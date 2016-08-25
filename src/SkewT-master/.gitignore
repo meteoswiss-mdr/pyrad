@@ -1,0 +1,4 @@
+*.pyc
+build
+skewt/__pycache__
+*.tar.gz

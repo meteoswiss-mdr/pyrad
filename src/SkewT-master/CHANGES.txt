@@ -1,0 +1,84 @@
+TJL 7 August 2015 — Made code able to run under Python 2.7 or 3.4. Also applied pep8.
+
+v1.1.0 18 June 2015 -- Oh gosh, where to begin?
+    - Bugs in CAPE calculations: were mixing ambient temperature-derived 
+      significant levels with virtual temperature formulation for CAPE, 
+      which was producing some weird results in special cases
+    - Fixed plotting and cape calculations for soundings that had a 
+      tropopause above 100hPa
+    - A few minor plotting issues
+    - Responses to bugs raised by community
+
+v1.0.1 Minor bug fix to suppress runtime warnings when P_lfc was nan
+    
+v1.0 10 October 2014 Major overhaul to implement new matplotlib 
+transformations and CAPE routines.
+
+    
+v0.1.4r4 02 Sep 2014 --Fixed examples
+
+v0.1.4r3 02 Sep 2014 --Fixed base of standard atmosphere.
+    - It's now aware of the lowest pressure level. Changing the upper 
+      pressure level still causes things to break horribly. 
+
+v0.1.4r2 20 Feb 2014 --New diagnostics and minor plotting changes.
+
+v0.1.4r1 20 Feb 2014 --New diagnostics and minor plotting changes.
+    - Trying to get examples uploaded. 
+    - fixed bug in readfile. Changed routine name to uwyofile
+
+v0.1.4 20 Feb 2014 --New diagnostics and minor plotting changes.
+    - Replaced "273.15" with thermodynamics.degCtoK
+    - Added a precipitable water diagnostic on request from Doug Miller! 
+      please feel free to request others, or even better, write your own.
+    
+v0.1.3r1 26 July -- Minor plotting changes and shell command-line features 
+(No new release for pypi)
+    - zorder of parcel plot set to plot beneath tc/td trace but above text 
+      labels
+    - shell command invocation: 
+	- "python SkewT.py" does the two examples from the "examples" 
+	  directory
+	- "python SkewT.py example" does the same thing
+	- "python SkewT.py path/to/soundingfile.txt" makes a skewt plot of 
+	  the sounding in soundingfile, provided it confirms to the UWyo 
+	  format
+    
+v0.1.3 25 July 2013 -- Minor changes (New release for pypi):
+    - Fixed Masked Value error in add_profile (Thanks Simon). The routing 
+      now enforces masked values so that an exception is not raised when 
+      counting the number of barbs to draw [nbarbs=(~uu.mask).sum()]
+    - Added an automated parcel routine. This works by analysing the lowest 
+      few levels (kwarg mixheight in mbar) to give:
+	- surface pressure (pressure of lowest level)
+	- surface temperature [derived from max(theta)] in lowst levels
+	- surface dew point [derived from mean(mixr)] in lowest levels
+      This seems to give pretty good agreement with the parcels in the BOM 
+      soundings, but I can't make it perfect. I presume they use a forecast 
+      daily max T for the parcel instead of a mixed value. The ability to 
+      define your own parcel is retained but plot_skewt() now automatically 
+      plots a parcel.
+    - Added a couple of routines to thermodynamics.py to enable this to 
+      work. TempK now calculates temperature given theta and pressure (I 
+      can't believe I didn't already have this)
+    
+v0.1.2 08 July 2013 -- A number of changes:
+    - Added a parcel ascent routine based on provided pressure, dewpoint and 
+      temperature. This routine adds some characteristics to the plot in the 
+      upper LHS. TODO: initialise parcels automatically, calculate CAPE and 
+      CIN and Precipitable water... 
+    - Removed reliance on rcParams to make the figure look pretty. Did this 
+      because I got annoyed (and I'm sure that others will too) at what 
+      happens to graphs plotted subsequently... they end up with yellow axes 
+      etc. 
+    - Improved some of the aesthetics of the plot... moved standard 
+      atmosphere height axis to right hand side.
+
+v0.1.1 03 July 2013 -- Very minor changes to docs and figure plotting.
+
+v0.1.0 01 July 2013 -- Initial Release!
+
+    
+
+
+

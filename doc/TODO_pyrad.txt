@@ -1,0 +1,13 @@
+Pending modifications for current code in Pyrad
+-----------------------------------------------
+- In function process_echo_id: Add condition on differential reflectivity at low reflectivity values. Allow user to select the various thresholds. Add a speckle filter
+- In function process_echo_filter: Enable the user to select what to keep and what to filter out.
+
+Processing functions to be implemented with highest priority:
+-------------------------------------------------------------
+- Melting layer estimator
+- Extraction of values at points of interest/ comparison with point measurements
+
+Product functions to be implemented with highest priority:
+----------------------------------------------------------
+- CAPPI plots

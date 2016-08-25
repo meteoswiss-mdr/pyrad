@@ -1,0 +1,65 @@
+# Name of this configuration:
+# Will be used in product generation save path
+name STRING mals_emmen_rad4alp_PHA
+
+# Base path of the raw data.
+# Note: Must have a trailing '/'
+datapath STRING /data/rad4alp/rawdata/
+
+# Base path of configuration files
+#configpath STRING $HOME/malsgit/config/
+
+# Base path for cosmo data
+#cosmopath STRING /data/cosmo/
+
+# Base path for dem data
+#dempath STRING /data/rad4alp/visibRad4Alp/
+
+# Base path for swissmetnet data
+#smnpath STRING /data/meteo_products/SMNRetrieve/
+
+# Base path for disdrometer data
+#disdropath STRING /data/scattering/dsd_ts/
+
+# Base path for rad4alp hourly averaged reflectivity data in zueub222
+#rad4alppath STRING /data/rad4alp/meanZ/
+
+# Base path for raw rad4alp data in zueub222
+#rad4alprawpath STRING /data/rad4alp/rawdata/
+
+# Base path for raw rad4alp data in zueub222
+#statuspgr STRING $HOME/malsgit/src/idl/utils/parse_ST_zueub222.pl
+
+# base path of background maps
+#mapspath STRING /data/maps/
+
+# name of directory for MXPOL data in zueub222
+#mxpolname STRING paradiso_MXPol_PPI-005_0
+
+# name of directory for MXPOL raw data in zueub222
+#mxpolrawname STRING paradiso_MXPol_raw
+
+# name of directory where to store kml files
+#kmlpath STRING $HOME/data/kml/
+
+#psrpath STRING /data/DX50/psr/
+
+saveimg         INT 1
+saveimgbasepath STRING /data/pyrad_examples/
+imgformat       STRING eps
+convertimage    INT 1
+convertformat   STRING png
+
+# Loading of saved datasets
+#loadbasepath STRING /data/rad4alp/
+#loadname     STRING mals_emmen_rad4alp_PHA
+
+# Configuration of the radar location and approach direction
+locationConfigFile STRING /home/lom/users/fvj/pyrad/config/processing/mals_emmen_rad4alp_PHA_loc.txt
+
+# Configuration of the product generation
+productConfigFile STRING /home/lom/users/fvj/pyrad/config/processing/mals_emmen_rad4alp_PHA_prod.txt
+
+# State after last run
+#lastStateFile STRING $HOME/realtime_idl/paradiso_vol_lastState.txt
+

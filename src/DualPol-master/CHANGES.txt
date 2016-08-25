@@ -1,0 +1,56 @@
+Change Log
+----------
+v1.0.2 Major Changes (05/10/16):
+1. Added support for band, thresh_dz, and thresh_kdp keywords in the
+   blended rainfall algorithm calls. See CSU_RadarTools documentation for
+   how these affect the blended rainfall logic. Primary effect is reduced
+   use of Zdr at non-S bands.
+
+v1.0.1 Major Changes (12/08/15):
+1. Added std_gates keyword to DualPolRetrieval that allows the user to adjust
+   the number of gates used to calculate stddev of diff phase. Default still 11.
+
+v1.0 Major Changes (11/27/15):
+1. Made an installable package.
+2. Added _FhcVars class to clean up FHC routines.
+3. Optimized FHC processing by reducing arrays before making csu_fhc call.
+4. Added common sub-module with radar_coords_to_cart function that Py-ART
+   just removed.
+
+v0.9 Major Changes (09/25/15):
+1. Added QC capabilities, including filters for insects, high SDP, & speckles.
+   These are based on the csu_radartools.csu_misc module. QC is performed prior
+   to all retrievals, except for KDP calculations.
+2. Added kdp_window keyword to DualPolRetrieval, to allow user to vary distance
+   for window used in phase filtering and KDP calculation using csu_radartools.
+3. Added capability for putting temperature field in radar object.
+
+v0.8 Major Changes (08/07/15):
+1. Now supports Python 3.4 and 2.7. Other versions untested.
+
+v0.7 Major Changes (07/02/15):
+1. Made code pep8 compliant
+
+v0.6 Major Changes (05/21/15):
+1. KDP calculation accepts gate spacing keyword (gs).
+2. Adjusted sounding read to work with latest version of skewt
+3. More info added to docstrings
+
+v0.5 Major Changes (03/13/15):
+1. KDP calculation implemented.
+2. Moved keyword arguments to separate dictionary (kwargs) and implemented
+   check_kwargs() function to process them.
+
+v0.4 Major Changes (03/05/15):
+1. DSD calculations implemented.
+2. Project renamed to DualPol from RadBro.
+
+v0.3 Major Changes (02/20/15):
+1. Rainfall rate implemented
+
+v0.2 Major Changes (01/27/15):
+1. Ice/liquid mass calculations implemented.
+
+v0.1 Functionality(01/26/15):
+1. Summer HID calculations implemented.
+2. Support for sounding import.

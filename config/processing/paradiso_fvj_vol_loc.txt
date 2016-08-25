@@ -1,0 +1,53 @@
+#
+# Configuration for PARADISO tests at the airport Payerne
+
+# Radar Name
+RadarName STRING DX50
+
+
+# Coordinates of the radar
+#RadarPosition STRUCT 3
+#              latitude  FLOAT 46.84249   # WGS84 latitude [deg]
+#              longitude FLOAT 6.91836    # WGS84 longitude [deg]
+#              altitude  FLOAT 450.0      # altitude [m] (NOT WGS84!!)
+
+# Names of the radar scans in the specified sector
+# NOTE: Must have a trailing '/'
+ScanList STRARR 1
+      MEE_PAY_360.vol/  # masterscan: first scan of a volume
+
+# Repetition time of the scans [min]
+ScanPeriod INT 5
+
+# Frequency of cosmo run [h]
+CosmoRunFreq INT 1
+
+# hours forecasted in cosmo run [h]
+CosmoForecasted INT 7
+
+# Coordinates for the zero temperature altitude
+#iso0setup STRUCT 2
+#   xcoord  STRING 185
+#   ycoord  STRING 560
+
+# radar beamwidth
+#RadarBeamwidth FLOAT 1.35
+
+# azimuth tolerance when azimuth may be variable
+#AzimTol FLOAT 0.5
+
+# Clutter map
+#clutterMap STRING cluttermaps_XXX.sav
+
+# Kalmann config
+#RcovFile STRING Rcov_2gatesV2.txt
+#PcovFile STRING Pcov_2gatesV3.txt
+
+# Image config
+ppiImageConfig STRUCT 6
+   xsize      INT   500     # size of the cartesian grid [pixels]
+   ysize      INT   500     # size of the cartesian grid [pixels]
+   xmin       FLOAT -50.0   # Min distance on horizontal axis [km]
+   xmax       FLOAT  50.0   # Max distance on horizontal axis [km]
+   ymin       FLOAT -50.0   # Min distance on vertical axis [km]
+   ymax       FLOAT  50.0   # Max distance on vertical axis [km]

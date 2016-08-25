@@ -1,0 +1,69 @@
+#
+# Configuration for MALS tests at the airport Payerne
+# Approach direction: from east
+
+# Radar Name
+RadarName STRING DX50
+
+## Coordinates of the radar
+#RadarPosition STRUCT 3
+#              latitude  FLOAT 46.84249   # WGS84 latitude [deg]
+#              longitude FLOAT 6.91836    # WGS84 longitude [deg]
+#              altitude  FLOAT 450.0      # altitude [m] (NOT WGS84!!)
+
+# Names of the radar scans in the specified sector
+# NOTE: Must have a trailing '/'
+ScanList STRARR 13
+      MALS_PAY_049_up_nopsr.ele/  # masterscan: first scan of a volume
+      MALS_PAY_053_dw_nopsr.ele/
+      MALS_PAY_057_up_nopsr.ele/
+      MALS_PAY_061_dw_nopsr.ele/
+      MALS_PAY_059_up_nopsr.ele/
+      MALS_PAY_055_dw_nopsr.ele/
+      MALS_PAY_051_up_nopsr.ele/
+      MALS_PAY_047_dw_nopsr.ele/
+      MALS_PAY_043_up_nopsr.ele/
+      MALS_PAY_039_dw_nopsr.ele/
+      MALS_PAY_037_up_nopsr.ele/
+      MALS_PAY_041_dw_nopsr.ele/
+      MALS_PAY_045_up_nopsr.ele/
+
+# Repetition time of the scans [min]
+ScanPeriod INT 2
+
+# Frequency of cosmo run [h]
+CosmoRunFreq INT 1
+
+# hours forecasted in cosmo run [h]
+CosmoForecasted INT 7
+
+# radar beam width
+# RADARBEAMWIDTH FLOAT 1.35
+
+# Image config
+ppiImageConfig STRUCT 6
+   xsize      FLOAT   7.      # image size [inches] (default dots per inch (dpi):72)
+   ysize      FLOAT   7.      # image size [inches] (default dots per inch (dpi):72)
+   xmin       FLOAT   0.0   # Min distance on horizontal axis [km]
+   xmax       FLOAT  40.0   # Max distance on horizontal axis [km]
+   ymin       FLOAT -10.0   # Min distance on vertical axis [km]
+   ymax       FLOAT  30.0   # Max distance on vertical axis [km]
+
+rhiImageConfig STRUCT 6
+   xsize      FLOAT   10.    # image size [inches]
+   ysize      FLOAT   5.     # image size [inches]
+   xmin       FLOAT   0.0   # Min distance on horizontal axis [km]
+   xmax       FLOAT  40.0   # Max distance on horizontal axis [km]
+   ymin       FLOAT   0.0   # Min distance on vertical axis [km]
+   ymax       FLOAT   7.5   # Max distance on vertical axis [km]
+
+# PAR antenna pattern (only for postprocessing)
+par_azimuth_antenna STRUCT 3
+   azPatternFile STRING PAR_AzAntenna_AzimuthPattern.csv
+   elPatternFile STRING PAR_AzAntenna_ElevationPattern.csv
+   fixed_angle FLOAT 9.5    # elevation angle of azimuth [deg]
+
+par_elevation_antenna STRUCT 3
+   azPatternFile STRING PAR_ElAntenna_AzimuthPattern.csv
+   elPatternFile STRING PAR_ElAntenna_ElevationPattern.csv
+   fixed_angle FLOAT 49.0    # azimuth angle of azimuth [deg]

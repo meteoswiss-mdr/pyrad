@@ -1,0 +1,35 @@
+Title/Version
+-------------
+Python Interface to Dual-Pol Radar Algorithms (DualPol)
+DualPol v1.0
+Developed & tested with Python 2.7 and 3.4
+Last changed 11/20/2015
+
+
+Author
+------
+Timothy Lang
+NASA MSFC
+timothy.j.lang@nasa.gov
+(256) 961-7861
+
+
+Overview
+--------
+This is an object-oriented Python module that facilitates precipitation
+retrievals (e.g., hydrometeor type, precipitation rate, precipitation mass,
+particle size distribution information) from polarimetric radar data. It
+leverages existing open source radar software packages to perform all-in-one
+retrievals that are then easily visualized or saved using existing software.
+
+To access this module, in the main DualPol source directory:
+python setup.py install
+
+Then in your program:
+import dualpol
+
+
+Notes
+-----
+Dependencies: numpy, pyart, warnings, skewt, csu_radartools, matplotlib
+Python 3 compliant SkewT here: https://github.com/tjlang/SkewT

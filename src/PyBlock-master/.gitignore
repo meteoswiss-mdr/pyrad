@@ -1,0 +1,13 @@
+*.pyc
+build
+notebooks/.ipynb_checkpoints
+notebooks/*.html
+notebooks/*.png
+pyblock/old
+pyblock.egg-info
+notebooks/*.txt
+notebooks/*.gz
+dist
+release
+old
+notebooks/PyBlock_Demo-test_new_skewt.ipynb
