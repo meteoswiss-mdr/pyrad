@@ -95,7 +95,3 @@ src/pyrad_proc/pyrad/version.py
 # radar data files #
 ####################
 
-
-# git submodule description files #
-###################################
-.gitmodules
