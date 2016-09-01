@@ -6,7 +6,7 @@ Pending modifications for current code in Pyrad
 Processing functions to be implemented with highest priority:
 -------------------------------------------------------------
 - Melting layer estimator
-- Extraction of values at points of interest/ comparison with point measurements
+- Comparison with point measurements
 
 Product functions to be implemented with highest priority:
 ----------------------------------------------------------

@@ -5,7 +5,7 @@
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
 dataSetList STRARR 1
-    rgMAH_dBZ
+    dBZ
 
 
 # ==========================================================================================
@@ -28,15 +28,18 @@ dataSetList STRARR 1
 # ==========================================================================================
 #                 raw data products
 # ==========================================================================================
-#dBZ STRUCT 3
-#	type STRING RAW
-#	datatype STRING dBZ
-#	products STRUCT 1
-#	  EL004_0 STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING dBZ
-#		 anglenr INT 0
-#
+dBZ STRUCT 3
+	type STRING RAW
+	datatype STRING dBZ
+	products STRUCT 2
+	   EL004_0 STRUCT 3
+         type   STRING PPI_IMAGE
+         voltype STRING dBZ
+		 anglenr INT 0
+       SAVEVOL STRUCT 2
+         type   STRING SAVEVOL
+         voltype STRING dBZ
+
 #ZDR STRUCT 3
 #	type STRING RAW
 #	datatype STRING ZDR
@@ -358,30 +361,30 @@ dataSetList STRARR 1
 
 # ---------------------- rain gauge MAH -------------------------------------------
 
-#46.737, 6.568, 437.0 MAH (Yverdon)
-rgMAH_dBZ STRUCT 12
-   type STRING POINT_MEASUREMENT
-   datatype STRARR 1
-      dBZ
-   latlon INT 1
-   truealt INT 0
-   lat FLOAT 46.737
-   lon FLOAT 6.568
-   alt FLOAT 437.0
-   ele FLOAT 4.
-   AziTol FLOAT 1.
-   EleTol FLOAT 1.
-   RngTol FLOAT 30.
-   products STRUCT 1
-      dBZ STRUCT 1
-	     type STRING PLOT_AND_WRITE_POINT
-#	  cum STRUCT 1
-#	     type STRING PLOT_CUMULATIVE_POINT
-#	  rrcomp STRUCT 3
-#	     type STRING COMPARE_POINT
-#		 sensor STRING rgage
-#		 sensorid STRING MAH
-#	  cumcomp STRUCT 3
-#	     type STRING COMPARE_CUMULATIVE_POINT
-#		 sensor STRING rgage
-#		 sensorid STRING MAH
+##46.737, 6.568, 437.0 MAH (Yverdon)
+#rgMAH_dBZ STRUCT 12
+#   type STRING POINT_MEASUREMENT
+#   datatype STRARR 1
+#      dBZ
+#   latlon INT 1
+#   truealt INT 0
+#   lat FLOAT 46.737
+#   lon FLOAT 6.568
+#   alt FLOAT 437.0
+#   ele FLOAT 4.
+#   AziTol FLOAT 1.
+#   EleTol FLOAT 1.
+#   RngTol FLOAT 30.
+#   products STRUCT 1
+#      dBZ STRUCT 1
+#	     type STRING PLOT_AND_WRITE_POINT
+##	  cum STRUCT 1
+##	     type STRING PLOT_CUMULATIVE_POINT
+##	  rrcomp STRUCT 3
+##	     type STRING COMPARE_POINT
+##		 sensor STRING rgage
+##		 sensorid STRING MAH
+##	  cumcomp STRUCT 3
+##	     type STRING COMPARE_CUMULATIVE_POINT
+##		 sensor STRING rgage
+##		 sensorid STRING MAH

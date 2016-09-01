@@ -15,6 +15,7 @@ Functions for obtaining Pyrad products from the datasets
 """
 
 import os
+from copy import deepcopy
 
 import numpy as np
 
@@ -90,6 +91,7 @@ def generate_vol_products(dataset, prdcfg):
                 'WARNING: Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
+
     elif prdcfg['type'] == 'RHI_IMAGE':
         field_name = get_fieldname_rainbow(prdcfg['voltype'])
         if field_name in dataset.fields:
@@ -113,6 +115,7 @@ def generate_vol_products(dataset, prdcfg):
                 'WARNING: Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
+
     elif prdcfg['type'] == 'PSEUDOPPI_IMAGE':
         field_name = get_fieldname_rainbow(prdcfg['voltype'])
         if field_name in dataset.fields:
@@ -134,6 +137,7 @@ def generate_vol_products(dataset, prdcfg):
                 'WARNING: Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
+
     elif prdcfg['type'] == 'PSEUDORHI_IMAGE':
         field_name = get_fieldname_rainbow(prdcfg['voltype'])
         if field_name in dataset.fields:
@@ -155,6 +159,30 @@ def generate_vol_products(dataset, prdcfg):
                 'WARNING: Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
+
+    elif prdcfg['type'] == 'SAVEVOL':
+        field_name = get_fieldname_rainbow(prdcfg['voltype'])
+        if field_name in dataset.fields:
+            new_dataset = deepcopy(dataset)
+            new_dataset.fields = dict()
+            new_dataset.add_field(field_name, dataset.fields[field_name])
+
+            savedir = get_save_dir(
+                prdcfg['basepath'], prdcfg['procname'], prdcfg['timeinfo'],
+                prdcfg['dsname'], prdcfg['prdname'])
+
+            fname = make_filename(
+                prdcfg['timeinfo'], 'savevol', prdcfg['dstype'],
+                prdcfg['voltype'], 'nc')
+
+            pyart.io.cfradial.write_cfradial(savedir+fname, new_dataset)
+            print('saved file: '+savedir+fname)
+        else:
+            print(
+                'WARNING: Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+        
     else:
         print('WARNING: Unsupported product type: ' + prdcfg['type'])
 
