@@ -6,6 +6,7 @@ def configuration(parent_package='', top_path=None):
     config.add_subpackage('util')
     config.add_subpackage('io')
     config.add_subpackage('proc')
+    config.add_subpackage('graph')
     
     return config
 

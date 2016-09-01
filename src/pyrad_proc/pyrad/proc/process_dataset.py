@@ -4,6 +4,9 @@ pyrad.proc.process_dataset
 
 Functions for processing Pyrad datasets
 
+.. autosummary::
+    :toctree: generated/
+
     get_process_type
     process_raw
     process_snr
@@ -25,6 +28,7 @@ import numpy as np
 import pyart
 
 from ..io.read_data import get_datatypefields, get_fieldname_rainbow
+from netCDF4 import num2date
 
 
 def get_process_type(dataset_type):
@@ -67,6 +71,9 @@ def get_process_type(dataset_type):
         func_name = 'process_rainrate'
     elif dataset_type == 'HYDROCLASS':
         func_name = 'process_hydroclass'
+    elif dataset_type == 'POINT_MEASUREMENT':
+        func_name = 'process_point_measurement'
+        dsformat = 'TIMESERIES'
     else:
         print('ERROR: Unknown dataset type')
 
@@ -749,3 +756,118 @@ def process_hydroclass(procstatus, dscfg, radar=None):
         new_dataset.add_field('radar_echo_classification', hydro)
 
         return new_dataset
+
+
+def process_point_measurement(procstatus, dscfg, radar=None):
+    """
+    Obtains the radar data at a point measurement
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+    if procstatus != 1:
+        return None
+
+    projparams = dict()
+    projparams.update({'proj': 'pyart_aeqd'})
+    projparams.update({'lon_0': radar.longitude['data']})
+    projparams.update({'lat_0': radar.latitude['data']})
+
+    if dscfg['latlon']:
+        lon = dscfg['lon']
+        lat = dscfg['lat']
+        alt = dscfg['alt']
+        x, y = pyart.core.geographic_to_cartesian(lon, lat, projparams)
+
+        if not dscfg['truealt']:
+            ke = 4./3.  # constant for effective radius
+            a = 6378100.  # earth radius
+            re = a * ke  # effective radius
+
+            elrad = dscfg['ele'] * np.pi / 180.
+            r_ground = np.sqrt(x ** 2. + y ** 2.)
+            r = r_ground / np.cos(elrad)
+            alt_radar = radar.altitude['data']+np.sqrt(
+                r ** 2. + re ** 2. + 2. * r * re * np.sin(elrad)) - re
+            alt_radar = alt_radar[0]
+        else:
+            alt_radar = dscfg['alt']
+
+        r, az, el = pyart.core.cartesian_to_antenna(
+            x, y, alt_radar-radar.altitude['data'])
+        r = r[0]
+        az = az[0]
+        el = el[0]
+    else:
+        r = dscfg['rng']
+        az = dscfg['azi']
+        el = dscfg['ele']
+
+        x, y, alt = antenna_to_cartesian(r, az, el)
+        lon, lat = cartesian_to_geographic(x, y, projparams)
+
+    d_az = np.min(np.abs(radar.azimuth['data'] - az))
+    if d_az > dscfg['AziTol']:
+        print('WARNING: No radar bin found for point (az, el, r):(' +
+              str(az)+', '+str(el)+', '+str(r) +
+              '). Minimum distance to radar azimuth '+str(d_az) +
+              ' larger than tolerance')
+        return None
+
+    d_el = np.min(np.abs(radar.elevation['data'] - el))
+    if d_el > dscfg['EleTol']:
+        print('WARNING: No radar bin found for point (az, el, r):(' +
+              str(az)+', '+str(el)+', '+str(r) +
+              '). Minimum distance to radar elevation '+str(d_el) +
+              ' larger than tolerance')
+        return None
+
+    d_r = np.min(np.abs(radar.range['data'] - r))
+    if d_r > dscfg['RngTol']:
+        print('WARNING: No radar bin found for point (az, el, r):(' +
+              str(az)+', '+str(el)+', '+str(r) +
+              '). Minimum distance to radar range bin '+str(d_r) +
+              ' larger than tolerance')
+        return None
+
+    datagroup, datatype, dataset, product = get_datatypefields(
+            dscfg['datatype'][0])
+    field_name = get_fieldname_rainbow(datatype)
+
+    ind_ray = np.argmin(np.abs(radar.azimuth['data'] - az) +
+                        np.abs(radar.elevation['data'] - el))
+    ind_r = np.argmin(np.abs(radar.range['data'] - r))
+
+    val = radar.fields[field_name]['data'].data[ind_ray, ind_r]
+    time = num2date(radar.time['data'][ind_ray], radar.time['units'],
+                    radar.time['calendar'])
+
+    # prepare for exit
+    new_dataset = dict()
+    new_dataset.update({'value': val})
+    new_dataset.update({'datatype': datatype})
+    new_dataset.update({'time': time})
+    new_dataset.update(
+        {'point_coordinates_WGS84_lon_lat_alt': [lon, lat, alt]})
+    new_dataset.update({'antenna_coordinates_az_el_r': [az, el, r]})
+    new_dataset.update(
+        {'used_antenna_coordinates_az_el_r': [radar.azimuth['data'][ind_ray],
+         radar.elevation['data'][ind_ray],
+         radar.range['data'][ind_r]]})
+
+    return new_dataset

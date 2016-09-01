@@ -4,8 +4,12 @@ pyrad.io.read_data
 
 Functions for reading pyrad input data, i.e. radar files
 
+.. autosummary::
+    :toctree: generated/
+
     get_data
     read_status
+    read_timeseries
     find_cosmo_file
     get_datatypemetranet
     get_fieldname_rainbow
@@ -19,6 +23,7 @@ Functions for reading pyrad input data, i.e. radar files
 import glob
 import datetime
 import os
+import csv
 import xml.etree.ElementTree as et
 
 import numpy as np
@@ -140,7 +145,7 @@ def get_data(voltime, datatypesdescr, cfg):
                     noisedBZ1km_h = float(
                         common_slice_info['noise_power_dbz'])
                     noisedBZ_h = pyart.retrieve.compute_noisedBZ(
-                        radar_aux.nrays, noisedBZ1km_h, 
+                        radar_aux.nrays, noisedBZ1km_h,
                         radar_aux.range['data'], 1.,
                         noise_field='noisedBZ_hh')
                     radar_aux.fields = dict()
@@ -434,6 +439,49 @@ def read_status(voltime, cfg):
     root = et.parse(filename[0]).getroot()
 
     return root
+
+
+def read_timeseries(fname):
+    """
+    Reads a time series contained in a csv file
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    date , value : tupple
+        A datetime object array containing the time and a numpy masked array
+        containing the value
+
+    """
+    with open(fname, 'r', newline='') as csvfile:
+        # first count the lines
+        reader = csv.DictReader(
+            row for row in csvfile if not row.startswith('#'))
+        nrows = sum(1 for row in reader)
+        value = np.ma.empty(nrows, dtype='float32')
+
+        # now read the data
+        csvfile.seek(0)
+        reader = csv.DictReader(
+            row for row in csvfile if not row.startswith('#'))
+        i = 0
+        date = list()
+        for row in reader:
+            date.append(datetime.datetime.strptime(
+                row['date'], '%Y-%m-%d %H:%M:%S.%f'))
+            value[i] = float(row['value'])
+            i += 1
+        csvfile.close()
+
+        fill_value = pyart.config.get_fillvalue()
+        value = np.ma.masked_where(value == fill_value, value)
+        value.set_fill_value(fill_value)
+
+    return date, value
 
 
 def find_cosmo_file(voltime, datatype, cfg):

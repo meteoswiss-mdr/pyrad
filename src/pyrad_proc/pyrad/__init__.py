@@ -29,6 +29,7 @@ else:
     from .version import version as __version__
 
     # import subpackages    
+    from . import graph
     from . import io    
     from . import proc
     from . import util

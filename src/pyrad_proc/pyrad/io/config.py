@@ -1,8 +1,11 @@
 """
 pyrad.io.config
-====================
+===============
 
 Functions for reading pyrad config files
+
+.. autosummary::
+    :toctree: generated/
 
     read_config
     get_num_elements
