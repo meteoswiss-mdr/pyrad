@@ -9,6 +9,7 @@ Functions for processing Pyrad datasets
 
     get_process_type
     process_raw
+    process_save_radar
     process_snr
     process_l
     process_cdr
@@ -53,6 +54,8 @@ def get_process_type(dataset_type):
     dsformat = 'VOL'
     if dataset_type == 'RAW':
         func_name = 'process_raw'
+    elif dataset_type == 'NCVOL':
+        func_name = 'process_save_radar'
     elif dataset_type == 'SNR':
         func_name = 'process_snr'
     elif dataset_type == 'RHOHV_CORRECTION':
@@ -83,6 +86,36 @@ def get_process_type(dataset_type):
 def process_raw(procstatus, dscfg, radar=None):
     """
     dummy function that returns the initial input data set
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+
+    """
+
+    if procstatus != 1:
+        return None
+
+    new_dataset = deepcopy(radar)
+    return new_dataset
+    
+
+def process_save_radar(procstatus, dscfg, radar=None):
+    """
+    dummy function that allows to save the entire radar object
 
     Parameters
     ----------

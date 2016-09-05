@@ -9,6 +9,7 @@ Functions for obtaining Pyrad products from the datasets
 
     get_product_type
     generate_vol_products
+    generate_timeseries_products
     get_save_dir
     make_filename
 
@@ -22,8 +23,10 @@ import numpy as np
 import pyart
 
 from ..io.read_data import get_fieldname_rainbow, read_timeseries
+from ..io.read_data import get_sensor_data
 from ..io.write_data import write_timeseries, generate_field_name_str
 from ..graph.plots import plot_ppi, plot_rhi, plot_timeseries
+from ..graph.plots import plot_timeseries_comp
 
 
 def get_product_type(product_type):
@@ -182,7 +185,19 @@ def generate_vol_products(dataset, prdcfg):
                 'WARNING: Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
-        
+
+    elif prdcfg['type'] == 'SAVEALL':
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], prdcfg['timeinfo'],
+            prdcfg['dsname'], prdcfg['prdname'])
+
+        fname = make_filename(
+            prdcfg['timeinfo'], 'savevol', prdcfg['dstype'],
+            'all_fields', 'nc')
+
+        pyart.io.cfradial.write_cfradial(savedir+fname, dataset)
+        print('saved file: '+savedir+fname)
+
     else:
         print('WARNING: Unsupported product type: ' + prdcfg['type'])
 
@@ -222,19 +237,141 @@ def generate_timeseries_products(dataset, prdcfg):
 
         date, value = read_timeseries(savedir+csvfname)
 
-        figfname = make_filename(
+        if date is not None:
+            figfname = make_filename(
+                date[0], 'ts', prdcfg['dstype'], dataset['datatype'],
+                prdcfg['convertformat'], prdcfginfo=gateinfo,
+                timeformat='%Y%m%d')
+
+            titl = ('Time Series '+date[0].strftime('%Y-%m-%d') +
+                    ' (az, el, r): ('+az+', '+el+', '+r+')')
+
+            labely = generate_field_name_str(dataset['datatype'])
+
+            plot_timeseries(
+                date, value, savedir+figfname, labelx='Time UTC',
+                labely=labely, titl=titl)
+            print('saved figure: '+savedir+figfname)
+
+    elif prdcfg['type'] == 'PLOT_CUMULATIVE_POINT':
+        az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
+        el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
+        r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
+        gateinfo = ('az'+az+'r'+r+'el'+el)
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], prdcfg['timeinfo'],
+            prdcfg['dsname'], prdcfg['prdid'])
+
+        csvfname = make_filename(
             prdcfg['timeinfo'], 'ts', prdcfg['dstype'], dataset['datatype'],
-            prdcfg['convertformat'], prdcfginfo=gateinfo, timeformat='%Y%m%d')
+            'csv', prdcfginfo=gateinfo, timeformat='%Y%m%d')
 
-        titl = ('Time Series '+date[0].strftime('%Y-%m-%d') +
-                ' (az, el, r): ('+az+', '+el+', '+r+')')
+        date, value = read_timeseries(savedir+csvfname)
 
-        labely = generate_field_name_str(dataset['datatype'])
+        if date is not None:
+            figfname = make_filename(
+                date[0], 'ts_cum', prdcfg['dstype'], dataset['datatype'],
+                prdcfg['convertformat'], prdcfginfo=gateinfo,
+                timeformat='%Y%m%d')
 
-        plot_timeseries(
-            date, value, savedir+figfname, labelx='Time UTC',
-            labely=labely, titl=titl)
-        print('saved figure: '+savedir+figfname)
+            titl = ('Time Series Acc. '+date[0].strftime('%Y-%m-%d') +
+                    ' (az, el, r): ('+az+', '+el+', '+r+')')
+
+            labely = 'Radar estimated rainfall accumulation (mm)'
+
+            plot_timeseries(
+                date, value, savedir+figfname, labelx='Time UTC',
+                labely=labely, titl=titl, period=prdcfg['ScanPeriod']*60.)
+            print('saved figure: '+savedir+figfname)
+
+    elif prdcfg['type'] == 'COMPARE_POINT':
+        az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
+        el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
+        r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
+        gateinfo = ('az'+az+'r'+r+'el'+el)
+
+        savedir_ts = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], prdcfg['timeinfo'],
+            prdcfg['dsname'], prdcfg['prdid'])
+
+        csvfname = make_filename(
+            prdcfg['timeinfo'], 'ts', prdcfg['dstype'], dataset['datatype'],
+            'csv', prdcfginfo=gateinfo, timeformat='%Y%m%d')
+
+        radardate, radarvalue = read_timeseries(savedir_ts+csvfname)
+
+        if radardate is not None:
+            sensordate, sensorvalue, label2, period = get_sensor_data(
+                radardate[0], dataset['datatype'], prdcfg)
+
+            if sensordate is not None:
+                savedir = get_save_dir(
+                    prdcfg['basepath'], prdcfg['procname'], radardate[0],
+                    prdcfg['dsname'], prdcfg['prdname'])
+
+                figfname = make_filename(
+                    radardate[0], 'ts_comp', prdcfg['dstype'],
+                    dataset['datatype'], prdcfg['convertformat'],
+                    prdcfginfo=gateinfo, timeformat='%Y%m%d')
+
+                titl = ('Time Series Comp. ' +
+                        radardate[0].strftime('%Y-%m-%d') +
+                        ' (az, el, r): ('+az+', '+el+', '+r+') - '+label2 +
+                        ' '+prdcfg['sensorid'])
+
+                labely = generate_field_name_str(dataset['datatype'])
+
+                plot_timeseries_comp(
+                    radardate, radarvalue, sensordate, sensorvalue,
+                    savedir+figfname, labelx='Time UTC', labely=labely,
+                    label1='Radar', label2=label2, titl=titl)
+                print('saved figure: '+savedir+figfname)
+
+    elif prdcfg['type'] == 'COMPARE_CUMULATIVE_POINT':
+        az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
+        el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
+        r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
+        gateinfo = ('az'+az+'r'+r+'el'+el)
+
+        savedir_ts = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], prdcfg['timeinfo'],
+            prdcfg['dsname'], prdcfg['prdid'])
+
+        csvfname = make_filename(
+            prdcfg['timeinfo'], 'ts', prdcfg['dstype'], dataset['datatype'],
+            'csv', prdcfginfo=gateinfo, timeformat='%Y%m%d')
+
+        radardate, radarvalue = read_timeseries(savedir_ts+csvfname)
+
+        if radardate is not None:
+            sensordate, sensorvalue, label2, period2 = get_sensor_data(
+                radardate[0], dataset['datatype'], prdcfg)
+
+            if sensordate is not None:
+                savedir = get_save_dir(
+                    prdcfg['basepath'], prdcfg['procname'], radardate[0],
+                    prdcfg['dsname'], prdcfg['prdname'])
+
+                figfname = make_filename(
+                    radardate[0], 'ts_cumcomp', prdcfg['dstype'],
+                    dataset['datatype'], prdcfg['convertformat'],
+                    prdcfginfo=gateinfo, timeformat='%Y%m%d')
+
+                titl = ('Time Series Acc. Comp. ' +
+                        radardate[0].strftime('%Y-%m-%d') +
+                        ' (az, el, r): ('+az+', '+el+', '+r+') - '+label2 +
+                        ' ' + prdcfg['sensorid'])
+
+                labely = 'Rainfall accumulation (mm)'
+
+                plot_timeseries_comp(
+                    radardate, radarvalue, sensordate, sensorvalue,
+                    savedir+figfname, labelx='Time UTC', labely=labely,
+                    label1='Radar', label2=label2, titl=titl,
+                    period1=prdcfg['ScanPeriod']*60., period2=period2)
+                print('saved figure: '+savedir+figfname)
+
     else:
         print('WARNING: Unsupported product type: ' + prdcfg['type'])
 

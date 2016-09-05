@@ -4,8 +4,12 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 1
-    dBZ
+dataSetList STRARR 4
+    l0:RRZh_noattcorr
+    l1:rgMAH_RRZh_noattcorr
+    l1:disdroBelleChasse_RRZh_noattcorr
+    l1:disdroBelleChasse_dBZ
+    
 
 
 # ==========================================================================================
@@ -26,20 +30,29 @@ dataSetList STRARR 1
 #		 anglenr INT 0
 
 # ==========================================================================================
+#                 Save radar object
+# ==========================================================================================
+#NCVOL STRUCT 2
+#	type STRING NCVOL
+#	products STRUCT 1
+#       SAVEVOL STRUCT 1
+#         type   STRING SAVEALL
+
+# ==========================================================================================
 #                 raw data products
 # ==========================================================================================
-dBZ STRUCT 3
-	type STRING RAW
-	datatype STRING dBZ
-	products STRUCT 2
-	   EL004_0 STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING dBZ
-		 anglenr INT 0
-       SAVEVOL STRUCT 2
-         type   STRING SAVEVOL
-         voltype STRING dBZ
-
+#dBZ STRUCT 3
+#	type STRING RAW
+#	datatype STRING dBZ
+#	products STRUCT 2
+#	   EL004_0 STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING dBZ
+#		 anglenr INT 0
+#       SAVEVOL STRUCT 2
+#         type   STRING SAVEVOL
+#         voltype STRING dBZ
+#
 #ZDR STRUCT 3
 #	type STRING RAW
 #	datatype STRING ZDR
@@ -239,19 +252,20 @@ dBZ STRUCT 3
 #         voltype STRING Adp
 #		 anglenr INT 0
 
-## ==========================================================================================
-##                 rainrate products
-## ==========================================================================================
-#RRZh_noattcorr STRUCT 4
-#   type STRING RAINRATE
-#   datatype STRARR 1
-#     PROC:dBZc
-#   RR_METHOD STRING Z
-#   products STRUCT 1
-# 	  EL004_0 STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING RR
-# 		 anglenr INT 0
+# ==========================================================================================
+#                 rainrate products
+# ==========================================================================================
+RRZh_noattcorr STRUCT 5
+   type STRING RAINRATE
+   datatype STRARR 1
+     dBZ
+   RR_METHOD STRING Z
+   MAKE_GLOBAL INT 1
+   products STRUCT 1
+ 	  EL004_0 STRUCT 3
+         type   STRING PPI_IMAGE
+         voltype STRING RR
+ 		 anglenr INT 0
 #
 #RRZh STRUCT 4
 #   type STRING RAINRATE
@@ -361,30 +375,90 @@ dBZ STRUCT 3
 
 # ---------------------- rain gauge MAH -------------------------------------------
 
-##46.737, 6.568, 437.0 MAH (Yverdon)
-#rgMAH_dBZ STRUCT 12
-#   type STRING POINT_MEASUREMENT
-#   datatype STRARR 1
-#      dBZ
-#   latlon INT 1
-#   truealt INT 0
-#   lat FLOAT 46.737
-#   lon FLOAT 6.568
-#   alt FLOAT 437.0
-#   ele FLOAT 4.
-#   AziTol FLOAT 1.
-#   EleTol FLOAT 1.
-#   RngTol FLOAT 30.
-#   products STRUCT 1
-#      dBZ STRUCT 1
-#	     type STRING PLOT_AND_WRITE_POINT
-##	  cum STRUCT 1
-##	     type STRING PLOT_CUMULATIVE_POINT
-##	  rrcomp STRUCT 3
-##	     type STRING COMPARE_POINT
-##		 sensor STRING rgage
-##		 sensorid STRING MAH
-##	  cumcomp STRUCT 3
-##	     type STRING COMPARE_CUMULATIVE_POINT
-##		 sensor STRING rgage
-##		 sensorid STRING MAH
+#46.737, 6.568, 437.0 MAH (Yverdon)
+rgMAH_RRZh_noattcorr STRUCT 12
+   type STRING POINT_MEASUREMENT
+   datatype STRARR 1
+      PROC:RR
+   latlon INT 1
+   truealt INT 0
+   lat FLOAT 46.737
+   lon FLOAT 6.568
+   alt FLOAT 437.0
+   ele FLOAT 4.
+   AziTol FLOAT 1.
+   EleTol FLOAT 1.
+   RngTol FLOAT 30.
+   products STRUCT 3
+      RR STRUCT 1
+	     type STRING PLOT_AND_WRITE_POINT
+	  RRcomp STRUCT 4
+	     type STRING COMPARE_POINT
+         prdid STRING RR
+		 sensor STRING rgage
+		 sensorid STRING MAH
+	  RRcumcomp STRUCT 4
+	     type STRING COMPARE_CUMULATIVE_POINT
+         prdid STRING RR
+		 sensor STRING rgage
+		 sensorid STRING MAH
+         
+# ------------------ disdrometer Bellechasse ---------------------------------------------
+
+# 46.9783, 7.1300, 433.0 (BelleChasse)
+disdroBelleChasse_RRZh_noattcorr STRUCT 12
+   type STRING POINT_MEASUREMENT
+   datatype STRARR 1
+      PROC:RR
+   latlon INT 1
+   truealt INT 0
+   lat FLOAT 46.9783
+   lon FLOAT 7.1300
+   alt FLOAT 433.0
+   ele FLOAT 4.
+   AziTol FLOAT 1.
+   EleTol FLOAT 1.
+   RngTol FLOAT 30.
+   products STRUCT 3
+      RR STRUCT 1
+	     type STRING PLOT_AND_WRITE_POINT
+	  RRcomp STRUCT 6	     
+         type STRING COMPARE_POINT
+         prdid STRING RR
+		 sensor STRING disdro
+		 sensorid STRING 20
+		 elev STRING 0000
+		 temp STRING 0100
+	  RRcumcomp STRUCT 6         
+	     type STRING COMPARE_CUMULATIVE_POINT
+         prdid STRING RR
+		 sensor STRING disdro
+		 sensorid STRING 20
+		 elev STRING 0000
+		 temp STRING 0100
+         
+# 46.9783, 7.1300, 433.0 (BelleChasse)
+disdroBelleChasse_dBZ STRUCT 12
+   type STRING POINT_MEASUREMENT
+   datatype STRARR 1
+      dBZ
+   latlon INT 1
+   truealt INT 0
+   lat FLOAT 46.9783
+   lon FLOAT 7.1300
+   alt FLOAT 433.0
+   ele FLOAT 4.
+   AziTol FLOAT 1.
+   EleTol FLOAT 1.
+   RngTol FLOAT 30.
+   products STRUCT 2
+      dBZ STRUCT 1
+	     type STRING PLOT_AND_WRITE_POINT
+	  dBZcomp STRUCT 6         
+	     type STRING COMPARE_POINT
+         prdid STRING dBZ
+		 sensor STRING disdro
+		 sensorid STRING 20
+		 elev STRING 0000
+		 temp STRING 0100
+         

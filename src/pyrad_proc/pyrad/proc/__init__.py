@@ -24,6 +24,7 @@ Dataset processing
     process_rainrate
     process_hydroclass
     process_point_measurement
+    process_save_radar
 
 Product processing
 ==================
@@ -41,7 +42,7 @@ from .process_dataset import process_snr, process_l, process_cdr
 from .process_dataset import process_correct_noise_rhohv
 from .process_dataset import process_echo_filter, process_attenuation
 from .process_dataset import process_rainrate, process_hydroclass
-from .process_dataset import process_point_measurement
+from .process_dataset import process_point_measurement, process_save_radar
 
 from .process_product import get_product_type, generate_vol_products
 from .process_product import generate_timeseries_products

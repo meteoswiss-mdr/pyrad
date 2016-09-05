@@ -10,6 +10,9 @@ Functions for reading pyrad input data, i.e. radar files
     get_data
     read_status
     read_timeseries
+    get_sensor_data
+    read_smn
+    read_disdro_scattering
     find_cosmo_file
     get_datatypemetranet
     get_fieldname_rainbow
@@ -454,34 +457,226 @@ def read_timeseries(fname):
     -------
     date , value : tupple
         A datetime object array containing the time and a numpy masked array
-        containing the value
+        containing the value. None otherwise
 
     """
-    with open(fname, 'r', newline='') as csvfile:
-        # first count the lines
-        reader = csv.DictReader(
-            row for row in csvfile if not row.startswith('#'))
-        nrows = sum(1 for row in reader)
-        value = np.ma.empty(nrows, dtype='float32')
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            nrows = sum(1 for row in reader)
+            value = np.ma.empty(nrows, dtype='float32')
 
-        # now read the data
-        csvfile.seek(0)
-        reader = csv.DictReader(
-            row for row in csvfile if not row.startswith('#'))
-        i = 0
-        date = list()
-        for row in reader:
-            date.append(datetime.datetime.strptime(
-                row['date'], '%Y-%m-%d %H:%M:%S.%f'))
-            value[i] = float(row['value'])
-            i += 1
-        csvfile.close()
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            i = 0
+            date = list()
+            for row in reader:
+                date.append(datetime.datetime.strptime(
+                    row['date'], '%Y-%m-%d %H:%M:%S.%f'))
+                value[i] = float(row['value'])
+                i += 1
 
-        fill_value = pyart.config.get_fillvalue()
-        value = np.ma.masked_where(value == fill_value, value)
-        value.set_fill_value(fill_value)
+            fill_value = pyart.config.get_fillvalue()
+            value = np.ma.masked_where(value == fill_value, value)
+            value.set_fill_value(fill_value)
 
-    return date, value
+            return date, value
+    except EnvironmentError:
+        print('WARNING: Unable to read file '+fname)
+        return None, None
+
+
+def get_sensor_data(date, datatype, cfg):
+    """
+    Gets data from a point measurement sensor (rain gauge or disdrometer)
+
+    Parameters
+    ----------
+    date : datetime object
+        measurement date
+
+    datatype : str
+        name of the data type to read
+
+    cfg : dictionary
+        dictionary containing sensor information
+
+    Returns
+    -------
+    sensordate , sensorvalue, label, period : tupple
+        date, value, type of sensor and measurement period
+
+    """
+    if cfg['sensor'] == 'rgage':
+        datapath = cfg['smnpath']+date.strftime('%Y%m')+'/'
+        datafile = date.strftime('%Y%m%d')+'_' + cfg['sensorid']+'.csv'
+        (id, sensordate, pressure, temp,
+         rh, sensorvalue, wspeed, wdir) = read_smn(datapath+datafile)
+        if sensordate is None:
+            return None, None, None, None
+        label = 'RG'
+        period = (sensordate[1]-sensordate[0]).total_seconds()
+    elif cfg['sensor'] == 'disdro':
+        datapath = cfg['disdropath']
+        datafile = ('DSDfiltpolvar-'+cfg['sensorid']+'_' +
+                    date.strftime('%Y%m%d')+'_Xband_temp' + cfg['temp'] +
+                    '_elev'+cfg['elev']+'.txt')
+        (sensordate, prectype, lwc, rr, zh, zv, zdr, ldr, ah, av,
+         adiff, kdp, detaco, rhohv) = read_disdro_scattering(
+            datapath+datafile)
+        if sensordate is None:
+            return None, None, None, None
+        label = 'Disdro'
+        period = (sensordate[1]-sensordate[0]).total_seconds()
+        if datatype == 'RR':
+            sensorvalue = rr
+        elif (datatype == 'dBZ') or (datatype == 'dBZc'):
+            sensorvalue = zh
+    else:
+        print('WARNING: Unknown sensor: '+cfg['sensor'])
+        return None, None, None, None
+
+    return sensordate, sensorvalue, label, period
+
+
+def read_smn(fname):
+    """
+    Reads SwissMetNet data contained in a csv file
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    id, date , pressure, temp, rh, precip, wspeed, wdir : tupple
+        The read values
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(csvfile)
+            nrows = sum(1 for row in reader)
+            id = np.ma.empty(nrows, dtype='float32')
+            pressure = np.ma.empty(nrows, dtype='float32')
+            temp = np.ma.empty(nrows, dtype='float32')
+            rh = np.ma.empty(nrows, dtype='float32')
+            precip = np.ma.empty(nrows, dtype='float32')
+            wspeed = np.ma.empty(nrows, dtype='float32')
+            wdir = np.ma.empty(nrows, dtype='float32')
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(csvfile)
+            i = 0
+            date = list()
+            for row in reader:
+                id[i] = float(row['StationID'])
+                date.append(datetime.datetime.strptime(
+                    row['DateTime'], '%Y%m%d%H%M%S'))
+                pressure[i] = float(row['AirPressure'])
+                temp[i] = float(row['2mTemperature'])
+                rh[i] = float(row['RH'])
+                precip[i] = float(row['Precipitation'])
+                wspeed[i] = float(row['Windspeed'])
+                wdir[i] = float(row['Winddirection'])
+                i += 1
+
+            # convert precip from mm/10min to mm/h
+            precip *= 6.
+
+            return id, date, pressure, temp, rh, precip, wspeed, wdir
+    except EnvironmentError:
+        print('WARNING: Unable to read file '+fname)
+        return None, None, None, None, None, None, None, None
+
+
+def read_disdro_scattering(fname):
+    """
+    Reads scattering parameters computed from disdrometer data contained in a
+    text file
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    id, date , pressure, temp, rh, precip, wspeed, wdir : tupple
+        The read values
+
+    """
+    try:
+        with (open(fname, 'r', newline='', encoding='utf-8', errors='ignore')
+              as csvfile):
+            # skip the first line
+            next(csvfile)
+
+            # first count the lines
+            reader = csv.DictReader(
+                csvfile, fieldnames=['date', 'preciptype', 'lwc', 'rr', 'zh',
+                                     'zv', 'zdr', 'ldr', 'ah', 'av', 'adiff',
+                                     'kdp', 'deltaco', 'rhohv'],
+                dialect='excel-tab')
+            nrows = sum(1 for row in reader)
+
+            preciptype = np.ma.empty(nrows, dtype='float32')
+            lwc = np.ma.empty(nrows, dtype='float32')
+            rr = np.ma.empty(nrows, dtype='float32')
+            zh = np.ma.empty(nrows, dtype='float32')
+            zv = np.ma.empty(nrows, dtype='float32')
+            zdr = np.ma.empty(nrows, dtype='float32')
+            ldr = np.ma.empty(nrows, dtype='float32')
+            ah = np.ma.empty(nrows, dtype='float32')
+            av = np.ma.empty(nrows, dtype='float32')
+            adiff = np.ma.empty(nrows, dtype='float32')
+            kdp = np.ma.empty(nrows, dtype='float32')
+            deltaco = np.ma.empty(nrows, dtype='float32')
+            rhohv = np.ma.empty(nrows, dtype='float32')
+
+            # now read the data
+            csvfile.seek(0)
+            # skip the first line
+            next(csvfile)
+
+            reader = csv.DictReader(
+                csvfile, fieldnames=['date', 'preciptype', 'lwc', 'rr', 'zh',
+                                     'zv', 'zdr', 'ldr', 'ah', 'av', 'adiff',
+                                     'kdp', 'deltaco', 'rhohv'],
+                dialect='excel-tab')
+            i = 0
+            date = list()
+            for row in reader:
+                date.append(datetime.datetime.strptime(
+                    row['date'], '%Y-%m-%d %H:%M:%S'))
+                preciptype[i] = float(row['preciptype'])
+                lwc[i] = float(row['lwc'])
+                rr[i] = float(row['rr'])
+                zh[i] = float(row['zh'])
+                zv[i] = float(row['zv'])
+                zdr[i] = float(row['zdr'])
+                ldr[i] = float(row['ldr'])
+                ah[i] = float(row['ah'])
+                av[i] = float(row['av'])
+                adiff[i] = float(row['adiff'])
+                kdp[i] = float(row['kdp'])
+                deltaco[i] = float(row['deltaco'])
+                rhohv[i] = float(row['rhohv'])
+                i += 1
+
+            return (date, preciptype, lwc, rr, zh, zv, zdr, ldr, ah, av,
+                    adiff, kdp, deltaco, rhohv)
+    except EnvironmentError:
+        print('WARNING: Unable to read file '+fname)
+        return (None, None, None, None, None, None, None, None, None, None,
+                None, None, None)
 
 
 def find_cosmo_file(voltime, datatype, cfg):

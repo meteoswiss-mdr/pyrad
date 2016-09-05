@@ -18,10 +18,10 @@ cosmopath STRING /data/cosmo/
 #dempath STRING /data/DEM/DX50_PAY/
 
 # Base path for swissmetnet data
-#smnpath STRING /data/meteo_products/SMNRetrieve/
+smnpath STRING /data/meteo_products/SMNRetrieve/
 
 # Base path for disdrometer data
-#disdropath STRING /data/scattering/dsd_ts/
+disdropath STRING /data/scattering/dsd_ts/
 
 # Base path for rad4alp data in zueub222
 #rad4alppath STRING /data/rad4alp/meanZ/

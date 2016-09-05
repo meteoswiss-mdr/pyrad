@@ -72,6 +72,14 @@ if __name__ == '__main__':
         datacfg.update({'dempath': cfg['dempath']})
     else:
         datacfg.update({'dempath': None})
+    if 'smnpath' in cfg:
+        datacfg.update({'smnpath': cfg['smnpath']})
+    else:
+        datacfg.update({'smnpath': None})
+    if 'disdropath' in cfg:
+        datacfg.update({'disdropath': cfg['disdropath']})
+    else:
+        datacfg.update({'disdropath': None})
     if 'loadbasepath' in cfg:
         datacfg.update({'loadbasepath': cfg['loadbasepath']})
     else:
@@ -115,17 +123,18 @@ if __name__ == '__main__':
 
     for datasetdescr in cfg['dataSetList']:
         proclevel, dataset = pyrad.io.get_datasetfields(datasetdescr)
-        if isinstance(cfg[dataset]['datatype'], str):
-            datagroup, datatype, dataset_save, product_save = (
-                pyrad.io.get_datatypefields(cfg[dataset]['datatype']))
-            if datagroup != 'PROC':
-                datatypesdescr.add(cfg[dataset]['datatype'])
-        else:
-            for datatype in cfg[dataset]['datatype']:
-                datagroup, datatype_aux, dataset_save, product_save = (
-                    pyrad.io.get_datatypefields(datatype))
+        if 'datatype' in cfg[dataset]:
+            if isinstance(cfg[dataset]['datatype'], str):
+                datagroup, datatype, dataset_save, product_save = (
+                    pyrad.io.get_datatypefields(cfg[dataset]['datatype']))
                 if datagroup != 'PROC':
-                    datatypesdescr.add(datatype)
+                    datatypesdescr.add(cfg[dataset]['datatype'])
+            else:
+                for datatype in cfg[dataset]['datatype']:
+                    datagroup, datatype_aux, dataset_save, product_save = (
+                        pyrad.io.get_datatypefields(datatype))
+                    if datagroup != 'PROC':
+                        datatypesdescr.add(datatype)
 
     datatypesdescr = list(datatypesdescr)
 
@@ -184,9 +193,12 @@ if __name__ == '__main__':
                 # create the data set products
                 if 'products' in cfg[dataset]:
                     for product in cfg[dataset]['products']:
-                        prdcfg = cfg[dataset]['products'][product]
+                        prdcfg = cfg[dataset]['products'][product]                        
                         prdcfg.update({'procname': cfg['name']})
                         prdcfg.update({'basepath': cfg['saveimgbasepath']})
+                        prdcfg.update({'smnpath': cfg['smnpath']})
+                        prdcfg.update({'disdropath': cfg['disdropath']})
+                        prdcfg.update({'ScanPeriod': cfg['ScanPeriod']})
                         prdcfg.update({'imgformat': cfg['imgformat']})
                         prdcfg.update({'convertformat': cfg['convertformat']})
                         prdcfg.update(
@@ -240,6 +252,9 @@ if __name__ == '__main__':
                             prdcfg.update({'procname': cfg['name']})
                             prdcfg.update(
                                 {'basepath': cfg['saveimgbasepath']})
+                            prdcfg.update({'smnpath': cfg['smnpath']})
+                            prdcfg.update({'disdropath': cfg['disdropath']})
+                            prdcfg.update({'ScanPeriod': cfg['ScanPeriod']})
                             prdcfg.update({'imgformat': cfg['imgformat']})
                             prdcfg.update(
                                 {'convertformat': cfg['convertformat']})
@@ -287,6 +302,9 @@ if __name__ == '__main__':
                         prdcfg = cfg[dataset]['products'][product]
                         prdcfg.update({'procname': cfg['name']})
                         prdcfg.update({'basepath': cfg['saveimgbasepath']})
+                        prdcfg.update({'smnpath': cfg['smnpath']})
+                        prdcfg.update({'disdropath': cfg['disdropath']})
+                        prdcfg.update({'ScanPeriod': cfg['ScanPeriod']})
                         prdcfg.update({'imgformat': cfg['imgformat']})
                         prdcfg.update({'convertformat': cfg['convertformat']})
                         prdcfg.update(
