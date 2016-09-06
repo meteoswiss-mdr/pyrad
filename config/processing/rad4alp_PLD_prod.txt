@@ -4,7 +4,9 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 1
+dataSetList STRARR 3
+    dBZ
+    TEMP
     ISO0
     
 
@@ -29,18 +31,18 @@ dataSetList STRARR 1
 # ==========================================================================================
 #                 raw data products
 # ==========================================================================================
-#dBZ STRUCT 3
-#    type STRING RAW
-#    datatype STRING RAD4ALP:dBZ
-#    products STRUCT 2
-#      ELN00_2 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 0
-#         voltype STRING dBZ
-#      AZ270_0 STRUCT 3
-#         type  STRING PSEUDORHI_IMAGE
-#         angle FLOAT 270.
-#         voltype STRING dBZ
+dBZ STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:dBZ
+    products STRUCT 2
+      ELN00_2 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING dBZ
+      AZ270_0 STRUCT 3
+         type  STRING PSEUDORHI_IMAGE
+         angle FLOAT 270.
+         voltype STRING dBZ
 #
 #ZDR STRUCT 3
 #    type STRING RAW
@@ -87,18 +89,18 @@ dataSetList STRARR 1
 #         anglenr INT 0
 #         voltype STRING Nv
 #
-#TEMP STRUCT 3
-#    type STRING RAW
-#    datatype STRING RAD4ALPCOSMO:TEMP
-#    products STRUCT 2
-#      ELN00_2 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 0
-#         voltype STRING TEMP
-#      AZ270_0 STRUCT 3
-#         type  STRING PSEUDORHI_IMAGE
-#         angle FLOAT 270.
-#         voltype STRING TEMP
+TEMP STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALPCOSMO:TEMP
+    products STRUCT 2
+      ELN00_2 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING TEMP
+      AZ270_0 STRUCT 3
+         type  STRING PSEUDORHI_IMAGE
+         angle FLOAT 270.
+         voltype STRING TEMP
 
 ISO0 STRUCT 3
     type STRING RAW

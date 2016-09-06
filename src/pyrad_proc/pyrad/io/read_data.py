@@ -9,11 +9,13 @@ Functions for reading pyrad input data, i.e. radar files
 
     get_data
     read_status
+    read_rad4alp_cosmo
     read_timeseries
     get_sensor_data
     read_smn
     read_disdro_scattering
     find_cosmo_file
+    find_rad4alpcosmo_file
     get_datatypemetranet
     get_fieldname_rainbow
     get_file_list
@@ -61,6 +63,7 @@ def get_data(voltime, datatypesdescr, cfg):
     datatype_rainbow = list()
     datatype_rad4alp = list()
     datatype_cosmo = list()
+    datatype_rad4alpcosmo = list()
     for datatypedescr in datatypesdescr:
         datagroup, datatype, dataset, product = get_datatypefields(
             datatypedescr)
@@ -70,10 +73,13 @@ def get_data(voltime, datatypesdescr, cfg):
             datatype_rad4alp.append(datatype)
         elif datagroup == 'COSMO':
             datatype_cosmo.append(datatype)
+        elif datagroup == 'RAD4ALPCOSMO':
+            datatype_rad4alpcosmo.append(datatype)
 
     ndatatypes_rainbow = len(datatype_rainbow)
     ndatatypes_rad4alp = len(datatype_rad4alp)
     ndatatypes_cosmo = len(datatype_cosmo)
+    ndatatypes_rad4alpcosmo = len(datatype_rad4alpcosmo)
     radar = None
 
     if ndatatypes_rainbow > 0:
@@ -226,19 +232,19 @@ def get_data(voltime, datatypesdescr, cfg):
                         radar_aux.add_field('noisedBZ_vv', noisedBZ_v)
 
                 # add other fields in the same scan
-                for i in range(1, ndatatypes_rainbow):
-                    if ((datatype_rainbow[i] != 'Nh') and
-                            (datatype_rainbow[i] != 'Nv')):
+                for j in range(1, ndatatypes_rainbow):
+                    if ((datatype_rainbow[j] != 'Nh') and
+                            (datatype_rainbow[j] != 'Nv')):
                         filename = glob.glob(
-                            datapath+fdatetime+datatype_rainbow[i]+'.*')
-                    elif datatype_rainbow[i] == 'Nh':
+                            datapath+fdatetime+datatype_rainbow[j]+'.*')
+                    elif datatype_rainbow[j] == 'Nh':
                         filename = glob.glob(datapath+fdatetime+'dBZ.*')
                     else:
                         filename = glob.glob(datapath+fdatetime+'dBZv.*')
 
                     radar_aux2 = pyart.aux_io.read_rainbow_wrl(filename[0])
-                    if ((datatype_rainbow[i] == 'Nh') or
-                            (datatype_rainbow[i] == 'Nv')):
+                    if ((datatype_rainbow[j] == 'Nh') or
+                            (datatype_rainbow[j] == 'Nv')):
                         rbf = wrl.io.read_Rainbow(filename[0], loaddata=False)
                         # check the number of slices
                         nslices = int(
@@ -251,7 +257,7 @@ def get_data(voltime, datatypesdescr, cfg):
                             single_slice = True
                             common_slice_info = rbf['volume']['scan']['slice']
 
-                        if datatype_rainbow[i] == 'Nh':
+                        if datatype_rainbow[j] == 'Nh':
                             noisedBZ1km_h = float(
                                 common_slice_info['noise_power_dbz'])
                             noisedBZ_h = pyart.retrieve.compute_noisedBZ(
@@ -381,7 +387,8 @@ def get_data(voltime, datatypesdescr, cfg):
         # look for COSMO data
         filename_list = list()
         for i in range(ndatatypes_cosmo):
-            filename = find_cosmo_file(voltime, datatype_cosmo[i], cfg)
+            filename = find_cosmo_file(
+                voltime, datatype_cosmo[i], cfg, cfg['ScanList'][0])
             if filename is not None:
                 filename_list.append(filename)
 
@@ -401,6 +408,119 @@ def get_data(voltime, datatypesdescr, cfg):
             # add other COSMO fields in the same scan
             for i in range(1, nfiles_valid):
                 radar_aux = pyart.aux_io.read_rainbow_wrl(filename_list[i])
+                for field_name in radar_aux.fields.keys():
+                    break
+                field_data = radar_aux.fields[field_name]['data']
+                field_metadata = pyart.config.get_metadata(field_name)
+                field_metadata['data'] = field_data
+                radar.add_field(field_name, field_metadata)
+
+        # merge scans into a single radar instance
+        nscans = len(cfg['ScanList'])
+        if nscans > 1:
+            endtime = voltime+datetime.timedelta(minutes=cfg['ScanPeriod'])
+            for i in range(1, nscans):
+                radar_aux = None
+                # look for COSMO data
+                filename = find_cosmo_file(
+                    voltime, datatype_cosmo[0], cfg, cfg['ScanList'][i])
+                if filename is not None:
+                    radar_aux = pyart.aux_io.read_rainbow_wrl(filename)
+
+                # add other fields in the same scan
+                for j in range(1, ndatatypes_cosmo):
+                    # look for COSMO data
+                    filename = find_cosmo_file(
+                        voltime, datatype_cosmo[j], cfg, cfg['ScanList'][i])
+                    if filename is not None:
+                        radar_aux2 = pyart.aux_io.read_rainbow_wrl(filename)
+
+                        if radar_aux is not None:
+                            for field_name in radar_aux2.fields.keys():
+                                break
+                            field_data = radar_aux2.fields[field_name]['data']
+                            field_metadata = (
+                                pyart.config.get_metadata(field_name))
+                            field_metadata['data'] = field_data
+                            radar_aux.add_field(field_name, field_metadata)
+                        else:
+                            radar_aux = radar_aux2
+
+                if radar_aux is not None:
+                    radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
+
+    elif ndatatypes_rad4alpcosmo > 0:
+        if (cfg['RadarRes'] is None) or (cfg['RadarName'] is None):
+            raise ValueError(
+                'ERROR: Radar Name and Resolution \
+                not specified in config file. \
+                Unable to load rad4alp COSMO data')
+
+        for i in range(ndatatypes_rad4alpcosmo):
+            # create the radar object where to store the data
+            # taking as reference the metranet polar file
+            metranet_field_names = dict()
+            metranet_field_names.update(
+                get_datatypemetranet('dBZ'))
+
+            dayinfo = voltime.strftime('%y%j')
+            timeinfo = voltime.strftime('%H%M')
+            basename = (
+                'P'+cfg['RadarRes']+cfg['RadarName']+dayinfo)
+            datapath = cfg['datapath']+dayinfo+'/'+basename+'/'
+            filename = glob.glob(
+                datapath+basename+timeinfo+'*.'+cfg['ScanList'][0])
+            radar_aux = pyart.aux_io.read_metranet(
+                filename[0], field_names=metranet_field_names)
+            radar_aux.fields = dict()
+
+            # look for rad4alp COSMO data
+            filename = find_rad4alpcosmo_file(
+                voltime, datatype_rad4alpcosmo[i], cfg, cfg['ScanList'][0])
+            if filename is not None:
+                cosmo_field = read_rad4alp_cosmo(
+                    filename, datatype_rad4alpcosmo[i])
+                if cosmo_field is not None:
+                    radar_aux.add_field(
+                        get_fieldname_rainbow(datatype_rad4alpcosmo[i]),
+                        cosmo_field)
+
+            # add other elevations
+            for j in range(1, len(cfg['ScanList'])):
+                # create the radar object where to store the data
+                # taking as reference the metranet polar file
+                metranet_field_names = dict()
+                metranet_field_names.update(
+                    get_datatypemetranet('dBZ'))
+
+                dayinfo = voltime.strftime('%y%j')
+                timeinfo = voltime.strftime('%H%M')
+                basename = (
+                    'P'+cfg['RadarRes']+cfg['RadarName']+dayinfo)
+                datapath = cfg['datapath']+dayinfo+'/'+basename+'/'
+                filename = glob.glob(
+                    datapath+basename+timeinfo+'*.'+cfg['ScanList'][j])
+                radar_aux2 = pyart.aux_io.read_metranet(
+                    filename[0], field_names=metranet_field_names)
+                radar_aux2.fields = dict()
+
+                # look for rad4alp COSMO data
+                filename = find_rad4alpcosmo_file(
+                    voltime, datatype_rad4alpcosmo[i], cfg,
+                    cfg['ScanList'][j])
+                if filename is not None:
+                    cosmo_field = read_rad4alp_cosmo(
+                        filename, datatype_rad4alpcosmo[i])
+                    if cosmo_field is not None:
+                        radar_aux2.add_field(
+                            get_fieldname_rainbow(
+                                datatype_rad4alpcosmo[i]), cosmo_field)
+
+                        radar_aux = pyart.util.radar_utils.join_radar(
+                            radar_aux, radar_aux2)
+            if radar is None:
+                radar = radar_aux
+            else:
                 for field_name in radar_aux.fields.keys():
                     break
                 field_data = radar_aux.fields[field_name]['data']
@@ -442,6 +562,61 @@ def read_status(voltime, cfg):
     root = et.parse(filename[0]).getroot()
 
     return root
+
+
+def read_rad4alp_cosmo(fname, datatype):
+    """
+    Reads rad4alp COSMO data binary file.
+
+    Parameters
+    ----------
+    fname : str
+        name of the file to read
+
+    datatype : str
+        name of the data type
+
+    Returns
+    -------
+    field : dictionary
+        The data field
+
+    """
+    try:
+        bindata = np.fromfile(fname, dtype='uint8', count=-1)
+        nbins = bindata.size
+        naz = 360
+        nr = int(nbins/naz)
+        bindata = np.reshape(bindata, (naz, nr))
+        mask = bindata == 0
+        fill_value = pyart.config.get_fillvalue()
+
+        if datatype == 'TEMP':
+            field_name = get_fieldname_rainbow(datatype)
+            field_data = np.ma.masked_where(
+                mask, (bindata-1).astype(float)*0.5-87.)
+            field_data.set_fill_value(fill_value)
+            field_data.data[mask] = fill_value
+
+            field = pyart.config.get_metadata(field_name)
+            field['data'] = field_data
+            return field
+        elif datatype == 'ISO0':
+            field_name = get_fieldname_rainbow(datatype)
+            field_data = np.ma.masked_where(mask, (bindata-1).astype(float))
+            field_data.set_fill_value(fill_value)
+            field_data.data[mask] = fill_value
+
+            field = pyart.config.get_metadata(field_name)
+            field['data'] = field_data
+            return field
+        else:
+            print('WARNING: Unknown COSMO data type '+datatype)
+            return None
+
+    except EnvironmentError:
+        print('WARNING: Unable to read file '+fname)
+        return None
 
 
 def read_timeseries(fname):
@@ -614,8 +789,7 @@ def read_disdro_scattering(fname):
 
     """
     try:
-        with (open(fname, 'r', newline='', encoding='utf-8', errors='ignore')
-              as csvfile):
+        with open(fname, 'r', newline='', encoding='utf-8', errors='ignore') as csvfile:
             # skip the first line
             next(csvfile)
 
@@ -679,7 +853,7 @@ def read_disdro_scattering(fname):
                 None, None, None)
 
 
-def find_cosmo_file(voltime, datatype, cfg):
+def find_cosmo_file(voltime, datatype, cfg, scanid):
     """
     Search a COSMO file
 
@@ -692,6 +866,9 @@ def find_cosmo_file(voltime, datatype, cfg):
 
     cfg: dictionary of dictionaries
         configuration info to figure out where the data is
+
+    scanid: str
+        name of the scan
 
     Returns
     -------
@@ -715,10 +892,68 @@ def find_cosmo_file(voltime, datatype, cfg):
         runtimestr = runtime.strftime('%Y%m%d%H')+'000000'
 
         daydir = runtime.strftime('%Y-%m-%d')
-        datapath = cfg['cosmopath']+datatype+'/'+cfg['ScanList'][0]+daydir+'/'
+        datapath = cfg['cosmopath']+datatype+'/'+scanid+daydir+'/'
 
         search_name = (
             datapath+datatype+'_RUN'+runtimestr+'_DX50'+fdatetime+'.*')
+        print('Looking for file: '+search_name)
+        fname = glob.glob(search_name)
+        if len(fname) > 0:
+            found = True
+            break
+
+    if not found:
+        print('WARNING: Unable to get COSMO '+datatype+' information')
+        return None
+    else:
+        return fname[0]
+
+
+def find_rad4alpcosmo_file(voltime, datatype, cfg, scanid):
+    """
+    Search a COSMO file
+
+    Parameters
+    ----------
+    voltime : datetime object
+        volume scan time
+
+    datatype : type of COSMO data to look for
+
+    cfg: dictionary of dictionaries
+        configuration info to figure out where the data is
+
+    Returns
+    -------
+    fname : str
+        Name of COSMO file if it exists. None otherwise
+
+    scanid: str
+        name of the scan
+
+    """
+    # hour rounded date-time
+    fdatetime = voltime.strftime('%y%j%H')+'00'
+
+    # initial run time to look for
+    hvol = int(voltime.strftime('%H'))
+    runhour0 = int(hvol/cfg['CosmoRunFreq'])*cfg['CosmoRunFreq']
+    runtime0 = voltime.replace(hour=runhour0, minute=0, second=0)
+
+    # look for cosmo file
+    found = False
+    nruns_to_check = int((cfg['CosmoForecasted']-1)/cfg['CosmoRunFreq'])
+    id = 'P'+cfg['RadarRes']+cfg['RadarName']
+    for i in range(nruns_to_check):
+        runtime = runtime0-datetime.timedelta(hours=i * cfg['CosmoRunFreq'])
+        runtimestr = runtime.strftime('%y%j%H')+'00'
+
+        daydir = runtime.strftime('%y%j')
+        datapath = cfg['cosmopath']+datatype+'/'+id+'/'+daydir+'/'
+
+        search_name = (
+            datapath+datatype+'_RUN'+runtimestr+'_'+id+fdatetime+'.'+scanid +
+            '.bin')
         print('Looking for file: '+search_name)
         fname = glob.glob(search_name)
         if len(fname) > 0:

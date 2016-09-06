@@ -61,62 +61,51 @@ if __name__ == '__main__':
     cfg = pyrad.io.read_config(cfg['locationConfigFile'], cfg=cfg)
     cfg = pyrad.io.read_config(cfg['productConfigFile'], cfg=cfg)
 
-    # configuration dictionary to figure out where the data is
-    datacfg = dict({'datapath': cfg['datapath']})
-    datacfg.update({'ScanList': cfg['ScanList']})
-    if 'cosmopath' in cfg:
-        datacfg.update({'cosmopath': cfg['cosmopath']})
-    else:
-        datacfg.update({'cosmopath': None})
-    if 'dempath' in cfg:
-        datacfg.update({'dempath': cfg['dempath']})
-    else:
-        datacfg.update({'dempath': None})
-    if 'smnpath' in cfg:
-        datacfg.update({'smnpath': cfg['smnpath']})
-    else:
-        datacfg.update({'smnpath': None})
-    if 'disdropath' in cfg:
-        datacfg.update({'disdropath': cfg['disdropath']})
-    else:
-        datacfg.update({'disdropath': None})
-    if 'loadbasepath' in cfg:
-        datacfg.update({'loadbasepath': cfg['loadbasepath']})
-    else:
-        datacfg.update({'loadbasepath': None})
-    if 'loadname' in cfg:
-        datacfg.update({'loadname': cfg['loadname']})
-    else:
-        datacfg.update({'loadname': None})
-    if 'RadarName' in cfg:
-        datacfg.update({'RadarName': cfg['RadarName']})
-    else:
-        datacfg.update({'RadarName': None})
-    if 'RadarRes' in cfg:
-        datacfg.update({'RadarRes': cfg['RadarRes']})
-    else:
-        datacfg.update({'RadarRes': None})
-    if 'ScanPeriod' in cfg:
-        datacfg.update({'ScanPeriod': int(cfg['ScanPeriod'])})
-    else:
+    # fill in defaults
+    if 'cosmopath' not in cfg:
+        cfg.update({'cosmopath': None})
+    if 'dempath' not in cfg:
+        cfg.update({'dempath': None})
+    if 'smnpath' not in cfg:
+        cfg.update({'smnpath': None})
+    if 'disdropath' not in cfg:
+        cfg.update({'disdropath': None})
+    if 'loadbasepath' not in cfg:
+        cfg.update({'loadbasepath': None})
+    if 'loadname' not in cfg:
+        cfg.update({'loadname': None})
+    if 'RadarName' not in cfg:
+        cfg.update({'RadarName': None})
+    if 'RadarRes' not in cfg:
+        cfg.update({'RadarRes': None})
+    if 'ScanPeriod' not in cfg:
         print(
             'WARNING: Scan period not specified. \
             Assumed default value 5 min')
-        datacfg.update({'ScanPeriod': 5})
-    if 'CosmoRunFreq' in cfg:
-        datacfg.update({'CosmoRunFreq': int(cfg['CosmoRunFreq'])})
-    else:
+        cfg.update({'ScanPeriod': 5})
+    if 'CosmoRunFreq' not in cfg:
         print(
             'WARNING: COSMO run frequency not specified. \
             Assumed default value 3h')
-        datacfg.update({'CosmoRunFreq': 3})
-    if 'CosmoForecasted' in cfg:
-        datacfg.update({'CosmoForecasted': int(cfg['CosmoForecasted'])})
-    else:
+        cfg.update({'CosmoRunFreq': 3})
+    if 'CosmoForecasted' not in cfg:
         print(
             'WARNING: Hours forecasted by COSMO not specified. \
              Assumed default value 7h (including analysis)')
-        datacfg.update({'CosmoForecasted': 7})
+        cfg.update({'CosmoForecasted': 7})
+
+    # configuration dictionary to figure out where the data is
+    datacfg = dict({'datapath': cfg['datapath']})
+    datacfg.update({'ScanList': cfg['ScanList']})
+    datacfg.update({'cosmopath': cfg['cosmopath']})
+    datacfg.update({'dempath': cfg['dempath']})
+    datacfg.update({'loadbasepath': cfg['loadbasepath']})
+    datacfg.update({'loadname': cfg['loadname']})
+    datacfg.update({'RadarName': cfg['RadarName']})
+    datacfg.update({'RadarRes': cfg['RadarRes']})
+    datacfg.update({'ScanPeriod': int(cfg['ScanPeriod'])})
+    datacfg.update({'CosmoRunFreq': int(cfg['CosmoRunFreq'])})
+    datacfg.update({'CosmoForecasted': int(cfg['CosmoForecasted'])})
 
     # get unique initial data types list
     datatypesdescr = set()
@@ -149,13 +138,26 @@ if __name__ == '__main__':
             dataset_levels.update({proclevel: [dataset]})
 
     # get lists of files to process using as reference a master scan
+    masterscan = cfg['ScanList'][0]
+    masterdatatypedescr = None
     for datatypedescr in datatypesdescr:
         datagroup, datatype, dataset, product = pyrad.io.get_datatypefields(
             datatypedescr)
         if (datagroup != 'COSMO') and (datagroup != 'RAD4ALPCOSMO'):
             masterdatatypedescr = datatypedescr
-            masterscan = cfg['ScanList'][0]
             break
+
+    # if only data type is COSMO use dBZ as reference
+    if masterdatatypedescr is None:
+        for datatypedescr in datatypesdescr:
+            datagroup, datatype, dataset, product = (
+                pyrad.io.get_datatypefields(datatypedescr))
+            if datagroup == 'COSMO':
+                masterdatatypedescr = 'RAINBOW:dBZ'
+                break
+            elif datagroup == 'RAD4ALPCOSMO':
+                masterdatatypedescr = 'RAD4ALP:dBZ'
+                break
 
     masterfilelist = pyrad.io.get_file_list(
         masterscan, masterdatatypedescr, proc_starttime, proc_endtime,
@@ -193,7 +195,7 @@ if __name__ == '__main__':
                 # create the data set products
                 if 'products' in cfg[dataset]:
                     for product in cfg[dataset]['products']:
-                        prdcfg = cfg[dataset]['products'][product]                        
+                        prdcfg = cfg[dataset]['products'][product]
                         prdcfg.update({'procname': cfg['name']})
                         prdcfg.update({'basepath': cfg['saveimgbasepath']})
                         prdcfg.update({'smnpath': cfg['smnpath']})

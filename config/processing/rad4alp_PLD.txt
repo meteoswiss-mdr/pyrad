@@ -1,6 +1,6 @@
 # Name of this configuration:
 # Will be used in product generation save path
-name STRING rad4alp_PHA
+name STRING rad4alp_PLD
 
 # Base path of the raw data.
 # Note: Must have a trailing '/'
@@ -55,10 +55,10 @@ convertformat   STRING png
 #loadname     STRING mals_emmen_rad4alp_PHA
 
 # Configuration of the radar location and approach direction
-locationConfigFile STRING /home/lom/users/fvj/pyrad/config/processing/rad4alp_PHA_loc.txt
+locationConfigFile STRING /home/lom/users/fvj/pyrad/config/processing/rad4alp_PLD_loc.txt
 
 # Configuration of the product generation
-productConfigFile STRING /home/lom/users/fvj/pyrad/config/processing/rad4alp_PHA_prod.txt
+productConfigFile STRING /home/lom/users/fvj/pyrad/config/processing/rad4alp_PLD_prod.txt
 
 # State after last run
 #lastStateFile STRING $HOME/realtime_idl/paradiso_vol_lastState.txt

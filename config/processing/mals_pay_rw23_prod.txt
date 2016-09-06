@@ -4,8 +4,200 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 1
-   reflectivity
+dataSetList STRARR 2   
+   TEMP
+   ISO0
+
+# ==========================================================================================
+#                 raw data products
+# ==========================================================================================
+#dBZ STRUCT 3
+#	type STRING RAW
+#	datatype STRING dBZ
+#	products STRUCT 4      
+#      AZ045 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 4
+#         voltype STRING dBZ
+#      AZ049 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 6
+#         voltype STRING dBZ
+#      AZ053 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 8
+#         voltype STRING dBZ
+#      EL06 STRUCT 3
+#         type  STRING PSEUDOPPI_IMAGE
+#         angle FLOAT 6.
+#         voltype STRING dBZ
+#
+#ZDR STRUCT 3
+#	type STRING RAW
+#	datatype STRING ZDR
+#	products STRUCT 4      
+#      AZ045 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 4
+#         voltype STRING ZDR
+#      AZ049 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 6
+#         voltype STRING ZDR
+#      AZ053 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 8
+#         voltype STRING ZDR
+#      EL06 STRUCT 3
+#         type  STRING PSEUDOPPI_IMAGE
+#         angle FLOAT 6.
+#         voltype STRING ZDR
+#
+#RhoHV STRUCT 3
+#	type STRING RAW
+#	datatype STRING RhoHV
+#	products STRUCT 1
+#	  EL004_0 STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING RhoHV
+#		 anglenr INT 0
+#
+#KDP STRUCT 3
+#	type STRING RAW
+#	datatype STRING KDP
+#	products STRUCT 1
+#	  EL004_0 STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING KDP
+#		 anglenr INT 0
+#
+#PhiDP STRUCT 3
+#	type STRING RAW
+#	datatype STRING PhiDP
+#	products STRUCT 1
+#	  EL004_0 STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING PhiDP
+#		 anglenr INT 0
+#
+#uPhiDP STRUCT 3
+#	type STRING RAW
+#	datatype STRING uPhiDP
+#	products STRUCT 1
+#	  EL004_0 STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING uPhiDP
+#		 anglenr INT 0
+#
+#Nh STRUCT 3
+#	type STRING RAW
+#	datatype STRING Nh
+#	products STRUCT 1
+#	  EL004_0 STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING Nh
+#		 anglenr INT 0
+#
+#Nv STRUCT 3
+#	type STRING RAW
+#	datatype STRING Nv
+#	products STRUCT 1
+#	  EL004_0 STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING Nv
+#		 anglenr INT 0
+#
+TEMP STRUCT 3
+	type STRING RAW
+	datatype STRING COSMO:TEMP
+	products STRUCT 4      
+      AZ045 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING TEMP
+      AZ049 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING TEMP
+      AZ053 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING TEMP
+      EL06 STRUCT 3
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         voltype STRING TEMP
+
+ISO0 STRUCT 3
+	type STRING RAW
+	datatype STRING COSMO:ISO0
+	products STRUCT 4      
+      AZ045 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING ISO0
+      AZ049 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING ISO0
+      AZ053 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING ISO0
+      EL06 STRUCT 3
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         voltype STRING ISO0
+
+# ==========================================================================================
+#                 secondary moments products
+# ==========================================================================================
+#SNRh STRUCT 5
+#    type STRING SNR
+#    datatype STRARR 2
+#        dBZ
+#        Nh
+#    output_type STRING SNRh
+#    MAKE_GLOBAL INT 1
+#    products STRUCT 1
+#      EL004_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 0
+#         voltype STRING SNRh
+#
+#SNRv STRUCT 4
+#    type STRING SNR
+#    datatype STRARR 2
+#        dBZv
+#        Nv
+#    output_type STRING SNRv
+#    products STRUCT 1
+#      EL004_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 0
+#         voltype STRING SNRv
+#
+#L STRUCT 3
+#    type STRING L
+#    datatype STRING RhoHV
+#    products STRUCT 1
+#      EL004_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 0
+#         voltype STRING L
+#
+#CDR STRUCT 3
+#    type STRING CDR
+#    datatype STRARR 2
+#        RhoHV
+#        ZDR
+#    products STRUCT 1
+#      EL004_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 0
+#         voltype STRING CDR
+
+
 
 # sanity STRUCT 10
 #    TYPE        STRING SAN
@@ -46,30 +238,30 @@ dataSetList STRARR 1
 #    ATTCORRMETHOD STRING zphi
 #    BIASCORRECTION INT 0
 #    ZDRBIAS0 FLOAT 0.0
-
-
-reflectivity STRUCT 3
-   type     STRING RAW
-   datatype STRING dBZ
-   products STRUCT 4      
-      AZ045 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 4
-         voltype STRING dBZ
-      AZ049 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 6
-         voltype STRING dBZ
-      AZ053 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 8
-         voltype STRING dBZ
-      EL06 STRUCT 3
-         type  STRING PSEUDOPPI_IMAGE
-         angle FLOAT 6.
-         voltype STRING dBZ
-#      SAVESTATE STRUCT 1
-#         type STRING SAVESTATE
+#
+#
+#reflectivity STRUCT 3
+#   type     STRING RAW
+#   datatype STRING dBZ
+#   products STRUCT 4      
+#      AZ045 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 4
+#         voltype STRING dBZ
+#      AZ049 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 6
+#         voltype STRING dBZ
+#      AZ053 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 8
+#         voltype STRING dBZ
+#      EL06 STRUCT 3
+#         type  STRING PSEUDOPPI_IMAGE
+#         angle FLOAT 6.
+#         voltype STRING dBZ
+##      SAVESTATE STRUCT 1
+##         type STRING SAVESTATE
 
 #wind STRUCT 4
 #   type     STRING RAW

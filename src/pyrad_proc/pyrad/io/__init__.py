@@ -15,6 +15,7 @@ Reading radar data
 
     get_data
     read_status
+    read_rad4alp_cosmo
 
 Reading configuration files
 ===========================
@@ -41,7 +42,7 @@ from .config import read_config
 
 from .read_data import get_data, read_status, read_timeseries, read_smn
 from .read_data import get_datetime, get_datasetfields, get_file_list
-from .read_data import get_datatypefields, get_sensor_data
+from .read_data import get_datatypefields, get_sensor_data, read_rad4alp_cosmo
 
 from .write_data import write_timeseries, generate_field_name_str
 
