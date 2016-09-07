@@ -4,71 +4,60 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 1
-    ISO0
+dataSetList STRARR 7
+    l0:dBZ
+    l0:ZDR
+    l0:uRhoHV
+    l0:uPhiDP
+    l0:ZDRc
+    l1:SNRh
+    l2:RhoHV
     
-
-# ==========================================================================================
-#                 echo identification
-# ==========================================================================================
-#echoID STRUCT 3
-#   type        STRING SAN
-#   datatype    STRARR 4
-#      RAD4ALP:dBZ
-#      RAD4ALP:ZDR
-#      RAD4ALP:uPhiDP
-#      PROC:RhoHV
-#   MAKE_GLOBAL         INT 1
-##   products STRUCT 1
-##       EL004_0 STRUCT 3
-##         type   STRING PPI_IMAGE
-##         voltype STRING echoID
-##		 anglenr INT 0
 
 
 # ==========================================================================================
 #                 raw data products
 # ==========================================================================================
-#dBZ STRUCT 3
-#    type STRING RAW
-#    datatype STRING RAD4ALP:dBZ
-#    products STRUCT 2
-#      ELN00_2 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 0
-#         voltype STRING dBZ
-#      AZ270_0 STRUCT 3
-#         type  STRING PSEUDORHI_IMAGE
-#         angle FLOAT 270.
-#         voltype STRING dBZ
-#
-#ZDR STRUCT 3
-#    type STRING RAW
-#    datatype STRING RAD4ALP:ZDR
-#    products STRUCT 1
-#      ELN00_2 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 0
-#         voltype STRING ZDR
-#
-#uRhoHV STRUCT 3
-#    type STRING RAW
-#    datatype STRING RAD4ALP:uRhoHV
-#    products STRUCT 1
-#      ELN00_2 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 0
-#         voltype STRING uRhoHV
-#
-#uPhiDP STRUCT 3
-#    type STRING RAW
-#    datatype STRING RAD4ALP:uPhiDP
-#    products STRUCT 1
-#      ELN00_2 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 0
-#         voltype STRING uPhiDP
-#         
+dBZ STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:dBZ
+    products STRUCT 1
+      EL002_5 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 4
+         voltype STRING dBZ
+      AZ270_0 STRUCT 3
+         type  STRING PSEUDORHI_IMAGE
+         angle FLOAT 270.
+         voltype STRING dBZ
+
+ZDR STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:ZDR
+    products STRUCT 1
+      EL002_5 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 4
+         voltype STRING ZDR
+
+uRhoHV STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:uRhoHV
+    products STRUCT 1
+      EL002_5 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 4
+         voltype STRING uRhoHV
+
+uPhiDP STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:uPhiDP
+    products STRUCT 1
+      EL002_5 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 4
+         voltype STRING uPhiDP
+         
 #Nh STRUCT 3
 #    type STRING RAW
 #    datatype STRING RAD4ALP:Nh
@@ -99,36 +88,53 @@ dataSetList STRARR 1
 #         type  STRING PSEUDORHI_IMAGE
 #         angle FLOAT 270.
 #         voltype STRING TEMP
+#
+#ISO0 STRUCT 3
+#    type STRING RAW
+#    datatype STRING RAD4ALPCOSMO:ISO0
+#    products STRUCT 2
+#      ELN00_2 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 0
+#         voltype STRING ISO0
+#      AZ270_0 STRUCT 3
+#         type  STRING PSEUDORHI_IMAGE
+#         angle FLOAT 270.
+#         voltype STRING ISO0
 
-ISO0 STRUCT 3
-    type STRING RAW
-    datatype STRING RAD4ALPCOSMO:ISO0
-    products STRUCT 2
-      ELN00_2 STRUCT 3
+
+# ==========================================================================================
+#                 bias correction
+# ==========================================================================================
+
+# --- bias on 2015-10-06 -----
+ZDRc STRUCT 5
+   type        STRING BIAS_CORRECTION
+   datatype    STRARR 1
+      RAD4ALP:ZDR
+   bias FLOAT -0.1
+   MAKE_GLOBAL         INT 1
+   products STRUCT 1
+       EL002_5 STRUCT 3
          type STRING PPI_IMAGE
-         anglenr INT 0
-         voltype STRING ISO0
-      AZ270_0 STRUCT 3
-         type  STRING PSEUDORHI_IMAGE
-         angle FLOAT 270.
-         voltype STRING ISO0
-
+         anglenr INT 4
+         voltype STRING ZDRc
 
 # ==========================================================================================
 #                 secondary moments products
 # ==========================================================================================
-#SNRh STRUCT 5
-#    type STRING SNR
-#    datatype STRARR 2
-#        RAD4ALP:dBZ
-#        RAD4ALP:Nh
-#    output_type STRING SNRh
-#    MAKE_GLOBAL INT 1
-#    products STRUCT 1
-#      ELN00_2 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 0
-#         voltype STRING SNRh
+SNRh STRUCT 5
+    type STRING SNR
+    datatype STRARR 2
+        RAD4ALP:dBZ
+        RAD4ALP:Nh
+    output_type STRING SNRh
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+      EL002_5 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 4
+         voltype STRING SNRh
 #         
 #SNRv STRUCT 4
 #    type STRING SNR
@@ -142,20 +148,20 @@ ISO0 STRUCT 3
 #         anglenr INT 0
 #         voltype STRING SNRv
 #         
-#RhoHV STRUCT 4
-#    type STRING RHOHV_CORRECTION
-#    datatype STRARR 5
-#        RAD4ALP:uRhoHV
-#        RAD4ALP:ZDR
-#        RAD4ALP:Nh
-#        RAD4ALP:Nv
-#        PROC:SNRh
-#    MAKE_GLOBAL INT 1
-#    products STRUCT 1
-#      ELN00_2 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 0
-#         voltype STRING RhoHV
+RhoHV STRUCT 4
+    type STRING RHOHV_CORRECTION
+    datatype STRARR 5
+        RAD4ALP:uRhoHV
+        PROC:ZDRc
+        RAD4ALP:Nh
+        RAD4ALP:Nv
+        PROC:SNRh
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+      EL002_5 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 4
+         voltype STRING RhoHV
 #         
 #L STRUCT 3
 #    type STRING L
@@ -177,6 +183,25 @@ ISO0 STRUCT 3
 #         anglenr INT 0
 #         voltype STRING CDR
 #
+#
+#
+#
+# ==========================================================================================
+#                 echo identification
+# ==========================================================================================
+#echoID STRUCT 3
+#   type        STRING SAN
+#   datatype    STRARR 4
+#      RAD4ALP:dBZ
+#      RAD4ALP:ZDR
+#      RAD4ALP:uPhiDP
+#      PROC:RhoHV
+#   MAKE_GLOBAL         INT 1
+##   products STRUCT 1
+##       EL004_0 STRUCT 3
+##         type   STRING PPI_IMAGE
+##         voltype STRING echoID
+##		 anglenr INT 0
 #
 # ==========================================================================================
 #                 clutter and noise suppression

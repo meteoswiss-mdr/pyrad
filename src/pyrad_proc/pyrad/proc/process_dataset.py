@@ -14,6 +14,7 @@ Functions for processing Pyrad datasets
     process_l
     process_cdr
     process_correct_noise_rhohv
+    process_correct_bias
     process_echo_id
     process_echo_filter
     process_attenuation
@@ -60,6 +61,8 @@ def get_process_type(dataset_type):
         func_name = 'process_snr'
     elif dataset_type == 'RHOHV_CORRECTION':
         func_name = 'process_correct_noise_rhohv'
+    elif dataset_type == 'BIAS_CORRECTION':
+        func_name = 'process_correct_bias'
     elif dataset_type == 'L':
         func_name = 'process_l'
     elif dataset_type == 'CDR':
@@ -111,7 +114,7 @@ def process_raw(procstatus, dscfg, radar=None):
 
     new_dataset = deepcopy(radar)
     return new_dataset
-    
+
 
 def process_save_radar(procstatus, dscfg, radar=None):
     """
@@ -140,6 +143,54 @@ def process_save_radar(procstatus, dscfg, radar=None):
         return None
 
     new_dataset = deepcopy(radar)
+    return new_dataset
+
+
+def process_correct_bias(procstatus, dscfg, radar=None):
+    """
+    Corrects a bias on the data
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+
+    """
+
+    if procstatus != 1:
+        return None
+
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatypefields(
+            datatypedescr)
+        break
+    field_name = get_fieldname_rainbow(datatype)
+
+    corrected_field = pyart.correct.correct_bias(
+        radar, bias=dscfg['bias'], field_name=field_name)
+
+    if field_name.startswith('corrected_'):
+        new_field_name = field_name
+    else:
+        new_field_name = 'corrected_'+field_name
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.add_field(new_field_name, corrected_field)
+
     return new_dataset
 
 
@@ -333,6 +384,8 @@ def process_correct_noise_rhohv(procstatus, dscfg, radar=None):
             snr = 'signal_to_noise_ratio_hh'
         if datatype == 'ZDR':
             zdr = 'differential_reflectivity'
+        if datatype == 'ZDRc':
+            zdr = 'corrected_differential_reflectivity'
         if datatype == 'Nh':
             nh = 'noisedBZ_hh'
         if datatype == 'Nv':
@@ -445,11 +498,15 @@ def process_echo_filter(procstatus, dscfg, radar=None):
         datagroup, datatype, dataset, product = get_datatypefields(
             datatypedescr)
         field_name = get_fieldname_rainbow(datatype)
-        radar_field = radar.fields[field_name]
+        radar_field = deepcopy(radar.fields[field_name])
         radar_field['data'].data[is_not_precip.nonzero()] = (
             pyart.config.get_fillvalue())
         radar_field['data'].mask[is_not_precip.nonzero()] = True
-        new_dataset.add_field('corrected_'+field_name, radar_field)
+        if field_name.startswith('corrected_'):
+            new_field_name = field_name
+        else:
+            new_field_name = 'corrected_'+field_name
+        new_dataset.add_field(new_field_name, radar_field)
 
     return new_dataset
 

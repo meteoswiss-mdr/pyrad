@@ -85,7 +85,7 @@ def generate_vol_products(dataset, prdcfg):
             fname = make_filename(
                 prdcfg['timeinfo'], 'ppi', prdcfg['dstype'],
                 prdcfg['voltype'], prdcfg['convertformat'],
-                prdcfginfo='el'+str(el))
+                prdcfginfo='el'+'{:.1f}'.format(el))
 
             plot_ppi(dataset, field_name, ind_el, prdcfg, savedir+fname)
             print('saved figure: '+savedir+fname)
@@ -109,7 +109,7 @@ def generate_vol_products(dataset, prdcfg):
             fname = make_filename(
                 prdcfg['timeinfo'], 'rhi', prdcfg['dstype'],
                 prdcfg['voltype'], prdcfg['convertformat'],
-                prdcfginfo='az'+str(az))
+                prdcfginfo='az'+'{:.1f}'.format(az))
 
             plot_rhi(dataset, field_name, ind_az, prdcfg, savedir+fname)
             print('saved figure: '+savedir+fname)
@@ -131,7 +131,7 @@ def generate_vol_products(dataset, prdcfg):
             fname = make_filename(
                 prdcfg['timeinfo'], 'ppi', prdcfg['dstype'],
                 prdcfg['voltype'], prdcfg['convertformat'],
-                prdcfginfo='el'+str(prdcfg['angle']))
+                prdcfginfo='el'+'{:.1f}'.format(prdcfg['angle']))
 
             plot_ppi(xsect, field_name, 0, prdcfg, savedir+fname)
             print('saved figure: '+savedir+fname)
@@ -153,7 +153,7 @@ def generate_vol_products(dataset, prdcfg):
             fname = make_filename(
                 prdcfg['timeinfo'], 'rhi', prdcfg['dstype'],
                 prdcfg['voltype'], prdcfg['convertformat'],
-                prdcfginfo='az'+str(prdcfg['angle']))
+                prdcfginfo='az'+'{:.1f}'.format(prdcfg['angle']))
 
             plot_rhi(xsect, field_name, 0, prdcfg, savedir+fname)
             print('saved figure: '+savedir+fname)
