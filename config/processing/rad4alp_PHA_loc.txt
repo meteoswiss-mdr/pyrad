@@ -14,27 +14,27 @@ RadarRes STRING H
 #              altitude  FLOAT 938.0      # altitude [m] (NOT WGS84!!)
 
 # Names of the radar scans in the specified sector
-ScanList STRARR 20
+ScanList STRARR 5
 	  001  # masterscan: first scan of a volume
 	  002
 	  003
 	  004
 	  005
-	  006
-	  007
-	  008
-	  009
-	  010
-	  011
-	  012
-	  013
-	  014
-	  015
-	  016
-	  017
-	  018
-	  019
-	  020
+#	  006
+#	  007
+#	  008
+#	  009
+#	  010
+#	  011
+#	  012
+#	  013
+#	  014
+#	  015
+#	  016
+#	  017
+#	  018
+#	  019
+#	  020
 
 
 # angles from 001 to 020

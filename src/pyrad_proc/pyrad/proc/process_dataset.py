@@ -17,9 +17,13 @@ Functions for processing Pyrad datasets
     process_correct_bias
     process_echo_id
     process_echo_filter
+    process_filter_snr
     process_attenuation
     process_rainrate
     process_hydroclass
+    process_correct_phidp0
+    process_smooth_phidp_single_window
+    process_smooth_phidp_double_window
 
 """
 
@@ -71,6 +75,14 @@ def get_process_type(dataset_type):
         func_name = 'process_echo_id'
     elif dataset_type == 'ECHO_FILTER':
         func_name = 'process_echo_filter'
+    elif dataset_type == 'SNR_FILTER':
+        func_name = 'process_filter_snr'
+    elif dataset_type == 'PHIDP0_CORRECTION':
+        func_name = 'process_correct_phidp0'
+    elif dataset_type == 'PHIDP_SMOOTH_1W':
+        func_name = 'process_smooth_phidp_single_window'
+    elif dataset_type == 'PHIDP_SMOOTH_2W':
+        func_name = 'process_smooth_phidp_double_window'
     elif dataset_type == 'ATTENUATION':
         func_name = 'process_attenuation'
     elif dataset_type == 'RAINRATE':
@@ -440,15 +452,13 @@ def process_echo_id(procstatus, dscfg, radar=None):
         max_textphi=20., max_textrhv=0.3, max_textzdr=2.85,
         max_textrefl=8., min_rhv=0.6)
 
-    is_clutter = gate_filter._gate_excluded is True
-
-    id[is_clutter.nonzero()] = 2
+    is_clutter = gate_filter.gate_excluded == 1
+    id[is_clutter] = 2
 
     # look for noise
     is_noise = radar.fields['reflectivity']['data'].data == (
         pyart.config.get_fillvalue())
-
-    id[is_noise.nonzero()] = 1
+    id[is_noise] = 1
 
     id_field = pyart.config.get_metadata('radar_echo_id')
     id_field['data'] = id
@@ -504,9 +514,277 @@ def process_echo_filter(procstatus, dscfg, radar=None):
         radar_field['data'].mask[is_not_precip.nonzero()] = True
         if field_name.startswith('corrected_'):
             new_field_name = field_name
+        elif field_name.startswith('uncorrected_'):
+            new_field_name = field_name.replace(
+                'uncorrected_', 'corrected_', 1)
         else:
             new_field_name = 'corrected_'+field_name
         new_dataset.add_field(new_field_name, radar_field)
+
+    return new_dataset
+
+
+def process_filter_snr(procstatus, dscfg, radar=None):
+    """
+    filters out low SNR echoes
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+
+    """
+
+    if procstatus != 1:
+        return None
+
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatypefields(
+            datatypedescr)
+        if (datatype == 'SNRh') or (datatype == 'SNRv'):
+            snr_field = get_fieldname_rainbow(datatype)
+            break
+
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatypefields(
+            datatypedescr)
+
+        if (datatype != 'SNRh') or (datatype != 'SNRv'):
+            field_name = get_fieldname_rainbow(datatype)
+
+            gate_filter = pyart.filters.snr_based_gate_filter(
+                radar, snr_field=snr_field, min_snr=dscfg['SNRmin'])
+            is_lowSNR = gate_filter.gate_excluded == 1
+
+            radar_field = deepcopy(radar.fields[field_name])
+            radar_field['data'].data[is_lowSNR] = (
+                pyart.config.get_fillvalue())
+            radar_field['data'].mask[is_lowSNR] = True
+
+            if field_name.startswith('corrected_'):
+                new_field_name = field_name
+            elif field_name.startswith('uncorrected_'):
+                new_field_name = field_name.replace(
+                    'uncorrected_', 'corrected_', 1)
+            else:
+                new_field_name = 'corrected_'+field_name
+            new_dataset.add_field(new_field_name, radar_field)
+
+    return new_dataset
+
+
+def process_correct_phidp0(procstatus, dscfg, radar=None):
+    """
+    corrects phidp of the system phase
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+
+    """
+
+    if procstatus != 1:
+        return None
+
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatypefields(
+            datatypedescr)
+        if datatype == 'dBZ':
+            refl_field = 'reflectivity'
+        if datatype == 'dBZc':
+            refl_field = 'corrected_reflectivity'
+        if datatype == 'PhiDP':
+            phidp_field = 'differential_phase'
+        if datatype == 'PhiDPc':
+            phidp_field = 'corrected_differential_phase'
+        if datatype == 'uPhiDP':
+            phidp_field = 'uncorrected_differential_phase'
+
+    ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
+    ind_rmax = np.where(radar.range['data'] < dscfg['rmax'])[0][-1]
+    r_res = radar.range['data'][1]-radar.range['data'][0]
+    min_rcons = int(dscfg['rcell']/r_res)
+
+    phidp = pyart.correct.correct_sys_phase(
+        radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, min_rcons=min_rcons,
+        zmin=dscfg['Zmin'], zmax=dscfg['Zmax'], phidp_field=phidp_field,
+        refl_field=refl_field)
+
+    # prepare for exit
+    if phidp_field.startswith('corrected_'):
+        new_field_name = phidp_field
+    elif phidp_field.startswith('uncorrected_'):
+        new_field_name = phidp_field.replace('uncorrected_', 'corrected_', 1)
+    else:
+        new_field_name = 'corrected_'+phidp_field
+
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.add_field(new_field_name, phidp)
+
+    return new_dataset
+
+
+def process_smooth_phidp_single_window(procstatus, dscfg, radar=None):
+    """
+    corrects phidp of the system phase and smoothes it using one window
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+
+    """
+
+    if procstatus != 1:
+        return None
+
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatypefields(
+            datatypedescr)
+        if datatype == 'dBZ':
+            refl_field = 'reflectivity'
+        if datatype == 'dBZc':
+            refl_field = 'corrected_reflectivity'
+        if datatype == 'PhiDP':
+            phidp_field = 'differential_phase'
+        if datatype == 'PhiDPc':
+            phidp_field = 'corrected_differential_phase'
+        if datatype == 'uPhiDP':
+            phidp_field = 'uncorrected_differential_phase'
+
+    ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
+    ind_rmax = np.where(radar.range['data'] < dscfg['rmax'])[0][-1]
+    r_res = radar.range['data'][1]-radar.range['data'][0]
+    min_rcons = int(dscfg['rcell']/r_res)
+    wind_len = int(dscfg['rwind']/r_res)
+    wind_type = dscfg['wind_type']
+
+    phidp = pyart.correct.smooth_phidp_single_window(
+        radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, min_rcons=min_rcons,
+        zmin=dscfg['Zmin'], zmax=dscfg['Zmax'], wind_len=wind_len,
+        wind_type=wind_type, phidp_field=phidp_field, refl_field=refl_field)
+
+    # prepare for exit
+    if phidp_field.startswith('corrected_'):
+        new_field_name = phidp_field
+    elif phidp_field.startswith('uncorrected_'):
+        new_field_name = phidp_field.replace('uncorrected_', 'corrected_', 1)
+    else:
+        new_field_name = 'corrected_'+phidp_field
+
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.add_field(new_field_name, phidp)
+
+    return new_dataset
+
+
+def process_smooth_phidp_double_window(procstatus, dscfg, radar=None):
+    """
+    corrects phidp of the system phase and smoothes it using a double window
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+
+    """
+
+    if procstatus != 1:
+        return None
+
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatypefields(
+            datatypedescr)
+        if datatype == 'dBZ':
+            refl_field = 'reflectivity'
+        if datatype == 'dBZc':
+            refl_field = 'corrected_reflectivity'
+        if datatype == 'PhiDP':
+            phidp_field = 'differential_phase'
+        if datatype == 'PhiDPc':
+            phidp_field = 'corrected_differential_phase'
+        if datatype == 'uPhiDP':
+            phidp_field = 'uncorrected_differential_phase'
+
+    ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
+    ind_rmax = np.where(radar.range['data'] < dscfg['rmax'])[0][-1]
+    r_res = radar.range['data'][1]-radar.range['data'][0]
+    min_rcons = int(dscfg['rcell']/r_res)
+    swind_len = int(dscfg['rwinds']/r_res)
+    lwind_len = int(dscfg['rwindl']/r_res)
+    wind_type = dscfg['wind_type']
+
+    phidp = pyart.correct.smooth_phidp_double_window(
+        radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, min_rcons=min_rcons,
+        zmin=dscfg['Zmin'], zmax=dscfg['Zmax'], swind_len=swind_len,
+        lwind_len=lwind_len, zthr=dscfg['Zthr'], wind_type=wind_type,
+        phidp_field=phidp_field, refl_field=refl_field)
+
+    # prepare for exit
+    if phidp_field.startswith('corrected_'):
+        new_field_name = phidp_field
+    elif phidp_field.startswith('uncorrected_'):
+        new_field_name = phidp_field.replace('uncorrected_', 'corrected_', 1)
+    else:
+        new_field_name = 'corrected_'+phidp_field
+
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.add_field(new_field_name, phidp)
 
     return new_dataset
 

@@ -1616,9 +1616,9 @@ DEFAULT_FIELD_LIMITS = {
     uncorrected_cross_correlation_ratio: (0.7, 1.),
     logarithmic_cross_correlation_ratio: (0, 4),
 
-    differential_phase: (-180, 180.),
-    unfolded_differential_phase: (-360, 360.),
-    corrected_differential_phase: (-360, 360.),
+    differential_phase: (-180., 180.),
+    unfolded_differential_phase: (-180., 180.),
+    corrected_differential_phase: (-180., 180.),
 	uncorrected_differential_phase: (-180, 180.),
     uncorrected_unfiltered_differential_phase: (-180, 180.),
 

@@ -21,6 +21,10 @@ Dataset processing
     process_correct_noise_rhohv
     process_correct_bias
     process_echo_filter
+    process_filter_snr
+    process_correct_phidp0
+    process_smooth_phidp_single_window
+    process_smooth_phidp_double_window
     process_attenuation
     process_rainrate
     process_hydroclass
@@ -41,7 +45,11 @@ Product processing
 from .process_dataset import get_process_type, process_raw, process_echo_id
 from .process_dataset import process_snr, process_l, process_cdr
 from .process_dataset import process_correct_noise_rhohv, process_correct_bias
-from .process_dataset import process_echo_filter, process_attenuation
+from .process_dataset import process_echo_filter, process_filter_snr
+from .process_dataset import process_attenuation
+from .process_dataset import process_correct_phidp0
+from .process_dataset import process_smooth_phidp_single_window
+from .process_dataset import process_smooth_phidp_double_window
 from .process_dataset import process_rainrate, process_hydroclass
 from .process_dataset import process_point_measurement, process_save_radar
 

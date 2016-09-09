@@ -485,48 +485,57 @@ def get_data(voltime, datatypesdescr, cfg):
                         get_fieldname_rainbow(datatype_rad4alpcosmo[i]),
                         cosmo_field)
 
-            # add other elevations
-            for j in range(1, len(cfg['ScanList'])):
-                # create the radar object where to store the data
-                # taking as reference the metranet polar file
-                metranet_field_names = dict()
-                metranet_field_names.update(
-                    get_datatypemetranet('dBZ'))
+                    # add other elevations
+                    for j in range(1, len(cfg['ScanList'])):
+                        # create the radar object where to store the data
+                        # taking as reference the metranet polar file
+                        metranet_field_names = dict()
+                        metranet_field_names.update(
+                            get_datatypemetranet('dBZ'))
 
-                dayinfo = voltime.strftime('%y%j')
-                timeinfo = voltime.strftime('%H%M')
-                basename = (
-                    'P'+cfg['RadarRes']+cfg['RadarName']+dayinfo)
-                datapath = cfg['datapath']+dayinfo+'/'+basename+'/'
-                filename = glob.glob(
-                    datapath+basename+timeinfo+'*.'+cfg['ScanList'][j])
-                radar_aux2 = pyart.aux_io.read_metranet(
-                    filename[0], field_names=metranet_field_names)
-                radar_aux2.fields = dict()
+                        dayinfo = voltime.strftime('%y%j')
+                        timeinfo = voltime.strftime('%H%M')
+                        basename = (
+                            'P'+cfg['RadarRes']+cfg['RadarName']+dayinfo)
+                        datapath = cfg['datapath']+dayinfo+'/'+basename+'/'
+                        filename = glob.glob(
+                            datapath+basename+timeinfo+'*.' +
+                            cfg['ScanList'][j])
+                        radar_aux2 = pyart.aux_io.read_metranet(
+                            filename[0], field_names=metranet_field_names)
+                        radar_aux2.fields = dict()
 
-                # look for rad4alp COSMO data
-                filename = find_rad4alpcosmo_file(
-                    voltime, datatype_rad4alpcosmo[i], cfg,
-                    cfg['ScanList'][j])
-                if filename is not None:
-                    cosmo_field = read_rad4alp_cosmo(
-                        filename, datatype_rad4alpcosmo[i])
-                    if cosmo_field is not None:
-                        radar_aux2.add_field(
-                            get_fieldname_rainbow(
-                                datatype_rad4alpcosmo[i]), cosmo_field)
+                        # look for rad4alp COSMO data
+                        filename = find_rad4alpcosmo_file(
+                            voltime, datatype_rad4alpcosmo[i], cfg,
+                            cfg['ScanList'][j])
+                        if filename is not None:
+                            cosmo_field = read_rad4alp_cosmo(
+                                filename, datatype_rad4alpcosmo[i])
+                            if cosmo_field is not None:
+                                radar_aux2.add_field(
+                                    get_fieldname_rainbow(
+                                        datatype_rad4alpcosmo[i]),
+                                    cosmo_field)
 
-                        radar_aux = pyart.util.radar_utils.join_radar(
-                            radar_aux, radar_aux2)
-            if radar is None:
-                radar = radar_aux
-            else:
-                for field_name in radar_aux.fields.keys():
-                    break
-                field_data = radar_aux.fields[field_name]['data']
-                field_metadata = pyart.config.get_metadata(field_name)
-                field_metadata['data'] = field_data
-                radar.add_field(field_name, field_metadata)
+                                radar_aux = pyart.util.radar_utils.join_radar(
+                                    radar_aux, radar_aux2)
+                            else:
+                                radar_aux = None
+                        else:
+                            radar_aux = None
+                    if radar_aux is not None:
+                        if radar is None:
+                            radar = radar_aux
+                        else:
+                            for field_name in radar_aux.fields.keys():
+                                break
+
+                            field_data = radar_aux.fields[field_name]['data']
+                            field_metadata = pyart.config.get_metadata(
+                                field_name)
+                            field_metadata['data'] = field_data
+                            radar.add_field(field_name, field_metadata)
 
     return radar
 

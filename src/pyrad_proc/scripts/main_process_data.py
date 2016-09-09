@@ -80,18 +80,18 @@ if __name__ == '__main__':
         cfg.update({'RadarRes': None})
     if 'ScanPeriod' not in cfg:
         print(
-            'WARNING: Scan period not specified. \
-            Assumed default value 5 min')
+            'WARNING: Scan period not specified.' +
+            'Assumed default value 5 min')
         cfg.update({'ScanPeriod': 5})
     if 'CosmoRunFreq' not in cfg:
         print(
-            'WARNING: COSMO run frequency not specified. \
-            Assumed default value 3h')
+            'WARNING: COSMO run frequency not specified.' +
+            'Assumed default value 3h')
         cfg.update({'CosmoRunFreq': 3})
     if 'CosmoForecasted' not in cfg:
         print(
-            'WARNING: Hours forecasted by COSMO not specified. \
-             Assumed default value 7h (including analysis)')
+            'WARNING: Hours forecasted by COSMO not specified.' +
+            'Assumed default value 7h (including analysis)')
         cfg.update({'CosmoForecasted': 7})
 
     # configuration dictionary to figure out where the data is

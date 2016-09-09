@@ -4,39 +4,14 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 4
-    l0:RRZh_noattcorr
-    l1:rgMAH_RRZh_noattcorr
-    l1:disdroBelleChasse_RRZh_noattcorr
-    l1:disdroBelleChasse_dBZ
-    
-
-
-# ==========================================================================================
-#                 echo identification
-# ==========================================================================================
-#echoID STRUCT 4
-#   type        STRING SAN
-#   datatype    STRARR 4
-#      dBZ
-#      ZDR
-#      uPhiDP
-#      RhoHV
-#   MAKE_GLOBAL         INT 1
-#   products STRUCT 1
-#       EL004_0 STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING echoID
-#		 anglenr INT 0
-
-# ==========================================================================================
-#                 Save radar object
-# ==========================================================================================
-#NCVOL STRUCT 2
-#	type STRING NCVOL
-#	products STRUCT 1
-#       SAVEVOL STRUCT 1
-#         type   STRING SAVEALL
+dataSetList STRARR 7
+    l0:PhiDP
+    l0:uPhiDP
+    l0:SNRh
+    l0:echoID
+    l1:echoFilter
+    l2:SNRFilter
+    l3:PhiDPc_smooth2w
 
 # ==========================================================================================
 #                 raw data products
@@ -80,23 +55,23 @@ dataSetList STRARR 4
 #         voltype STRING KDP
 #		 anglenr INT 0
 #
-#PhiDP STRUCT 3
-#	type STRING RAW
-#	datatype STRING PhiDP
-#	products STRUCT 1
-#	  EL004_0 STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING PhiDP
-#		 anglenr INT 0
-#
-#uPhiDP STRUCT 3
-#	type STRING RAW
-#	datatype STRING uPhiDP
-#	products STRUCT 1
-#	  EL004_0 STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING uPhiDP
-#		 anglenr INT 0
+PhiDP STRUCT 3
+	type STRING RAW
+	datatype STRING PhiDP
+	products STRUCT 1
+	  EL004_0 STRUCT 3
+         type   STRING PPI_IMAGE
+         voltype STRING PhiDP
+		 anglenr INT 0
+
+uPhiDP STRUCT 3
+	type STRING RAW
+	datatype STRING uPhiDP
+	products STRUCT 1
+	  EL004_0 STRUCT 3
+         type   STRING PPI_IMAGE
+         voltype STRING uPhiDP
+		 anglenr INT 0
 #
 #Nh STRUCT 3
 #	type STRING RAW
@@ -137,18 +112,18 @@ dataSetList STRARR 4
 # ==========================================================================================
 #                 secondary moments products
 # ==========================================================================================
-#SNRh STRUCT 5
-#    type STRING SNR
-#    datatype STRARR 2
-#        dBZ
-#        Nh
-#    output_type STRING SNRh
-#    MAKE_GLOBAL INT 1
-#    products STRUCT 1
-#      EL004_0 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 0
-#         voltype STRING SNRh
+SNRh STRUCT 5
+    type STRING SNR
+    datatype STRARR 2
+        dBZ
+        Nh
+    output_type STRING SNRh
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+      EL004_0 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING SNRh
 #
 #SNRv STRUCT 4
 #    type STRING SNR
@@ -182,46 +157,135 @@ dataSetList STRARR 4
 #         anglenr INT 0
 #         voltype STRING CDR
 
+# ==========================================================================================
+#                 echo identification
+# ==========================================================================================
+echoID STRUCT 4
+   type        STRING SAN
+   datatype    STRARR 4
+      dBZ
+      ZDR
+      uPhiDP
+      RhoHV
+   MAKE_GLOBAL         INT 1
+   products STRUCT 1
+       EL004_0 STRUCT 3
+         type   STRING PPI_IMAGE
+         voltype STRING echoID
+		 anglenr INT 0
+         
 
 # ==========================================================================================
 #                 clutter and noise suppression
 # ==========================================================================================
-#echoFilter STRUCT 3
-#   type STRING ECHO_FILTER
-#   datatype STRARR 5
-#      dBZ
-#      ZDR
-#      PhiDP
-#      RhoHV
-#      KDP
-#   MAKE_GLOBAL INT 1
-##   products STRUCT 5
-##	  EL004_0_dBZc STRUCT 3
-##         type   STRING PPI_IMAGE
-##         voltype STRING dBZc
-##		 anglenr INT 0
-##      EL004_0_ZDRc STRUCT 3
-##         type   STRING PPI_IMAGE
-##         voltype STRING ZDRc
-##		 anglenr INT 0
-##      EL004_0_PhiDPc STRUCT 3
-##         type   STRING PPI_IMAGE
-##         voltype STRING PhiDPc
-##		 anglenr INT 0
-##      EL004_0_RhoHVc STRUCT 3
-##         type   STRING PPI_IMAGE
-##         voltype STRING RhoHVc
-##		 anglenr INT 0
-##      EL004_0_KDPc STRUCT 3
-##         type   STRING PPI_IMAGE
-##         voltype STRING KDPc
-##		 anglenr INT 0
+echoFilter STRUCT 3
+   type STRING ECHO_FILTER
+   datatype STRARR 2
+      uPhiDP
+      dBZ
+   MAKE_GLOBAL INT 1
+#   products STRUCT 5
+#	  EL004_0_dBZc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING dBZc
+#		 anglenr INT 0
+#      EL004_0_ZDRc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING ZDRc
+#		 anglenr INT 0
+#      EL004_0_PhiDPc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING PhiDPc
+#		 anglenr INT 0
+#      EL004_0_RhoHVc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING RhoHVc
+#		 anglenr INT 0
+#      EL004_0_KDPc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING KDPc
+#		 anglenr INT 0
 #
 #echoFilter2 STRUCT 3
 #   type STRING ECHO_FILTER
 #   datatype STRARR 1
 #      PROC:Ah
 #   MAKE_GLOBAL INT 1
+
+# ==========================================================================================
+#                 filtration based on SNR
+# ==========================================================================================
+SNRFilter STRUCT 5
+   type STRING SNR_FILTER
+   datatype STRARR 2
+      PROC:SNRh
+      PROC:PhiDPc
+   SNRmin FLOAT 10.
+   MAKE_GLOBAL INT 1
+   products STRUCT 1
+      EL004_0_PhiDPc STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING PhiDPc
+         
+         
+# ==========================================================================================
+#                 PHIDP processing
+# ==========================================================================================
+#PhiDPc_noPhiDP0 STRUCT 8
+#    type STRING PHIDP0_CORRECTION
+#    datatype STRARR 2
+#        PROC:PhiDPc
+#        PROC:dBZc
+#    rmin FLOAT 1000.
+#    rmax FLOAT 50000.
+#    rcell FLOAT 1000.
+#    Zmin FLOAT 20.
+#    Zmax FLOAT 40.
+#    products STRUCT 1
+#      EL004_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 0
+#         voltype STRING PhiDPc
+#         
+#PhiDPc_smooth1w STRUCT 10
+#    type STRING PHIDP_SMOOTH_1W
+#    datatype STRARR 2
+#        PROC:PhiDPc
+#        PROC:dBZc
+#    rmin FLOAT 1000.
+#    rmax FLOAT 50000.
+#    rcell FLOAT 1000.
+#    Zmin FLOAT 20.
+#    Zmax FLOAT 40.
+#    rwind FLOAT 1000.
+#    wind_type STRING median
+#    products STRUCT 1
+#      EL004_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 0
+#         voltype STRING PhiDPc
+         
+PhiDPc_smooth2w STRUCT 12
+    type STRING PHIDP_SMOOTH_2W
+    datatype STRARR 2
+        PROC:PhiDPc
+        PROC:dBZc
+    rmin FLOAT 1000.
+    rmax FLOAT 50000.
+    rcell FLOAT 1000.
+    Zmin FLOAT 20.
+    Zmax FLOAT 40.
+    rwinds FLOAT 1000.
+    rwindl FLOAT 3000.
+    Zthr FLOAT 40.
+    wind_type STRING median
+    products STRUCT 1
+      EL004_0 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING PhiDPc
+
 
 ## ==========================================================================================
 ##                 Attenuation
@@ -255,17 +319,17 @@ dataSetList STRARR 4
 # ==========================================================================================
 #                 rainrate products
 # ==========================================================================================
-RRZh_noattcorr STRUCT 5
-   type STRING RAINRATE
-   datatype STRARR 1
-     dBZ
-   RR_METHOD STRING Z
-   MAKE_GLOBAL INT 1
-   products STRUCT 1
- 	  EL004_0 STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING RR
- 		 anglenr INT 0
+#RRZh_noattcorr STRUCT 5
+#   type STRING RAINRATE
+#   datatype STRARR 1
+#     dBZ
+#   RR_METHOD STRING Z
+#   MAKE_GLOBAL INT 1
+#   products STRUCT 1
+# 	  EL004_0 STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING RR
+# 		 anglenr INT 0
 #
 #RRZh STRUCT 4
 #   type STRING RAINRATE
@@ -370,95 +434,105 @@ RRZh_noattcorr STRUCT 5
 
 
 # ==========================================================================================
+#                 Save radar object
+# ==========================================================================================
+#NCVOL STRUCT 2
+#	type STRING NCVOL
+#	products STRUCT 1
+#       SAVEVOL STRUCT 1
+#         type   STRING SAVEALL
+
+
+# ==========================================================================================
 #                 rain rate comparison
 # ==========================================================================================
-
-# ---------------------- rain gauge MAH -------------------------------------------
-
-#46.737, 6.568, 437.0 MAH (Yverdon)
-rgMAH_RRZh_noattcorr STRUCT 12
-   type STRING POINT_MEASUREMENT
-   datatype STRARR 1
-      PROC:RR
-   latlon INT 1
-   truealt INT 0
-   lat FLOAT 46.737
-   lon FLOAT 6.568
-   alt FLOAT 437.0
-   ele FLOAT 4.
-   AziTol FLOAT 1.
-   EleTol FLOAT 1.
-   RngTol FLOAT 30.
-   products STRUCT 3
-      RR STRUCT 1
-	     type STRING PLOT_AND_WRITE_POINT
-	  RRcomp STRUCT 4
-	     type STRING COMPARE_POINT
-         prdid STRING RR
-		 sensor STRING rgage
-		 sensorid STRING MAH
-	  RRcumcomp STRUCT 4
-	     type STRING COMPARE_CUMULATIVE_POINT
-         prdid STRING RR
-		 sensor STRING rgage
-		 sensorid STRING MAH
-         
-# ------------------ disdrometer Bellechasse ---------------------------------------------
-
-# 46.9783, 7.1300, 433.0 (BelleChasse)
-disdroBelleChasse_RRZh_noattcorr STRUCT 12
-   type STRING POINT_MEASUREMENT
-   datatype STRARR 1
-      PROC:RR
-   latlon INT 1
-   truealt INT 0
-   lat FLOAT 46.9783
-   lon FLOAT 7.1300
-   alt FLOAT 433.0
-   ele FLOAT 4.
-   AziTol FLOAT 1.
-   EleTol FLOAT 1.
-   RngTol FLOAT 30.
-   products STRUCT 3
-      RR STRUCT 1
-	     type STRING PLOT_AND_WRITE_POINT
-	  RRcomp STRUCT 6	     
-         type STRING COMPARE_POINT
-         prdid STRING RR
-		 sensor STRING disdro
-		 sensorid STRING 20
-		 elev STRING 0000
-		 temp STRING 0100
-	  RRcumcomp STRUCT 6         
-	     type STRING COMPARE_CUMULATIVE_POINT
-         prdid STRING RR
-		 sensor STRING disdro
-		 sensorid STRING 20
-		 elev STRING 0000
-		 temp STRING 0100
-         
-# 46.9783, 7.1300, 433.0 (BelleChasse)
-disdroBelleChasse_dBZ STRUCT 12
-   type STRING POINT_MEASUREMENT
-   datatype STRARR 1
-      dBZ
-   latlon INT 1
-   truealt INT 0
-   lat FLOAT 46.9783
-   lon FLOAT 7.1300
-   alt FLOAT 433.0
-   ele FLOAT 4.
-   AziTol FLOAT 1.
-   EleTol FLOAT 1.
-   RngTol FLOAT 30.
-   products STRUCT 2
-      dBZ STRUCT 1
-	     type STRING PLOT_AND_WRITE_POINT
-	  dBZcomp STRUCT 6         
-	     type STRING COMPARE_POINT
-         prdid STRING dBZ
-		 sensor STRING disdro
-		 sensorid STRING 20
-		 elev STRING 0000
-		 temp STRING 0100
+#
+## ---------------------- rain gauge MAH -------------------------------------------
+#
+##46.737, 6.568, 437.0 MAH (Yverdon)
+#rgMAH_RRZh_noattcorr STRUCT 12
+#   type STRING POINT_MEASUREMENT
+#   datatype STRARR 1
+#      PROC:RR
+#   latlon INT 1
+#   truealt INT 0
+#   lat FLOAT 46.737
+#   lon FLOAT 6.568
+#   alt FLOAT 437.0
+#   ele FLOAT 4.
+#   AziTol FLOAT 1.
+#   EleTol FLOAT 1.
+#   RngTol FLOAT 30.
+#   products STRUCT 3
+#      RR STRUCT 1
+#	     type STRING PLOT_AND_WRITE_POINT
+#	  RRcomp STRUCT 4
+#	     type STRING COMPARE_POINT
+#         prdid STRING RR
+#		 sensor STRING rgage
+#		 sensorid STRING MAH
+#	  RRcumcomp STRUCT 4
+#	     type STRING COMPARE_CUMULATIVE_POINT
+#         prdid STRING RR
+#		 sensor STRING rgage
+#		 sensorid STRING MAH
+#         
+## ------------------ disdrometer Bellechasse ---------------------------------------------
+#
+## 46.9783, 7.1300, 433.0 (BelleChasse)
+#disdroBelleChasse_RRZh_noattcorr STRUCT 12
+#   type STRING POINT_MEASUREMENT
+#   datatype STRARR 1
+#      PROC:RR
+#   latlon INT 1
+#   truealt INT 0
+#   lat FLOAT 46.9783
+#   lon FLOAT 7.1300
+#   alt FLOAT 433.0
+#   ele FLOAT 4.
+#   AziTol FLOAT 1.
+#   EleTol FLOAT 1.
+#   RngTol FLOAT 30.
+#   products STRUCT 3
+#      RR STRUCT 1
+#	     type STRING PLOT_AND_WRITE_POINT
+#	  RRcomp STRUCT 6	     
+#         type STRING COMPARE_POINT
+#         prdid STRING RR
+#		 sensor STRING disdro
+#		 sensorid STRING 20
+#		 elev STRING 0000
+#		 temp STRING 0100
+#	  RRcumcomp STRUCT 6         
+#	     type STRING COMPARE_CUMULATIVE_POINT
+#         prdid STRING RR
+#		 sensor STRING disdro
+#		 sensorid STRING 20
+#		 elev STRING 0000
+#		 temp STRING 0100
+#         
+## 46.9783, 7.1300, 433.0 (BelleChasse)
+#disdroBelleChasse_dBZ STRUCT 12
+#   type STRING POINT_MEASUREMENT
+#   datatype STRARR 1
+#      dBZ
+#   latlon INT 1
+#   truealt INT 0
+#   lat FLOAT 46.9783
+#   lon FLOAT 7.1300
+#   alt FLOAT 433.0
+#   ele FLOAT 4.
+#   AziTol FLOAT 1.
+#   EleTol FLOAT 1.
+#   RngTol FLOAT 30.
+#   products STRUCT 2
+#      dBZ STRUCT 1
+#	     type STRING PLOT_AND_WRITE_POINT
+#	  dBZcomp STRUCT 6         
+#	     type STRING COMPARE_POINT
+#         prdid STRING dBZ
+#		 sensor STRING disdro
+#		 sensorid STRING 20
+#		 elev STRING 0000
+#		 temp STRING 0100
          
