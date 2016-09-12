@@ -347,6 +347,8 @@ def process_cdr(procstatus, dscfg, radar=None):
             rhohv = 'unfiltered_cross_correlation_ratio'
         if datatype == 'ZDR':
             zdr = 'differential_reflectivity'
+        if datatype == 'ZDRc':
+            zdr = 'corrected_differential_reflectivity'
 
     cdr = pyart.retrieve.compute_cdr(
         radar, rhohv_field=rhohv, zdr_field=zdr,

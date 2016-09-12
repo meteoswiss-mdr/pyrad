@@ -4,34 +4,34 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 2   
-   TEMP
-   ISO0
+dataSetList STRARR 1
+   dBZ
 
 # ==========================================================================================
 #                 raw data products
 # ==========================================================================================
-#dBZ STRUCT 3
-#	type STRING RAW
-#	datatype STRING dBZ
-#	products STRUCT 4      
-#      AZ045 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 4
-#         voltype STRING dBZ
-#      AZ049 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 6
-#         voltype STRING dBZ
-#      AZ053 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 8
-#         voltype STRING dBZ
-#      EL06 STRUCT 3
-#         type  STRING PSEUDOPPI_IMAGE
-#         angle FLOAT 6.
-#         voltype STRING dBZ
-#
+dBZ STRUCT 3
+	type STRING RAW
+	datatype STRING dBZ
+	products STRUCT 4      
+      AZ045 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING dBZ
+      AZ049 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING dBZ
+      AZ053 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING dBZ
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING dBZ
+
 #ZDR STRUCT 3
 #	type STRING RAW
 #	datatype STRING ZDR
@@ -107,47 +107,47 @@ dataSetList STRARR 2
 #         voltype STRING Nv
 #		 anglenr INT 0
 #
-TEMP STRUCT 3
-	type STRING RAW
-	datatype STRING COSMO:TEMP
-	products STRUCT 4      
-      AZ045 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 4
-         voltype STRING TEMP
-      AZ049 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 6
-         voltype STRING TEMP
-      AZ053 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 8
-         voltype STRING TEMP
-      EL06 STRUCT 3
-         type  STRING PSEUDOPPI_IMAGE
-         angle FLOAT 6.
-         voltype STRING TEMP
-
-ISO0 STRUCT 3
-	type STRING RAW
-	datatype STRING COSMO:ISO0
-	products STRUCT 4      
-      AZ045 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 4
-         voltype STRING ISO0
-      AZ049 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 6
-         voltype STRING ISO0
-      AZ053 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 8
-         voltype STRING ISO0
-      EL06 STRUCT 3
-         type  STRING PSEUDOPPI_IMAGE
-         angle FLOAT 6.
-         voltype STRING ISO0
+#TEMP STRUCT 3
+#	type STRING RAW
+#	datatype STRING COSMO:TEMP
+#	products STRUCT 4      
+#      AZ045 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 4
+#         voltype STRING TEMP
+#      AZ049 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 6
+#         voltype STRING TEMP
+#      AZ053 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 8
+#         voltype STRING TEMP
+#      EL06 STRUCT 3
+#         type  STRING PSEUDOPPI_IMAGE
+#         angle FLOAT 6.
+#         voltype STRING TEMP
+#
+#ISO0 STRUCT 3
+#	type STRING RAW
+#	datatype STRING COSMO:ISO0
+#	products STRUCT 4      
+#      AZ045 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 4
+#         voltype STRING ISO0
+#      AZ049 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 6
+#         voltype STRING ISO0
+#      AZ053 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 8
+#         voltype STRING ISO0
+#      EL06 STRUCT 3
+#         type  STRING PSEUDOPPI_IMAGE
+#         angle FLOAT 6.
+#         voltype STRING ISO0
 
 # ==========================================================================================
 #                 secondary moments products

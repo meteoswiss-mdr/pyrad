@@ -122,19 +122,25 @@ def generate_vol_products(dataset, prdcfg):
     elif prdcfg['type'] == 'PSEUDOPPI_IMAGE':
         field_name = get_fieldname_rainbow(prdcfg['voltype'])
         if field_name in dataset.fields:
-            xsect = pyart.util.cross_section_rhi(dataset, [prdcfg['angle']])
-
-            savedir = get_save_dir(
-                prdcfg['basepath'], prdcfg['procname'], prdcfg['timeinfo'],
-                prdcfg['dsname'], prdcfg['prdname'])
-
-            fname = make_filename(
-                prdcfg['timeinfo'], 'ppi', prdcfg['dstype'],
-                prdcfg['voltype'], prdcfg['convertformat'],
-                prdcfginfo='el'+'{:.1f}'.format(prdcfg['angle']))
-
-            plot_ppi(xsect, field_name, 0, prdcfg, savedir+fname)
-            print('saved figure: '+savedir+fname)
+            xsect = pyart.util.cross_section_rhi(dataset, [prdcfg['angle']],
+                                                 el_tol=prdcfg['EleTol'])
+            if xsect is not None:
+                savedir = get_save_dir(
+                    prdcfg['basepath'], prdcfg['procname'],
+                    prdcfg['timeinfo'], prdcfg['dsname'], prdcfg['prdname'])
+    
+                fname = make_filename(
+                    prdcfg['timeinfo'], 'ppi', prdcfg['dstype'],
+                    prdcfg['voltype'], prdcfg['convertformat'],
+                    prdcfginfo='el'+'{:.1f}'.format(prdcfg['angle']))
+    
+                plot_ppi(xsect, field_name, 0, prdcfg, savedir+fname)
+                print('saved figure: '+savedir+fname)
+            else:
+                print(
+                    'WARNING: No data found at elevation ' +
+                    str(prdcfg['angle']) +'. Skipping product ' +
+                    prdcfg['type'])
         else:
             print(
                 'WARNING: Field type ' + field_name +
@@ -144,19 +150,25 @@ def generate_vol_products(dataset, prdcfg):
     elif prdcfg['type'] == 'PSEUDORHI_IMAGE':
         field_name = get_fieldname_rainbow(prdcfg['voltype'])
         if field_name in dataset.fields:
-            xsect = pyart.util.cross_section_ppi(dataset, [prdcfg['angle']])
+            xsect = pyart.util.cross_section_ppi(dataset, [prdcfg['angle']],
+                                                 az_tol=prdcfg['AziTol'])
+            if xsect is not None:
+                savedir = get_save_dir(
+                    prdcfg['basepath'], prdcfg['procname'],
+                    prdcfg['timeinfo'], prdcfg['dsname'], prdcfg['prdname'])
 
-            savedir = get_save_dir(
-                prdcfg['basepath'], prdcfg['procname'], prdcfg['timeinfo'],
-                prdcfg['dsname'], prdcfg['prdname'])
+                fname = make_filename(
+                    prdcfg['timeinfo'], 'rhi', prdcfg['dstype'],
+                    prdcfg['voltype'], prdcfg['convertformat'],
+                    prdcfginfo='az'+'{:.1f}'.format(prdcfg['angle']))
 
-            fname = make_filename(
-                prdcfg['timeinfo'], 'rhi', prdcfg['dstype'],
-                prdcfg['voltype'], prdcfg['convertformat'],
-                prdcfginfo='az'+'{:.1f}'.format(prdcfg['angle']))
-
-            plot_rhi(xsect, field_name, 0, prdcfg, savedir+fname)
-            print('saved figure: '+savedir+fname)
+                plot_rhi(xsect, field_name, 0, prdcfg, savedir+fname)
+                print('saved figure: '+savedir+fname)
+            else:
+                print(
+                    'WARNING: No data found at azimuth ' +
+                    str(prdcfg['angle'])+'. Skipping product ' +
+                    prdcfg['type'])
         else:
             print(
                 'WARNING: Field type ' + field_name +
