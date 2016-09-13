@@ -25,6 +25,7 @@ Functions for processing Pyrad datasets
     process_smooth_phidp_single_window
     process_smooth_phidp_double_window
     process_phidp_kdp_Maesaka
+    process_phidp_kdp_lp
 
 """
 
@@ -86,6 +87,8 @@ def get_process_type(dataset_type):
         func_name = 'process_smooth_phidp_double_window'
     elif dataset_type == 'PHIDP_KDP_MAESAKA':
         func_name = 'process_phidp_kdp_Maesaka'
+    elif dataset_type == 'PHIDP_KDP_LP':
+        func_name = 'process_phidp_kdp_lp'
     elif dataset_type == 'ATTENUATION':
         func_name = 'process_attenuation'
     elif dataset_type == 'RAINRATE':
@@ -905,30 +908,44 @@ def process_phidp_kdp_lp(procstatus, dscfg, radar=None):
             psidp_field = 'corrected_differential_phase'
         if datatype == 'uPhiDP':
             psidp_field = 'uncorrected_differential_phase'
+        if datatype == 'dBZ':
+            refl_field = 'reflectivity'
+        if datatype == 'dBZc':
+            refl_field = 'corrected_reflectivity'
+        if datatype == 'RhoHVc':
+            rhv_field = 'corrected_cross_correlation_ratio'
+        if datatype == 'RhoHV':
+            rhv_field = 'cross_correlation_ratio'
+        if datatype == 'SNRh':
+            snr_field = 'signal_to_noise_ratio_hh'
+            
 
     fill_value = radar.fields[psidp_field]['data'].get_fill_value()
     mask = radar.fields[psidp_field]['data'].mask
     phidp_field = 'corrected_differential_phase'
     kdp_field = 'corrected_specific_differential_phase'
 
-    kdp, phidpf, phidpr = pyart.retrieve.kdp_proc.kdp_maesaka(
-        radar, gatefilter=None, method='cg', backscatter=None, Clpf=1.,
-        length_scale=None, first_guess=0.01, finite_order='low',
-        fill_value=fill_value, psidp_field=psidp_field, kdp_field=kdp_field,
-        phidp_field=phidp_field)
+    phidp, kdp = pyart.correct.phase_proc_lp(
+        radar, 0, debug=False, self_const=60000.0,
+        low_z=10.0, high_z=53.0, min_phidp=0.01, min_ncp=10.,
+        min_rhv=0.6, fzl=4000.0, sys_phase=0.0,
+        overide_sys_phase=False, nowrap=None, really_verbose=False,
+        LP_solver='cvxopt', refl_field=refl_field, ncp_field=snr_field,
+        rhv_field=rhv_field, phidp_field=psidp_field, kdp_field=kdp_field,
+        unf_field=phidp_field, window_len=35, proc=1)
 
     kdp['data'] = np.ma.masked_where(mask, kdp['data'])
     kdp['data'].set_fill_value(fill_value)
     kdp['data'].data[mask] = fill_value
 
-    phidpf['data'] = np.ma.masked_where(mask, phidpf['data'])
-    phidpf['data'].set_fill_value(fill_value)
-    phidpf['data'].data[mask] = fill_value
+    phidp['data'] = np.ma.masked_where(mask, phidp['data'])
+    phidp['data'].set_fill_value(fill_value)
+    phidp['data'].data[mask] = fill_value
 
     # prepare for exit
     new_dataset = deepcopy(radar)
     new_dataset.fields = dict()
-    new_dataset.add_field(phidp_field, phidpf)
+    new_dataset.add_field(phidp_field, phidp)
     new_dataset.add_field(kdp_field, kdp)
 
     return new_dataset

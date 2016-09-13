@@ -4,36 +4,33 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 5
-    l0:dBZ
-    l0:ZDR
-    l0:echoID
-    l1:echoFilter
-    l2:Att
+dataSetList STRARR 2
+    l0:SNRh
+    l1:PhiDP_KDP_lp
 
 # ==========================================================================================
 #                 raw data products
 # ==========================================================================================
-dBZ STRUCT 3
-	type STRING RAW
-	datatype STRING dBZ
-	products STRUCT 2
-	   EL004_0 STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING dBZ
-		 anglenr INT 0
-       SAVEVOL STRUCT 2
-         type   STRING SAVEVOL
-         voltype STRING dBZ
-
-ZDR STRUCT 3
-	type STRING RAW
-	datatype STRING ZDR
-	products STRUCT 1
-	  EL004_0 STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING ZDR
-		 anglenr INT 0
+#dBZ STRUCT 3
+#	type STRING RAW
+#	datatype STRING dBZ
+#	products STRUCT 2
+#	   EL004_0 STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING dBZ
+#		 anglenr INT 0
+#       SAVEVOL STRUCT 2
+#         type   STRING SAVEVOL
+#         voltype STRING dBZ
+#
+#ZDR STRUCT 3
+#	type STRING RAW
+#	datatype STRING ZDR
+#	products STRUCT 1
+#	  EL004_0 STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING ZDR
+#		 anglenr INT 0
 #
 #RhoHV STRUCT 3
 #	type STRING RAW
@@ -110,19 +107,19 @@ ZDR STRUCT 3
 # ==========================================================================================
 #                 secondary moments products
 # ==========================================================================================
-#SNRh STRUCT 5
-#    type STRING SNR
-#    datatype STRARR 2
-#        dBZ
-#        Nh
-#    output_type STRING SNRh
-#    MAKE_GLOBAL INT 1
-#    products STRUCT 1
-#      EL004_0 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 0
-#         voltype STRING SNRh
-#
+SNRh STRUCT 5
+    type STRING SNR
+    datatype STRARR 2
+        dBZ
+        Nh
+    output_type STRING SNRh
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+      EL004_0 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING SNRh
+
 #SNRv STRUCT 4
 #    type STRING SNR
 #    datatype STRARR 2
@@ -158,52 +155,52 @@ ZDR STRUCT 3
 # ==========================================================================================
 #                 echo identification
 # ==========================================================================================
-echoID STRUCT 4
-   type        STRING SAN
-   datatype    STRARR 4
-      dBZ
-      ZDR
-      uPhiDP
-      RhoHV
-   MAKE_GLOBAL         INT 1
-   products STRUCT 1
-       EL004_0 STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING echoID
-		 anglenr INT 0
+#echoID STRUCT 4
+#   type        STRING SAN
+#   datatype    STRARR 4
+#      dBZ
+#      ZDR
+#      uPhiDP
+#      RhoHV
+#   MAKE_GLOBAL         INT 1
+#   products STRUCT 1
+#       EL004_0 STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING echoID
+#		 anglenr INT 0
          
 
 # ==========================================================================================
 #                 clutter and noise suppression
 # ==========================================================================================
-echoFilter STRUCT 3
-   type STRING ECHO_FILTER
-   datatype STRARR 3
-      PhiDP
-      dBZ
-      ZDR
-   MAKE_GLOBAL INT 1
-#   products STRUCT 5
-#	  EL004_0_dBZc STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING dBZc
-#		 anglenr INT 0
-#      EL004_0_ZDRc STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING ZDRc
-#		 anglenr INT 0
-#      EL004_0_PhiDPc STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING PhiDPc
-#		 anglenr INT 0
-#      EL004_0_RhoHVc STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING RhoHVc
-#		 anglenr INT 0
-#      EL004_0_KDPc STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING KDPc
-#		 anglenr INT 0
+#echoFilter STRUCT 3
+#   type STRING ECHO_FILTER
+#   datatype STRARR 3
+#      PhiDP
+#      dBZ
+#      ZDR
+#   MAKE_GLOBAL INT 1
+##   products STRUCT 5
+##	  EL004_0_dBZc STRUCT 3
+##         type   STRING PPI_IMAGE
+##         voltype STRING dBZc
+##		 anglenr INT 0
+##      EL004_0_ZDRc STRUCT 3
+##         type   STRING PPI_IMAGE
+##         voltype STRING ZDRc
+##		 anglenr INT 0
+##      EL004_0_PhiDPc STRUCT 3
+##         type   STRING PPI_IMAGE
+##         voltype STRING PhiDPc
+##		 anglenr INT 0
+##      EL004_0_RhoHVc STRUCT 3
+##         type   STRING PPI_IMAGE
+##         voltype STRING RhoHVc
+##		 anglenr INT 0
+##      EL004_0_KDPc STRUCT 3
+##         type   STRING PPI_IMAGE
+##         voltype STRING KDPc
+##		 anglenr INT 0
 
 #echoFilter2 STRUCT 3
 #   type STRING ECHO_FILTER
@@ -301,36 +298,53 @@ echoFilter STRUCT 3
 #         anglenr INT 0
 #         voltype STRING KDPc
 #
+PhiDP_KDP_lp STRUCT 3
+    type STRING PHIDP_KDP_LP
+    datatype STRARR 4
+        uPhiDP
+        dBZ
+        RhoHV
+        PROC:SNRh
+    products STRUCT 2
+      EL004_0_PhiDPc STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING PhiDPc
+      EL004_0_KDPc STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING KDPc
+#
 #
 ## ==========================================================================================
 ##                 Attenuation
 ## ==========================================================================================
-Att STRUCT 4
-	type STRING ATTENUATION
-	datatype STRARR 4
-        PROC:dBZc
-        PROC:ZDRc
-        PROC:PhiDPc
-        COSMO:TEMP
-    MAKE_GLOBAL INT 1
-	products STRUCT 4
-	  EL004_0_Ah STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING Ah
-		 anglenr INT 0
-      EL004_0_dBZc STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING dBZc
-		 anglenr INT 0
-      EL004_0_ZDRc STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING ZDRc
-		 anglenr INT 0
-      EL004_0_Adp STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING Adp
-		 anglenr INT 0
-
+#Att STRUCT 4
+#	type STRING ATTENUATION
+#	datatype STRARR 4
+#        PROC:dBZc
+#        PROC:ZDRc
+#        PROC:PhiDPc
+#        COSMO:TEMP
+#    MAKE_GLOBAL INT 1
+#	products STRUCT 4
+#	  EL004_0_Ah STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING Ah
+#		 anglenr INT 0
+#      EL004_0_dBZc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING dBZc
+#		 anglenr INT 0
+#      EL004_0_ZDRc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING ZDRc
+#		 anglenr INT 0
+#      EL004_0_Adp STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING Adp
+#		 anglenr INT 0
+#
 # ==========================================================================================
 #                 rainrate products
 # ==========================================================================================

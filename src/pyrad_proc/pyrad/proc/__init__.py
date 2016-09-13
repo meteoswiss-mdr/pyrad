@@ -26,6 +26,7 @@ Dataset processing
     process_smooth_phidp_single_window
     process_smooth_phidp_double_window
     process_phidp_kdp_Maesaka
+    process_phidp_kdp_lp
     process_attenuation
     process_rainrate
     process_hydroclass
@@ -50,6 +51,7 @@ from .process_dataset import process_echo_filter, process_filter_snr
 from .process_dataset import process_attenuation
 from .process_dataset import process_correct_phidp0, process_phidp_kdp_Maesaka
 from .process_dataset import process_smooth_phidp_single_window
+from .process_dataset import process_phidp_kdp_lp
 from .process_dataset import process_smooth_phidp_double_window
 from .process_dataset import process_rainrate, process_hydroclass
 from .process_dataset import process_point_measurement, process_save_radar
