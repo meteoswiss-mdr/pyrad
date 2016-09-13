@@ -24,6 +24,7 @@ Functions for processing Pyrad datasets
     process_correct_phidp0
     process_smooth_phidp_single_window
     process_smooth_phidp_double_window
+    process_phidp_kdp_Maesaka
 
 """
 
@@ -83,6 +84,8 @@ def get_process_type(dataset_type):
         func_name = 'process_smooth_phidp_single_window'
     elif dataset_type == 'PHIDP_SMOOTH_2W':
         func_name = 'process_smooth_phidp_double_window'
+    elif dataset_type == 'PHIDP_KDP_MAESAKA':
+        func_name = 'process_phidp_kdp_Maesaka'
     elif dataset_type == 'ATTENUATION':
         func_name = 'process_attenuation'
     elif dataset_type == 'RAINRATE':
@@ -447,14 +450,14 @@ def process_echo_id(procstatus, dscfg, radar=None):
     id = np.zeros((radar.nrays, radar.ngates), dtype='int32')+3
 
     # look for clutter
-    gate_filter = pyart.filters.moment_and_texture_based_gate_filter(
+    gatefilter = pyart.filters.moment_and_texture_based_gate_filter(
         radar, zdr_field=None, rhv_field=None, phi_field=None,
         refl_field=None, textzdr_field=None, textrhv_field=None,
         textphi_field=None, textrefl_field=None, wind_size=7,
         max_textphi=20., max_textrhv=0.3, max_textzdr=2.85,
         max_textrefl=8., min_rhv=0.6)
 
-    is_clutter = gate_filter.gate_excluded == 1
+    is_clutter = gatefilter.gate_excluded == 1
     id[is_clutter] = 2
 
     # look for noise
@@ -511,9 +514,9 @@ def process_echo_filter(procstatus, dscfg, radar=None):
             datatypedescr)
         field_name = get_fieldname_rainbow(datatype)
         radar_field = deepcopy(radar.fields[field_name])
-        radar_field['data'].data[is_not_precip.nonzero()] = (
+        radar_field['data'].data[is_not_precip] = (
             pyart.config.get_fillvalue())
-        radar_field['data'].mask[is_not_precip.nonzero()] = True
+        radar_field['data'].mask[is_not_precip] = True
         if field_name.startswith('corrected_'):
             new_field_name = field_name
         elif field_name.startswith('uncorrected_'):
@@ -569,9 +572,9 @@ def process_filter_snr(procstatus, dscfg, radar=None):
         if (datatype != 'SNRh') or (datatype != 'SNRv'):
             field_name = get_fieldname_rainbow(datatype)
 
-            gate_filter = pyart.filters.snr_based_gate_filter(
+            gatefilter = pyart.filters.snr_based_gate_filter(
                 radar, snr_field=snr_field, min_snr=dscfg['SNRmin'])
-            is_lowSNR = gate_filter.gate_excluded == 1
+            is_lowSNR = gatefilter.gate_excluded == 1
 
             radar_field = deepcopy(radar.fields[field_name])
             radar_field['data'].data[is_lowSNR] = (
@@ -724,7 +727,7 @@ def process_smooth_phidp_single_window(procstatus, dscfg, radar=None):
 
 def process_smooth_phidp_double_window(procstatus, dscfg, radar=None):
     """
-    corrects phidp of the system phase and smoothes it using a double window
+    corrects phidp of the system phase and smoothes it using one window
 
     Parameters
     ----------
@@ -791,6 +794,146 @@ def process_smooth_phidp_double_window(procstatus, dscfg, radar=None):
     return new_dataset
 
 
+def process_phidp_kdp_Maesaka(procstatus, dscfg, radar=None):
+    """
+    Estimates PhiDP and KDP using the method by Maesaka
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+
+    """
+
+    if procstatus != 1:
+        return None
+
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatypefields(
+            datatypedescr)
+        if datatype == 'PhiDP':
+            psidp_field = 'differential_phase'
+        if datatype == 'PhiDPc':
+            psidp_field = 'corrected_differential_phase'
+        if datatype == 'uPhiDP':
+            psidp_field = 'uncorrected_differential_phase'
+        if datatype == 'TEMP':
+            temp_field = 'temperature'
+
+    # filter out data in an above the melting layer
+    radar_aux = deepcopy(radar)
+
+    gatefilter = pyart.filters.temp_based_gate_filter(
+        radar_aux, temp_field=temp_field, min_temp=0., thickness=400.)
+    is_notrain = gatefilter.gate_excluded == 1
+
+    fill_value = radar_aux.fields[psidp_field]['data'].get_fill_value()
+    radar_aux.fields[psidp_field]['data'].mask[is_notrain] = 1
+    radar_aux.fields[psidp_field]['data'].data[is_notrain] = fill_value
+    mask = radar_aux.fields[psidp_field]['data'].mask
+
+    phidp_field = 'corrected_differential_phase'
+    kdp_field = 'corrected_specific_differential_phase'
+
+    kdp, phidpf, phidpr = pyart.retrieve.kdp_proc.kdp_maesaka(
+        radar_aux, gatefilter=None, method='cg', backscatter=None, Clpf=1.,
+        length_scale=None, first_guess=0.01, finite_order='low',
+        fill_value=fill_value, psidp_field=psidp_field, kdp_field=kdp_field,
+        phidp_field=phidp_field)
+
+    kdp['data'] = np.ma.masked_where(mask, kdp['data'])
+    kdp['data'].set_fill_value(fill_value)
+    kdp['data'].data[mask] = fill_value
+
+    phidpf['data'] = np.ma.masked_where(mask, phidpf['data'])
+    phidpf['data'].set_fill_value(fill_value)
+    phidpf['data'].data[mask] = fill_value
+
+    # prepare for exit
+    new_dataset = deepcopy(radar_aux)
+    new_dataset.fields = dict()
+    new_dataset.add_field(phidp_field, phidpf)
+    new_dataset.add_field(kdp_field, kdp)
+
+    return new_dataset
+
+
+def process_phidp_kdp_lp(procstatus, dscfg, radar=None):
+    """
+    Estimates PhiDP and KDP using a linear programming algorithm
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+
+    """
+
+    if procstatus != 1:
+        return None
+
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatypefields(
+            datatypedescr)
+        if datatype == 'PhiDP':
+            psidp_field = 'differential_phase'
+        if datatype == 'PhiDPc':
+            psidp_field = 'corrected_differential_phase'
+        if datatype == 'uPhiDP':
+            psidp_field = 'uncorrected_differential_phase'
+
+    fill_value = radar.fields[psidp_field]['data'].get_fill_value()
+    mask = radar.fields[psidp_field]['data'].mask
+    phidp_field = 'corrected_differential_phase'
+    kdp_field = 'corrected_specific_differential_phase'
+
+    kdp, phidpf, phidpr = pyart.retrieve.kdp_proc.kdp_maesaka(
+        radar, gatefilter=None, method='cg', backscatter=None, Clpf=1.,
+        length_scale=None, first_guess=0.01, finite_order='low',
+        fill_value=fill_value, psidp_field=psidp_field, kdp_field=kdp_field,
+        phidp_field=phidp_field)
+
+    kdp['data'] = np.ma.masked_where(mask, kdp['data'])
+    kdp['data'].set_fill_value(fill_value)
+    kdp['data'].data[mask] = fill_value
+
+    phidpf['data'] = np.ma.masked_where(mask, phidpf['data'])
+    phidpf['data'].set_fill_value(fill_value)
+    phidpf['data'].data[mask] = fill_value
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.add_field(phidp_field, phidpf)
+    new_dataset.add_field(kdp_field, kdp)
+
+    return new_dataset
+
+
 def process_attenuation(procstatus, dscfg, radar=None):
     """
     Computes specific attenuation and specific differential attenuation using
@@ -833,12 +976,14 @@ def process_attenuation(procstatus, dscfg, radar=None):
             phidp = 'differential_phase'
         if datatype == 'ZDR':
             zdr = 'differential_reflectivity'
+        if datatype == 'TEMP':
+            temp = 'temperature'
 
     spec_at, cor_z, spec_diff_at, cor_zdr = (
         pyart.correct.calculate_attenuation(
             radar, doc=15, fzl=None, smooth_window_len=0, a_coef=None,
             beta=None, refl_field=refl, phidp_field=phidp, zdr_field=zdr,
-            temp_field=None, spec_at_field=None, corr_refl_field=None,
+            temp_field=temp, spec_at_field=None, corr_refl_field=None,
             spec_diff_at_field=None, corr_zdr_field=None))
 
     # prepare for exit
