@@ -4,25 +4,28 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 2
-    l0:SNRh
-    l1:PhiDP_KDP_lp
+dataSetList STRARR 1
+    l0:dBZ
 
 # ==========================================================================================
 #                 raw data products
 # ==========================================================================================
-#dBZ STRUCT 3
-#	type STRING RAW
-#	datatype STRING dBZ
-#	products STRUCT 2
-#	   EL004_0 STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING dBZ
-#		 anglenr INT 0
-#       SAVEVOL STRUCT 2
-#         type   STRING SAVEVOL
-#         voltype STRING dBZ
-#
+dBZ STRUCT 3
+	type STRING RAW
+	datatype STRING dBZ
+	products STRUCT 3
+	   EL004_0 STRUCT 3
+         type   STRING PPI_IMAGE
+         voltype STRING dBZ
+		 anglenr INT 0
+       ALT1000 STRUCT 3
+         type   STRING CAPPI_IMAGE
+         voltype STRING dBZ
+		 altitude FLOAT 1000.
+       SAVEVOL STRUCT 2
+         type   STRING SAVEVOL
+         voltype STRING dBZ
+
 #ZDR STRUCT 3
 #	type STRING RAW
 #	datatype STRING ZDR
@@ -107,19 +110,19 @@ dataSetList STRARR 2
 # ==========================================================================================
 #                 secondary moments products
 # ==========================================================================================
-SNRh STRUCT 5
-    type STRING SNR
-    datatype STRARR 2
-        dBZ
-        Nh
-    output_type STRING SNRh
-    MAKE_GLOBAL INT 1
-    products STRUCT 1
-      EL004_0 STRUCT 3
-         type STRING PPI_IMAGE
-         anglenr INT 0
-         voltype STRING SNRh
-
+#SNRh STRUCT 5
+#    type STRING SNR
+#    datatype STRARR 2
+#        dBZ
+#        Nh
+#    output_type STRING SNRh
+#    MAKE_GLOBAL INT 1
+#    products STRUCT 1
+#      EL004_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 0
+#         voltype STRING SNRh
+#
 #SNRv STRUCT 4
 #    type STRING SNR
 #    datatype STRARR 2
@@ -298,22 +301,22 @@ SNRh STRUCT 5
 #         anglenr INT 0
 #         voltype STRING KDPc
 #
-PhiDP_KDP_lp STRUCT 3
-    type STRING PHIDP_KDP_LP
-    datatype STRARR 4
-        uPhiDP
-        dBZ
-        RhoHV
-        PROC:SNRh
-    products STRUCT 2
-      EL004_0_PhiDPc STRUCT 3
-         type STRING PPI_IMAGE
-         anglenr INT 0
-         voltype STRING PhiDPc
-      EL004_0_KDPc STRUCT 3
-         type STRING PPI_IMAGE
-         anglenr INT 0
-         voltype STRING KDPc
+#PhiDP_KDP_lp STRUCT 3
+#    type STRING PHIDP_KDP_LP
+#    datatype STRARR 4
+#        uPhiDP
+#        dBZ
+#        RhoHV
+#        PROC:SNRh
+#    products STRUCT 2
+#      EL004_0_PhiDPc STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 0
+#         voltype STRING PhiDPc
+#      EL004_0_KDPc STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 0
+#         voltype STRING KDPc
 #
 #
 ## ==========================================================================================

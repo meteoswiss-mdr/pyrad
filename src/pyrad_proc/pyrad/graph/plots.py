@@ -9,6 +9,7 @@ Functions to plot Pyrad datasets
 
     plot_ppi
     plot_rhi
+    plot_cappi
     plot_timeseries
     plot_timeseries_comp
 
@@ -49,8 +50,7 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname):
     display = pyart.graph.RadarDisplay(radar)
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                               prdcfg['ppiImageConfig']['ysize']],
-                     dpi=72)
-    ax = fig.add_subplot(111)
+                     dpi=72)    
     display.plot_ppi(field_name, sweep=ind_el)
     display.set_limits(
         ylim=[prdcfg['ppiImageConfig']['ymin'],
@@ -94,8 +94,7 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname):
     display = pyart.graph.RadarDisplay(radar)
     fig = plt.figure(figsize=[prdcfg['rhiImageConfig']['xsize'],
                               prdcfg['rhiImageConfig']['ysize']],
-                     dpi=72)
-    ax = fig.add_subplot(111)
+                     dpi=72)    
     display.plot_rhi(field_name, sweep=ind_az, reverse_xaxis=False)
     display.set_limits(
         ylim=[prdcfg['rhiImageConfig']['ymin'],
@@ -104,6 +103,55 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname):
               prdcfg['rhiImageConfig']['xmax']])
     display.plot_cross_hair(5.)
 
+    fig.savefig(fname)
+    plt.close()
+
+
+def plot_cappi(radar, field_name, altitude, prdcfg, fname):
+    """
+    plots a Constant Altitude Plan Position Indicator CAPPI
+
+    Parameters
+    ----------
+    radar : Radar object
+        object containing the radar data to plot
+
+    field_name : str
+        name of the radar field to plot
+
+    altitude : float
+        the altitude [m MSL] to be plotted
+
+    prdcfg : dict
+        dictionary containing the product configuration
+
+    fname : str
+        name of the file where to store the plot
+
+    Returns
+    -------
+    no return
+
+    """
+    xmin = prdcfg['ppiImageConfig']['xmin']
+    xmax = prdcfg['ppiImageConfig']['xmax']
+    ymin = prdcfg['ppiImageConfig']['ymin']
+    ymax = prdcfg['ppiImageConfig']['ymax']
+    
+    # cartesian mapping
+    grid = pyart.map.grid_from_radars(
+        (radar,), grid_shape=(1, 241, 241),
+        grid_limits=((altitude, altitude), (xmin*1000., xmax*1000.),
+                     (ymin*1000., ymax*1000.)),
+        fields=[field_name])
+    
+    # display data
+    display = pyart.graph.GridMapDisplay(grid)
+    fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
+                              prdcfg['ppiImageConfig']['ysize']],
+                     dpi=72)
+    display.plot_grid(field_name, axislabels_flag=True)
+    
     fig.savefig(fname)
     plt.close()
 

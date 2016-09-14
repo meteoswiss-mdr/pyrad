@@ -25,8 +25,8 @@ import pyart
 from ..io.read_data import get_fieldname_rainbow, read_timeseries
 from ..io.read_data import get_sensor_data
 from ..io.write_data import write_timeseries, generate_field_name_str
-from ..graph.plots import plot_ppi, plot_rhi, plot_timeseries
-from ..graph.plots import plot_timeseries_comp
+from ..graph.plots import plot_ppi, plot_rhi, plot_cappi 
+from ..graph.plots import plot_timeseries, plot_timeseries_comp
 
 
 def get_product_type(product_type):
@@ -175,6 +175,27 @@ def generate_vol_products(dataset, prdcfg):
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
 
+    elif prdcfg['type'] == 'CAPPI_IMAGE':
+        field_name = get_fieldname_rainbow(prdcfg['voltype'])
+        if field_name in dataset.fields:
+            savedir = get_save_dir(
+                prdcfg['basepath'], prdcfg['procname'], prdcfg['timeinfo'],
+                prdcfg['dsname'], prdcfg['prdname'])
+
+            fname = make_filename(
+                prdcfg['timeinfo'], 'cappi', prdcfg['dstype'],
+                prdcfg['voltype'], prdcfg['convertformat'],
+                prdcfginfo='alt'+'{:.1f}'.format(prdcfg['altitude']))
+
+            plot_cappi(dataset, field_name, prdcfg['altitude'], prdcfg,
+                       savedir+fname)
+            print('saved figure: '+savedir+fname)
+        else:
+            print(
+                'WARNING: Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+                
     elif prdcfg['type'] == 'SAVEVOL':
         field_name = get_fieldname_rainbow(prdcfg['voltype'])
         if field_name in dataset.fields:
