@@ -30,6 +30,7 @@ import datetime
 import os
 import csv
 import xml.etree.ElementTree as et
+from warnings import warn
 
 import numpy as np
 
@@ -620,11 +621,11 @@ def read_rad4alp_cosmo(fname, datatype):
             field['data'] = field_data
             return field
         else:
-            print('WARNING: Unknown COSMO data type '+datatype)
+            warn('WARNING: Unknown COSMO data type '+datatype)
             return None
 
     except EnvironmentError:
-        print('WARNING: Unable to read file '+fname)
+        warn('WARNING: Unable to read file '+fname)
         return None
 
 
@@ -670,7 +671,7 @@ def read_timeseries(fname):
 
             return date, value
     except EnvironmentError:
-        print('WARNING: Unable to read file '+fname)
+        warn('WARNING: Unable to read file '+fname)
         return None, None
 
 
@@ -721,7 +722,7 @@ def get_sensor_data(date, datatype, cfg):
         elif (datatype == 'dBZ') or (datatype == 'dBZc'):
             sensorvalue = zh
     else:
-        print('WARNING: Unknown sensor: '+cfg['sensor'])
+        warn('WARNING: Unknown sensor: '+cfg['sensor'])
         return None, None, None, None
 
     return sensordate, sensorvalue, label, period
@@ -777,7 +778,7 @@ def read_smn(fname):
 
             return id, date, pressure, temp, rh, precip, wspeed, wdir
     except EnvironmentError:
-        print('WARNING: Unable to read file '+fname)
+        warn('WARNING: Unable to read file '+fname)
         return None, None, None, None, None, None, None, None
 
 
@@ -857,7 +858,7 @@ def read_disdro_scattering(fname):
             return (date, preciptype, lwc, rr, zh, zv, zdr, ldr, ah, av,
                     adiff, kdp, deltaco, rhohv)
     except EnvironmentError:
-        print('WARNING: Unable to read file '+fname)
+        warn('WARNING: Unable to read file '+fname)
         return (None, None, None, None, None, None, None, None, None, None,
                 None, None, None)
 
@@ -912,7 +913,7 @@ def find_cosmo_file(voltime, datatype, cfg, scanid):
             break
 
     if not found:
-        print('WARNING: Unable to get COSMO '+datatype+' information')
+        warn('WARNING: Unable to get COSMO '+datatype+' information')
         return None
     else:
         return fname[0]
@@ -970,7 +971,7 @@ def find_rad4alpcosmo_file(voltime, datatype, cfg, scanid):
             break
 
     if not found:
-        print('WARNING: Unable to get COSMO '+datatype+' information')
+        warn('WARNING: Unable to get COSMO '+datatype+' information')
         return None
     else:
         return fname[0]

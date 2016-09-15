@@ -9,14 +9,14 @@ dataSetList STRARR 12
     l0:ZDR
     l0:uRhoHV
     l0:uPhiDP
+    l0:Nh
+    l0:Nv
     l0:ZDRc
     l0:SNRh
+    l0:SNRv
     l1:RhoHV
-    l2:echoID
-    l3:echoFilter
-    l4:SNRFilter
-    l5:PhiDPc_smooth2w
-    l6:Att
+    l2:L
+    l2:CDR
     
 
 
@@ -59,24 +59,24 @@ uPhiDP STRUCT 3
          anglenr INT 4
          voltype STRING uPhiDP
          
-#Nh STRUCT 3
-#    type STRING RAW
-#    datatype STRING RAD4ALP:Nh
-#    products STRUCT 1
-#      EL002_5 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 4
-#         voltype STRING Nh
-#         
-#Nv STRUCT 3
-#    type STRING RAW
-#    datatype STRING RAD4ALP:Nv
-#    products STRUCT 1
-#      EL002_5 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 4
-#         voltype STRING Nv
-#
+Nh STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:Nh
+    products STRUCT 1
+      EL002_5 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 4
+         voltype STRING Nh
+         
+Nv STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:Nv
+    products STRUCT 1
+      EL002_5 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 4
+         voltype STRING Nv
+
 #TEMP STRUCT 3
 #    type STRING RAW
 #    datatype STRING RAD4ALPCOSMO:TEMP
@@ -137,17 +137,17 @@ SNRh STRUCT 5
          anglenr INT 4
          voltype STRING SNRh
          
-#SNRv STRUCT 4
-#    type STRING SNR
-#    datatype STRARR 2
-#        RAD4ALP:dBZv
-#        RAD4ALP:Nv
-#    output_type STRING SNRv
-#    products STRUCT 1
-#      EL002_5 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 4
-#         voltype STRING SNRv
+SNRv STRUCT 4
+    type STRING SNR
+    datatype STRARR 2
+        RAD4ALP:dBZv
+        RAD4ALP:Nv
+    output_type STRING SNRv
+    products STRUCT 1
+      EL002_5 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 4
+         voltype STRING SNRv
          
 RhoHV STRUCT 4
     type STRING RHOHV_CORRECTION
@@ -164,25 +164,25 @@ RhoHV STRUCT 4
          anglenr INT 4
          voltype STRING RhoHV
          
-#L STRUCT 3
-#    type STRING L
-#    datatype STRING PROC:RhoHV
-#    products STRUCT 1
-#      EL002_5 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 4
-#         voltype STRING L
-#         
-#CDR STRUCT 3
-#    type STRING CDR
-#    datatype STRARR 2
-#        PROC:RhoHV
-#        PROC:ZDRc
-#    products STRUCT 1
-#      EL002_5 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 4
-#         voltype STRING CDR
+L STRUCT 3
+    type STRING L
+    datatype STRING PROC:RhoHV
+    products STRUCT 1
+      EL002_5 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 4
+         voltype STRING L
+         
+CDR STRUCT 3
+    type STRING CDR
+    datatype STRARR 2
+        PROC:RhoHV
+        PROC:ZDRc
+    products STRUCT 1
+      EL002_5 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 4
+         voltype STRING CDR
          
 
 # ==========================================================================================

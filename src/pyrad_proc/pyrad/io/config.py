@@ -18,6 +18,7 @@ Functions for reading pyrad config files
 """
 
 import numpy as np
+from warnings import warn
 
 
 def read_config(fname, cfg=None):

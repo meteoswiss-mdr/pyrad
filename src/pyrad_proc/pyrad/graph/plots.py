@@ -15,6 +15,8 @@ Functions to plot Pyrad datasets
 
 """
 
+from warnings import warn
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -141,16 +143,27 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname):
     # cartesian mapping
     grid = pyart.map.grid_from_radars(
         (radar,), grid_shape=(1, 241, 241),
-        grid_limits=((altitude, altitude), (xmin*1000., xmax*1000.),
-                     (ymin*1000., ymax*1000.)),
+        grid_limits=((altitude, altitude), (ymin*1000., ymax*1000.),
+                     (xmin*1000., xmax*1000.)),
         fields=[field_name])
     
     # display data
-    display = pyart.graph.GridMapDisplay(grid)
+    # display = pyart.graph.GridMapDisplay(grid)
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                               prdcfg['ppiImageConfig']['ysize']],
                      dpi=72)
-    display.plot_grid(field_name, axislabels_flag=True)
+    ax = fig.add_subplot(111)
+    cmap = pyart.config.get_field_colormap(field_name)
+    vmin, vmax = pyart.config.get_field_limits(field_name)
+    titl = pyart.graph.common.generate_grid_title(grid, field_name, 0)
+    
+    ax.imshow(
+        grid.fields[field_name]['data'][0], extent=(xmin, xmax, ymin, ymax),
+        origin='lower', cmap=cmap, vmin=vmin, vmax=vmax)
+    plt.xlabel('East West distance from radar(km)')
+    plt.ylabel('North South distance from radar(km)')
+    plt.title(titl)
+    #display.plot_grid(field_name, axislabels_flag=True, ax=ax)
     
     fig.savefig(fname)
     plt.close()

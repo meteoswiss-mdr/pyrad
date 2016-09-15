@@ -30,6 +30,7 @@ Functions for processing Pyrad datasets
 """
 
 from copy import deepcopy
+from warnings import warn
 
 import numpy as np
 
@@ -99,7 +100,7 @@ def get_process_type(dataset_type):
         func_name = 'process_point_measurement'
         dsformat = 'TIMESERIES'
     else:
-        print('ERROR: Unknown dataset type')
+        raise ValueError('ERROR: Unknown dataset type')
 
     return func_name, dsformat
 
@@ -1015,9 +1016,9 @@ def process_attenuation(procstatus, dscfg, radar=None):
             'specific_differential_attenuation', spec_diff_at)
         new_dataset.add_field('corrected_differential_reflectivity', cor_zdr)
     else:
-        print(
-            'WARNING: Specific differential attenuation and \
-            attenuation corrected differential reflectivity non available')
+        warn(
+            'WARNING: Specific differential attenuation and attenuation ' +
+            'corrected differential reflectivity not available')
 
     return new_dataset
 
@@ -1271,7 +1272,7 @@ def process_hydroclass(procstatus, dscfg, radar=None):
             mass_centers[8, :] = [
                 44.2216, -0.3419, 0.0687, 0.9683,  1272.7]  # IH/HDG
         else:
-            print(
+            warn(
                 'WARNING: Unknown radar. \
                 Default centroids will be used in classification.')
             mass_centers = None
@@ -1355,7 +1356,7 @@ def process_point_measurement(procstatus, dscfg, radar=None):
 
     d_az = np.min(np.abs(radar.azimuth['data'] - az))
     if d_az > dscfg['AziTol']:
-        print('WARNING: No radar bin found for point (az, el, r):(' +
+        warn('WARNING: No radar bin found for point (az, el, r):(' +
               str(az)+', '+str(el)+', '+str(r) +
               '). Minimum distance to radar azimuth '+str(d_az) +
               ' larger than tolerance')
@@ -1363,7 +1364,7 @@ def process_point_measurement(procstatus, dscfg, radar=None):
 
     d_el = np.min(np.abs(radar.elevation['data'] - el))
     if d_el > dscfg['EleTol']:
-        print('WARNING: No radar bin found for point (az, el, r):(' +
+        warn('WARNING: No radar bin found for point (az, el, r):(' +
               str(az)+', '+str(el)+', '+str(r) +
               '). Minimum distance to radar elevation '+str(d_el) +
               ' larger than tolerance')
@@ -1371,7 +1372,7 @@ def process_point_measurement(procstatus, dscfg, radar=None):
 
     d_r = np.min(np.abs(radar.range['data'] - r))
     if d_r > dscfg['RngTol']:
-        print('WARNING: No radar bin found for point (az, el, r):(' +
+        warn('WARNING: No radar bin found for point (az, el, r):(' +
               str(az)+', '+str(el)+', '+str(r) +
               '). Minimum distance to radar range bin '+str(d_r) +
               ' larger than tolerance')

@@ -13,7 +13,7 @@ dataSetList STRARR 1
 dBZ STRUCT 3
 	type STRING RAW
 	datatype STRING dBZ
-	products STRUCT 4      
+	products STRUCT 5      
       AZ045 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 4
@@ -31,6 +31,11 @@ dBZ STRUCT 3
          angle FLOAT 6.
          EleTol FLOAT 1.
          voltype STRING dBZ
+      ALT1000 STRUCT 3
+         type  STRING CAPPI_IMAGE
+         altitude FLOAT 1000.
+         voltype STRING dBZ
+         
 
 #ZDR STRUCT 3
 #	type STRING RAW

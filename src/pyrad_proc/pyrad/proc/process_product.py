@@ -17,6 +17,7 @@ Functions for obtaining Pyrad products from the datasets
 
 import os
 from copy import deepcopy
+from warnings import warn
 
 import numpy as np
 
@@ -90,7 +91,7 @@ def generate_vol_products(dataset, prdcfg):
             plot_ppi(dataset, field_name, ind_el, prdcfg, savedir+fname)
             print('saved figure: '+savedir+fname)
         else:
-            print(
+            warn(
                 'WARNING: Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
@@ -114,7 +115,7 @@ def generate_vol_products(dataset, prdcfg):
             plot_rhi(dataset, field_name, ind_az, prdcfg, savedir+fname)
             print('saved figure: '+savedir+fname)
         else:
-            print(
+            warn(
                 'WARNING: Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
@@ -122,9 +123,10 @@ def generate_vol_products(dataset, prdcfg):
     elif prdcfg['type'] == 'PSEUDOPPI_IMAGE':
         field_name = get_fieldname_rainbow(prdcfg['voltype'])
         if field_name in dataset.fields:
-            xsect = pyart.util.cross_section_rhi(dataset, [prdcfg['angle']],
-                                                 el_tol=prdcfg['EleTol'])
-            if xsect is not None:
+            try:
+                xsect = pyart.util.cross_section_rhi(
+                    dataset, [prdcfg['angle']], el_tol=prdcfg['EleTol'])
+            
                 savedir = get_save_dir(
                     prdcfg['basepath'], prdcfg['procname'],
                     prdcfg['timeinfo'], prdcfg['dsname'], prdcfg['prdname'])
@@ -136,13 +138,13 @@ def generate_vol_products(dataset, prdcfg):
     
                 plot_ppi(xsect, field_name, 0, prdcfg, savedir+fname)
                 print('saved figure: '+savedir+fname)
-            else:
-                print(
+            except EnvironmentError:
+                warn(
                     'WARNING: No data found at elevation ' +
                     str(prdcfg['angle']) +'. Skipping product ' +
                     prdcfg['type'])
         else:
-            print(
+            warn(
                 'WARNING: Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
@@ -150,9 +152,10 @@ def generate_vol_products(dataset, prdcfg):
     elif prdcfg['type'] == 'PSEUDORHI_IMAGE':
         field_name = get_fieldname_rainbow(prdcfg['voltype'])
         if field_name in dataset.fields:
-            xsect = pyart.util.cross_section_ppi(dataset, [prdcfg['angle']],
-                                                 az_tol=prdcfg['AziTol'])
-            if xsect is not None:
+            try:
+                xsect = pyart.util.cross_section_ppi(
+                    dataset, [prdcfg['angle']], az_tol=prdcfg['AziTol'])
+                    
                 savedir = get_save_dir(
                     prdcfg['basepath'], prdcfg['procname'],
                     prdcfg['timeinfo'], prdcfg['dsname'], prdcfg['prdname'])
@@ -164,13 +167,13 @@ def generate_vol_products(dataset, prdcfg):
 
                 plot_rhi(xsect, field_name, 0, prdcfg, savedir+fname)
                 print('saved figure: '+savedir+fname)
-            else:
-                print(
+            except EnvironmentError:
+                warn(
                     'WARNING: No data found at azimuth ' +
                     str(prdcfg['angle'])+'. Skipping product ' +
                     prdcfg['type'])
         else:
-            print(
+            warn(
                 'WARNING: Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
@@ -191,7 +194,7 @@ def generate_vol_products(dataset, prdcfg):
                        savedir+fname)
             print('saved figure: '+savedir+fname)
         else:
-            print(
+            warn(
                 'WARNING: Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
@@ -214,7 +217,7 @@ def generate_vol_products(dataset, prdcfg):
             pyart.io.cfradial.write_cfradial(savedir+fname, new_dataset)
             print('saved file: '+savedir+fname)
         else:
-            print(
+            warn(
                 'WARNING: Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
@@ -232,7 +235,7 @@ def generate_vol_products(dataset, prdcfg):
         print('saved file: '+savedir+fname)
 
     else:
-        print('WARNING: Unsupported product type: ' + prdcfg['type'])
+        warn('WARNING: Unsupported product type: ' + prdcfg['type'])
 
 
 def generate_timeseries_products(dataset, prdcfg):
@@ -406,7 +409,7 @@ def generate_timeseries_products(dataset, prdcfg):
                 print('saved figure: '+savedir+figfname)
 
     else:
-        print('WARNING: Unsupported product type: ' + prdcfg['type'])
+        warn('WARNING: Unsupported product type: ' + prdcfg['type'])
 
 
 def get_save_dir(basepath, procname, timeinfo, dsname, prdname):
