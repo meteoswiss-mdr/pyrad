@@ -317,7 +317,69 @@ PhiDPc_smooth2w STRUCT 13
          type STRING PPI_IMAGE
          anglenr INT 4
          voltype STRING PhiDPc
+
+#PhiDP_KDP_Maesaka STRUCT 8
+#    type STRING PHIDP_KDP_MAESAKA
+#    rmin FLOAT 1000.
+#    rmax FLOAT 50000.
+#    rcell FLOAT 1000.
+#    Zmin FLOAT 20.
+#    Zmax FLOAT 40.
+#    datatype STRARR 3
+#        PROC:PhiDPc
+#        PROC:dBZc
+#        COSMO:TEMP
+#    products STRUCT 2
+#      EL002_5_PhiDPc STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 4
+#         voltype STRING PhiDPc
+#      EL002_5_KDPc STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 4
+#         voltype STRING KDPc
+#
+#PhiDP_KDP_lp STRUCT 3
+#    type STRING PHIDP_KDP_LP
+#    datatype STRARR 4
+#        uPhiDP
+#        dBZ
+#        RhoHV
+#        PROC:SNRh
+#    products STRUCT 2
+#      EL002_5_PhiDPc STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 4
+#         voltype STRING PhiDPc
+#      EL002_5_KDPc STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 4
+#         voltype STRING KDPc
+#
+#KDPc_leastsquare1w STRUCT 4
+#    type STRING KDP_LEASTSQUARE_1W
+#    datatype STRARR 1
+#        PROC:PhiDPc
+#    rwind FLOAT 1000.
+#    products STRUCT 1
+#      EL002_5 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 4
+#         voltype STRING KDPc
          
+KDPc_leastsquare2w STRUCT 6
+    type STRING KDP_LEASTSQUARE_2W
+    datatype STRARR 2
+        PROC:PhiDPc
+        PROC:dBZc
+    rwinds FLOAT 1000.
+    rwindl FLOAT 3000.
+    Zthr FLOAT 40.
+    products STRUCT 1
+      EL002_5 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 4
+         voltype STRING KDPc         
          
 ## ==========================================================================================
 ##                 Attenuation

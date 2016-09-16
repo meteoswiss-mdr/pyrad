@@ -1622,10 +1622,10 @@ DEFAULT_FIELD_LIMITS = {
 	uncorrected_differential_phase: (-180, 180.),
     uncorrected_unfiltered_differential_phase: (-180, 180.),
 
-    specific_differential_phase: (-2., 5.),
-    corrected_specific_differential_phase: (-2., 5.),
-	uncorrected_specific_differential_phase: (-2., 5.),
-    uncorrected_unfiltered_specific_differential_phase: (-2., 5.),
+    specific_differential_phase: (0., 1.),
+    corrected_specific_differential_phase: (0., 1.),
+	uncorrected_specific_differential_phase: (0., 1.),
+    uncorrected_unfiltered_specific_differential_phase: (0., 1.),
 
     linear_depolarization_ratio: (-40., 0.),
     linear_depolarization_ratio_h: (-40., 0.),

@@ -24,6 +24,8 @@ Functions for processing Pyrad datasets
     process_correct_phidp0
     process_smooth_phidp_single_window
     process_smooth_phidp_double_window
+    process_kdp_leastsquare_single_window
+    process_kdp_leastsquare_double_window
     process_phidp_kdp_Maesaka
     process_phidp_kdp_lp
 
@@ -90,6 +92,10 @@ def get_process_type(dataset_type):
         func_name = 'process_phidp_kdp_Maesaka'
     elif dataset_type == 'PHIDP_KDP_LP':
         func_name = 'process_phidp_kdp_lp'
+    elif dataset_type == 'KDP_LEASTSQUARE_1W':
+        func_name = 'process_kdp_leastsquare_single_window'
+    elif dataset_type == 'KDP_LEASTSQUARE_2W':
+        func_name = 'process_kdp_leastsquare_double_window'
     elif dataset_type == 'ATTENUATION':
         func_name = 'process_attenuation'
     elif dataset_type == 'RAINRATE':
@@ -517,10 +523,11 @@ def process_echo_filter(procstatus, dscfg, radar=None):
         datagroup, datatype, dataset, product = get_datatypefields(
             datatypedescr)
         field_name = get_fieldname_rainbow(datatype)
+
         radar_field = deepcopy(radar.fields[field_name])
-        radar_field['data'].data[is_not_precip] = (
-            pyart.config.get_fillvalue())
-        radar_field['data'].mask[is_not_precip] = True
+        radar_field['data'] = np.ma.masked_where(
+            is_not_precip, radar_field['data'])
+
         if field_name.startswith('corrected_'):
             new_field_name = field_name
         elif field_name.startswith('uncorrected_'):
@@ -573,7 +580,7 @@ def process_filter_snr(procstatus, dscfg, radar=None):
         datagroup, datatype, dataset, product = get_datatypefields(
             datatypedescr)
 
-        if (datatype != 'SNRh') or (datatype != 'SNRv'):
+        if (datatype != 'SNRh') and (datatype != 'SNRv'):
             field_name = get_fieldname_rainbow(datatype)
 
             gatefilter = pyart.filters.snr_based_gate_filter(
@@ -581,9 +588,8 @@ def process_filter_snr(procstatus, dscfg, radar=None):
             is_lowSNR = gatefilter.gate_excluded == 1
 
             radar_field = deepcopy(radar.fields[field_name])
-            radar_field['data'].data[is_lowSNR] = (
-                pyart.config.get_fillvalue())
-            radar_field['data'].mask[is_lowSNR] = True
+            radar_field['data'] = np.ma.masked_where(
+                is_lowSNR, radar_field['data'])
 
             if field_name.startswith('corrected_'):
                 new_field_name = field_name
@@ -631,33 +637,33 @@ def process_correct_phidp0(procstatus, dscfg, radar=None):
         if datatype == 'dBZc':
             refl_field = 'corrected_reflectivity'
         if datatype == 'PhiDP':
-            phidp_field = 'differential_phase'
+            psidp_field = 'differential_phase'
         if datatype == 'PhiDPc':
-            phidp_field = 'corrected_differential_phase'
+            psidp_field = 'corrected_differential_phase'
         if datatype == 'uPhiDP':
-            phidp_field = 'uncorrected_differential_phase'
+            psidp_field = 'uncorrected_differential_phase'
 
     ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
     ind_rmax = np.where(radar.range['data'] < dscfg['rmax'])[0][-1]
     r_res = radar.range['data'][1]-radar.range['data'][0]
     min_rcons = int(dscfg['rcell']/r_res)
 
+    if psidp_field.startswith('corrected_'):
+        phidp_field = psidp_field
+    elif psidp_field.startswith('uncorrected_'):
+        phidp_field = psidp_field.replace('uncorrected_', 'corrected_', 1)
+    else:
+        phidp_field = 'corrected_'+psidp_field
+
     phidp = pyart.correct.correct_sys_phase(
         radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, min_rcons=min_rcons,
-        zmin=dscfg['Zmin'], zmax=dscfg['Zmax'], phidp_field=phidp_field,
-        refl_field=refl_field)
+        zmin=dscfg['Zmin'], zmax=dscfg['Zmax'], psidp_field=psidp_field,
+        refl_field=refl_field, phidp_field=phidp_field)
 
     # prepare for exit
-    if phidp_field.startswith('corrected_'):
-        new_field_name = phidp_field
-    elif phidp_field.startswith('uncorrected_'):
-        new_field_name = phidp_field.replace('uncorrected_', 'corrected_', 1)
-    else:
-        new_field_name = 'corrected_'+phidp_field
-
     new_dataset = deepcopy(radar)
     new_dataset.fields = dict()
-    new_dataset.add_field(new_field_name, phidp)
+    new_dataset.add_field(phidp_field, phidp)
 
     return new_dataset
 
@@ -696,11 +702,11 @@ def process_smooth_phidp_single_window(procstatus, dscfg, radar=None):
         if datatype == 'dBZc':
             refl_field = 'corrected_reflectivity'
         if datatype == 'PhiDP':
-            phidp_field = 'differential_phase'
+            psidp_field = 'differential_phase'
         if datatype == 'PhiDPc':
-            phidp_field = 'corrected_differential_phase'
+            psidp_field = 'corrected_differential_phase'
         if datatype == 'uPhiDP':
-            phidp_field = 'uncorrected_differential_phase'
+            psidp_field = 'uncorrected_differential_phase'
 
     ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
     ind_rmax = np.where(radar.range['data'] < dscfg['rmax'])[0][-1]
@@ -709,22 +715,23 @@ def process_smooth_phidp_single_window(procstatus, dscfg, radar=None):
     wind_len = int(dscfg['rwind']/r_res)
     wind_type = dscfg['wind_type']
 
+    if psidp_field.startswith('corrected_'):
+        phidp_field = psidp_field
+    elif psidp_field.startswith('uncorrected_'):
+        phidp_field = psidp_field.replace('uncorrected_', 'corrected_', 1)
+    else:
+        phidp_field = 'corrected_'+psidp_field
+
     phidp = pyart.correct.smooth_phidp_single_window(
         radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, min_rcons=min_rcons,
         zmin=dscfg['Zmin'], zmax=dscfg['Zmax'], wind_len=wind_len,
-        wind_type=wind_type, phidp_field=phidp_field, refl_field=refl_field)
+        wind_type=wind_type, psidp_field=psidp_field, refl_field=refl_field,
+        phidp_field=phidp_field)
 
     # prepare for exit
-    if phidp_field.startswith('corrected_'):
-        new_field_name = phidp_field
-    elif phidp_field.startswith('uncorrected_'):
-        new_field_name = phidp_field.replace('uncorrected_', 'corrected_', 1)
-    else:
-        new_field_name = 'corrected_'+phidp_field
-
     new_dataset = deepcopy(radar)
     new_dataset.fields = dict()
-    new_dataset.add_field(new_field_name, phidp)
+    new_dataset.add_field(phidp_field, phidp)
 
     return new_dataset
 
@@ -763,11 +770,11 @@ def process_smooth_phidp_double_window(procstatus, dscfg, radar=None):
         if datatype == 'dBZc':
             refl_field = 'corrected_reflectivity'
         if datatype == 'PhiDP':
-            phidp_field = 'differential_phase'
+            psidp_field = 'differential_phase'
         if datatype == 'PhiDPc':
-            phidp_field = 'corrected_differential_phase'
+            psidp_field = 'corrected_differential_phase'
         if datatype == 'uPhiDP':
-            phidp_field = 'uncorrected_differential_phase'
+            psidp_field = 'uncorrected_differential_phase'
 
     ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
     ind_rmax = np.where(radar.range['data'] < dscfg['rmax'])[0][-1]
@@ -777,23 +784,24 @@ def process_smooth_phidp_double_window(procstatus, dscfg, radar=None):
     lwind_len = int(dscfg['rwindl']/r_res)
     wind_type = dscfg['wind_type']
 
+    if psidp_field.startswith('corrected_'):
+        phidp_field = psidp_field
+    elif psidp_field.startswith('uncorrected_'):
+        phidp_field = psidp_field.replace('uncorrected_', 'corrected_', 1)
+    else:
+        phidp_field = 'corrected_'+psidp_field
+
     phidp = pyart.correct.smooth_phidp_double_window(
         radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, min_rcons=min_rcons,
         zmin=dscfg['Zmin'], zmax=dscfg['Zmax'], swind_len=swind_len,
         lwind_len=lwind_len, zthr=dscfg['Zthr'], wind_type=wind_type,
-        phidp_field=phidp_field, refl_field=refl_field)
+        psidp_field=psidp_field, refl_field=refl_field,
+        phidp_field=phidp_field)
 
     # prepare for exit
-    if phidp_field.startswith('corrected_'):
-        new_field_name = phidp_field
-    elif phidp_field.startswith('uncorrected_'):
-        new_field_name = phidp_field.replace('uncorrected_', 'corrected_', 1)
-    else:
-        new_field_name = 'corrected_'+phidp_field
-
     new_dataset = deepcopy(radar)
     new_dataset.fields = dict()
-    new_dataset.add_field(new_field_name, phidp)
+    new_dataset.add_field(phidp_field, phidp)
 
     return new_dataset
 
@@ -833,37 +841,48 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar=None):
             psidp_field = 'corrected_differential_phase'
         if datatype == 'uPhiDP':
             psidp_field = 'uncorrected_differential_phase'
+        if datatype == 'dBZ':
+            refl_field = 'reflectivity'
+        if datatype == 'dBZc':
+            refl_field = 'corrected_reflectivity'
         if datatype == 'TEMP':
             temp_field = 'temperature'
-
-    # filter out data in an above the melting layer
-    radar_aux = deepcopy(radar)
-
-    gatefilter = pyart.filters.temp_based_gate_filter(
-        radar_aux, temp_field=temp_field, min_temp=0., thickness=400.)
-    is_notrain = gatefilter.gate_excluded == 1
-
-    fill_value = radar_aux.fields[psidp_field]['data'].get_fill_value()
-    radar_aux.fields[psidp_field]['data'].mask[is_notrain] = 1
-    radar_aux.fields[psidp_field]['data'].data[is_notrain] = fill_value
-    mask = radar_aux.fields[psidp_field]['data'].mask
 
     phidp_field = 'corrected_differential_phase'
     kdp_field = 'corrected_specific_differential_phase'
 
+    radar_aux = deepcopy(radar)
+
+    # correct PhiDP0
+    ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
+    ind_rmax = np.where(radar.range['data'] < dscfg['rmax'])[0][-1]
+    r_res = radar.range['data'][1]-radar.range['data'][0]
+    min_rcons = int(dscfg['rcell']/r_res)
+
+    phidp = pyart.correct.correct_sys_phase(
+        radar_aux, ind_rmin=ind_rmin, ind_rmax=ind_rmax, min_rcons=min_rcons,
+        zmin=dscfg['Zmin'], zmax=dscfg['Zmax'], psidp_field=psidp_field,
+        refl_field=refl_field, phidp_field=phidp_field)
+
+    # filter out data in an above the melting layer
+    gatefilter = pyart.filters.temp_based_gate_filter(
+        radar_aux, temp_field=temp_field, min_temp=0., thickness=400.)
+    is_notrain = gatefilter.gate_excluded == 1
+
+    phidp['data'][is_notrain] = np.ma.masked
+    mask = np.ma.getmaskarray(phidp['data'])
+    fill_value = pyart.config.get_fillvalue()
+    radar_aux.add_field(phidp_field, phidp, replace_existing=True)
+
+    # the return data is not a masked array
     kdp, phidpf, phidpr = pyart.retrieve.kdp_proc.kdp_maesaka(
         radar_aux, gatefilter=None, method='cg', backscatter=None, Clpf=1.,
         length_scale=None, first_guess=0.01, finite_order='low',
-        fill_value=fill_value, psidp_field=psidp_field, kdp_field=kdp_field,
+        fill_value=fill_value, psidp_field=phidp_field, kdp_field=kdp_field,
         phidp_field=phidp_field)
 
     kdp['data'] = np.ma.masked_where(mask, kdp['data'])
-    kdp['data'].set_fill_value(fill_value)
-    kdp['data'].data[mask] = fill_value
-
     phidpf['data'] = np.ma.masked_where(mask, phidpf['data'])
-    phidpf['data'].set_fill_value(fill_value)
-    phidpf['data'].data[mask] = fill_value
 
     # prepare for exit
     new_dataset = deepcopy(radar_aux)
@@ -919,10 +938,9 @@ def process_phidp_kdp_lp(procstatus, dscfg, radar=None):
             rhv_field = 'cross_correlation_ratio'
         if datatype == 'SNRh':
             snr_field = 'signal_to_noise_ratio_hh'
-            
 
-    fill_value = radar.fields[psidp_field]['data'].get_fill_value()
-    mask = radar.fields[psidp_field]['data'].mask
+    mask = np.ma.getmaskarray(radar.fields[psidp_field]['data'])
+
     phidp_field = 'corrected_differential_phase'
     kdp_field = 'corrected_specific_differential_phase'
 
@@ -936,17 +954,124 @@ def process_phidp_kdp_lp(procstatus, dscfg, radar=None):
         unf_field=phidp_field, window_len=35, proc=1)
 
     kdp['data'] = np.ma.masked_where(mask, kdp['data'])
-    kdp['data'].set_fill_value(fill_value)
-    kdp['data'].data[mask] = fill_value
-
     phidp['data'] = np.ma.masked_where(mask, phidp['data'])
-    phidp['data'].set_fill_value(fill_value)
-    phidp['data'].data[mask] = fill_value
 
     # prepare for exit
     new_dataset = deepcopy(radar)
     new_dataset.fields = dict()
     new_dataset.add_field(phidp_field, phidp)
+    new_dataset.add_field(kdp_field, kdp)
+
+    return new_dataset
+
+
+def process_kdp_leastsquare_single_window(procstatus, dscfg, radar=None):
+    """
+    Computes specific differential phase using a piecewise least square method
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+    if procstatus != 1:
+        return None
+
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatypefields(
+            datatypedescr)
+        if datatype == 'PhiDP':
+            phidp_field = 'differential_phase'
+        if datatype == 'PhiDPc':
+            phidp_field = 'corrected_differential_phase'
+        if datatype == 'uPhiDP':
+            phidp_field = 'uncorrected_differential_phase'
+
+    r_res = radar.range['data'][1]-radar.range['data'][0]
+    wind_len = int(dscfg['rwind']/r_res)
+    min_valid = int(wind_len/2)
+    kdp_field = 'corrected_specific_differential_phase'
+
+    kdp = pyart.retrieve.kdp_leastsquare_single_window(
+        radar, wind_len=wind_len, min_valid=min_valid, phidp_field=phidp_field,
+        kdp_field=kdp_field)
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.add_field(kdp_field, kdp)
+
+    return new_dataset
+
+
+def process_kdp_leastsquare_double_window(procstatus, dscfg, radar=None):
+    """
+    Computes specific differential phase using a piecewise least square method
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+    if procstatus != 1:
+        return None
+
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatypefields(
+            datatypedescr)
+        if datatype == 'PhiDP':
+            phidp_field = 'differential_phase'
+        if datatype == 'PhiDPc':
+            phidp_field = 'corrected_differential_phase'
+        if datatype == 'uPhiDP':
+            phidp_field = 'uncorrected_differential_phase'
+        if datatype == 'dBZ':
+            refl_field = 'reflectivity'
+        if datatype == 'dBZc':
+            refl_field = 'corrected_reflectivity'
+
+    r_res = radar.range['data'][1]-radar.range['data'][0]
+    swind_len = int(dscfg['rwinds']/r_res)
+    smin_valid = int(swind_len/2)
+    lwind_len = int(dscfg['rwindl']/r_res)
+    lmin_valid = int(lwind_len/2)
+
+    kdp_field = 'corrected_specific_differential_phase'
+
+    kdp = pyart.retrieve.kdp_leastsquare_double_window(
+        radar, swind_len=swind_len, smin_valid=smin_valid,
+        lwind_len=lwind_len, lmin_valid=lmin_valid, zthr=dscfg['Zthr'],
+        phidp_field=phidp_field, refl_field=refl_field, kdp_field=kdp_field)
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
     new_dataset.add_field(kdp_field, kdp)
 
     return new_dataset
@@ -1017,7 +1142,7 @@ def process_attenuation(procstatus, dscfg, radar=None):
         new_dataset.add_field('corrected_differential_reflectivity', cor_zdr)
     else:
         warn(
-            'WARNING: Specific differential attenuation and attenuation ' +
+            ' Specific differential attenuation and attenuation ' +
             'corrected differential reflectivity not available')
 
     return new_dataset
@@ -1273,7 +1398,7 @@ def process_hydroclass(procstatus, dscfg, radar=None):
                 44.2216, -0.3419, 0.0687, 0.9683,  1272.7]  # IH/HDG
         else:
             warn(
-                'WARNING: Unknown radar. \
+                ' Unknown radar. \
                 Default centroids will be used in classification.')
             mass_centers = None
 
@@ -1356,26 +1481,26 @@ def process_point_measurement(procstatus, dscfg, radar=None):
 
     d_az = np.min(np.abs(radar.azimuth['data'] - az))
     if d_az > dscfg['AziTol']:
-        warn('WARNING: No radar bin found for point (az, el, r):(' +
-              str(az)+', '+str(el)+', '+str(r) +
-              '). Minimum distance to radar azimuth '+str(d_az) +
-              ' larger than tolerance')
+        warn(' No radar bin found for point (az, el, r):(' +
+             str(az)+', '+str(el)+', '+str(r) +
+             '). Minimum distance to radar azimuth '+str(d_az) +
+             ' larger than tolerance')
         return None
 
     d_el = np.min(np.abs(radar.elevation['data'] - el))
     if d_el > dscfg['EleTol']:
-        warn('WARNING: No radar bin found for point (az, el, r):(' +
-              str(az)+', '+str(el)+', '+str(r) +
-              '). Minimum distance to radar elevation '+str(d_el) +
-              ' larger than tolerance')
+        warn(' No radar bin found for point (az, el, r):(' +
+             str(az)+', '+str(el)+', '+str(r) +
+             '). Minimum distance to radar elevation '+str(d_el) +
+             ' larger than tolerance')
         return None
 
     d_r = np.min(np.abs(radar.range['data'] - r))
     if d_r > dscfg['RngTol']:
-        warn('WARNING: No radar bin found for point (az, el, r):(' +
-              str(az)+', '+str(el)+', '+str(r) +
-              '). Minimum distance to radar range bin '+str(d_r) +
-              ' larger than tolerance')
+        warn(' No radar bin found for point (az, el, r):(' +
+             str(az)+', '+str(el)+', '+str(r) +
+             '). Minimum distance to radar range bin '+str(d_r) +
+             ' larger than tolerance')
         return None
 
     datagroup, datatype, dataset, product = get_datatypefields(

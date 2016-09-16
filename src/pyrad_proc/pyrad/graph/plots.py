@@ -52,7 +52,7 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname):
     display = pyart.graph.RadarDisplay(radar)
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                               prdcfg['ppiImageConfig']['ysize']],
-                     dpi=72)    
+                     dpi=72)
     display.plot_ppi(field_name, sweep=ind_el)
     display.set_limits(
         ylim=[prdcfg['ppiImageConfig']['ymin'],
@@ -96,7 +96,7 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname):
     display = pyart.graph.RadarDisplay(radar)
     fig = plt.figure(figsize=[prdcfg['rhiImageConfig']['xsize'],
                               prdcfg['rhiImageConfig']['ysize']],
-                     dpi=72)    
+                     dpi=72)
     display.plot_rhi(field_name, sweep=ind_az, reverse_xaxis=False)
     display.set_limits(
         ylim=[prdcfg['rhiImageConfig']['ymin'],
@@ -139,15 +139,15 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname):
     xmax = prdcfg['ppiImageConfig']['xmax']
     ymin = prdcfg['ppiImageConfig']['ymin']
     ymax = prdcfg['ppiImageConfig']['ymax']
-    
+
     # cartesian mapping
     grid = pyart.map.grid_from_radars(
         (radar,), grid_shape=(1, 241, 241),
         grid_limits=((altitude, altitude), (ymin*1000., ymax*1000.),
                      (xmin*1000., xmax*1000.)),
         fields=[field_name])
-    
-    # display data    
+
+    # display data
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                               prdcfg['ppiImageConfig']['ysize']],
                      dpi=72)
@@ -155,14 +155,14 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname):
     cmap = pyart.config.get_field_colormap(field_name)
     vmin, vmax = pyart.config.get_field_limits(field_name)
     titl = pyart.graph.common.generate_grid_title(grid, field_name, 0)
-    
+
     cax = ax.imshow(
         grid.fields[field_name]['data'][0], extent=(xmin, xmax, ymin, ymax),
         origin='lower', cmap=cmap, vmin=vmin, vmax=vmax)
     plt.xlabel('East West distance from radar(km)')
     plt.ylabel('North South distance from radar(km)')
     plt.title(titl)
-    
+
     # plot the colorbar and set the label.
     if 'standard_name' in grid.fields[field_name]:
         standard_name = grid.fields[field_name]['standard_name']
@@ -170,17 +170,17 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname):
         standard_name = grid.fields[field_name]['long_name']
     else:
         standard_name = field
-    
+
     if 'units' in grid.fields[field_name]:
         units = grid.fields[field_name]['units']
     else:
         units = '?'
-    
+
     label = pyart.graph.common.generate_colorbar_label(standard_name, units)
-    
+
     cb = fig.colorbar(cax)
     cb.set_label(label)
-    
+
     fig.savefig(fname)
     plt.close()
 

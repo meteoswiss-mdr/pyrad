@@ -26,7 +26,7 @@ import pyart
 from ..io.read_data import get_fieldname_rainbow, read_timeseries
 from ..io.read_data import get_sensor_data
 from ..io.write_data import write_timeseries, generate_field_name_str
-from ..graph.plots import plot_ppi, plot_rhi, plot_cappi 
+from ..graph.plots import plot_ppi, plot_rhi, plot_cappi
 from ..graph.plots import plot_timeseries, plot_timeseries_comp
 
 
@@ -92,7 +92,7 @@ def generate_vol_products(dataset, prdcfg):
             print('saved figure: '+savedir+fname)
         else:
             warn(
-                'WARNING: Field type ' + field_name +
+                ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
 
@@ -116,7 +116,7 @@ def generate_vol_products(dataset, prdcfg):
             print('saved figure: '+savedir+fname)
         else:
             warn(
-                'WARNING: Field type ' + field_name +
+                ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
 
@@ -126,26 +126,25 @@ def generate_vol_products(dataset, prdcfg):
             try:
                 xsect = pyart.util.cross_section_rhi(
                     dataset, [prdcfg['angle']], el_tol=prdcfg['EleTol'])
-            
+
                 savedir = get_save_dir(
                     prdcfg['basepath'], prdcfg['procname'],
                     prdcfg['timeinfo'], prdcfg['dsname'], prdcfg['prdname'])
-    
+
                 fname = make_filename(
                     prdcfg['timeinfo'], 'ppi', prdcfg['dstype'],
                     prdcfg['voltype'], prdcfg['convertformat'],
                     prdcfginfo='el'+'{:.1f}'.format(prdcfg['angle']))
-    
+
                 plot_ppi(xsect, field_name, 0, prdcfg, savedir+fname)
                 print('saved figure: '+savedir+fname)
             except EnvironmentError:
                 warn(
-                    'WARNING: No data found at elevation ' +
-                    str(prdcfg['angle']) +'. Skipping product ' +
-                    prdcfg['type'])
+                    'No data found at elevation ' + str(prdcfg['angle']) +
+                    '. Skipping product ' + prdcfg['type'])
         else:
             warn(
-                'WARNING: Field type ' + field_name +
+                ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
 
@@ -155,7 +154,7 @@ def generate_vol_products(dataset, prdcfg):
             try:
                 xsect = pyart.util.cross_section_ppi(
                     dataset, [prdcfg['angle']], az_tol=prdcfg['AziTol'])
-                    
+
                 savedir = get_save_dir(
                     prdcfg['basepath'], prdcfg['procname'],
                     prdcfg['timeinfo'], prdcfg['dsname'], prdcfg['prdname'])
@@ -169,12 +168,12 @@ def generate_vol_products(dataset, prdcfg):
                 print('saved figure: '+savedir+fname)
             except EnvironmentError:
                 warn(
-                    'WARNING: No data found at azimuth ' +
+                    ' No data found at azimuth ' +
                     str(prdcfg['angle'])+'. Skipping product ' +
                     prdcfg['type'])
         else:
             warn(
-                'WARNING: Field type ' + field_name +
+                ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
 
@@ -195,10 +194,10 @@ def generate_vol_products(dataset, prdcfg):
             print('saved figure: '+savedir+fname)
         else:
             warn(
-                'WARNING: Field type ' + field_name +
+                ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
-                
+
     elif prdcfg['type'] == 'SAVEVOL':
         field_name = get_fieldname_rainbow(prdcfg['voltype'])
         if field_name in dataset.fields:
@@ -218,7 +217,7 @@ def generate_vol_products(dataset, prdcfg):
             print('saved file: '+savedir+fname)
         else:
             warn(
-                'WARNING: Field type ' + field_name +
+                ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
 
@@ -235,7 +234,7 @@ def generate_vol_products(dataset, prdcfg):
         print('saved file: '+savedir+fname)
 
     else:
-        warn('WARNING: Unsupported product type: ' + prdcfg['type'])
+        warn(' Unsupported product type: ' + prdcfg['type'])
 
 
 def generate_timeseries_products(dataset, prdcfg):
@@ -409,7 +408,7 @@ def generate_timeseries_products(dataset, prdcfg):
                 print('saved figure: '+savedir+figfname)
 
     else:
-        warn('WARNING: Unsupported product type: ' + prdcfg['type'])
+        warn(' Unsupported product type: ' + prdcfg['type'])
 
 
 def get_save_dir(basepath, procname, timeinfo, dsname, prdname):
