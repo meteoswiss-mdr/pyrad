@@ -713,7 +713,7 @@ def process_smooth_phidp_single_window(procstatus, dscfg, radar=None):
     r_res = radar.range['data'][1]-radar.range['data'][0]
     min_rcons = int(dscfg['rcell']/r_res)
     wind_len = int(dscfg['rwind']/r_res)
-    wind_type = dscfg['wind_type']
+    min_valid = int(wind_len/2+1)
 
     if psidp_field.startswith('corrected_'):
         phidp_field = psidp_field
@@ -725,7 +725,7 @@ def process_smooth_phidp_single_window(procstatus, dscfg, radar=None):
     phidp = pyart.correct.smooth_phidp_single_window(
         radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, min_rcons=min_rcons,
         zmin=dscfg['Zmin'], zmax=dscfg['Zmax'], wind_len=wind_len,
-        wind_type=wind_type, psidp_field=psidp_field, refl_field=refl_field,
+        min_valid=min_valid, psidp_field=psidp_field, refl_field=refl_field,
         phidp_field=phidp_field)
 
     # prepare for exit
@@ -781,8 +781,9 @@ def process_smooth_phidp_double_window(procstatus, dscfg, radar=None):
     r_res = radar.range['data'][1]-radar.range['data'][0]
     min_rcons = int(dscfg['rcell']/r_res)
     swind_len = int(dscfg['rwinds']/r_res)
+    smin_valid = int(swind_len/2+1)
     lwind_len = int(dscfg['rwindl']/r_res)
-    wind_type = dscfg['wind_type']
+    lmin_valid = int(lwind_len/2+1)
 
     if psidp_field.startswith('corrected_'):
         phidp_field = psidp_field
@@ -794,8 +795,8 @@ def process_smooth_phidp_double_window(procstatus, dscfg, radar=None):
     phidp = pyart.correct.smooth_phidp_double_window(
         radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, min_rcons=min_rcons,
         zmin=dscfg['Zmin'], zmax=dscfg['Zmax'], swind_len=swind_len,
-        lwind_len=lwind_len, zthr=dscfg['Zthr'], wind_type=wind_type,
-        psidp_field=psidp_field, refl_field=refl_field,
+        smin_valid=smin_valid, lwind_len=lwind_len, lmin_valid=lmin_valid,
+        zthr=dscfg['Zthr'], psidp_field=psidp_field, refl_field=refl_field,
         phidp_field=phidp_field)
 
     # prepare for exit
@@ -1002,7 +1003,7 @@ def process_kdp_leastsquare_single_window(procstatus, dscfg, radar=None):
 
     r_res = radar.range['data'][1]-radar.range['data'][0]
     wind_len = int(dscfg['rwind']/r_res)
-    min_valid = int(wind_len/2)
+    min_valid = int(wind_len/2+1)
     kdp_field = 'corrected_specific_differential_phase'
 
     kdp = pyart.retrieve.kdp_leastsquare_single_window(
@@ -1058,9 +1059,9 @@ def process_kdp_leastsquare_double_window(procstatus, dscfg, radar=None):
 
     r_res = radar.range['data'][1]-radar.range['data'][0]
     swind_len = int(dscfg['rwinds']/r_res)
-    smin_valid = int(swind_len/2)
+    smin_valid = int(swind_len/2+1)
     lwind_len = int(dscfg['rwindl']/r_res)
-    lmin_valid = int(lwind_len/2)
+    lmin_valid = int(lwind_len/2+1)
 
     kdp_field = 'corrected_specific_differential_phase'
 
