@@ -1126,9 +1126,10 @@ def process_attenuation(procstatus, dscfg, radar=None):
     spec_at, cor_z, spec_diff_at, cor_zdr = (
         pyart.correct.calculate_attenuation(
             radar, doc=15, fzl=None, smooth_window_len=0, a_coef=None,
-            beta=None, refl_field=refl, phidp_field=phidp, zdr_field=zdr,
-            temp_field=temp, spec_at_field=None, corr_refl_field=None,
-            spec_diff_at_field=None, corr_zdr_field=None))
+            beta=None, c=None, d=None, refl_field=refl, phidp_field=phidp,
+            zdr_field=zdr, temp_field=temp, spec_at_field=None,
+            corr_refl_field=None, spec_diff_at_field=None,
+            corr_zdr_field=None))
 
     # prepare for exit
     new_dataset = deepcopy(radar)
