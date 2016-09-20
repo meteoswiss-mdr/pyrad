@@ -1178,7 +1178,7 @@ def process_rainrate(procstatus, dscfg, radar=None):
         datagroup, datatype, dataset, product = get_datatypefields(
             dscfg['datatype'][0])
         refl_field = get_fieldname_rainbow(datatype)
-        rain = pyart.retrieve.rr_z(
+        rain = pyart.retrieve.est_rain_rate_z(
             radar, alpha=0.0376, beta=0.6112, refl_field=refl_field,
             rr_field=None)
 
@@ -1186,21 +1186,21 @@ def process_rainrate(procstatus, dscfg, radar=None):
         datagroup, datatype, dataset, product = get_datatypefields(
             dscfg['datatype'][0])
         refl_field = get_fieldname_rainbow(datatype)
-        rain = pyart.retrieve.rr_zpoly(
+        rain = pyart.retrieve.est_rain_rate_zpoly(
             radar, refl_field=refl_field, rr_field=None)
 
     elif dscfg['RR_METHOD'] == 'KDP':
         datagroup, datatype, dataset, product = get_datatypefields(
             dscfg['datatype'][0])
         kdp_field = get_fieldname_rainbow(datatype)
-        rain = pyart.retrieve.rr_kdp(
+        rain = pyart.retrieve.est_rain_rate_kdp(
             radar, alpha=None, beta=None, kdp_field=kdp_field, rr_field=None)
 
     elif dscfg['RR_METHOD'] == 'A':
         datagroup, datatype, dataset, product = get_datatypefields(
             dscfg['datatype'][0])
         a_field = get_fieldname_rainbow(datatype)
-        rain = pyart.retrieve.rr_a(
+        rain = pyart.retrieve.est_rain_rate_a(
             radar, alpha=None, beta=None, a_field=a_field, rr_field=None)
 
     elif dscfg['RR_METHOD'] == 'ZKDP':
@@ -1216,7 +1216,7 @@ def process_rainrate(procstatus, dscfg, radar=None):
             if datatype == 'KDP':
                 kdp_field = 'specific_differential_phase'
 
-        rain = pyart.retrieve.rr_zkdp(
+        rain = pyart.retrieve.est_rain_rate_zkdp(
             radar, alphaz=0.0376, betaz=0.6112, alphakdp=None, betakdp=None,
             refl_field=refl_field, kdp_field=kdp_field, rr_field=None,
             master_field=refl_field, thresh=10., thresh_max=True)
@@ -1234,7 +1234,7 @@ def process_rainrate(procstatus, dscfg, radar=None):
             if datatype == 'Ah':
                 a_field = 'specific_attenuation'
 
-        rain = pyart.retrieve.rr_za(
+        rain = pyart.retrieve.est_rain_rate_za(
             radar, alphaz=0.0376, betaz=0.6112, alphaa=None, betaa=None,
             refl_field=refl_field, a_field=a_field, rr_field=None,
             master_field=refl_field, thresh=0.04, thresh_max=False)
@@ -1254,7 +1254,7 @@ def process_rainrate(procstatus, dscfg, radar=None):
             if datatype == 'Ah':
                 a_field = 'specific_attenuation'
 
-        rain = pyart.retrieve.rr_hydro(
+        rain = pyart.retrieve.est_rain_rate_hydro(
             radar, alphazr=0.0376, betazr=0.6112, alphazs=0.1, betazs=0.5,
             alphaa=None, betaa=None, mp_factor=0.6, refl_field=refl_field,
             a_field=a_field, hydro_field=hydro_field, rr_field=None,
@@ -1399,8 +1399,8 @@ def process_hydroclass(procstatus, dscfg, radar=None):
                 44.2216, -0.3419, 0.0687, 0.9683,  1272.7]  # IH/HDG
         else:
             warn(
-                ' Unknown radar. \
-                Default centroids will be used in classification.')
+                ' Unknown radar. ' +
+                'Default centroids will be used in classification.')
             mass_centers = None
 
         hydro = pyart.retrieve.hydroclass_semisupervised(
