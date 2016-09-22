@@ -21,6 +21,7 @@ Functions for processing Pyrad datasets
     process_attenuation
     process_rainrate
     process_hydroclass
+    process_estimate_phidp0
     process_correct_phidp0
     process_smooth_phidp_single_window
     process_smooth_phidp_double_window
@@ -28,6 +29,8 @@ Functions for processing Pyrad datasets
     process_kdp_leastsquare_double_window
     process_phidp_kdp_Maesaka
     process_phidp_kdp_lp
+    process_selfconsistency_kdp_phidp
+    process_selfconsistency_bias
 
 """
 
@@ -39,6 +42,7 @@ import numpy as np
 import pyart
 
 from ..io.read_data import get_datatypefields, get_fieldname_rainbow
+from ..io.read_data import read_selfconsistency
 from netCDF4 import num2date
 
 
@@ -82,6 +86,8 @@ def get_process_type(dataset_type):
         func_name = 'process_echo_filter'
     elif dataset_type == 'SNR_FILTER':
         func_name = 'process_filter_snr'
+    elif dataset_type == 'PHIDP0_ESTIMATE':
+        func_name = 'process_estimate_phidp0'
     elif dataset_type == 'PHIDP0_CORRECTION':
         func_name = 'process_correct_phidp0'
     elif dataset_type == 'PHIDP_SMOOTH_1W':
@@ -102,6 +108,10 @@ def get_process_type(dataset_type):
         func_name = 'process_rainrate'
     elif dataset_type == 'HYDROCLASS':
         func_name = 'process_hydroclass'
+    elif dataset_type == 'SELFCONSISTENCY_KDP_PHIDP':
+        func_name = 'process_selfconsistency_kdp_phidp'
+    elif dataset_type == 'SELFCONSISTENCY_BIAS':
+        func_name = 'process_selfconsistency_bias'
     elif dataset_type == 'POINT_MEASUREMENT':
         func_name = 'process_point_measurement'
         dsformat = 'TIMESERIES'
@@ -599,6 +609,68 @@ def process_filter_snr(procstatus, dscfg, radar=None):
             else:
                 new_field_name = 'corrected_'+field_name
             new_dataset.add_field(new_field_name, radar_field)
+
+    return new_dataset
+
+
+def process_estimate_phidp0(procstatus, dscfg, radar=None):
+    """
+    estimates the system differential phase offset at each ray
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+
+    """
+
+    if procstatus != 1:
+        return None
+
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatypefields(
+            datatypedescr)
+        if datatype == 'dBZ':
+            refl_field = 'reflectivity'
+        if datatype == 'dBZc':
+            refl_field = 'corrected_reflectivity'
+        if datatype == 'PhiDP':
+            psidp_field = 'differential_phase'
+        if datatype == 'PhiDPc':
+            psidp_field = 'corrected_differential_phase'
+        if datatype == 'uPhiDP':
+            psidp_field = 'uncorrected_differential_phase'
+
+    ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
+    ind_rmax = np.where(radar.range['data'] < dscfg['rmax'])[0][-1]
+    r_res = radar.range['data'][1]-radar.range['data'][0]
+    min_rcons = int(dscfg['rcell']/r_res)
+
+    phidp0, first_gates = pyart.correct.det_sys_phase_ray(
+        radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, min_rcons=min_rcons,
+        zmin=dscfg['Zmin'], zmax=dscfg['Zmax'], phidp_field=psidp_field,
+        refl_field=refl_field)
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.range['data'] = np.array([0.])
+    new_dataset.ngates = 1
+
+    new_dataset.add_field('system_differential_phase', phidp0)
+    new_dataset.add_field('first_gate_differential_phase', first_gates)
 
     return new_dataset
 
@@ -1123,13 +1195,21 @@ def process_attenuation(procstatus, dscfg, radar=None):
         if datatype == 'TEMP':
             temp = 'temperature'
 
-    spec_at, cor_z, spec_diff_at, cor_zdr = (
-        pyart.correct.calculate_attenuation(
-            radar, doc=15, fzl=None, smooth_window_len=0, a_coef=None,
-            beta=None, c=None, d=None, refl_field=refl, phidp_field=phidp,
-            zdr_field=zdr, temp_field=temp, spec_at_field=None,
-            corr_refl_field=None, spec_diff_at_field=None,
-            corr_zdr_field=None))
+    if dscfg['ATT_METHOD'] == 'ZPhi':
+        spec_at, cor_z, spec_diff_at, cor_zdr = (
+            pyart.correct.calculate_attenuation_zphi(
+                radar, doc=15, fzl=None, smooth_window_len=0, a_coef=None,
+                beta=None, c=None, d=None, refl_field=refl, phidp_field=phidp,
+                zdr_field=zdr, temp_field=temp, spec_at_field=None,
+                corr_refl_field=None, spec_diff_at_field=None,
+                corr_zdr_field=None))
+    elif dscfg['ATT_METHOD'] == 'Philin':
+        spec_at, cor_z, spec_diff_at, cor_zdr = (
+            pyart.correct.calculate_attenuation_philinear(
+                radar, doc=None, fzl=None, pia_coef=None, pida_coef=None,
+                refl_field=refl, phidp_field=phidp, zdr_field=zdr,
+                temp_field=temp, spec_at_field=None, corr_refl_field=None,
+                spec_diff_at_field=None, corr_zdr_field=None))
 
     # prepare for exit
     new_dataset = deepcopy(radar)
@@ -1529,5 +1609,148 @@ def process_point_measurement(procstatus, dscfg, radar=None):
         {'used_antenna_coordinates_az_el_r': [radar.azimuth['data'][ind_ray],
          radar.elevation['data'][ind_ray],
          radar.range['data'][ind_r]]})
+
+    return new_dataset
+
+
+def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar=None):
+    """
+    Computes specific differential phase and differential phase in rain using
+    the selfconsistency between Zdr, Zh and KDP
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+
+    if procstatus != 1:
+        return None
+
+    fname = (
+        dscfg['configpath'] + 'selfconsistency/' +
+        'selfconsistency_zdr_zhkdp_Xband_temp10_elev000_mu05.txt')
+    zdr_kdpzh_table = read_selfconsistency(fname)
+
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatypefields(
+            datatypedescr)
+        if datatype == 'dBZc':
+            refl = 'corrected_reflectivity'
+        if datatype == 'dBZ':
+            refl = 'reflectivity'
+        if datatype == 'ZDRc':
+            zdr = 'corrected_differential_reflectivity'
+        if datatype == 'ZDR':
+            zdr = 'differential_reflectivity'
+        if datatype == 'PhiDPc':
+            phidp = 'corrected_differential_phase'
+        if datatype == 'PhiDP':
+            phidp = 'differential_phase'
+        if datatype == 'TEMP':
+            temp = 'temperature'
+        if datatype == 'RhoHV':
+            rhohv = 'cross_correlation_ratio'
+        if datatype == 'RhoHVc':
+            rhohv = 'corrected_cross_correlation_ratio'
+
+    kdpsim_field = 'specific_differential_phase'
+    phidpsim_field = 'differential_phase'
+
+    kdpsim, phidpsim = pyart.correct.selfconsistency_kdp_phidp(
+        radar, zdr_kdpzh_table, min_rhohv=0.92, max_phidp=20., doc=None,
+        fzl=None, refl_field=refl, phidp_field=phidp, zdr_field=zdr,
+        temp_field=temp, rhohv_field=rhohv, kdpsim_field=kdpsim_field,
+        phidpsim_field=phidpsim_field)
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+
+    new_dataset.add_field(kdpsim_field, kdpsim)
+    new_dataset.add_field(phidpsim_field, phidpsim)
+
+    return new_dataset
+
+
+def process_selfconsistency_bias(procstatus, dscfg, radar=None):
+    """
+    Estimates the reflectivity bias by means of the selfconsistency
+    algorithm by Gourley
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+
+    if procstatus != 1:
+        return None
+
+    fname = (
+        dscfg['configpath'] + 'selfconsistency/' +
+        'selfconsistency_zdr_zhkdp_Xband_temp10_elev000_mu05.txt')
+    zdr_kdpzh_table = read_selfconsistency(fname)
+
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatypefields(
+            datatypedescr)
+        if datatype == 'dBZc':
+            refl = 'corrected_reflectivity'
+        if datatype == 'dBZ':
+            refl = 'reflectivity'
+        if datatype == 'ZDRc':
+            zdr = 'corrected_differential_reflectivity'
+        if datatype == 'ZDR':
+            zdr = 'differential_reflectivity'
+        if datatype == 'PhiDPc':
+            phidp = 'corrected_differential_phase'
+        if datatype == 'PhiDP':
+            phidp = 'differential_phase'
+        if datatype == 'TEMP':
+            temp = 'temperature'
+        if datatype == 'RhoHV':
+            rhohv = 'cross_correlation_ratio'
+        if datatype == 'RhoHVc':
+            rhohv = 'corrected_cross_correlation_ratio'
+
+    refl_bias = pyart.correct.selfconsistency_bias(
+        radar, zdr_kdpzh_table, min_rhohv=0.92, max_phidp=20., doc=None,
+        fzl=None, min_rcons=20, dphidp_min=2, dphidp_max=16, refl_field=refl,
+        phidp_field=phidp, zdr_field=zdr, temp_field=temp, rhohv_field=rhohv)
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.range['data'] = np.array([0.])
+    new_dataset.ngates = 1
+
+    new_dataset.add_field('reflectivity_bias', refl_bias)
 
     return new_dataset

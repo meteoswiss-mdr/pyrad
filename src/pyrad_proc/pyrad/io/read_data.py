@@ -14,6 +14,7 @@ Functions for reading pyrad input data, i.e. radar files
     get_sensor_data
     read_smn
     read_disdro_scattering
+    read_selfconsistency
     find_cosmo_file
     find_rad4alpcosmo_file
     get_datatypemetranet
@@ -794,7 +795,7 @@ def read_disdro_scattering(fname):
 
     Returns
     -------
-    id, date , pressure, temp, rh, precip, wspeed, wdir : tupple
+    id, date , pressure, temp, rh, precip, wspeed, wdir : arrays
         The read values
 
     """
@@ -861,6 +862,48 @@ def read_disdro_scattering(fname):
         warn('WARNING: Unable to read file '+fname)
         return (None, None, None, None, None, None, None, None, None, None,
                 None, None, None)
+
+
+def read_selfconsistency(fname):
+    """
+    Reads a self-consistency table with Zdr, Kdp/Zh columns
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    zdr, kdpzh : arrays
+        The read values
+
+    """
+    try:
+        with open(fname, 'r', newline='', encoding='utf-8', errors='ignore') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                csvfile, fieldnames=['zdr', 'kdpzh'], dialect='excel-tab')
+            nrows = sum(1 for row in reader)
+
+            zdr_kdpzh_table = np.empty((2, nrows), dtype='float32')
+
+            # now read the data
+            csvfile.seek(0)
+
+            reader = csv.DictReader(
+                csvfile, fieldnames=['zdr', 'kdpzh'], dialect='excel-tab')
+            i = 0
+
+            for row in reader:
+                zdr_kdpzh_table[0, i] = float(row['zdr'])
+                zdr_kdpzh_table[1, i] = float(row['kdpzh'])
+                i += 1
+
+            return zdr_kdpzh_table
+    except EnvironmentError:
+        warn('WARNING: Unable to read file '+fname)
+        return None
 
 
 def find_cosmo_file(voltime, datatype, cfg, scanid):
@@ -1072,6 +1115,10 @@ def get_fieldname_rainbow(datatype):
         field_name = 'uncorrected_differential_phase'
     elif datatype == 'PhiDPc':
         field_name = 'corrected_differential_phase'
+    elif datatype == 'PhiDP0':
+        field_name = 'system_differential_phase'
+    elif datatype == 'PhiDP0_bin':
+        field_name = 'first_gate_differential_phase'
     elif datatype == 'KDP':
         field_name = 'specific_differential_phase'
     elif datatype == 'KDPc':
@@ -1100,6 +1147,8 @@ def get_fieldname_rainbow(datatype):
         field_name = 'radar_estimated_rain_rate'
     elif datatype == 'hydro':
         field_name = 'radar_echo_classification'
+    elif datatype == 'dBZ_bias':
+        field_name = 'reflectivity_bias'
     else:
         raise ValueError('ERROR: Unknown data type '+datatype)
 

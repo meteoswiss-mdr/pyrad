@@ -176,6 +176,7 @@ if __name__ == '__main__':
             print('Processing dataset: '+dataset)
 
             dscfg = cfg[dataset]
+            dscfg.update({'configpath': cfg['configpath']})
             if 'MAKE_GLOBAL' not in dscfg:
                     dscfg.update({'MAKE_GLOBAL': 0})
 
@@ -231,6 +232,7 @@ if __name__ == '__main__':
                 print('Processing dataset: '+dataset)
 
                 dscfg = cfg[dataset]
+                dscfg.update({'configpath': cfg['configpath']})
                 if 'MAKE_GLOBAL' not in dscfg:
                     dscfg.update({'MAKE_GLOBAL': 0})
 
@@ -282,6 +284,7 @@ if __name__ == '__main__':
             print('Processing dataset: '+dataset)
 
             dscfg = cfg[dataset]
+            dscfg.update({'configpath': cfg['configpath']})
             if 'MAKE_GLOBAL' not in dscfg:
                     dscfg.update({'MAKE_GLOBAL': 0})
 

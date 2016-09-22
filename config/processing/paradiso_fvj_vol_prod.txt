@@ -4,19 +4,13 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 12    
-    l0:echoID
+dataSetList STRARR 6
+    l0:echoID    
     l1:echoFilter
-    l3:echoFilter2
-    l2:Att
-    l2:hydroclass_semisupervised
-    l4:RRZh
-    l4:RRZh_polynomial    
-    l4:RRKDP
-    l4:RRAh
-    l4:RRZhKDP
-    l4:RRZhAh
-    l4:RR_hydro
+    l2:RRZh_noattcorr
+    l3:rgMAH_RRZh_noattcorr
+    l3:disdroBelleChasse_RRZh_noattcorr
+    l3:disdroBelleChasse_dBZ
 
 # ==========================================================================================
 #                 raw data products
@@ -189,22 +183,11 @@ echoID STRUCT 4
 # ==========================================================================================
 echoFilter STRUCT 3
    type STRING ECHO_FILTER
-   datatype STRARR 5      
-      dBZ
-      ZDR
-      PhiDP
-      KDP
-      RhoHV
+   datatype STRARR 2
+      dBZ      
+      uPhiDP      
    MAKE_GLOBAL INT 1
-#   products STRUCT 5
-#	  EL004_0_dBZc STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING dBZc
-#		 anglenr INT 0
-#      EL004_0_ZDRc STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING ZDRc
-#		 anglenr INT 0
+#   products STRUCT 2
 #      EL004_0_PhiDPc STRUCT 3
 #         type   STRING PPI_IMAGE
 #         voltype STRING PhiDPc
@@ -213,16 +196,24 @@ echoFilter STRUCT 3
 #         type   STRING PPI_IMAGE
 #         voltype STRING RhoHVc
 #		 anglenr INT 0
+#	  EL004_0_dBZc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING dBZc
+#		 anglenr INT 0
+#      EL004_0_ZDRc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING ZDRc
+#		 anglenr INT 0      
 #      EL004_0_KDPc STRUCT 3
 #         type   STRING PPI_IMAGE
 #         voltype STRING KDPc
 #		 anglenr INT 0
 #
-echoFilter2 STRUCT 3
-   type STRING ECHO_FILTER
-   datatype STRARR 1
-      PROC:Ah
-   MAKE_GLOBAL INT 1
+#echoFilter2 STRUCT 3
+#   type STRING ECHO_FILTER
+#   datatype STRARR 1
+#      PROC:Ah
+#   MAKE_GLOBAL INT 1
 
 # ==========================================================================================
 #                 filtration based on SNR
@@ -244,6 +235,27 @@ echoFilter2 STRUCT 3
 # ==========================================================================================
 #                 PHIDP KDP processing
 # ==========================================================================================
+#PhiDP0 STRUCT 9
+#    type STRING PHIDP0_ESTIMATE
+#    datatype STRARR 2
+#        PROC:PhiDPc
+#        PROC:dBZc
+#    rmin FLOAT 1000.
+#    rmax FLOAT 50000.
+#    rcell FLOAT 1000.
+#    Zmin FLOAT 20.
+#    Zmax FLOAT 40.
+#    MAKE_GLOBAL INT 0
+#    products STRUCT 2
+#      EL004_0_PhiDP0 STRUCT 3
+#         type STRING BSCOPE_IMAGE
+#         anglenr INT 0
+#         voltype STRING PhiDP0    
+#      EL004_0_PhiDP0_bin STRUCT 3
+#         type STRING BSCOPE_IMAGE
+#         anglenr INT 0
+#         voltype STRING PhiDP0_bin
+#
 #PhiDPc_noPhiDP0 STRUCT 9
 #    type STRING PHIDP0_CORRECTION
 #    datatype STRARR 2
@@ -292,14 +304,14 @@ echoFilter2 STRUCT 3
 #    rwinds FLOAT 1000.
 #    rwindl FLOAT 3000.
 #    Zthr FLOAT 40.    
-#    MAKE_GLOBAL INT 1
+#    MAKE_GLOBAL INT 0
 #    products STRUCT 1
 #      EL004_0 STRUCT 3
 #         type STRING PPI_IMAGE
 #         anglenr INT 0
 #         voltype STRING PhiDPc
 #
-#PhiDP_KDP_Maesaka STRUCT 8
+#PhiDP_KDP_Maesaka STRUCT 9
 #    type STRING PHIDP_KDP_MAESAKA
 #    rmin FLOAT 1000.
 #    rmax FLOAT 50000.
@@ -310,6 +322,7 @@ echoFilter2 STRUCT 3
 #        PROC:PhiDPc
 #        PROC:dBZc
 #        COSMO:TEMP
+#    MAKE_GLOBAL INT 0
 #    products STRUCT 2
 #      EL004_0_PhiDPc STRUCT 3
 #         type STRING PPI_IMAGE
@@ -365,151 +378,218 @@ echoFilter2 STRUCT 3
 ## ==========================================================================================
 ##                 Attenuation
 ## ==========================================================================================
-Att STRUCT 4
-	type STRING ATTENUATION
-	datatype STRARR 4
-        PROC:dBZc
-        PROC:ZDRc
-        PROC:PhiDPc
-        COSMO:TEMP
-    MAKE_GLOBAL INT 1
-	products STRUCT 4
-	  EL004_0_Ah STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING Ah
-		 anglenr INT 0
-      EL004_0_dBZc STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING dBZc
-		 anglenr INT 0
-      EL004_0_ZDRc STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING ZDRc
-		 anglenr INT 0
-      EL004_0_Adp STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING Adp
-		 anglenr INT 0
+#Att_ZPhi STRUCT 5
+#	type STRING ATTENUATION
+#	datatype STRARR 4
+#        PROC:dBZc
+#        PROC:ZDRc
+#        PROC:PhiDPc
+#        COSMO:TEMP
+#    MAKE_GLOBAL INT 1
+#    ATT_METHOD STRING ZPhi
+#	products STRUCT 5
+#	  EL004_0_Ah STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING Ah
+#		 anglenr INT 0
+#      EL004_0_dBZc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING dBZc
+#		 anglenr INT 0
+#      EL004_0_ZDRc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING ZDRc
+#		 anglenr INT 0
+#      EL004_0_Adp STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING Adp
+#		 anglenr INT 0
+#      EL004_0_BSCOPE_dBZc STRUCT 3
+#         type   STRING BSCOPE_IMAGE
+#         voltype STRING dBZc
+#		 anglenr INT 0
+#         
+#Att_Philin STRUCT 5
+#	type STRING ATTENUATION
+#	datatype STRARR 4
+#        PROC:dBZc
+#        PROC:ZDRc
+#        PROC:PhiDPc
+#        COSMO:TEMP
+#    MAKE_GLOBAL INT 0
+#    ATT_METHOD STRING Philin
+#	products STRUCT 4
+#	  EL004_0_Ah STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING Ah
+#		 anglenr INT 0
+#      EL004_0_dBZc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING dBZc
+#		 anglenr INT 0
+#      EL004_0_ZDRc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING ZDRc
+#		 anglenr INT 0
+#      EL004_0_Adp STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING Adp
+#		 anglenr INT 0
 
-         
+
+# ==========================================================================================
+#                 selfconsistency products
+# ==========================================================================================         
+#PhiDP_KDP_selfconsistency STRUCT 3
+#    type STRING SELFCONSISTENCY_KDP_PHIDP
+#    datatype STRARR 5
+#        PROC:dBZc
+#        PROC:ZDRc
+#        PROC:PhiDPc
+#        PROC:RhoHVc
+#        COSMO:TEMP
+#    products STRUCT 2
+#      EL004_0_PhiDP STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 0
+#         voltype STRING PhiDP
+#      EL004_0_KDP STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 0
+#         voltype STRING KDP
+#         
+#Zh_bias_selfconsistency STRUCT 3
+#    type STRING SELFCONSISTENCY_BIAS
+#    datatype STRARR 5
+#        PROC:dBZc
+#        PROC:ZDRc
+#        PROC:PhiDPc
+#        PROC:RhoHVc
+#        COSMO:TEMP
+#    products STRUCT 1
+#      EL004_0 STRUCT 3
+#         type STRING BSCOPE_IMAGE
+#         anglenr INT 0
+#         voltype STRING dBZ_bias
+#
 # ==========================================================================================
 #                 hydrometeor classification products
 # ==========================================================================================
-hydroclass_semisupervised STRUCT 6
-   type STRING HYDROCLASS
-   datatype STRARR 5
-      PROC:dBZc
-	  PROC:ZDRc
-	  PROC:RhoHVc
-	  PROC:KDPc
-	  COSMO:TEMP
-   HYDRO_METHOD STRING SEMISUPERVISED
-   RADARCENTROIDS STRING DX50
+#hydroclass_semisupervised STRUCT 6
+#   type STRING HYDROCLASS
+#   datatype STRARR 5
+#      PROC:dBZc
+#	  PROC:ZDRc
+#	  PROC:RhoHVc
+#	  PROC:KDPc
+#	  COSMO:TEMP
+#   HYDRO_METHOD STRING SEMISUPERVISED
+#   RADARCENTROIDS STRING DX50
+#   MAKE_GLOBAL INT 1
+#   products STRUCT 1
+# 	  EL004_0 STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING hydro
+# 		 anglenr INT 0
+#
+#
+# ==========================================================================================
+#                 rainrate products
+# ==========================================================================================
+RRZh_noattcorr STRUCT 5
+   type STRING RAINRATE
+   datatype STRARR 1
+     PROC:dBZc
+   RR_METHOD STRING Z
    MAKE_GLOBAL INT 1
    products STRUCT 1
  	  EL004_0 STRUCT 3
          type   STRING PPI_IMAGE
-         voltype STRING hydro
+         voltype STRING RR
  		 anglenr INT 0
 
-
-# ==========================================================================================
-#                 rainrate products
-# ==========================================================================================
-#RRZh_noattcorr STRUCT 5
+#RRZh STRUCT 4
 #   type STRING RAINRATE
 #   datatype STRARR 1
-#     dBZ
+#     PROC:dBZc
 #   RR_METHOD STRING Z
-#   MAKE_GLOBAL INT 1
 #   products STRUCT 1
 # 	  EL004_0 STRUCT 3
 #         type   STRING PPI_IMAGE
 #         voltype STRING RR
 # 		 anglenr INT 0
 #
-RRZh STRUCT 4
-   type STRING RAINRATE
-   datatype STRARR 1
-     PROC:dBZc
-   RR_METHOD STRING Z
-   products STRUCT 1
- 	  EL004_0 STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING RR
- 		 anglenr INT 0
-
-RRZh_polynomial STRUCT 4
-   type STRING RAINRATE
-   datatype STRARR 1
-     PROC:dBZc
-   RR_METHOD STRING ZPoly
-   products STRUCT 1
- 	  EL004_0 STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING RR
- 		 anglenr INT 0
-
-RRKDP STRUCT 4
-   type STRING RAINRATE
-   datatype STRARR 1
-     PROC:KDPc
-   RR_METHOD STRING KDP
-   products STRUCT 1
- 	  EL004_0 STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING RR
- 		 anglenr INT 0
-
-RRAh STRUCT 4
-   type STRING RAINRATE
-   datatype STRARR 1
-	  PROC:Ahc
-   RR_METHOD STRING A
-   products STRUCT 1
- 	  EL004_0 STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING RR
- 		 anglenr INT 0
-
-RRZhKDP STRUCT 4
-   type STRING RAINRATE
-   datatype STRARR 2
-     PROC:dBZc
-     PROC:KDPc
-   RR_METHOD STRING ZKDP
-   products STRUCT 1
- 	  EL004_0 STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING RR
- 		 anglenr INT 0
-
-RRZhAh STRUCT 4
-   type STRING RAINRATE
-   datatype STRARR 2
-     PROC:dBZc
-     PROC:Ahc
-   RR_METHOD STRING ZA
-   products STRUCT 1
- 	  EL004_0 STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING RR
- 		 anglenr INT 0
-
-RR_hydro STRUCT 4
-   type STRING RAINRATE
-   datatype STRARR 3
-     PROC:dBZc
-     PROC:Ahc
-     PROC:hydro
-   RR_METHOD STRING hydro
-   products STRUCT 1
- 	  EL004_0 STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING RR
- 		 anglenr INT 0
-
-
+#RRZh_polynomial STRUCT 4
+#   type STRING RAINRATE
+#   datatype STRARR 1
+#     PROC:dBZc
+#   RR_METHOD STRING ZPoly
+#   products STRUCT 1
+# 	  EL004_0 STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING RR
+# 		 anglenr INT 0
+#
+#RRKDP STRUCT 4
+#   type STRING RAINRATE
+#   datatype STRARR 1
+#     PROC:KDPc
+#   RR_METHOD STRING KDP
+#   products STRUCT 1
+# 	  EL004_0 STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING RR
+# 		 anglenr INT 0
+#
+#RRAh STRUCT 4
+#   type STRING RAINRATE
+#   datatype STRARR 1
+#	  PROC:Ahc
+#   RR_METHOD STRING A
+#   products STRUCT 1
+# 	  EL004_0 STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING RR
+# 		 anglenr INT 0
+#
+#RRZhKDP STRUCT 4
+#   type STRING RAINRATE
+#   datatype STRARR 2
+#     PROC:dBZc
+#     PROC:KDPc
+#   RR_METHOD STRING ZKDP
+#   products STRUCT 1
+# 	  EL004_0 STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING RR
+# 		 anglenr INT 0
+#
+#RRZhAh STRUCT 4
+#   type STRING RAINRATE
+#   datatype STRARR 2
+#     PROC:dBZc
+#     PROC:Ahc
+#   RR_METHOD STRING ZA
+#   products STRUCT 1
+# 	  EL004_0 STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING RR
+# 		 anglenr INT 0
+#
+#RR_hydro STRUCT 4
+#   type STRING RAINRATE
+#   datatype STRARR 3
+#     PROC:dBZc
+#     PROC:Ahc
+#     PROC:hydro
+#   RR_METHOD STRING hydro
+#   products STRUCT 1
+# 	  EL004_0 STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING RR
+# 		 anglenr INT 0
+#
+#
 # ==========================================================================================
 #                 Save radar object
 # ==========================================================================================
@@ -523,93 +603,93 @@ RR_hydro STRUCT 4
 # ==========================================================================================
 #                 rain rate comparison
 # ==========================================================================================
-#
-## ---------------------- rain gauge MAH -------------------------------------------
-#
-##46.737, 6.568, 437.0 MAH (Yverdon)
-#rgMAH_RRZh_noattcorr STRUCT 12
-#   type STRING POINT_MEASUREMENT
-#   datatype STRARR 1
-#      PROC:RR
-#   latlon INT 1
-#   truealt INT 0
-#   lat FLOAT 46.737
-#   lon FLOAT 6.568
-#   alt FLOAT 437.0
-#   ele FLOAT 4.
-#   AziTol FLOAT 1.
-#   EleTol FLOAT 1.
-#   RngTol FLOAT 30.
-#   products STRUCT 3
-#      RR STRUCT 1
-#	     type STRING PLOT_AND_WRITE_POINT
-#	  RRcomp STRUCT 4
-#	     type STRING COMPARE_POINT
-#         prdid STRING RR
-#		 sensor STRING rgage
-#		 sensorid STRING MAH
-#	  RRcumcomp STRUCT 4
-#	     type STRING COMPARE_CUMULATIVE_POINT
-#         prdid STRING RR
-#		 sensor STRING rgage
-#		 sensorid STRING MAH
-#         
-## ------------------ disdrometer Bellechasse ---------------------------------------------
-#
-## 46.9783, 7.1300, 433.0 (BelleChasse)
-#disdroBelleChasse_RRZh_noattcorr STRUCT 12
-#   type STRING POINT_MEASUREMENT
-#   datatype STRARR 1
-#      PROC:RR
-#   latlon INT 1
-#   truealt INT 0
-#   lat FLOAT 46.9783
-#   lon FLOAT 7.1300
-#   alt FLOAT 433.0
-#   ele FLOAT 4.
-#   AziTol FLOAT 1.
-#   EleTol FLOAT 1.
-#   RngTol FLOAT 30.
-#   products STRUCT 3
-#      RR STRUCT 1
-#	     type STRING PLOT_AND_WRITE_POINT
-#	  RRcomp STRUCT 6	     
-#         type STRING COMPARE_POINT
-#         prdid STRING RR
-#		 sensor STRING disdro
-#		 sensorid STRING 20
-#		 elev STRING 0000
-#		 temp STRING 0100
-#	  RRcumcomp STRUCT 6         
-#	     type STRING COMPARE_CUMULATIVE_POINT
-#         prdid STRING RR
-#		 sensor STRING disdro
-#		 sensorid STRING 20
-#		 elev STRING 0000
-#		 temp STRING 0100
-#         
-## 46.9783, 7.1300, 433.0 (BelleChasse)
-#disdroBelleChasse_dBZ STRUCT 12
-#   type STRING POINT_MEASUREMENT
-#   datatype STRARR 1
-#      dBZ
-#   latlon INT 1
-#   truealt INT 0
-#   lat FLOAT 46.9783
-#   lon FLOAT 7.1300
-#   alt FLOAT 433.0
-#   ele FLOAT 4.
-#   AziTol FLOAT 1.
-#   EleTol FLOAT 1.
-#   RngTol FLOAT 30.
-#   products STRUCT 2
-#      dBZ STRUCT 1
-#	     type STRING PLOT_AND_WRITE_POINT
-#	  dBZcomp STRUCT 6         
-#	     type STRING COMPARE_POINT
-#         prdid STRING dBZ
-#		 sensor STRING disdro
-#		 sensorid STRING 20
-#		 elev STRING 0000
-#		 temp STRING 0100
+
+# ---------------------- rain gauge MAH -------------------------------------------
+
+#46.737, 6.568, 437.0 MAH (Yverdon)
+rgMAH_RRZh_noattcorr STRUCT 12
+   type STRING POINT_MEASUREMENT
+   datatype STRARR 1
+      PROC:RR
+   latlon INT 1
+   truealt INT 0
+   lat FLOAT 46.737
+   lon FLOAT 6.568
+   alt FLOAT 437.0
+   ele FLOAT 4.
+   AziTol FLOAT 1.
+   EleTol FLOAT 1.
+   RngTol FLOAT 30.
+   products STRUCT 3
+      RR STRUCT 1
+	     type STRING PLOT_AND_WRITE_POINT
+	  RRcomp STRUCT 4
+	     type STRING COMPARE_POINT
+         prdid STRING RR
+		 sensor STRING rgage
+		 sensorid STRING MAH
+	  RRcumcomp STRUCT 4
+	     type STRING COMPARE_CUMULATIVE_POINT
+         prdid STRING RR
+		 sensor STRING rgage
+		 sensorid STRING MAH
+         
+# ------------------ disdrometer Bellechasse ---------------------------------------------
+
+# 46.9783, 7.1300, 433.0 (BelleChasse)
+disdroBelleChasse_RRZh_noattcorr STRUCT 12
+   type STRING POINT_MEASUREMENT
+   datatype STRARR 1
+      PROC:RR
+   latlon INT 1
+   truealt INT 0
+   lat FLOAT 46.9783
+   lon FLOAT 7.1300
+   alt FLOAT 433.0
+   ele FLOAT 4.
+   AziTol FLOAT 1.
+   EleTol FLOAT 1.
+   RngTol FLOAT 30.
+   products STRUCT 3
+      RR STRUCT 1
+	     type STRING PLOT_AND_WRITE_POINT
+	  RRcomp STRUCT 6	     
+         type STRING COMPARE_POINT
+         prdid STRING RR
+		 sensor STRING disdro
+		 sensorid STRING 20
+		 elev STRING 0000
+		 temp STRING 0100
+	  RRcumcomp STRUCT 6         
+	     type STRING COMPARE_CUMULATIVE_POINT
+         prdid STRING RR
+		 sensor STRING disdro
+		 sensorid STRING 20
+		 elev STRING 0000
+		 temp STRING 0100
+         
+# 46.9783, 7.1300, 433.0 (BelleChasse)
+disdroBelleChasse_dBZ STRUCT 12
+   type STRING POINT_MEASUREMENT
+   datatype STRARR 1
+      PROC:dBZc
+   latlon INT 1
+   truealt INT 0
+   lat FLOAT 46.9783
+   lon FLOAT 7.1300
+   alt FLOAT 433.0
+   ele FLOAT 4.
+   AziTol FLOAT 1.
+   EleTol FLOAT 1.
+   RngTol FLOAT 30.
+   products STRUCT 2
+      dBZ STRUCT 1
+	     type STRING PLOT_AND_WRITE_POINT
+	  dBZcomp STRUCT 6         
+	     type STRING COMPARE_POINT
+         prdid STRING dBZ
+		 sensor STRING disdro
+		 sensorid STRING 20
+		 elev STRING 0000
+		 temp STRING 0100
          

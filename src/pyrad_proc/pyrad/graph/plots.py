@@ -10,6 +10,7 @@ Functions to plot Pyrad datasets
     plot_ppi
     plot_rhi
     plot_cappi
+    plot_bscope
     plot_timeseries
     plot_timeseries_comp
 
@@ -109,6 +110,101 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname):
     plt.close()
 
 
+def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname):
+    """
+    plots a B-Scope (angle-range representation)
+
+    Parameters
+    ----------
+    radar : Radar object
+        object containing the radar data to plot
+
+    field_name : str
+        name of the radar field to plot
+
+    ind_sweep : int
+        sweep index to plot
+
+    prdcfg : dict
+        dictionary containing the product configuration
+
+    fname : str
+        name of the file where to store the plot
+
+    Returns
+    -------
+    no return
+
+    """
+    radar_aux = radar.extract_sweeps([ind_sweep])
+    if radar_aux.scan_type == 'ppi':
+        ang = np.sort(radar_aux.azimuth['data'])
+        ind_ang = np.argsort(radar_aux.azimuth['data'])
+        ang_min = np.min(radar_aux.azimuth['data'])
+        ang_max = np.max(radar_aux.azimuth['data'])
+        field = radar_aux.fields[field_name]['data'][ind_ang, :]
+        labely = 'azimuth angle (degrees)'
+    elif radar_aux.scan_type == 'rhi':
+        ang = np.sort(radar_aux.elevation['data'])
+        ind_ang = np.argsort(radar_aux.elevation['data'])
+        ang_min = np.min(radar_aux.elevation['data'])
+        ang_max = np.max(radar_aux.elevation['data'])
+        field = radar_aux.fields[field_name]['data'][ind_ang, :]
+        labely = 'elevation angle (degrees)'
+    else:
+        field = radar_aux.fields[field_name]['data']
+        ang = np.array(range(radar_aux.nrays))
+        ang_min = 0
+        ang_max = radar_aux.nrays-1
+        labely = 'ray number'
+
+    # display data
+    titl = pyart.graph.common.generate_title(radar_aux, field_name, ind_sweep)
+
+    # set the colorbar/yaxis label.
+    if 'standard_name' in radar_aux.fields[field_name]:
+        standard_name = radar_aux.fields[field_name]['standard_name']
+    elif 'long_name' in radar_aux.fields[field_name]:
+        standard_name = radar_aux.fields[field_name]['long_name']
+    else:
+        standard_name = field_name
+
+    if 'units' in radar_aux.fields[field_name]:
+        units = radar_aux.fields[field_name]['units']
+    else:
+        units = '?'
+
+    label = pyart.graph.common.generate_colorbar_label(standard_name, units)
+
+    fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
+                              prdcfg['ppiImageConfig']['ysize']],
+                     dpi=72)
+    ax = fig.add_subplot(111)
+    if radar_aux.ngates == 1:
+        plt.plot(ang, field, 'bx')
+        plt.xlabel(labely)
+        plt.ylabel(label)
+        plt.title(titl)
+    else:
+        cmap = pyart.config.get_field_colormap(field_name)
+        vmin, vmax = pyart.config.get_field_limits(field_name)
+
+        rmin = radar_aux.range['data'][0]/1000.
+        rmax = radar_aux.range['data'][-1]/1000.
+        cax = ax.imshow(
+            field, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax,
+            extent=(rmin, rmax, ang_min, ang_max), aspect='auto')
+        plt.xlabel('Range (km)')
+        plt.ylabel(labely)
+        plt.title(titl)
+
+        cb = fig.colorbar(cax)
+        cb.set_label(label)
+
+    fig.savefig(fname)
+    plt.close()
+
+
 def plot_cappi(radar, field_name, altitude, prdcfg, fname):
     """
     plots a Constant Altitude Plan Position Indicator CAPPI
@@ -169,7 +265,7 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname):
     elif 'long_name' in grid.fields[field_name]:
         standard_name = grid.fields[field_name]['long_name']
     else:
-        standard_name = field
+        standard_name = field_name
 
     if 'units' in grid.fields[field_name]:
         units = grid.fields[field_name]['units']
@@ -186,7 +282,7 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname):
 
 
 def plot_timeseries(date, value, fname, labelx='Time [UTC]', labely='Value',
-                    titl='Time Series', period=0):
+                    label1='Sensor', titl='Time Series', period=0):
     """
     plots a time series
 
@@ -194,22 +290,18 @@ def plot_timeseries(date, value, fname, labelx='Time [UTC]', labely='Value',
     ----------
     date : datetime object
         time of the time series
-
     value : float array
         values of the time series
-
     fname : str
         name of the file where to store the plot
-
     labelx : str
         The label of the X axis
-
     labely : str
         The label of the Y axis
-
+    label1 : str
+        The label of the legend
     titl : str
         The figure title
-
     period : float
         measurement period in seconds used to compute accumulation. If 0 no
         accumulation is computed
@@ -224,7 +316,7 @@ def plot_timeseries(date, value, fname, labelx='Time [UTC]', labely='Value',
         value = np.ma.cumsum(value)
 
     fig = plt.figure(figsize=[10, 6])
-    plt.plot(date, value)
+    plt.plot(date, value, label=label1)
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)

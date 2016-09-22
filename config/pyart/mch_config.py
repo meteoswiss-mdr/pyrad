@@ -48,6 +48,8 @@ unfiltered_reflectivity = 'unfiltered_reflectivity'
 reflectivity_vv = 'reflectivity_vv'
 unfiltered_reflectivity_vv = 'unfiltered_reflectivity_vv'
 
+reflectivity_bias = 'reflectivity_bias'
+
 
 # Mean Doppler velocity fields, VEL
 velocity = 'velocity'
@@ -87,6 +89,9 @@ corrected_differential_phase = 'corrected_differential_phase'
 
 uncorrected_differential_phase = 'uncorrected_differential_phase'
 uncorrected_unfiltered_differential_phase = 'uncorrected_unfiltered_differential_phase'
+
+system_differential_phase = 'system_differential_phase'
+first_gate_differential_phase = 'first_gate_differential_phase'
 
 # Specific differential phase shift, KDP
 specific_differential_phase = 'specific_differential_phase'
@@ -192,6 +197,7 @@ DEFAULT_FIELD_NAMES = {
     'unfiltered_reflectivity': unfiltered_reflectivity,
     'reflectivity_vv': reflectivity_vv,
     'unfiltered_reflectivity_vv': unfiltered_reflectivity_vv,
+    'reflectivity_bias': reflectivity_bias,
     'velocity': velocity,
     'corrected_velocity': corrected_velocity,
     'unfiltered_velocity': unfiltered_velocity,
@@ -214,6 +220,7 @@ DEFAULT_FIELD_NAMES = {
     'corrected_differential_phase': corrected_differential_phase,
     'uncorrected_differential_phase': uncorrected_differential_phase,
     'uncorrected_unfiltered_differential_phase': uncorrected_unfiltered_differential_phase,
+    'system_differential_phase': system_differential_phase,
     'specific_differential_phase': specific_differential_phase,
     'corrected_specific_differential_phase': corrected_specific_differential_phase,
     'uncorrected_specific_differential_phase': uncorrected_specific_differential_phase,
@@ -537,6 +544,12 @@ DEFAULT_METADATA = {
         'standard_name': 'equivalent_reflectivity_factor',
         'long_name': 'Total power',
         'coordinates': 'elevation azimuth range'},
+        
+    reflectivity_bias: {
+        'units': 'dB',
+        'standard_name': 'reflectivity_bias',
+        'long_name': 'Reflectivity bias',
+        'coordinates': 'elevation azimuth'},
 
     # Velocity fields
     velocity: {
@@ -636,7 +649,21 @@ DEFAULT_METADATA = {
         'standard_name': 'differential_phase_hv',
         'long_name': 'Uncorrected unfiltered differential phase',
         'coordinates': 'elevation azimuth range'},
-
+    
+    system_differential_phase: {
+        'units': 'degrees',
+        'standard_name': 'system_differential_phase',
+        'long_name': 'System differential phase (PhiDP0)',
+        'valid_max': 180.0,
+        'valid_min': -180.0,
+        'coordinates': 'elevation azimuth'},
+        
+    first_gate_differential_phase: {
+        'units': 'gate index',
+        'standard_name': 'first_gate_differential_phase',
+        'long_name': 'First valid differential phase gate',
+        'coordinates': 'elevation azimuth'},
+        
     specific_differential_phase: {
         'units': 'degrees/km',
         'standard_name': 'specific_differential_phase_hv',
@@ -1493,6 +1520,7 @@ DEFAULT_FIELD_COLORMAP = {
     unfiltered_reflectivity: 'pyart_NWSRef',
     reflectivity_vv: 'pyart_NWSRef',
     unfiltered_reflectivity_vv: 'pyart_NWSRef',
+    reflectivity_bias: 'pyart_NWSRef',
 	
     signal_to_noise_ratio: 'pyart_Carbone17',
     signal_to_noise_ratio_hh: 'pyart_Carbone17',
@@ -1531,6 +1559,7 @@ DEFAULT_FIELD_COLORMAP = {
     corrected_differential_phase: 'pyart_Wild25',
     uncorrected_differential_phase: 'pyart_Wild25',
     uncorrected_unfiltered_differential_phase: 'pyart_Wild25',
+    system_differential_phase: 'pyart_Wild25',
 
     specific_differential_phase: 'pyart_Theodore16',
     corrected_specific_differential_phase: 'pyart_Theodore16',
@@ -1590,6 +1619,7 @@ DEFAULT_FIELD_LIMITS = {
     signal_to_noise_ratio_vv: (-5., 30.),
     noisedBZ_hh: (-40., 10.),
     noisedBZ_vv: (-40., 10.),
+    reflectivity_bias: (-10., 10.),
 
     velocity: velocity_limit,
     corrected_velocity: velocity_limit,
@@ -1621,6 +1651,7 @@ DEFAULT_FIELD_LIMITS = {
     corrected_differential_phase: (-180., 180.),
 	uncorrected_differential_phase: (-180, 180.),
     uncorrected_unfiltered_differential_phase: (-180, 180.),
+    system_differential_phase: (-180., 180.),
 
     specific_differential_phase: (0., 1.),
     corrected_specific_differential_phase: (0., 1.),

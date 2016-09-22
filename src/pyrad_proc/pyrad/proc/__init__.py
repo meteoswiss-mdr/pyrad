@@ -22,6 +22,7 @@ Dataset processing
     process_correct_bias
     process_echo_filter
     process_filter_snr
+    process_estimate_phidp0
     process_correct_phidp0
     process_smooth_phidp_single_window
     process_smooth_phidp_double_window
@@ -34,6 +35,8 @@ Dataset processing
     process_hydroclass
     process_point_measurement
     process_save_radar
+    process_selfconsistency_kdp_phidp
+    process_selfconsistency_bias
 
 Product processing
 ==================
@@ -52,7 +55,7 @@ from .process_dataset import process_correct_noise_rhohv, process_correct_bias
 from .process_dataset import process_echo_filter, process_filter_snr
 from .process_dataset import process_attenuation
 from .process_dataset import process_phidp_kdp_lp, process_phidp_kdp_Maesaka
-from .process_dataset import process_correct_phidp0
+from .process_dataset import process_estimate_phidp0, process_correct_phidp0
 from .process_dataset import process_smooth_phidp_single_window
 from .process_dataset import process_smooth_phidp_double_window
 from .process_dataset import process_kdp_leastsquare_single_window
@@ -60,6 +63,8 @@ from .process_dataset import process_kdp_leastsquare_double_window
 
 from .process_dataset import process_rainrate, process_hydroclass
 from .process_dataset import process_point_measurement, process_save_radar
+from .process_dataset import process_selfconsistency_kdp_phidp
+from .process_dataset import process_selfconsistency_bias
 
 from .process_product import get_product_type, generate_vol_products
 from .process_product import generate_timeseries_products

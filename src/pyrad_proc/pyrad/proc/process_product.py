@@ -26,7 +26,7 @@ import pyart
 from ..io.read_data import get_fieldname_rainbow, read_timeseries
 from ..io.read_data import get_sensor_data
 from ..io.write_data import write_timeseries, generate_field_name_str
-from ..graph.plots import plot_ppi, plot_rhi, plot_cappi
+from ..graph.plots import plot_ppi, plot_rhi, plot_cappi, plot_bscope
 from ..graph.plots import plot_timeseries, plot_timeseries_comp
 
 
@@ -198,6 +198,30 @@ def generate_vol_products(dataset, prdcfg):
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
 
+    if prdcfg['type'] == 'BSCOPE_IMAGE':
+        field_name = get_fieldname_rainbow(prdcfg['voltype'])
+        if field_name in dataset.fields:
+            ang_vec = np.sort(dataset.fixed_angle['data'])
+            ang = ang_vec[prdcfg['anglenr']]
+            ind_ang = np.where(dataset.fixed_angle['data'] == ang)[0][0]
+
+            savedir = get_save_dir(
+                prdcfg['basepath'], prdcfg['procname'], prdcfg['timeinfo'],
+                prdcfg['dsname'], prdcfg['prdname'])
+
+            fname = make_filename(
+                prdcfg['timeinfo'], 'b-scope', prdcfg['dstype'],
+                prdcfg['voltype'], prdcfg['convertformat'],
+                prdcfginfo='ang'+'{:.1f}'.format(ang))
+
+            plot_bscope(dataset, field_name, ind_ang, prdcfg, savedir+fname)
+            print('saved figure: '+savedir+fname)
+        else:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+
     elif prdcfg['type'] == 'SAVEVOL':
         field_name = get_fieldname_rainbow(prdcfg['voltype'])
         if field_name in dataset.fields:
@@ -278,14 +302,14 @@ def generate_timeseries_products(dataset, prdcfg):
                 prdcfg['convertformat'], prdcfginfo=gateinfo,
                 timeformat='%Y%m%d')
 
-            titl = ('Time Series '+date[0].strftime('%Y-%m-%d') +
-                    ' (az, el, r): ('+az+', '+el+', '+r+')')
+            label1 = 'Radar (az, el, r): ('+az+', '+el+', '+r+')'
+            titl = ('Time Series '+date[0].strftime('%Y-%m-%d'))
 
             labely = generate_field_name_str(dataset['datatype'])
 
             plot_timeseries(
                 date, value, savedir+figfname, labelx='Time UTC',
-                labely=labely, titl=titl)
+                labely=labely, label1=label1, titl=titl)
             print('saved figure: '+savedir+figfname)
 
     elif prdcfg['type'] == 'PLOT_CUMULATIVE_POINT':
@@ -310,14 +334,15 @@ def generate_timeseries_products(dataset, prdcfg):
                 prdcfg['convertformat'], prdcfginfo=gateinfo,
                 timeformat='%Y%m%d')
 
-            titl = ('Time Series Acc. '+date[0].strftime('%Y-%m-%d') +
-                    ' (az, el, r): ('+az+', '+el+', '+r+')')
+            label1 = 'Radar (az, el, r): ('+az+', '+el+', '+r+')'
+            titl = ('Time Series Acc. '+date[0].strftime('%Y-%m-%d'))
 
             labely = 'Radar estimated rainfall accumulation (mm)'
 
             plot_timeseries(
                 date, value, savedir+figfname, labelx='Time UTC',
-                labely=labely, titl=titl, period=prdcfg['ScanPeriod']*60.)
+                labely=labely, label1=label1, titl=titl,
+                period=prdcfg['ScanPeriod']*60.)
             print('saved figure: '+savedir+figfname)
 
     elif prdcfg['type'] == 'COMPARE_POINT':
@@ -337,7 +362,7 @@ def generate_timeseries_products(dataset, prdcfg):
         radardate, radarvalue = read_timeseries(savedir_ts+csvfname)
 
         if radardate is not None:
-            sensordate, sensorvalue, label2, period = get_sensor_data(
+            sensordate, sensorvalue, sensortype, period = get_sensor_data(
                 radardate[0], dataset['datatype'], prdcfg)
 
             if sensordate is not None:
@@ -350,17 +375,17 @@ def generate_timeseries_products(dataset, prdcfg):
                     dataset['datatype'], prdcfg['convertformat'],
                     prdcfginfo=gateinfo, timeformat='%Y%m%d')
 
+                label1 = 'Radar (az, el, r): ('+az+', '+el+', '+r+')'
+                label2 = sensortype+' '+prdcfg['sensorid']
                 titl = ('Time Series Comp. ' +
-                        radardate[0].strftime('%Y-%m-%d') +
-                        ' (az, el, r): ('+az+', '+el+', '+r+') - '+label2 +
-                        ' '+prdcfg['sensorid'])
+                        radardate[0].strftime('%Y-%m-%d'))
 
                 labely = generate_field_name_str(dataset['datatype'])
 
                 plot_timeseries_comp(
                     radardate, radarvalue, sensordate, sensorvalue,
                     savedir+figfname, labelx='Time UTC', labely=labely,
-                    label1='Radar', label2=label2, titl=titl)
+                    label1=label1, label2=label2, titl=titl)
                 print('saved figure: '+savedir+figfname)
 
     elif prdcfg['type'] == 'COMPARE_CUMULATIVE_POINT':
@@ -380,7 +405,7 @@ def generate_timeseries_products(dataset, prdcfg):
         radardate, radarvalue = read_timeseries(savedir_ts+csvfname)
 
         if radardate is not None:
-            sensordate, sensorvalue, label2, period2 = get_sensor_data(
+            sensordate, sensorvalue, sensortype, period2 = get_sensor_data(
                 radardate[0], dataset['datatype'], prdcfg)
 
             if sensordate is not None:
@@ -393,17 +418,16 @@ def generate_timeseries_products(dataset, prdcfg):
                     dataset['datatype'], prdcfg['convertformat'],
                     prdcfginfo=gateinfo, timeformat='%Y%m%d')
 
+                label1 = 'Radar (az, el, r): ('+az+', '+el+', '+r+')'
+                label2 = sensortype+' '+prdcfg['sensorid']
                 titl = ('Time Series Acc. Comp. ' +
-                        radardate[0].strftime('%Y-%m-%d') +
-                        ' (az, el, r): ('+az+', '+el+', '+r+') - '+label2 +
-                        ' ' + prdcfg['sensorid'])
-
+                        radardate[0].strftime('%Y-%m-%d'))
                 labely = 'Rainfall accumulation (mm)'
 
                 plot_timeseries_comp(
                     radardate, radarvalue, sensordate, sensorvalue,
                     savedir+figfname, labelx='Time UTC', labely=labely,
-                    label1='Radar', label2=label2, titl=titl,
+                    label1=label1, label2=label2, titl=titl,
                     period1=prdcfg['ScanPeriod']*60., period2=period2)
                 print('saved figure: '+savedir+figfname)
 
