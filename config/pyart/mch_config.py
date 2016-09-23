@@ -79,6 +79,8 @@ unfiltered_cross_correlation_ratio = 'unfiltered_cross_correlation_ratio'
 uncorrected_cross_correlation_ratio = 'uncorrected_cross_correlation_ratio'
 logarithmic_cross_correlation_ratio = 'logarithmic_cross_correlation_ratio'
 
+cross_correlation_ratio_in_rain = 'cross_correlation_ratio_in_rain'
+
 # Normalized coherent power, signal quality index, SQI, NCP
 normalized_coherent_power = 'normalized_coherent_power'
 
@@ -88,7 +90,8 @@ unfolded_differential_phase = 'unfolded_differential_phase'
 corrected_differential_phase = 'corrected_differential_phase'
 
 uncorrected_differential_phase = 'uncorrected_differential_phase'
-uncorrected_unfiltered_differential_phase = 'uncorrected_unfiltered_differential_phase'
+uncorrected_unfiltered_differential_phase = (
+    'uncorrected_unfiltered_differential_phase')
 
 system_differential_phase = 'system_differential_phase'
 first_gate_differential_phase = 'first_gate_differential_phase'
@@ -97,8 +100,10 @@ first_gate_differential_phase = 'first_gate_differential_phase'
 specific_differential_phase = 'specific_differential_phase'
 corrected_specific_differential_phase = 'corrected_specific_differential_phase'
 
-uncorrected_specific_differential_phase = 'uncorrected_specific_differential_phase'
-uncorrected_unfiltered_specific_differential_phase = 'uncorrected_unfiltered_specific_differential_phase'
+uncorrected_specific_differential_phase = (
+    'uncorrected_specific_differential_phase')
+uncorrected_unfiltered_specific_differential_phase = (
+    'uncorrected_unfiltered_specific_differential_phase')
 
 # Linear depolarization ration (h - horizontal, v - vertical), LDR
 linear_depolarization_ratio = 'linear_polarization_ratio'
@@ -209,22 +214,28 @@ DEFAULT_FIELD_NAMES = {
     'unfiltered_spectrum_width_vv': unfiltered_spectrum_width_vv,
     'differential_reflectivity': differential_reflectivity,
     'corrected_differential_reflectivity': corrected_differential_reflectivity,
-    'unfiltered_differential_reflectivity': unfiltered_differential_reflectivity,
+    'unfiltered_differential_reflectivity': (
+        unfiltered_differential_reflectivity),
     'cross_correlation_ratio': cross_correlation_ratio,
     'unfiltered_cross_correlation_ratio': unfiltered_cross_correlation_ratio,
     'uncorrected_cross_correlation_ratio': uncorrected_cross_correlation_ratio,
     'logarithmic_cross_correlation_ratio': logarithmic_cross_correlation_ratio,
+    'cross_correlation_ratio_in_rain': cross_correlation_ratio_in_rain,
     'normalized_coherent_power': normalized_coherent_power,
     'differential_phase': differential_phase,
     'unfolded_differential_phase': unfolded_differential_phase,
     'corrected_differential_phase': corrected_differential_phase,
     'uncorrected_differential_phase': uncorrected_differential_phase,
-    'uncorrected_unfiltered_differential_phase': uncorrected_unfiltered_differential_phase,
+    'uncorrected_unfiltered_differential_phase': (
+        uncorrected_unfiltered_differential_phase),
     'system_differential_phase': system_differential_phase,
     'specific_differential_phase': specific_differential_phase,
-    'corrected_specific_differential_phase': corrected_specific_differential_phase,
-    'uncorrected_specific_differential_phase': uncorrected_specific_differential_phase,
-    'uncorrected_unfiltered_specific_differential_phase': uncorrected_unfiltered_specific_differential_phase,
+    'corrected_specific_differential_phase': (
+        corrected_specific_differential_phase),
+    'uncorrected_specific_differential_phase': (
+        uncorrected_specific_differential_phase),
+    'uncorrected_unfiltered_specific_differential_phase': (
+        uncorrected_unfiltered_specific_differential_phase),
     'linear_depolarization_ratio': linear_depolarization_ratio,
     'linear_depolarization_ratio_h': linear_depolarization_ratio_h,
     'linear_depolarization_ratio_v': linear_depolarization_ratio_v,
@@ -544,7 +555,7 @@ DEFAULT_METADATA = {
         'standard_name': 'equivalent_reflectivity_factor',
         'long_name': 'Total power',
         'coordinates': 'elevation azimuth range'},
-        
+
     reflectivity_bias: {
         'units': 'dB',
         'standard_name': 'reflectivity_bias',
@@ -590,13 +601,13 @@ DEFAULT_METADATA = {
         'standard_name': 'cross_correlation_ratio_hv',
         'long_name': 'Cross correlation ratio (RHOHV)',
         'coordinates': 'elevation azimuth range'},
-        
+
     unfiltered_cross_correlation_ratio: {
         'units': 'ratio',
         'standard_name': 'unfiltered_cross_correlation_ratio_hv',
         'long_name': 'Unfiltered cross correlation ratio (RHOHV)',
         'coordinates': 'elevation azimuth range'},
-        
+
     uncorrected_cross_correlation_ratio: {
         'units': 'ratio',
         'standard_name': 'uncorrected_cross_correlation_ratio_hv',
@@ -607,6 +618,12 @@ DEFAULT_METADATA = {
         'units': 'dB',
         'standard_name': 'logarithmic_cross_correlation_ratio_hv',
         'long_name': 'Logarithmic cross correlation ratio (L)',
+        'coordinates': 'elevation azimuth range'},
+
+    cross_correlation_ratio_in_rain: {
+        'units': 'ratio',
+        'standard_name': 'cross_correlation_ratio_in_rain',
+        'long_name': 'cross correlation ratio in rain',
         'coordinates': 'elevation azimuth range'},
 
     normalized_coherent_power: {
@@ -637,19 +654,19 @@ DEFAULT_METADATA = {
         'standard_name': 'differential_phase_hv',
         'long_name': 'Corrected differential phase',
         'coordinates': 'elevation azimuth range'},
-        
+
     uncorrected_differential_phase: {
         'units': 'degrees',
         'standard_name': 'differential_phase_hv',
         'long_name': 'Uncorrected differential phase',
         'coordinates': 'elevation azimuth range'},
-        
+
     uncorrected_unfiltered_differential_phase: {
         'units': 'degrees',
         'standard_name': 'differential_phase_hv',
         'long_name': 'Uncorrected unfiltered differential phase',
         'coordinates': 'elevation azimuth range'},
-    
+
     system_differential_phase: {
         'units': 'degrees',
         'standard_name': 'system_differential_phase',
@@ -657,13 +674,13 @@ DEFAULT_METADATA = {
         'valid_max': 180.0,
         'valid_min': -180.0,
         'coordinates': 'elevation azimuth'},
-        
+
     first_gate_differential_phase: {
         'units': 'gate index',
         'standard_name': 'first_gate_differential_phase',
         'long_name': 'First valid differential phase gate',
         'coordinates': 'elevation azimuth'},
-        
+
     specific_differential_phase: {
         'units': 'degrees/km',
         'standard_name': 'specific_differential_phase_hv',
@@ -695,7 +712,7 @@ DEFAULT_METADATA = {
         'standard_name': 'log_linear_depolarization_ratio_v',
         'long_name': 'Linear depolarization ratio vertical',
         'coordinates': 'elevation azimuth range'},
-        
+
     circular_depolarization_ratio: {
         'units': 'dB',
         'standard_name': 'circular_depolarization_ratio',
@@ -707,26 +724,26 @@ DEFAULT_METADATA = {
         'units': 'dB',
         'standard_name': 'signal_to_noise_ratio',
         'long_name': 'Signal to noise ratio',
-        'coordinates': 'elevation azimuth range'},        
-    
+        'coordinates': 'elevation azimuth range'},
+
     signal_to_noise_ratio_hh: {
         'units': 'dB',
         'standard_name': 'signal_to_noise_ratio_hh',
         'long_name': 'Signal to noise ratio horizontal',
         'coordinates': 'elevation azimuth range'},
-        
+
     signal_to_noise_ratio_vv: {
         'units': 'dB',
         'standard_name': 'signal_to_noise_ratio_vv',
         'long_name': 'Signal to noise ratio vertical',
         'coordinates': 'elevation azimuth range'},
-        
+
     noisedBZ_hh: {
         'units': 'dBZ',
         'standard_name': 'noisedBZ_hh',
         'long_name': 'noise in dBZ horizontal',
         'coordinates': 'elevation azimuth range'},
-        
+
     noisedBZ_vv: {
         'units': 'dBZ',
         'standard_name': 'noisedBZ_vv',
@@ -750,7 +767,7 @@ DEFAULT_METADATA = {
         'standard_name': 'radar_echo_classification',
         'long_name': 'Radar Echo classification',
         'coordinates': 'elevation azimuth range'},
-        
+
     radar_echo_id: {
         'units': 'legend',
         'standard_name': 'radar_echo_id',
@@ -762,20 +779,20 @@ DEFAULT_METADATA = {
         'standard_name': 'specific_attenuation',
         'long_name': 'Specific attenuation',
         'coordinates': 'elevation azimuth range'},
-        
+
     specific_differential_attenuation: {
         'units': 'dB/km',
         'standard_name': 'specific_differential_attenuation',
         'long_name': 'Specific differential attenuation',
         'coordinates': 'elevation azimuth range'},
-    
+
     # COSMO model data
     temperature: {
         'units': 'degrees Celsius',
         'standard_name': 'temperature',
         'long_name': 'Temperature',
         'coordinates': 'elevation azimuth range'},
-        
+
     iso0: {
         'units': 'dimensionless',
         'standard_name': 'iso0',
@@ -787,19 +804,19 @@ DEFAULT_METADATA = {
         'standard_name': 'differential_phase_hv_texture',
         'long_name': 'Texture of differential phase (PhiDP)',
         'coordinates': 'elevation azimuth range'},
-        
+
     differential_reflectivity_texture: {
         'units': 'dB',
         'standard_name': 'differential_reflectivity_texture',
         'long_name': 'Texture of differential reflectivity',
         'coordinates': 'elevation azimuth range'},
-        
+
     reflectivity_texture: {
         'units': 'dB',
         'standard_name': 'reflectivity_texture',
         'long_name': 'Texture of reflectivity',
         'coordinates': 'elevation azimuth range'},
-        
+
     cross_correlation_ratio_texture: {
         'units': 'ratio',
         'standard_name': 'cross_correlation_ratio_texture',
@@ -1521,11 +1538,11 @@ DEFAULT_FIELD_COLORMAP = {
     reflectivity_vv: 'pyart_NWSRef',
     unfiltered_reflectivity_vv: 'pyart_NWSRef',
     reflectivity_bias: 'pyart_NWSRef',
-	
+
     signal_to_noise_ratio: 'pyart_Carbone17',
     signal_to_noise_ratio_hh: 'pyart_Carbone17',
     signal_to_noise_ratio_vv: 'pyart_Carbone17',
-    
+
     noisedBZ_hh: 'pyart_NWSRef',
     noisedBZ_vv: 'pyart_NWSRef',
 
@@ -1553,6 +1570,7 @@ DEFAULT_FIELD_COLORMAP = {
     unfiltered_cross_correlation_ratio: 'pyart_RefDiff',
     uncorrected_cross_correlation_ratio: 'pyart_RefDiff',
     logarithmic_cross_correlation_ratio: 'pyart_RefDiff',
+    cross_correlation_ratio_in_rain: 'pyart_RefDiff',
 
     differential_phase: 'pyart_Wild25',
     unfolded_differential_phase: 'pyart_Wild25',
@@ -1569,7 +1587,7 @@ DEFAULT_FIELD_COLORMAP = {
     linear_depolarization_ratio: 'pyart_SCook18',
     linear_depolarization_ratio_h: 'pyart_SCook18',
     linear_depolarization_ratio_v: 'pyart_SCook18',
-    
+
     circular_depolarization_ratio: 'pyart_SCook18',
 
     rain_rate: 'pyart_RRate11',
@@ -1585,7 +1603,7 @@ DEFAULT_FIELD_COLORMAP = {
     differential_reflectivity_texture: 'pyart_BlueBrown11',
     reflectivity_texture: 'pyart_BlueBrown11',
     cross_correlation_ratio_texture: 'pyart_BlueBrown11',
-    
+
     height: 'pyart_SCook18',
     interpolated_profile: 'pyart_SCook18',
 
@@ -1623,7 +1641,7 @@ DEFAULT_FIELD_LIMITS = {
 
     velocity: velocity_limit,
     corrected_velocity: velocity_limit,
-	unfiltered_velocity: velocity_limit,
+    unfiltered_velocity: velocity_limit,
     velocity_vv: velocity_limit,
     unfiltered_velocity_vv: velocity_limit,
     eastward_wind_component: velocity_limit,
@@ -1631,7 +1649,7 @@ DEFAULT_FIELD_LIMITS = {
     vertical_wind_component: velocity_limit,
 
     spectrum_width: spectrum_width_limit,
-	unfiltered_spectrum_width: spectrum_width_limit,
+    unfiltered_spectrum_width: spectrum_width_limit,
     spectrum_width_vv: spectrum_width_limit,
     unfiltered_spectrum_width_vv: spectrum_width_limit,
 
@@ -1639,29 +1657,30 @@ DEFAULT_FIELD_LIMITS = {
 
     differential_reflectivity: (-1., 8.),
     corrected_differential_reflectivity: (-1., 8.),
-	unfiltered_differential_reflectivity: (-1., 8.),
+    unfiltered_differential_reflectivity: (-1., 8.),
 
     cross_correlation_ratio: (0.7, 1.),
-	unfiltered_cross_correlation_ratio: (0.7, 1.),
+    unfiltered_cross_correlation_ratio: (0.7, 1.),
     uncorrected_cross_correlation_ratio: (0.7, 1.),
     logarithmic_cross_correlation_ratio: (0, 4),
+    cross_correlation_ratio_in_rain: (0.9, 1.),
 
     differential_phase: (-180., 180.),
     unfolded_differential_phase: (-180., 180.),
     corrected_differential_phase: (-180., 180.),
-	uncorrected_differential_phase: (-180, 180.),
+    uncorrected_differential_phase: (-180, 180.),
     uncorrected_unfiltered_differential_phase: (-180, 180.),
     system_differential_phase: (-180., 180.),
 
     specific_differential_phase: (0., 1.),
     corrected_specific_differential_phase: (0., 1.),
-	uncorrected_specific_differential_phase: (0., 1.),
+    uncorrected_specific_differential_phase: (0., 1.),
     uncorrected_unfiltered_specific_differential_phase: (0., 1.),
 
     linear_depolarization_ratio: (-40., 0.),
     linear_depolarization_ratio_h: (-40., 0.),
     linear_depolarization_ratio_v: (-40., 0.),
-    
+
     circular_depolarization_ratio: (-40., 0.),
 
     rain_rate: (0., 30.),
@@ -1669,7 +1688,7 @@ DEFAULT_FIELD_LIMITS = {
 
     radar_echo_classification: (0, 9),
     radar_echo_id: (0, 3),
-       
+
 
     specific_attenuation: (0., 1.),
     specific_differential_attenuation: (0., 0.3),

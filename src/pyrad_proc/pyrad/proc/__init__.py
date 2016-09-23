@@ -37,6 +37,7 @@ Dataset processing
     process_save_radar
     process_selfconsistency_kdp_phidp
     process_selfconsistency_bias
+    process_rhohv_rain
 
 Product processing
 ==================
@@ -64,7 +65,7 @@ from .process_dataset import process_kdp_leastsquare_double_window
 from .process_dataset import process_rainrate, process_hydroclass
 from .process_dataset import process_point_measurement, process_save_radar
 from .process_dataset import process_selfconsistency_kdp_phidp
-from .process_dataset import process_selfconsistency_bias
+from .process_dataset import process_selfconsistency_bias, process_rhohv_rain
 
 from .process_product import get_product_type, generate_vol_products
 from .process_product import generate_timeseries_products

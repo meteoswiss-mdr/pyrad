@@ -28,6 +28,7 @@ from ..io.read_data import get_sensor_data
 from ..io.write_data import write_timeseries, generate_field_name_str
 from ..graph.plots import plot_ppi, plot_rhi, plot_cappi, plot_bscope
 from ..graph.plots import plot_timeseries, plot_timeseries_comp
+from ..graph.plots import plot_quantiles, get_colobar_label
 
 
 def get_product_type(product_type):
@@ -88,7 +89,19 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfg['voltype'], prdcfg['convertformat'],
                 prdcfginfo='el'+'{:.1f}'.format(el))
 
-            plot_ppi(dataset, field_name, ind_el, prdcfg, savedir+fname)
+            step = None
+            quantiles = None
+            plot_type = 'PPI'
+            if 'plot_type' in prdcfg:
+                plot_type = prdcfg['plot_type']
+            if 'step' in prdcfg:
+                step = prdcfg['step']
+            if 'quantiles' in prdcfg:
+                quantiles = prdcfg['quantiles']
+
+            plot_ppi(dataset, field_name, ind_el, prdcfg, savedir+fname,
+                     plot_type=plot_type, step=step, quantiles=quantiles)
+
             print('saved figure: '+savedir+fname)
         else:
             warn(
@@ -112,7 +125,19 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfg['voltype'], prdcfg['convertformat'],
                 prdcfginfo='az'+'{:.1f}'.format(az))
 
-            plot_rhi(dataset, field_name, ind_az, prdcfg, savedir+fname)
+            step = None
+            quantiles = None
+            plot_type = 'RHI'
+            if 'plot_type' in prdcfg:
+                plot_type = prdcfg['plot_type']
+            if 'step' in prdcfg:
+                step = prdcfg['step']
+            if 'quantiles' in prdcfg:
+                quantiles = prdcfg['quantiles']
+
+            plot_rhi(dataset, field_name, ind_az, prdcfg, savedir+fname,
+                     plot_type=plot_type, step=step, quantiles=quantiles)
+
             print('saved figure: '+savedir+fname)
         else:
             warn(
@@ -136,7 +161,19 @@ def generate_vol_products(dataset, prdcfg):
                     prdcfg['voltype'], prdcfg['convertformat'],
                     prdcfginfo='el'+'{:.1f}'.format(prdcfg['angle']))
 
-                plot_ppi(xsect, field_name, 0, prdcfg, savedir+fname)
+                step = None
+                quantiles = None
+                plot_type = 'PPI'
+                if 'plot_type' in prdcfg:
+                    plot_type = prdcfg['plot_type']
+                if 'step' in prdcfg:
+                    step = prdcfg['step']
+                if 'quantiles' in prdcfg:
+                    quantiles = prdcfg['quantiles']
+
+                plot_ppi(xsect, field_name, 0, prdcfg, savedir+fname,
+                         plot_type=plot_type, step=step, quantiles=quantiles)
+
                 print('saved figure: '+savedir+fname)
             except EnvironmentError:
                 warn(
@@ -164,7 +201,19 @@ def generate_vol_products(dataset, prdcfg):
                     prdcfg['voltype'], prdcfg['convertformat'],
                     prdcfginfo='az'+'{:.1f}'.format(prdcfg['angle']))
 
-                plot_rhi(xsect, field_name, 0, prdcfg, savedir+fname)
+                step = None
+                quantiles = None
+                plot_type = 'RHI'
+                if 'plot_type' in prdcfg:
+                    plot_type = prdcfg['plot_type']
+                if 'step' in prdcfg:
+                    step = prdcfg['step']
+                if 'quantiles' in prdcfg:
+                    quantiles = prdcfg['quantiles']
+
+                plot_rhi(xsect, field_name, 0, prdcfg, savedir+fname,
+                         plot_type=plot_type, step=step, quantiles=quantiles)
+
                 print('saved figure: '+savedir+fname)
             except EnvironmentError:
                 warn(
@@ -215,6 +264,38 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfginfo='ang'+'{:.1f}'.format(ang))
 
             plot_bscope(dataset, field_name, ind_ang, prdcfg, savedir+fname)
+            print('saved figure: '+savedir+fname)
+        else:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+
+    if prdcfg['type'] == 'QUANTILES':
+        field_name = get_fieldname_rainbow(prdcfg['voltype'])
+        if field_name in dataset.fields:
+            ang_vec = np.sort(dataset.fixed_angle['data'])
+            ang = ang_vec[prdcfg['anglenr']]
+            ind_ang = np.where(dataset.fixed_angle['data'] == ang)[0][0]
+
+            savedir = get_save_dir(
+                prdcfg['basepath'], prdcfg['procname'], prdcfg['timeinfo'],
+                prdcfg['dsname'], prdcfg['prdname'])
+
+            fname = make_filename(
+                prdcfg['timeinfo'], 'quantiles', prdcfg['dstype'],
+                prdcfg['voltype'], prdcfg['convertformat'],
+                prdcfginfo='ang'+'{:.1f}'.format(ang))
+
+            quant = dataset.range['data']
+            value = dataset.fields[field_name]['data'][ind_ang, :]
+            titl = pyart.graph.common.generate_title(
+                dataset, field_name, ind_ang)
+            labely = get_colobar_label(dataset.fields[field_name], field_name)
+
+            plot_quantiles(quant, value, savedir+fname, labelx='quantile',
+                           labely=labely, titl=titl)
+
             print('saved figure: '+savedir+fname)
         else:
             warn(

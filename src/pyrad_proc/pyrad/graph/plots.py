@@ -11,8 +11,12 @@ Functions to plot Pyrad datasets
     plot_rhi
     plot_cappi
     plot_bscope
+    plot_quantiles
     plot_timeseries
     plot_timeseries_comp
+    get_colobar_label
+    compute_quantiles_sweep
+    compute_histogram_sweep
 
 """
 
@@ -24,7 +28,8 @@ import numpy as np
 import pyart
 
 
-def plot_ppi(radar, field_name, ind_el, prdcfg, fname):
+def plot_ppi(radar, field_name, ind_el, prdcfg, fname, plot_type='PPI',
+             step=None, quantiles=None):
     """
     plots a PPI
 
@@ -32,43 +37,71 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname):
     ----------
     radar : Radar object
         object containing the radar data to plot
-
     field_name : str
         name of the radar field to plot
-
     ind_el : int
         sweep index to plot
-
     prdcfg : dict
         dictionary containing the product configuration
-
     fname : str
         name of the file where to store the plot
+    plot_type : str
+        type of plot (PPI, QUANTILES or HISTOGRAM)
+    step : float
+        step for histogram plotting
+    quantiles : float array
+        quantiles to plot
 
     Returns
     -------
     no return
 
     """
-    display = pyart.graph.RadarDisplay(radar)
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                               prdcfg['ppiImageConfig']['ysize']],
                      dpi=72)
-    display.plot_ppi(field_name, sweep=ind_el)
-    display.set_limits(
-        ylim=[prdcfg['ppiImageConfig']['ymin'],
-              prdcfg['ppiImageConfig']['ymax']],
-        xlim=[prdcfg['ppiImageConfig']['xmin'],
-              prdcfg['ppiImageConfig']['xmax']])
-    display.plot_range_rings([10, 20, 30, 40])
-    display.plot_cross_hair(5.)
 
-    fig.savefig(fname)
+    if plot_type == 'PPI':
+        display = pyart.graph.RadarDisplay(radar)
+        display.plot_ppi(field_name, sweep=ind_el)
+        display.set_limits(
+            ylim=[prdcfg['ppiImageConfig']['ymin'],
+                  prdcfg['ppiImageConfig']['ymax']],
+            xlim=[prdcfg['ppiImageConfig']['xmin'],
+                  prdcfg['ppiImageConfig']['xmax']])
+        display.plot_range_rings([10, 20, 30, 40])
+        display.plot_cross_hair(5.)
 
-    plt.close()
+        fig.savefig(fname)
+        plt.close()
+
+    elif plot_type == 'QUANTILES':
+        quantiles, values = compute_quantiles_sweep(
+            radar.fields[field_name]['data'],
+            radar.sweep_start_ray_index['data'][ind_el],
+            radar.sweep_end_ray_index['data'][ind_el], quantiles=quantiles)
+
+        titl = pyart.graph.common.generate_title(radar, field_name, ind_el)
+        labely = get_colobar_label(radar.fields[field_name], field_name)
+
+        plot_quantiles(quantiles, values, fname, labelx='quantile',
+                       labely=labely, titl=titl)
+
+    elif plot_type == 'HISTOGRAM':
+        bins, values = compute_histogram_sweep(
+            radar.fields[field_name]['data'],
+            radar.sweep_start_ray_index['data'][ind_el],
+            radar.sweep_end_ray_index['data'][ind_el], field_name, step=step)
+
+        titl = pyart.graph.common.generate_title(radar, field_name, ind_el)
+        labelx = get_colobar_label(radar.fields[field_name], field_name)
+
+        plot_histogram(bins, values, fname, labelx=labelx,
+                       labely='Number of Samples', titl=titl)
 
 
-def plot_rhi(radar, field_name, ind_az, prdcfg, fname):
+def plot_rhi(radar, field_name, ind_az, prdcfg, fname, plot_type='PPI',
+             step=None, quantiles=None):
     """
     plots an RHI
 
@@ -76,38 +109,65 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname):
     ----------
     radar : Radar object
         object containing the radar data to plot
-
     field_name : str
         name of the radar field to plot
-
     ind_az : int
         sweep index to plot
-
     prdcfg : dict
         dictionary containing the product configuration
-
     fname : str
         name of the file where to store the plot
+    plot_type : str
+        type of plot (PPI, QUANTILES or HISTOGRAM)
+    step : float
+        step for histogram plotting
+    quantiles : float array
+        quantiles to plot
 
     Returns
     -------
     no return
 
     """
-    display = pyart.graph.RadarDisplay(radar)
     fig = plt.figure(figsize=[prdcfg['rhiImageConfig']['xsize'],
                               prdcfg['rhiImageConfig']['ysize']],
                      dpi=72)
-    display.plot_rhi(field_name, sweep=ind_az, reverse_xaxis=False)
-    display.set_limits(
-        ylim=[prdcfg['rhiImageConfig']['ymin'],
-              prdcfg['rhiImageConfig']['ymax']],
-        xlim=[prdcfg['rhiImageConfig']['xmin'],
-              prdcfg['rhiImageConfig']['xmax']])
-    display.plot_cross_hair(5.)
 
-    fig.savefig(fname)
-    plt.close()
+    if plot_type == 'RHI':
+        display = pyart.graph.RadarDisplay(radar)
+        display.plot_rhi(field_name, sweep=ind_az, reverse_xaxis=False)
+        display.set_limits(
+            ylim=[prdcfg['rhiImageConfig']['ymin'],
+                  prdcfg['rhiImageConfig']['ymax']],
+            xlim=[prdcfg['rhiImageConfig']['xmin'],
+                  prdcfg['rhiImageConfig']['xmax']])
+        display.plot_cross_hair(5.)
+
+        fig.savefig(fname)
+        plt.close()
+    elif plot_type == 'QUANTILES':
+        quantiles, values = compute_quantiles_sweep(
+            radar.fields[field_name]['data'],
+            radar.sweep_start_ray_index['data'][ind_az],
+            radar.sweep_end_ray_index['data'][ind_az], quantiles=quantiles)
+
+        titl = pyart.graph.common.generate_title(radar, field_name, ind_az)
+        labely = get_colobar_label(radar.fields[field_name], field_name)
+
+        plot_quantiles(quantiles, values, fname, labelx='quantile',
+                       labely=labely, titl=titl)
+
+    elif plot_type == 'HISTOGRAM':
+        bins, values = compute_histogram_sweep(
+            radar.fields[field_name]['data'],
+            radar.sweep_start_ray_index['data'][ind_az],
+            radar.sweep_end_ray_index['data'][ind_az], field_name, step=step)
+
+        titl = pyart.graph.common.generate_title(radar, field_name, ind_az)
+        labelx = get_colobar_label(radar.fields[field_name], field_name)
+
+        plot_histogram(bins, values, fname, labelx=labelx,
+                       labely='Number of Samples', titl=titl)
 
 
 def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname):
@@ -160,21 +220,7 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname):
 
     # display data
     titl = pyart.graph.common.generate_title(radar_aux, field_name, ind_sweep)
-
-    # set the colorbar/yaxis label.
-    if 'standard_name' in radar_aux.fields[field_name]:
-        standard_name = radar_aux.fields[field_name]['standard_name']
-    elif 'long_name' in radar_aux.fields[field_name]:
-        standard_name = radar_aux.fields[field_name]['long_name']
-    else:
-        standard_name = field_name
-
-    if 'units' in radar_aux.fields[field_name]:
-        units = radar_aux.fields[field_name]['units']
-    else:
-        units = '?'
-
-    label = pyart.graph.common.generate_colorbar_label(standard_name, units)
+    label = get_colobar_label(radar_aux.fields[field_name], field_name)
 
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                               prdcfg['ppiImageConfig']['ysize']],
@@ -260,22 +306,79 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname):
     plt.title(titl)
 
     # plot the colorbar and set the label.
-    if 'standard_name' in grid.fields[field_name]:
-        standard_name = grid.fields[field_name]['standard_name']
-    elif 'long_name' in grid.fields[field_name]:
-        standard_name = grid.fields[field_name]['long_name']
-    else:
-        standard_name = field_name
-
-    if 'units' in grid.fields[field_name]:
-        units = grid.fields[field_name]['units']
-    else:
-        units = '?'
-
-    label = pyart.graph.common.generate_colorbar_label(standard_name, units)
-
+    label = get_colobar_label(grid.fields[field_name], field_name)
     cb = fig.colorbar(cax)
     cb.set_label(label)
+
+    fig.savefig(fname)
+    plt.close()
+
+
+def plot_quantiles(quant, value, fname, labelx='quantile', labely='value',
+                   titl='quantile'):
+    """
+    plots quantiles
+
+    Parameters
+    ----------
+    quant : array
+        quantiles to be plotted
+    value : array
+        values of each quantie
+    fname : str
+        name of the file where to store the plot
+    labelx : str
+        The label of the X axis
+    labely : str
+        The label of the Y axis
+    titl : str
+        The figure title
+
+    Returns
+    -------
+    no return
+
+    """
+    fig = plt.figure(figsize=[10, 6])
+    plt.plot(quant, value, 'bx-')
+    plt.xlabel(labelx)
+    plt.ylabel(labely)
+    plt.title(titl)
+
+    fig.savefig(fname)
+    plt.close()
+
+
+def plot_histogram(bins, values, fname, labelx='bins',
+                   labely='Number of Samples', titl='histogram'):
+    """
+    plots histogram
+
+    Parameters
+    ----------
+    quant : array
+        quantiles to be plotted
+    value : array
+        values of each quantie
+    fname : str
+        name of the file where to store the plot
+    labelx : str
+        The label of the X axis
+    labely : str
+        The label of the Y axis
+    titl : str
+        The figure title
+
+    Returns
+    -------
+    no return
+
+    """
+    fig = plt.figure(figsize=[10, 6])
+    plt.hist(values, bins=bins)
+    plt.xlabel(labelx)
+    plt.ylabel(labely)
+    plt.title(titl)
 
     fig.savefig(fname)
     plt.close()
@@ -387,3 +490,104 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname,
 
     fig.savefig(fname)
     plt.close()
+
+
+def get_colobar_label(field_dict, field_name):
+    """
+    creates the colorbar label using field metadata
+
+    Parameters
+    ----------
+    field_dict : dict
+        dictionary containing field metadata
+    field_name : str
+        name of the field
+
+    Returns
+    -------
+    label : str
+        colorbar label
+
+    """
+    if 'standard_name' in field_dict:
+        standard_name = field_dict['standard_name']
+    elif 'long_name' in field_dict:
+        standard_name = field_dict['long_name']
+    else:
+        standard_name = field_name
+
+    if 'units' in field_dict:
+        units = field_dict['units']
+    else:
+        units = '?'
+
+    return pyart.graph.common.generate_colorbar_label(standard_name, units)
+
+
+def compute_quantiles_sweep(field, ray_start, ray_end, quantiles=None):
+    """
+    computes quantiles of a particular sweep
+
+    Parameters
+    ----------
+    field : ndarray 2D
+        the radar field
+    ray_start, ray_end : int
+        starting and ending ray indexes
+    quantiles: float array
+        list of quantiles to compute
+
+    Returns
+    -------
+    quantiles : float array
+        list of quantiles
+    values : float array
+        values at each quantile
+
+    """
+    if quantiles is None:
+        quantiles = [10., 20., 30., 40., 50., 60., 70., 80., 90.]
+        warn('No quantiles have been defined. Default ' + str(quantiles) +
+             ' will be used')
+    nquantiles = len(quantiles)
+    values = np.ma.zeros(nquantiles)
+    values[:] = np.ma.masked
+
+    data_valid = field[ray_start:ray_end, :].compressed()
+    for i in range(nquantiles):
+        values[i] = np.percentile(data_valid, quantiles[i])
+
+    return quantiles, values
+
+
+def compute_histogram_sweep(field, ray_start, ray_end, field_name, step=None):
+    """
+    computes histogram of the data in a particular sweep
+
+    Parameters
+    ----------
+    field : ndarray 2D
+        the radar field
+    ray_start, ray_end : int
+        starting and ending ray indexes
+    field_name: str
+        name of the field
+    step : float
+        size of bin
+
+    Returns
+    -------
+    bins : float array
+        interval of each bin
+    values : float array
+        values at each bin
+
+    """
+    vmin, vmax = pyart.config.get_field_limits(field_name)
+    if step is None:
+        step = (vmax-vmin)/50.
+        warn('No step has been defined. Default '+str(step)+' will be used')
+    bins = np.linspace(vmin, vmax, num=int((vmax-vmin)/step))
+    values = field[ray_start:ray_end, :].compressed()
+
+    return bins, values

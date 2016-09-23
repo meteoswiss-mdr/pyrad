@@ -1105,6 +1105,8 @@ def get_fieldname_rainbow(datatype):
         field_name = 'uncorrected_cross_correlation_ratio'
     elif datatype == 'RhoHVc':
         field_name = 'corrected_cross_correlation_ratio'
+    elif datatype == 'RhoHV_rain':
+        field_name = 'cross_correlation_ratio_in_rain'
     elif datatype == 'L':
         field_name = 'logarithmic_cross_correlation_ratio'
     elif datatype == 'CDR':

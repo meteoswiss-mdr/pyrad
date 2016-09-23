@@ -31,6 +31,7 @@ Functions for processing Pyrad datasets
     process_phidp_kdp_lp
     process_selfconsistency_kdp_phidp
     process_selfconsistency_bias
+    process_rhohv_rain
 
 """
 
@@ -112,6 +113,8 @@ def get_process_type(dataset_type):
         func_name = 'process_selfconsistency_kdp_phidp'
     elif dataset_type == 'SELFCONSISTENCY_BIAS':
         func_name = 'process_selfconsistency_bias'
+    elif dataset_type == 'RHOHV_RAIN':
+        func_name = 'process_rhohv_rain'
     elif dataset_type == 'POINT_MEASUREMENT':
         func_name = 'process_point_measurement'
         dsformat = 'TIMESERIES'
@@ -1758,5 +1761,62 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
     new_dataset.ngates = 1
 
     new_dataset.add_field('reflectivity_bias', refl_bias)
+
+    return new_dataset
+
+
+def process_rhohv_rain(procstatus, dscfg, radar=None):
+    """
+    Computes quantiles of RhoHV in rain
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+
+    if procstatus != 1:
+        return None
+
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatypefields(
+            datatypedescr)
+        if datatype == 'RhoHV':
+            rhohv = 'cross_correlation_ratio'
+        if datatype == 'RhoHVc':
+            rhohv = 'corrected_cross_correlation_ratio'
+        if datatype == 'dBZc':
+            refl = 'corrected_reflectivity'
+        if datatype == 'dBZ':
+            refl = 'reflectivity'
+        if datatype == 'TEMP':
+            temp = 'temperature'
+
+    ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
+    ind_rmax = np.where(radar.range['data'] < dscfg['rmax'])[0][-1]
+
+    rhohv_rain = pyart.correct.est_rhohv_rain(
+        radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, zmin=dscfg['Zmin'],
+        zmax=dscfg['Zmax'], doc=None, fzl=None, rhohv_field=None,
+        temp_field=None, refl_field=None)
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+
+    new_dataset.add_field('cross_correlation_ratio_in_rain', rhohv_rain)
 
     return new_dataset

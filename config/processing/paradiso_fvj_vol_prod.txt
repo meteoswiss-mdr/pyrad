@@ -4,12 +4,11 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 5
+dataSetList STRARR 4
     l0:echoID
-    l1:echoFilter    
+    l1:echoFilter
     l2:Att_ZPhi
-    l3:PhiDP_KDP_selfconsistency
-    l3:Zh_bias_selfconsistency
+    l3:RhoHV_rain
 
 # ==========================================================================================
 #                 raw data products
@@ -17,19 +16,30 @@ dataSetList STRARR 5
 #dBZ STRUCT 3
 #	type STRING RAW
 #	datatype STRING dBZ
-#	products STRUCT 3
-#	   EL004_0 STRUCT 3
-#         type   STRING PPI_IMAGE
+#	products STRUCT 4
+#	   EL004_0 STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING PPI
 #         voltype STRING dBZ
 #		 anglenr INT 0
+#       EL004_0_QUANTILES STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING QUANTILES
+#         voltype STRING dBZ
+#		 anglenr INT 0
+#       EL004_0_HISTOGRAM STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING HISTOGRAM
+#         voltype STRING dBZ
+#		 anglenr INT 0         
 #       ALT1000 STRUCT 3
-#         type   STRING CAPPI_IMAGE
+#         type STRING CAPPI_IMAGE
 #         voltype STRING dBZ
 #		 altitude FLOAT 1000.
 #       SAVEVOL STRUCT 2
 #         type   STRING SAVEVOL
 #         voltype STRING dBZ
-#
+
 #ZDR STRUCT 3
 #	type STRING RAW
 #	datatype STRING ZDR
@@ -441,40 +451,76 @@ Att_ZPhi STRUCT 5
 # ==========================================================================================
 #                 selfconsistency products
 # ==========================================================================================         
-PhiDP_KDP_selfconsistency STRUCT 4
-    type STRING SELFCONSISTENCY_KDP_PHIDP
-    datatype STRARR 5
-        PROC:dBZc
-        PROC:ZDRc
-        PROC:PhiDPc
-        PROC:RhoHVc
-        COSMO:TEMP
-    rsmooth FLOAT 1000.
-    products STRUCT 2
-      EL004_0_PhiDP STRUCT 3
-         type STRING PPI_IMAGE
-         anglenr INT 0
-         voltype STRING PhiDP
-      EL004_0_KDP STRUCT 3
-         type STRING PPI_IMAGE
-         anglenr INT 0
-         voltype STRING KDP
-         
-Zh_bias_selfconsistency STRUCT 4
-    type STRING SELFCONSISTENCY_BIAS
-    datatype STRARR 5
-        PROC:dBZc
-        PROC:ZDRc
-        PROC:PhiDPc
-        PROC:RhoHVc
-        COSMO:TEMP
-    rsmooth FLOAT 1000.
-    products STRUCT 1
-      EL004_0 STRUCT 3
-         type STRING BSCOPE_IMAGE
-         anglenr INT 0
-         voltype STRING dBZ_bias
+#PhiDP_KDP_selfconsistency STRUCT 4
+#    type STRING SELFCONSISTENCY_KDP_PHIDP
+#    datatype STRARR 5
+#        PROC:dBZc
+#        PROC:ZDRc
+#        PROC:PhiDPc
+#        PROC:RhoHVc
+#        COSMO:TEMP
+#    rsmooth FLOAT 1000.
+#    products STRUCT 2
+#      EL004_0_PhiDP STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 0
+#         voltype STRING PhiDP
+#      EL004_0_KDP STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 0
+#         voltype STRING KDP
+#         
+#Zh_bias_selfconsistency STRUCT 4
+#    type STRING SELFCONSISTENCY_BIAS
+#    datatype STRARR 5
+#        PROC:dBZc
+#        PROC:ZDRc
+#        PROC:PhiDPc
+#        PROC:RhoHVc
+#        COSMO:TEMP
+#    rsmooth FLOAT 1000.
+#    products STRUCT 1
+#      EL004_0 STRUCT 3
+#         type STRING BSCOPE_IMAGE
+#         anglenr INT 0
+#         voltype STRING dBZ_bias
 
+         
+# ==========================================================================================
+#                 RhoHV in rain monitoring
+# ========================================================================================== 
+RhoHV_rain STRUCT 7
+    type STRING RHOHV_RAIN
+    datatype STRARR 3
+        PROC:RhoHVc
+        PROC:dBZc
+        COSMO:TEMP
+    rmin FLOAT 1000.
+    rmax FLOAT 50000.
+    Zmin FLOAT 20.
+    Zmax FLOAT 40.
+    products STRUCT 4
+	   EL004_0 STRUCT 4
+         type STRING PPI_IMAGE
+         plot_type STRING PPI
+         voltype STRING RhoHV_rain
+		 anglenr INT 0
+       EL004_0_QUANTILES STRUCT 4
+         type STRING PPI_IMAGE
+         plot_type STRING QUANTILES
+         voltype STRING RhoHV_rain
+		 anglenr INT 0
+       EL004_0_HISTOGRAM STRUCT 5
+         type STRING PPI_IMAGE
+         plot_type STRING HISTOGRAM
+         step FLOAT 0.001
+         voltype STRING RhoHV_rain
+		 anglenr INT 0         
+       ALT1000 STRUCT 3
+         type STRING CAPPI_IMAGE
+         voltype STRING RhoHV_rain
+		 altitude FLOAT 1000.
+         
 # ==========================================================================================
 #                 hydrometeor classification products
 # ==========================================================================================
@@ -499,18 +545,18 @@ Zh_bias_selfconsistency STRUCT 4
 # ==========================================================================================
 #                 rainrate products
 # ==========================================================================================
-RRZh_noattcorr STRUCT 5
-   type STRING RAINRATE
-   datatype STRARR 1
-     PROC:dBZc
-   RR_METHOD STRING Z
-   MAKE_GLOBAL INT 1
-   products STRUCT 1
- 	  EL004_0 STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING RR
- 		 anglenr INT 0
-
+#RRZh_noattcorr STRUCT 5
+#   type STRING RAINRATE
+#   datatype STRARR 1
+#     PROC:dBZc
+#   RR_METHOD STRING Z
+#   MAKE_GLOBAL INT 1
+#   products STRUCT 1
+# 	  EL004_0 STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING RR
+# 		 anglenr INT 0
+#
 #RRZh STRUCT 4
 #   type STRING RAINRATE
 #   datatype STRARR 1
@@ -606,93 +652,93 @@ RRZh_noattcorr STRUCT 5
 # ==========================================================================================
 #                 rain rate comparison
 # ==========================================================================================
-
-# ---------------------- rain gauge MAH -------------------------------------------
-
-#46.737, 6.568, 437.0 MAH (Yverdon)
-rgMAH_RRZh_noattcorr STRUCT 12
-   type STRING POINT_MEASUREMENT
-   datatype STRARR 1
-      PROC:RR
-   latlon INT 1
-   truealt INT 0
-   lat FLOAT 46.737
-   lon FLOAT 6.568
-   alt FLOAT 437.0
-   ele FLOAT 4.
-   AziTol FLOAT 1.
-   EleTol FLOAT 1.
-   RngTol FLOAT 30.
-   products STRUCT 3
-      RR STRUCT 1
-	     type STRING PLOT_AND_WRITE_POINT
-	  RRcomp STRUCT 4
-	     type STRING COMPARE_POINT
-         prdid STRING RR
-		 sensor STRING rgage
-		 sensorid STRING MAH
-	  RRcumcomp STRUCT 4
-	     type STRING COMPARE_CUMULATIVE_POINT
-         prdid STRING RR
-		 sensor STRING rgage
-		 sensorid STRING MAH
-         
-# ------------------ disdrometer Bellechasse ---------------------------------------------
-
-# 46.9783, 7.1300, 433.0 (BelleChasse)
-disdroBelleChasse_RRZh_noattcorr STRUCT 12
-   type STRING POINT_MEASUREMENT
-   datatype STRARR 1
-      PROC:RR
-   latlon INT 1
-   truealt INT 0
-   lat FLOAT 46.9783
-   lon FLOAT 7.1300
-   alt FLOAT 433.0
-   ele FLOAT 4.
-   AziTol FLOAT 1.
-   EleTol FLOAT 1.
-   RngTol FLOAT 30.
-   products STRUCT 3
-      RR STRUCT 1
-	     type STRING PLOT_AND_WRITE_POINT
-	  RRcomp STRUCT 6	     
-         type STRING COMPARE_POINT
-         prdid STRING RR
-		 sensor STRING disdro
-		 sensorid STRING 20
-		 elev STRING 0000
-		 temp STRING 0100
-	  RRcumcomp STRUCT 6         
-	     type STRING COMPARE_CUMULATIVE_POINT
-         prdid STRING RR
-		 sensor STRING disdro
-		 sensorid STRING 20
-		 elev STRING 0000
-		 temp STRING 0100
-         
-# 46.9783, 7.1300, 433.0 (BelleChasse)
-disdroBelleChasse_dBZ STRUCT 12
-   type STRING POINT_MEASUREMENT
-   datatype STRARR 1
-      PROC:dBZc
-   latlon INT 1
-   truealt INT 0
-   lat FLOAT 46.9783
-   lon FLOAT 7.1300
-   alt FLOAT 433.0
-   ele FLOAT 4.
-   AziTol FLOAT 1.
-   EleTol FLOAT 1.
-   RngTol FLOAT 30.
-   products STRUCT 2
-      dBZ STRUCT 1
-	     type STRING PLOT_AND_WRITE_POINT
-	  dBZcomp STRUCT 6         
-	     type STRING COMPARE_POINT
-         prdid STRING dBZ
-		 sensor STRING disdro
-		 sensorid STRING 20
-		 elev STRING 0000
-		 temp STRING 0100
+#
+## ---------------------- rain gauge MAH -------------------------------------------
+#
+##46.737, 6.568, 437.0 MAH (Yverdon)
+#rgMAH_RRZh_noattcorr STRUCT 12
+#   type STRING POINT_MEASUREMENT
+#   datatype STRARR 1
+#      PROC:RR
+#   latlon INT 1
+#   truealt INT 0
+#   lat FLOAT 46.737
+#   lon FLOAT 6.568
+#   alt FLOAT 437.0
+#   ele FLOAT 4.
+#   AziTol FLOAT 1.
+#   EleTol FLOAT 1.
+#   RngTol FLOAT 30.
+#   products STRUCT 3
+#      RR STRUCT 1
+#	     type STRING PLOT_AND_WRITE_POINT
+#	  RRcomp STRUCT 4
+#	     type STRING COMPARE_POINT
+#         prdid STRING RR
+#		 sensor STRING rgage
+#		 sensorid STRING MAH
+#	  RRcumcomp STRUCT 4
+#	     type STRING COMPARE_CUMULATIVE_POINT
+#         prdid STRING RR
+#		 sensor STRING rgage
+#		 sensorid STRING MAH
+#         
+## ------------------ disdrometer Bellechasse ---------------------------------------------
+#
+## 46.9783, 7.1300, 433.0 (BelleChasse)
+#disdroBelleChasse_RRZh_noattcorr STRUCT 12
+#   type STRING POINT_MEASUREMENT
+#   datatype STRARR 1
+#      PROC:RR
+#   latlon INT 1
+#   truealt INT 0
+#   lat FLOAT 46.9783
+#   lon FLOAT 7.1300
+#   alt FLOAT 433.0
+#   ele FLOAT 4.
+#   AziTol FLOAT 1.
+#   EleTol FLOAT 1.
+#   RngTol FLOAT 30.
+#   products STRUCT 3
+#      RR STRUCT 1
+#	     type STRING PLOT_AND_WRITE_POINT
+#	  RRcomp STRUCT 6	     
+#         type STRING COMPARE_POINT
+#         prdid STRING RR
+#		 sensor STRING disdro
+#		 sensorid STRING 20
+#		 elev STRING 0000
+#		 temp STRING 0100
+#	  RRcumcomp STRUCT 6         
+#	     type STRING COMPARE_CUMULATIVE_POINT
+#         prdid STRING RR
+#		 sensor STRING disdro
+#		 sensorid STRING 20
+#		 elev STRING 0000
+#		 temp STRING 0100
+#         
+## 46.9783, 7.1300, 433.0 (BelleChasse)
+#disdroBelleChasse_dBZ STRUCT 12
+#   type STRING POINT_MEASUREMENT
+#   datatype STRARR 1
+#      PROC:dBZc
+#   latlon INT 1
+#   truealt INT 0
+#   lat FLOAT 46.9783
+#   lon FLOAT 7.1300
+#   alt FLOAT 433.0
+#   ele FLOAT 4.
+#   AziTol FLOAT 1.
+#   EleTol FLOAT 1.
+#   RngTol FLOAT 30.
+#   products STRUCT 2
+#      dBZ STRUCT 1
+#	     type STRING PLOT_AND_WRITE_POINT
+#	  dBZcomp STRUCT 6         
+#	     type STRING COMPARE_POINT
+#         prdid STRING dBZ
+#		 sensor STRING disdro
+#		 sensorid STRING 20
+#		 elev STRING 0000
+#		 temp STRING 0100
          
