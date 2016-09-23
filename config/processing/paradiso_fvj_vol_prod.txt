@@ -4,13 +4,12 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 6
-    l0:echoID    
-    l1:echoFilter
-    l2:RRZh_noattcorr
-    l3:rgMAH_RRZh_noattcorr
-    l3:disdroBelleChasse_RRZh_noattcorr
-    l3:disdroBelleChasse_dBZ
+dataSetList STRARR 5
+    l0:echoID
+    l1:echoFilter    
+    l2:Att_ZPhi
+    l3:PhiDP_KDP_selfconsistency
+    l3:Zh_bias_selfconsistency
 
 # ==========================================================================================
 #                 raw data products
@@ -183,9 +182,11 @@ echoID STRUCT 4
 # ==========================================================================================
 echoFilter STRUCT 3
    type STRING ECHO_FILTER
-   datatype STRARR 2
-      dBZ      
-      uPhiDP      
+   datatype STRARR 4
+      dBZ
+      ZDR
+      PhiDP
+      RhoHV
    MAKE_GLOBAL INT 1
 #   products STRUCT 2
 #      EL004_0_PhiDPc STRUCT 3
@@ -304,7 +305,7 @@ echoFilter STRUCT 3
 #    rwinds FLOAT 1000.
 #    rwindl FLOAT 3000.
 #    Zthr FLOAT 40.    
-#    MAKE_GLOBAL INT 0
+#    MAKE_GLOBAL INT 1
 #    products STRUCT 1
 #      EL004_0 STRUCT 3
 #         type STRING PPI_IMAGE
@@ -378,37 +379,37 @@ echoFilter STRUCT 3
 ## ==========================================================================================
 ##                 Attenuation
 ## ==========================================================================================
-#Att_ZPhi STRUCT 5
-#	type STRING ATTENUATION
-#	datatype STRARR 4
-#        PROC:dBZc
-#        PROC:ZDRc
-#        PROC:PhiDPc
-#        COSMO:TEMP
-#    MAKE_GLOBAL INT 1
-#    ATT_METHOD STRING ZPhi
-#	products STRUCT 5
-#	  EL004_0_Ah STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING Ah
-#		 anglenr INT 0
-#      EL004_0_dBZc STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING dBZc
-#		 anglenr INT 0
-#      EL004_0_ZDRc STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING ZDRc
-#		 anglenr INT 0
-#      EL004_0_Adp STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING Adp
-#		 anglenr INT 0
-#      EL004_0_BSCOPE_dBZc STRUCT 3
-#         type   STRING BSCOPE_IMAGE
-#         voltype STRING dBZc
-#		 anglenr INT 0
-#         
+Att_ZPhi STRUCT 5
+	type STRING ATTENUATION
+	datatype STRARR 4
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:PhiDPc
+        COSMO:TEMP    
+    MAKE_GLOBAL INT 1
+    ATT_METHOD STRING ZPhi
+	products STRUCT 5
+	  EL004_0_Ah STRUCT 3
+         type   STRING PPI_IMAGE
+         voltype STRING Ah
+		 anglenr INT 0
+      EL004_0_dBZc STRUCT 3
+         type   STRING PPI_IMAGE
+         voltype STRING dBZc
+		 anglenr INT 0
+      EL004_0_ZDRc STRUCT 3
+         type   STRING PPI_IMAGE
+         voltype STRING ZDRc
+		 anglenr INT 0
+      EL004_0_Adp STRUCT 3
+         type   STRING PPI_IMAGE
+         voltype STRING Adp
+		 anglenr INT 0
+      EL004_0_BSCOPE_dBZc STRUCT 3
+         type   STRING BSCOPE_IMAGE
+         voltype STRING dBZc
+		 anglenr INT 0
+         
 #Att_Philin STRUCT 5
 #	type STRING ATTENUATION
 #	datatype STRARR 4
@@ -440,38 +441,40 @@ echoFilter STRUCT 3
 # ==========================================================================================
 #                 selfconsistency products
 # ==========================================================================================         
-#PhiDP_KDP_selfconsistency STRUCT 3
-#    type STRING SELFCONSISTENCY_KDP_PHIDP
-#    datatype STRARR 5
-#        PROC:dBZc
-#        PROC:ZDRc
-#        PROC:PhiDPc
-#        PROC:RhoHVc
-#        COSMO:TEMP
-#    products STRUCT 2
-#      EL004_0_PhiDP STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 0
-#         voltype STRING PhiDP
-#      EL004_0_KDP STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 0
-#         voltype STRING KDP
-#         
-#Zh_bias_selfconsistency STRUCT 3
-#    type STRING SELFCONSISTENCY_BIAS
-#    datatype STRARR 5
-#        PROC:dBZc
-#        PROC:ZDRc
-#        PROC:PhiDPc
-#        PROC:RhoHVc
-#        COSMO:TEMP
-#    products STRUCT 1
-#      EL004_0 STRUCT 3
-#         type STRING BSCOPE_IMAGE
-#         anglenr INT 0
-#         voltype STRING dBZ_bias
-#
+PhiDP_KDP_selfconsistency STRUCT 4
+    type STRING SELFCONSISTENCY_KDP_PHIDP
+    datatype STRARR 5
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:PhiDPc
+        PROC:RhoHVc
+        COSMO:TEMP
+    rsmooth FLOAT 1000.
+    products STRUCT 2
+      EL004_0_PhiDP STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING PhiDP
+      EL004_0_KDP STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING KDP
+         
+Zh_bias_selfconsistency STRUCT 4
+    type STRING SELFCONSISTENCY_BIAS
+    datatype STRARR 5
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:PhiDPc
+        PROC:RhoHVc
+        COSMO:TEMP
+    rsmooth FLOAT 1000.
+    products STRUCT 1
+      EL004_0 STRUCT 3
+         type STRING BSCOPE_IMAGE
+         anglenr INT 0
+         voltype STRING dBZ_bias
+
 # ==========================================================================================
 #                 hydrometeor classification products
 # ==========================================================================================

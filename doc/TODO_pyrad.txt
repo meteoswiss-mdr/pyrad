@@ -2,10 +2,19 @@ Pending modifications for current code in Pyrad
 -----------------------------------------------
 - In function process_echo_id: Add condition on differential reflectivity at low reflectivity values. Allow user to select the various thresholds. Add a speckle filter
 - In function process_echo_filter: Enable the user to select what to keep and what to filter out.
-- In function plot_cappi: find a way to mark ticks as distance from radar
+- In selfconsistency functions: get tables as a function of elevation, allow user to define the tresholds
+- Put functions in different files.
+
+Documentation
+-------------
+- rename pyart-mch to master-mch
+- Change documentation to reflect that pull requests have to be done in specifically named branches. (You do not modify master)
 
 Processing functions to be implemented with highest priority:
 -------------------------------------------------------------
+- Estimate RhoHV in rain
+- Sun monitoring
 
 Product functions to be implemented with highest priority:
 ----------------------------------------------------------
+- Monitoring

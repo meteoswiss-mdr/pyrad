@@ -1669,12 +1669,14 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar=None):
 
     kdpsim_field = 'specific_differential_phase'
     phidpsim_field = 'differential_phase'
+    r_res = radar.range['data'][1]-radar.range['data'][0]
+    smooth_wind_len = int(dscfg['rsmooth']/r_res)
 
     kdpsim, phidpsim = pyart.correct.selfconsistency_kdp_phidp(
-        radar, zdr_kdpzh_table, min_rhohv=0.92, max_phidp=20., doc=None,
-        fzl=None, refl_field=refl, phidp_field=phidp, zdr_field=zdr,
-        temp_field=temp, rhohv_field=rhohv, kdpsim_field=kdpsim_field,
-        phidpsim_field=phidpsim_field)
+        radar, zdr_kdpzh_table, min_rhohv=0.92, max_phidp=20.,
+        smooth_wind_len=smooth_wind_len, doc=None, fzl=None, refl_field=refl,
+        phidp_field=phidp, zdr_field=zdr, temp_field=temp, rhohv_field=rhohv,
+        kdpsim_field=kdpsim_field, phidpsim_field=phidpsim_field)
 
     # prepare for exit
     new_dataset = deepcopy(radar)
@@ -1740,10 +1742,14 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
         if datatype == 'RhoHVc':
             rhohv = 'corrected_cross_correlation_ratio'
 
+    r_res = radar.range['data'][1]-radar.range['data'][0]
+    smooth_wind_len = int(dscfg['rsmooth']/r_res)
+
     refl_bias = pyart.correct.selfconsistency_bias(
-        radar, zdr_kdpzh_table, min_rhohv=0.92, max_phidp=20., doc=None,
-        fzl=None, min_rcons=20, dphidp_min=2, dphidp_max=16, refl_field=refl,
-        phidp_field=phidp, zdr_field=zdr, temp_field=temp, rhohv_field=rhohv)
+        radar, zdr_kdpzh_table, min_rhohv=0.92, max_phidp=20.,
+        smooth_wind_len=smooth_wind_len, doc=None, fzl=None, min_rcons=20,
+        dphidp_min=2, dphidp_max=16, refl_field=refl, phidp_field=phidp,
+        zdr_field=zdr, temp_field=temp, rhohv_field=rhohv)
 
     # prepare for exit
     new_dataset = deepcopy(radar)
