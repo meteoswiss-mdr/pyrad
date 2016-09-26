@@ -1085,6 +1085,10 @@ def get_fieldname_rainbow(datatype):
         field_name = 'reflectivity'
     elif datatype == 'dBZv':
         field_name = 'reflectivity_vv'
+    elif datatype == 'dBm':
+        field_name = 'signal_power_hh'
+    elif datatype == 'dBmv':
+        field_name = 'signal_power_vv'
     elif datatype == 'Nh':
         field_name = 'noisedBZ_hh'
     elif datatype == 'Nv':

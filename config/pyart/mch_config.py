@@ -50,6 +50,9 @@ unfiltered_reflectivity_vv = 'unfiltered_reflectivity_vv'
 
 reflectivity_bias = 'reflectivity_bias'
 
+signal_power_hh = 'signal_power_hh'
+signal_power_vv = 'signal_power_vv'
+
 
 # Mean Doppler velocity fields, VEL
 velocity = 'velocity'
@@ -203,6 +206,8 @@ DEFAULT_FIELD_NAMES = {
     'reflectivity_vv': reflectivity_vv,
     'unfiltered_reflectivity_vv': unfiltered_reflectivity_vv,
     'reflectivity_bias': reflectivity_bias,
+    'signal_power_hh': signal_power_hh,
+    'signal_power_vv': signal_power_vv,
     'velocity': velocity,
     'corrected_velocity': corrected_velocity,
     'unfiltered_velocity': unfiltered_velocity,
@@ -482,6 +487,19 @@ DEFAULT_METADATA = {
         'meta_group': 'instrument_parameters',
         'long_name': 'Number of samples used to compute moments'},
 
+    # metadata for radar calibration constant
+    'calibration_constant_hh': {
+        'units': 'dB',
+        'meta_group': 'radar_calibration',
+        'long_name': ' radar calibration constant H polarization',
+    },
+
+    'calibration_constant_vv': {
+        'units': 'dB',
+        'meta_group': 'radar_calibration',
+        'long_name': ' radar calibration constant V polarization',
+    },
+
     # non-standard parameter for specifying the PRF high/low for each ray
     'prf_flag': {
         'units': 'unitless',
@@ -561,6 +579,18 @@ DEFAULT_METADATA = {
         'standard_name': 'reflectivity_bias',
         'long_name': 'Reflectivity bias',
         'coordinates': 'elevation azimuth'},
+
+    signal_power_hh: {
+        'units': 'dBm',
+        'standard_name': 'signal_power_hh',
+        'long_name': 'Signal power horizontal',
+        'coordinates': 'elevation azimuth range'},
+
+    signal_power_vv: {
+        'units': 'dBm',
+        'standard_name': 'signal_power_vv',
+        'long_name': 'Signal power vertical',
+        'coordinates': 'elevation azimuth range'},
 
     # Velocity fields
     velocity: {
@@ -1538,6 +1568,8 @@ DEFAULT_FIELD_COLORMAP = {
     reflectivity_vv: 'pyart_NWSRef',
     unfiltered_reflectivity_vv: 'pyart_NWSRef',
     reflectivity_bias: 'pyart_NWSRef',
+    signal_power_hh: 'pyart_NWSRef',
+    signal_power_vv: 'pyart_NWSRef',
 
     signal_to_noise_ratio: 'pyart_Carbone17',
     signal_to_noise_ratio_hh: 'pyart_Carbone17',
@@ -1638,6 +1670,9 @@ DEFAULT_FIELD_LIMITS = {
     noisedBZ_hh: (-40., 10.),
     noisedBZ_vv: (-40., 10.),
     reflectivity_bias: (-10., 10.),
+
+    signal_power_hh: (-130., 0.),
+    signal_power_vv: (-130., 0.),
 
     velocity: velocity_limit,
     corrected_velocity: velocity_limit,

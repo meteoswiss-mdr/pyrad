@@ -16,6 +16,7 @@ Dataset processing
     process_raw
     process_echo_id
     process_snr
+    process_signal_power
     process_l
     process_cdr
     process_correct_noise_rhohv
@@ -54,7 +55,7 @@ from .process_dataset import get_process_type, process_raw, process_echo_id
 from .process_dataset import process_snr, process_l, process_cdr
 from .process_dataset import process_correct_noise_rhohv, process_correct_bias
 from .process_dataset import process_echo_filter, process_filter_snr
-from .process_dataset import process_attenuation
+from .process_dataset import process_attenuation, process_signal_power
 from .process_dataset import process_phidp_kdp_lp, process_phidp_kdp_Maesaka
 from .process_dataset import process_estimate_phidp0, process_correct_phidp0
 from .process_dataset import process_smooth_phidp_single_window

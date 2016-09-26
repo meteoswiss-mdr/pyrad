@@ -25,6 +25,10 @@ CosmoRunFreq INT 1
 # hours forecasted in cosmo run [h]
 CosmoForecasted INT 7
 
+# matching filter losses
+mflossh FLOAT 1.
+mflossv FLOAT 1.
+
 # Coordinates for the zero temperature altitude
 #iso0setup STRUCT 2
 #   xcoord  STRING 185

@@ -10,6 +10,7 @@ Functions for processing Pyrad datasets
     get_process_type
     process_raw
     process_save_radar
+    process_signal_power
     process_snr
     process_l
     process_cdr
@@ -71,6 +72,8 @@ def get_process_type(dataset_type):
         func_name = 'process_raw'
     elif dataset_type == 'NCVOL':
         func_name = 'process_save_radar'
+    elif dataset_type == 'PWR':
+        func_name = 'process_signal_power'
     elif dataset_type == 'SNR':
         func_name = 'process_snr'
     elif dataset_type == 'RHOHV_CORRECTION':
@@ -384,6 +387,81 @@ def process_cdr(procstatus, dscfg, radar=None):
     new_dataset = deepcopy(radar)
     new_dataset.fields = dict()
     new_dataset.add_field('circular_depolarization_ratio', cdr)
+
+    return new_dataset
+
+
+def process_signal_power(procstatus, dscfg, radar=None):
+    """
+    Computes the signal power in dBm
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+
+    """
+
+    if procstatus != 1:
+        return None
+
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatypefields(
+            datatypedescr)
+        if datatype == 'dBZ':
+            refl_field = 'reflectivity'
+        if datatype == 'dBuZ':
+            refl_field = 'unfiltered_reflectivity'
+        if datatype == 'dBZv':
+            refl_field = 'reflectivity_vv'
+        if datatype == 'dBuZv':
+            refl_field = 'unfiltered_reflectivity_vv'
+
+    if refl_field.endswith('_vv'):
+        pwr_field = 'signal_power_vv'
+
+        lmf = None
+        if 'mflossv' in dscfg:
+            lmf = dscfg['mflossv']
+
+        radconst = None
+        if 'radconstv' in dscfg:
+            radconst = dscfg['radconstv']
+    else:
+        pwr_field = 'signal_power_hh'
+
+        lmf = None
+        if 'mflossh' in dscfg:
+            lmf = dscfg['mflossh']
+
+        radconst = None
+        if 'radconsth' in dscfg:
+            radconst = dscfg['radconsth']
+
+    attg = None
+    if 'attg' in dscfg:
+        attg = dscfg['attg']
+
+    s_pwr = pyart.retrieve.compute_signal_power(
+        radar, lmf=lmf, attg=attg, radconst=radconst, refl_field=refl_field,
+        pwr_field=pwr_field)
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.add_field(pwr_field, s_pwr)
 
     return new_dataset
 

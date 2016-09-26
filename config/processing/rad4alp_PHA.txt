@@ -7,7 +7,7 @@ name STRING rad4alp_PHA
 datapath STRING /data/rad4alp/rawdata/
 
 # Base path of configuration files
-#configpath STRING $HOME/malsgit/config/
+configpath STRING /home/lom/users/fvj/pyrad/config/
 
 # Base path for cosmo data
 cosmopath STRING /data/cosmo/

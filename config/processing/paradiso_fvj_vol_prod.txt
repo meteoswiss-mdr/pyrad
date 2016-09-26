@@ -4,11 +4,9 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 4
-    l0:echoID
-    l1:echoFilter
-    l2:Att_ZPhi
-    l3:RhoHV_rain
+dataSetList STRARR 2
+    dBm
+    dBmv
 
 # ==========================================================================================
 #                 raw data products
@@ -168,57 +166,78 @@ dataSetList STRARR 4
 #         type STRING PPI_IMAGE
 #         anglenr INT 0
 #         voltype STRING CDR
-#
+
+
+dBm STRUCT 3
+    type STRING PWR
+    datatype STRARR 1
+        dBZ
+    products STRUCT 1
+      EL004_0 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING dBm
+         
+dBmv STRUCT 3
+    type STRING PWR
+    datatype STRARR 1
+        dBZv
+    products STRUCT 1
+      EL004_0 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING dBmv
+
 # ==========================================================================================
 #                 echo identification
 # ==========================================================================================
-echoID STRUCT 4
-   type        STRING SAN
-   datatype    STRARR 4
-      dBZ
-      ZDR
-      uPhiDP
-      RhoHV
-   MAKE_GLOBAL         INT 1
-   products STRUCT 1
-       EL004_0 STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING echoID
-		 anglenr INT 0
-         
-
+#echoID STRUCT 4
+#   type        STRING SAN
+#   datatype    STRARR 4
+#      dBZ
+#      ZDR
+#      uPhiDP
+#      RhoHV
+#   MAKE_GLOBAL         INT 1
+#   products STRUCT 1
+#       EL004_0 STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING echoID
+#		 anglenr INT 0
+#         
+#
 # ==========================================================================================
 #                 clutter and noise suppression
 # ==========================================================================================
-echoFilter STRUCT 3
-   type STRING ECHO_FILTER
-   datatype STRARR 4
-      dBZ
-      ZDR
-      PhiDP
-      RhoHV
-   MAKE_GLOBAL INT 1
-#   products STRUCT 2
-#      EL004_0_PhiDPc STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING PhiDPc
-#		 anglenr INT 0
-#      EL004_0_RhoHVc STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING RhoHVc
-#		 anglenr INT 0
-#	  EL004_0_dBZc STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING dBZc
-#		 anglenr INT 0
-#      EL004_0_ZDRc STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING ZDRc
-#		 anglenr INT 0      
-#      EL004_0_KDPc STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING KDPc
-#		 anglenr INT 0
+#echoFilter STRUCT 3
+#   type STRING ECHO_FILTER
+#   datatype STRARR 4
+#      dBZ
+#      ZDR
+#      PhiDP
+#      RhoHV
+#   MAKE_GLOBAL INT 1
+##   products STRUCT 2
+##      EL004_0_PhiDPc STRUCT 3
+##         type   STRING PPI_IMAGE
+##         voltype STRING PhiDPc
+##		 anglenr INT 0
+##      EL004_0_RhoHVc STRUCT 3
+##         type   STRING PPI_IMAGE
+##         voltype STRING RhoHVc
+##		 anglenr INT 0
+##	  EL004_0_dBZc STRUCT 3
+##         type   STRING PPI_IMAGE
+##         voltype STRING dBZc
+##		 anglenr INT 0
+##      EL004_0_ZDRc STRUCT 3
+##         type   STRING PPI_IMAGE
+##         voltype STRING ZDRc
+##		 anglenr INT 0      
+##      EL004_0_KDPc STRUCT 3
+##         type   STRING PPI_IMAGE
+##         voltype STRING KDPc
+##		 anglenr INT 0
 #
 #echoFilter2 STRUCT 3
 #   type STRING ECHO_FILTER
@@ -389,37 +408,37 @@ echoFilter STRUCT 3
 ## ==========================================================================================
 ##                 Attenuation
 ## ==========================================================================================
-Att_ZPhi STRUCT 5
-	type STRING ATTENUATION
-	datatype STRARR 4
-        PROC:dBZc
-        PROC:ZDRc
-        PROC:PhiDPc
-        COSMO:TEMP    
-    MAKE_GLOBAL INT 1
-    ATT_METHOD STRING ZPhi
-	products STRUCT 5
-	  EL004_0_Ah STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING Ah
-		 anglenr INT 0
-      EL004_0_dBZc STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING dBZc
-		 anglenr INT 0
-      EL004_0_ZDRc STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING ZDRc
-		 anglenr INT 0
-      EL004_0_Adp STRUCT 3
-         type   STRING PPI_IMAGE
-         voltype STRING Adp
-		 anglenr INT 0
-      EL004_0_BSCOPE_dBZc STRUCT 3
-         type   STRING BSCOPE_IMAGE
-         voltype STRING dBZc
-		 anglenr INT 0
-         
+#Att_ZPhi STRUCT 5
+#	type STRING ATTENUATION
+#	datatype STRARR 4
+#        PROC:dBZc
+#        PROC:ZDRc
+#        PROC:PhiDPc
+#        COSMO:TEMP    
+#    MAKE_GLOBAL INT 1
+#    ATT_METHOD STRING ZPhi
+#	products STRUCT 5
+#	  EL004_0_Ah STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING Ah
+#		 anglenr INT 0
+#      EL004_0_dBZc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING dBZc
+#		 anglenr INT 0
+#      EL004_0_ZDRc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING ZDRc
+#		 anglenr INT 0
+#      EL004_0_Adp STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING Adp
+#		 anglenr INT 0
+#      EL004_0_BSCOPE_dBZc STRUCT 3
+#         type   STRING BSCOPE_IMAGE
+#         voltype STRING dBZc
+#		 anglenr INT 0
+#         
 #Att_Philin STRUCT 5
 #	type STRING ATTENUATION
 #	datatype STRARR 4
@@ -489,38 +508,38 @@ Att_ZPhi STRUCT 5
 # ==========================================================================================
 #                 RhoHV in rain monitoring
 # ========================================================================================== 
-RhoHV_rain STRUCT 7
-    type STRING RHOHV_RAIN
-    datatype STRARR 3
-        PROC:RhoHVc
-        PROC:dBZc
-        COSMO:TEMP
-    rmin FLOAT 1000.
-    rmax FLOAT 50000.
-    Zmin FLOAT 20.
-    Zmax FLOAT 40.
-    products STRUCT 4
-	   EL004_0 STRUCT 4
-         type STRING PPI_IMAGE
-         plot_type STRING PPI
-         voltype STRING RhoHV_rain
-		 anglenr INT 0
-       EL004_0_QUANTILES STRUCT 4
-         type STRING PPI_IMAGE
-         plot_type STRING QUANTILES
-         voltype STRING RhoHV_rain
-		 anglenr INT 0
-       EL004_0_HISTOGRAM STRUCT 5
-         type STRING PPI_IMAGE
-         plot_type STRING HISTOGRAM
-         step FLOAT 0.001
-         voltype STRING RhoHV_rain
-		 anglenr INT 0         
-       ALT1000 STRUCT 3
-         type STRING CAPPI_IMAGE
-         voltype STRING RhoHV_rain
-		 altitude FLOAT 1000.
-         
+#RhoHV_rain STRUCT 7
+#    type STRING RHOHV_RAIN
+#    datatype STRARR 3
+#        PROC:RhoHVc
+#        PROC:dBZc
+#        COSMO:TEMP
+#    rmin FLOAT 1000.
+#    rmax FLOAT 50000.
+#    Zmin FLOAT 20.
+#    Zmax FLOAT 40.
+#    products STRUCT 4
+#	   EL004_0 STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING PPI
+#         voltype STRING RhoHV_rain
+#		 anglenr INT 0
+#       EL004_0_QUANTILES STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING QUANTILES
+#         voltype STRING RhoHV_rain
+#		 anglenr INT 0
+#       EL004_0_HISTOGRAM STRUCT 5
+#         type STRING PPI_IMAGE
+#         plot_type STRING HISTOGRAM
+#         step FLOAT 0.001
+#         voltype STRING RhoHV_rain
+#		 anglenr INT 0         
+#       ALT1000 STRUCT 3
+#         type STRING CAPPI_IMAGE
+#         voltype STRING RhoHV_rain
+#		 altitude FLOAT 1000.
+#         
 # ==========================================================================================
 #                 hydrometeor classification products
 # ==========================================================================================

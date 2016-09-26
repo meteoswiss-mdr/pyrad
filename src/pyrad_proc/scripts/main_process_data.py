@@ -78,6 +78,16 @@ if __name__ == '__main__':
         cfg.update({'RadarName': None})
     if 'RadarRes' not in cfg:
         cfg.update({'RadarRes': None})
+    if 'mflossh' not in cfg:
+        cfg.update({'mflossh': None})
+    if 'mflossv' not in cfg:
+        cfg.update({'mflossv': None})
+    if 'radconsth' not in cfg:
+        cfg.update({'radconsth': None})
+    if 'radconstv' not in cfg:
+        cfg.update({'radconstv': None})
+    if 'attg' not in cfg:
+        cfg.update({'attg': None})
     if 'ScanPeriod' not in cfg:
         print(
             'WARNING: Scan period not specified.' +
@@ -177,6 +187,11 @@ if __name__ == '__main__':
 
             dscfg = cfg[dataset]
             dscfg.update({'configpath': cfg['configpath']})
+            dscfg.update({'mflossh': cfg['mflossh']})
+            dscfg.update({'mflossv': cfg['mflossv']})
+            dscfg.update({'radconsth': cfg['radconsth']})
+            dscfg.update({'radconstv': cfg['radconstv']})
+            dscfg.update({'attg': cfg['attg']})
             if 'MAKE_GLOBAL' not in dscfg:
                     dscfg.update({'MAKE_GLOBAL': 0})
 
@@ -233,6 +248,11 @@ if __name__ == '__main__':
 
                 dscfg = cfg[dataset]
                 dscfg.update({'configpath': cfg['configpath']})
+                dscfg.update({'mflossh': cfg['mflossh']})
+                dscfg.update({'mflossv': cfg['mflossv']})
+                dscfg.update({'radconsth': cfg['radconsth']})
+                dscfg.update({'radconstv': cfg['radconstv']})
+                dscfg.update({'attg': cfg['attg']})
                 if 'MAKE_GLOBAL' not in dscfg:
                     dscfg.update({'MAKE_GLOBAL': 0})
 
@@ -285,6 +305,11 @@ if __name__ == '__main__':
 
             dscfg = cfg[dataset]
             dscfg.update({'configpath': cfg['configpath']})
+            dscfg.update({'mflossh': cfg['mflossh']})
+            dscfg.update({'mflossv': cfg['mflossv']})
+            dscfg.update({'radconsth': cfg['radconsth']})
+            dscfg.update({'radconstv': cfg['radconstv']})
+            dscfg.update({'attg': cfg['attg']})
             if 'MAKE_GLOBAL' not in dscfg:
                     dscfg.update({'MAKE_GLOBAL': 0})
 
