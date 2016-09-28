@@ -39,6 +39,7 @@ Dataset processing
     process_selfconsistency_kdp_phidp
     process_selfconsistency_bias
     process_rhohv_rain
+    process_sun_hits
 
 Product processing
 ==================
@@ -48,6 +49,7 @@ Product processing
 
     generate_vol_products
     generate_timeseries_products
+    generate_sun_hits_products
 
 """
 
@@ -67,8 +69,10 @@ from .process_dataset import process_rainrate, process_hydroclass
 from .process_dataset import process_point_measurement, process_save_radar
 from .process_dataset import process_selfconsistency_kdp_phidp
 from .process_dataset import process_selfconsistency_bias, process_rhohv_rain
+from .process_dataset import process_sun_hits
 
 from .process_product import get_product_type, generate_vol_products
 from .process_product import generate_timeseries_products
+from .process_product import generate_sun_hits_products
 
 __all__ = [s for s in dir() if not s.startswith('_')]

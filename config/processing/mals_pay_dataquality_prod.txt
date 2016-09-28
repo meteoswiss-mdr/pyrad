@@ -168,42 +168,69 @@ dataSetList STRARR 3
 #         anglenr INT 0
 #         voltype STRING CDR
 
-dBm STRUCT 4
+dBm STRUCT 3
     type STRING PWR
     datatype STRARR 1
         dBZ
     MAKE_GLOBAL INT 1
-    products STRUCT 1
-      EL004_0 STRUCT 3
-         type STRING PPI_IMAGE
-         anglenr INT 0
-         voltype STRING dBm
+#    products STRUCT 1
+#       EL003_0_BSCOPE STRUCT 3
+#         type STRING BSCOPE_IMAGE
+#         anglenr INT 1
+#         voltype STRING dBm
          
-dBmv STRUCT 4
+dBmv STRUCT 3
     type STRING PWR
     datatype STRARR 1
         dBZv
     MAKE_GLOBAL INT 1
-    products STRUCT 1
-      EL004_0 STRUCT 3
-         type STRING PPI_IMAGE
-         anglenr INT 0
-         voltype STRING dBmv
+#    products STRUCT 1
+#      EL003_0_BSCOPE STRUCT 3
+#         type STRING BSCOPE_IMAGE
+#         anglenr INT 1
+#         voltype STRING dBmv
 
 # ==========================================================================================
 #                 sun hits
 # ==========================================================================================
-sun_hits STRUCT 2
+sun_hits STRUCT 4
     type STRING SUN_HITS
     datatype STRARR 3
         PROC:dBm
         PROC:dBmv
         ZDR
-#    products STRUCT 1
-#       EL004_0 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 0
-#         voltype STRING dBmv
+    rmin FLOAT 20000.
+    products STRUCT 8
+       PWRH STRUCT 3
+         type STRING BSCOPE_IMAGE
+         anglenr INT 0
+         voltype STRING dBm
+       PWRV STRUCT 3
+         type STRING BSCOPE_IMAGE
+         anglenr INT 0
+         voltype STRING dBmv
+       ZDR STRUCT 3
+         type STRING BSCOPE_IMAGE
+         anglenr INT 0
+         voltype STRING ZDR
+       PWRH_POS STRUCT 3
+         type STRING BSCOPE_IMAGE
+         anglenr INT 0
+         voltype STRING sun_pos_h
+       PWRV_POS STRUCT 3
+         type STRING BSCOPE_IMAGE
+         anglenr INT 0
+         voltype STRING sun_pos_v
+       ZDR_POS STRUCT 3
+         type STRING BSCOPE_IMAGE
+         anglenr INT 0
+         voltype STRING sun_pos_zdr
+       SUN_HITS STRUCT 1
+         type STRING WRITE_SUN_HITS
+       SUN_RETRIEVAL STRUCT 1
+         type STRING WRITE_SUN_RETRIEVAL
+       
+         
 
 
 

@@ -4,9 +4,10 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 2    
+dataSetList STRARR 3    
     l0:dBm
     l0:dBmv
+    l1:sun_hits
     
 
 
@@ -193,6 +194,22 @@ dBmv STRUCT 3
          type STRING PPI_IMAGE
          anglenr INT 4
          voltype STRING dBmv
+         
+         
+# ==========================================================================================
+#                 sun hits
+# ==========================================================================================
+sun_hits STRUCT 2
+    type STRING SUN_HITS
+    datatype STRARR 3
+        PROC:dBm
+        PROC:dBmv
+        RAD4ALP:ZDR
+#    products STRUCT 1
+#       EL004_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 0
+#         voltype STRING dBmv
          
 
 # ==========================================================================================

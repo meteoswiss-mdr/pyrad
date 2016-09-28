@@ -3,7 +3,9 @@ Pending modifications for current code in Pyrad
 - In function process_echo_id: Add condition on differential reflectivity at low reflectivity values. Allow user to select the various thresholds. Add a speckle filter
 - In function process_echo_filter: Enable the user to select what to keep and what to filter out.
 - In selfconsistency functions: get tables as a function of elevation, allow user to define the tresholds
+- In function to get the freezing level mask: find the way to account for the antenna beamwidth when considering up to which altitude there is valid data
 - Put functions in different files.
+- In process sun hits, find a way to get the file name where sun hits are stored
 
 Documentation
 -------------
@@ -12,9 +14,11 @@ Documentation
 
 Processing functions to be implemented with highest priority:
 -------------------------------------------------------------
-- Estimate RhoHV in rain
-- Sun monitoring
+
 
 Product functions to be implemented with highest priority:
 ----------------------------------------------------------
-- Monitoring
+- sun retrieval plot
+- sun hits plot
+- sun time series
+- monitoring plots and time series

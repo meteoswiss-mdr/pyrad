@@ -9,6 +9,7 @@ Functions for obtaining Pyrad products from the datasets
 
     get_product_type
     generate_vol_products
+    generate_sun_hits_products
     generate_timeseries_products
     get_save_dir
     make_filename
@@ -25,7 +26,10 @@ import pyart
 
 from ..io.read_data import get_fieldname_rainbow, read_timeseries
 from ..io.read_data import get_sensor_data
+
 from ..io.write_data import write_timeseries, generate_field_name_str
+from ..io.write_data import write_sun_hits, write_sun_retrieval
+
 from ..graph.plots import plot_ppi, plot_rhi, plot_cappi, plot_bscope
 from ..graph.plots import plot_timeseries, plot_timeseries_comp
 from ..graph.plots import plot_quantiles, get_colobar_label
@@ -50,10 +54,80 @@ def get_product_type(product_type):
         func_name = 'generate_vol_products'
     elif product_type == 'TIMESERIES':
         func_name = 'generate_timeseries_products'
+    elif product_type == 'SUN_HITS':
+        func_name = 'generate_sun_hits_products'
     else:
         print('ERROR: Unknown dataset type')
 
     return func_name
+
+
+def generate_sun_hits_products(dataset, prdcfg):
+    """
+    generates sun hits products
+
+    Parameters
+    ----------
+    dataset : tuple
+        radar object and sun hits dictionary
+
+    prdcfg : dictionary of dictionaries
+        product configuration dictionary of dictionaries
+
+    Returns
+    -------
+    no return
+
+    """
+    if prdcfg['type'] == 'WRITE_SUN_HITS':
+        if 'sun_hits' in dataset:
+            savedir = get_save_dir(
+                prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+            fname = prdcfg['timeinfo'].strftime('%Y%m%d')+'_sun_hits.csv'
+
+            write_sun_hits(dataset['sun_hits'], savedir+fname)
+
+            print('saved sun hits file: '+savedir+fname)
+
+    if prdcfg['type'] == 'PLOT_SUN_HITS':
+        if 'sun_hits' in dataset:
+            savedir = get_save_dir(
+                prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+            fname = prdcfg['timeinfo'].strftime('%Y%m%d')+'_sun_hits.csv'
+
+            write_sun_hits(dataset['sun_hits'], savedir+fname)
+
+            print('saved sun hits file: '+savedir+fname)
+
+    elif prdcfg['type'] == 'WRITE_SUN_RETRIEVAL':
+        if 'sun_retrieval' in dataset:
+            savedir = get_save_dir(
+                prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+                prdcfg['prdname'], timeinfo=None)
+            fname = 'sun_retrieval.csv'
+
+            write_sun_retrieval(dataset['sun_retrieval'], savedir+fname)
+
+            print('saved sun retrieval file: '+savedir+fname)
+
+    elif prdcfg['type'] == 'PLOT_SUN_RETRIEVAL':
+        if 'sun_retrieval' in dataset:
+            savedir = get_save_dir(
+                prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        #    fname = prdcfg['timeinfo'].strftime('%Y%m%d')+'_sun_retrieval.csv'
+        #
+        #    write_sun_retrieval(dataset['sun_retrieval'], savedir+fname)
+        #
+        #    print('saved sun retrieval file: '+savedir+fname)
+    else:
+        if 'radar' in dataset:
+            generate_vol_products(dataset['radar'], prdcfg)
 
 
 def generate_vol_products(dataset, prdcfg):
@@ -81,8 +155,8 @@ def generate_vol_products(dataset, prdcfg):
             ind_el = np.where(dataset.fixed_angle['data'] == el)[0][0]
 
             savedir = get_save_dir(
-                prdcfg['basepath'], prdcfg['procname'], prdcfg['timeinfo'],
-                prdcfg['dsname'], prdcfg['prdname'])
+                prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
             fname = make_filename(
                 prdcfg['timeinfo'], 'ppi', prdcfg['dstype'],
@@ -117,8 +191,8 @@ def generate_vol_products(dataset, prdcfg):
             ind_az = np.where(dataset.fixed_angle['data'] == az)[0][0]
 
             savedir = get_save_dir(
-                prdcfg['basepath'], prdcfg['procname'], prdcfg['timeinfo'],
-                prdcfg['dsname'], prdcfg['prdname'])
+                prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
             fname = make_filename(
                 prdcfg['timeinfo'], 'rhi', prdcfg['dstype'],
@@ -153,8 +227,8 @@ def generate_vol_products(dataset, prdcfg):
                     dataset, [prdcfg['angle']], el_tol=prdcfg['EleTol'])
 
                 savedir = get_save_dir(
-                    prdcfg['basepath'], prdcfg['procname'],
-                    prdcfg['timeinfo'], prdcfg['dsname'], prdcfg['prdname'])
+                    prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+                    prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
                 fname = make_filename(
                     prdcfg['timeinfo'], 'ppi', prdcfg['dstype'],
@@ -193,8 +267,8 @@ def generate_vol_products(dataset, prdcfg):
                     dataset, [prdcfg['angle']], az_tol=prdcfg['AziTol'])
 
                 savedir = get_save_dir(
-                    prdcfg['basepath'], prdcfg['procname'],
-                    prdcfg['timeinfo'], prdcfg['dsname'], prdcfg['prdname'])
+                    prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+                    prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
                 fname = make_filename(
                     prdcfg['timeinfo'], 'rhi', prdcfg['dstype'],
@@ -230,8 +304,8 @@ def generate_vol_products(dataset, prdcfg):
         field_name = get_fieldname_rainbow(prdcfg['voltype'])
         if field_name in dataset.fields:
             savedir = get_save_dir(
-                prdcfg['basepath'], prdcfg['procname'], prdcfg['timeinfo'],
-                prdcfg['dsname'], prdcfg['prdname'])
+                prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
             fname = make_filename(
                 prdcfg['timeinfo'], 'cappi', prdcfg['dstype'],
@@ -255,8 +329,8 @@ def generate_vol_products(dataset, prdcfg):
             ind_ang = np.where(dataset.fixed_angle['data'] == ang)[0][0]
 
             savedir = get_save_dir(
-                prdcfg['basepath'], prdcfg['procname'], prdcfg['timeinfo'],
-                prdcfg['dsname'], prdcfg['prdname'])
+                prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
             fname = make_filename(
                 prdcfg['timeinfo'], 'b-scope', prdcfg['dstype'],
@@ -279,8 +353,8 @@ def generate_vol_products(dataset, prdcfg):
             ind_ang = np.where(dataset.fixed_angle['data'] == ang)[0][0]
 
             savedir = get_save_dir(
-                prdcfg['basepath'], prdcfg['procname'], prdcfg['timeinfo'],
-                prdcfg['dsname'], prdcfg['prdname'])
+                prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
             fname = make_filename(
                 prdcfg['timeinfo'], 'quantiles', prdcfg['dstype'],
@@ -311,8 +385,8 @@ def generate_vol_products(dataset, prdcfg):
             new_dataset.add_field(field_name, dataset.fields[field_name])
 
             savedir = get_save_dir(
-                prdcfg['basepath'], prdcfg['procname'], prdcfg['timeinfo'],
-                prdcfg['dsname'], prdcfg['prdname'])
+                prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
             fname = make_filename(
                 prdcfg['timeinfo'], 'savevol', prdcfg['dstype'],
@@ -328,8 +402,8 @@ def generate_vol_products(dataset, prdcfg):
 
     elif prdcfg['type'] == 'SAVEALL':
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['timeinfo'],
-            prdcfg['dsname'], prdcfg['prdname'])
+            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname = make_filename(
             prdcfg['timeinfo'], 'savevol', prdcfg['dstype'],
@@ -366,8 +440,8 @@ def generate_timeseries_products(dataset, prdcfg):
         gateinfo = ('az'+az+'r'+r+'el'+el)
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['timeinfo'],
-            prdcfg['dsname'], prdcfg['prdname'])
+            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         csvfname = make_filename(
             prdcfg['timeinfo'], 'ts', prdcfg['dstype'], dataset['datatype'],
@@ -400,8 +474,8 @@ def generate_timeseries_products(dataset, prdcfg):
         gateinfo = ('az'+az+'r'+r+'el'+el)
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['timeinfo'],
-            prdcfg['dsname'], prdcfg['prdid'])
+            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['prdid'], timeinfo=prdcfg['timeinfo'])
 
         csvfname = make_filename(
             prdcfg['timeinfo'], 'ts', prdcfg['dstype'], dataset['datatype'],
@@ -433,8 +507,8 @@ def generate_timeseries_products(dataset, prdcfg):
         gateinfo = ('az'+az+'r'+r+'el'+el)
 
         savedir_ts = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['timeinfo'],
-            prdcfg['dsname'], prdcfg['prdid'])
+            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['prdid'], timeinfo=prdcfg['timeinfo'])
 
         csvfname = make_filename(
             prdcfg['timeinfo'], 'ts', prdcfg['dstype'], dataset['datatype'],
@@ -448,8 +522,8 @@ def generate_timeseries_products(dataset, prdcfg):
 
             if sensordate is not None:
                 savedir = get_save_dir(
-                    prdcfg['basepath'], prdcfg['procname'], radardate[0],
-                    prdcfg['dsname'], prdcfg['prdname'])
+                    prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+                    prdcfg['prdname'], timeinfo=radardate[0])
 
                 figfname = make_filename(
                     radardate[0], 'ts_comp', prdcfg['dstype'],
@@ -491,8 +565,8 @@ def generate_timeseries_products(dataset, prdcfg):
 
             if sensordate is not None:
                 savedir = get_save_dir(
-                    prdcfg['basepath'], prdcfg['procname'], radardate[0],
-                    prdcfg['dsname'], prdcfg['prdname'])
+                    prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+                    prdcfg['prdname'], timeinfo=radardate[0])
 
                 figfname = make_filename(
                     radardate[0], 'ts_cumcomp', prdcfg['dstype'],
@@ -516,7 +590,8 @@ def generate_timeseries_products(dataset, prdcfg):
         warn(' Unsupported product type: ' + prdcfg['type'])
 
 
-def get_save_dir(basepath, procname, timeinfo, dsname, prdname):
+def get_save_dir(basepath, procname, dsname, prdname, timeinfo=None,
+                 timeformat='%Y-%m-%d'):
     """
     obtains the path to a product directory and eventually creates it
 
@@ -524,18 +599,17 @@ def get_save_dir(basepath, procname, timeinfo, dsname, prdname):
     ----------
     basepath : str
         product base path
-
     procname : str
         name of processing space
-
-    timeinfo : datetime
-        time info to generate the date directory
-
     dsname : str
         data set name
-
     prdname : str
         product name
+    timeinfo : datetime
+        time info to generate the date directory. If None there is no time
+        format in the path
+    timeformat : str
+        Optional. The time format.
 
     Returns
     -------
@@ -543,8 +617,12 @@ def get_save_dir(basepath, procname, timeinfo, dsname, prdname):
         path to product
 
     """
-    daydir = timeinfo.strftime('%Y-%m-%d')
-    savedir = basepath+procname+'/'+daydir+'/'+dsname+'/'+prdname+'/'
+    if timeinfo is None:
+        savedir = basepath+procname+'/'+dsname+'/'+prdname+'/'
+    else:
+        daydir = timeinfo.strftime('%Y-%m-%d')
+        savedir = basepath+procname+'/'+daydir+'/'+dsname+'/'+prdname+'/'
+
     if os.path.isdir(savedir):
         pass
     else:

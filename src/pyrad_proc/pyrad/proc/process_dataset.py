@@ -33,6 +33,7 @@ Functions for processing Pyrad datasets
     process_selfconsistency_kdp_phidp
     process_selfconsistency_bias
     process_rhohv_rain
+    process_sun_hits
 
 """
 
@@ -44,7 +45,8 @@ import numpy as np
 import pyart
 
 from ..io.read_data import get_datatypefields, get_fieldname_rainbow
-from ..io.read_data import read_selfconsistency
+from ..io.read_data import read_selfconsistency, read_sun_hits
+
 from netCDF4 import num2date
 
 
@@ -118,6 +120,9 @@ def get_process_type(dataset_type):
         func_name = 'process_selfconsistency_bias'
     elif dataset_type == 'RHOHV_RAIN':
         func_name = 'process_rhohv_rain'
+    elif dataset_type == 'SUN_HITS':
+        func_name = 'process_sun_hits'
+        dsformat = 'SUN_HITS'
     elif dataset_type == 'POINT_MEASUREMENT':
         func_name = 'process_point_measurement'
         dsformat = 'TIMESERIES'
@@ -1873,23 +1878,23 @@ def process_rhohv_rain(procstatus, dscfg, radar=None):
         datagroup, datatype, dataset, product = get_datatypefields(
             datatypedescr)
         if datatype == 'RhoHV':
-            rhohv = 'cross_correlation_ratio'
+            rhohv_field = 'cross_correlation_ratio'
         if datatype == 'RhoHVc':
-            rhohv = 'corrected_cross_correlation_ratio'
+            rhohv_field = 'corrected_cross_correlation_ratio'
         if datatype == 'dBZc':
-            refl = 'corrected_reflectivity'
+            refl_field = 'corrected_reflectivity'
         if datatype == 'dBZ':
-            refl = 'reflectivity'
+            refl_field = 'reflectivity'
         if datatype == 'TEMP':
-            temp = 'temperature'
+            temp_field = 'temperature'
 
     ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
     ind_rmax = np.where(radar.range['data'] < dscfg['rmax'])[0][-1]
 
     rhohv_rain = pyart.correct.est_rhohv_rain(
         radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, zmin=dscfg['Zmin'],
-        zmax=dscfg['Zmax'], doc=None, fzl=None, rhohv_field=None,
-        temp_field=None, refl_field=None)
+        zmax=dscfg['Zmax'], doc=None, fzl=None, rhohv_field=rhohv_field,
+        temp_field=temp_field, refl_field=refl_field)
 
     # prepare for exit
     new_dataset = deepcopy(radar)
@@ -1898,3 +1903,143 @@ def process_rhohv_rain(procstatus, dscfg, radar=None):
     new_dataset.add_field('cross_correlation_ratio_in_rain', rhohv_rain)
 
     return new_dataset
+
+
+def process_sun_hits(procstatus, dscfg, radar=None):
+    """
+    monitoring of the radar using sun hits
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    sun_hits_dict : dict
+        dictionary containing a radar object, a sun_hits dict and a
+        sun_retrieval dictionary
+
+    """
+
+    if procstatus == 0:
+        return None
+
+    if procstatus == 1:
+        for datatypedescr in dscfg['datatype']:
+            datagroup, datatype, dataset, product = get_datatypefields(
+                datatypedescr)
+            if datatype == 'dBm':
+                pwrh_field = 'signal_power_hh'
+            if datatype == 'dBmv':
+                pwrv_field = 'signal_power_vv'
+            if datatype == 'ZDR':
+                zdr_field = 'differential_reflectivity'
+
+        ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
+
+        sun_hits, new_radar = pyart.correct.get_sun_hits(
+            radar, delev_max=1.5, dazim_max=1.5, elmin=1., ind_rmin=ind_rmin,
+            percent_bins=10., attg=None, pwrh_field=pwrh_field,
+            pwrv_field=pwrv_field, zdr_field=zdr_field)
+
+        if sun_hits is None:
+            return None
+
+        sun_hits_dataset = dict()
+        sun_hits_dataset.update({'sun_hits': sun_hits})
+        sun_hits_dataset.update({'radar': new_radar})
+
+        return sun_hits_dataset
+
+    if procstatus == 2:
+        fname = ('/data/pyrad_examples/mals_pay_dataquality/2016-03-14/' +
+                 'sun_hits/SUN_HITS/20160314_sun_hits.csv')
+        sun_hits = read_sun_hits(fname)
+
+        if sun_hits[0] is not None:
+            sun_retrieval_h = pyart.correct.sun_retrieval(
+                sun_hits[3], sun_hits[5], sun_hits[2], sun_hits[4],
+                sun_hits[6], sun_hits[7], az_width_co=None, el_width_co=None,
+                az_width_cross=None, el_width_cross=None, is_zdr=False)
+
+            sun_retrieval_v = pyart.correct.sun_retrieval(
+                sun_hits[3], sun_hits[5], sun_hits[2], sun_hits[4],
+                sun_hits[9], sun_hits[10], az_width_co=None, el_width_co=None,
+                az_width_cross=None, el_width_cross=None, is_zdr=False)
+
+            sun_retrieval_zdr = pyart.correct.sun_retrieval(
+                sun_hits[3], sun_hits[5], sun_hits[2], sun_hits[4],
+                sun_hits[12], sun_hits[13], az_width_co=None,
+                el_width_co=None, az_width_cross=None, el_width_cross=None,
+                is_zdr=True)
+
+            sun_retrieval_dict = dict()
+            sun_retrieval_dict.update({'time': sun_hits[0][0]})
+            sun_retrieval_ok = False
+            if sun_retrieval_h is not None:
+                sun_retrieval_ok = True
+                sun_retrieval_dict.update({'Ph': sun_retrieval_h[0]})
+                sun_retrieval_dict.update({'std(Ph)': sun_retrieval_h[1]})
+                sun_retrieval_dict.update({'az_bias_h': sun_retrieval_h[2]})
+                sun_retrieval_dict.update({'el_bias_h': sun_retrieval_h[3]})
+                sun_retrieval_dict.update({'az_width_h': sun_retrieval_h[4]})
+                sun_retrieval_dict.update({'el_width_h': sun_retrieval_h[5]})
+                sun_retrieval_dict.update({'nhits_h': sun_retrieval_h[6]})
+            if sun_retrieval_v is not None:
+                sun_retrieval_ok = True
+                sun_retrieval_dict.update({'Pv': sun_retrieval_v[0]})
+                sun_retrieval_dict.update({'std(Pv)': sun_retrieval_v[1]})
+                sun_retrieval_dict.update({'az_bias_v': sun_retrieval_v[2]})
+                sun_retrieval_dict.update({'el_bias_v': sun_retrieval_v[3]})
+                sun_retrieval_dict.update({'az_width_v': sun_retrieval_v[4]})
+                sun_retrieval_dict.update({'el_width_v': sun_retrieval_v[5]})
+                sun_retrieval_dict.update({'nhits_v': sun_retrieval_v[6]})
+            if sun_retrieval_zdr is not None:
+                sun_retrieval_ok = True
+                sun_retrieval_dict.update({'ZDR': sun_retrieval_zdr[0]})
+                sun_retrieval_dict.update({'std(ZDR)': sun_retrieval_zdr[1]})
+                sun_retrieval_dict.update(
+                    {'az_bias_zdr': sun_retrieval_zdr[2]})
+                sun_retrieval_dict.update(
+                    {'el_bias_zdr': sun_retrieval_zdr[3]})
+                # sun_retrieval_dict.update(
+                #    {'az_width_v': sun_retrieval_zdr[4]})
+                # sun_retrieval_dict.update(
+                #    {'el_width_v': sun_retrieval_zdr[5]})
+                sun_retrieval_dict.update({'nhits_zdr': sun_retrieval_zdr[6]})
+
+        #    sun_hits_dict = dict()
+        #    sun_hits_dict.update({'time': sun_hits[0]})
+        #    sun_hits_dict.update({'ray': sun_hits[1]})
+        #    sun_hits_dict.update({'rad_el': sun_hits[2]})
+        #    sun_hits_dict.update({'rad_az': sun_hits[3]})
+        #    sun_hits_dict.update({'sun_el': sun_hits[4]})
+        #    sun_hits_dict.update({'sun_az': sun_hits[5]})
+        #    sun_hits_dict.update({'pwrh': sun_hits[6]})
+        #    sun_hits_dict.update({'pwrh_std': sun_hits[7]})
+        #    sun_hits_dict.update({'npointsh': sun_hits[8]})
+        #    sun_hits_dict.update({'pwrv': sun_hits[9]})
+        #    sun_hits_dict.update({'pwrv_std': sun_hits[10]})
+        #    sun_hits_dict.update({'npointsv': sun_hits[11]})
+        #    sun_hits_dict.update({'zdr': sun_hits[12]})
+        #    sun_hits_dict.update({'zdr_std': sun_hits[13]})
+        #    sun_hits_dict.update({'npointszdr': sun_hits[14]})
+        #    sun_hits_dict.update({'nvalid': sun_hits[15]})
+        #    sun_hits_dict.update({'nrange': sun_hits[16]})
+
+            if sun_retrieval_ok:
+                sun_hits_dataset = dict()
+            #    sun_hits_dataset.update({'sun_hits_final' : sun_hits_dict})
+                sun_hits_dataset.update({'sun_retrieval': sun_retrieval_dict})
+
+                return sun_hits_dataset
+
+            return None

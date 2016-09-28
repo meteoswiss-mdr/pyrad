@@ -11,6 +11,7 @@ Functions for reading pyrad input data, i.e. radar files
     read_status
     read_rad4alp_cosmo
     read_timeseries
+    read_sun_hits
     get_sensor_data
     read_smn
     read_disdro_scattering
@@ -606,8 +607,6 @@ def read_rad4alp_cosmo(fname, datatype):
             field_name = get_fieldname_rainbow(datatype)
             field_data = np.ma.masked_where(
                 mask, (bindata-1).astype(float)*0.5-87.)
-            field_data.set_fill_value(fill_value)
-            field_data.data[mask] = fill_value
 
             field = pyart.config.get_metadata(field_name)
             field['data'] = field_data
@@ -615,8 +614,6 @@ def read_rad4alp_cosmo(fname, datatype):
         elif datatype == 'ISO0':
             field_name = get_fieldname_rainbow(datatype)
             field_data = np.ma.masked_where(mask, (bindata-1).astype(float))
-            field_data.set_fill_value(fill_value)
-            field_data.data[mask] = fill_value
 
             field = pyart.config.get_metadata(field_name)
             field['data'] = field_data
@@ -652,7 +649,7 @@ def read_timeseries(fname):
             reader = csv.DictReader(
                 row for row in csvfile if not row.startswith('#'))
             nrows = sum(1 for row in reader)
-            value = np.ma.empty(nrows, dtype='float32')
+            value = np.ma.empty(nrows, dtype=float)
 
             # now read the data
             csvfile.seek(0)
@@ -667,13 +664,96 @@ def read_timeseries(fname):
                 i += 1
 
             fill_value = pyart.config.get_fillvalue()
-            value = np.ma.masked_where(value == fill_value, value)
-            value.set_fill_value(fill_value)
+            value = np.ma.masked_values(value, fill_value)
 
             return date, value
     except EnvironmentError:
         warn('WARNING: Unable to read file '+fname)
         return None, None
+
+
+def read_sun_hits(fname):
+    """
+    Reads sun hits data contained in a csv file
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    date , value : tupple
+        A datetime object array containing the time and a numpy masked array
+        containing the value. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            nrows = sum(1 for row in reader)
+            ray = np.empty(nrows, dtype=int)
+            rad_el = np.empty(nrows, dtype=float)
+            rad_az = np.empty(nrows, dtype=float)
+            sun_el = np.empty(nrows, dtype=float)
+            sun_az = np.empty(nrows, dtype=float)
+            ph = np.ma.empty(nrows, dtype=float)
+            ph_std = np.ma.empty(nrows, dtype=float)
+            nph = np.empty(nrows, dtype=int)
+            pv = np.ma.empty(nrows, dtype=float)
+            pv_std = np.ma.empty(nrows, dtype=float)
+            npv = np.empty(nrows, dtype=int)
+            zdr = np.ma.empty(nrows, dtype=float)
+            zdr_std = np.ma.empty(nrows, dtype=float)
+            nzdr = np.empty(nrows, dtype=int)
+            nval = np.empty(nrows, dtype=int)
+            nrng = np.empty(nrows, dtype=int)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            i = 0
+            date = list()
+            for row in reader:
+                date.append(datetime.datetime.strptime(
+                    row['time'], '%Y-%m-%d %H:%M:%S.%f'))
+                ray[i] = int(row['ray'])
+                rad_el[i] = float(row['rad_el'])
+                rad_az[i] = float(row['rad_az'])
+                sun_el[i] = float(row['sun_el'])
+                sun_az[i] = float(row['sun_az'])
+                ph[i] = float(row['Ph'])
+                ph_std[i] = float(row['std(Ph)'])
+                nph[i] = int(row['NPh'])
+                pv[i] = float(row['Pv'])
+                pv_std[i] = float(row['std(Pv)'])
+                npv[i] = int(row['NPv'])
+                zdr[i] = float(row['ZDR'])
+                zdr_std[i] = float(row['std(ZDR)'])
+                nzdr[i] = int(row['NPzdr'])
+                nval[i] = int(row['NPval'])
+                nrng[i] = int(row['NPrng'])
+                i += 1
+
+            fill_value = pyart.config.get_fillvalue()
+
+            ph = np.ma.masked_values(ph, fill_value)
+            ph_std = np.ma.masked_values(ph_std, fill_value)
+            pv = np.ma.masked_values(pv, fill_value)
+            pv_std = np.ma.masked_values(pv_std, fill_value)
+            zdr = np.ma.masked_values(zdr, fill_value)
+            zdr_std = np.ma.masked_values(zdr_std, fill_value)
+
+            return (date, ray, rad_el, rad_az, sun_el, sun_az, ph, ph_std,
+                    nph, pv, pv_std, npv, zdr, zdr_std, nzdr, nval, nrng)
+
+    except EnvironmentError:
+        warn('WARNING: Unable to read file '+fname)
+        return (None, None, None, None, None, None, None, None,
+                None, None, None, None, None, None, None, None, None)
 
 
 def get_sensor_data(date, datatype, cfg):
@@ -1089,6 +1169,12 @@ def get_fieldname_rainbow(datatype):
         field_name = 'signal_power_hh'
     elif datatype == 'dBmv':
         field_name = 'signal_power_vv'
+    elif datatype == 'sun_pos_h':
+        field_name = 'sun_hit_h'
+    elif datatype == 'sun_pos_v':
+        field_name = 'sun_hit_v'
+    elif datatype == 'sun_pos_zdr':
+        field_name = 'sun_hit_zdr'
     elif datatype == 'Nh':
         field_name = 'noisedBZ_hh'
     elif datatype == 'Nv':

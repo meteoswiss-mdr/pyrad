@@ -135,6 +135,10 @@ radar_echo_id = 'radar_echo_id'
 specific_attenuation = 'specific_attenuation'
 specific_differential_attenuation = 'specific_differential_attenuation'
 
+sun_hit_h = 'sun_hit_h'
+sun_hit_v = 'sun_hit_v'
+sun_hit_zdr = 'sun_hit_zdr'
+
 # COSMO data fields
 temperature = 'temperature'
 iso0 = 'iso0'
@@ -255,6 +259,9 @@ DEFAULT_FIELD_NAMES = {
     'noisedBZ_hh': noisedBZ_hh,
     'noisedBZ_vv': noisedBZ_vv,
     'rain_rate': rain_rate,
+    'sun_hit_h': sun_hit_h,
+    'sun_hit_v': sun_hit_v,
+    'sun_hit_zdr': sun_hit_zdr,
     'radar_estimated_rain_rate': radar_estimated_rain_rate,
     'radar_echo_classification': radar_echo_classification,
     'radar_echo_id': radar_echo_id,
@@ -791,7 +798,25 @@ DEFAULT_METADATA = {
         'standard_name': 'radar_estimated_rain_rate',
         'long_name': 'Radar estimated rain rate',
         'coordinates': 'elevation azimuth range'},
-
+        
+    sun_hit_h: {
+        'units': 'dimensionless',
+        'standard_name': 'sun_hit_h',
+        'long_name': 'sun hit radar bins horizontal polarization',
+        'coordinates': 'elevation azimuth range'},
+        
+    sun_hit_v: {
+        'units': 'dimensionless',
+        'standard_name': 'sun_hit_v',
+        'long_name': 'sun hit radar bins vertical polarization',
+        'coordinates': 'elevation azimuth range'},
+        
+    sun_hit_zdr: {
+        'units': 'dimensionless',
+        'standard_name': 'sun_hit_zdr',
+        'long_name': 'sun hit radar bins differential reflectivity',
+        'coordinates': 'elevation azimuth range'},
+        
     radar_echo_classification: {
         'units': 'legend',
         'standard_name': 'radar_echo_classification',
@@ -1624,6 +1649,10 @@ DEFAULT_FIELD_COLORMAP = {
 
     rain_rate: 'pyart_RRate11',
     radar_estimated_rain_rate: 'pyart_RRate11',
+    
+    sun_hit_h: 'pyart_LangRainbow12',
+    sun_hit_v: 'pyart_LangRainbow12',
+    sun_hit_zdr: 'pyart_LangRainbow12',
 
     radar_echo_classification: 'pyart_LangRainbow12',
     radar_echo_id: 'pyart_LangRainbow12',
@@ -1723,6 +1752,10 @@ DEFAULT_FIELD_LIMITS = {
 
     radar_echo_classification: (0, 9),
     radar_echo_id: (0, 3),
+    
+    sun_hit_h: (0, 1),
+    sun_hit_v: (0, 1),
+    sun_hit_zdr: (0, 1),
 
 
     specific_attenuation: (0., 1.),
