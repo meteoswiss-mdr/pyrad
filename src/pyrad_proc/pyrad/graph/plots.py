@@ -11,12 +11,12 @@ Functions to plot Pyrad datasets
     plot_rhi
     plot_cappi
     plot_bscope
+    plot_sun_hits
     plot_quantiles
     plot_timeseries
     plot_timeseries_comp
     get_colobar_label
-    compute_quantiles_sweep
-    compute_histogram_sweep
+    get_field_name
 
 """
 
@@ -26,6 +26,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import pyart
+
+from ..util.radar_utils import compute_quantiles_sweep
+from ..util.radar_utils import compute_histogram_sweep
 
 
 def plot_ppi(radar, field_name, ind_el, prdcfg, fname, plot_type='PPI',
@@ -239,7 +242,8 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname):
         rmax = radar_aux.range['data'][-1]/1000.
         cax = ax.imshow(
             field, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax,
-            extent=(rmin, rmax, ang_min, ang_max), aspect='auto')
+            extent=(rmin, rmax, ang_min, ang_max), aspect='auto',
+            interpolation='none')
         plt.xlabel('Range (km)')
         plt.ylabel(labely)
         plt.title(titl)
@@ -300,13 +304,72 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname):
 
     cax = ax.imshow(
         grid.fields[field_name]['data'][0], extent=(xmin, xmax, ymin, ymax),
-        origin='lower', cmap=cmap, vmin=vmin, vmax=vmax)
+        origin='lower', cmap=cmap, vmin=vmin, vmax=vmax, interpolation='none')
     plt.xlabel('East West distance from radar(km)')
     plt.ylabel('North South distance from radar(km)')
     plt.title(titl)
 
     # plot the colorbar and set the label.
     label = get_colobar_label(grid.fields[field_name], field_name)
+    cb = fig.colorbar(cax)
+    cb.set_label(label)
+
+    fig.savefig(fname)
+    plt.close()
+
+
+def plot_sun_hits(field, field_name, fname, prdcfg):
+    """
+    plots the sun hits
+
+    Parameters
+    ----------
+    radar : Radar object
+        object containing the radar data to plot
+
+    field_name : str
+        name of the radar field to plot
+
+    altitude : float
+        the altitude [m MSL] to be plotted
+
+    prdcfg : dict
+        dictionary containing the product configuration
+
+    fname : str
+        name of the file where to store the plot
+
+    Returns
+    -------
+    no return
+
+    """
+    azmin = prdcfg['sunhitsImageConfig']['azmin']
+    azmax = prdcfg['sunhitsImageConfig']['azmax']
+    elmin = prdcfg['sunhitsImageConfig']['elmin']
+    elmax = prdcfg['sunhitsImageConfig']['elmax']
+
+    field_dict = pyart.config.get_metadata(field_name)
+
+    # display data
+    fig = plt.figure(figsize=[prdcfg['sunhitsImageConfig']['xsize'],
+                              prdcfg['sunhitsImageConfig']['ysize']],
+                     dpi=72)
+    ax = fig.add_subplot(111)
+    cmap = pyart.config.get_field_colormap(field_name)
+    vmin, vmax = pyart.config.get_field_limits(field_name)
+    titl = (prdcfg['timeinfo'].strftime('%Y-%m-%d') + '\n' +
+            get_field_name(field_dict, field_name))
+
+    cax = ax.imshow(
+        field, extent=(azmin, azmax, elmin, elmax),
+        origin='lower', cmap=cmap, vmin=vmin, vmax=vmax, interpolation='none')
+    plt.xlabel('rad_az-sun_az (deg)')
+    plt.ylabel('rad_el-sun_el (deg)')
+    plt.title(titl)
+
+    # plot the colorbar and set the label.
+    label = get_colobar_label(field_dict, field_name)
     cb = fig.colorbar(cax)
     cb.set_label(label)
 
@@ -524,70 +587,30 @@ def get_colobar_label(field_dict, field_name):
     return pyart.graph.common.generate_colorbar_label(standard_name, units)
 
 
-def compute_quantiles_sweep(field, ray_start, ray_end, quantiles=None):
+def get_field_name(field_dict, field):
     """
-    computes quantiles of a particular sweep
+    Return a nice field name for a particular field
 
     Parameters
     ----------
-    field : ndarray 2D
-        the radar field
-    ray_start, ray_end : int
-        starting and ending ray indexes
-    quantiles: float array
-        list of quantiles to compute
-
-    Returns
-    -------
-    quantiles : float array
-        list of quantiles
-    values : float array
-        values at each quantile
-
-    """
-    if quantiles is None:
-        quantiles = [10., 20., 30., 40., 50., 60., 70., 80., 90.]
-        warn('No quantiles have been defined. Default ' + str(quantiles) +
-             ' will be used')
-    nquantiles = len(quantiles)
-    values = np.ma.zeros(nquantiles)
-    values[:] = np.ma.masked
-
-    data_valid = field[ray_start:ray_end, :].compressed()
-    for i in range(nquantiles):
-        values[i] = np.percentile(data_valid, quantiles[i])
-
-    return quantiles, values
-
-
-def compute_histogram_sweep(field, ray_start, ray_end, field_name, step=None):
-    """
-    computes histogram of the data in a particular sweep
-
-    Parameters
-    ----------
-    field : ndarray 2D
-        the radar field
-    ray_start, ray_end : int
-        starting and ending ray indexes
-    field_name: str
+    field_dict : dict
+        dictionary containing field metadata
+    field : str
         name of the field
-    step : float
-        size of bin
 
     Returns
     -------
-    bins : float array
-        interval of each bin
-    values : float array
-        values at each bin
+    field_name : str
+        the field name
 
     """
-    vmin, vmax = pyart.config.get_field_limits(field_name)
-    if step is None:
-        step = (vmax-vmin)/50.
-        warn('No step has been defined. Default '+str(step)+' will be used')
-    bins = np.linspace(vmin, vmax, num=int((vmax-vmin)/step))
-    values = field[ray_start:ray_end, :].compressed()
+    if 'standard_name' in field_dict:
+        field_name = field_dict['standard_name']
+    elif 'long_name' in field_dict:
+        field_name = field_dict['long_name']
+    else:
+        field_name = str(field)
+    field_name = field_name.replace('_', ' ')
+    field_name = field_name[0].upper() + field_name[1:]
 
-    return bins, values
+    return field_name

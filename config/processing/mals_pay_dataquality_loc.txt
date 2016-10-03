@@ -52,6 +52,17 @@ ppiImageConfig STRUCT 6
    ymax       FLOAT  50.0   # Max distance on vertical axis [km]
    
 # Image config
+sunhitsImageConfig STRUCT 8
+   xsize FLOAT  8.   # image size [inches] (default dots per inch (dpi):72)
+   ysize FLOAT  7.   # image size [inches] (default dots per inch (dpi):72)
+   azmin FLOAT -2.0  # Min az [deg]
+   azmax FLOAT  2.0  # Max az [deg]
+   elmin FLOAT -2.0  # Min el [deg]
+   elmax FLOAT  2.0  # Max el [deg]
+   azres FLOAT  0.1  # az resolution [deg]
+   elres FLOAT  0.1  # el resolution [deg]
+   
+# Image config
 rhiImageConfig STRUCT 6
    xsize      FLOAT   10.    # image size [inches]
    ysize      FLOAT   5.     # image size [inches]

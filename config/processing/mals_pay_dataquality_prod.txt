@@ -4,17 +4,17 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 3
-    l0:dBm
-    l0:dBmv
+dataSetList STRARR 3    
+    l0:dBmu
+    l0:dBmvu
     l1:sun_hits
 
 # ==========================================================================================
 #                 raw data products
 # ==========================================================================================
-#dBZ STRUCT 3
+#dBuZ STRUCT 3
 #	type STRING RAW
-#	datatype STRING dBZ
+#	datatype STRING dBuZ
 #	products STRUCT 4
 #	   EL004_0 STRUCT 4
 #         type STRING PPI_IMAGE
@@ -30,14 +30,14 @@ dataSetList STRARR 3
 #         type STRING PPI_IMAGE
 #         plot_type STRING HISTOGRAM
 #         voltype STRING dBZ
-#		 anglenr INT 0         
+#		 anglenr INT 0
 #       ALT1000 STRUCT 3
 #         type STRING CAPPI_IMAGE
 #         voltype STRING dBZ
 #		 altitude FLOAT 1000.
-#       SAVEVOL STRUCT 2
-#         type   STRING SAVEVOL
-#         voltype STRING dBZ
+##       SAVEVOL STRUCT 2
+##         type   STRING SAVEVOL
+##         voltype STRING dBZ
 
 #ZDR STRUCT 3
 #	type STRING RAW
@@ -168,10 +168,10 @@ dataSetList STRARR 3
 #         anglenr INT 0
 #         voltype STRING CDR
 
-dBm STRUCT 3
+dBmu STRUCT 3
     type STRING PWR
     datatype STRARR 1
-        dBZ
+        dBuZ
     MAKE_GLOBAL INT 1
 #    products STRUCT 1
 #       EL003_0_BSCOPE STRUCT 3
@@ -179,10 +179,10 @@ dBm STRUCT 3
 #         anglenr INT 1
 #         voltype STRING dBm
          
-dBmv STRUCT 3
+dBmvu STRUCT 3
     type STRING PWR
     datatype STRARR 1
-        dBZv
+        dBuZv
     MAKE_GLOBAL INT 1
 #    products STRUCT 1
 #      EL003_0_BSCOPE STRUCT 3
@@ -193,14 +193,15 @@ dBmv STRUCT 3
 # ==========================================================================================
 #                 sun hits
 # ==========================================================================================
-sun_hits STRUCT 4
+sun_hits STRUCT 5
     type STRING SUN_HITS
     datatype STRARR 3
         PROC:dBm
         PROC:dBmv
-        ZDR
+        ZDRu
     rmin FLOAT 20000.
-    products STRUCT 8
+    sun_hits_dir STRING SUN_HITS  # must be the same as product WRITE_SUN_HITS
+    products STRUCT 14
        PWRH STRUCT 3
          type STRING BSCOPE_IMAGE
          anglenr INT 0
@@ -209,10 +210,10 @@ sun_hits STRUCT 4
          type STRING BSCOPE_IMAGE
          anglenr INT 0
          voltype STRING dBmv
-       ZDR STRUCT 3
+       ZDRu STRUCT 3
          type STRING BSCOPE_IMAGE
          anglenr INT 0
-         voltype STRING ZDR
+         voltype STRING ZDRu
        PWRH_POS STRUCT 3
          type STRING BSCOPE_IMAGE
          anglenr INT 0
@@ -225,13 +226,28 @@ sun_hits STRUCT 4
          type STRING BSCOPE_IMAGE
          anglenr INT 0
          voltype STRING sun_pos_zdr
+       SUN_HITS_PH STRUCT 2
+         type STRING PLOT_SUN_HITS
+         voltype STRING dBm_sun_hit
+       SUN_HITS_PV STRUCT 2
+         type STRING PLOT_SUN_HITS
+         voltype STRING dBmv_sun_hit
+       SUN_HITS_ZDR STRUCT 2
+         type STRING PLOT_SUN_HITS
+         voltype STRING ZDR_sun_hit
        SUN_HITS STRUCT 1
          type STRING WRITE_SUN_HITS
        SUN_RETRIEVAL STRUCT 1
          type STRING WRITE_SUN_RETRIEVAL
-       
-         
-
+       SUN_RETRIEVAL_PH STRUCT 2
+         type STRING PLOT_SUN_RETRIEVAL
+         voltype STRING dBm_sun_est
+       SUN_RETRIEVAL_PV STRUCT 2
+         type STRING PLOT_SUN_RETRIEVAL
+         voltype STRING dBmv_sun_est
+       SUN_RETRIEVAL_ZDR STRUCT 2
+         type STRING PLOT_SUN_RETRIEVAL
+         voltype STRING ZDR_sun_est
 
 
 # ==========================================================================================

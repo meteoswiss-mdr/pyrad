@@ -175,7 +175,9 @@ if __name__ == '__main__':
     nvolumes = len(masterfilelist)
     if nvolumes == 0:
         raise Exception(
-            "ERROR: Could not find any volume within the specified times")
+            'ERROR: Could not find any volume within the specified times ' +
+            ' for master scan '+masterscan+' and master data type ' +
+            masterdatatypedescr)
     print('Number of volumes to process: '+str(nvolumes)+'\n\n')
 
     # initial processing of the datasets
@@ -223,6 +225,8 @@ if __name__ == '__main__':
                             {'ppiImageConfig': cfg['ppiImageConfig']})
                         prdcfg.update(
                             {'rhiImageConfig': cfg['rhiImageConfig']})
+                        prdcfg.update(
+                            {'sunhitsImageConfig': cfg['sunhitsImageConfig']})
                         prdcfg.update({'dsname': dataset})
                         prdcfg.update({'dstype': cfg[dataset]['type']})
                         prdcfg.update({'prdname': product})
@@ -286,6 +290,9 @@ if __name__ == '__main__':
                                 {'ppiImageConfig': cfg['ppiImageConfig']})
                             prdcfg.update(
                                 {'rhiImageConfig': cfg['rhiImageConfig']})
+                            prdcfg.update(
+                                {'sunhitsImageConfig':
+                                    cfg['sunhitsImageConfig']})
                             prdcfg.update({'dsname': dataset})
                             prdcfg.update({'dstype': cfg[dataset]['type']})
                             prdcfg.update({'prdname': product})
@@ -310,6 +317,11 @@ if __name__ == '__main__':
             dscfg.update({'radconsth': cfg['radconsth']})
             dscfg.update({'radconstv': cfg['radconstv']})
             dscfg.update({'attg': cfg['attg']})
+
+            dscfg.update({'basepath': cfg['saveimgbasepath']})
+            dscfg.update({'timeinfo': voltime})
+            dscfg.update({'procname': cfg['name']})
+            dscfg.update({'dsname': dataset})
             if 'MAKE_GLOBAL' not in dscfg:
                     dscfg.update({'MAKE_GLOBAL': 0})
 
@@ -341,6 +353,9 @@ if __name__ == '__main__':
                             {'ppiImageConfig': cfg['ppiImageConfig']})
                         prdcfg.update(
                             {'rhiImageConfig': cfg['rhiImageConfig']})
+                        prdcfg.update(
+                                {'sunhitsImageConfig':
+                                    cfg['sunhitsImageConfig']})
                         prdcfg.update({'dsname': dataset})
                         prdcfg.update({'dstype': cfg[dataset]['type']})
                         prdcfg.update({'prdname': product})

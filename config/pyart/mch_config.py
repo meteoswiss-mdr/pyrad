@@ -53,6 +53,14 @@ reflectivity_bias = 'reflectivity_bias'
 signal_power_hh = 'signal_power_hh'
 signal_power_vv = 'signal_power_vv'
 
+sun_hit_power_h = 'sun_hit_power_h'
+sun_hit_power_v = 'sun_hit_power_v'
+sun_hit_differential_reflectivity = 'sun_hit_differential_reflectivity'
+
+sun_est_power_h = 'sun_est_power_h'
+sun_est_power_v = 'sun_est_power_v'
+sun_est_differential_reflectivity = 'sun_est_differential_reflectivity'
+
 
 # Mean Doppler velocity fields, VEL
 velocity = 'velocity'
@@ -212,6 +220,12 @@ DEFAULT_FIELD_NAMES = {
     'reflectivity_bias': reflectivity_bias,
     'signal_power_hh': signal_power_hh,
     'signal_power_vv': signal_power_vv,
+    'sun_hit_power_h': sun_hit_power_h,
+    'sun_hit_power_v': sun_hit_power_v,
+    'sun_hit_differential_reflectivity': sun_hit_differential_reflectivity,
+    'sun_est_power_h': sun_est_power_h,
+    'sun_est_power_v': sun_est_power_v,
+    'sun_est_differential_reflectivity': sun_est_differential_reflectivity,
     'velocity': velocity,
     'corrected_velocity': corrected_velocity,
     'unfiltered_velocity': unfiltered_velocity,
@@ -599,6 +613,42 @@ DEFAULT_METADATA = {
         'long_name': 'Signal power vertical',
         'coordinates': 'elevation azimuth range'},
 
+    sun_hit_power_h: {
+        'units': 'dBm',
+        'standard_name': 'sun_hit_power_h',
+        'long_name': 'sun hit power horizontal',
+        'coordinates': 'elevation azimuth'},
+
+    sun_hit_power_v: {
+        'units': 'dBm',
+        'standard_name': 'sun_hit_power_v',
+        'long_name': 'sun hit power vertical',
+        'coordinates': 'elevation azimuth'},
+
+    sun_hit_differential_reflectivity: {
+        'units': 'dB',
+        'standard_name': 'sun_hit_differential_reflectivity',
+        'long_name': 'sun hit differential reflectivity',
+        'coordinates': 'elevation azimuth'},
+
+    sun_est_power_h: {
+        'units': 'dBm',
+        'standard_name': 'sun_est_power_h',
+        'long_name': 'estimated sun power horizontal',
+        'coordinates': 'elevation azimuth'},
+
+    sun_est_power_v: {
+        'units': 'dBm',
+        'standard_name': 'sun_est_power_v',
+        'long_name': 'estimated sun power vertical',
+        'coordinates': 'elevation azimuth'},
+
+    sun_est_differential_reflectivity: {
+        'units': 'dB',
+        'standard_name': 'sun_est_differential_reflectivity',
+        'long_name': 'estimated sun differential reflectivity',
+        'coordinates': 'elevation azimuth'},
+
     # Velocity fields
     velocity: {
         'units': 'meters_per_second',
@@ -798,25 +848,25 @@ DEFAULT_METADATA = {
         'standard_name': 'radar_estimated_rain_rate',
         'long_name': 'Radar estimated rain rate',
         'coordinates': 'elevation azimuth range'},
-        
+
     sun_hit_h: {
         'units': 'dimensionless',
         'standard_name': 'sun_hit_h',
         'long_name': 'sun hit radar bins horizontal polarization',
         'coordinates': 'elevation azimuth range'},
-        
+
     sun_hit_v: {
         'units': 'dimensionless',
         'standard_name': 'sun_hit_v',
         'long_name': 'sun hit radar bins vertical polarization',
         'coordinates': 'elevation azimuth range'},
-        
+
     sun_hit_zdr: {
         'units': 'dimensionless',
         'standard_name': 'sun_hit_zdr',
         'long_name': 'sun hit radar bins differential reflectivity',
         'coordinates': 'elevation azimuth range'},
-        
+
     radar_echo_classification: {
         'units': 'legend',
         'standard_name': 'radar_echo_classification',
@@ -1603,6 +1653,16 @@ DEFAULT_FIELD_COLORMAP = {
     noisedBZ_hh: 'pyart_NWSRef',
     noisedBZ_vv: 'pyart_NWSRef',
 
+    sun_hit_power_h: 'pyart_NWSRef',
+    sun_hit_power_v: 'pyart_NWSRef',
+
+    sun_hit_differential_reflectivity: 'pyart_RefDiff',
+
+    sun_est_power_h: 'pyart_NWSRef',
+    sun_est_power_v: 'pyart_NWSRef',
+
+    sun_est_differential_reflectivity: 'pyart_RefDiff',
+
     velocity: 'pyart_BuDRd18',
     corrected_velocity: 'pyart_BuDRd18',
     unfiltered_velocity: 'pyart_BuDRd18',
@@ -1649,7 +1709,7 @@ DEFAULT_FIELD_COLORMAP = {
 
     rain_rate: 'pyart_RRate11',
     radar_estimated_rain_rate: 'pyart_RRate11',
-    
+
     sun_hit_h: 'pyart_LangRainbow12',
     sun_hit_v: 'pyart_LangRainbow12',
     sun_hit_zdr: 'pyart_LangRainbow12',
@@ -1703,6 +1763,14 @@ DEFAULT_FIELD_LIMITS = {
     signal_power_hh: (-130., 0.),
     signal_power_vv: (-130., 0.),
 
+    sun_hit_power_h: (-120., -90.),
+    sun_hit_power_v: (-120., -90.),
+    sun_hit_differential_reflectivity: (-2., 2.),
+
+    sun_est_power_h: (-120., -90.),
+    sun_est_power_v: (-120., -90.),
+    sun_est_differential_reflectivity: (-2., 2.),
+
     velocity: velocity_limit,
     corrected_velocity: velocity_limit,
     unfiltered_velocity: velocity_limit,
@@ -1752,7 +1820,7 @@ DEFAULT_FIELD_LIMITS = {
 
     radar_echo_classification: (0, 9),
     radar_echo_id: (0, 3),
-    
+
     sun_hit_h: (0, 1),
     sun_hit_v: (0, 1),
     sun_hit_zdr: (0, 1),

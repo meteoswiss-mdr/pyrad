@@ -18,7 +18,5 @@ Processing functions to be implemented with highest priority:
 
 Product functions to be implemented with highest priority:
 ----------------------------------------------------------
-- sun retrieval plot
-- sun hits plot
 - sun time series
 - monitoring plots and time series

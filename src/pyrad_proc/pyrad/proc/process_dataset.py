@@ -47,6 +47,8 @@ import pyart
 from ..io.read_data import get_datatypefields, get_fieldname_rainbow
 from ..io.read_data import read_selfconsistency, read_sun_hits
 
+from .process_product import get_save_dir, make_filename
+
 from netCDF4 import num2date
 
 
@@ -1940,8 +1942,8 @@ def process_sun_hits(procstatus, dscfg, radar=None):
                 pwrh_field = 'signal_power_hh'
             if datatype == 'dBmv':
                 pwrv_field = 'signal_power_vv'
-            if datatype == 'ZDR':
-                zdr_field = 'differential_reflectivity'
+            if datatype == 'ZDRu':
+                zdr_field = 'unfiltered_differential_reflectivity'
 
         ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
 
@@ -1960,86 +1962,110 @@ def process_sun_hits(procstatus, dscfg, radar=None):
         return sun_hits_dataset
 
     if procstatus == 2:
-        fname = ('/data/pyrad_examples/mals_pay_dataquality/2016-03-14/' +
-                 'sun_hits/SUN_HITS/20160314_sun_hits.csv')
-        sun_hits = read_sun_hits(fname)
+        savedir = get_save_dir(
+            dscfg['basepath'], dscfg['procname'], dscfg['dsname'],
+            dscfg['sun_hits_dir'], timeinfo=dscfg['timeinfo'])
 
-        if sun_hits[0] is not None:
-            sun_retrieval_h = pyart.correct.sun_retrieval(
-                sun_hits[3], sun_hits[5], sun_hits[2], sun_hits[4],
-                sun_hits[6], sun_hits[7], az_width_co=None, el_width_co=None,
-                az_width_cross=None, el_width_cross=None, is_zdr=False)
+        fname = make_filename(
+            'info', dscfg['type'], 'detected', 'csv',
+            timeinfo=dscfg['timeinfo'], timeformat='%Y%m%d')
 
-            sun_retrieval_v = pyart.correct.sun_retrieval(
-                sun_hits[3], sun_hits[5], sun_hits[2], sun_hits[4],
-                sun_hits[9], sun_hits[10], az_width_co=None, el_width_co=None,
-                az_width_cross=None, el_width_cross=None, is_zdr=False)
+        sun_hits = read_sun_hits(savedir+fname)
 
-            sun_retrieval_zdr = pyart.correct.sun_retrieval(
-                sun_hits[3], sun_hits[5], sun_hits[2], sun_hits[4],
-                sun_hits[12], sun_hits[13], az_width_co=None,
-                el_width_co=None, az_width_cross=None, el_width_cross=None,
-                is_zdr=True)
-
-            sun_retrieval_dict = dict()
-            sun_retrieval_dict.update({'time': sun_hits[0][0]})
-            sun_retrieval_ok = False
-            if sun_retrieval_h is not None:
-                sun_retrieval_ok = True
-                sun_retrieval_dict.update({'Ph': sun_retrieval_h[0]})
-                sun_retrieval_dict.update({'std(Ph)': sun_retrieval_h[1]})
-                sun_retrieval_dict.update({'az_bias_h': sun_retrieval_h[2]})
-                sun_retrieval_dict.update({'el_bias_h': sun_retrieval_h[3]})
-                sun_retrieval_dict.update({'az_width_h': sun_retrieval_h[4]})
-                sun_retrieval_dict.update({'el_width_h': sun_retrieval_h[5]})
-                sun_retrieval_dict.update({'nhits_h': sun_retrieval_h[6]})
-            if sun_retrieval_v is not None:
-                sun_retrieval_ok = True
-                sun_retrieval_dict.update({'Pv': sun_retrieval_v[0]})
-                sun_retrieval_dict.update({'std(Pv)': sun_retrieval_v[1]})
-                sun_retrieval_dict.update({'az_bias_v': sun_retrieval_v[2]})
-                sun_retrieval_dict.update({'el_bias_v': sun_retrieval_v[3]})
-                sun_retrieval_dict.update({'az_width_v': sun_retrieval_v[4]})
-                sun_retrieval_dict.update({'el_width_v': sun_retrieval_v[5]})
-                sun_retrieval_dict.update({'nhits_v': sun_retrieval_v[6]})
-            if sun_retrieval_zdr is not None:
-                sun_retrieval_ok = True
-                sun_retrieval_dict.update({'ZDR': sun_retrieval_zdr[0]})
-                sun_retrieval_dict.update({'std(ZDR)': sun_retrieval_zdr[1]})
-                sun_retrieval_dict.update(
-                    {'az_bias_zdr': sun_retrieval_zdr[2]})
-                sun_retrieval_dict.update(
-                    {'el_bias_zdr': sun_retrieval_zdr[3]})
-                # sun_retrieval_dict.update(
-                #    {'az_width_v': sun_retrieval_zdr[4]})
-                # sun_retrieval_dict.update(
-                #    {'el_width_v': sun_retrieval_zdr[5]})
-                sun_retrieval_dict.update({'nhits_zdr': sun_retrieval_zdr[6]})
-
-        #    sun_hits_dict = dict()
-        #    sun_hits_dict.update({'time': sun_hits[0]})
-        #    sun_hits_dict.update({'ray': sun_hits[1]})
-        #    sun_hits_dict.update({'rad_el': sun_hits[2]})
-        #    sun_hits_dict.update({'rad_az': sun_hits[3]})
-        #    sun_hits_dict.update({'sun_el': sun_hits[4]})
-        #    sun_hits_dict.update({'sun_az': sun_hits[5]})
-        #    sun_hits_dict.update({'pwrh': sun_hits[6]})
-        #    sun_hits_dict.update({'pwrh_std': sun_hits[7]})
-        #    sun_hits_dict.update({'npointsh': sun_hits[8]})
-        #    sun_hits_dict.update({'pwrv': sun_hits[9]})
-        #    sun_hits_dict.update({'pwrv_std': sun_hits[10]})
-        #    sun_hits_dict.update({'npointsv': sun_hits[11]})
-        #    sun_hits_dict.update({'zdr': sun_hits[12]})
-        #    sun_hits_dict.update({'zdr_std': sun_hits[13]})
-        #    sun_hits_dict.update({'npointszdr': sun_hits[14]})
-        #    sun_hits_dict.update({'nvalid': sun_hits[15]})
-        #    sun_hits_dict.update({'nrange': sun_hits[16]})
-
-            if sun_retrieval_ok:
-                sun_hits_dataset = dict()
-            #    sun_hits_dataset.update({'sun_hits_final' : sun_hits_dict})
-                sun_hits_dataset.update({'sun_retrieval': sun_retrieval_dict})
-
-                return sun_hits_dataset
-
+        if sun_hits[0] is None:
             return None
+
+        sun_retrieval_h = pyart.correct.sun_retrieval(
+            sun_hits[4], sun_hits[6], sun_hits[3], sun_hits[5],
+            sun_hits[7], sun_hits[8], az_width_co=None, el_width_co=None,
+            az_width_cross=None, el_width_cross=None, is_zdr=False)
+
+        sun_retrieval_v = pyart.correct.sun_retrieval(
+            sun_hits[4], sun_hits[6], sun_hits[3], sun_hits[5],
+            sun_hits[11], sun_hits[12], az_width_co=None,
+            el_width_co=None, az_width_cross=None, el_width_cross=None,
+            is_zdr=False)
+
+        sun_retrieval_zdr = pyart.correct.sun_retrieval(
+            sun_hits[4], sun_hits[6], sun_hits[3], sun_hits[5],
+            sun_hits[15], sun_hits[16], az_width_co=None,
+            el_width_co=None, az_width_cross=None, el_width_cross=None,
+            is_zdr=True)
+
+        sun_retrieval_dict = {
+            'time': sun_hits[0][0],
+            'dBm_sun_est': pyart.config.get_fillvalue(),
+            'std(dBm_sun_est)': pyart.config.get_fillvalue(),
+            'az_bias_h': pyart.config.get_fillvalue(),
+            'el_bias_h': pyart.config.get_fillvalue(),
+            'az_width_h': pyart.config.get_fillvalue(),
+            'el_width_h': pyart.config.get_fillvalue(),
+            'nhits_h': 0,
+            'par_h': None,
+            'dBmv_sun_est': pyart.config.get_fillvalue(),
+            'std(dBmv_sun_est)': pyart.config.get_fillvalue(),
+            'az_bias_v': pyart.config.get_fillvalue(),
+            'el_bias_v': pyart.config.get_fillvalue(),
+            'az_width_v': pyart.config.get_fillvalue(),
+            'el_width_v': pyart.config.get_fillvalue(),
+            'nhits_v': 0,
+            'par_v': None,
+            'ZDR_sun_est': pyart.config.get_fillvalue(),
+            'std(ZDR_sun_est)': pyart.config.get_fillvalue(),
+            'az_bias_zdr': pyart.config.get_fillvalue(),
+            'el_bias_zdr': pyart.config.get_fillvalue(),
+            'nhits_zdr': 0,
+            'par_zdr': None}
+
+        if sun_retrieval_h is not None:
+            sun_retrieval_dict['dBm_sun_est'] = sun_retrieval_h[0]
+            sun_retrieval_dict['std(dBm_sun_est)'] = sun_retrieval_h[1]
+            sun_retrieval_dict['az_bias_h'] = sun_retrieval_h[2]
+            sun_retrieval_dict['el_bias_h'] = sun_retrieval_h[3]
+            sun_retrieval_dict['az_width_h'] = sun_retrieval_h[4]
+            sun_retrieval_dict['el_width_h'] = sun_retrieval_h[5]
+            sun_retrieval_dict['nhits_h'] = sun_retrieval_h[6]
+            sun_retrieval_dict['par_h'] = sun_retrieval_h[7]
+        if sun_retrieval_v is not None:
+            sun_retrieval_dict['dBmv_sun_est'] = sun_retrieval_v[0]
+            sun_retrieval_dict['std(dBmv_sun_est)'] = sun_retrieval_v[1]
+            sun_retrieval_dict['az_bias_v'] = sun_retrieval_v[2]
+            sun_retrieval_dict['el_bias_v'] = sun_retrieval_v[3]
+            sun_retrieval_dict['az_width_v'] = sun_retrieval_v[4]
+            sun_retrieval_dict['el_width_v'] = sun_retrieval_v[5]
+            sun_retrieval_dict['nhits_v'] = sun_retrieval_v[6]
+            sun_retrieval_dict['par_v'] = sun_retrieval_v[7]
+        if sun_retrieval_zdr is not None:
+            sun_retrieval_dict['ZDR_sun_est'] = sun_retrieval_zdr[0]
+            sun_retrieval_dict['std(ZDR_sun_est)'] = sun_retrieval_zdr[1]
+            sun_retrieval_dict['az_bias_zdr'] = sun_retrieval_zdr[2]
+            sun_retrieval_dict['el_bias_dzr'] = sun_retrieval_zdr[3]
+            sun_retrieval_dict['nhits_zdr'] = sun_retrieval_zdr[6]
+            sun_retrieval_dict['par_zdr'] = sun_retrieval_zdr[7]
+
+        sun_hits_dict = {
+            'time': sun_hits[0],
+            'ray': sun_hits[1],
+            'NPrng': sun_hits[2],
+            'rad_el': sun_hits[3],
+            'rad_az': sun_hits[4],
+            'sun_el': sun_hits[5],
+            'sun_az': sun_hits[6],
+            'dBm_sun_hit': sun_hits[7],
+            'std(dBm_sun_hit)': sun_hits[8],
+            'NPh': sun_hits[9],
+            'NPhval': sun_hits[10],
+            'dBmv_sun_hit': sun_hits[11],
+            'std(dBmv_sun_hit)': sun_hits[12],
+            'NPv': sun_hits[13],
+            'NPvval': sun_hits[14],
+            'ZDR_sun_hit': sun_hits[15],
+            'std(ZDR_sun_hit)': sun_hits[16],
+            'NPzdr': sun_hits[17],
+            'NPzdrval': sun_hits[18]}
+
+        sun_hits_dataset = dict()
+        sun_hits_dataset.update({'sun_hits_final': sun_hits_dict})
+        sun_hits_dataset.update({'sun_retrieval': sun_retrieval_dict})
+
+        return sun_hits_dataset

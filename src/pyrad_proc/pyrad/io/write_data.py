@@ -101,6 +101,16 @@ def write_sun_hits(sun_hits, fname):
     No return
 
     """
+    dBm_sun_hit = sun_hits['dBm_sun_hit'].filled(fill_value=get_fillvalue())
+    std_dBm_sun_hit = sun_hits['std(dBm_sun_hit)'].filled(
+        fill_value=get_fillvalue())
+    dBmv_sun_hit = sun_hits['dBmv_sun_hit'].filled(fill_value=get_fillvalue())
+    std_dBmv_sun_hit = sun_hits['std(dBmv_sun_hit)'].filled(
+        fill_value=get_fillvalue())
+    zdr_sun_hit = sun_hits['ZDR_sun_hit'].filled(fill_value=get_fillvalue())
+    std_zdr_sun_hit = sun_hits['std(ZDR_sun_hit)'].filled(
+        fill_value=get_fillvalue())
+
     filelist = glob.glob(fname)
     nhits = len(sun_hits['time'])
     if len(filelist) == 0:
@@ -110,62 +120,66 @@ def write_sun_hits(sun_hits, fname):
             csvfile.write('# Fill Value: '+str(get_fillvalue())+'\n')
             csvfile.write('#\n')
 
-            fieldnames = ['time', 'ray', 'rad_el', 'rad_az', 'sun_el',
-                          'sun_az',
-                          'Ph', 'std(Ph)', 'NPh',
-                          'Pv', 'std(Pv)', 'NPv',
-                          'ZDR', 'std(ZDR)', 'NPzdr',
-                          'NPval', 'NPrng']
+            fieldnames = [
+                'time', 'ray', 'NPrng',
+                'rad_el', 'rad_az', 'sun_el', 'sun_az',
+                'dBm_sun_hit', 'std(dBm_sun_hit)', 'NPh', 'NPhval',
+                'dBmv_sun_hit', 'std(dBmv_sun_hit)', 'NPv', 'NPvval',
+                'ZDR_sun_hit', 'std(ZDR_sun_hit)', 'NPzdr', 'NPzdrval']
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
             for i in range(nhits):
                 writer.writerow(
                     {'time': sun_hits['time'][i],
                      'ray': sun_hits['ray'][i],
+                     'NPrng': sun_hits['NPrng'][i],
                      'rad_el': sun_hits['rad_el'][i],
                      'rad_az': sun_hits['rad_az'][i],
                      'sun_el': sun_hits['sun_el'][i],
                      'sun_az': sun_hits['sun_az'][i],
-                     'Ph': sun_hits['pwrh'][i],
-                     'std(Ph)': sun_hits['pwrh_std'][i],
-                     'NPh': sun_hits['npointsh'][i],
-                     'Pv': sun_hits['pwrv'][i],
-                     'std(Pv)': sun_hits['pwrv_std'][i],
-                     'NPv': sun_hits['npointsv'][i],
-                     'ZDR': sun_hits['zdr'][i],
-                     'std(ZDR)': sun_hits['zdr_std'][i],
-                     'NPzdr': sun_hits['npointszdr'][i],
-                     'NPval': sun_hits['nvalid'][i],
-                     'NPrng': sun_hits['nrange'][i]})
+                     'dBm_sun_hit': dBm_sun_hit[i],
+                     'std(dBm_sun_hit)': std_dBm_sun_hit[i],
+                     'NPh': sun_hits['NPh'][i],
+                     'NPhval': sun_hits['NPhval'][i],
+                     'dBmv_sun_hit': dBmv_sun_hit[i],
+                     'std(dBmv_sun_hit)': std_dBmv_sun_hit[i],
+                     'NPv': sun_hits['NPv'][i],
+                     'NPvval': sun_hits['NPvval'][i],
+                     'ZDR_sun_hit': zdr_sun_hit[i],
+                     'std(ZDR_sun_hit)': std_zdr_sun_hit[i],
+                     'NPzdr': sun_hits['NPzdr'][i],
+                     'NPzdrval': sun_hits['NPzdrval'][i]})
             csvfile.close()
     else:
         with open(fname, 'a', newline='') as csvfile:
-            fieldnames = ['time', 'ray', 'rad_el', 'rad_az',
-                          'sun_el', 'sun_az',
-                          'Ph', 'std(Ph)', 'NPh',
-                          'Pv', 'std(Pv)', 'NPv',
-                          'ZDR', 'std(ZDR)', 'NPzdr',
-                          'NPval', 'NPrng']
+            fieldnames = [
+                'time', 'ray', 'NPrng',
+                'rad_el', 'rad_az', 'sun_el', 'sun_az',
+                'dBm_sun_hit', 'std(dBm_sun_hit)', 'NPh', 'NPhval',
+                'dBmv_sun_hit', 'std(dBmv_sun_hit)', 'NPv', 'NPvval',
+                'ZDR_sun_hit', 'std(ZDR_sun_hit)', 'NPzdr', 'NPzdrval']
             writer = csv.DictWriter(csvfile, fieldnames)
             for i in range(nhits):
                 writer.writerow(
                     {'time': sun_hits['time'][i],
                      'ray': sun_hits['ray'][i],
+                     'NPrng': sun_hits['NPrng'][i],
                      'rad_el': sun_hits['rad_el'][i],
                      'rad_az': sun_hits['rad_az'][i],
                      'sun_el': sun_hits['sun_el'][i],
                      'sun_az': sun_hits['sun_az'][i],
-                     'Ph': sun_hits['pwrh'][i],
-                     'std(Ph)': sun_hits['pwrh_std'][i],
-                     'NPh': sun_hits['npointsh'][i],
-                     'Pv': sun_hits['pwrv'][i],
-                     'std(Pv)': sun_hits['pwrv_std'][i],
-                     'NPv': sun_hits['npointsv'][i],
-                     'ZDR': sun_hits['zdr'][i],
-                     'std(ZDR)': sun_hits['zdr_std'][i],
-                     'NPzdr': sun_hits['npointszdr'][i],
-                     'NPval': sun_hits['nvalid'][i],
-                     'NPrng': sun_hits['nrange'][i]})
+                     'dBm_sun_hit': dBm_sun_hit[i],
+                     'std(dBm_sun_hit)': std_dBm_sun_hit[i],
+                     'NPh': sun_hits['NPh'][i],
+                     'NPhval': sun_hits['NPhval'][i],
+                     'dBmv_sun_hit': dBmv_sun_hit[i],
+                     'std(dBmv_sun_hit)': std_dBmv_sun_hit[i],
+                     'NPv': sun_hits['NPv'][i],
+                     'NPvval': sun_hits['NPvval'][i],
+                     'ZDR_sun_hit': zdr_sun_hit[i],
+                     'std(ZDR_sun_hit)': std_zdr_sun_hit[i],
+                     'NPzdr': sun_hits['NPzdr'][i],
+                     'NPzdrval': sun_hits['NPzdrval'][i]})
             csvfile.close()
 
 
@@ -197,10 +211,10 @@ def write_sun_retrieval(sun_retrieval, fname):
             fieldnames = [
                 'time',
                 'nhits_h', 'el_width_h', 'az_width_h',
-                'el_bias_h', 'az_bias_h', 'Ph', 'std(Ph)',
+                'el_bias_h', 'az_bias_h', 'dBm_sun_est', 'std(dBm_sun_est)',
                 'nhits_v', 'el_width_v', 'az_width_v',
-                'el_bias_v', 'az_bias_v', 'Pv', 'std(Pv)',
-                'nhits_zdr', 'ZDR', 'std(ZDR)']
+                'el_bias_v', 'az_bias_v', 'dBmv_sun_est', 'std(dBmv_sun_est)',
+                'nhits_zdr', 'ZDR_sun_est', 'std(ZDR_sun_est)']
 
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
@@ -211,28 +225,28 @@ def write_sun_retrieval(sun_retrieval, fname):
                  'az_width_h': sun_retrieval['az_width_h'],
                  'el_bias_h': sun_retrieval['el_bias_h'],
                  'az_bias_h': sun_retrieval['az_bias_h'],
-                 'Ph': sun_retrieval['Ph'],
-                 'std(Ph)': sun_retrieval['std(Ph)'],
+                 'dBm_sun_est': sun_retrieval['dBm_sun_est'],
+                 'std(dBm_sun_est)': sun_retrieval['std(dBm_sun_est)'],
                  'nhits_v': sun_retrieval['nhits_v'],
                  'el_width_v': sun_retrieval['el_width_v'],
                  'az_width_v': sun_retrieval['az_width_v'],
                  'el_bias_v': sun_retrieval['el_bias_v'],
                  'az_bias_v': sun_retrieval['az_bias_v'],
-                 'Pv': sun_retrieval['Pv'],
-                 'std(Pv)': sun_retrieval['std(Pv)'],
+                 'dBmv_sun_est': sun_retrieval['dBmv_sun_est'],
+                 'std(dBmv_sun_est)': sun_retrieval['std(dBmv_sun_est)'],
                  'nhits_zdr': sun_retrieval['nhits_zdr'],
-                 'ZDR': sun_retrieval['ZDR'],
-                 'std(ZDR)': sun_retrieval['std(ZDR)']})
+                 'ZDR_sun_est': sun_retrieval['ZDR_sun_est'],
+                 'std(ZDR_sun_est)': sun_retrieval['std(ZDR_sun_est)']})
             csvfile.close()
     else:
         with open(fname, 'a', newline='') as csvfile:
             fieldnames = [
                 'time',
                 'nhits_h', 'el_width_h', 'az_width_h',
-                'el_bias_h', 'az_bias_h', 'Ph', 'std(Ph)',
+                'el_bias_h', 'az_bias_h', 'dBm_sun_est', 'std(dBm_sun_est)',
                 'nhits_v', 'el_width_v', 'az_width_v',
-                'el_bias_v', 'az_bias_v', 'Pv', 'std(Pv)',
-                'nhits_zdr', 'ZDR', 'std(ZDR)']
+                'el_bias_v', 'az_bias_v', 'dBmv_sun_est', 'std(dBmv_sun_est)',
+                'nhits_zdr', 'ZDR_sun_est', 'std(ZDR_sun_est)']
 
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writerow(
@@ -242,18 +256,18 @@ def write_sun_retrieval(sun_retrieval, fname):
                  'az_width_h': sun_retrieval['az_width_h'],
                  'el_bias_h': sun_retrieval['el_bias_h'],
                  'az_bias_h': sun_retrieval['az_bias_h'],
-                 'Ph': sun_retrieval['Ph'],
-                 'std(Ph)': sun_retrieval['std(Ph)'],
+                 'dBm_sun_est': sun_retrieval['dBm_sun_est'],
+                 'std(dBm_sun_est)': sun_retrieval['std(dBm_sun_est)'],
                  'nhits_v': sun_retrieval['nhits_v'],
                  'el_width_v': sun_retrieval['el_width_v'],
                  'az_width_v': sun_retrieval['az_width_v'],
                  'el_bias_v': sun_retrieval['el_bias_v'],
                  'az_bias_v': sun_retrieval['az_bias_v'],
-                 'Pv': sun_retrieval['Pv'],
-                 'std(Pv)': sun_retrieval['std(Pv)'],
+                 'dBmv_sun_est': sun_retrieval['dBmv_sun_est'],
+                 'std(dBmv_sun_est)': sun_retrieval['std(dBmv_sun_est)'],
                  'nhits_zdr': sun_retrieval['nhits_zdr'],
-                 'ZDR': sun_retrieval['ZDR'],
-                 'std(ZDR)': sun_retrieval['std(ZDR)']})
+                 'ZDR_sun_est': sun_retrieval['ZDR_sun_est'],
+                 'std(ZDR_sun_est)': sun_retrieval['std(ZDR_sun_est)']})
             csvfile.close()
 
 

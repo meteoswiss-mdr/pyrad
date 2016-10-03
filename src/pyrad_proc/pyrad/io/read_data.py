@@ -695,6 +695,7 @@ def read_sun_hits(fname):
                 row for row in csvfile if not row.startswith('#'))
             nrows = sum(1 for row in reader)
             ray = np.empty(nrows, dtype=int)
+            nrng = np.empty(nrows, dtype=int)
             rad_el = np.empty(nrows, dtype=float)
             rad_az = np.empty(nrows, dtype=float)
             sun_el = np.empty(nrows, dtype=float)
@@ -702,14 +703,15 @@ def read_sun_hits(fname):
             ph = np.ma.empty(nrows, dtype=float)
             ph_std = np.ma.empty(nrows, dtype=float)
             nph = np.empty(nrows, dtype=int)
+            nvalh = np.empty(nrows, dtype=int)
             pv = np.ma.empty(nrows, dtype=float)
             pv_std = np.ma.empty(nrows, dtype=float)
             npv = np.empty(nrows, dtype=int)
+            nvalv = np.empty(nrows, dtype=int)
             zdr = np.ma.empty(nrows, dtype=float)
             zdr_std = np.ma.empty(nrows, dtype=float)
             nzdr = np.empty(nrows, dtype=int)
-            nval = np.empty(nrows, dtype=int)
-            nrng = np.empty(nrows, dtype=int)
+            nvalzdr = np.empty(nrows, dtype=int)
 
             # now read the data
             csvfile.seek(0)
@@ -721,21 +723,24 @@ def read_sun_hits(fname):
                 date.append(datetime.datetime.strptime(
                     row['time'], '%Y-%m-%d %H:%M:%S.%f'))
                 ray[i] = int(row['ray'])
+                nrng[i] = int(row['NPrng'])
                 rad_el[i] = float(row['rad_el'])
                 rad_az[i] = float(row['rad_az'])
                 sun_el[i] = float(row['sun_el'])
                 sun_az[i] = float(row['sun_az'])
-                ph[i] = float(row['Ph'])
-                ph_std[i] = float(row['std(Ph)'])
+                ph[i] = float(row['dBm_sun_hit'])
+                ph_std[i] = float(row['std(dBm_sun_hit)'])
                 nph[i] = int(row['NPh'])
-                pv[i] = float(row['Pv'])
-                pv_std[i] = float(row['std(Pv)'])
+                nvalh[i] = int(row['NPhval'])
+                pv[i] = float(row['dBmv_sun_hit'])
+                pv_std[i] = float(row['std(dBmv_sun_hit)'])
                 npv[i] = int(row['NPv'])
-                zdr[i] = float(row['ZDR'])
-                zdr_std[i] = float(row['std(ZDR)'])
+                nvalv[i] = int(row['NPvval'])
+                zdr[i] = float(row['ZDR_sun_hit'])
+                zdr_std[i] = float(row['std(ZDR_sun_hit)'])
                 nzdr[i] = int(row['NPzdr'])
-                nval[i] = int(row['NPval'])
-                nrng[i] = int(row['NPrng'])
+                nvalzdr[i] = int(row['NPzdrval'])
+
                 i += 1
 
             fill_value = pyart.config.get_fillvalue()
@@ -747,12 +752,13 @@ def read_sun_hits(fname):
             zdr = np.ma.masked_values(zdr, fill_value)
             zdr_std = np.ma.masked_values(zdr_std, fill_value)
 
-            return (date, ray, rad_el, rad_az, sun_el, sun_az, ph, ph_std,
-                    nph, pv, pv_std, npv, zdr, zdr_std, nzdr, nval, nrng)
+            return (date, ray, nrng, rad_el, rad_az, sun_el, sun_az,
+                    ph, ph_std, nph, nvalh, pv, pv_std, npv, nvalv,
+                    zdr, zdr_std, nzdr, nvalzdr)
 
     except EnvironmentError:
         warn('WARNING: Unable to read file '+fname)
-        return (None, None, None, None, None, None, None, None,
+        return (None, None, None, None, None, None, None, None, None, None,
                 None, None, None, None, None, None, None, None, None)
 
 
@@ -1163,12 +1169,28 @@ def get_fieldname_rainbow(datatype):
     """
     if datatype == 'dBZ':
         field_name = 'reflectivity'
+    elif datatype == 'dBuZ':
+        field_name = 'unfiltered_reflectivity'
     elif datatype == 'dBZv':
         field_name = 'reflectivity_vv'
+    elif datatype == 'dBuZv':
+        field_name = 'unfiltered_reflectivity_vv'
     elif datatype == 'dBm':
         field_name = 'signal_power_hh'
     elif datatype == 'dBmv':
         field_name = 'signal_power_vv'
+    elif datatype == 'dBm_sun_hit':
+        field_name = 'sun_hit_power_h'
+    elif datatype == 'dBmv_sun_hit':
+        field_name = 'sun_hit_power_v'
+    elif datatype == 'ZDR_sun_hit':
+        field_name = 'sun_hit_differential_reflectivity'
+    elif datatype == 'dBm_sun_est':
+        field_name = 'sun_est_power_h'
+    elif datatype == 'dBmv_sun_est':
+        field_name = 'sun_est_power_v'
+    elif datatype == 'ZDR_sun_est':
+        field_name = 'sun_est_differential_reflectivity'
     elif datatype == 'sun_pos_h':
         field_name = 'sun_hit_h'
     elif datatype == 'sun_pos_v':
@@ -1187,6 +1209,8 @@ def get_fieldname_rainbow(datatype):
         field_name = 'corrected_reflectivity'
     elif datatype == 'ZDR':
         field_name = 'differential_reflectivity'
+    elif datatype == 'ZDRu':
+        field_name = 'unfiltered_differential_reflectivity'
     elif datatype == 'ZDRc':
         field_name = 'corrected_differential_reflectivity'
     elif datatype == 'RhoHV':
