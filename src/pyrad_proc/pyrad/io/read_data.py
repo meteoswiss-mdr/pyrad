@@ -177,7 +177,11 @@ def get_data(voltime, datatypesdescr, cfg):
             field_data = radar_aux.fields[field_name]['data']
             field_metadata = pyart.config.get_metadata(field_name)
             field_metadata['data'] = field_data
-            radar.add_field(field_name, field_metadata)
+
+            try:
+                radar.add_field(field_name, field_metadata)
+            except (ValueError, KeyError):
+                warn('Unable to add field '+field_name+' to radar object')
 
         # merge scans into a single radar instance
         nscans = len(cfg['ScanList'])
@@ -224,6 +228,7 @@ def get_data(voltime, datatypesdescr, cfg):
                             radar_aux.nrays, noisedBZ1km_h,
                             radar_aux.range['data'], 1.,
                             noise_field='noisedBZ_hh')
+                        radar_aux.fields = dict()
                         radar_aux.add_field('noisedBZ_hh', noisedBZ_h)
                     else:
                         noisedBZ1km_v = float(
@@ -232,6 +237,7 @@ def get_data(voltime, datatypesdescr, cfg):
                             radar_aux.nrays, noisedBZ1km_v,
                             radar_aux.range['data'], 1.,
                             noise_field='noisedBZ_vv')
+                        radar_aux.fields = dict()
                         radar_aux.add_field('noisedBZ_vv', noisedBZ_v)
 
                 # add other fields in the same scan
@@ -284,7 +290,12 @@ def get_data(voltime, datatypesdescr, cfg):
                     field_data = radar_aux2.fields[field_name]['data']
                     field_metadata = pyart.config.get_metadata(field_name)
                     field_metadata['data'] = field_data
-                    radar_aux.add_field(field_name, field_metadata)
+
+                    try:
+                        radar_aux.add_field(field_name, field_metadata)
+                    except (ValueError, KeyError):
+                        warn('Unable to add field '+field_name +
+                             ' to radar object')
 
                 radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
 

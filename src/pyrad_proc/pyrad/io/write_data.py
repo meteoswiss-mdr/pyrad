@@ -200,6 +200,29 @@ def write_sun_retrieval(sun_retrieval, fname):
     No return
 
     """
+    el_width_h = sun_retrieval['el_width_h'].filled(fill_value=get_fillvalue())
+    az_width_h = sun_retrieval['az_width_h'].filled(fill_value=get_fillvalue())
+    el_bias_h = sun_retrieval['el_bias_h'].filled(fill_value=get_fillvalue())
+    az_bias_h = sun_retrieval['az_bias_h'].filled(fill_value=get_fillvalue())
+    dBm_sun_est = sun_retrieval['dBm_sun_est'].filled(
+        fill_value=get_fillvalue())
+    std_dBm_sun_est = sun_retrieval['std(dBm_sun_est)'].filled(
+        fill_value=get_fillvalue())
+
+    el_width_v = sun_retrieval['el_width_v'].filled(fill_value=get_fillvalue())
+    az_width_v = sun_retrieval['az_width_v'].filled(fill_value=get_fillvalue())
+    el_bias_v = sun_retrieval['el_bias_v'].filled(fill_value=get_fillvalue())
+    az_bias_v = sun_retrieval['az_bias_v'].filled(fill_value=get_fillvalue())
+    dBmv_sun_est = sun_retrieval['dBmv_sun_est'].filled(
+        fill_value=get_fillvalue())
+    std_dBmv_sun_est = sun_retrieval['std(dBmv_sun_est)'].filled(
+        fill_value=get_fillvalue())
+
+    zdr_sun_est = sun_retrieval['ZDR_sun_est'].filled(
+        fill_value=get_fillvalue())
+    std_zdr_sun_est = sun_retrieval['std(ZDR_sun_est)'].filled(
+        fill_value=get_fillvalue())
+
     filelist = glob.glob(fname)
     if len(filelist) == 0:
         with open(fname, 'w', newline='') as csvfile:
@@ -221,22 +244,22 @@ def write_sun_retrieval(sun_retrieval, fname):
             writer.writerow(
                 {'time': sun_retrieval['time'].strftime('%Y%m%d'),
                  'nhits_h': sun_retrieval['nhits_h'],
-                 'el_width_h': sun_retrieval['el_width_h'],
-                 'az_width_h': sun_retrieval['az_width_h'],
-                 'el_bias_h': sun_retrieval['el_bias_h'],
-                 'az_bias_h': sun_retrieval['az_bias_h'],
-                 'dBm_sun_est': sun_retrieval['dBm_sun_est'],
-                 'std(dBm_sun_est)': sun_retrieval['std(dBm_sun_est)'],
+                 'el_width_h': el_width_h,
+                 'az_width_h': az_width_h,
+                 'el_bias_h': el_bias_h,
+                 'az_bias_h': az_bias_h,
+                 'dBm_sun_est': dBm_sun_est,
+                 'std(dBm_sun_est)': std_dBm_sun_est,
                  'nhits_v': sun_retrieval['nhits_v'],
-                 'el_width_v': sun_retrieval['el_width_v'],
-                 'az_width_v': sun_retrieval['az_width_v'],
-                 'el_bias_v': sun_retrieval['el_bias_v'],
-                 'az_bias_v': sun_retrieval['az_bias_v'],
-                 'dBmv_sun_est': sun_retrieval['dBmv_sun_est'],
-                 'std(dBmv_sun_est)': sun_retrieval['std(dBmv_sun_est)'],
+                 'el_width_v': el_width_v,
+                 'az_width_v': az_width_v,
+                 'el_bias_v': el_bias_v,
+                 'az_bias_v': az_bias_v,
+                 'dBmv_sun_est': dBmv_sun_est,
+                 'std(dBmv_sun_est)': std_dBmv_sun_est,
                  'nhits_zdr': sun_retrieval['nhits_zdr'],
-                 'ZDR_sun_est': sun_retrieval['ZDR_sun_est'],
-                 'std(ZDR_sun_est)': sun_retrieval['std(ZDR_sun_est)']})
+                 'ZDR_sun_est': zdr_sun_est,
+                 'std(ZDR_sun_est)': std_zdr_sun_est})
             csvfile.close()
     else:
         with open(fname, 'a', newline='') as csvfile:
@@ -252,22 +275,22 @@ def write_sun_retrieval(sun_retrieval, fname):
             writer.writerow(
                 {'time': sun_retrieval['time'].strftime('%Y%m%d'),
                  'nhits_h': sun_retrieval['nhits_h'],
-                 'el_width_h': sun_retrieval['el_width_h'],
-                 'az_width_h': sun_retrieval['az_width_h'],
-                 'el_bias_h': sun_retrieval['el_bias_h'],
-                 'az_bias_h': sun_retrieval['az_bias_h'],
-                 'dBm_sun_est': sun_retrieval['dBm_sun_est'],
-                 'std(dBm_sun_est)': sun_retrieval['std(dBm_sun_est)'],
+                 'el_width_h': el_width_h,
+                 'az_width_h': az_width_h,
+                 'el_bias_h': el_bias_h,
+                 'az_bias_h': az_bias_h,
+                 'dBm_sun_est': dBm_sun_est,
+                 'std(dBm_sun_est)': std_dBm_sun_est,
                  'nhits_v': sun_retrieval['nhits_v'],
-                 'el_width_v': sun_retrieval['el_width_v'],
-                 'az_width_v': sun_retrieval['az_width_v'],
-                 'el_bias_v': sun_retrieval['el_bias_v'],
-                 'az_bias_v': sun_retrieval['az_bias_v'],
-                 'dBmv_sun_est': sun_retrieval['dBmv_sun_est'],
-                 'std(dBmv_sun_est)': sun_retrieval['std(dBmv_sun_est)'],
+                 'el_width_v': el_width_v,
+                 'az_width_v': az_width_v,
+                 'el_bias_v': el_bias_v,
+                 'az_bias_v': az_bias_v,
+                 'dBmv_sun_est': dBmv_sun_est,
+                 'std(dBmv_sun_est)': std_dBmv_sun_est,
                  'nhits_zdr': sun_retrieval['nhits_zdr'],
-                 'ZDR_sun_est': sun_retrieval['ZDR_sun_est'],
-                 'std(ZDR_sun_est)': sun_retrieval['std(ZDR_sun_est)']})
+                 'ZDR_sun_est': zdr_sun_est,
+                 'std(ZDR_sun_est)': std_zdr_sun_est})
             csvfile.close()
 
 

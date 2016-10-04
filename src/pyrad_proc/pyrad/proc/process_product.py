@@ -151,7 +151,7 @@ def generate_sun_hits_products(dataset, prdcfg):
             elif field_name == 'sun_est_differential_reflectivity':
                 par = 'par_zdr'
 
-            if par in dataset['sun_retrieval'] and par is not None:
+            if par in dataset['sun_retrieval']:
                 savedir = get_save_dir(
                     prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
                     prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
@@ -161,12 +161,13 @@ def generate_sun_hits_products(dataset, prdcfg):
                     prdcfg['convertformat'], timeinfo=prdcfg['timeinfo'],
                     timeformat='%Y%m%d')
 
-                field = create_sun_retrieval_field(
-                    dataset['sun_retrieval'][par],
-                    prdcfg['sunhitsImageConfig'])
+                if dataset['sun_retrieval'][par] is not None:
+                    field = create_sun_retrieval_field(
+                        dataset['sun_retrieval'][par],
+                        prdcfg['sunhitsImageConfig'])
 
-                if field is not None:
-                    plot_sun_hits(field, field_name, savedir+fname, prdcfg)
+                    if field is not None:
+                        plot_sun_hits(field, field_name, savedir+fname, prdcfg)
 
                     print('saved image: '+savedir+fname)
             else:

@@ -1977,71 +1977,88 @@ def process_sun_hits(procstatus, dscfg, radar=None):
 
         sun_retrieval_h = pyart.correct.sun_retrieval(
             sun_hits[4], sun_hits[6], sun_hits[3], sun_hits[5],
-            sun_hits[7], sun_hits[8], az_width_co=None, el_width_co=None,
-            az_width_cross=None, el_width_cross=None, is_zdr=False)
+            sun_hits[7], sun_hits[8], max_std=1., az_width_co=None,
+            el_width_co=None, az_width_cross=None, el_width_cross=None,
+            is_zdr=False)
 
         sun_retrieval_v = pyart.correct.sun_retrieval(
             sun_hits[4], sun_hits[6], sun_hits[3], sun_hits[5],
-            sun_hits[11], sun_hits[12], az_width_co=None,
+            sun_hits[11], sun_hits[12], max_std=1., az_width_co=None,
             el_width_co=None, az_width_cross=None, el_width_cross=None,
             is_zdr=False)
 
         sun_retrieval_zdr = pyart.correct.sun_retrieval(
             sun_hits[4], sun_hits[6], sun_hits[3], sun_hits[5],
-            sun_hits[15], sun_hits[16], az_width_co=None,
+            sun_hits[15], sun_hits[16], max_std=1., az_width_co=None,
             el_width_co=None, az_width_cross=None, el_width_cross=None,
             is_zdr=True)
 
         sun_retrieval_dict = {
             'time': sun_hits[0][0],
-            'dBm_sun_est': pyart.config.get_fillvalue(),
-            'std(dBm_sun_est)': pyart.config.get_fillvalue(),
-            'az_bias_h': pyart.config.get_fillvalue(),
-            'el_bias_h': pyart.config.get_fillvalue(),
-            'az_width_h': pyart.config.get_fillvalue(),
-            'el_width_h': pyart.config.get_fillvalue(),
+            'dBm_sun_est': np.ma.asarray(np.ma.masked),
+            'std(dBm_sun_est)': np.ma.asarray(np.ma.masked),
+            'az_bias_h': np.ma.asarray(np.ma.masked),
+            'el_bias_h': np.ma.asarray(np.ma.masked),
+            'az_width_h': np.ma.asarray(np.ma.masked),
+            'el_width_h': np.ma.asarray(np.ma.masked),
             'nhits_h': 0,
             'par_h': None,
-            'dBmv_sun_est': pyart.config.get_fillvalue(),
-            'std(dBmv_sun_est)': pyart.config.get_fillvalue(),
-            'az_bias_v': pyart.config.get_fillvalue(),
-            'el_bias_v': pyart.config.get_fillvalue(),
-            'az_width_v': pyart.config.get_fillvalue(),
-            'el_width_v': pyart.config.get_fillvalue(),
+            'dBmv_sun_est': np.ma.asarray(np.ma.masked),
+            'std(dBmv_sun_est)': np.ma.asarray(np.ma.masked),
+            'az_bias_v': np.ma.asarray(np.ma.masked),
+            'el_bias_v': np.ma.asarray(np.ma.masked),
+            'az_width_v': np.ma.asarray(np.ma.masked),
+            'el_width_v': np.ma.asarray(np.ma.masked),
             'nhits_v': 0,
             'par_v': None,
-            'ZDR_sun_est': pyart.config.get_fillvalue(),
-            'std(ZDR_sun_est)': pyart.config.get_fillvalue(),
-            'az_bias_zdr': pyart.config.get_fillvalue(),
-            'el_bias_zdr': pyart.config.get_fillvalue(),
+            'ZDR_sun_est': np.ma.asarray(np.ma.masked),
+            'std(ZDR_sun_est)': np.ma.asarray(np.ma.masked),
+            'az_bias_zdr': np.ma.asarray(np.ma.masked),
+            'el_bias_zdr': np.ma.asarray(np.ma.masked),
             'nhits_zdr': 0,
             'par_zdr': None}
 
         if sun_retrieval_h is not None:
-            sun_retrieval_dict['dBm_sun_est'] = sun_retrieval_h[0]
-            sun_retrieval_dict['std(dBm_sun_est)'] = sun_retrieval_h[1]
-            sun_retrieval_dict['az_bias_h'] = sun_retrieval_h[2]
-            sun_retrieval_dict['el_bias_h'] = sun_retrieval_h[3]
-            sun_retrieval_dict['az_width_h'] = sun_retrieval_h[4]
-            sun_retrieval_dict['el_width_h'] = sun_retrieval_h[5]
-            sun_retrieval_dict['nhits_h'] = sun_retrieval_h[6]
-            sun_retrieval_dict['par_h'] = sun_retrieval_h[7]
+            sun_retrieval_dict['dBm_sun_est'] = np.ma.asarray(
+                sun_retrieval_h[0])
+            sun_retrieval_dict['std(dBm_sun_est)'] = np.ma.asarray(
+                sun_retrieval_h[1])
+            sun_retrieval_dict['az_bias_h'] = np.ma.asarray(
+                sun_retrieval_h[2])
+            sun_retrieval_dict['el_bias_h'] = np.ma.asarray(
+                sun_retrieval_h[3])
+            sun_retrieval_dict['az_width_h'] = np.ma.asarray(
+                sun_retrieval_h[4])
+            sun_retrieval_dict['el_width_h'] = np.ma.asarray(
+                sun_retrieval_h[5])
+            sun_retrieval_dict['nhits_h'] = np.asarray(sun_retrieval_h[6])
+            sun_retrieval_dict['par_h'] = np.ma.asarray(sun_retrieval_h[7])
         if sun_retrieval_v is not None:
-            sun_retrieval_dict['dBmv_sun_est'] = sun_retrieval_v[0]
-            sun_retrieval_dict['std(dBmv_sun_est)'] = sun_retrieval_v[1]
-            sun_retrieval_dict['az_bias_v'] = sun_retrieval_v[2]
-            sun_retrieval_dict['el_bias_v'] = sun_retrieval_v[3]
-            sun_retrieval_dict['az_width_v'] = sun_retrieval_v[4]
-            sun_retrieval_dict['el_width_v'] = sun_retrieval_v[5]
-            sun_retrieval_dict['nhits_v'] = sun_retrieval_v[6]
-            sun_retrieval_dict['par_v'] = sun_retrieval_v[7]
+            sun_retrieval_dict['dBmv_sun_est'] = np.ma.asarray(
+                sun_retrieval_v[0])
+            sun_retrieval_dict['std(dBmv_sun_est)'] = np.ma.asarray(
+                sun_retrieval_v[1])
+            sun_retrieval_dict['az_bias_v'] = np.ma.asarray(
+                sun_retrieval_v[2])
+            sun_retrieval_dict['el_bias_v'] = np.ma.asarray(
+                sun_retrieval_v[3])
+            sun_retrieval_dict['az_width_v'] = np.ma.asarray(
+                sun_retrieval_v[4])
+            sun_retrieval_dict['el_width_v'] = np.ma.asarray(
+                sun_retrieval_v[5])
+            sun_retrieval_dict['nhits_v'] = np.ma.asarray(sun_retrieval_v[6])
+            sun_retrieval_dict['par_v'] = np.ma.asarray(sun_retrieval_v[7])
         if sun_retrieval_zdr is not None:
-            sun_retrieval_dict['ZDR_sun_est'] = sun_retrieval_zdr[0]
-            sun_retrieval_dict['std(ZDR_sun_est)'] = sun_retrieval_zdr[1]
-            sun_retrieval_dict['az_bias_zdr'] = sun_retrieval_zdr[2]
-            sun_retrieval_dict['el_bias_dzr'] = sun_retrieval_zdr[3]
-            sun_retrieval_dict['nhits_zdr'] = sun_retrieval_zdr[6]
-            sun_retrieval_dict['par_zdr'] = sun_retrieval_zdr[7]
+            sun_retrieval_dict['ZDR_sun_est'] = np.ma.asarray(
+                sun_retrieval_zdr[0])
+            sun_retrieval_dict['std(ZDR_sun_est)'] = np.ma.asarray(
+                sun_retrieval_zdr[1])
+            sun_retrieval_dict['az_bias_zdr'] = np.ma.asarray(
+                sun_retrieval_zdr[2])
+            sun_retrieval_dict['el_bias_dzr'] = np.ma.asarray(
+                sun_retrieval_zdr[3])
+            sun_retrieval_dict['nhits_zdr'] = np.asarray(sun_retrieval_zdr[6])
+            sun_retrieval_dict['par_zdr'] = np.asarray(sun_retrieval_zdr[7])
 
         sun_hits_dict = {
             'time': sun_hits[0],

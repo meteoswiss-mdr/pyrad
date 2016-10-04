@@ -28,11 +28,12 @@ else:
     from .version import git_revision as __git_revision__
     from .version import version as __version__
 
-    # import subpackages    
+    # import subpackages
     from . import graph
-    from . import io    
+    from . import io
     from . import proc
     from . import util
+    from . import flow
 
     # root level functions
     # non at the moment
