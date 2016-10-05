@@ -32,6 +32,7 @@ else:
     from . import graph
     from . import io
     from . import proc
+    from . import prod
     from . import util
     from . import flow
 

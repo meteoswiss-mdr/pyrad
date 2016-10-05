@@ -22,14 +22,14 @@ functions to control the Pyrad data processing flow
 from warnings import warn
 import os
 
-from ..io.read_data import get_datetime, get_data, get_file_list
-from ..io.read_data import get_datasetfields, get_datatypefields
+from ..io.read_data_radar import get_datetime, get_data, get_file_list
+from ..io.read_data_radar import get_datasetfields, get_datatypefields
 from ..io.config import read_config
 
-from ..proc.process_dataset import get_process_type
-from ..proc.process_product import get_product_type
+from ..proc.process_aux import get_process_type
+from ..prod.product_aux import get_product_type
 
-from pyrad import proc
+from pyrad import proc, prod
 
 
 def main(cfgfile, starttime, endtime):
@@ -460,5 +460,5 @@ def _process_dataset(cfg, dataset, proc_status=0, radar=None, voltime=None):
                 prdcfg = _create_prdcfg_dict(
                     cfg, dataset, product, voltime=voltime)
                 prod_func_name = get_product_type(dsformat)
-                prod_func = getattr(proc, prod_func_name)
+                prod_func = getattr(prod, prod_func_name)
                 result = prod_func(new_dataset, prdcfg)

@@ -14,8 +14,6 @@ Reading radar data
     :toctree: generated/
 
     get_data
-    read_status
-    read_rad4alp_cosmo
 
 Reading configuration files
 ===========================
@@ -31,6 +29,8 @@ Reading other data
 .. autosummary::
     :toctree: generated/
 
+    read_status
+    read_rad4alp_cosmo
     read_timeseries
     get_sensor_data
     read_smn
@@ -50,10 +50,12 @@ Writing data
 
 from .config import read_config
 
-from .read_data import get_data, read_status, read_timeseries, read_smn
-from .read_data import get_datetime, get_datasetfields, get_file_list
-from .read_data import get_datatypefields, get_sensor_data, read_rad4alp_cosmo
-from .read_data import read_selfconsistency, read_sun_hits
+from .read_data_radar import get_data, get_datetime, get_datasetfields
+from .read_data_radar import get_file_list, get_datatypefields
+
+from .read_data_aux import read_status, read_timeseries, read_smn
+from .read_data_aux import get_sensor_data, read_rad4alp_cosmo, read_sun_hits
+from .read_data_aux import read_selfconsistency
 
 from .write_data import write_timeseries, generate_field_name_str
 from .write_data import write_sun_hits, write_sun_retrieval

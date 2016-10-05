@@ -19,7 +19,7 @@ import csv
 
 from pyart.config import get_fillvalue, get_metadata
 
-from ..io.read_data import get_fieldname_rainbow
+from ..io.read_data_radar import get_fieldname_rainbow
 
 
 def write_timeseries(dataset, fname):
