@@ -11,9 +11,7 @@ Functions to control the Pyrad data processing flow
     :toctree: generated/
 
     main
-    create_sun_retrieval_field
-    compute_quantiles_sweep
-    compute_histogram_sweep
+
 
 """
 

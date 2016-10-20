@@ -15,6 +15,7 @@ Functions to plot Pyrad datasets
     plot_quantiles
     plot_timeseries
     plot_timeseries_comp
+    plot_sun_retrieval_ts
     get_colobar_label
     get_field_name
 
@@ -57,7 +58,8 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname, plot_type='PPI',
 
     Returns
     -------
-    no return
+    fname : str
+        the name of the created plot file
 
     """
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
@@ -102,6 +104,8 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname, plot_type='PPI',
         plot_histogram(bins, values, fname, labelx=labelx,
                        labely='Number of Samples', titl=titl)
 
+    return fname
+
 
 def plot_rhi(radar, field_name, ind_az, prdcfg, fname, plot_type='PPI',
              step=None, quantiles=None):
@@ -129,7 +133,8 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname, plot_type='PPI',
 
     Returns
     -------
-    no return
+    fname : str
+        the name of the created plot file
 
     """
     fig = plt.figure(figsize=[prdcfg['rhiImageConfig']['xsize'],
@@ -172,6 +177,8 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname, plot_type='PPI',
         plot_histogram(bins, values, fname, labelx=labelx,
                        labely='Number of Samples', titl=titl)
 
+    return fname
+
 
 def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname):
     """
@@ -196,7 +203,8 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname):
 
     Returns
     -------
-    no return
+    fname : str
+        the name of the created plot file
 
     """
     radar_aux = radar.extract_sweeps([ind_sweep])
@@ -254,6 +262,8 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname):
     fig.savefig(fname)
     plt.close()
 
+    return fname
+
 
 def plot_cappi(radar, field_name, altitude, prdcfg, fname):
     """
@@ -278,7 +288,8 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname):
 
     Returns
     -------
-    no return
+    fname : str
+        the name of the created plot file
 
     """
     xmin = prdcfg['ppiImageConfig']['xmin']
@@ -317,6 +328,8 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname):
     fig.savefig(fname)
     plt.close()
 
+    return fname
+
 
 def plot_sun_hits(field, field_name, fname, prdcfg):
     """
@@ -341,7 +354,8 @@ def plot_sun_hits(field, field_name, fname, prdcfg):
 
     Returns
     -------
-    no return
+    fname : str
+        the name of the created plot file
 
     """
     azmin = prdcfg['sunhitsImageConfig']['azmin']
@@ -376,6 +390,8 @@ def plot_sun_hits(field, field_name, fname, prdcfg):
     fig.savefig(fname)
     plt.close()
 
+    return fname
+
 
 def plot_quantiles(quant, value, fname, labelx='quantile', labely='value',
                    titl='quantile'):
@@ -399,7 +415,8 @@ def plot_quantiles(quant, value, fname, labelx='quantile', labely='value',
 
     Returns
     -------
-    no return
+    fname : str
+        the name of the created plot file
 
     """
     fig = plt.figure(figsize=[10, 6])
@@ -410,6 +427,8 @@ def plot_quantiles(quant, value, fname, labelx='quantile', labely='value',
 
     fig.savefig(fname)
     plt.close()
+
+    return fname
 
 
 def plot_histogram(bins, values, fname, labelx='bins',
@@ -434,7 +453,8 @@ def plot_histogram(bins, values, fname, labelx='bins',
 
     Returns
     -------
-    no return
+    fname : str
+        the name of the created plot file
 
     """
     fig = plt.figure(figsize=[10, 6])
@@ -445,6 +465,8 @@ def plot_histogram(bins, values, fname, labelx='bins',
 
     fig.savefig(fname)
     plt.close()
+
+    return fname
 
 
 def plot_timeseries(date, value, fname, labelx='Time [UTC]', labely='Value',
@@ -474,7 +496,8 @@ def plot_timeseries(date, value, fname, labelx='Time [UTC]', labely='Value',
 
     Returns
     -------
-    no return
+    fname : str
+        the name of the created plot file
 
     """
     if period > 0:
@@ -489,6 +512,8 @@ def plot_timeseries(date, value, fname, labelx='Time [UTC]', labely='Value',
 
     fig.savefig(fname)
     plt.close()
+
+    return fname
 
 
 def plot_timeseries_comp(date1, value1, date2, value2, fname,
@@ -533,7 +558,8 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname,
 
     Returns
     -------
-    no return
+    fname : str
+        the name of the created plot file
 
     """
     if (period1 > 0) and (period2 > 0):
@@ -553,6 +579,138 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname,
 
     fig.savefig(fname)
     plt.close()
+
+    return fname
+
+
+def plot_sun_retrieval_ts(sun_retrieval, data_type, fname):
+    """
+    plots a time series
+
+    Parameters
+    ----------
+    date : datetime object
+        time of the time series
+    value : float array
+        values of the time series
+    fname : str
+        name of the file where to store the plot
+    labelx : str
+        The label of the X axis
+    labely : str
+        The label of the Y axis
+    label1 : str
+        The label of the legend
+    titl : str
+        The figure title
+    period : float
+        measurement period in seconds used to compute accumulation. If 0 no
+        accumulation is computed
+
+    Returns
+    -------
+    fname : str
+        the name of the created plot file
+
+    """
+    labelx = 'Date'
+    titl = 'Sun retrieval Time Series'
+
+    value_std = None
+    sun_ref = None
+    date = sun_retrieval[0]
+    if data_type == 'nhits_h':
+        value = sun_retrieval[1]
+        labely = 'Number of sun hits H channel'
+        vmin = 0
+        vmax = 30
+    elif data_type == 'el_width_h':
+        value = sun_retrieval[2]
+        labely = 'Elevation beamwidth H channel (Deg)'
+        vmin = 0.
+        vmax = 4.
+    elif data_type == 'az_width_h':
+        value = sun_retrieval[3]
+        labely = 'Azimuth beamwidth H channel (Deg)'
+        vmin = 0.
+        vmax = 4.
+    elif data_type == 'el_bias_h':
+        value = sun_retrieval[4]
+        labely = 'Elevation bias H channel (Deg)'
+        vmin = -2.
+        vmax = 2.
+    elif data_type == 'az_bias_h':
+        value = sun_retrieval[5]
+        labely = 'Azimuth bias H channel (Deg)'
+        vmin = -2.
+        vmax = 2.
+    elif data_type == 'dBm_sun_est':
+        value = sun_retrieval[6]
+        value_std = sun_retrieval[7]
+        labely = 'Sun Power H channel (dBm)'
+        vmin = -110.
+        vmax = -90.
+    elif data_type == 'nhits_v':
+        value = sun_retrieval[8]
+        labely = 'Number of sun hits V channel'
+        vmin = 0
+        vmax = 30
+    elif data_type == 'el_width_v':
+        value = sun_retrieval[9]
+        labely = 'Elevation beamwidth V channel (Deg)'
+        vmin = 0.
+        vmax = 4.
+    elif data_type == 'az_width_v':
+        value = sun_retrieval[10]
+        labely = 'Azimuth beamwidth V channel (Deg)'
+        vmin = 0.
+        vmax = 4.
+    elif data_type == 'el_bias_v':
+        value = sun_retrieval[11]
+        labely = 'Elevation bias V channel (Deg)'
+        vmin = -2.
+        vmax = 2.
+    elif data_type == 'az_bias_v':
+        value = sun_retrieval[12]
+        labely = 'Azimuth bias V channel (Deg)'
+        vmin = -2.
+        vmax = 2.
+    elif data_type == 'dBmv_sun_est':
+        value = sun_retrieval[13]
+        value_std = sun_retrieval[14]
+        labely = 'Sun Power V channel (dBm)'
+        vmin = -110.
+        vmax = -90.
+    elif data_type == 'nhits_zdr':
+        value = sun_retrieval[15]
+        labely = 'Number of sun hits ZDR'
+        vmin = 0
+        vmax = 30
+    elif data_type == 'ZDR_sun_est':
+        value = sun_retrieval[16]
+        value_std = sun_retrieval[17]
+        labely = 'Sun ZDR (dB)'
+        vmin = -2.
+        vmax = 2.
+
+    fig = plt.figure(figsize=[10, 6])
+    plt.plot(date, value)
+    if value_std is not None:
+        plt.plot(date, value+value_std, 'r')
+        plt.plot(date, value-value_std, 'r')
+    if sun_ref is not None:
+        plt.plot(date, sun_ref, 'r')
+    plt.xlabel(labelx)
+    plt.ylabel(labely)
+    plt.title(titl)
+
+    axes = plt.gca()
+    axes.set_ylim([vmin, vmax])
+
+    fig.savefig(fname)
+    plt.close()
+
+    return fname
 
 
 def get_colobar_label(field_dict, field_name):

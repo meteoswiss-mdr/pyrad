@@ -23,10 +23,9 @@ import numpy as np
 
 import pyart
 
-from ..io.read_data_radar import get_datatypefields, get_fieldname_rainbow
-from ..io.read_data_aux import read_selfconsistency, read_sun_hits
-
-from ..prod.product_aux import get_save_dir, make_filename
+from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
+from ..io.read_data_other import read_selfconsistency
+from ..io.read_data_other import read_sun_hits_multiple_days
 
 
 def process_correct_bias(procstatus, dscfg, radar=None):
@@ -40,7 +39,12 @@ def process_correct_bias(procstatus, dscfg, radar=None):
         2 post-processing
 
     dscfg : dictionary of dictionaries
-        data set configuration
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : string. Dataset keyword
+            The data type to correct for bias
+        bias : float. Dataset keyword
+            The bias to be corrected [dB]
 
     radar : Radar
         Optional. Radar object
@@ -56,13 +60,22 @@ def process_correct_bias(procstatus, dscfg, radar=None):
         return None
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatypefields(
+        datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         break
-    field_name = get_fieldname_rainbow(datatype)
+    field_name = get_fieldname_pyart(datatype)
+
+    if field_name not in radar.fields:
+        warn('Unable to correct for bias field ' + field_name +
+             '. Field not available')
+        return None
+
+    bias = 0.
+    if 'bias' in dscfg:
+        bias = dscfg['bias']
 
     corrected_field = pyart.correct.correct_bias(
-        radar, bias=dscfg['bias'], field_name=field_name)
+        radar, bias=bias, field_name=field_name)
 
     if field_name.startswith('corrected_'):
         new_field_name = field_name
@@ -89,7 +102,10 @@ def process_correct_noise_rhohv(procstatus, dscfg, radar=None):
         2 post-processing
 
     dscfg : dictionary of dictionaries
-        data set configuration
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The data types used in the correction
 
     radar : Radar
         Optional. Radar object
@@ -105,7 +121,7 @@ def process_correct_noise_rhohv(procstatus, dscfg, radar=None):
         return None
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatypefields(
+        datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if datatype == 'uRhoHV':
             urhohv = 'uncorrected_cross_correlation_ratio'
@@ -119,6 +135,14 @@ def process_correct_noise_rhohv(procstatus, dscfg, radar=None):
             nh = 'noisedBZ_hh'
         if datatype == 'Nv':
             nv = 'noisedBZ_vv'
+
+    if ((urhohv not in radar.fields) or
+            (snr not in radar.fields) or
+            (zdr not in radar.fields) or
+            (nh not in radar.fields) or
+            (nv not in radar.fields)):
+        warn('Unable to correct RhoHV field for noise. Missing fields')
+        return None
 
     rhohv = pyart.correct.correct_noise_rhohv(
         radar, urhohv_field=urhohv, snr_field=snr, zdr_field=zdr,
@@ -144,7 +168,12 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar=None):
         2 post-processing
 
     dscfg : dictionary of dictionaries
-        data set configuration
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of strings. Dataset keyword
+            The input data types
+        rsmooth : float. Dataset keyword
+            length of the smoothing window [m]
 
     radar : Radar
         Optional. Radar object
@@ -159,13 +188,8 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar=None):
     if procstatus != 1:
         return None
 
-    fname = (
-        dscfg['configpath'] + 'selfconsistency/' +
-        'selfconsistency_zdr_zhkdp_Xband_temp10_elev000_mu05.txt')
-    zdr_kdpzh_table = read_selfconsistency(fname)
-
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatypefields(
+        datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if datatype == 'dBZc':
             refl = 'corrected_reflectivity'
@@ -185,6 +209,20 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar=None):
             rhohv = 'cross_correlation_ratio'
         if datatype == 'RhoHVc':
             rhohv = 'corrected_cross_correlation_ratio'
+
+    if ((refl not in radar.fields) or
+            (zdr not in radar.fields) or
+            (phidp not in radar.fields) or
+            (temp not in radar.fields) or
+            (rhohv not in radar.fields)):
+        warn('Unable to estimate KDP and PhiDP fields ' +
+             'using selfconsistency. Missing data')
+        return None
+
+    fname = (
+        dscfg['configpath'] + 'selfconsistency/' +
+        'selfconsistency_zdr_zhkdp_Xband_temp10_elev000_mu05.txt')
+    zdr_kdpzh_table = read_selfconsistency(fname)
 
     kdpsim_field = 'specific_differential_phase'
     phidpsim_field = 'differential_phase'
@@ -219,7 +257,12 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
         2 post-processing
 
     dscfg : dictionary of dictionaries
-        data set configuration
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        rsmooth : float. Dataset keyword
+            length of the smoothing window [m]
 
     radar : Radar
         Optional. Radar object
@@ -234,13 +277,8 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
     if procstatus != 1:
         return None
 
-    fname = (
-        dscfg['configpath'] + 'selfconsistency/' +
-        'selfconsistency_zdr_zhkdp_Xband_temp10_elev000_mu05.txt')
-    zdr_kdpzh_table = read_selfconsistency(fname)
-
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatypefields(
+        datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if datatype == 'dBZc':
             refl = 'corrected_reflectivity'
@@ -260,6 +298,20 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
             rhohv = 'cross_correlation_ratio'
         if datatype == 'RhoHVc':
             rhohv = 'corrected_cross_correlation_ratio'
+
+    if ((refl not in radar.fields) or
+            (zdr not in radar.fields) or
+            (phidp not in radar.fields) or
+            (temp not in radar.fields) or
+            (rhohv not in radar.fields)):
+        warn('Unable to estimate reflectivity bias using selfconsistency. ' +
+             'Missing data')
+        return None
+
+    fname = (
+        dscfg['configpath'] + 'selfconsistency/' +
+        'selfconsistency_zdr_zhkdp_Xband_temp10_elev000_mu05.txt')
+    zdr_kdpzh_table = read_selfconsistency(fname)
 
     r_res = radar.range['data'][1]-radar.range['data'][0]
     smooth_wind_len = int(dscfg['rsmooth']/r_res)
@@ -292,7 +344,18 @@ def process_rhohv_rain(procstatus, dscfg, radar=None):
         2 post-processing
 
     dscfg : dictionary of dictionaries
-        data set configuration
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        rmin : float. Dataset keyword
+            minimum range where to look for rain [m]
+        rmax : float. Dataset keyword
+            maximum range where to look for rain [m]
+        Zmin : float. Dataset keyword
+            minimum reflectivity to consider the bin as precipitation [dBZ]
+        Zmax : float. Dataset keyword
+            maximum reflectivity to consider the bin as precipitation [dBZ]
 
     radar : Radar
         Optional. Radar object
@@ -308,7 +371,7 @@ def process_rhohv_rain(procstatus, dscfg, radar=None):
         return None
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatypefields(
+        datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if datatype == 'RhoHV':
             rhohv_field = 'cross_correlation_ratio'
@@ -320,6 +383,12 @@ def process_rhohv_rain(procstatus, dscfg, radar=None):
             refl_field = 'reflectivity'
         if datatype == 'TEMP':
             temp_field = 'temperature'
+
+    if ((refl_field not in radar.fields) or
+            (rhohv_field not in radar.fields) or
+            (temp_field not in radar.fields)):
+        warn('Unable to estimate RhoHV in rain. Missing data')
+        return None
 
     ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
     ind_rmax = np.where(radar.range['data'] < dscfg['rmax'])[0][-1]
@@ -349,7 +418,38 @@ def process_sun_hits(procstatus, dscfg, radar=None):
         2 post-processing
 
     dscfg : dictionary of dictionaries
-        data set configuration
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        rmin : float. Dataset keyword
+            minimum range where to look for a sun hit signal [m]
+        delev_max : float. Dataset keyword
+            maximum elevation distance from nominal radar elevation where to
+            look for a sun hit signal [deg]
+        dazim_max : float. Dataset keyword
+            maximum azimuth distance from nominal radar elevation where to
+            look for a sun hit signal [deg]
+        elmin : float. Dataset keyword
+            minimum radar elevation where to look for sun hits [deg]
+        percent_bins : float. Dataset keyword
+            minimum percentage of range bins that have to contain signal to
+            consider the ray a potential sun hit
+        attg : float. Dataset keyword
+            gaseous attenuation
+        max_std : float. Dataset keyword
+            maximum standard deviation to consider the data noise
+        az_width_co : float. Dataset keyword
+            co-polar antenna azimuth width (convoluted with sun width) [deg]
+        el_width_co : float. Dataset keyword
+            co-polar antenna elevation width (convoluted with sun width) [deg]
+        az_width_cross : float. Dataset keyword
+            cross-polar antenna azimuth width (convoluted with sun width) [deg]
+        el_width_cross : float. Dataset keyword
+            cross-polar antenna elevation width (convoluted with sun width)
+            [deg]
+        ndays : int. Dataset keyword
+            number of days used in sun retrieval
 
     radar : Radar
         Optional. Radar object
@@ -367,7 +467,7 @@ def process_sun_hits(procstatus, dscfg, radar=None):
 
     if procstatus == 1:
         for datatypedescr in dscfg['datatype']:
-            datagroup, datatype, dataset, product = get_datatypefields(
+            datagroup, datatype, dataset, product = get_datatype_fields(
                 datatypedescr)
             if datatype == 'dBm':
                 pwrh_field = 'signal_power_hh'
@@ -375,13 +475,47 @@ def process_sun_hits(procstatus, dscfg, radar=None):
                 pwrv_field = 'signal_power_vv'
             if datatype == 'ZDRu':
                 zdr_field = 'unfiltered_differential_reflectivity'
+            if datatype == 'ZDRuc':
+                zdr_field = 'corrected_unfiltered_differential_reflectivity'
 
-        ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
+        if ((pwrh_field not in radar.fields) or
+                (pwrv_field not in radar.fields) or
+                (zdr_field not in radar.fields)):
+            warn('Unable to get sun hits. Missing data')
+            return None
+
+        # default values
+        rmin = 20.
+        delev_max = 1.5
+        dazim_max = 1.5
+        elmin = 1.
+        percent_bins = 10.
+        attg = None
+        max_std = 1.
+
+        # user values
+        if 'rmin' in dscfg:
+            rmin = dscfg['rmin']
+        if 'delev_max' in dscfg:
+            delev_max = dscfg['delev_max']
+        if 'dazim_max' in dscfg:
+            dazim_max = dscfg['dazim_max']
+        if 'elmin' in dscfg:
+            elmin = dscfg['elmin']
+        if 'percent_bins' in dscfg:
+            percent_bins = dscfg['percent_bins']
+        if 'attg' in dscfg:
+            attg = dscfg['attg']
+        if 'max_std' in dscfg:
+            max_std = dscfg['max_std']
+
+        ind_rmin = np.where(radar.range['data'] > rmin)[0][0]
 
         sun_hits, new_radar = pyart.correct.get_sun_hits(
-            radar, delev_max=1.5, dazim_max=1.5, elmin=1., ind_rmin=ind_rmin,
-            percent_bins=10., attg=None, pwrh_field=pwrh_field,
-            pwrv_field=pwrv_field, zdr_field=zdr_field)
+            radar, delev_max=delev_max, dazim_max=dazim_max, elmin=elmin,
+            ind_rmin=ind_rmin, percent_bins=percent_bins, max_std=max_std,
+            attg=attg, pwrh_field=pwrh_field, pwrv_field=pwrv_field,
+            zdr_field=zdr_field)
 
         if sun_hits is None:
             return None
@@ -393,35 +527,49 @@ def process_sun_hits(procstatus, dscfg, radar=None):
         return sun_hits_dataset
 
     if procstatus == 2:
-        savedir = get_save_dir(
-            dscfg['basepath'], dscfg['procname'], dscfg['dsname'],
-            dscfg['sun_hits_dir'], timeinfo=dscfg['timeinfo'])
+        # default values
+        az_width_co = None
+        el_width_co = None
+        az_width_cross = None
+        el_width_cross = None
+        nfiles = 1
 
-        fname = make_filename(
-            'info', dscfg['type'], 'detected', 'csv',
-            timeinfo=dscfg['timeinfo'], timeformat='%Y%m%d')
+        # user values
+        if 'az_width_co' in dscfg:
+            az_width_co = dscfg['az_width_co']
+        if 'el_width_co' in dscfg:
+            el_width_co = dscfg['el_width_co']
+        if 'az_width_cross' in dscfg:
+            az_width_cross = dscfg['az_width_cross']
+        if 'el_width_cross' in dscfg:
+            el_width_cross = dscfg['el_width_cross']
+        if 'ndays' in dscfg:
+            nfiles = dscfg['ndays']
 
-        sun_hits = read_sun_hits(savedir+fname)
+        sun_hits = read_sun_hits_multiple_days(dscfg, nfiles=nfiles)
 
         if sun_hits[0] is None:
             return None
 
         sun_retrieval_h = pyart.correct.sun_retrieval(
             sun_hits[4], sun_hits[6], sun_hits[3], sun_hits[5],
-            sun_hits[7], sun_hits[8], max_std=1., az_width_co=None,
-            el_width_co=None, az_width_cross=None, el_width_cross=None,
+            sun_hits[7], sun_hits[8],
+            az_width_co=az_width_co, el_width_co=el_width_co,
+            az_width_cross=az_width_cross, el_width_cross=el_width_cross,
             is_zdr=False)
 
         sun_retrieval_v = pyart.correct.sun_retrieval(
             sun_hits[4], sun_hits[6], sun_hits[3], sun_hits[5],
-            sun_hits[11], sun_hits[12], max_std=1., az_width_co=None,
-            el_width_co=None, az_width_cross=None, el_width_cross=None,
+            sun_hits[11], sun_hits[12],
+            az_width_co=az_width_co, el_width_co=el_width_co,
+            az_width_cross=az_width_cross, el_width_cross=el_width_cross,
             is_zdr=False)
 
         sun_retrieval_zdr = pyart.correct.sun_retrieval(
             sun_hits[4], sun_hits[6], sun_hits[3], sun_hits[5],
-            sun_hits[15], sun_hits[16], max_std=1., az_width_co=None,
-            el_width_co=None, az_width_cross=None, el_width_cross=None,
+            sun_hits[15], sun_hits[16],
+            az_width_co=az_width_co, el_width_co=el_width_co,
+            az_width_cross=az_width_cross, el_width_cross=el_width_cross,
             is_zdr=True)
 
         sun_retrieval_dict = {

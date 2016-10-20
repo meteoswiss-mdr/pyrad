@@ -22,9 +22,10 @@ functions to control the Pyrad data processing flow
 from warnings import warn
 import os
 
-from ..io.read_data_radar import get_datetime, get_data, get_file_list
-from ..io.read_data_radar import get_datasetfields, get_datatypefields
 from ..io.config import read_config
+from ..io.read_data_radar import get_data
+from ..io.io_aux import get_datetime, get_file_list
+from ..io.io_aux import get_dataset_fields, get_datatype_fields
 
 from ..proc.process_aux import get_process_type
 from ..prod.product_aux import get_product_type
@@ -70,8 +71,8 @@ def main(cfgfile, starttime, endtime):
         print('\nProcess level: '+level)
         for dataset in dataset_levels[level]:
             print('Processing dataset: '+dataset)
-            _process_dataset(cfg, dataset, proc_status=0, radar=None,
-                             voltime=None)
+            result = _process_dataset(cfg, dataset, proc_status=0, radar=None,
+                                      voltime=None)
 
     # process all data files in file list
     for masterfile in masterfilelist:
@@ -86,8 +87,8 @@ def main(cfgfile, starttime, endtime):
             print('\nProcess level: '+level)
             for dataset in dataset_levels[level]:
                 print('Processing dataset: '+dataset)
-                _process_dataset(cfg, dataset, proc_status=1, radar=radar,
-                                 voltime=voltime)
+                result = _process_dataset(cfg, dataset, proc_status=1,
+                                          radar=radar, voltime=voltime)
 
     # post-processing of the datasets
     print('\n\nPost-processing datasets')
@@ -95,8 +96,8 @@ def main(cfgfile, starttime, endtime):
         print('\nProcess level: '+level)
         for dataset in dataset_levels[level]:
             print('Processing dataset: '+dataset)
-            _process_dataset(cfg, dataset, proc_status=2, radar=None,
-                             voltime=voltime)
+            result = _process_dataset(cfg, dataset, proc_status=2, radar=None,
+                                      voltime=voltime)
 
     print('\n\n\nThis is the end my friend! See you soon!')
 
@@ -298,17 +299,17 @@ def _get_datatype_list(cfg):
     datatypesdescr = set()
 
     for datasetdescr in cfg['dataSetList']:
-        proclevel, dataset = get_datasetfields(datasetdescr)
+        proclevel, dataset = get_dataset_fields(datasetdescr)
         if 'datatype' in cfg[dataset]:
             if isinstance(cfg[dataset]['datatype'], str):
                 datagroup, datatype, dataset_save, product_save = (
-                    get_datatypefields(cfg[dataset]['datatype']))
+                    get_datatype_fields(cfg[dataset]['datatype']))
                 if datagroup != 'PROC':
                     datatypesdescr.add(cfg[dataset]['datatype'])
             else:
                 for datatype in cfg[dataset]['datatype']:
                     datagroup, datatype_aux, dataset_save, product_save = (
-                        get_datatypefields(datatype))
+                        get_datatype_fields(datatype))
                     if datagroup != 'PROC':
                         datatypesdescr.add(datatype)
 
@@ -334,7 +335,7 @@ def _get_datasets_list(cfg):
     """
     dataset_levels = dict({'l0': list()})
     for datasetdescr in cfg['dataSetList']:
-        proclevel, dataset = get_datasetfields(datasetdescr)
+        proclevel, dataset = get_dataset_fields(datasetdescr)
         if proclevel in dataset_levels:
             dataset_levels[proclevel].append(dataset)
         else:
@@ -369,7 +370,7 @@ def _get_masterfile_list(masterscan, datatypesdescr, starttime, endtime,
     """
     masterdatatypedescr = None
     for datatypedescr in datatypesdescr:
-        datagroup, datatype, dataset, product = get_datatypefields(
+        datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if (datagroup != 'COSMO') and (datagroup != 'RAD4ALPCOSMO'):
             masterdatatypedescr = datatypedescr
@@ -379,7 +380,7 @@ def _get_masterfile_list(masterscan, datatypesdescr, starttime, endtime,
     if masterdatatypedescr is None:
         for datatypedescr in datatypesdescr:
             datagroup, datatype, dataset, product = (
-                get_datatypefields(datatypedescr))
+                get_datatype_fields(datatypedescr))
             if datagroup == 'COSMO':
                 masterdatatypedescr = 'RAINBOW:dBZ'
                 break
@@ -408,20 +409,21 @@ def _add_dataset(new_dataset, radar, make_global=True):
 
     Returns
     -------
-    None
+    0 if successful. None otherwise
 
     """
     if radar is None:
-        return
+        return None
 
     if not make_global:
-        return
+        return None
 
     for field in new_dataset.fields:
         print('Adding field: '+field)
         radar.add_field(
             field, new_dataset.fields[field],
             replace_existing=True)
+    return 0
 
 
 def _process_dataset(cfg, dataset, proc_status=0, radar=None, voltime=None):
@@ -444,21 +446,26 @@ def _process_dataset(cfg, dataset, proc_status=0, radar=None, voltime=None):
 
     Returns
     -------
-    None
+    0 if a new dataset has been created. None otherwise
 
     """
     dscfg = _create_dscfg_dict(cfg, dataset, voltime=voltime)
     proc_func_name, dsformat = get_process_type(dscfg['type'])
     proc_func = getattr(proc, proc_func_name)
     new_dataset = proc_func(proc_status, dscfg, radar=radar)
-    if new_dataset is not None:
-        _add_dataset(new_dataset, radar, make_global=dscfg['MAKE_GLOBAL'])
+    if new_dataset is None:
+        return None
 
-        # create the data set products
-        if 'products' in cfg[dataset]:
-            for product in cfg[dataset]['products']:
-                prdcfg = _create_prdcfg_dict(
-                    cfg, dataset, product, voltime=voltime)
-                prod_func_name = get_product_type(dsformat)
-                prod_func = getattr(prod, prod_func_name)
-                result = prod_func(new_dataset, prdcfg)
+    result = _add_dataset(
+        new_dataset, radar, make_global=dscfg['MAKE_GLOBAL'])
+
+    # create the data set products
+    if 'products' in cfg[dataset]:
+        for product in cfg[dataset]['products']:
+            prdcfg = _create_prdcfg_dict(
+                cfg, dataset, product, voltime=voltime)
+            prod_func_name = get_product_type(dsformat)
+            prod_func = getattr(prod, prod_func_name)
+            result = prod_func(new_dataset, prdcfg)
+
+    return 0

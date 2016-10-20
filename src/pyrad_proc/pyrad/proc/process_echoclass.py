@@ -21,7 +21,7 @@ import numpy as np
 
 import pyart
 
-from ..io.read_data_radar import get_datatypefields, get_fieldname_rainbow
+from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 
 
 def process_echo_id(procstatus, dscfg, radar=None):
@@ -36,7 +36,10 @@ def process_echo_id(procstatus, dscfg, radar=None):
         2 post-processing
 
     dscfg : dictionary of dictionaries
-        data set configuration
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
 
     radar : Radar
         Optional. Radar object
@@ -51,12 +54,35 @@ def process_echo_id(procstatus, dscfg, radar=None):
     if procstatus != 1:
         return None
 
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        if datatype == 'dBZ':
+            refl_field = 'reflectivity'
+        if datatype == 'dBuZ':
+            refl_field = 'unfiltered_reflectivity'
+        if datatype == 'ZDR':
+            zdr_field = 'differential_reflectivity'
+        if datatype == 'ZDRu':
+            zdr_field = 'unfiltered_differential_reflectivity'
+        if datatype == 'RhoHV':
+            rhv_field = 'cross_correlation_ratio'
+        if datatype == 'uPhiDP':
+            phi_field = 'uncorrected_differential_phase'
+
+    if ((refl_field not in radar.fields) or
+            (zdr_field not in radar.fields) or
+            (rhv_field not in radar.fields) or
+            (phi_field not in radar.fields)):
+        warn('Unable to create radar_echo_id dataset. Missing data')
+        return None
+
     id = np.zeros((radar.nrays, radar.ngates), dtype='int32')+3
 
     # look for clutter
     gatefilter = pyart.filters.moment_and_texture_based_gate_filter(
-        radar, zdr_field=None, rhv_field=None, phi_field=None,
-        refl_field=None, textzdr_field=None, textrhv_field=None,
+        radar, zdr_field=zdr_field, rhv_field=rhv_field, phi_field=phi_field,
+        refl_field=refl_field, textzdr_field=None, textrhv_field=None,
         textphi_field=None, textrefl_field=None, wind_size=7,
         max_textphi=20., max_textrhv=0.3, max_textzdr=2.85,
         max_textrefl=8., min_rhv=0.6)
@@ -65,7 +91,7 @@ def process_echo_id(procstatus, dscfg, radar=None):
     id[is_clutter] = 2
 
     # look for noise
-    is_noise = radar.fields['reflectivity']['data'].data == (
+    is_noise = radar.fields[refl_field]['data'].data == (
         pyart.config.get_fillvalue())
     id[is_noise] = 1
 
@@ -82,9 +108,8 @@ def process_echo_id(procstatus, dscfg, radar=None):
 
 def process_echo_filter(procstatus, dscfg, radar=None):
     """
-    filters out undesired echo types.
-    TODO: make the selection of the echo types to filter and to keep user
-    defined
+    Masks all echo types that are not of the class specified in
+    keyword echo_type
 
     Parameters
     ----------
@@ -93,7 +118,12 @@ def process_echo_filter(procstatus, dscfg, radar=None):
         2 post-processing
 
     dscfg : dictionary of dictionaries
-        data set configuration
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        echo_type : int
+            The type of echo to keep: 1 noise, 2 clutter, 3 precipitation
 
     radar : Radar
         Optional. Radar object
@@ -108,19 +138,26 @@ def process_echo_filter(procstatus, dscfg, radar=None):
     if procstatus != 1:
         return None
 
-    is_not_precip = radar.fields['radar_echo_id']['data'] != 3
+    if 'radar_echo_id' not in radar.fields:
+        warn('Unable to filter data. Missing echo ID field')
+        return None
+
+    echo_type = 3
+    if 'echo_type' in dscfg:
+        echo_type = dscfg['echo_type']
+
+    mask = radar.fields['radar_echo_id']['data'] != echo_type
 
     new_dataset = deepcopy(radar)
     new_dataset.fields = dict()
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatypefields(
+        datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
-        field_name = get_fieldname_rainbow(datatype)
+        field_name = get_fieldname_pyart(datatype)
 
         radar_field = deepcopy(radar.fields[field_name])
-        radar_field['data'] = np.ma.masked_where(
-            is_not_precip, radar_field['data'])
+        radar_field['data'] = np.ma.masked_where(mask, radar_field['data'])
 
         if field_name.startswith('corrected_'):
             new_field_name = field_name
@@ -145,7 +182,12 @@ def process_filter_snr(procstatus, dscfg, radar=None):
         2 post-processing
 
     dscfg : dictionary of dictionaries
-        data set configuration
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        SNRmin : float. Dataset keyword
+            The minimum SNR to keep the data.
 
     radar : Radar
         Optional. Radar object
@@ -164,18 +206,22 @@ def process_filter_snr(procstatus, dscfg, radar=None):
     new_dataset.fields = dict()
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatypefields(
+        datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if (datatype == 'SNRh') or (datatype == 'SNRv'):
-            snr_field = get_fieldname_rainbow(datatype)
+            snr_field = get_fieldname_pyart(datatype)
             break
 
+    if snr_field not in radar.fields:
+        warn('Unable to filter dataset according to SNR. Missing SNR field')
+        return None
+
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatypefields(
+        datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
 
         if (datatype != 'SNRh') and (datatype != 'SNRv'):
-            field_name = get_fieldname_rainbow(datatype)
+            field_name = get_fieldname_pyart(datatype)
 
             gatefilter = pyart.filters.snr_based_gate_filter(
                 radar, snr_field=snr_field, min_snr=dscfg['SNRmin'])
@@ -208,7 +254,17 @@ def process_hydroclass(procstatus, dscfg, radar=None):
         2 post-processing
 
     dscfg : dictionary of dictionaries
-        data set configuration
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        HYDRO_METHOD : string. Dataset keyword
+            The hydrometeor classification method. One of the following:
+            SEMISUPERVISED
+        RADARCENTROIDS : string. Datset keyword
+            Used with HYDRO_METHOD SEMISUPERVISED. The name of the radar of
+            which the derived centroids will be used. One of the following: A
+            Albis, L Lema, P Plaine Morte, DX50
 
     radar : Radar
         Optional. Radar object
@@ -224,26 +280,35 @@ def process_hydroclass(procstatus, dscfg, radar=None):
 
     if dscfg['HYDRO_METHOD'] == 'SEMISUPERVISED':
         for datatypedescr in dscfg['datatype']:
-            datagroup, datatype, dataset, product = get_datatypefields(
+            datagroup, datatype, dataset, product = get_datatype_fields(
                 datatypedescr)
+            if datatype == 'dBZ':
+                refl_field = 'reflectivity'
             if datatype == 'dBZc':
                 refl_field = 'corrected_reflectivity'
+            if datatype == 'ZDR':
+                zdr_field = 'differential_reflectivity'
             if datatype == 'ZDRc':
                 zdr_field = 'corrected_differential_reflectivity'
+            if datatype == 'RhoHV':
+                rhv_field = 'cross_correlation_ratio'
             if datatype == 'RhoHVc':
                 rhv_field = 'corrected_cross_correlation_ratio'
+            if datatype == 'KDP':
+                kdp_field = 'specific_differential_phase'
             if datatype == 'KDPc':
                 kdp_field = 'corrected_specific_differential_phase'
             if datatype == 'TEMP':
                 temp_field = 'temperature'
-            if datatype == 'dBZ':
-                refl_field = 'reflectivity'
-            if datatype == 'ZDR':
-                zdr_field = 'differential_reflectivity'
-            if datatype == 'RhoHV':
-                rhv_field = 'cross_correlation_ratio'
-            if datatype == 'KDP':
-                kdp_field = 'specific_differential_phase'
+
+        if ((refl_field not in radar.fields) or
+                (zdr_field not in radar.fields) or
+                (rhv_field not in radar.fields) or
+                (kdp_field not in radar.fields) or
+                (temp_field not in radar.fields)):
+            warn('Unable to create hydrometeor classification field. ' +
+                 'Missing data')
+            return None
 
         mass_centers = np.zeros((9, 5))
         if dscfg['RADARCENTROIDS'] == 'A':

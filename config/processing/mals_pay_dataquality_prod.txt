@@ -5,9 +5,9 @@
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
 dataSetList STRARR 3    
-    l0:dBmu
-    l0:dBmvu
-    l1:sun_hits
+    l2:dBmu
+    l2:dBmvu
+    l3:sun_hits
 
 # ==========================================================================================
 #                 raw data products
@@ -190,10 +190,65 @@ dBmvu STRUCT 3
 #         anglenr INT 1
 #         voltype STRING dBmv
 
+
+# ==========================================================================================
+#                 echo identification
+# ==========================================================================================
+#echoID STRUCT 3
+#   type STRING SAN
+#   datatype STRARR 4
+#      dBuZ
+#      ZDRu
+#      uPhiDP
+#      RhoHV
+#   MAKE_GLOBAL INT 1
+##   products STRUCT 1
+##       EL003_0_BSCOPE STRUCT 3
+##         type   STRING BSCOPE_IMAGE
+##         voltype STRING echoID
+##		 anglenr INT 1
+
+
+# ==========================================================================================
+#                 clutter and noise suppression
+# ==========================================================================================
+## echo type 3 : precip, 2 : clutter, 1 : noise
+#echoFilter STRUCT 4
+#   type STRING ECHO_FILTER
+#   datatype STRARR 3
+#      dBuZ
+#      dBuZv
+#      ZDRu
+#   echo_type INT 2
+#   MAKE_GLOBAL INT 1
+##   products STRUCT 2
+##      EL004_0_PhiDPc STRUCT 3
+##         type   STRING PPI_IMAGE
+##         voltype STRING PhiDPc
+##		 anglenr INT 0
+##      EL004_0_RhoHVc STRUCT 3
+##         type   STRING PPI_IMAGE
+##         voltype STRING RhoHVc
+##		 anglenr INT 0
+##	  EL004_0_dBZc STRUCT 3
+##         type   STRING PPI_IMAGE
+##         voltype STRING dBZc
+##		 anglenr INT 0
+##      EL004_0_ZDRc STRUCT 3
+##         type   STRING PPI_IMAGE
+##         voltype STRING ZDRc
+##		 anglenr INT 0      
+##      EL004_0_KDPc STRUCT 3
+##         type   STRING PPI_IMAGE
+##         voltype STRING KDPc
+##		 anglenr INT 0
+
+
+
 # ==========================================================================================
 #                 sun hits
 # ==========================================================================================
-sun_hits STRUCT 5
+sun_hits STRUCT 6
     type STRING SUN_HITS
     datatype STRARR 3
         PROC:dBm
@@ -201,7 +256,8 @@ sun_hits STRUCT 5
         ZDRu
     rmin FLOAT 20000.
     sun_hits_dir STRING SUN_HITS  # must be the same as product WRITE_SUN_HITS
-    products STRUCT 14
+    ndays INT 5
+    products STRUCT 28
        PWRH STRUCT 3
          type STRING BSCOPE_IMAGE
          anglenr INT 0
@@ -210,10 +266,10 @@ sun_hits STRUCT 5
          type STRING BSCOPE_IMAGE
          anglenr INT 0
          voltype STRING dBmv
-       ZDRu STRUCT 3
+       ZDR STRUCT 3
          type STRING BSCOPE_IMAGE
          anglenr INT 0
-         voltype STRING ZDRu
+         voltype STRING ZDRuc
        PWRH_POS STRUCT 3
          type STRING BSCOPE_IMAGE
          anglenr INT 0
@@ -248,64 +304,65 @@ sun_hits STRUCT 5
        SUN_RETRIEVAL_ZDR STRUCT 2
          type STRING PLOT_SUN_RETRIEVAL
          voltype STRING ZDR_sun_est
+       SUN_RETRIEVAL_PH_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING dBm_sun_est
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_AZ_BIAS_H_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING az_bias_h
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_EL_BIAS_H_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING el_bias_h
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_AZ_WIDTH_H_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING az_width_h
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_EL_WIDTH_H_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING el_width_h
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_NHITS_H_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING nhits_h
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_PV_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING dBmv_sun_est
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_AZ_BIAS_V_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING az_bias_v
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_EL_BIAS_V_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING el_bias_v
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_AZ_WIDTH_V_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING az_width_v
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_EL_WIDTH_V_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING el_width_v
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_NHITS_V_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING nhits_v
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_ZDR_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING ZDR_sun_est
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_NHITS_ZDR_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING nhits_zdr
+         prdid STRING SUN_RETRIEVAL
 
+         
 
-# ==========================================================================================
-#                 echo identification
-# ==========================================================================================
-#echoID STRUCT 4
-#   type        STRING SAN
-#   datatype    STRARR 4
-#      dBZ
-#      ZDR
-#      uPhiDP
-#      RhoHV
-#   MAKE_GLOBAL         INT 1
-#   products STRUCT 1
-#       EL004_0 STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING echoID
-#		 anglenr INT 0
-#         
-#
-# ==========================================================================================
-#                 clutter and noise suppression
-# ==========================================================================================
-#echoFilter STRUCT 3
-#   type STRING ECHO_FILTER
-#   datatype STRARR 4
-#      dBZ
-#      ZDR
-#      PhiDP
-#      RhoHV
-#   MAKE_GLOBAL INT 1
-##   products STRUCT 2
-##      EL004_0_PhiDPc STRUCT 3
-##         type   STRING PPI_IMAGE
-##         voltype STRING PhiDPc
-##		 anglenr INT 0
-##      EL004_0_RhoHVc STRUCT 3
-##         type   STRING PPI_IMAGE
-##         voltype STRING RhoHVc
-##		 anglenr INT 0
-##	  EL004_0_dBZc STRUCT 3
-##         type   STRING PPI_IMAGE
-##         voltype STRING dBZc
-##		 anglenr INT 0
-##      EL004_0_ZDRc STRUCT 3
-##         type   STRING PPI_IMAGE
-##         voltype STRING ZDRc
-##		 anglenr INT 0      
-##      EL004_0_KDPc STRUCT 3
-##         type   STRING PPI_IMAGE
-##         voltype STRING KDPc
-##		 anglenr INT 0
-#
-#echoFilter2 STRUCT 3
-#   type STRING ECHO_FILTER
-#   datatype STRARR 1
-#      PROC:Ah
-#   MAKE_GLOBAL INT 1
 
 # ==========================================================================================
 #                 filtration based on SNR

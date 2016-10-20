@@ -23,7 +23,7 @@ import numpy as np
 
 import pyart
 
-from ..io.read_data_radar import get_datatypefields, get_fieldname_rainbow
+from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 
 from netCDF4 import num2date
 
@@ -181,18 +181,58 @@ def process_point_measurement(procstatus, dscfg, radar=None):
         2 post-processing
 
     dscfg : dictionary of dictionaries
-        data set configuration
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : string. Dataset keyword
+            The data type where we want to extract the point measurement
+        latlon : boolean. Dataset keyword
+            if True position is obtained from latitude, longitude information,
+            otherwise position is obtained from antenna coordinates
+            (range, azimuth, elevation).
+        truealt : boolean. Dataset keyword
+            if True the user input altitude is used to determine the point of
+            interest.
+            if False use the altitude at a given radar elevation ele over the
+            point of interest.
+        lon : float. Dataset keyword
+            the longitude [deg]. Use when latlon is True.
+        lat : float. Dataset keyword
+            the latitude [deg]. Use when latlon is True.
+        alt : float. Dataset keyword
+            altitude [m MSL]. Use when latlon is True.
+        ele : float. Dataset keyword
+            radar elevation [deg]. Use when latlon is False or when latlon is
+            True and truealt is False
+        azi : float. Dataset keyword
+            radar azimuth [deg]. Use when latlon is False
+        rng : float. Dataset keyword
+            range from radar [m]. Use when latlon is False
+        AziTol : float. Dataset keyword
+            azimuthal tolerance to determine which radar azimuth to use [deg]
+        EleTol : float. Dataset keyword
+            elevation tolerance to determine which radar elevation to use [deg]
+        RngTol : float. Dataset keyword
+            range tolerance to determine which radar bin to use [m]
 
     radar : Radar
         Optional. Radar object
 
     Returns
     -------
-    radar : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the data and metadata of the point of interest
 
     """
     if procstatus != 1:
+        return None
+
+    datagroup, datatype, dataset, product = get_datatype_fields(
+            dscfg['datatype'][0])
+    field_name = get_fieldname_pyart(datatype)
+
+    if field_name not in radar.fields:
+        warn('Unable to extract point measurement information. ' +
+             'Field not available')
         return None
 
     projparams = dict()
@@ -256,10 +296,6 @@ def process_point_measurement(procstatus, dscfg, radar=None):
              '). Minimum distance to radar range bin '+str(d_r) +
              ' larger than tolerance')
         return None
-
-    datagroup, datatype, dataset, product = get_datatypefields(
-            dscfg['datatype'][0])
-    field_name = get_fieldname_rainbow(datatype)
 
     ind_ray = np.argmin(np.abs(radar.azimuth['data'] - az) +
                         np.abs(radar.elevation['data'] - el))

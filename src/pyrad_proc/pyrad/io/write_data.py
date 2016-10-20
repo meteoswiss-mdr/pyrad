@@ -19,7 +19,7 @@ import csv
 
 from pyart.config import get_fillvalue, get_metadata
 
-from ..io.read_data_radar import get_fieldname_rainbow
+from .io_aux import generate_field_name_str
 
 
 def write_timeseries(dataset, fname):
@@ -36,7 +36,8 @@ def write_timeseries(dataset, fname):
 
     Returns
     -------
-    No return
+    fname : str
+        the name of the file where data has written
 
     """
     filelist = glob.glob(fname)
@@ -83,6 +84,8 @@ def write_timeseries(dataset, fname):
                  'value': dataset['value']})
             csvfile.close()
 
+    return fname
+
 
 def write_sun_hits(sun_hits, fname):
     """
@@ -98,7 +101,8 @@ def write_sun_hits(sun_hits, fname):
 
     Returns
     -------
-    No return
+    fname : str
+        the name of the file where data has written
 
     """
     dBm_sun_hit = sun_hits['dBm_sun_hit'].filled(fill_value=get_fillvalue())
@@ -182,6 +186,8 @@ def write_sun_hits(sun_hits, fname):
                      'NPzdrval': sun_hits['NPzdrval'][i]})
             csvfile.close()
 
+    return fname
+
 
 def write_sun_retrieval(sun_retrieval, fname):
     """
@@ -197,7 +203,8 @@ def write_sun_retrieval(sun_retrieval, fname):
 
     Returns
     -------
-    No return
+    fname : str
+        the name of the file where data has written
 
     """
     el_width_h = sun_retrieval['el_width_h'].filled(fill_value=get_fillvalue())
@@ -293,26 +300,4 @@ def write_sun_retrieval(sun_retrieval, fname):
                  'std(ZDR_sun_est)': std_zdr_sun_est})
             csvfile.close()
 
-
-def generate_field_name_str(datatype):
-    """
-    Generates a field name in a nice to read format.
-
-    Parameters
-    ----------
-    datatype : str
-        The data type
-
-    Returns
-    -------
-    field_str : str
-        The field name
-
-    """
-    field_name = get_fieldname_rainbow(datatype)
-    field_dic = get_metadata(field_name)
-    field_str = field_dic['standard_name'].replace('_', ' ')
-    field_str = field_str[0].upper() + field_str[1:]
-    field_str += ' ('+field_dic['units']+')'
-
-    return field_str
+    return fname
