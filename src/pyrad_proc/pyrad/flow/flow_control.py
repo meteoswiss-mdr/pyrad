@@ -265,12 +265,12 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime=None):
     prdcfg.update({'ScanPeriod': cfg['ScanPeriod']})
     prdcfg.update({'imgformat': cfg['imgformat']})
     prdcfg.update({'convertformat': cfg['convertformat']})
-    prdcfg.update(
-        {'ppiImageConfig': cfg['ppiImageConfig']})
-    prdcfg.update(
-        {'rhiImageConfig': cfg['rhiImageConfig']})
-    prdcfg.update(
-        {'sunhitsImageConfig': cfg['sunhitsImageConfig']})
+    if 'ppiImageConfig' in cfg:
+        prdcfg.update({'ppiImageConfig': cfg['ppiImageConfig']})
+    if 'rhiImageConfig' in cfg:
+        prdcfg.update({'rhiImageConfig': cfg['rhiImageConfig']})
+    if 'sunhitsImageConfig' in cfg:
+        prdcfg.update({'sunhitsImageConfig': cfg['sunhitsImageConfig']})
     prdcfg.update({'dsname': dataset})
     prdcfg.update({'dstype': cfg[dataset]['type']})
     prdcfg.update({'prdname': product})

@@ -451,13 +451,21 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar=None):
         zmin=dscfg['Zmin'], zmax=dscfg['Zmax'], psidp_field=psidp_field,
         refl_field=refl_field, phidp_field=phidp_field)
 
-    # filter out data in an above the melting layer
-    gatefilter = pyart.filters.temp_based_gate_filter(
-        radar_aux, temp_field=temp_field, min_temp=0., thickness=400.)
-    is_notrain = gatefilter.gate_excluded == 1
-
-    phidp['data'][is_notrain] = np.ma.masked
     mask = np.ma.getmaskarray(phidp['data'])
+    # filter out data in an above the melting layer
+    if 'radar_beam_width_h' in radar.instrument_parameters:
+        beamwidth = (
+            radar.instrument_parameters['radar_beam_width_h']['data'][0])
+    else:
+        warn('Unknown radar antenna beamwidth.')
+        beamwidth = None
+        
+    mask_fzl, end_gate_arr = get_mask_fzl(
+        radar_aux, fzl=None, doc=None, min_temp=0., thickness=400.,
+        beamwidth=beamwidth, temp_field=temp_field)    
+    mask = np.logical_or(mask, mask_refl)
+    
+    phidp['data'] = np.ma.masked_where(mask, phidp['data'])
     fill_value = pyart.config.get_fillvalue()
     radar_aux.add_field(phidp_field, phidp, replace_existing=True)
 

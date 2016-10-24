@@ -349,13 +349,17 @@ def process_rhohv_rain(procstatus, dscfg, radar=None):
         datatype : list of string. Dataset keyword
             The input data types
         rmin : float. Dataset keyword
-            minimum range where to look for rain [m]
+            minimum range where to look for rain [m]. Default 1000.
         rmax : float. Dataset keyword
-            maximum range where to look for rain [m]
+            maximum range where to look for rain [m]. Default 50000.
         Zmin : float. Dataset keyword
-            minimum reflectivity to consider the bin as precipitation [dBZ]
+            minimum reflectivity to consider the bin as precipitation [dBZ].
+            Default 20.
         Zmax : float. Dataset keyword
             maximum reflectivity to consider the bin as precipitation [dBZ]
+            Default 40.
+        ml_thickness : float. Dataset keyword
+            assumed thickness of the melting layer
 
     radar : Radar
         Optional. Radar object
@@ -389,14 +393,33 @@ def process_rhohv_rain(procstatus, dscfg, radar=None):
             (temp_field not in radar.fields)):
         warn('Unable to estimate RhoHV in rain. Missing data')
         return None
+        
+    # default values
+    rmin = 1000.
+    rmax = 50000.
+    zmin = 20.
+    zmax = 40.
+    thickness = 1000.
+    
+    # user defined values
+    if 'rmin' in dscfg:
+        rmin = dscfg['rmin']
+    if 'rmax' in dscfg:
+        rmax = dscfg['rmax']
+    if 'Zmin' in dscfg:
+        zmin = dscfg['Zmin']
+    if 'Zmax' in dscfg:
+        zmax = dscfg['Zmax']
+    if 'ml_thickness' in dscfg:
+        thickness = dscfg['ml_thickness']
 
-    ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
-    ind_rmax = np.where(radar.range['data'] < dscfg['rmax'])[0][-1]
+    ind_rmin = np.where(radar.range['data'] > rmin)[0][0]
+    ind_rmax = np.where(radar.range['data'] < rmax)[0][-1]
 
     rhohv_rain = pyart.correct.est_rhohv_rain(
-        radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, zmin=dscfg['Zmin'],
-        zmax=dscfg['Zmax'], doc=None, fzl=None, rhohv_field=rhohv_field,
-        temp_field=temp_field, refl_field=refl_field)
+        radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, zmin=zmin,
+        zmax=zmax, thickness=thickness, doc=None, fzl=None,
+        rhohv_field=rhohv_field, temp_field=temp_field, refl_field=refl_field)
 
     # prepare for exit
     new_dataset = deepcopy(radar)
