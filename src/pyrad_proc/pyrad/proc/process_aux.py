@@ -98,6 +98,8 @@ def get_process_type(dataset_type):
         func_name = 'process_selfconsistency_bias'
     elif dataset_type == 'RHOHV_RAIN':
         func_name = 'process_rhohv_rain'
+    elif dataset_type == 'ZDR_RAIN':
+        func_name = 'process_zdr_rain'
     elif dataset_type == 'SUN_HITS':
         func_name = 'process_sun_hits'
         dsformat = 'SUN_HITS'

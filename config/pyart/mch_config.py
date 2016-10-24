@@ -83,6 +83,8 @@ corrected_differential_reflectivity = 'corrected_differential_reflectivity'
 
 unfiltered_differential_reflectivity = 'unfiltered_differential_reflectivity'
 
+differential_reflectivity_in_rain = 'differential_reflectivity_in_rain'
+
 # Cross correlation ratio, correlation coefficient, RhoHV
 cross_correlation_ratio = 'cross_correlation_ratio'
 
@@ -239,6 +241,7 @@ DEFAULT_FIELD_NAMES = {
     'corrected_differential_reflectivity': corrected_differential_reflectivity,
     'unfiltered_differential_reflectivity': (
         unfiltered_differential_reflectivity),
+    'differential_reflectivity_in_rain': differential_reflectivity_in_rain,
     'cross_correlation_ratio': cross_correlation_ratio,
     'unfiltered_cross_correlation_ratio': unfiltered_cross_correlation_ratio,
     'uncorrected_cross_correlation_ratio': uncorrected_cross_correlation_ratio,
@@ -681,6 +684,12 @@ DEFAULT_METADATA = {
         'units': 'dB',
         'standard_name': 'corrected_log_differential_reflectivity_hv',
         'long_name': 'Corrected differential reflectivity',
+        'coordinates': 'elevation azimuth range'},
+        
+    differential_reflectivity_in_rain: {
+        'units': 'dB',
+        'standard_name': 'log_differential_reflectivity_hv_in_rain',
+        'long_name': 'Differential reflectivity in rain',
         'coordinates': 'elevation azimuth range'},
 
     cross_correlation_ratio: {
@@ -1682,6 +1691,7 @@ DEFAULT_FIELD_COLORMAP = {
     differential_reflectivity: 'pyart_RefDiff',
     corrected_differential_reflectivity: 'pyart_RefDiff',
     unfiltered_differential_reflectivity: 'pyart_RefDiff',
+    differential_reflectivity_in_rain: 'pyart_RefDiff',
 
     cross_correlation_ratio: 'pyart_RefDiff',
     unfiltered_cross_correlation_ratio: 'pyart_RefDiff',
@@ -1790,6 +1800,7 @@ DEFAULT_FIELD_LIMITS = {
     differential_reflectivity: (-1., 8.),
     corrected_differential_reflectivity: (-1., 8.),
     unfiltered_differential_reflectivity: (-1., 8.),
+    differential_reflectivity_in_rain: (-2., 2.),
 
     cross_correlation_ratio: (0.7, 1.),
     unfiltered_cross_correlation_ratio: (0.7, 1.),

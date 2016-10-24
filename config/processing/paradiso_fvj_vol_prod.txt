@@ -4,11 +4,13 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 4
-    l0:RhoHV
+dataSetList STRARR 6
+    l0:ZDR
+    l0:RhoHV    
     l0:echoID
     l1:echoFilter
     l2:RhoHV_rain
+    l2:ZDR_rain
 
 # ==========================================================================================
 #                 raw data products
@@ -40,15 +42,31 @@ dataSetList STRARR 4
 #         type   STRING SAVEVOL
 #         voltype STRING dBZ
 #
-#ZDR STRUCT 3
-#	type STRING RAW
-#	datatype STRING ZDR
-#	products STRUCT 1
-#	  EL004_0 STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING ZDR
-#		 anglenr INT 0
-#
+ZDR STRUCT 3
+	type STRING RAW
+	datatype STRING ZDR
+    products STRUCT 4
+	   EL004_0 STRUCT 4
+         type STRING PPI_IMAGE
+         plot_type STRING PPI
+         voltype STRING ZDR
+		 anglenr INT 0
+       EL004_0_QUANTILES STRUCT 4
+         type STRING PPI_IMAGE
+         plot_type STRING QUANTILES
+         voltype STRING ZDR
+		 anglenr INT 0
+       EL004_0_HISTOGRAM STRUCT 5
+         type STRING PPI_IMAGE
+         plot_type STRING HISTOGRAM
+         step FLOAT 0.1
+         voltype STRING ZDR
+		 anglenr INT 0         
+       ALT1000 STRUCT 3
+         type STRING CAPPI_IMAGE
+         voltype STRING ZDR
+		 altitude FLOAT 1000.
+         
 RhoHV STRUCT 3
 	type STRING RAW
 	datatype STRING RhoHV
@@ -247,9 +265,11 @@ echoID STRUCT 4
 # ==========================================================================================
 echoFilter STRUCT 3
    type STRING ECHO_FILTER
-   datatype STRARR 2
-      dBZ            
+   datatype STRARR 4
+      dBZ
+      ZDR
       RhoHV
+      PhiDP
    MAKE_GLOBAL INT 1
 #   products STRUCT 2
 #      EL004_0_PhiDPc STRUCT 3
@@ -574,6 +594,49 @@ RhoHV_rain STRUCT 8
          type STRING CAPPI_IMAGE
          voltype STRING RhoHV_rain
 		 altitude FLOAT 1000.
+         
+         
+# ==========================================================================================
+#                 ZDR in rain monitoring
+# ========================================================================================== 
+ZDR_rain STRUCT 11
+    type STRING ZDR_RAIN
+    datatype STRARR 5
+        PROC:ZDRc
+        PROC:PhiDPc
+        PROC:RhoHVc
+        PROC:dBZc
+        COSMO:TEMP
+    rmin FLOAT 1000.
+    rmax FLOAT 50000.
+    Zmin FLOAT 20.
+    Zmax FLOAT 22.
+    RhoHVmin FLOAT 0.97
+    PhiDPmax FLOAT 10.
+    elmax FLOAT 30.
+    ml_thickness FLOAT 700.
+    products STRUCT 4
+	   EL004_0 STRUCT 4
+         type STRING PPI_IMAGE
+         plot_type STRING PPI
+         voltype STRING ZDR_rain
+		 anglenr INT 0
+       EL004_0_QUANTILES STRUCT 4
+         type STRING PPI_IMAGE
+         plot_type STRING QUANTILES
+         voltype STRING ZDR_rain
+		 anglenr INT 0
+       EL004_0_HISTOGRAM STRUCT 5
+         type STRING PPI_IMAGE
+         plot_type STRING HISTOGRAM
+         step FLOAT 0.1
+         voltype STRING ZDR_rain
+		 anglenr INT 0         
+       ALT1000 STRUCT 3
+         type STRING CAPPI_IMAGE
+         voltype STRING ZDR_rain
+		 altitude FLOAT 1000.
+         
          
 # ==========================================================================================
 #                 hydrometeor classification products

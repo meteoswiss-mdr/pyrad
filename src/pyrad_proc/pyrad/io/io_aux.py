@@ -227,6 +227,9 @@ def get_fieldname_pyart(datatype):
         field_name = 'unfiltered_reflectivity_vv'
     elif datatype == 'dBuZvc':
         field_name = 'corrected_unfiltered_reflectivity_vv'
+    elif datatype == 'dBZ_bias':
+        field_name = 'reflectivity_bias'
+
     elif datatype == 'ZDR':
         field_name = 'differential_reflectivity'
     elif datatype == 'ZDRu':
@@ -235,6 +238,9 @@ def get_fieldname_pyart(datatype):
         field_name = 'corrected_differential_reflectivity'
     elif datatype == 'ZDRuc':
         field_name = 'corrected_unfiltered_differential_reflectivity'
+    elif datatype == 'ZDR_rain':
+        field_name = 'differential_reflectivity_in_rain'
+
     elif datatype == 'dBm':
         field_name = 'signal_power_hh'
     elif datatype == 'dBmv':
@@ -247,6 +253,7 @@ def get_fieldname_pyart(datatype):
         field_name = 'signal_to_noise_ratio_hh'
     elif datatype == 'SNRv':
         field_name = 'signal_to_noise_ratio_vv'
+
     elif datatype == 'dBm_sun_hit':
         field_name = 'sun_hit_power_h'
     elif datatype == 'dBmv_sun_hit':
@@ -265,8 +272,7 @@ def get_fieldname_pyart(datatype):
         field_name = 'sun_hit_v'
     elif datatype == 'sun_pos_zdr':
         field_name = 'sun_hit_zdr'
-    elif datatype == 'dBZ_bias':
-        field_name = 'reflectivity_bias'
+
     elif datatype == 'RhoHV':
         field_name = 'cross_correlation_ratio'
     elif datatype == 'uRhoHV':
@@ -279,6 +285,7 @@ def get_fieldname_pyart(datatype):
         field_name = 'logarithmic_cross_correlation_ratio'
     elif datatype == 'CDR':
         field_name = 'circular_depolarization_ratio'
+
     elif datatype == 'PhiDP':
         field_name = 'differential_phase'
     elif datatype == 'uPhiDP':
@@ -293,20 +300,24 @@ def get_fieldname_pyart(datatype):
         field_name = 'specific_differential_phase'
     elif datatype == 'KDPc':
         field_name = 'corrected_specific_differential_phase'
+
     elif datatype == 'V':
         field_name = 'velocity'
     elif datatype == 'W':
         field_name = 'spectrum_width'
+
     elif datatype == 'Ah':
         field_name = 'specific_attenuation'
     elif datatype == 'Ahc':
         field_name = 'corrected_specific_attenuation'
     elif datatype == 'Adp':
         field_name = 'specific_differential_attenuation'
+
     elif datatype == 'TEMP':
         field_name = 'temperature'
     elif datatype == 'ISO0':
         field_name = 'iso0'
+
     elif datatype == 'echoID':
         field_name = 'radar_echo_id'
     elif datatype == 'RR':

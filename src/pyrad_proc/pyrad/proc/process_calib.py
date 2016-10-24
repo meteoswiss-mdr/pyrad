@@ -12,6 +12,7 @@ Functions for monitoring data quality and correct bias and noise effects
     process_selfconsistency_kdp_phidp
     process_selfconsistency_bias
     process_rhohv_rain
+    process_zdr_rain
     process_sun_hits
 
 """
@@ -44,7 +45,7 @@ def process_correct_bias(procstatus, dscfg, radar=None):
         datatype : string. Dataset keyword
             The data type to correct for bias
         bias : float. Dataset keyword
-            The bias to be corrected [dB]
+            The bias to be corrected [dB]. Default 0
 
     radar : Radar
         Optional. Radar object
@@ -173,7 +174,11 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar=None):
         datatype : list of strings. Dataset keyword
             The input data types
         rsmooth : float. Dataset keyword
-            length of the smoothing window [m]
+            length of the smoothing window [m]. Default 1000.
+        min_rhohv : float. Dataset keyword
+            minimum valid RhoHV. Default 0.92
+        max_phidp : float. Dataset keyword
+            maximum valid PhiDP [deg]. Default 20.
 
     radar : Radar
         Optional. Radar object
@@ -224,13 +229,26 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar=None):
         'selfconsistency_zdr_zhkdp_Xband_temp10_elev000_mu05.txt')
     zdr_kdpzh_table = read_selfconsistency(fname)
 
+    # default values
+    rsmooth = 1000.
+    min_rhohv = 0.92
+    max_phidp = 20.
+
+    # get user defined values
+    if 'rsmooth' in dscfg:
+        rsmooth = dscfg['rsmooth']
+    if 'min_rhohv' in dscfg:
+        min_rhohv = dscfg['min_rhohv']
+    if 'max_phidp' in dscfg:
+        max_phidp = dscfg['max_phidp']
+
     kdpsim_field = 'specific_differential_phase'
     phidpsim_field = 'differential_phase'
     r_res = radar.range['data'][1]-radar.range['data'][0]
-    smooth_wind_len = int(dscfg['rsmooth']/r_res)
+    smooth_wind_len = int(rsmooth/r_res)
 
     kdpsim, phidpsim = pyart.correct.selfconsistency_kdp_phidp(
-        radar, zdr_kdpzh_table, min_rhohv=0.92, max_phidp=20.,
+        radar, zdr_kdpzh_table, min_rhohv=min_rhohv, max_phidp=max_phidp,
         smooth_wind_len=smooth_wind_len, doc=None, fzl=None, refl_field=refl,
         phidp_field=phidp, zdr_field=zdr, temp_field=temp, rhohv_field=rhohv,
         kdpsim_field=kdpsim_field, phidpsim_field=phidpsim_field)
@@ -262,7 +280,18 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
         datatype : list of string. Dataset keyword
             The input data types
         rsmooth : float. Dataset keyword
-            length of the smoothing window [m]
+            length of the smoothing window [m]. Default 1000.
+        min_rhohv : float. Dataset keyword
+            minimum valid RhoHV. Default 0.92
+        max_phidp : float. Dataset keyword
+            maximum valid PhiDP [deg]. Default 20.
+        rcell : float. Dataset keyword
+            length of continuous precipitation to consider the precipitation
+            cell a valid phidp segment [m]. Default 1000.
+        dphidp_min : float. Dataset keyword
+            minimum phase shift [deg]. Default 2.
+        dphidp_max : float. Dataset keyword
+            maximum phase shift [deg]. Default 16.
 
     radar : Radar
         Optional. Radar object
@@ -308,19 +337,42 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
              'Missing data')
         return None
 
+    # default values
+    rsmooth = 1000.
+    min_rhohv = 0.92
+    max_phidp = 20.
+    rcell = 1000.
+    dphidp_min = 2.
+    dphidp_max = 16.
+
+    # get user defined values
+    if 'rsmooth' in dscfg:
+        rsmooth = dscfg['rsmooth']
+    if 'min_rhohv' in dscfg:
+        min_rhohv = dscfg['min_rhohv']
+    if 'max_phidp' in dscfg:
+        max_phidp = dscfg['max_phidp']
+    if 'rcell' in dscfg:
+        rcell = dscfg['rcell']
+    if 'dphidp_min' in dscfg:
+        dphidp_min = dscfg['dphidp_min']
+    if 'dphidp_max' in dscfg:
+        dphidp_max = dscfg['dphidp_max']
+
     fname = (
         dscfg['configpath'] + 'selfconsistency/' +
         'selfconsistency_zdr_zhkdp_Xband_temp10_elev000_mu05.txt')
     zdr_kdpzh_table = read_selfconsistency(fname)
 
     r_res = radar.range['data'][1]-radar.range['data'][0]
-    smooth_wind_len = int(dscfg['rsmooth']/r_res)
+    smooth_wind_len = int(rsmooth/r_res)
+    min_rcons = int(rcell/r_res)
 
     refl_bias = pyart.correct.selfconsistency_bias(
-        radar, zdr_kdpzh_table, min_rhohv=0.92, max_phidp=20.,
-        smooth_wind_len=smooth_wind_len, doc=None, fzl=None, min_rcons=20,
-        dphidp_min=2, dphidp_max=16, refl_field=refl, phidp_field=phidp,
-        zdr_field=zdr, temp_field=temp, rhohv_field=rhohv)
+        radar, zdr_kdpzh_table, min_rhohv=min_rhohv, max_phidp=max_phidp,
+        smooth_wind_len=smooth_wind_len, doc=None, fzl=None,
+        min_rcons=min_rcons, dphidp_min=2., dphidp_max=16., refl_field=refl,
+        phidp_field=phidp, zdr_field=zdr, temp_field=temp, rhohv_field=rhohv)
 
     # prepare for exit
     new_dataset = deepcopy(radar)
@@ -335,7 +387,7 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
 
 def process_rhohv_rain(procstatus, dscfg, radar=None):
     """
-    Computes quantiles of RhoHV in rain
+    Keeps only suitable data to evaluate the 80 percentile of RhoHV in rain
 
     Parameters
     ----------
@@ -359,7 +411,7 @@ def process_rhohv_rain(procstatus, dscfg, radar=None):
             maximum reflectivity to consider the bin as precipitation [dBZ]
             Default 40.
         ml_thickness : float. Dataset keyword
-            assumed thickness of the melting layer
+            assumed thickness of the melting layer. Default 700.
 
     radar : Radar
         Optional. Radar object
@@ -393,14 +445,14 @@ def process_rhohv_rain(procstatus, dscfg, radar=None):
             (temp_field not in radar.fields)):
         warn('Unable to estimate RhoHV in rain. Missing data')
         return None
-        
+
     # default values
     rmin = 1000.
     rmax = 50000.
     zmin = 20.
     zmax = 40.
-    thickness = 1000.
-    
+    thickness = 700.
+
     # user defined values
     if 'rmin' in dscfg:
         rmin = dscfg['rmin']
@@ -430,6 +482,132 @@ def process_rhohv_rain(procstatus, dscfg, radar=None):
     return new_dataset
 
 
+def process_zdr_rain(procstatus, dscfg, radar=None):
+    """
+    Keeps only suitable data to evaluate the differential reflectivity in
+    moderate rain
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        rmin : float. Dataset keyword
+            minimum range where to look for rain [m]. Default 1000.
+        rmax : float. Dataset keyword
+            maximum range where to look for rain [m]. Default 50000.
+        Zmin : float. Dataset keyword
+            minimum reflectivity to consider the bin as precipitation [dBZ].
+            Default 20.
+        Zmax : float. Dataset keyword
+            maximum reflectivity to consider the bin as precipitation [dBZ]
+            Default 40.
+        rhohvmin : float. Dataset keyword
+            minimum RhoHV to consider the bin as precipitation
+            Default 0.97
+        phidpmax : float. Dataset keyword
+            maximum PhiDP to consider the bin as precipitation [deg]
+            Default 10.
+        elmax : float. Dataset keyword
+            maximum elevation angle where to look for precipitation [deg]
+            Default 30.
+        ml_thickness : float. Dataset keyword
+            assumed thickness of the melting layer. Default 700.
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+
+    if procstatus != 1:
+        return None
+
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        if datatype == 'ZDR':
+            zdr_field = 'differential_reflectivity'
+        if datatype == 'ZDRc':
+            zdr_field = 'corrected_differential_reflectivity'
+        if datatype == 'PhiDP':
+            phidp_field = 'differential_phase'
+        if datatype == 'PhiDPc':
+            phidp_field = 'corrected_differential_phase'
+        if datatype == 'RhoHV':
+            rhohv_field = 'cross_correlation_ratio'
+        if datatype == 'RhoHVc':
+            rhohv_field = 'corrected_cross_correlation_ratio'
+        if datatype == 'dBZc':
+            refl_field = 'corrected_reflectivity'
+        if datatype == 'dBZ':
+            refl_field = 'reflectivity'
+        if datatype == 'TEMP':
+            temp_field = 'temperature'
+
+    if ((refl_field not in radar.fields) or
+            (rhohv_field not in radar.fields) or
+            (temp_field not in radar.fields)):
+        warn('Unable to estimate RhoHV in rain. Missing data')
+        return None
+
+    # default values
+    rmin = 1000.
+    rmax = 50000.
+    zmin = 20.
+    zmax = 40.
+    rhohvmin = 0.97
+    phidpmax = 10.
+    elmax = 30.
+    thickness = 700.
+
+    # user defined values
+    if 'rmin' in dscfg:
+        rmin = dscfg['rmin']
+    if 'rmax' in dscfg:
+        rmax = dscfg['rmax']
+    if 'Zmin' in dscfg:
+        zmin = dscfg['Zmin']
+    if 'Zmax' in dscfg:
+        zmax = dscfg['Zmax']
+    if 'RhoHVmin' in dscfg:
+        rhohvmin = dscfg['RhoHVmin']
+    if 'PhiDPmax' in dscfg:
+        phidpmax = dscfg['PhiDPmax']
+    if 'elmax' in dscfg:
+        elmax = dscfg['elmax']
+    if 'ml_thickness' in dscfg:
+        thickness = dscfg['ml_thickness']
+
+    ind_rmin = np.where(radar.range['data'] > rmin)[0][0]
+    ind_rmax = np.where(radar.range['data'] < rmax)[0][-1]
+
+    zdr_rain = pyart.correct.est_zdr_rain(
+        radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, zmin=zmin,
+        zmax=zmax, rhohvmin=rhohvmin, phidpmax=phidpmax, elmax=elmax,
+        thickness=thickness, doc=None, fzl=None, zdr_field=zdr_field,
+        rhohv_field=rhohv_field, phidp_field=phidp_field,
+        temp_field=temp_field, refl_field=refl_field)
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+
+    new_dataset.add_field('differential_reflectivity_in_rain', zdr_rain)
+
+    return new_dataset
+
+
 def process_sun_hits(procstatus, dscfg, radar=None):
     """
     monitoring of the radar using sun hits
@@ -446,33 +624,37 @@ def process_sun_hits(procstatus, dscfg, radar=None):
         datatype : list of string. Dataset keyword
             The input data types
         rmin : float. Dataset keyword
-            minimum range where to look for a sun hit signal [m]
+            minimum range where to look for a sun hit signal [m]. Default 20
         delev_max : float. Dataset keyword
             maximum elevation distance from nominal radar elevation where to
-            look for a sun hit signal [deg]
+            look for a sun hit signal [deg]. Default 1.5
         dazim_max : float. Dataset keyword
             maximum azimuth distance from nominal radar elevation where to
-            look for a sun hit signal [deg]
+            look for a sun hit signal [deg]. Default 1.5
         elmin : float. Dataset keyword
-            minimum radar elevation where to look for sun hits [deg]
-        percent_bins : float. Dataset keyword
+            minimum radar elevation where to look for sun hits [deg].
+            Default 1.
+        percent_bins : float. Dataset keyword.
             minimum percentage of range bins that have to contain signal to
-            consider the ray a potential sun hit
+            consider the ray a potential sun hit. Default 10.
         attg : float. Dataset keyword
-            gaseous attenuation
+            gaseous attenuation. Default None
         max_std : float. Dataset keyword
-            maximum standard deviation to consider the data noise
+            maximum standard deviation to consider the data noise. Default 1.
         az_width_co : float. Dataset keyword
-            co-polar antenna azimuth width (convoluted with sun width) [deg]
+            co-polar antenna azimuth width (convoluted with sun width) [deg].
+            Default None
         el_width_co : float. Dataset keyword
-            co-polar antenna elevation width (convoluted with sun width) [deg]
+            co-polar antenna elevation width (convoluted with sun width)
+            [deg]. Default None
         az_width_cross : float. Dataset keyword
-            cross-polar antenna azimuth width (convoluted with sun width) [deg]
+            cross-polar antenna azimuth width (convoluted with sun width)
+            [deg]. Default None
         el_width_cross : float. Dataset keyword
             cross-polar antenna elevation width (convoluted with sun width)
-            [deg]
+            [deg]. Default None
         ndays : int. Dataset keyword
-            number of days used in sun retrieval
+            number of days used in sun retrieval. Default 1
 
     radar : Radar
         Optional. Radar object
