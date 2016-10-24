@@ -9,12 +9,13 @@ Functions to plot Pyrad datasets
 
     plot_ppi
     plot_rhi
-    plot_cappi
     plot_bscope
-    plot_sun_hits
+    plot_cappi
     plot_quantiles
+    plot_histogram
     plot_timeseries
     plot_timeseries_comp
+    plot_sun_hits
     plot_sun_retrieval_ts
     get_colobar_label
     get_field_name
@@ -331,68 +332,6 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname):
     return fname
 
 
-def plot_sun_hits(field, field_name, fname, prdcfg):
-    """
-    plots the sun hits
-
-    Parameters
-    ----------
-    radar : Radar object
-        object containing the radar data to plot
-
-    field_name : str
-        name of the radar field to plot
-
-    altitude : float
-        the altitude [m MSL] to be plotted
-
-    prdcfg : dict
-        dictionary containing the product configuration
-
-    fname : str
-        name of the file where to store the plot
-
-    Returns
-    -------
-    fname : str
-        the name of the created plot file
-
-    """
-    azmin = prdcfg['sunhitsImageConfig']['azmin']
-    azmax = prdcfg['sunhitsImageConfig']['azmax']
-    elmin = prdcfg['sunhitsImageConfig']['elmin']
-    elmax = prdcfg['sunhitsImageConfig']['elmax']
-
-    field_dict = pyart.config.get_metadata(field_name)
-
-    # display data
-    fig = plt.figure(figsize=[prdcfg['sunhitsImageConfig']['xsize'],
-                              prdcfg['sunhitsImageConfig']['ysize']],
-                     dpi=72)
-    ax = fig.add_subplot(111)
-    cmap = pyart.config.get_field_colormap(field_name)
-    vmin, vmax = pyart.config.get_field_limits(field_name)
-    titl = (prdcfg['timeinfo'].strftime('%Y-%m-%d') + '\n' +
-            get_field_name(field_dict, field_name))
-
-    cax = ax.imshow(
-        field, extent=(azmin, azmax, elmin, elmax),
-        origin='lower', cmap=cmap, vmin=vmin, vmax=vmax, interpolation='none')
-    plt.xlabel('rad_az-sun_az (deg)')
-    plt.ylabel('rad_el-sun_el (deg)')
-    plt.title(titl)
-
-    # plot the colorbar and set the label.
-    label = get_colobar_label(field_dict, field_name)
-    cb = fig.colorbar(cax)
-    cb.set_label(label)
-
-    fig.savefig(fname)
-    plt.close()
-
-    return fname
-
-
 def plot_quantiles(quant, value, fname, labelx='quantile', labely='value',
                    titl='quantile'):
     """
@@ -576,6 +515,68 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname,
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)
+
+    fig.savefig(fname)
+    plt.close()
+
+    return fname
+
+
+def plot_sun_hits(field, field_name, fname, prdcfg):
+    """
+    plots the sun hits
+
+    Parameters
+    ----------
+    radar : Radar object
+        object containing the radar data to plot
+
+    field_name : str
+        name of the radar field to plot
+
+    altitude : float
+        the altitude [m MSL] to be plotted
+
+    prdcfg : dict
+        dictionary containing the product configuration
+
+    fname : str
+        name of the file where to store the plot
+
+    Returns
+    -------
+    fname : str
+        the name of the created plot file
+
+    """
+    azmin = prdcfg['sunhitsImageConfig']['azmin']
+    azmax = prdcfg['sunhitsImageConfig']['azmax']
+    elmin = prdcfg['sunhitsImageConfig']['elmin']
+    elmax = prdcfg['sunhitsImageConfig']['elmax']
+
+    field_dict = pyart.config.get_metadata(field_name)
+
+    # display data
+    fig = plt.figure(figsize=[prdcfg['sunhitsImageConfig']['xsize'],
+                              prdcfg['sunhitsImageConfig']['ysize']],
+                     dpi=72)
+    ax = fig.add_subplot(111)
+    cmap = pyart.config.get_field_colormap(field_name)
+    vmin, vmax = pyart.config.get_field_limits(field_name)
+    titl = (prdcfg['timeinfo'].strftime('%Y-%m-%d') + '\n' +
+            get_field_name(field_dict, field_name))
+
+    cax = ax.imshow(
+        field, extent=(azmin, azmax, elmin, elmax),
+        origin='lower', cmap=cmap, vmin=vmin, vmax=vmax, interpolation='none')
+    plt.xlabel('rad_az-sun_az (deg)')
+    plt.ylabel('rad_el-sun_el (deg)')
+    plt.title(titl)
+
+    # plot the colorbar and set the label.
+    label = get_colobar_label(field_dict, field_name)
+    cb = fig.colorbar(cax)
+    cb.set_label(label)
 
     fig.savefig(fname)
     plt.close()

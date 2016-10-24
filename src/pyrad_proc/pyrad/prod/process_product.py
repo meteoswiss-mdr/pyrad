@@ -36,10 +36,12 @@ from ..io.write_data import write_sun_hits, write_sun_retrieval
 from ..graph.plots import plot_ppi, plot_rhi, plot_cappi, plot_bscope
 from ..graph.plots import plot_timeseries, plot_timeseries_comp
 from ..graph.plots import plot_quantiles, get_colobar_label, plot_sun_hits
-from ..graph.plots import plot_sun_retrieval_ts
+from ..graph.plots import plot_sun_retrieval_ts, plot_histogram
+from ..graph.plots import get_field_name, get_colobar_label
 
 from ..util.radar_utils import create_sun_hits_field
 from ..util.radar_utils import create_sun_retrieval_field
+from ..util.radar_utils import compute_histogram, compute_quantiles
 
 
 def generate_sun_hits_products(dataset, prdcfg):
@@ -461,6 +463,84 @@ def generate_vol_products(dataset, prdcfg):
             timeinfo=prdcfg['timeinfo'])
 
         plot_bscope(dataset, field_name, ind_ang, prdcfg, savedir+fname)
+        print('saved figure: '+savedir+fname)
+
+        return savedir+fname
+
+    if prdcfg['type'] == 'HISTOGRAM':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        step = None
+        if 'step' in prdcfg:
+            step = prdcfg['step']
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'histogram', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['convertformat'],
+            timeinfo=prdcfg['timeinfo'])
+
+        bins, values = compute_histogram(
+            dataset.fields[field_name]['data'], field_name, step=step)
+
+        titl = (
+            pyart.graph.common.generate_radar_time_begin(
+                dataset).isoformat() + 'Z' + '\n' +
+            get_field_name(dataset.fields[field_name], field_name))
+
+        labelx = get_colobar_label(dataset.fields[field_name], field_name)
+
+        plot_histogram(bins, values, savedir+fname, labelx=labelx,
+                       labely='Number of Samples', titl=titl)
+
+        print('saved figure: '+savedir+fname)
+
+        return savedir+fname
+
+    if prdcfg['type'] == 'QUANTILES':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        quantiles = None
+        if 'quantiles' in prdcfg:
+            quantiles = prdcfg['quantiles']
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'quantiles', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['convertformat'],
+            timeinfo=prdcfg['timeinfo'])
+
+        quantiles, values = compute_quantiles(
+            dataset.fields[field_name]['data'], quantiles=quantiles)
+
+        titl = (
+            pyart.graph.common.generate_radar_time_begin(
+                dataset).isoformat() + 'Z' + '\n' +
+            get_field_name(dataset.fields[field_name], field_name))
+
+        labely = get_colobar_label(dataset.fields[field_name], field_name)
+
+        plot_quantiles(quantiles, values, savedir+fname, labelx='quantile',
+                       labely=labely, titl=titl)
+
         print('saved figure: '+savedir+fname)
 
         return savedir+fname

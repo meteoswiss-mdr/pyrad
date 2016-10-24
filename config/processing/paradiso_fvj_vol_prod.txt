@@ -4,13 +4,16 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 6
-    l0:ZDR
-    l0:RhoHV    
+dataSetList STRARR 9
     l0:echoID
     l1:echoFilter
-    l2:RhoHV_rain
-    l2:ZDR_rain
+    l2:Att_ZPhi
+    l3:monitoring_PhiDP0    
+    l3:monitoring_Zh_bias
+    l3:RhoHV_rain
+    l3:ZDR_rain    
+    l4:monitoring_RhoHV
+    l4:monitoring_ZDR
 
 # ==========================================================================================
 #                 raw data products
@@ -42,56 +45,70 @@ dataSetList STRARR 6
 #         type   STRING SAVEVOL
 #         voltype STRING dBZ
 #
-ZDR STRUCT 3
-	type STRING RAW
-	datatype STRING ZDR
-    products STRUCT 4
-	   EL004_0 STRUCT 4
-         type STRING PPI_IMAGE
-         plot_type STRING PPI
-         voltype STRING ZDR
-		 anglenr INT 0
-       EL004_0_QUANTILES STRUCT 4
-         type STRING PPI_IMAGE
-         plot_type STRING QUANTILES
-         voltype STRING ZDR
-		 anglenr INT 0
-       EL004_0_HISTOGRAM STRUCT 5
-         type STRING PPI_IMAGE
-         plot_type STRING HISTOGRAM
-         step FLOAT 0.1
-         voltype STRING ZDR
-		 anglenr INT 0         
-       ALT1000 STRUCT 3
-         type STRING CAPPI_IMAGE
-         voltype STRING ZDR
-		 altitude FLOAT 1000.
-         
-RhoHV STRUCT 3
-	type STRING RAW
-	datatype STRING RhoHV
-	products STRUCT 4
-	   EL004_0 STRUCT 4
-         type STRING PPI_IMAGE
-         plot_type STRING PPI
-         voltype STRING RhoHV
-		 anglenr INT 0
-       EL004_0_QUANTILES STRUCT 4
-         type STRING PPI_IMAGE
-         plot_type STRING QUANTILES
-         voltype STRING RhoHV
-		 anglenr INT 0
-       EL004_0_HISTOGRAM STRUCT 5
-         type STRING PPI_IMAGE
-         plot_type STRING HISTOGRAM
-         step FLOAT 0.001
-         voltype STRING RhoHV
-		 anglenr INT 0         
-       ALT1000 STRUCT 3
-         type STRING CAPPI_IMAGE
-         voltype STRING RhoHV
-		 altitude FLOAT 1000.
-
+#ZDR STRUCT 3
+#	type STRING RAW
+#	datatype STRING ZDR
+#    products STRUCT 6
+#	   EL004_0 STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING PPI
+#         voltype STRING ZDR
+#		 anglenr INT 0
+#       EL004_0_QUANTILES STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING QUANTILES
+#         voltype STRING ZDR
+#		 anglenr INT 0
+#       EL004_0_HISTOGRAM STRUCT 5
+#         type STRING PPI_IMAGE
+#         plot_type STRING HISTOGRAM
+#         step FLOAT 0.1
+#         voltype STRING ZDR
+#		 anglenr INT 0         
+#       ALT1000 STRUCT 3
+#         type STRING CAPPI_IMAGE
+#         voltype STRING ZDR
+#		 altitude FLOAT 1000.
+#       HISTOGRAM STRUCT 3
+#         type STRING HISTOGRAM
+#         voltype string ZDR
+#         step FLOAT 0.1
+#       QUANTILES STRUCT 2
+#         type STRING QUANTILES
+#         voltype string ZDR
+#         
+#RhoHV STRUCT 3
+#	type STRING RAW
+#	datatype STRING RhoHV
+#	products STRUCT 6
+#	   EL004_0 STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING PPI
+#         voltype STRING RhoHV
+#		 anglenr INT 0
+#       EL004_0_QUANTILES STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING QUANTILES
+#         voltype STRING RhoHV
+#		 anglenr INT 0
+#       EL004_0_HISTOGRAM STRUCT 5
+#         type STRING PPI_IMAGE
+#         plot_type STRING HISTOGRAM
+#         step FLOAT 0.001
+#         voltype STRING RhoHV
+#		 anglenr INT 0         
+#       ALT1000 STRUCT 3
+#         type STRING CAPPI_IMAGE
+#         voltype STRING RhoHV
+#		 altitude FLOAT 1000.
+#       HISTOGRAM STRUCT 3
+#         type STRING HISTOGRAM
+#         voltype string RhoHV
+#         step FLOAT 0.001
+#       QUANTILES STRUCT 2
+#         type STRING QUANTILES
+#         voltype string RhoHV
+#
 #KDP STRUCT 3
 #	type STRING RAW
 #	datatype STRING KDP
@@ -319,27 +336,6 @@ echoFilter STRUCT 3
 # ==========================================================================================
 #                 PHIDP KDP processing
 # ==========================================================================================
-#PhiDP0 STRUCT 9
-#    type STRING PHIDP0_ESTIMATE
-#    datatype STRARR 2
-#        PROC:PhiDPc
-#        PROC:dBZc
-#    rmin FLOAT 1000.
-#    rmax FLOAT 50000.
-#    rcell FLOAT 1000.
-#    Zmin FLOAT 20.
-#    Zmax FLOAT 40.
-#    MAKE_GLOBAL INT 0
-#    products STRUCT 2
-#      EL004_0_PhiDP0 STRUCT 3
-#         type STRING BSCOPE_IMAGE
-#         anglenr INT 0
-#         voltype STRING PhiDP0    
-#      EL004_0_PhiDP0_bin STRUCT 3
-#         type STRING BSCOPE_IMAGE
-#         anglenr INT 0
-#         voltype STRING PhiDP0_bin
-#
 #PhiDPc_noPhiDP0 STRUCT 9
 #    type STRING PHIDP0_CORRECTION
 #    datatype STRARR 2
@@ -462,37 +458,37 @@ echoFilter STRUCT 3
 ## ==========================================================================================
 ##                 Attenuation
 ## ==========================================================================================
-#Att_ZPhi STRUCT 5
-#	type STRING ATTENUATION
-#	datatype STRARR 4
-#        PROC:dBZc
-#        PROC:ZDRc
-#        PROC:PhiDPc
-#        COSMO:TEMP    
-#    MAKE_GLOBAL INT 1
-#    ATT_METHOD STRING ZPhi
-#	products STRUCT 5
-#	  EL004_0_Ah STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING Ah
-#		 anglenr INT 0
-#      EL004_0_dBZc STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING dBZc
-#		 anglenr INT 0
-#      EL004_0_ZDRc STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING ZDRc
-#		 anglenr INT 0
-#      EL004_0_Adp STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING Adp
-#		 anglenr INT 0
-#      EL004_0_BSCOPE_dBZc STRUCT 3
-#         type   STRING BSCOPE_IMAGE
-#         voltype STRING dBZc
-#		 anglenr INT 0
-#         
+Att_ZPhi STRUCT 5
+	type STRING ATTENUATION
+	datatype STRARR 4
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:PhiDPc
+        COSMO:TEMP    
+    MAKE_GLOBAL INT 1
+    ATT_METHOD STRING ZPhi
+	products STRUCT 5
+	  EL004_0_Ah STRUCT 3
+         type   STRING PPI_IMAGE
+         voltype STRING Ah
+		 anglenr INT 0
+      EL004_0_dBZc STRUCT 3
+         type   STRING PPI_IMAGE
+         voltype STRING dBZc
+		 anglenr INT 0
+      EL004_0_ZDRc STRUCT 3
+         type   STRING PPI_IMAGE
+         voltype STRING ZDRc
+		 anglenr INT 0
+      EL004_0_Adp STRUCT 3
+         type   STRING PPI_IMAGE
+         voltype STRING Adp
+		 anglenr INT 0
+      EL004_0_BSCOPE_dBZc STRUCT 3
+         type   STRING BSCOPE_IMAGE
+         voltype STRING dBZc
+		 anglenr INT 0
+         
 #Att_Philin STRUCT 5
 #	type STRING ATTENUATION
 #	datatype STRARR 4
@@ -522,6 +518,40 @@ echoFilter STRUCT 3
 
 
 # ==========================================================================================
+#                 PhiDP0 monitoring
+# ========================================================================================== 
+monitoring_PhiDP0 STRUCT 9
+    type STRING PHIDP0_ESTIMATE
+    datatype STRARR 2
+        uPhiDP
+        PROC:dBZc
+    rmin FLOAT 1000.
+    rmax FLOAT 50000.
+    rcell FLOAT 1000.
+    Zmin FLOAT 20.
+    Zmax FLOAT 40.
+    MAKE_GLOBAL INT 0
+    products STRUCT 4
+      EL004_0_PhiDP0 STRUCT 3
+         type STRING BSCOPE_IMAGE
+         anglenr INT 0
+         voltype STRING PhiDP0    
+      EL004_0_PhiDP0_bin STRUCT 3
+         type STRING BSCOPE_IMAGE
+         anglenr INT 0
+         voltype STRING PhiDP0_bin
+      EL004_0_HISTOGRAM STRUCT 4
+         type STRING PPI_IMAGE
+         step FLOAT 1.
+         anglenr INT 0
+         voltype STRING PhiDP0
+      HISTOGRAM STRUCT 3
+         type STRING HISTOGRAM
+         step FLOAT 1.         
+         voltype STRING PhiDP0
+         
+
+# ==========================================================================================
 #                 selfconsistency products
 # ==========================================================================================         
 #PhiDP_KDP_selfconsistency STRUCT 4
@@ -542,21 +572,30 @@ echoFilter STRUCT 3
 #         type STRING PPI_IMAGE
 #         anglenr INT 0
 #         voltype STRING KDP
-#         
-#Zh_bias_selfconsistency STRUCT 4
-#    type STRING SELFCONSISTENCY_BIAS
-#    datatype STRARR 5
-#        PROC:dBZc
-#        PROC:ZDRc
-#        PROC:PhiDPc
-#        PROC:RhoHVc
-#        COSMO:TEMP
-#    rsmooth FLOAT 1000.
-#    products STRUCT 1
-#      EL004_0 STRUCT 3
-#         type STRING BSCOPE_IMAGE
-#         anglenr INT 0
-#         voltype STRING dBZ_bias
+         
+monitoring_Zh_bias STRUCT 4
+    type STRING SELFCONSISTENCY_BIAS
+    datatype STRARR 5
+        PROC:dBZc
+        PROC:ZDRc        
+        PROC:RhoHVc
+        PROC:PhiDP
+        COSMO:TEMP
+    rsmooth FLOAT 1000.
+    products STRUCT 3
+      EL004_0 STRUCT 3
+         type STRING BSCOPE_IMAGE
+         anglenr INT 0
+         voltype STRING dBZ_bias
+      EL004_0_HISTOGRAM STRUCT 4
+         type STRING PPI_IMAGE
+         step FLOAT 0.5
+         anglenr INT 0
+         voltype STRING dBZ_bias
+      HISTOGRAM STRUCT 3
+         type STRING HISTOGRAM
+         step FLOAT 0.5         
+         voltype STRING dBZ_bias         
 
          
 # ==========================================================================================
@@ -573,27 +612,77 @@ RhoHV_rain STRUCT 8
     Zmin FLOAT 20.
     Zmax FLOAT 40.
     ml_thickness FLOAT 700.
-    products STRUCT 4
-	   EL004_0 STRUCT 4
-         type STRING PPI_IMAGE
-         plot_type STRING PPI
+    MAKE_GLOBAL INT 1
+#    products STRUCT 12
+#	   EL004_0 STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING PPI
+#         voltype STRING RhoHV_rain
+#		 anglenr INT 0
+#       EL004_0_QUANTILES STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING QUANTILES
+#         voltype STRING RhoHV_rain
+#		 anglenr INT 0
+#       EL004_0_HISTOGRAM STRUCT 5
+#         type STRING PPI_IMAGE
+#         plot_type STRING HISTOGRAM
+#         step FLOAT 0.001
+#         voltype STRING RhoHV_rain
+#		 anglenr INT 0         
+#       EL006_0 STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING PPI
+#         voltype STRING RhoHV_rain
+#		 anglenr INT 1
+#       EL006_0_QUANTILES STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING QUANTILES
+#         voltype STRING RhoHV_rain
+#		 anglenr INT 1
+#       EL006_0_HISTOGRAM STRUCT 5
+#         type STRING PPI_IMAGE
+#         plot_type STRING HISTOGRAM
+#         step FLOAT 0.001
+#         voltype STRING RhoHV_rain
+#		 anglenr INT 1
+#       EL025_0 STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING PPI
+#         voltype STRING RhoHV_rain
+#		 anglenr INT 2
+#       EL025_0_QUANTILES STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING QUANTILES
+#         voltype STRING RhoHV_rain
+#		 anglenr INT 2
+#       EL025_0_HISTOGRAM STRUCT 5
+#         type STRING PPI_IMAGE
+#         plot_type STRING HISTOGRAM
+#         step FLOAT 0.001
+#         voltype STRING RhoHV_rain
+#		 anglenr INT 2         
+#       ALT1000 STRUCT 3
+#         type STRING CAPPI_IMAGE
+#         voltype STRING RhoHV_rain
+#		 altitude FLOAT 1000.
+#       HISTOGRAM STRUCT 3
+#         type STRING HISTOGRAM
+#         voltype string RhoHV_rain
+#         step FLOAT 0.001
+#       QUANTILES STRUCT 2
+#         type STRING QUANTILES
+#         voltype string RhoHV_rain         
+         
+monitoring_RhoHV STRUCT 3
+    type STRING MONITORING_RHOHV
+    datatype STRARR 1
+        PROC:RhoHV_rain
+    products STRUCT 1
+       HISTOGRAM STRUCT 3
+         type STRING HISTOGRAM
+         step FLOAT 0.001         
          voltype STRING RhoHV_rain
-		 anglenr INT 0
-       EL004_0_QUANTILES STRUCT 4
-         type STRING PPI_IMAGE
-         plot_type STRING QUANTILES
-         voltype STRING RhoHV_rain
-		 anglenr INT 0
-       EL004_0_HISTOGRAM STRUCT 5
-         type STRING PPI_IMAGE
-         plot_type STRING HISTOGRAM
-         step FLOAT 0.001
-         voltype STRING RhoHV_rain
-		 anglenr INT 0         
-       ALT1000 STRUCT 3
-         type STRING CAPPI_IMAGE
-         voltype STRING RhoHV_rain
-		 altitude FLOAT 1000.
          
          
 # ==========================================================================================
@@ -613,29 +702,88 @@ ZDR_rain STRUCT 11
     Zmax FLOAT 22.
     RhoHVmin FLOAT 0.97
     PhiDPmax FLOAT 10.
-    elmax FLOAT 30.
+    elmax FLOAT 20.
     ml_thickness FLOAT 700.
-    products STRUCT 4
-	   EL004_0 STRUCT 4
-         type STRING PPI_IMAGE
-         plot_type STRING PPI
+    MAKE_GLOBAL INT 1
+#    products STRUCT 12
+#	   EL004_0 STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING PPI
+#         voltype STRING ZDR_rain
+#		 anglenr INT 0
+#       EL004_0_QUANTILES STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING QUANTILES
+#         voltype STRING ZDR_rain
+#		 anglenr INT 0
+#       EL004_0_HISTOGRAM STRUCT 5
+#         type STRING PPI_IMAGE
+#         plot_type STRING HISTOGRAM
+#         step FLOAT 0.1
+#         voltype STRING ZDR_rain
+#		 anglenr INT 0
+#       EL006_0 STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING PPI
+#         voltype STRING ZDR_rain
+#		 anglenr INT 1
+#       EL006_0_QUANTILES STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING QUANTILES
+#         voltype STRING ZDR_rain
+#		 anglenr INT 1
+#       EL006_0_HISTOGRAM STRUCT 5
+#         type STRING PPI_IMAGE
+#         plot_type STRING HISTOGRAM
+#         step FLOAT 0.1
+#         voltype STRING ZDR_rain
+#		 anglenr INT 1
+#       EL025_0 STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING PPI
+#         voltype STRING ZDR_rain
+#		 anglenr INT 2
+#       EL025_0_QUANTILES STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING QUANTILES
+#         voltype STRING ZDR_rain
+#		 anglenr INT 2
+#       EL025_0_HISTOGRAM STRUCT 5
+#         type STRING PPI_IMAGE
+#         plot_type STRING HISTOGRAM
+#         step FLOAT 0.1
+#         voltype STRING ZDR_rain
+#		 anglenr INT 2         
+#       ALT1000 STRUCT 3
+#         type STRING CAPPI_IMAGE
+#         voltype STRING ZDR_rain
+#		 altitude FLOAT 1000.
+#       HISTOGRAM STRUCT 3
+#         type STRING HISTOGRAM
+#         voltype string ZDR_rain
+#         step FLOAT 0.1
+#       QUANTILES STRUCT 2
+#         type STRING QUANTILES
+#         voltype string ZDR_rain
+         
+monitoring_ZDR STRUCT 3
+    type STRING MONITORING_ZDR
+    datatype STRARR 1
+        PROC:ZDR_rain
+    products STRUCT 3
+      EL004_0 STRUCT 3
+         type STRING BSCOPE_IMAGE
+         anglenr INT 0
          voltype STRING ZDR_rain
-		 anglenr INT 0
-       EL004_0_QUANTILES STRUCT 4
+      EL004_0_HISTOGRAM STRUCT 4
          type STRING PPI_IMAGE
-         plot_type STRING QUANTILES
-         voltype STRING ZDR_rain
-		 anglenr INT 0
-       EL004_0_HISTOGRAM STRUCT 5
-         type STRING PPI_IMAGE
-         plot_type STRING HISTOGRAM
          step FLOAT 0.1
+         anglenr INT 0
          voltype STRING ZDR_rain
-		 anglenr INT 0         
-       ALT1000 STRUCT 3
-         type STRING CAPPI_IMAGE
+      HISTOGRAM STRUCT 3
+         type STRING HISTOGRAM
+         step FLOAT 0.1         
          voltype STRING ZDR_rain
-		 altitude FLOAT 1000.
          
          
 # ==========================================================================================

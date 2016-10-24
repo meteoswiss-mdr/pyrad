@@ -100,6 +100,10 @@ def get_process_type(dataset_type):
         func_name = 'process_rhohv_rain'
     elif dataset_type == 'ZDR_RAIN':
         func_name = 'process_zdr_rain'
+    elif dataset_type == 'MONITORING_RHOHV':
+        func_name = 'process_monitoring_rhohv'
+    elif dataset_type == 'MONITORING_ZDR':
+        func_name = 'process_monitoring_zdr'
     elif dataset_type == 'SUN_HITS':
         func_name = 'process_sun_hits'
         dsformat = 'SUN_HITS'
@@ -107,7 +111,7 @@ def get_process_type(dataset_type):
         func_name = 'process_point_measurement'
         dsformat = 'TIMESERIES'
     else:
-        raise ValueError('ERROR: Unknown dataset type')
+        raise ValueError('ERROR: Unknown dataset type '+dataset_type)
 
     return func_name, dsformat
 

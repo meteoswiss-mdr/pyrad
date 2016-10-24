@@ -13,6 +13,8 @@ Functions for monitoring data quality and correct bias and noise effects
     process_selfconsistency_bias
     process_rhohv_rain
     process_zdr_rain
+    process_monitoring_rhohv
+    process_monitoring_zdr
     process_sun_hits
 
 """
@@ -27,6 +29,8 @@ import pyart
 from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 from ..io.read_data_other import read_selfconsistency
 from ..io.read_data_other import read_sun_hits_multiple_days
+
+from ..util.radar_utils import compute_quantiles_sweep
 
 
 def process_correct_bias(procstatus, dscfg, radar=None):
@@ -179,6 +183,8 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar=None):
             minimum valid RhoHV. Default 0.92
         max_phidp : float. Dataset keyword
             maximum valid PhiDP [deg]. Default 20.
+        ml_thickness : float. Dataset keyword
+            assumed melting layer thickness [m]. Default 700.
 
     radar : Radar
         Optional. Radar object
@@ -233,6 +239,7 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar=None):
     rsmooth = 1000.
     min_rhohv = 0.92
     max_phidp = 20.
+    ml_thickness = 700.
 
     # get user defined values
     if 'rsmooth' in dscfg:
@@ -241,6 +248,8 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar=None):
         min_rhohv = dscfg['min_rhohv']
     if 'max_phidp' in dscfg:
         max_phidp = dscfg['max_phidp']
+    if 'ml_thickness' in dscfg:
+        ml_thickness = dscfg['ml_thickness']
 
     kdpsim_field = 'specific_differential_phase'
     phidpsim_field = 'differential_phase'
@@ -249,8 +258,9 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar=None):
 
     kdpsim, phidpsim = pyart.correct.selfconsistency_kdp_phidp(
         radar, zdr_kdpzh_table, min_rhohv=min_rhohv, max_phidp=max_phidp,
-        smooth_wind_len=smooth_wind_len, doc=None, fzl=None, refl_field=refl,
-        phidp_field=phidp, zdr_field=zdr, temp_field=temp, rhohv_field=rhohv,
+        smooth_wind_len=smooth_wind_len, doc=None, fzl=None,
+        thickness=ml_thickness, refl_field=refl, phidp_field=phidp,
+        zdr_field=zdr, temp_field=temp, rhohv_field=rhohv,
         kdpsim_field=kdpsim_field, phidpsim_field=phidpsim_field)
 
     # prepare for exit
@@ -341,6 +351,7 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
     rsmooth = 1000.
     min_rhohv = 0.92
     max_phidp = 20.
+    ml_thickness = 700.
     rcell = 1000.
     dphidp_min = 2.
     dphidp_max = 16.
@@ -352,6 +363,8 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
         min_rhohv = dscfg['min_rhohv']
     if 'max_phidp' in dscfg:
         max_phidp = dscfg['max_phidp']
+    if 'ml_thickness' in dscfg:
+        ml_thickness = dscfg['ml_thickness']
     if 'rcell' in dscfg:
         rcell = dscfg['rcell']
     if 'dphidp_min' in dscfg:
@@ -371,8 +384,9 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
     refl_bias = pyart.correct.selfconsistency_bias(
         radar, zdr_kdpzh_table, min_rhohv=min_rhohv, max_phidp=max_phidp,
         smooth_wind_len=smooth_wind_len, doc=None, fzl=None,
-        min_rcons=min_rcons, dphidp_min=2., dphidp_max=16., refl_field=refl,
-        phidp_field=phidp, zdr_field=zdr, temp_field=temp, rhohv_field=rhohv)
+        thickness=ml_thickness, min_rcons=min_rcons, dphidp_min=dphidp_min,
+        dphidp_max=dphidp_max, refl_field=refl, phidp_field=phidp,
+        zdr_field=zdr, temp_field=temp, rhohv_field=rhohv)
 
     # prepare for exit
     new_dataset = deepcopy(radar)
@@ -516,7 +530,7 @@ def process_zdr_rain(procstatus, dscfg, radar=None):
             Default 10.
         elmax : float. Dataset keyword
             maximum elevation angle where to look for precipitation [deg]
-            Default 30.
+            Default 20.
         ml_thickness : float. Dataset keyword
             assumed thickness of the melting layer. Default 700.
 
@@ -558,7 +572,7 @@ def process_zdr_rain(procstatus, dscfg, radar=None):
     if ((refl_field not in radar.fields) or
             (rhohv_field not in radar.fields) or
             (temp_field not in radar.fields)):
-        warn('Unable to estimate RhoHV in rain. Missing data')
+        warn('Unable to estimate ZDR in rain. Missing data')
         return None
 
     # default values
@@ -568,7 +582,7 @@ def process_zdr_rain(procstatus, dscfg, radar=None):
     zmax = 40.
     rhohvmin = 0.97
     phidpmax = 10.
-    elmax = 30.
+    elmax = 20.
     thickness = 700.
 
     # user defined values
@@ -604,6 +618,136 @@ def process_zdr_rain(procstatus, dscfg, radar=None):
     new_dataset.fields = dict()
 
     new_dataset.add_field('differential_reflectivity_in_rain', zdr_rain)
+
+    return new_dataset
+
+
+def process_monitoring_rhohv(procstatus, dscfg, radar=None):
+    """
+    monitoring of the 80-percentile of RhoHV in rain
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+
+    if procstatus != 1:
+        return None
+
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        if datatype == 'RhoHV_rain':
+            rhohv_field = 'cross_correlation_ratio_in_rain'
+
+    if rhohv_field not in radar.fields:
+        warn('Unable to estimate RhoHV in rain. Missing data')
+        return None
+
+    rhohv_rain = radar.fields[rhohv_field]['data']
+    rhohv_monitoring = np.ma.empty((radar.nsweeps, 1))
+    rhohv_monitoring[:] = np.ma.masked
+    npoints = np.zeros((radar.nsweeps, 1))
+    for sweep in range(radar.nsweeps):
+        sweep_start = radar.sweep_start_ray_index['data'][sweep]
+        sweep_end = radar.sweep_end_ray_index['data'][sweep]
+        quant, rhohv_monitoring[sweep, 0] = compute_quantiles_sweep(
+            rhohv_rain, sweep_start, sweep_end, quantiles=[80.])
+        npoints[sweep, 0] = np.size(
+            rhohv_rain[sweep_start:sweep_end+1, :].compressed())
+
+    rhohv_mon_dict = pyart.config.get_metadata(
+        'cross_correlation_ratio_in_rain')
+    rhohv_mon_dict['data'] = rhohv_monitoring
+
+    print(npoints)
+    print(rhohv_monitoring)
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.range['data'] = np.array([0.])
+    new_dataset.ngates = 1
+    new_dataset.nrays = radar.nsweeps
+
+    new_dataset.add_field('cross_correlation_ratio_in_rain', rhohv_mon_dict)
+
+    return new_dataset
+
+
+def process_monitoring_zdr(procstatus, dscfg, radar=None):
+    """
+    Estimate ZDR bias by observing the value of ZDR in moderate rain
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+
+    if procstatus != 1:
+        return None
+
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        if datatype == 'ZDR_rain':
+            zdr_field = 'differential_reflectivity_in_rain'
+
+    if zdr_field not in radar.fields:
+        warn('Unable to estimate ZDR bias. Missing data')
+        return None
+
+    zdr_rain = radar.fields[zdr_field]['data']
+
+    zdr_monitoring = np.ma.empty((radar.nrays, 1))
+    zdr_monitoring[:] = np.ma.masked
+    zdr_monitoring[:, 0] = np.ma.median(zdr_rain, axis=1)
+
+    zdr_mon_dict = pyart.config.get_metadata(
+        'differential_reflectivity_in_rain')
+    zdr_mon_dict['data'] = zdr_monitoring
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.range['data'] = np.array([0.])
+    new_dataset.ngates = 1
+
+    new_dataset.add_field('differential_reflectivity_in_rain', zdr_mon_dict)
 
     return new_dataset
 

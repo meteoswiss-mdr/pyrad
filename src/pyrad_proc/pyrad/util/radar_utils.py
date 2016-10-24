@@ -9,7 +9,9 @@ Miscellaneous functions dealing with radar data
 
     create_sun_hits_field
     create_sun_retrieval_field
+    compute_quantiles
     compute_quantiles_sweep
+    compute_histogram
     compute_histogram_sweep
 
 """
@@ -117,6 +119,46 @@ def create_sun_retrieval_field(par, imgcfg):
     return field
 
 
+def compute_quantiles(field, quantiles=None):
+    """
+    computes quantiles
+
+    Parameters
+    ----------
+    field : ndarray 2D
+        the radar field
+    ray_start, ray_end : int
+        starting and ending ray indexes
+    quantiles: float array
+        list of quantiles to compute
+
+    Returns
+    -------
+    quantiles : float array
+        list of quantiles
+    values : float array
+        values at each quantile
+
+    """
+    if quantiles is None:
+        quantiles = [10., 20., 30., 40., 50., 60., 70., 80., 90.]
+        warn('No quantiles have been defined. Default ' + str(quantiles) +
+             ' will be used')
+    nquantiles = len(quantiles)
+    values = np.ma.zeros(nquantiles)
+    values[:] = np.ma.masked
+
+    data_valid = field.compressed()
+    if np.size(data_valid) < 10:
+        warn('Unable to compute quantiles. Not enough valid data')
+        return quantiles, values
+
+    for i in range(nquantiles):
+        values[i] = np.percentile(data_valid, quantiles[i])
+
+    return quantiles, values
+
+
 def compute_quantiles_sweep(field, ray_start, ray_end, quantiles=None):
     """
     computes quantiles of a particular sweep
@@ -146,11 +188,46 @@ def compute_quantiles_sweep(field, ray_start, ray_end, quantiles=None):
     values = np.ma.zeros(nquantiles)
     values[:] = np.ma.masked
 
-    data_valid = field[ray_start:ray_end, :].compressed()
+    data_valid = field[ray_start:ray_end+1, :].compressed()
+    if np.size(data_valid) < 10:
+        warn('Unable to compute quantiles. Not enough valid data')
+        return quantiles, values
+
     for i in range(nquantiles):
         values[i] = np.percentile(data_valid, quantiles[i])
 
     return quantiles, values
+
+
+def compute_histogram(field, field_name, step=None):
+    """
+    computes histogram of the data
+
+    Parameters
+    ----------
+    field : ndarray 2D
+        the radar field
+    field_name: str
+        name of the field
+    step : float
+        size of bin
+
+    Returns
+    -------
+    bins : float array
+        interval of each bin
+    values : float array
+        values at each bin
+
+    """
+    vmin, vmax = pyart.config.get_field_limits(field_name)
+    if step is None:
+        step = (vmax-vmin)/50.
+        warn('No step has been defined. Default '+str(step)+' will be used')
+    bins = np.linspace(vmin, vmax, num=int((vmax-vmin)/step))
+    values = field.compressed()
+
+    return bins, values
 
 
 def compute_histogram_sweep(field, ray_start, ray_end, field_name, step=None):
@@ -181,6 +258,6 @@ def compute_histogram_sweep(field, ray_start, ray_end, field_name, step=None):
         step = (vmax-vmin)/50.
         warn('No step has been defined. Default '+str(step)+' will be used')
     bins = np.linspace(vmin, vmax, num=int((vmax-vmin)/step))
-    values = field[ray_start:ray_end, :].compressed()
+    values = field[ray_start:ray_end+1, :].compressed()
 
     return bins, values
