@@ -61,7 +61,7 @@ def main(cfgfile, starttime, endtime):
     if nvolumes == 0:
         raise Exception(
             'ERROR: Could not find any volume within the specified times ' +
-            ' for master scan '+masterscan+' and master data type ' +
+            ' for master scan '+cfg['ScanList'][0]+' and master data type ' +
             masterdatatypedescr)
     print('Number of volumes to process: '+str(nvolumes)+'\n\n')
 
@@ -372,11 +372,12 @@ def _get_masterfile_list(masterscan, datatypesdescr, starttime, endtime,
     for datatypedescr in datatypesdescr:
         datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
-        if (datagroup != 'COSMO') and (datagroup != 'RAD4ALPCOSMO'):
+        if ((datagroup != 'COSMO') and (datagroup != 'RAD4ALPCOSMO')
+                and (datagroup != 'DEM') and (datagroup != 'RAD4ALPDEM')):
             masterdatatypedescr = datatypedescr
             break
 
-    # if only data type is COSMO use dBZ as reference
+    # if data type is not radar use dBZ as reference
     if masterdatatypedescr is None:
         for datatypedescr in datatypesdescr:
             datagroup, datatype, dataset, product = (
@@ -385,6 +386,12 @@ def _get_masterfile_list(masterscan, datatypesdescr, starttime, endtime,
                 masterdatatypedescr = 'RAINBOW:dBZ'
                 break
             elif datagroup == 'RAD4ALPCOSMO':
+                masterdatatypedescr = 'RAD4ALP:dBZ'
+                break
+            elif datagroup == 'DEM':
+                masterdatatypedescr = 'RAINBOW:dBZ'
+                break
+            elif datagroup == 'RAD4ALPDEM':
                 masterdatatypedescr = 'RAD4ALP:dBZ'
                 break
 

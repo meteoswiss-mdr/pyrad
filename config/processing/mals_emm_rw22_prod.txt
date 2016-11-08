@@ -1,0 +1,147 @@
+#
+# Product generation configuration
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 6
+   reflectivity
+   ZDR
+   RhoHV
+   PhiDP
+   KDP
+   TEMP
+
+   
+reflectivity STRUCT 3
+   type     STRING RAW
+   datatype STRING dBZ
+   products STRUCT 4      
+      AZ033 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING dBZ
+      AZ037 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING dBZ
+      AZ041 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING dBZ
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING dBZ
+         
+ZDR STRUCT 3
+   type     STRING RAW
+   datatype STRING ZDR
+   products STRUCT 4      
+      AZ033 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING ZDR
+      AZ037 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING ZDR
+      AZ041 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING ZDR
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING ZDR
+         
+RhoHV STRUCT 3
+   type     STRING RAW
+   datatype STRING RhoHV
+   products STRUCT 4      
+      AZ033 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING RhoHV
+      AZ037 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING RhoHV
+      AZ041 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING RhoHV
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING RhoHV
+         
+PhiDP STRUCT 3
+   type     STRING RAW
+   datatype STRING PhiDP
+   products STRUCT 4      
+      AZ033 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING PhiDP
+      AZ037 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING PhiDP
+      AZ041 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING PhiDP
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING PhiDP
+         
+         
+KDP STRUCT 3
+   type     STRING RAW
+   datatype STRING KDP
+   products STRUCT 4      
+      AZ033 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING KDP
+      AZ037 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING KDP
+      AZ041 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING KDP
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING KDP
+         
+TEMP STRUCT 3
+   type     STRING RAW
+   datatype STRING COSMO:TEMP
+   products STRUCT 4      
+      AZ033 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING TEMP
+      AZ037 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING TEMP
+      AZ041 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING TEMP
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING TEMP

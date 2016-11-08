@@ -459,12 +459,12 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar=None):
     else:
         warn('Unknown radar antenna beamwidth.')
         beamwidth = None
-        
+
     mask_fzl, end_gate_arr = get_mask_fzl(
         radar_aux, fzl=None, doc=None, min_temp=0., thickness=400.,
-        beamwidth=beamwidth, temp_field=temp_field)    
+        beamwidth=beamwidth, temp_field=temp_field)
     mask = np.logical_or(mask, mask_refl)
-    
+
     phidp['data'] = np.ma.masked_where(mask, phidp['data'])
     fill_value = pyart.config.get_fillvalue()
     radar_aux.add_field(phidp_field, phidp, replace_existing=True)
@@ -726,6 +726,10 @@ def process_attenuation(procstatus, dscfg, radar=None):
         ATT_METHOD : float. Dataset keyword
             The attenuation estimation method used. One of the following:
             ZPhi, Philin
+        fzl : float. Dataset keyword
+            The default freezing level height. It will be used if no
+            temperature field name is specified or the temperature field is
+            not in the radar object. Default 2000.
 
     radar : Radar
         Optional. Radar object
@@ -740,6 +744,7 @@ def process_attenuation(procstatus, dscfg, radar=None):
     if procstatus != 1:
         return None
 
+    temp = None
     for datatypedescr in dscfg['datatype']:
         datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
@@ -760,24 +765,45 @@ def process_attenuation(procstatus, dscfg, radar=None):
 
     if ((phidp not in radar.fields) or
             (refl not in radar.fields) or
-            (zdr not in radar.fields) or
-            (temp not in radar.fields)):
+            (zdr not in radar.fields)):
         warn('Unable to retrieve KDP from PhiDP using least square. ' +
              'Missing data')
         return None
 
-    if dscfg['ATT_METHOD'] == 'ZPhi':
+    if (temp is not None) and (temp not in radar.fields):
+        warn('COSMO temperature field not available. ' +
+             'Using fixed freezing level height')
+
+    fzl = None
+    if (temp is None) or (temp not in radar.fields):
+        if 'fzl' in dscfg:
+            fzl = dscfg['fzl']
+        else:
+            fzl = 2000.
+            warn('Freezing level height not defined. Using default ' +
+                 str(fzl)+' m')
+
+    att_method = 'ZPhi'
+    if 'ATT_METHOD' in dscfg:
+        att_method = dscfg['ATT_METHOD']
+
+    if (att_method != 'ZPhi') and (att_method != 'Philin'):
+        raise ValueError(
+            'Unknown attenuation correction method. ' +
+            'Must be one of the following: [ZPhi, Philin]')
+
+    if att_method == 'ZPhi':
         spec_at, cor_z, spec_diff_at, cor_zdr = (
             pyart.correct.calculate_attenuation_zphi(
-                radar, doc=15, fzl=None, smooth_window_len=0, a_coef=None,
+                radar, doc=15, fzl=fzl, smooth_window_len=0, a_coef=None,
                 beta=None, c=None, d=None, refl_field=refl, phidp_field=phidp,
                 zdr_field=zdr, temp_field=temp, spec_at_field=None,
                 corr_refl_field=None, spec_diff_at_field=None,
                 corr_zdr_field=None))
-    elif dscfg['ATT_METHOD'] == 'Philin':
+    elif att_method == 'Philin':
         spec_at, cor_z, spec_diff_at, cor_zdr = (
             pyart.correct.calculate_attenuation_philinear(
-                radar, doc=None, fzl=None, pia_coef=None, pida_coef=None,
+                radar, doc=15, fzl=fzl, pia_coef=None, pida_coef=None,
                 refl_field=refl, phidp_field=phidp, zdr_field=zdr,
                 temp_field=temp, spec_at_field=None, corr_refl_field=None,
                 spec_diff_at_field=None, corr_zdr_field=None))

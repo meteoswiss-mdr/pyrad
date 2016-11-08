@@ -185,6 +185,10 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar=None):
             maximum valid PhiDP [deg]. Default 20.
         ml_thickness : float. Dataset keyword
             assumed melting layer thickness [m]. Default 700.
+        fzl : float. Dataset keyword
+            The default freezing level height. It will be used if no
+            temperature field name is specified or the temperature field is
+            not in the radar object. Default 2000.
 
     radar : Radar
         Optional. Radar object
@@ -199,6 +203,7 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar=None):
     if procstatus != 1:
         return None
 
+    temp = None
     for datatypedescr in dscfg['datatype']:
         datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
@@ -224,11 +229,23 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar=None):
     if ((refl not in radar.fields) or
             (zdr not in radar.fields) or
             (phidp not in radar.fields) or
-            (temp not in radar.fields) or
             (rhohv not in radar.fields)):
-        warn('Unable to estimate KDP and PhiDP fields ' +
-             'using selfconsistency. Missing data')
+        warn('Unable to estimate reflectivity bias using selfconsistency. ' +
+             'Missing data')
         return None
+
+    if (temp is not None) and (temp not in radar.fields):
+        warn('COSMO temperature field not available. ' +
+             'Using fixed freezing level height')
+
+    fzl = None
+    if (temp is None) or (temp not in radar.fields):
+        if 'fzl' in dscfg:
+            fzl = dscfg['fzl']
+        else:
+            fzl = 2000.
+            warn('Freezing level height not defined. Using default ' +
+                 str(fzl)+' m')
 
     fname = (
         dscfg['configpath'] + 'selfconsistency/' +
@@ -258,7 +275,7 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar=None):
 
     kdpsim, phidpsim = pyart.correct.selfconsistency_kdp_phidp(
         radar, zdr_kdpzh_table, min_rhohv=min_rhohv, max_phidp=max_phidp,
-        smooth_wind_len=smooth_wind_len, doc=None, fzl=None,
+        smooth_wind_len=smooth_wind_len, doc=15, fzl=fzl,
         thickness=ml_thickness, refl_field=refl, phidp_field=phidp,
         zdr_field=zdr, temp_field=temp, rhohv_field=rhohv,
         kdpsim_field=kdpsim_field, phidpsim_field=phidpsim_field)
@@ -316,6 +333,7 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
     if procstatus != 1:
         return None
 
+    temp = None
     for datatypedescr in dscfg['datatype']:
         datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
@@ -341,11 +359,23 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
     if ((refl not in radar.fields) or
             (zdr not in radar.fields) or
             (phidp not in radar.fields) or
-            (temp not in radar.fields) or
             (rhohv not in radar.fields)):
         warn('Unable to estimate reflectivity bias using selfconsistency. ' +
              'Missing data')
         return None
+
+    if (temp is not None) and (temp not in radar.fields):
+        warn('COSMO temperature field not available. ' +
+             'Using fixed freezing level height')
+
+    fzl = None
+    if (temp is None) or (temp not in radar.fields):
+        if 'fzl' in dscfg:
+            fzl = dscfg['fzl']
+        else:
+            fzl = 2000.
+            warn('Freezing level height not defined. Using default ' +
+                 str(fzl)+' m')
 
     # default values
     rsmooth = 1000.
@@ -383,7 +413,7 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
 
     refl_bias = pyart.correct.selfconsistency_bias(
         radar, zdr_kdpzh_table, min_rhohv=min_rhohv, max_phidp=max_phidp,
-        smooth_wind_len=smooth_wind_len, doc=None, fzl=None,
+        smooth_wind_len=smooth_wind_len, doc=15, fzl=fzl,
         thickness=ml_thickness, min_rcons=min_rcons, dphidp_min=dphidp_min,
         dphidp_max=dphidp_max, refl_field=refl, phidp_field=phidp,
         zdr_field=zdr, temp_field=temp, rhohv_field=rhohv)
@@ -426,6 +456,10 @@ def process_rhohv_rain(procstatus, dscfg, radar=None):
             Default 40.
         ml_thickness : float. Dataset keyword
             assumed thickness of the melting layer. Default 700.
+        fzl : float. Dataset keyword
+            The default freezing level height. It will be used if no
+            temperature field name is specified or the temperature field is
+            not in the radar object. Default 2000.
 
     radar : Radar
         Optional. Radar object
@@ -440,6 +474,7 @@ def process_rhohv_rain(procstatus, dscfg, radar=None):
     if procstatus != 1:
         return None
 
+    temp_field = None
     for datatypedescr in dscfg['datatype']:
         datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
@@ -455,10 +490,22 @@ def process_rhohv_rain(procstatus, dscfg, radar=None):
             temp_field = 'temperature'
 
     if ((refl_field not in radar.fields) or
-            (rhohv_field not in radar.fields) or
-            (temp_field not in radar.fields)):
+            (rhohv_field not in radar.fields)):
         warn('Unable to estimate RhoHV in rain. Missing data')
         return None
+
+    if (temp_field is not None) and (temp_field not in radar.fields):
+        warn('COSMO temperature field not available. ' +
+             'Using fixed freezing level height')
+
+    fzl = None
+    if (temp_field is None) or (temp_field not in radar.fields):
+        if 'fzl' in dscfg:
+            fzl = dscfg['fzl']
+        else:
+            fzl = 2000.
+            warn('Freezing level height not defined. Using default ' +
+                 str(fzl)+' m')
 
     # default values
     rmin = 1000.
@@ -484,7 +531,7 @@ def process_rhohv_rain(procstatus, dscfg, radar=None):
 
     rhohv_rain = pyart.correct.est_rhohv_rain(
         radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, zmin=zmin,
-        zmax=zmax, thickness=thickness, doc=None, fzl=None,
+        zmax=zmax, thickness=thickness, doc=15, fzl=fzl,
         rhohv_field=rhohv_field, temp_field=temp_field, refl_field=refl_field)
 
     # prepare for exit
@@ -533,6 +580,10 @@ def process_zdr_rain(procstatus, dscfg, radar=None):
             Default 20.
         ml_thickness : float. Dataset keyword
             assumed thickness of the melting layer. Default 700.
+        fzl : float. Dataset keyword
+            The default freezing level height. It will be used if no
+            temperature field name is specified or the temperature field is
+            not in the radar object. Default 2000.
 
     radar : Radar
         Optional. Radar object
@@ -547,6 +598,7 @@ def process_zdr_rain(procstatus, dscfg, radar=None):
     if procstatus != 1:
         return None
 
+    temp_field = None
     for datatypedescr in dscfg['datatype']:
         datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
@@ -570,10 +622,22 @@ def process_zdr_rain(procstatus, dscfg, radar=None):
             temp_field = 'temperature'
 
     if ((refl_field not in radar.fields) or
-            (rhohv_field not in radar.fields) or
-            (temp_field not in radar.fields)):
+            (rhohv_field not in radar.fields)):
         warn('Unable to estimate ZDR in rain. Missing data')
         return None
+
+    if (temp_field is not None) and (temp_field not in radar.fields):
+        warn('COSMO temperature field not available. ' +
+             'Using fixed freezing level height')
+
+    fzl = None
+    if (temp_field is None) or (temp_field not in radar.fields):
+        if 'fzl' in dscfg:
+            fzl = dscfg['fzl']
+        else:
+            fzl = 2000.
+            warn('Freezing level height not defined. Using default ' +
+                 str(fzl)+' m')
 
     # default values
     rmin = 1000.
@@ -609,7 +673,7 @@ def process_zdr_rain(procstatus, dscfg, radar=None):
     zdr_rain = pyart.correct.est_zdr_rain(
         radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, zmin=zmin,
         zmax=zmax, rhohvmin=rhohvmin, phidpmax=phidpmax, elmax=elmax,
-        thickness=thickness, doc=None, fzl=None, zdr_field=zdr_field,
+        thickness=thickness, doc=15, fzl=fzl, zdr_field=zdr_field,
         rhohv_field=rhohv_field, phidp_field=phidp_field,
         temp_field=temp_field, refl_field=refl_field)
 

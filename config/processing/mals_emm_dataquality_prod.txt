@@ -1,0 +1,491 @@
+#
+# Product generation configuration
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 13    
+    l0:dBmu
+    l0:dBmvu
+	l0:echoID
+    l1:echoFilter
+    l2:visibilityFilter
+	l1:sun_hits	
+	l3:Att_ZPhi
+    l4:monitoring_PhiDP0    
+    l4:monitoring_Zh_bias
+    l4:RhoHV_rain
+    l4:ZDR_rain    
+    l5:monitoring_RhoHV
+    l5:monitoring_ZDR
+
+
+# ==========================================================================================
+#                 secondary moments products
+# ==========================================================================================
+dBmu STRUCT 3
+    type STRING PWR
+    datatype STRARR 1
+        dBuZ
+    MAKE_GLOBAL INT 1
+#    products STRUCT 1
+#       EL003_0_BSCOPE STRUCT 3
+#         type STRING BSCOPE_IMAGE
+#         anglenr INT 1
+#         voltype STRING dBm
+         
+dBmvu STRUCT 3
+    type STRING PWR
+    datatype STRARR 1
+        dBuZv
+    MAKE_GLOBAL INT 1
+#    products STRUCT 1
+#      EL003_0_BSCOPE STRUCT 3
+#         type STRING BSCOPE_IMAGE
+#         anglenr INT 1
+#         voltype STRING dBmv
+
+
+# ==========================================================================================
+#                 echo identification
+# ==========================================================================================
+echoID STRUCT 3
+   type STRING SAN
+   datatype STRARR 4
+      dBZ
+      ZDR
+      uPhiDP
+      RhoHV
+   MAKE_GLOBAL INT 1
+#   products STRUCT 1
+#       EL003_0_BSCOPE STRUCT 3
+#         type   STRING BSCOPE_IMAGE
+#         voltype STRING echoID
+#		 anglenr INT 1
+
+
+# ==========================================================================================
+#                 clutter and noise suppression
+# ==========================================================================================
+# echo type 3 : precip, 2 : clutter, 1 : noise
+echoFilter STRUCT 4
+   type STRING ECHO_FILTER
+   datatype STRARR 4
+      dBZ
+      ZDR
+      PhiDP
+      RhoHV
+   echo_type INT 3
+   MAKE_GLOBAL INT 1
+#   products STRUCT 2
+#      EL005_7_PhiDPc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING PhiDPc
+#		 anglenr INT 2
+#      EL005_7_RhoHVc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING RhoHVc
+#		 anglenr INT 2
+#	  EL005_7_dBZc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING dBZc
+#		 anglenr INT 2
+#      EL005_7_ZDRc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING ZDRc
+#		 anglenr INT 2      
+#      EL005_7_KDPc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING KDPc
+#		 anglenr INT 2
+
+
+# ==========================================================================================
+#                 visibility filter
+# ==========================================================================================
+# echo type 3 : precip, 2 : clutter, 1 : noise
+visibilityFilter STRUCT 4
+   type STRING ECHO_FILTER
+   datatype STRARR 5
+      DEM:VIS
+      PROC:dBZc
+      PROC:ZDRc
+      PROC:PhiDPc
+      PROC:RhoHVc
+   VISmin FLOAT 90.
+   MAKE_GLOBAL INT 1
+#   products STRUCT 2
+#      EL005_7_PhiDPc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING PhiDPc
+#		 anglenr INT 2
+#      EL005_7_RhoHVc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING RhoHVc
+#		 anglenr INT 2
+#	  EL005_7_dBZc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING dBZc
+#		 anglenr INT 2
+#      EL005_7_ZDRc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING ZDRc
+#		 anglenr INT 2      
+#      EL005_7_KDPc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING KDPc
+#		 anglenr INT 2
+
+
+
+# ==========================================================================================
+#                 sun hits
+# ==========================================================================================
+sun_hits STRUCT 6
+    type STRING SUN_HITS
+    datatype STRARR 3
+        PROC:dBm
+        PROC:dBmv
+        ZDRu
+    rmin FLOAT 20000.
+    sun_hits_dir STRING SUN_HITS  # must be the same as product WRITE_SUN_HITS
+    ndays INT 1
+    products STRUCT 28
+       PWRH STRUCT 3
+         type STRING BSCOPE_IMAGE
+         anglenr INT 0
+         voltype STRING dBm
+       PWRV STRUCT 3
+         type STRING BSCOPE_IMAGE
+         anglenr INT 0
+         voltype STRING dBmv
+       ZDR STRUCT 3
+         type STRING BSCOPE_IMAGE
+         anglenr INT 0
+         voltype STRING ZDRuc
+       PWRH_POS STRUCT 3
+         type STRING BSCOPE_IMAGE
+         anglenr INT 0
+         voltype STRING sun_pos_h
+       PWRV_POS STRUCT 3
+         type STRING BSCOPE_IMAGE
+         anglenr INT 0
+         voltype STRING sun_pos_v
+       ZDR_POS STRUCT 3
+         type STRING BSCOPE_IMAGE
+         anglenr INT 0
+         voltype STRING sun_pos_zdr
+       SUN_HITS_PH STRUCT 2
+         type STRING PLOT_SUN_HITS
+         voltype STRING dBm_sun_hit
+       SUN_HITS_PV STRUCT 2
+         type STRING PLOT_SUN_HITS
+         voltype STRING dBmv_sun_hit
+       SUN_HITS_ZDR STRUCT 2
+         type STRING PLOT_SUN_HITS
+         voltype STRING ZDR_sun_hit
+       SUN_HITS STRUCT 1
+         type STRING WRITE_SUN_HITS
+       SUN_RETRIEVAL STRUCT 1
+         type STRING WRITE_SUN_RETRIEVAL
+       SUN_RETRIEVAL_PH STRUCT 2
+         type STRING PLOT_SUN_RETRIEVAL
+         voltype STRING dBm_sun_est
+       SUN_RETRIEVAL_PV STRUCT 2
+         type STRING PLOT_SUN_RETRIEVAL
+         voltype STRING dBmv_sun_est
+       SUN_RETRIEVAL_ZDR STRUCT 2
+         type STRING PLOT_SUN_RETRIEVAL
+         voltype STRING ZDR_sun_est
+       SUN_RETRIEVAL_PH_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING dBm_sun_est
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_AZ_BIAS_H_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING az_bias_h
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_EL_BIAS_H_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING el_bias_h
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_AZ_WIDTH_H_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING az_width_h
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_EL_WIDTH_H_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING el_width_h
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_NHITS_H_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING nhits_h
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_PV_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING dBmv_sun_est
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_AZ_BIAS_V_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING az_bias_v
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_EL_BIAS_V_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING el_bias_v
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_AZ_WIDTH_V_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING az_width_v
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_EL_WIDTH_V_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING el_width_v
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_NHITS_V_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING nhits_v
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_ZDR_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING ZDR_sun_est
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_NHITS_ZDR_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING nhits_zdr
+         prdid STRING SUN_RETRIEVAL
+
+# ==========================================================================================
+#                 Attenuation
+# ==========================================================================================
+Att_ZPhi STRUCT 5
+	type STRING ATTENUATION
+	datatype STRARR 3
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:PhiDPc        
+    ATT_METHOD STRING ZPhi
+	fzl FLOAT 2000.
+    MAKE_GLOBAL INT 1    
+#	products STRUCT 5
+#	  EL005_7_Ah STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING Ah
+#		 anglenr INT 2
+#      EL005_7_dBZc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING dBZc
+#		 anglenr INT 2
+#      EL005_7_ZDRc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING ZDRc
+#		 anglenr INT 2
+#      EL005_7_Adp STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING Adp
+#		 anglenr INT 2
+#      EL005_7_BSCOPE_dBZc STRUCT 3
+#         type   STRING BSCOPE_IMAGE
+#         voltype STRING dBZc
+#		 anglenr INT 2
+         
+#Att_Philin STRUCT 5
+#	type STRING ATTENUATION
+#	datatype STRARR 4
+#        PROC:dBZc
+#        PROC:ZDRc
+#        PROC:PhiDPc
+#        COSMO:TEMP
+#    MAKE_GLOBAL INT 0
+#    ATT_METHOD STRING Philin
+#	products STRUCT 4
+#	  EL005_7_Ah STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING Ah
+#		 anglenr INT 2
+#      EL005_7_dBZc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING dBZc
+#		 anglenr INT 2
+#      EL005_7_ZDRc STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING ZDRc
+#		 anglenr INT 2
+#      EL005_7_Adp STRUCT 3
+#         type   STRING PPI_IMAGE
+#         voltype STRING Adp
+#		 anglenr INT 2		 
+
+
+# ==========================================================================================
+#                 PhiDP0 monitoring
+# ========================================================================================== 
+monitoring_PhiDP0 STRUCT 9
+    type STRING PHIDP0_ESTIMATE
+    datatype STRARR 2
+        uPhiDP
+        PROC:dBZc
+    rmin FLOAT 1000.
+    rmax FLOAT 50000.
+    rcell FLOAT 1000.
+    Zmin FLOAT 20.
+    Zmax FLOAT 40.
+    MAKE_GLOBAL INT 0
+    products STRUCT 4
+      EL005_7_PhiDP0 STRUCT 3
+         type STRING BSCOPE_IMAGE
+         anglenr INT 2
+         voltype STRING PhiDP0    
+      EL005_7_PhiDP0_bin STRUCT 3
+         type STRING BSCOPE_IMAGE
+         anglenr INT 2
+         voltype STRING PhiDP0_bin
+      EL005_7_HISTOGRAM STRUCT 4
+         type STRING PPI_IMAGE
+         step FLOAT 1.
+         anglenr INT 2
+         voltype STRING PhiDP0
+      HISTOGRAM STRUCT 3
+         type STRING HISTOGRAM
+         step FLOAT 1.         
+         voltype STRING PhiDP0
+
+
+
+# ==========================================================================================
+#                 selfconsistency products
+# ==========================================================================================         
+#PhiDP_KDP_selfconsistency STRUCT 4
+#    type STRING SELFCONSISTENCY_KDP_PHIDP
+#    datatype STRARR 5
+#        PROC:dBZc
+#        PROC:ZDRc
+#        PROC:PhiDPc
+#        PROC:RhoHVc
+#        COSMO:TEMP
+#    rsmooth FLOAT 1000.
+#    products STRUCT 2
+#      EL005_7_PhiDP STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 2
+#         voltype STRING PhiDP
+#      EL005_7_KDP STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 2
+#         voltype STRING KDP
+         
+monitoring_Zh_bias STRUCT 5
+    type STRING SELFCONSISTENCY_BIAS
+    datatype STRARR 4
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:PhiDPc
+        PROC:RhoHVc        
+    fzl FLOAT 2000.
+	rsmooth FLOAT 1000.
+    products STRUCT 3
+      EL005_7 STRUCT 3
+         type STRING BSCOPE_IMAGE
+         anglenr INT 2
+         voltype STRING dBZ_bias
+      EL005_7_HISTOGRAM STRUCT 4
+         type STRING PPI_IMAGE
+         step FLOAT 0.5
+         anglenr INT 2
+         voltype STRING dBZ_bias
+      HISTOGRAM STRUCT 3
+         type STRING HISTOGRAM
+         step FLOAT 0.5         
+         voltype STRING dBZ_bias         
+
+         
+# ==========================================================================================
+#                 RhoHV in rain monitoring
+# ========================================================================================== 
+RhoHV_rain STRUCT 10
+    type STRING RHOHV_RAIN
+    datatype STRARR 2
+        PROC:RhoHVc
+        PROC:dBZc        
+    fzl FLOAT 2000.
+    rmin FLOAT 1000.
+    rmax FLOAT 50000.
+    Zmin FLOAT 20.
+    Zmax FLOAT 40.
+    ml_thickness FLOAT 700.
+    MAKE_GLOBAL INT 1
+    products STRUCT 3
+	   EL005_7 STRUCT 4
+         type STRING PPI_IMAGE
+         plot_type STRING PPI
+         voltype STRING RhoHV_rain
+		 anglenr INT 2
+       HISTOGRAM STRUCT 3
+         type STRING HISTOGRAM
+         voltype string RhoHV_rain
+         step FLOAT 0.001
+       QUANTILES STRUCT 2
+         type STRING QUANTILES
+         voltype string RhoHV_rain
+
+monitoring_RhoHV STRUCT 3
+    type STRING MONITORING_RHOHV
+    datatype STRARR 1
+        PROC:RhoHV_rain
+    products STRUCT 1
+       HISTOGRAM STRUCT 3
+         type STRING HISTOGRAM
+         step FLOAT 0.001         
+         voltype STRING RhoHV_rain
+         
+# ==========================================================================================
+#                 ZDR in rain monitoring
+# ========================================================================================== 
+ZDR_rain STRUCT 13
+    type STRING ZDR_RAIN
+    datatype STRARR 4
+        PROC:ZDRc
+        PROC:PhiDPc
+        PROC:RhoHVc
+        PROC:dBZc        
+    fzl FLOAT 2000.
+    rmin FLOAT 1000.
+    rmax FLOAT 50000.
+    Zmin FLOAT 20.
+    Zmax FLOAT 22.
+    RhoHVmin FLOAT 0.97
+    PhiDPmax FLOAT 10.
+    elmax FLOAT 20.
+    ml_thickness FLOAT 700.
+    MAKE_GLOBAL INT 1
+    products STRUCT 3
+	   EL005_7 STRUCT 4
+         type STRING PPI_IMAGE
+         plot_type STRING PPI
+         voltype STRING ZDR_rain
+		 anglenr INT 2
+       HISTOGRAM STRUCT 3
+         type STRING HISTOGRAM
+         voltype string ZDR_rain
+         step FLOAT 0.1
+       QUANTILES STRUCT 2
+         type STRING QUANTILES
+         voltype string ZDR_rain
+         
+monitoring_ZDR STRUCT 3
+    type STRING MONITORING_ZDR
+    datatype STRARR 1
+        PROC:ZDR_rain
+    products STRUCT 3
+      EL005_7 STRUCT 3
+         type STRING BSCOPE_IMAGE
+         anglenr INT 2
+         voltype STRING ZDR_rain
+      EL005_7_HISTOGRAM STRUCT 4
+         type STRING PPI_IMAGE
+         step FLOAT 0.1
+         anglenr INT 2
+         voltype STRING ZDR_rain
+      HISTOGRAM STRUCT 3
+         type STRING HISTOGRAM
+         step FLOAT 0.1         
+         voltype STRING ZDR_rain        

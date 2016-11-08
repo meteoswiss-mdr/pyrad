@@ -153,6 +153,9 @@ sun_hit_zdr = 'sun_hit_zdr'
 temperature = 'temperature'
 iso0 = 'iso0'
 
+# DEM fields
+visibility = 'visibility'
+
 # Textures
 differential_phase_texture = 'differential_phase_texture'
 cross_correlation_ratio_texture = 'cross_correlation_ratio_texture'
@@ -286,6 +289,7 @@ DEFAULT_FIELD_NAMES = {
     'specific_differential_attenuation': specific_differential_attenuation,
     'temperature': temperature,
     'iso0': iso0,
+    'visibility': visibility,
     'differential_phase_texture': differential_phase_texture,
     'cross_correlation_ratio_texture': cross_correlation_ratio_texture,
     'differential_reflectivity_texture': differential_reflectivity_texture,
@@ -912,6 +916,13 @@ DEFAULT_METADATA = {
         'standard_name': 'iso0',
         'long_name': 'Position of the range bin respect to the iso0 level',
         'coordinates': 'elevation azimuth range'},
+        
+    visibility: {
+        'units': 'percentage',
+        'standard_name': 'visibility',
+        'long_name': 'visibility',
+        'coordinates': 'elevation azimuth range'},
+        
     # Textures
     differential_phase_texture: {
         'units': 'degrees',
@@ -1658,6 +1669,8 @@ DEFAULT_FIELD_COLORMAP = {
     signal_to_noise_ratio: 'pyart_Carbone17',
     signal_to_noise_ratio_hh: 'pyart_Carbone17',
     signal_to_noise_ratio_vv: 'pyart_Carbone17',
+    
+    visibility: 'pyart_Carbone17',
 
     noisedBZ_hh: 'pyart_NWSRef',
     noisedBZ_vv: 'pyart_NWSRef',
@@ -1844,6 +1857,8 @@ DEFAULT_FIELD_LIMITS = {
 
     height: (0, 20000),
     interpolated_profile: (0, 10000),
+    
+    visibility: (0, 100),
 
     # Additional reflectivity like fields
     'CZ': (-10., 65.),

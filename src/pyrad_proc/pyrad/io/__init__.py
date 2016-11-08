@@ -22,7 +22,7 @@ Reading radar data
     :toctree: generated/
 
     get_data
-    
+
 Reading other data
 ==================
 
@@ -31,6 +31,7 @@ Reading other data
 
     read_status
     read_rad4alp_cosmo
+    read_rad4alp_vis
     read_timeseries
     get_sensor_data
     read_smn
@@ -62,8 +63,8 @@ Auxiliary functions
     get_datetime
     get_datasetfields
     get_file_list
-    get_datatypefields    
-    get_fieldname_rainbow    
+    get_datatypefields
+    get_fieldname_rainbow
     generate_field_name_str
 
 """
@@ -72,7 +73,8 @@ from .config import read_config
 
 from .read_data_radar import get_data
 
-from .read_data_other import read_status, read_rad4alp_cosmo, read_timeseries
+from .read_data_other import read_status, read_rad4alp_cosmo, read_rad4alp_vis
+from .read_data_other import read_timeseries
 from .read_data_other import get_sensor_data, read_smn, read_disdro_scattering
 from .read_data_other import read_sun_hits, read_sun_hits_multiple_days
 from .read_data_other import read_sun_retrieval

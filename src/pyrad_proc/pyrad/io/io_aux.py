@@ -318,6 +318,9 @@ def get_fieldname_pyart(datatype):
     elif datatype == 'ISO0':
         field_name = 'iso0'
 
+    elif datatype == 'VIS':
+        field_name = 'visibility'
+
     elif datatype == 'echoID':
         field_name = 'radar_echo_id'
     elif datatype == 'RR':

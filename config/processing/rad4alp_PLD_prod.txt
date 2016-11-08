@@ -5,7 +5,7 @@
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
 dataSetList STRARR 3
-    dBZ
+    dBZ    
     TEMP
     ISO0
     
@@ -34,15 +34,23 @@ dataSetList STRARR 3
 dBZ STRUCT 3
     type STRING RAW
     datatype STRING RAD4ALP:dBZ
-    products STRUCT 2
+    products STRUCT 4
       ELN00_2 STRUCT 3
          type STRING PPI_IMAGE
          anglenr INT 0
          voltype STRING dBZ
-      AZ270_0 STRUCT 3
-         type  STRING PSEUDORHI_IMAGE
-         angle FLOAT 270.
+      EL000_4 STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 1
+         voltype STRING dBZ  
+      EL001_0 STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 2
          voltype STRING dBZ
+      EL001_6 STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 3
+         voltype STRING dBZ        
 #
 #ZDR STRUCT 3
 #    type STRING RAW
@@ -97,9 +105,10 @@ TEMP STRUCT 3
          type STRING PPI_IMAGE
          anglenr INT 0
          voltype STRING TEMP
-      AZ270_0 STRUCT 3
+       AZ270_0 STRUCT 4
          type  STRING PSEUDORHI_IMAGE
          angle FLOAT 270.
+         AziTol FLOAT 1.
          voltype STRING TEMP
 
 ISO0 STRUCT 3
@@ -110,10 +119,121 @@ ISO0 STRUCT 3
          type STRING PPI_IMAGE
          anglenr INT 0
          voltype STRING ISO0
-      AZ270_0 STRUCT 3
+       AZ270_0 STRUCT 4
          type  STRING PSEUDORHI_IMAGE
          angle FLOAT 270.
+         AziTol FLOAT 1.
          voltype STRING ISO0
+         
+#VIS STRUCT 3
+#   type     STRING RAW
+#   datatype STRING RAD4ALPDEM:VIS
+#   products STRUCT 20
+#      ELN00_2 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 0
+#         voltype STRING VIS
+#      EL000_4 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 1
+#         voltype STRING VIS
+#      EL001_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 2
+#         voltype STRING VIS
+#      EL001_6 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 3
+#         voltype STRING VIS
+#      EL002_5 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 4
+#         voltype STRING VIS
+#      EL003_5 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 5
+#         voltype STRING VIS
+#      EL004_5 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 6
+#         voltype STRING VIS
+#      EL005_5 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 7
+#         voltype STRING VIS
+#      EL006_5 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 8
+#         voltype STRING VIS
+#      EL007_5 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 9
+#         voltype STRING VIS
+#      EL008_5 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 10
+#         voltype STRING VIS
+#      EL009_5 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 11
+#         voltype STRING VIS
+#      EL011_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 12
+#         voltype STRING VIS
+#      EL013_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 13
+#         voltype STRING VIS
+#      EL016_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 14
+#         voltype STRING VIS
+#      EL020_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 15
+#         voltype STRING VIS
+#      EL025_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 16
+#         voltype STRING VIS
+#      EL030_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 17
+#         voltype STRING VIS
+#      EL035_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 18
+#         voltype STRING VIS
+#      EL040_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 19
+#         voltype STRING VIS
+#
+#dBZc STRUCT 4
+#   type     STRING VIS_FILTER
+#   datatype STRARR 2
+#      RAD4ALPDEM:VIS
+#      RAD4ALP:dBZ
+#   VISmin FLOAT 50.
+#   products STRUCT 4      
+#      ELN00_2 STRUCT 3
+#         type  STRING PPI_IMAGE
+#         anglenr INT 0
+#         voltype STRING dBZc
+#      EL000_4 STRUCT 3
+#         type  STRING PPI_IMAGE
+#         anglenr INT 1
+#         voltype STRING dBZc  
+#      EL001_0 STRUCT 3
+#         type  STRING PPI_IMAGE
+#         anglenr INT 2
+#         voltype STRING dBZc
+#      EL001_6 STRUCT 3
+#         type  STRING PPI_IMAGE
+#         anglenr INT 3
+#         voltype STRING dBZc         
+         
 
 
 # ==========================================================================================

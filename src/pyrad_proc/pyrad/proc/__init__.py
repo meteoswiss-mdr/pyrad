@@ -27,6 +27,7 @@ Echo classification and filtering
     process_echo_id
     process_echo_filter
     process_filter_snr
+    process_filter_visibility
     process_hydroclass
 
 Phase processing and attenuation correction
@@ -79,7 +80,8 @@ from .process_aux import get_process_type, process_raw, process_save_radar
 from .process_aux import process_point_measurement
 
 from .process_echoclass import process_echo_id, process_echo_filter
-from .process_echoclass import process_filter_snr, process_hydroclass
+from .process_echoclass import process_filter_snr, process_filter_visibility
+from .process_echoclass import process_hydroclass
 
 from .process_phase import process_estimate_phidp0, process_correct_phidp0
 from .process_phase import process_smooth_phidp_single_window

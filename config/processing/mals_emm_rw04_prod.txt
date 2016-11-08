@@ -1,0 +1,123 @@
+#
+# Product generation configuration
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 5
+   reflectivity
+   ZDR
+   RhoHV
+   PhiDP
+   KDP
+   
+
+reflectivity STRUCT 3
+   type     STRING RAW
+   datatype STRING dBZ
+   products STRUCT 4
+      AZ213 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING dBZ
+      AZ217 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING dBZ
+      AZ221 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING dBZ
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING dBZ
+         
+ZDR STRUCT 3
+   type     STRING RAW
+   datatype STRING ZDR
+   products STRUCT 4
+      AZ213 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING ZDR
+      AZ217 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING ZDR
+      AZ221 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING ZDR
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING ZDR
+         
+RhoHV STRUCT 3
+   type     STRING RAW
+   datatype STRING RhoHV
+   products STRUCT 4
+      AZ213 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING RhoHV
+      AZ217 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING RhoHV
+      AZ221 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING RhoHV
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING RhoHV
+         
+PhiDP STRUCT 3
+   type     STRING RAW
+   datatype STRING PhiDP
+   products STRUCT 4
+      AZ213 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING PhiDP
+      AZ217 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING PhiDP
+      AZ221 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING PhiDP
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING PhiDP
+         
+KDP STRUCT 3
+   type     STRING RAW
+   datatype STRING KDP
+   products STRUCT 4
+      AZ213 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING KDP
+      AZ217 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING KDP
+      AZ221 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING KDP
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING KDP

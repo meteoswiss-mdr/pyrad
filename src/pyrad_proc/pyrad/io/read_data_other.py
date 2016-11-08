@@ -9,6 +9,7 @@ Functions for reading auxiliary data
 
     read_status
     read_rad4alp_cosmo
+    read_rad4alp_vis
     read_timeseries
     read_sun_hits_multiple_days
     read_sun_hits
@@ -112,6 +113,62 @@ def read_rad4alp_cosmo(fname, datatype):
         else:
             warn('WARNING: Unknown COSMO data type '+datatype)
             return None
+
+    except EnvironmentError:
+        warn('WARNING: Unable to read file '+fname)
+        return None
+
+
+def read_rad4alp_vis(fname, datatype):
+    """
+    Reads rad4alp visibility data binary file.
+
+    Parameters
+    ----------
+    fname : str
+        name of the file to read
+
+    datatype : str
+        name of the data type
+
+    Returns
+    -------
+    field_list : list of dictionaries
+        A data field. Each element of the list corresponds to one elevation
+
+    """
+    if datatype != 'VIS':
+        warn('WARNING: Unknown DEM data type '+datatype)
+        return None
+
+    header_size = 64
+    nel = 20
+    naz = 360
+    nr = [492, 420, 492, 324, 366, 324, 292, 324, 280, 242,
+          222, 200, 174, 150, 124, 100, 082, 068, 060, 054]
+
+    try:
+        with open(fname, 'rb') as visfile:
+            field_list = list()
+            # skip header
+            visfile.seek(header_size, os.SEEK_SET)
+
+            bindata = np.fromfile(visfile, dtype='uint8', count=-1)
+
+            sweep_start_index = 0
+            for i in range(nel):
+                sweep_end_index = sweep_start_index+naz*nr[i]-1
+                field_data = np.reshape(
+                    bindata[sweep_start_index:sweep_end_index+1],
+                    (naz, nr[i])).astype(float)
+                sweep_start_index = sweep_end_index+1
+
+                field_name = get_fieldname_pyart(datatype)
+                field = get_metadata(field_name)
+                field['data'] = field_data
+                field_list.append(field)
+
+            return field_list
 
     except EnvironmentError:
         warn('WARNING: Unable to read file '+fname)

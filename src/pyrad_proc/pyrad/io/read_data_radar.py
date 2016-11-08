@@ -9,13 +9,17 @@ Functions for reading radar data files
 
     get_data
     merge_scans_rainbow
+    merge_scans_dem
     merge_scans_rad4alp
     merge_scans_cosmo
     merge_scans_cosmo_rad4alp
+    merge_scans_dem_rad4alp
     merge_fields_rainbow
     merge_fields_cosmo
+    merge_fields_dem
     get_data_rainbow
     get_data_rad4alp
+    interpol_field
 
 """
 
@@ -25,11 +29,12 @@ import os
 from warnings import warn
 
 import numpy as np
+from scipy.interpolate import RegularGridInterpolator
 
 import pyart
 import wradlib as wrl
 
-from .read_data_other import read_status, read_rad4alp_cosmo
+from .read_data_other import read_status, read_rad4alp_cosmo, read_rad4alp_vis
 
 from .io_aux import get_datatype_metranet, get_fieldname_pyart, get_file_list
 from .io_aux import get_datatype_fields, get_datetime
@@ -61,6 +66,8 @@ def get_data(voltime, datatypesdescr, cfg):
     datatype_rad4alp = list()
     datatype_cosmo = list()
     datatype_rad4alpcosmo = list()
+    datatype_dem = list()
+    datatype_rad4alpdem = list()
     for datatypedescr in datatypesdescr:
         datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
@@ -72,11 +79,17 @@ def get_data(voltime, datatypesdescr, cfg):
             datatype_cosmo.append(datatype)
         elif datagroup == 'RAD4ALPCOSMO':
             datatype_rad4alpcosmo.append(datatype)
+        elif datagroup == 'DEM':
+            datatype_dem.append(datatype)
+        elif datagroup == 'RAD4ALPDEM':
+            datatype_rad4alpdem.append(datatype)
 
     ndatatypes_rainbow = len(datatype_rainbow)
     ndatatypes_rad4alp = len(datatype_rad4alp)
     ndatatypes_cosmo = len(datatype_cosmo)
     ndatatypes_rad4alpcosmo = len(datatype_rad4alpcosmo)
+    ndatatypes_dem = len(datatype_dem)
+    ndatatypes_rad4alpdem = len(datatype_rad4alpdem)
 
     radar = None
     if ndatatypes_rainbow > 0:
@@ -97,8 +110,21 @@ def get_data(voltime, datatypesdescr, cfg):
             radar = radar_aux
         else:
             if radar_aux is not None:
-                for field_name in radar_aux.fields.keys():
-                    radar.add_field(field_name, radar_aux.fields[field_name])
+                if ((np.allclose(
+                        radar.azimuth['data'], radar_aux.azimuth['data'],
+                        atol=0.5, equal_nan=True)) and
+                        (np.allclose(
+                            radar.elevation['data'],
+                            radar_aux.elevation['data'], atol=0.5,
+                            equal_nan=True))):
+                    for field_name in radar_aux.fields.keys():
+                        radar.add_field(
+                            field_name, radar_aux.fields[field_name])
+                else:
+                    for field_name in radar_aux.fields.keys():
+                        field_interp = interpol_field(
+                            radar, radar_aux, field_name)
+                        radar.add_field(field_name, field_interp)
 
     elif ndatatypes_rad4alpcosmo > 0:
         if (cfg['RadarRes'] is None) or (cfg['RadarName'] is None):
@@ -110,6 +136,53 @@ def get_data(voltime, datatypesdescr, cfg):
         for i in range(ndatatypes_rad4alpcosmo):
             radar_aux = merge_scans_cosmo_rad4alp(
                 voltime, datatype_rad4alpcosmo[i], cfg)
+            if radar is None:
+                radar = radar_aux
+            else:
+                if radar_aux is not None:
+                    for field_name in radar_aux.fields.keys():
+                        radar.add_field(
+                            field_name, radar_aux.fields[field_name])
+
+    # add DEM files to the radar field
+    if ndatatypes_dem > 0:
+        radar_aux = merge_scans_dem(
+            cfg['dempath'], cfg['ScanList'], datatype_dem, cfg)
+
+        if radar is None:
+            radar = radar_aux
+        else:
+            if radar_aux is not None:
+                if ((np.allclose(
+                        radar.azimuth['data'], radar_aux.azimuth['data'],
+                        atol=0.5, equal_nan=True)) and
+                        (np.allclose(
+                            radar.elevation['data'],
+                            radar_aux.elevation['data'], atol=0.5,
+                            equal_nan=True))):
+                    for field_name in radar_aux.fields.keys():
+                        radar.add_field(
+                            field_name, radar_aux.fields[field_name])
+                else:
+                    for field_name in radar_aux.fields.keys():
+                        field_interp = interpol_field(
+                            radar, radar_aux, field_name)
+                        radar.add_field(field_name, field_interp)
+
+    elif ndatatypes_rad4alpdem > 0:
+        if (cfg['RadarRes'] is None) or (cfg['RadarName'] is None):
+            raise ValueError(
+                'ERROR: Radar Name and Resolution ' +
+                'not specified in config file. ' +
+                'Unable to load rad4alp DEM data')
+
+        if cfg['RadarRes'] != 'L':
+            raise ValueError(
+                'ERROR: DEM files only available for rad4alp PL data')
+
+        for i in range(ndatatypes_rad4alpdem):
+            radar_aux = merge_scans_dem_rad4alp(
+                voltime, datatype_rad4alpdem[i], cfg)
             if radar is None:
                 radar = radar_aux
             else:
@@ -165,6 +238,42 @@ def merge_scans_rainbow(basepath, scan_list, voltime, scan_period,
 
             radar_aux = merge_fields_rainbow(
                 basepath, scan_list[i], scantime, datatype_list)
+
+            radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
+
+    return radar
+
+
+def merge_scans_dem(basepath, scan_list, datatype_list, cfg):
+    """
+    merge rainbow scans
+
+    Parameters
+    ----------
+    basepath : str
+        base path of rad4alp radar data
+    scan_list : list
+        list of scans
+    datatype_list : list
+        lists of data types to get
+    cfg : dict
+        configuration dictionary
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+    radar = merge_fields_dem(
+        basepath, scan_list[0], datatype_list)
+
+    # merge scans into a single radar instance
+    nscans = len(scan_list)
+    if nscans > 1:
+        for i in range(1, nscans):
+            radar_aux = merge_fields_dem(
+                basepath, scan_list[i], datatype_list)
 
             radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
 
@@ -292,8 +401,8 @@ def merge_scans_cosmo_rad4alp(voltime, datatype, cfg):
     ----------
     voltime: datetime object
         reference time of the scan
-    datatype_list : list
-        lists of data types to get
+    datatype : str
+        name of the data type to read
     cfg : dict
         configuration dictionary
 
@@ -315,9 +424,13 @@ def merge_scans_cosmo_rad4alp(voltime, datatype, cfg):
 
     # create the radar object where to store the data
     # taking as reference the metranet polar file
-    radar = merge_scans_rad4alp(
-        cfg['datapath'], cfg['ScanList'][0], cfg['RadarName'],
-        cfg['RadarRes'], voltime, get_datatype_metranet('dBZ'), cfg)
+    dayinfo = voltime.strftime('%y%j')
+    timeinfo = voltime.strftime('%H%M')
+    basename = 'P'+cfg['RadarRes']+cfg['RadarName']+dayinfo
+    datapath = cfg['datapath']+dayinfo+'/'+basename+'/'
+    filename = glob.glob(datapath+basename+timeinfo+'*.'+cfg['ScanList'][0])
+
+    radar = get_data_rad4alp(filename[0], ['dBZ'], cfg['ScanList'][0], cfg)
     radar.fields = dict()
 
     cosmo_field = read_rad4alp_cosmo(filename_list[0], datatype)
@@ -328,9 +441,10 @@ def merge_scans_cosmo_rad4alp(voltime, datatype, cfg):
 
     # add the other scans
     for i in range(1, len(cfg['ScanList'])):
-        radar_aux = merge_scans_rad4alp(
-            cfg['datapath'], cfg['ScanList'][i], cfg['RadarName'],
-            cfg['RadarRes'], voltime, get_datatype_metranet('dBZ'), cfg)
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*.'+cfg['ScanList'][i])
+        radar_aux = get_data_rad4alp(
+            filename[0], ['dBZ'], cfg['ScanList'][i], cfg)
         radar_aux.fields = dict()
 
         cosmo_field = read_rad4alp_cosmo(filename_list[i], datatype)
@@ -339,7 +453,65 @@ def merge_scans_cosmo_rad4alp(voltime, datatype, cfg):
 
         radar_aux.add_field(get_fieldname_pyart(datatype), cosmo_field)
 
-    radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
+        radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
+
+    return radar
+
+
+def merge_scans_dem_rad4alp(voltime, datatype, cfg):
+    """
+    merge cosmo rad4alp scans. If data for all the scans cannot be retrieved
+    returns None
+
+    Parameters
+    ----------
+    voltime: datetime object
+        reference time of the scan
+    datatype : str
+        name of the data type to read
+    cfg : dict
+        configuration dictionary
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+    # read visibility data file
+    vis_list = read_rad4alp_vis(
+        cfg['dempath']+cfg['RadarName']+'_visib_volume_40', datatype)
+    if vis_list is None:
+        return None
+
+    # create the radar object where to store the data
+    # taking as reference the metranet polar file
+    dayinfo = voltime.strftime('%y%j')
+    timeinfo = voltime.strftime('%H%M')
+    basename = 'P'+cfg['RadarRes']+cfg['RadarName']+dayinfo
+    datapath = cfg['datapath']+dayinfo+'/'+basename+'/'
+    filename = glob.glob(datapath+basename+timeinfo+'*.'+cfg['ScanList'][0])
+
+    radar = get_data_rad4alp(filename[0], ['dBZ'], cfg['ScanList'][0], cfg)
+    radar.fields = dict()
+
+    # add visibility data for first scan
+    radar.add_field(
+        get_fieldname_pyart(datatype), vis_list[int(cfg['ScanList'][0])-1])
+
+    # add the other scans
+    for i in range(1, len(cfg['ScanList'])):
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*.'+cfg['ScanList'][i])
+        radar_aux = get_data_rad4alp(
+            filename[0], ['dBZ'], cfg['ScanList'][i], cfg)
+        radar_aux.fields = dict()
+
+        radar_aux.add_field(
+            get_fieldname_pyart(datatype),
+            vis_list[int(cfg['ScanList'][i])-1])
+
+        radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
 
     return radar
 
@@ -387,6 +559,49 @@ def merge_fields_rainbow(basepath, scan_name, voltime, datatype_list):
         else:
             filename = glob.glob(datapath+fdatetime+'dBZv.*')
 
+        radar_aux = get_data_rainbow(filename[0], datatype_list[i])
+
+        for field_name in radar_aux.fields.keys():
+            break
+
+        try:
+            radar.add_field(field_name, radar_aux.fields[field_name])
+        except (ValueError, KeyError):
+            warn('Unable to add field '+field_name+' to radar object')
+
+    return radar
+
+
+def merge_fields_dem(basepath, scan_name, datatype_list):
+    """
+    merge DEM fields into a single radar object.
+
+    Parameters
+    ----------
+    basepath : str
+        name of the base path where to find the data
+    scan_name: str
+        name of the scan
+    datatype_list : list
+        lists of data types to get
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+    datapath = basepath+datatype_list[0]+'/'+scan_name
+    scan_name_aux = scan_name.partition('/')[0]
+    filename = glob.glob(datapath+datatype_list[0]+'_'+scan_name_aux)
+
+    # create radar object
+    radar = get_data_rainbow(filename[0], datatype_list[0])
+
+    # add other fields in the same scan
+    for i in range(1, len(datatype_list)):
+        datapath = basepath+datatype_list[i]+'/'+scan_name+'/'
+        filename = glob.glob(datapath+datatype_list[i]+'_'+scan_name_aux)
         radar_aux = get_data_rainbow(filename[0], datatype_list[i])
 
         for field_name in radar_aux.fields.keys():
@@ -542,3 +757,67 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg):
             radar.add_field('noisedBZ_vv', noisedBZ_v)
 
     return radar
+
+
+def interpol_field(radar_dest, radar_orig, field_name):
+    """
+    interpolates field field_name contained in radar_orig to the grid in
+    radar_dest
+
+    Parameters
+    ----------
+    radar_dest : radar object
+        the destination radar
+    radar_orig : radar object
+        the radar object containing the original field
+    field_name: str
+        name of the field to interpolate
+
+    Returns
+    -------
+    field_dest : dict
+        interpolated field and metadata
+
+    """
+    fill_value = pyart.config.get_fillvalue()
+    field_orig_data = radar_orig.fields[field_name]['data'].filled(
+        fill_value=fill_value)
+    field_dest = radar_orig.fields[field_name]
+    field_dest['data'] = np.ma.empty((radar_dest.nrays, radar_dest.ngates))
+    field_dest['data'][:] = np.ma.masked
+
+    for sweep in range(radar_dest.nsweeps):
+        sweep_start_orig = radar_orig.sweep_start_ray_index['data'][sweep]
+        sweep_end_orig = radar_orig.sweep_end_ray_index['data'][sweep]
+
+        sweep_start_dest = radar_dest.sweep_start_ray_index['data'][sweep]
+        sweep_end_dest = radar_dest.sweep_end_ray_index['data'][sweep]
+
+        if radar_dest.scan_type == 'ppi':
+            angle_old = radar_orig.azimuth['data'][
+                sweep_start_orig:sweep_end_orig+1]
+            angle_new = radar_dest.azimuth['data'][
+                sweep_start_dest:sweep_end_dest+1]
+        elif radar_dest.scan_type == 'rhi':
+            angle_old = radar_orig.elevation['data'][
+                sweep_start_orig:sweep_end_orig+1]
+            angle_new = radar_dest.elevation['data'][
+                sweep_start_dest:sweep_end_dest+1]
+
+        interpol_func = RegularGridInterpolator(
+            (angle_old, radar_orig.range['data']),
+            field_orig_data[sweep_start_orig:sweep_end_orig+1, :],
+            method='nearest', bounds_error=False, fill_value=fill_value)
+
+        # interpolate data to radar_dest grid
+        angv, rngv = np.meshgrid(
+            angle_new, radar_dest.range['data'], indexing='ij')
+
+        field_dest_sweep = interpol_func((angv, rngv))
+        field_dest_sweep = np.ma.masked_where(
+            field_dest_sweep == fill_value, field_dest_sweep)
+
+        field_dest['data'][sweep_start_dest:sweep_end_dest+1, :] = (
+            field_dest_sweep)
+
+    return field_dest

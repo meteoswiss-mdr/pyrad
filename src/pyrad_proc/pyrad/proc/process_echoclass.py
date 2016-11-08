@@ -10,6 +10,7 @@ Functions for echo classification and filtering
     process_echo_id
     process_echo_filter
     process_filter_snr
+    process_filter_visibility
     process_hydroclass
 
 """
@@ -216,20 +217,99 @@ def process_filter_snr(procstatus, dscfg, radar=None):
         warn('Unable to filter dataset according to SNR. Missing SNR field')
         return None
 
+    gatefilter = pyart.filters.snr_based_gate_filter(
+        radar, snr_field=snr_field, min_snr=dscfg['SNRmin'])
+    is_lowSNR = gatefilter.gate_excluded == 1
+
     for datatypedescr in dscfg['datatype']:
         datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
 
         if (datatype != 'SNRh') and (datatype != 'SNRv'):
             field_name = get_fieldname_pyart(datatype)
-
-            gatefilter = pyart.filters.snr_based_gate_filter(
-                radar, snr_field=snr_field, min_snr=dscfg['SNRmin'])
-            is_lowSNR = gatefilter.gate_excluded == 1
-
             radar_field = deepcopy(radar.fields[field_name])
             radar_field['data'] = np.ma.masked_where(
                 is_lowSNR, radar_field['data'])
+
+            if field_name.startswith('corrected_'):
+                new_field_name = field_name
+            elif field_name.startswith('uncorrected_'):
+                new_field_name = field_name.replace(
+                    'uncorrected_', 'corrected_', 1)
+            else:
+                new_field_name = 'corrected_'+field_name
+            new_dataset.add_field(new_field_name, radar_field)
+
+    return new_dataset
+
+
+def process_filter_visibility(procstatus, dscfg, radar=None):
+    """
+    filters out rays gates with low visibility and corrects the reflectivity
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        VISmin : float. Dataset keyword
+            The minimum visibility to keep the data.
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+
+    """
+
+    if procstatus != 1:
+        return None
+
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        if datatype == 'VIS':
+            vis_field = get_fieldname_pyart(datatype)
+            break
+
+    if vis_field not in radar.fields:
+        warn('Unable to filter dataset according to visibility. ' +
+             'Missing visibility field')
+        return None
+
+    gatefilter = pyart.filters.visibility_based_gate_filter(
+        radar, vis_field=vis_field, min_vis=dscfg['VISmin'])
+    is_lowVIS = gatefilter.gate_excluded == 1
+
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+
+        if datatype != 'VIS':
+            field_name = get_fieldname_pyart(datatype)
+            radar_aux = deepcopy(radar)
+            radar_aux.fields[field_name]['data'] = np.ma.masked_where(
+                is_lowVIS, radar_aux.fields[field_name]['data'])
+
+            if ((datatype == 'dBZ') or (datatype == 'dBZc') or
+                    (datatype == 'dBuZ') or (datatype == 'dBZv') or
+                    (datatype == 'dBZvc') or (datatype == 'dBuZv')):
+                radar_field = pyart.correct.correct_visibility(
+                    radar_aux, vis_field=vis_field, field_name=field_name)
+            else:
+                radar_field = radar_aux.fields[field_name]
 
             if field_name.startswith('corrected_'):
                 new_field_name = field_name

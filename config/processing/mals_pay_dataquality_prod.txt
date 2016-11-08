@@ -5,9 +5,9 @@
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
 dataSetList STRARR 3    
-    l2:dBmu
-    l2:dBmvu
-    l3:sun_hits
+    l0:dBmu
+    l0:dBmvu
+    l1:sun_hits
 
 # ==========================================================================================
 #                 raw data products

@@ -70,6 +70,8 @@ def get_process_type(dataset_type):
         func_name = 'process_echo_filter'
     elif dataset_type == 'SNR_FILTER':
         func_name = 'process_filter_snr'
+    elif dataset_type == 'VIS_FILTER':
+        func_name = 'process_filter_visibility'
     elif dataset_type == 'PHIDP0_ESTIMATE':
         func_name = 'process_estimate_phidp0'
     elif dataset_type == 'PHIDP0_CORRECTION':
