@@ -19,6 +19,7 @@ Functions for reading radar data files
     merge_fields_dem
     get_data_rainbow
     get_data_rad4alp
+    add_field
     interpol_field
 
 """
@@ -105,26 +106,7 @@ def get_data(voltime, datatypesdescr, cfg):
     # add COSMO files to the radar field
     if ndatatypes_cosmo > 0:
         radar_aux = merge_scans_cosmo(voltime, datatype_cosmo, cfg)
-
-        if radar is None:
-            radar = radar_aux
-        else:
-            if radar_aux is not None:
-                if ((np.allclose(
-                        radar.azimuth['data'], radar_aux.azimuth['data'],
-                        atol=0.5, equal_nan=True)) and
-                        (np.allclose(
-                            radar.elevation['data'],
-                            radar_aux.elevation['data'], atol=0.5,
-                            equal_nan=True))):
-                    for field_name in radar_aux.fields.keys():
-                        radar.add_field(
-                            field_name, radar_aux.fields[field_name])
-                else:
-                    for field_name in radar_aux.fields.keys():
-                        field_interp = interpol_field(
-                            radar, radar_aux, field_name)
-                        radar.add_field(field_name, field_interp)
+        radar = add_field(radar, radar_aux)
 
     elif ndatatypes_rad4alpcosmo > 0:
         if (cfg['RadarRes'] is None) or (cfg['RadarName'] is None):
@@ -148,26 +130,7 @@ def get_data(voltime, datatypesdescr, cfg):
     if ndatatypes_dem > 0:
         radar_aux = merge_scans_dem(
             cfg['dempath'], cfg['ScanList'], datatype_dem, cfg)
-
-        if radar is None:
-            radar = radar_aux
-        else:
-            if radar_aux is not None:
-                if ((np.allclose(
-                        radar.azimuth['data'], radar_aux.azimuth['data'],
-                        atol=0.5, equal_nan=True)) and
-                        (np.allclose(
-                            radar.elevation['data'],
-                            radar_aux.elevation['data'], atol=0.5,
-                            equal_nan=True))):
-                    for field_name in radar_aux.fields.keys():
-                        radar.add_field(
-                            field_name, radar_aux.fields[field_name])
-                else:
-                    for field_name in radar_aux.fields.keys():
-                        field_interp = interpol_field(
-                            radar, radar_aux, field_name)
-                        radar.add_field(field_name, field_interp)
+        radar = add_field(radar, radar_aux)
 
     elif ndatatypes_rad4alpdem > 0:
         if (cfg['RadarRes'] is None) or (cfg['RadarName'] is None):
@@ -757,6 +720,54 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg):
             radar.add_field('noisedBZ_vv', noisedBZ_v)
 
     return radar
+
+
+def add_field(radar_dest, radar_orig):
+    """
+    adds the fields from orig radar into dest radar. If they are not in the
+    same grid, interpolates them to dest grid
+
+    Parameters
+    ----------
+    radar_dest : radar object
+        the destination radar
+    radar_orig : radar object
+        the radar object containing the original field
+
+    Returns
+    -------
+    field_dest : dict
+        interpolated field and metadata
+
+    """
+    if radar_dest is None:
+        radar_dest = radar_orig
+    else:
+        if radar_orig is not None:
+            if radar_dest.nrays == radar_orig.nrays:
+                if ((np.allclose(
+                        radar_dest.azimuth['data'],
+                        radar_orig.azimuth['data'],
+                        atol=0.5, equal_nan=True)) and
+                        (np.allclose(
+                            radar_dest.elevation['data'],
+                            radar_orig.elevation['data'],
+                            atol=0.5, equal_nan=True))):
+                    for field_name in radar_orig.fields.keys():
+                        radar_dest.add_field(
+                            field_name, radar_orig.fields[field_name])
+                else:
+                    for field_name in radar_orig.fields.keys():
+                        field_interp = interpol_field(
+                            radar_dest, radar_orig, field_name)
+                        radar_dest.add_field(field_name, field_interp)
+            else:
+                for field_name in radar_orig.fields.keys():
+                    field_interp = interpol_field(
+                        radar_dest, radar_orig, field_name)
+                    radar_dest.add_field(field_name, field_interp)
+
+    return radar_dest
 
 
 def interpol_field(radar_dest, radar_orig, field_name):

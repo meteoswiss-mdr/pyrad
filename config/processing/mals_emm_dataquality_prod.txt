@@ -105,7 +105,7 @@ echoFilter STRUCT 4
 # ==========================================================================================
 # echo type 3 : precip, 2 : clutter, 1 : noise
 visibilityFilter STRUCT 4
-   type STRING ECHO_FILTER
+   type STRING VIS_FILTER
    datatype STRARR 5
       DEM:VIS
       PROC:dBZc
@@ -114,28 +114,23 @@ visibilityFilter STRUCT 4
       PROC:RhoHVc
    VISmin FLOAT 90.
    MAKE_GLOBAL INT 1
-#   products STRUCT 2
-#      EL005_7_PhiDPc STRUCT 3
+#   products STRUCT 4
+#      EL000_7_dBZc STRUCT 3
 #         type   STRING PPI_IMAGE
-#         voltype STRING PhiDPc
-#		 anglenr INT 2
-#      EL005_7_RhoHVc STRUCT 3
+#         voltype STRING dBZc
+#		 anglenr INT 0
+#      EL003_0_dBZc STRUCT 3
 #         type   STRING PPI_IMAGE
-#         voltype STRING RhoHVc
-#		 anglenr INT 2
-#	  EL005_7_dBZc STRUCT 3
+#         voltype STRING dBZc
+#		 anglenr INT 1  
+#      EL005_4_dBZc STRUCT 3
 #         type   STRING PPI_IMAGE
 #         voltype STRING dBZc
 #		 anglenr INT 2
-#      EL005_7_ZDRc STRUCT 3
+#      EL008_2_dBZc STRUCT 3
 #         type   STRING PPI_IMAGE
-#         voltype STRING ZDRc
-#		 anglenr INT 2      
-#      EL005_7_KDPc STRUCT 3
-#         type   STRING PPI_IMAGE
-#         voltype STRING KDPc
-#		 anglenr INT 2
-
+#         voltype STRING dBZc
+#		 anglenr INT 3
 
 
 # ==========================================================================================
