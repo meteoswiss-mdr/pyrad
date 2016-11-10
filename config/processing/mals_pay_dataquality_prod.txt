@@ -256,8 +256,8 @@ sun_hits STRUCT 6
         ZDRu
     rmin FLOAT 20000.
     sun_hits_dir STRING SUN_HITS  # must be the same as product WRITE_SUN_HITS
-    ndays INT 5
-    products STRUCT 28
+    ndays INT 1
+    products STRUCT 30
        PWRH STRUCT 3
          type STRING BSCOPE_IMAGE
          anglenr INT 0
@@ -269,7 +269,7 @@ sun_hits STRUCT 6
        ZDR STRUCT 3
          type STRING BSCOPE_IMAGE
          anglenr INT 0
-         voltype STRING ZDRuc
+         voltype STRING ZDRu
        PWRH_POS STRUCT 3
          type STRING BSCOPE_IMAGE
          anglenr INT 0
@@ -297,7 +297,7 @@ sun_hits STRUCT 6
          type STRING WRITE_SUN_RETRIEVAL
        SUN_RETRIEVAL_PH STRUCT 2
          type STRING PLOT_SUN_RETRIEVAL
-         voltype STRING dBm_sun_est
+         voltype STRING dBm_sun_est       
        SUN_RETRIEVAL_PV STRUCT 2
          type STRING PLOT_SUN_RETRIEVAL
          voltype STRING dBmv_sun_est
@@ -307,6 +307,10 @@ sun_hits STRUCT 6
        SUN_RETRIEVAL_PH_TS STRUCT 3
          type STRING PLOT_SUN_RETRIEVAL_TS
          voltype STRING dBm_sun_est
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_RX_BIAS_H_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING rx_bias_h
          prdid STRING SUN_RETRIEVAL
        SUN_RETRIEVAL_AZ_BIAS_H_TS STRUCT 3
          type STRING PLOT_SUN_RETRIEVAL_TS
@@ -331,6 +335,10 @@ sun_hits STRUCT 6
        SUN_RETRIEVAL_PV_TS STRUCT 3
          type STRING PLOT_SUN_RETRIEVAL_TS
          voltype STRING dBmv_sun_est
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_RX_BIAS_V_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING rx_bias_v
          prdid STRING SUN_RETRIEVAL
        SUN_RETRIEVAL_AZ_BIAS_V_TS STRUCT 3
          type STRING PLOT_SUN_RETRIEVAL_TS

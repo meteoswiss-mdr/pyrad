@@ -7,6 +7,7 @@ Miscellaneous functions dealing with radar data
 .. autosummary::
     :toctree: generated/
 
+    get_closest_solar_flux
     create_sun_hits_field
     create_sun_retrieval_field
     compute_quantiles
@@ -20,6 +21,51 @@ from warnings import warn
 import numpy as np
 
 import pyart
+
+
+def get_closest_solar_flux(hit_datetime_list, flux_datetime_list,
+                           flux_value_list):
+    """
+    finds the solar flux measurement closest to the sun hit
+
+    Parameters
+    ----------
+    hit_datetime_list : datetime array
+        the date and time of the sun hit
+    flux_datetime_list : datetime array
+        the date and time of the solar flux measurement
+    flux_value_list: ndarray 1D
+        the solar flux values
+
+    Returns
+    -------
+    flux_datetime_closest_list : datetime array
+        the date and time of the solar flux measurement closest to sun hit
+    flux_value_closest_list : ndarray 1D
+        the solar flux values closest to the sun hit time
+
+    """
+    flux_datetime_closest_list = list()
+    flux_value_closest_list = np.ma.empty(len(hit_datetime_list))
+    flux_value_closest_list[:] = np.ma.masked
+
+    i = 0
+    for datetime in hit_datetime_list:
+        flux_datetime_closest = min(
+            flux_datetime_list, key=lambda x: abs(x-datetime))
+        flux_datetime_closest_list.append(flux_datetime_closest)
+
+        # solar flux observation within 24h of sun hit
+        time_diff = abs(flux_datetime_closest-datetime).total_seconds()
+        if time_diff < 86400.:
+            flux_value_closest_list[i] = flux_value_list[
+                flux_datetime_list == flux_datetime_closest]
+        else:
+            warn('Nearest solar flux observation further than ' +
+                 str(time_diff)+' s in time')
+        i += 1
+
+    return flux_datetime_closest_list, flux_value_closest_list
 
 
 def create_sun_hits_field(rad_el, rad_az, sun_el, sun_az, data, imgcfg):

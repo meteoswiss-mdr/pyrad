@@ -4,7 +4,7 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 13    
+dataSetList STRARR 13
     l0:dBmu
     l0:dBmvu
 	l0:echoID
@@ -145,7 +145,7 @@ sun_hits STRUCT 6
     rmin FLOAT 20000.
     sun_hits_dir STRING SUN_HITS  # must be the same as product WRITE_SUN_HITS
     ndays INT 1
-    products STRUCT 28
+    products STRUCT 30
        PWRH STRUCT 3
          type STRING BSCOPE_IMAGE
          anglenr INT 0
@@ -157,7 +157,7 @@ sun_hits STRUCT 6
        ZDR STRUCT 3
          type STRING BSCOPE_IMAGE
          anglenr INT 0
-         voltype STRING ZDRuc
+         voltype STRING ZDRu
        PWRH_POS STRUCT 3
          type STRING BSCOPE_IMAGE
          anglenr INT 0
@@ -196,6 +196,10 @@ sun_hits STRUCT 6
          type STRING PLOT_SUN_RETRIEVAL_TS
          voltype STRING dBm_sun_est
          prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_RX_BIAS_H_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING rx_bias_h
+         prdid STRING SUN_RETRIEVAL
        SUN_RETRIEVAL_AZ_BIAS_H_TS STRUCT 3
          type STRING PLOT_SUN_RETRIEVAL_TS
          voltype STRING az_bias_h
@@ -219,6 +223,10 @@ sun_hits STRUCT 6
        SUN_RETRIEVAL_PV_TS STRUCT 3
          type STRING PLOT_SUN_RETRIEVAL_TS
          voltype STRING dBmv_sun_est
+         prdid STRING SUN_RETRIEVAL
+       SUN_RETRIEVAL_RX_BIAS_V_TS STRUCT 3
+         type STRING PLOT_SUN_RETRIEVAL_TS
+         voltype STRING rx_bias_v
          prdid STRING SUN_RETRIEVAL
        SUN_RETRIEVAL_AZ_BIAS_V_TS STRUCT 3
          type STRING PLOT_SUN_RETRIEVAL_TS
@@ -396,7 +404,7 @@ monitoring_Zh_bias STRUCT 5
 # ==========================================================================================
 #                 RhoHV in rain monitoring
 # ========================================================================================== 
-RhoHV_rain STRUCT 10
+RhoHV_rain STRUCT 9
     type STRING RHOHV_RAIN
     datatype STRARR 2
         PROC:RhoHVc
@@ -408,19 +416,19 @@ RhoHV_rain STRUCT 10
     Zmax FLOAT 40.
     ml_thickness FLOAT 700.
     MAKE_GLOBAL INT 1
-    products STRUCT 3
-	   EL005_7 STRUCT 4
-         type STRING PPI_IMAGE
-         plot_type STRING PPI
-         voltype STRING RhoHV_rain
-		 anglenr INT 2
-       HISTOGRAM STRUCT 3
-         type STRING HISTOGRAM
-         voltype string RhoHV_rain
-         step FLOAT 0.001
-       QUANTILES STRUCT 2
-         type STRING QUANTILES
-         voltype string RhoHV_rain
+#    products STRUCT 3
+#	   EL005_7 STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING PPI
+#         voltype STRING RhoHV_rain
+#		 anglenr INT 2
+#       HISTOGRAM STRUCT 3
+#         type STRING HISTOGRAM
+#         voltype string RhoHV_rain
+#         step FLOAT 0.001
+#       QUANTILES STRUCT 2
+#         type STRING QUANTILES
+#         voltype string RhoHV_rain
 
 monitoring_RhoHV STRUCT 3
     type STRING MONITORING_RHOHV
@@ -435,7 +443,7 @@ monitoring_RhoHV STRUCT 3
 # ==========================================================================================
 #                 ZDR in rain monitoring
 # ========================================================================================== 
-ZDR_rain STRUCT 13
+ZDR_rain STRUCT 12
     type STRING ZDR_RAIN
     datatype STRARR 4
         PROC:ZDRc
@@ -452,20 +460,20 @@ ZDR_rain STRUCT 13
     elmax FLOAT 20.
     ml_thickness FLOAT 700.
     MAKE_GLOBAL INT 1
-    products STRUCT 3
-	   EL005_7 STRUCT 4
-         type STRING PPI_IMAGE
-         plot_type STRING PPI
-         voltype STRING ZDR_rain
-		 anglenr INT 2
-       HISTOGRAM STRUCT 3
-         type STRING HISTOGRAM
-         voltype string ZDR_rain
-         step FLOAT 0.1
-       QUANTILES STRUCT 2
-         type STRING QUANTILES
-         voltype string ZDR_rain
-         
+#    products STRUCT 3
+#	   EL005_7 STRUCT 4
+#         type STRING PPI_IMAGE
+#         plot_type STRING PPI
+#         voltype STRING ZDR_rain
+#		 anglenr INT 2
+#       HISTOGRAM STRUCT 3
+#         type STRING HISTOGRAM
+#         voltype string ZDR_rain
+#         step FLOAT 0.1
+#       QUANTILES STRUCT 2
+#         type STRING QUANTILES
+#         voltype string ZDR_rain
+#         
 monitoring_ZDR STRUCT 3
     type STRING MONITORING_ZDR
     datatype STRARR 1

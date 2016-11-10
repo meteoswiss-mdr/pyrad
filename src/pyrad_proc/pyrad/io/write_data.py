@@ -229,6 +229,8 @@ def write_sun_retrieval(sun_retrieval, fname):
         fill_value=get_fillvalue())
     std_zdr_sun_est = sun_retrieval['std(ZDR_sun_est)'].filled(
         fill_value=get_fillvalue())
+    dBm_sun_ref = sun_retrieval['dBm_sun_ref'].filled(
+        fill_value=get_fillvalue())
 
     filelist = glob.glob(fname)
     if len(filelist) == 0:
@@ -239,17 +241,20 @@ def write_sun_retrieval(sun_retrieval, fname):
             csvfile.write('#\n')
 
             fieldnames = [
-                'time',
+                'first_hit_time', 'last_hit_time',
                 'nhits_h', 'el_width_h', 'az_width_h',
                 'el_bias_h', 'az_bias_h', 'dBm_sun_est', 'std(dBm_sun_est)',
                 'nhits_v', 'el_width_v', 'az_width_v',
                 'el_bias_v', 'az_bias_v', 'dBmv_sun_est', 'std(dBmv_sun_est)',
-                'nhits_zdr', 'ZDR_sun_est', 'std(ZDR_sun_est)']
+                'nhits_zdr', 'ZDR_sun_est', 'std(ZDR_sun_est)', 'dBm_sun_ref']
 
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
             writer.writerow(
-                {'time': sun_retrieval['time'].strftime('%Y%m%d'),
+                {'first_hit_time': sun_retrieval['first_hit_time'].strftime(
+                    '%Y%m%d%H%M%S'),
+                 'last_hit_time': sun_retrieval['last_hit_time'].strftime(
+                    '%Y%m%d%H%M%S'),
                  'nhits_h': sun_retrieval['nhits_h'],
                  'el_width_h': el_width_h,
                  'az_width_h': az_width_h,
@@ -266,21 +271,25 @@ def write_sun_retrieval(sun_retrieval, fname):
                  'std(dBmv_sun_est)': std_dBmv_sun_est,
                  'nhits_zdr': sun_retrieval['nhits_zdr'],
                  'ZDR_sun_est': zdr_sun_est,
-                 'std(ZDR_sun_est)': std_zdr_sun_est})
+                 'std(ZDR_sun_est)': std_zdr_sun_est,
+                 'dBm_sun_ref': dBm_sun_ref})
             csvfile.close()
     else:
         with open(fname, 'a', newline='') as csvfile:
             fieldnames = [
-                'time',
+                'first_hit_time', 'last_hit_time',
                 'nhits_h', 'el_width_h', 'az_width_h',
                 'el_bias_h', 'az_bias_h', 'dBm_sun_est', 'std(dBm_sun_est)',
                 'nhits_v', 'el_width_v', 'az_width_v',
                 'el_bias_v', 'az_bias_v', 'dBmv_sun_est', 'std(dBmv_sun_est)',
-                'nhits_zdr', 'ZDR_sun_est', 'std(ZDR_sun_est)']
+                'nhits_zdr', 'ZDR_sun_est', 'std(ZDR_sun_est)', 'dBm_sun_ref']
 
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writerow(
-                {'time': sun_retrieval['time'].strftime('%Y%m%d'),
+                {'first_hit_time': sun_retrieval['first_hit_time'].strftime(
+                    '%Y%m%d%H%M%S'),
+                 'last_hit_time': sun_retrieval['last_hit_time'].strftime(
+                    '%Y%m%d%H%M%S'),
                  'nhits_h': sun_retrieval['nhits_h'],
                  'el_width_h': el_width_h,
                  'az_width_h': az_width_h,
@@ -297,7 +306,8 @@ def write_sun_retrieval(sun_retrieval, fname):
                  'std(dBmv_sun_est)': std_dBmv_sun_est,
                  'nhits_zdr': sun_retrieval['nhits_zdr'],
                  'ZDR_sun_est': zdr_sun_est,
-                 'std(ZDR_sun_est)': std_zdr_sun_est})
+                 'std(ZDR_sun_est)': std_zdr_sun_est,
+                 'dBm_sun_ref': dBm_sun_ref})
             csvfile.close()
 
     return fname

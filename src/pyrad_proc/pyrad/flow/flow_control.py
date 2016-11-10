@@ -67,12 +67,15 @@ def main(cfgfile, starttime, endtime):
 
     # initial processing of the datasets
     print('\n\nInitializing datasets:')
+
+    dscfg = dict()
     for level in sorted(dataset_levels):
         print('\nProcess level: '+level)
         for dataset in dataset_levels[level]:
             print('Processing dataset: '+dataset)
-            result = _process_dataset(cfg, dataset, proc_status=0, radar=None,
-                                      voltime=None)
+            dscfg.update({dataset: _create_dscfg_dict(cfg, dataset)})
+            result = _process_dataset(
+                cfg, dscfg[dataset], proc_status=0, radar=None, voltime=None)
 
     # process all data files in file list
     for masterfile in masterfilelist:
@@ -87,8 +90,9 @@ def main(cfgfile, starttime, endtime):
             print('\nProcess level: '+level)
             for dataset in dataset_levels[level]:
                 print('Processing dataset: '+dataset)
-                result = _process_dataset(cfg, dataset, proc_status=1,
-                                          radar=radar, voltime=voltime)
+                result = _process_dataset(
+                    cfg, dscfg[dataset], proc_status=1, radar=radar,
+                    voltime=voltime)
 
     # post-processing of the datasets
     print('\n\nPost-processing datasets')
@@ -96,10 +100,56 @@ def main(cfgfile, starttime, endtime):
         print('\nProcess level: '+level)
         for dataset in dataset_levels[level]:
             print('Processing dataset: '+dataset)
-            result = _process_dataset(cfg, dataset, proc_status=2, radar=None,
-                                      voltime=voltime)
+            result = _process_dataset(
+                cfg, dscfg[dataset], proc_status=2, radar=None,
+                voltime=voltime)
 
     print('\n\n\nThis is the end my friend! See you soon!')
+
+
+def _process_dataset(cfg, dscfg, proc_status=0, radar=None, voltime=None):
+    """
+    processes a dataset
+
+    Parameters
+    ----------
+    cfg : dict
+        configuration dictionary
+    dscfg : dict
+        dataset specific configuration dictionary
+    proc_status : int
+        status of the processing 0: Initialization 1: process of radar volume
+        2: Final processing
+    radar : radar object
+        radar object containing the data to be processed
+    voltime : datetime object
+        reference time of the radar
+
+    Returns
+    -------
+    0 if a new dataset has been created. None otherwise
+
+    """
+    dscfg['timeinfo'] = voltime
+    proc_func_name, dsformat = get_process_type(dscfg['type'])
+    proc_func = getattr(proc, proc_func_name)
+    new_dataset = proc_func(proc_status, dscfg, radar=radar)
+    if new_dataset is None:
+        return None
+
+    result = _add_dataset(
+        new_dataset, radar, make_global=dscfg['MAKE_GLOBAL'])
+
+    # create the data set products
+    if 'products' in dscfg:
+        for product in dscfg['products']:
+            prdcfg = _create_prdcfg_dict(
+                cfg, dscfg['dsname'], product, voltime=voltime)
+            prod_func_name = get_product_type(dsformat)
+            prod_func = getattr(prod, prod_func_name)
+            result = prod_func(new_dataset, prdcfg)
+
+    return 0
 
 
 def _create_cfg_dict(cfgfile):
@@ -131,6 +181,8 @@ def _create_cfg_dict(cfgfile):
         cfg.update({'smnpath': None})
     if 'disdropath' not in cfg:
         cfg.update({'disdropath': None})
+    if 'solarfluxpath' not in cfg:
+        cfg.update({'solarfluxpath': None})
     if 'loadbasepath' not in cfg:
         cfg.update({'loadbasepath': None})
     if 'loadname' not in cfg:
@@ -147,6 +199,8 @@ def _create_cfg_dict(cfgfile):
         cfg.update({'radconsth': None})
     if 'radconstv' not in cfg:
         cfg.update({'radconstv': None})
+    if 'AntennaGain' not in cfg:
+        cfg.update({'AntennaGain': None})
     if 'attg' not in cfg:
         cfg.update({'attg': None})
     if 'ScanPeriod' not in cfg:
@@ -219,19 +273,25 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
     """
     dscfg = cfg[dataset]
     dscfg.update({'configpath': cfg['configpath']})
+    dscfg.update({'solarfluxpath': cfg['solarfluxpath']})
     dscfg.update({'mflossh': cfg['mflossh']})
     dscfg.update({'mflossv': cfg['mflossv']})
     dscfg.update({'radconsth': cfg['radconsth']})
     dscfg.update({'radconstv': cfg['radconstv']})
+    dscfg.update({'AntennaGain': cfg['AntennaGain']})
     dscfg.update({'attg': cfg['attg']})
 
     dscfg.update({'basepath': cfg['saveimgbasepath']})
     dscfg.update({'procname': cfg['name']})
     dscfg.update({'dsname': dataset})
+    dscfg.update({'timeinfo': None})
+
+    # indicates the dataset has been initialized and aux data is available
+    dscfg.update({'initialized': 0})
+    dscfg.update({'global_data': None})
+
     if 'MAKE_GLOBAL' not in dscfg:
-            dscfg.update({'MAKE_GLOBAL': 0})
-    if voltime is not None:
-        dscfg.update({'timeinfo': voltime})
+        dscfg.update({'MAKE_GLOBAL': 0})
 
     return dscfg
 
@@ -430,49 +490,4 @@ def _add_dataset(new_dataset, radar, make_global=True):
         radar.add_field(
             field, new_dataset.fields[field],
             replace_existing=True)
-    return 0
-
-
-def _process_dataset(cfg, dataset, proc_status=0, radar=None, voltime=None):
-    """
-    processes a dataset
-
-    Parameters
-    ----------
-    cfg : dict
-        configuration dictionary
-    dataset : str
-        name of the dataset to be processed
-    proc_status : int
-        status of the processing 0: Initialization 1: process of radar volume
-        2: Final processing
-    radar : radar object
-        radar object containing the data to be processed
-    voltime : datetime object
-        reference time of the radar
-
-    Returns
-    -------
-    0 if a new dataset has been created. None otherwise
-
-    """
-    dscfg = _create_dscfg_dict(cfg, dataset, voltime=voltime)
-    proc_func_name, dsformat = get_process_type(dscfg['type'])
-    proc_func = getattr(proc, proc_func_name)
-    new_dataset = proc_func(proc_status, dscfg, radar=radar)
-    if new_dataset is None:
-        return None
-
-    result = _add_dataset(
-        new_dataset, radar, make_global=dscfg['MAKE_GLOBAL'])
-
-    # create the data set products
-    if 'products' in cfg[dataset]:
-        for product in cfg[dataset]['products']:
-            prdcfg = _create_prdcfg_dict(
-                cfg, dataset, product, voltime=voltime)
-            prod_func_name = get_product_type(dsformat)
-            prod_func = getattr(prod, prod_func_name)
-            result = prod_func(new_dataset, prdcfg)
-
     return 0

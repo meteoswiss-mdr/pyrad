@@ -18,11 +18,8 @@ CosmoRunFreq INT 3
 # hours forecasted in cosmo run [h]
 CosmoForecasted INT 7
 
-# antenna beamwidth
-RadarBeamwidth FLOAT 1.35
-
-# antenna gain
-#AntennaGaindB FLOAT 42.2
+# antenna gain [dB]
+AntennaGain FLOAT 42.2
 
 # Image config
 ppiImageConfig STRUCT 6

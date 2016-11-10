@@ -28,9 +28,9 @@ import pyart
 
 from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 from ..io.read_data_other import read_selfconsistency
-from ..io.read_data_other import read_sun_hits_multiple_days
+from ..io.read_data_other import read_sun_hits_multiple_days, read_solar_flux
 
-from ..util.radar_utils import compute_quantiles_sweep
+from ..util.radar_utils import compute_quantiles_sweep, get_closest_solar_flux
 
 
 def process_correct_bias(procstatus, dscfg, radar=None):
@@ -897,6 +897,42 @@ def process_sun_hits(procstatus, dscfg, radar=None):
             warn('Unable to get sun hits. Missing data')
             return None
 
+        # initialize dataset
+        if dscfg['initialized'] == 0:
+            radar_par = dict()
+            if 'frequency' in radar.instrument_parameters:
+                radar_par.update(
+                    {'wavelen': (
+                        3e8 /
+                        radar.instrument_parameters['frequency']['data'][0])})
+            else:
+                warn('Radar frequency unknown.')
+            if 'radar_beam_width_h' in radar.instrument_parameters:
+                radar_par.update(
+                    {'beamwidth': (
+                        radar.instrument_parameters[
+                            'radar_beam_width_h']['data'][0])})
+            elif 'radar_beam_width_v' in radar.instrument_parameters:
+                radar_par.update(
+                    {'beamwidth': (
+                        radar.instrument_parameters[
+                            'radar_beam_width_v']['data'][0])})
+            else:
+                warn('Antenna beam width unknown.')
+            if 'pulse_width' in radar.instrument_parameters:
+                radar_par.update(
+                    {'pulse_width': (
+                        radar.instrument_parameters[
+                            'pulse_width']['data'][0])})
+            else:
+                warn('Pulse width unknown.')
+            if radar.ray_angle_res is not None:
+                radar_par.update(
+                    {'angle_step': (radar.ray_angle_res['data'][0])})
+
+            dscfg['global_data'] = radar_par
+            dscfg['initialized'] = 1
+
         # default values
         rmin = 20.
         delev_max = 1.5
@@ -964,16 +1000,50 @@ def process_sun_hits(procstatus, dscfg, radar=None):
         if sun_hits[0] is None:
             return None
 
+        sun_pwr_h = sun_hits[7]
+        sun_pwr_v = sun_hits[11]
+
+        if (('pulse_width' in dscfg['global_data']) and
+                ('wavelen' in dscfg['global_data']) and
+                ('angle_step' in dscfg['global_data']) and
+                ('beamwidth' in dscfg['global_data']) and
+                (dscfg['AntennaGain'] is not None)):
+
+            flx_dt, flx_val = read_solar_flux(
+                dscfg['solarfluxpath']+'fluxtable.txt')
+
+            if flx_dt is not None:
+                flx_dt_closest, flx_val_closest = get_closest_solar_flux(
+                    sun_hits[0], flx_dt, flx_val)
+
+                sun_pwr_drao = pyart.correct.sun_power(
+                    flx_val_closest, dscfg['global_data']['pulse_width'],
+                    dscfg['global_data']['wavelen'], dscfg['AntennaGain'],
+                    dscfg['global_data']['angle_step'],
+                    dscfg['global_data']['beamwidth'])
+
+                sun_pwr_ref = np.ma.asarray(sun_pwr_drao[-1])
+
+                # scaling of the power to account for solar flux variations.
+                # The last sun hit is the reference
+                scale_factor = sun_pwr_drao/sun_pwr_ref
+                sun_pwr_h *= scale_factor
+                sun_pwr_v *= scale_factor
+            else:
+                sun_pwr_ref = np.ma.asarray(np.ma.masked)
+        else:
+            sun_pwr_ref = np.ma.asarray(np.ma.masked)
+
         sun_retrieval_h = pyart.correct.sun_retrieval(
             sun_hits[4], sun_hits[6], sun_hits[3], sun_hits[5],
-            sun_hits[7], sun_hits[8],
+            sun_pwr_h, sun_hits[8],
             az_width_co=az_width_co, el_width_co=el_width_co,
             az_width_cross=az_width_cross, el_width_cross=el_width_cross,
             is_zdr=False)
 
         sun_retrieval_v = pyart.correct.sun_retrieval(
             sun_hits[4], sun_hits[6], sun_hits[3], sun_hits[5],
-            sun_hits[11], sun_hits[12],
+            sun_pwr_v, sun_hits[12],
             az_width_co=az_width_co, el_width_co=el_width_co,
             az_width_cross=az_width_cross, el_width_cross=el_width_cross,
             is_zdr=False)
@@ -986,7 +1056,8 @@ def process_sun_hits(procstatus, dscfg, radar=None):
             is_zdr=True)
 
         sun_retrieval_dict = {
-            'time': sun_hits[0][0],
+            'first_hit_time': sun_hits[0][0],
+            'last_hit_time': sun_hits[0][-1],
             'dBm_sun_est': np.ma.asarray(np.ma.masked),
             'std(dBm_sun_est)': np.ma.asarray(np.ma.masked),
             'az_bias_h': np.ma.asarray(np.ma.masked),
@@ -1008,7 +1079,8 @@ def process_sun_hits(procstatus, dscfg, radar=None):
             'az_bias_zdr': np.ma.asarray(np.ma.masked),
             'el_bias_zdr': np.ma.asarray(np.ma.masked),
             'nhits_zdr': 0,
-            'par_zdr': None}
+            'par_zdr': None,
+            'dBm_sun_ref': sun_pwr_ref}
 
         if sun_retrieval_h is not None:
             sun_retrieval_dict['dBm_sun_est'] = np.ma.asarray(

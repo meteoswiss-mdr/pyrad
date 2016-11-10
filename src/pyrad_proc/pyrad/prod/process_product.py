@@ -113,7 +113,7 @@ def generate_sun_hits_products(dataset, prdcfg):
         if field is None:
             warn(
                 'Unable to create field '+prdcfg['voltype'] +
-                'Skipping product ' + prdcfg['type'])
+                ' Skipping product ' + prdcfg['type'])
             return None
 
         plot_sun_hits(field, field_name, savedir+fname, prdcfg)

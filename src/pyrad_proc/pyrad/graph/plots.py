@@ -618,89 +618,115 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname):
     titl = 'Sun retrieval Time Series'
 
     value_std = None
-    sun_ref = None
-    date = sun_retrieval[0]
+    ref = None
+    date = sun_retrieval[1]
     if data_type == 'nhits_h':
-        value = sun_retrieval[1]
+        value = sun_retrieval[2]
         labely = 'Number of sun hits H channel'
         vmin = 0
         vmax = 30
     elif data_type == 'el_width_h':
-        value = sun_retrieval[2]
+        value = sun_retrieval[3]
         labely = 'Elevation beamwidth H channel (Deg)'
         vmin = 0.
         vmax = 4.
     elif data_type == 'az_width_h':
-        value = sun_retrieval[3]
+        value = sun_retrieval[4]
         labely = 'Azimuth beamwidth H channel (Deg)'
         vmin = 0.
         vmax = 4.
     elif data_type == 'el_bias_h':
-        value = sun_retrieval[4]
-        labely = 'Elevation bias H channel (Deg)'
+        value = sun_retrieval[5]
+        ref = np.zeros(len(value))
+        labely = 'Elevation pointing bias H channel (Deg)'
         vmin = -2.
         vmax = 2.
     elif data_type == 'az_bias_h':
-        value = sun_retrieval[5]
-        labely = 'Azimuth bias H channel (Deg)'
+        value = sun_retrieval[6]
+        ref = np.zeros(len(value))
+        labely = 'Azimuth pointing bias H channel (Deg)'
         vmin = -2.
         vmax = 2.
     elif data_type == 'dBm_sun_est':
-        value = sun_retrieval[6]
-        value_std = sun_retrieval[7]
+        value = sun_retrieval[7]
+        value_std = sun_retrieval[8]
+        ref = sun_retrieval[19]
         labely = 'Sun Power H channel (dBm)'
         vmin = -110.
         vmax = -90.
+    elif data_type == 'rx_bias_h':
+        value = sun_retrieval[7]-sun_retrieval[19]
+        value_std = sun_retrieval[8]
+        ref = np.zeros(len(value))
+        labely = 'Receiver bias H channel (dB)'
+        vmin = -2.
+        vmax = 2.
     elif data_type == 'nhits_v':
-        value = sun_retrieval[8]
+        value = sun_retrieval[9]
         labely = 'Number of sun hits V channel'
         vmin = 0
         vmax = 30
     elif data_type == 'el_width_v':
-        value = sun_retrieval[9]
+        value = sun_retrieval[10]
         labely = 'Elevation beamwidth V channel (Deg)'
         vmin = 0.
         vmax = 4.
     elif data_type == 'az_width_v':
-        value = sun_retrieval[10]
+        value = sun_retrieval[11]
         labely = 'Azimuth beamwidth V channel (Deg)'
         vmin = 0.
         vmax = 4.
     elif data_type == 'el_bias_v':
-        value = sun_retrieval[11]
-        labely = 'Elevation bias V channel (Deg)'
+        value = sun_retrieval[12]
+        ref = np.zeros(len(value))
+        labely = 'Elevation pointing bias V channel (Deg)'
         vmin = -2.
         vmax = 2.
     elif data_type == 'az_bias_v':
-        value = sun_retrieval[12]
-        labely = 'Azimuth bias V channel (Deg)'
+        value = sun_retrieval[13]
+        ref = np.zeros(len(value))
+        labely = 'Azimuth pointing bias V channel (Deg)'
         vmin = -2.
         vmax = 2.
     elif data_type == 'dBmv_sun_est':
-        value = sun_retrieval[13]
-        value_std = sun_retrieval[14]
+        value = sun_retrieval[14]
+        value_std = sun_retrieval[15]
+        ref = sun_retrieval[19]
         labely = 'Sun Power V channel (dBm)'
         vmin = -110.
         vmax = -90.
+    elif data_type == 'rx_bias_v':
+        value = sun_retrieval[14]-sun_retrieval[19]
+        value_std = sun_retrieval[15]
+        ref = np.zeros(len(value))
+        labely = 'Receiver bias V channel (dB)'
+        vmin = -2.
+        vmax = 2.
     elif data_type == 'nhits_zdr':
-        value = sun_retrieval[15]
+        value = sun_retrieval[16]
         labely = 'Number of sun hits ZDR'
         vmin = 0
         vmax = 30
     elif data_type == 'ZDR_sun_est':
-        value = sun_retrieval[16]
-        value_std = sun_retrieval[17]
+        value = sun_retrieval[17]
+        value_std = sun_retrieval[18]
+        ref = np.zeros(len(value))
         labely = 'Sun ZDR (dB)'
         vmin = -2.
         vmax = 2.
+
+    mask = np.ma.getmaskarray(value)
+    if mask.all():
+        warn('Unable to create figure '+fname+'. No valid data')
+        return None
 
     fig = plt.figure(figsize=[10, 6])
     plt.plot(date, value)
     if value_std is not None:
         plt.plot(date, value+value_std, 'r')
         plt.plot(date, value-value_std, 'r')
-    if sun_ref is not None:
-        plt.plot(date, sun_ref, 'r')
+    if ref is not None:
+        plt.plot(date, ref, 'r')
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)

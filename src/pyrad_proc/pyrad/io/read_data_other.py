@@ -14,6 +14,7 @@ Functions for reading auxiliary data
     read_sun_hits_multiple_days
     read_sun_hits
     read_sun_retrieval
+    read_solar_flux
     get_sensor_data
     read_smn
     read_disdro_scattering
@@ -111,11 +112,11 @@ def read_rad4alp_cosmo(fname, datatype):
             field['data'] = field_data
             return field
         else:
-            warn('WARNING: Unknown COSMO data type '+datatype)
+            warn('Unknown COSMO data type '+datatype)
             return None
 
     except EnvironmentError:
-        warn('WARNING: Unable to read file '+fname)
+        warn('Unable to read file '+fname)
         return None
 
 
@@ -138,7 +139,7 @@ def read_rad4alp_vis(fname, datatype):
 
     """
     if datatype != 'VIS':
-        warn('WARNING: Unknown DEM data type '+datatype)
+        warn('Unknown DEM data type '+datatype)
         return None
 
     header_size = 64
@@ -171,7 +172,7 @@ def read_rad4alp_vis(fname, datatype):
             return field_list
 
     except EnvironmentError:
-        warn('WARNING: Unable to read file '+fname)
+        warn('Unable to read file '+fname)
         return None
 
 
@@ -215,7 +216,7 @@ def read_timeseries(fname):
 
             return date, value
     except EnvironmentError:
-        warn('WARNING: Unable to read file '+fname)
+        warn('Unable to read file '+fname)
         return None, None
 
 
@@ -403,7 +404,7 @@ def read_sun_hits(fname):
                     zdr, zdr_std, nzdr, nvalzdr)
 
     except EnvironmentError:
-        warn('WARNING: Unable to read file '+fname)
+        warn('Unable to read file '+fname)
         return (None, None, None, None, None, None, None, None, None, None,
                 None, None, None, None, None, None, None, None, None)
 
@@ -422,7 +423,7 @@ def read_sun_retrieval(fname):
     nhits_h, el_width_h, az_width_h, el_bias_h, az_bias_h, dBm_sun_est,
     std_dBm_sun_est, nhits_v, el_width_v, az_width_v, el_bias_v, az_bias_v,
     dBmv_sun_est, std_dBmv_sun_est, nhits_zdr, zdr_sun_est,
-    std_zdr_sun_est : tupple
+    std_zdr_sun_est, dBm_sun_ref : tupple
         Each parameter is an array containing a time series of information on
         a variable
 
@@ -454,16 +455,21 @@ def read_sun_retrieval(fname):
             zdr_sun_est = np.ma.empty(nrows, dtype=float)
             std_zdr_sun_est = np.ma.empty(nrows, dtype=float)
 
+            dBm_sun_ref = np.ma.empty(nrows, dtype=float)
+
             # now read the data
             csvfile.seek(0)
             reader = csv.DictReader(
                 row for row in csvfile if not row.startswith('#'))
 
             i = 0
-            date = list()
+            first_hit_time = list()
+            last_hit_time = list()
             for row in reader:
-                date.append(datetime.datetime.strptime(
-                    row['time'], '%Y%m%d'))
+                first_hit_time.append(datetime.datetime.strptime(
+                    row['first_hit_time'], '%Y%m%d%H%M%S'))
+                last_hit_time.append(datetime.datetime.strptime(
+                    row['last_hit_time'], '%Y%m%d%H%M%S'))
 
                 nhits_h[i] = int(row['nhits_h'])
                 el_width_h[i] = float(row['el_width_h'])
@@ -484,6 +490,8 @@ def read_sun_retrieval(fname):
                 nhits_zdr[i] = int(row['nhits_zdr'])
                 zdr_sun_est[i] = float(row['ZDR_sun_est'])
                 std_zdr_sun_est[i] = float(row['std(ZDR_sun_est)'])
+
+                dBm_sun_ref[i] = float(row['dBm_sun_ref'])
 
                 i += 1
 
@@ -507,17 +515,79 @@ def read_sun_retrieval(fname):
             std_zdr_sun_est = np.ma.masked_values(
                 std_zdr_sun_est, get_fillvalue())
 
-            return (date, nhits_h,
+            dBm_sun_ref = np.ma.masked_values(dBm_sun_ref, get_fillvalue())
+
+            return (first_hit_time, last_hit_time, nhits_h,
                     el_width_h, az_width_h, el_bias_h, az_bias_h,
                     dBm_sun_est, std_dBm_sun_est,
                     nhits_v, el_width_v, az_width_v, el_bias_v, az_bias_v,
                     dBmv_sun_est, std_dBmv_sun_est,
-                    nhits_zdr, zdr_sun_est, std_zdr_sun_est)
+                    nhits_zdr, zdr_sun_est, std_zdr_sun_est, dBm_sun_ref)
 
     except EnvironmentError:
-        warn('WARNING: Unable to read file '+fname)
+        warn('Unable to read file '+fname)
         return (None, None, None, None, None, None, None, None, None, None,
-                None, None, None, None, None, None, None, None)
+                None, None, None, None, None, None, None, None, None, None)
+
+
+def read_solar_flux(fname):
+    """
+    Reads solar flux data from the DRAO observatory in Canada
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    flux_datetime : datetime array
+        the date and time of the solar flux retrievals
+    flux_value : array
+        the observed solar flux
+
+    """
+    try:
+        with open(fname, 'r', newline='') as txtfile:
+            # skip the first two lines
+            for i in range(2):
+                next(txtfile)
+
+            # first count the lines
+            reader = csv.DictReader(
+                txtfile, delimiter=' ', skipinitialspace=True, fieldnames=[
+                    'fluxdate', 'fluxtime', 'fluxjulian', 'fluxcarrington',
+                    'fluxobsflux', 'fluxadjflux', 'fluxursi'])
+            nrows = sum(1 for row in reader)
+
+            flux_value = np.empty(nrows, dtype=float)
+
+            # now read the data
+            txtfile.seek(0)
+
+            # skip the first two lines
+            for i in range(2):
+                next(txtfile)
+
+            reader = csv.DictReader(
+                txtfile, delimiter=' ', skipinitialspace=True, fieldnames=[
+                    'fluxdate', 'fluxtime', 'fluxjulian', 'fluxcarrington',
+                    'fluxobsflux', 'fluxadjflux', 'fluxursi'])
+
+            i = 0
+            flux_datetime = list()
+            for row in reader:
+                flux_datetime.append(datetime.datetime.strptime(
+                    row['fluxdate']+row['fluxtime'], '%Y%m%d%H%M%S'))
+                flux_value[i] = float(row['fluxobsflux'])
+
+                i += 1
+
+            return flux_datetime, flux_value
+
+    except EnvironmentError:
+        warn('Unable to read file '+fname)
+        return None, None
 
 
 def get_sensor_data(date, datatype, cfg):
@@ -567,7 +637,7 @@ def get_sensor_data(date, datatype, cfg):
         elif (datatype == 'dBZ') or (datatype == 'dBZc'):
             sensorvalue = zh
     else:
-        warn('WARNING: Unknown sensor: '+cfg['sensor'])
+        warn('Unknown sensor: '+cfg['sensor'])
         return None, None, None, None
 
     return sensordate, sensorvalue, label, period
@@ -623,7 +693,7 @@ def read_smn(fname):
 
             return id, date, pressure, temp, rh, precip, wspeed, wdir
     except EnvironmentError:
-        warn('WARNING: Unable to read file '+fname)
+        warn('Unable to read file '+fname)
         return None, None, None, None, None, None, None, None
 
 
@@ -703,7 +773,7 @@ def read_disdro_scattering(fname):
             return (date, preciptype, lwc, rr, zh, zv, zdr, ldr, ah, av,
                     adiff, kdp, deltaco, rhohv)
     except EnvironmentError:
-        warn('WARNING: Unable to read file '+fname)
+        warn('Unable to read file '+fname)
         return (None, None, None, None, None, None, None, None, None, None,
                 None, None, None)
 
@@ -746,5 +816,5 @@ def read_selfconsistency(fname):
 
             return zdr_kdpzh_table
     except EnvironmentError:
-        warn('WARNING: Unable to read file '+fname)
+        warn('Unable to read file '+fname)
         return None

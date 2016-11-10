@@ -27,7 +27,7 @@ dempath STRING /data/DEM/DX50_EMM/
 #disdropath STRING /data_rainbow/scattering/dsd_ts/
 
 # Base path for solar flux data
-#solarfluxpath STRING /data_rainbow/solar_flux/
+solarfluxpath STRING /data/solar_flux/
 
 # Base path for rad4alp data in zueub222
 #rad4alppath STRING /data_rainbow/meanC/

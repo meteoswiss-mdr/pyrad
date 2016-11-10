@@ -156,18 +156,24 @@ def process_echo_filter(procstatus, dscfg, radar=None):
         datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         field_name = get_fieldname_pyart(datatype)
+        if field_name in radar.fields:
+            radar_field = deepcopy(radar.fields[field_name])
+            radar_field['data'] = np.ma.masked_where(mask, radar_field['data'])
 
-        radar_field = deepcopy(radar.fields[field_name])
-        radar_field['data'] = np.ma.masked_where(mask, radar_field['data'])
-
-        if field_name.startswith('corrected_'):
-            new_field_name = field_name
-        elif field_name.startswith('uncorrected_'):
-            new_field_name = field_name.replace(
-                'uncorrected_', 'corrected_', 1)
+            if field_name.startswith('corrected_'):
+                new_field_name = field_name
+            elif field_name.startswith('uncorrected_'):
+                new_field_name = field_name.replace(
+                    'uncorrected_', 'corrected_', 1)
+            else:
+                new_field_name = 'corrected_'+field_name
+            new_dataset.add_field(new_field_name, radar_field)
         else:
-            new_field_name = 'corrected_'+field_name
-        new_dataset.add_field(new_field_name, radar_field)
+            warn('Unable to filter '+field_name+' according to echo ID. ' +
+                 'No valid input fields')
+
+    if not new_dataset.fields:
+        return None
 
     return new_dataset
 
@@ -227,18 +233,25 @@ def process_filter_snr(procstatus, dscfg, radar=None):
 
         if (datatype != 'SNRh') and (datatype != 'SNRv'):
             field_name = get_fieldname_pyart(datatype)
-            radar_field = deepcopy(radar.fields[field_name])
-            radar_field['data'] = np.ma.masked_where(
-                is_lowSNR, radar_field['data'])
+            if field_name in radar.fields:
+                radar_field = deepcopy(radar.fields[field_name])
+                radar_field['data'] = np.ma.masked_where(
+                    is_lowSNR, radar_field['data'])
 
-            if field_name.startswith('corrected_'):
-                new_field_name = field_name
-            elif field_name.startswith('uncorrected_'):
-                new_field_name = field_name.replace(
-                    'uncorrected_', 'corrected_', 1)
+                if field_name.startswith('corrected_'):
+                    new_field_name = field_name
+                elif field_name.startswith('uncorrected_'):
+                    new_field_name = field_name.replace(
+                        'uncorrected_', 'corrected_', 1)
+                else:
+                    new_field_name = 'corrected_'+field_name
+                new_dataset.add_field(new_field_name, radar_field)
             else:
-                new_field_name = 'corrected_'+field_name
-            new_dataset.add_field(new_field_name, radar_field)
+                warn('Unable to filter '+field_name +
+                     ' according to SNR. '+'No valid input fields')
+
+    if not new_dataset.fields:
+        return None
 
     return new_dataset
 
@@ -299,26 +312,33 @@ def process_filter_visibility(procstatus, dscfg, radar=None):
 
         if datatype != 'VIS':
             field_name = get_fieldname_pyart(datatype)
-            radar_aux = deepcopy(radar)
-            radar_aux.fields[field_name]['data'] = np.ma.masked_where(
-                is_lowVIS, radar_aux.fields[field_name]['data'])
+            if field_name in radar.fields:
+                radar_aux = deepcopy(radar)
+                radar_aux.fields[field_name]['data'] = np.ma.masked_where(
+                    is_lowVIS, radar_aux.fields[field_name]['data'])
 
-            if ((datatype == 'dBZ') or (datatype == 'dBZc') or
-                    (datatype == 'dBuZ') or (datatype == 'dBZv') or
-                    (datatype == 'dBZvc') or (datatype == 'dBuZv')):
-                radar_field = pyart.correct.correct_visibility(
-                    radar_aux, vis_field=vis_field, field_name=field_name)
-            else:
-                radar_field = radar_aux.fields[field_name]
+                if ((datatype == 'dBZ') or (datatype == 'dBZc') or
+                        (datatype == 'dBuZ') or (datatype == 'dBZv') or
+                        (datatype == 'dBZvc') or (datatype == 'dBuZv')):
+                    radar_field = pyart.correct.correct_visibility(
+                        radar_aux, vis_field=vis_field, field_name=field_name)
+                else:
+                    radar_field = radar_aux.fields[field_name]
 
-            if field_name.startswith('corrected_'):
-                new_field_name = field_name
-            elif field_name.startswith('uncorrected_'):
-                new_field_name = field_name.replace(
-                    'uncorrected_', 'corrected_', 1)
+                if field_name.startswith('corrected_'):
+                    new_field_name = field_name
+                elif field_name.startswith('uncorrected_'):
+                    new_field_name = field_name.replace(
+                        'uncorrected_', 'corrected_', 1)
+                else:
+                    new_field_name = 'corrected_'+field_name
+                new_dataset.add_field(new_field_name, radar_field)
             else:
-                new_field_name = 'corrected_'+field_name
-            new_dataset.add_field(new_field_name, radar_field)
+                warn('Unable to filter '+field_name +
+                     ' according to visibility. No valid input fields')
+
+    if not new_dataset.fields:
+        return None
 
     return new_dataset
 
