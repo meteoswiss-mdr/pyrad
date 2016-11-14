@@ -59,8 +59,10 @@ def main(cfgfile, starttime, endtime):
 
     nvolumes = len(masterfilelist)
     if nvolumes == 0:
-        raise Exception(
-            'ERROR: Could not find any volume within the specified times ' +
+        raise ValueError(
+            'ERROR: Could not find any valid volume between ' +
+            starttime.strftime('%Y-%m-%d %H:%M:S')+' and ' +
+            endtime.strftime('%Y-%m-%d %H:%M:S') +
             ' for master scan '+cfg['ScanList'][0]+' and master data type ' +
             masterdatatypedescr)
     print('Number of volumes to process: '+str(nvolumes)+'\n\n')

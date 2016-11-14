@@ -606,7 +606,7 @@ DEFAULT_METADATA = {
         'units': 'dB',
         'standard_name': 'reflectivity_bias',
         'long_name': 'Reflectivity bias',
-        'coordinates': 'elevation azimuth'},
+        'coordinates': 'elevation azimuth range'},
 
     signal_power_hh: {
         'units': 'dBm',
@@ -771,9 +771,7 @@ DEFAULT_METADATA = {
         'units': 'degrees',
         'standard_name': 'system_differential_phase',
         'long_name': 'System differential phase (PhiDP0)',
-        'valid_max': 180.0,
-        'valid_min': -180.0,
-        'coordinates': 'elevation azimuth'},
+        'coordinates': 'elevation azimuth range'},
 
     first_gate_differential_phase: {
         'units': 'gate index',

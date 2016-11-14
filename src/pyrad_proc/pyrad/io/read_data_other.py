@@ -11,6 +11,7 @@ Functions for reading auxiliary data
     read_rad4alp_cosmo
     read_rad4alp_vis
     read_timeseries
+    read_monitoring_ts
     read_sun_hits_multiple_days
     read_sun_hits
     read_sun_retrieval
@@ -220,6 +221,61 @@ def read_timeseries(fname):
         return None, None
 
 
+def read_monitoring_ts(fname):
+    """
+    Reads a monitoring time series contained in a csv file
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    date , np_t, central_quantile, low_quantile, high_quantile : tupple
+        The read data. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            nrows = sum(1 for row in reader)
+            np_t = np.zeros(nrows, dtype=int)
+            central_quantile = np.ma.empty(nrows, dtype=float)
+            low_quantile = np.ma.empty(nrows, dtype=float)
+            high_quantile = np.ma.empty(nrows, dtype=float)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#')
+                )
+            i = 0
+            date = list()
+            for row in reader:
+                date.append(datetime.datetime.strptime(
+                    row['date'], '%Y%m%d%H%M%S'))
+                np_t[i] = int(row['NP'])
+                central_quantile[i] = float(row['central_quantile'])
+                low_quantile[i] = float(row['low_quantile'])
+                high_quantile[i] = float(row['high_quantile'])
+                i += 1
+
+            central_quantile = np.ma.masked_values(
+                central_quantile, get_fillvalue())
+            low_quantile = np.ma.masked_values(
+                low_quantile, get_fillvalue())
+            high_quantile = np.ma.masked_values(
+                high_quantile, get_fillvalue())
+
+            return date, np_t, central_quantile, low_quantile, high_quantile
+    except EnvironmentError:
+        warn('Unable to read file '+fname)
+        return None, None
+
+
 def read_sun_hits_multiple_days(cfg, nfiles=1):
     """
     Reads sun hits data from multiple file sources
@@ -420,10 +476,10 @@ def read_sun_retrieval(fname):
 
     Returns
     -------
-    nhits_h, el_width_h, az_width_h, el_bias_h, az_bias_h, dBm_sun_est,
-    std_dBm_sun_est, nhits_v, el_width_v, az_width_v, el_bias_v, az_bias_v,
-    dBmv_sun_est, std_dBmv_sun_est, nhits_zdr, zdr_sun_est,
-    std_zdr_sun_est, dBm_sun_ref : tupple
+    first_hit_time, last_hit_time, nhits_h, el_width_h, az_width_h, el_bias_h,
+    az_bias_h, dBm_sun_est, std_dBm_sun_est, nhits_v, el_width_v, az_width_v,
+    el_bias_v, az_bias_v, dBmv_sun_est, std_dBmv_sun_est, nhits_zdr,
+    zdr_sun_est, std_zdr_sun_est, dBm_sun_ref, ref_time : tupple
         Each parameter is an array containing a time series of information on
         a variable
 
@@ -465,6 +521,7 @@ def read_sun_retrieval(fname):
             i = 0
             first_hit_time = list()
             last_hit_time = list()
+            ref_time = list()
             for row in reader:
                 first_hit_time.append(datetime.datetime.strptime(
                     row['first_hit_time'], '%Y%m%d%H%M%S'))
@@ -492,6 +549,11 @@ def read_sun_retrieval(fname):
                 std_zdr_sun_est[i] = float(row['std(ZDR_sun_est)'])
 
                 dBm_sun_ref[i] = float(row['dBm_sun_ref'])
+                if row['ref_time'] == 'None':
+                    ref_time.append(None)
+                else:
+                    ref_time.append(datetime.datetime.strptime(
+                        row['ref_time'], '%Y%m%d%H%M%S'))
 
                 i += 1
 
@@ -522,12 +584,14 @@ def read_sun_retrieval(fname):
                     dBm_sun_est, std_dBm_sun_est,
                     nhits_v, el_width_v, az_width_v, el_bias_v, az_bias_v,
                     dBmv_sun_est, std_dBmv_sun_est,
-                    nhits_zdr, zdr_sun_est, std_zdr_sun_est, dBm_sun_ref)
+                    nhits_zdr, zdr_sun_est, std_zdr_sun_est, dBm_sun_ref,
+                    ref_time)
 
     except EnvironmentError:
         warn('Unable to read file '+fname)
         return (None, None, None, None, None, None, None, None, None, None,
-                None, None, None, None, None, None, None, None, None, None)
+                None, None, None, None, None, None, None, None, None, None,
+                None)
 
 
 def read_solar_flux(fname):

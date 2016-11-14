@@ -24,6 +24,7 @@ Product generation
     generate_vol_products
     generate_timeseries_products
     generate_sun_hits_products
+    generate_monitoring_products
 
 """
 
@@ -32,5 +33,6 @@ from .product_aux import get_product_type
 from .process_product import generate_vol_products
 from .process_product import generate_timeseries_products
 from .process_product import generate_sun_hits_products
+from .process_product import generate_monitoring_products
 
 __all__ = [s for s in dir() if not s.startswith('_')]

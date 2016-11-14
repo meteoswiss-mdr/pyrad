@@ -256,7 +256,7 @@ sun_hits STRUCT 6
         ZDRu
     rmin FLOAT 20000.
     sun_hits_dir STRING SUN_HITS  # must be the same as product WRITE_SUN_HITS
-    ndays INT 1
+    ndays INT 3
     products STRUCT 30
        PWRH STRUCT 3
          type STRING BSCOPE_IMAGE

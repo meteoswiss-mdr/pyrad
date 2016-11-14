@@ -7,12 +7,10 @@ Functions for obtaining Pyrad products from the datasets
 .. autosummary::
     :toctree: generated/
 
-    get_product_type
     generate_vol_products
     generate_sun_hits_products
     generate_timeseries_products
-    get_save_dir
-    make_filename
+    generate_monitoring_products
 
 """
 
@@ -28,20 +26,22 @@ from ..io.io_aux import get_save_dir, make_filename
 from ..io.io_aux import generate_field_name_str
 
 from ..io.read_data_other import get_sensor_data, read_timeseries
-from ..io.read_data_other import read_sun_retrieval
+from ..io.read_data_other import read_sun_retrieval, read_monitoring_ts
 
-from ..io.write_data import write_timeseries
+from ..io.write_data import write_timeseries, write_monitoring_ts
 from ..io.write_data import write_sun_hits, write_sun_retrieval
 
 from ..graph.plots import plot_ppi, plot_rhi, plot_cappi, plot_bscope
 from ..graph.plots import plot_timeseries, plot_timeseries_comp
 from ..graph.plots import plot_quantiles, get_colobar_label, plot_sun_hits
 from ..graph.plots import plot_sun_retrieval_ts, plot_histogram
+from ..graph.plots import plot_histogram2, plot_density, plot_monitoring_ts
 from ..graph.plots import get_field_name, get_colobar_label
 
 from ..util.radar_utils import create_sun_hits_field
 from ..util.radar_utils import create_sun_retrieval_field
 from ..util.radar_utils import compute_histogram, compute_quantiles
+from ..util.radar_utils import compute_quantiles_from_hist
 
 
 def generate_sun_hits_products(dataset, prdcfg):
@@ -794,6 +794,256 @@ def generate_timeseries_products(dataset, prdcfg):
         print('saved figure: '+savedir+figfname)
 
         return savedir+figfname
+
+    else:
+        warn(' Unsupported product type: ' + prdcfg['type'])
+        return None
+
+
+def generate_monitoring_products(dataset, prdcfg):
+
+    # check the type of dataset required
+    hist_type = 'cumulative'
+    if 'hist_type' in prdcfg:
+        hist_type = prdcfg['hist_type']
+
+    if dataset['hist_type'] != hist_type:
+        return None
+
+    hist_obj = dataset['hist_obj']
+
+    if prdcfg['type'] == 'VOL_HISTOGRAM':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in hist_obj.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        timeformat = '%Y%m%d'
+        titl = (
+                pyart.graph.common.generate_radar_time_begin(
+                    hist_obj).strftime('%Y-%m-%d') + '\n' +
+                get_field_name(hist_obj.fields[field_name], field_name))
+        if hist_type == 'instant':
+            timeformat = '%Y%m%d%H%M%S'
+            titl = (
+                pyart.graph.common.generate_radar_time_begin(
+                    hist_obj).isoformat() + 'Z' + '\n' +
+                get_field_name(hist_obj.fields[field_name], field_name))
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'histogram', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['convertformat'],
+            timeinfo=prdcfg['timeinfo'], timeformat=timeformat)
+
+        labelx = get_colobar_label(hist_obj.fields[field_name], field_name)
+
+        plot_histogram2(
+            hist_obj.range['data'],
+            np.sum(hist_obj.fields[field_name]['data'], axis=0),
+            savedir+fname, labelx=labelx, labely='Number of Samples',
+            titl=titl)
+
+        print('saved figure: '+savedir+fname)
+
+        return savedir+fname
+
+    if prdcfg['type'] == 'PPI_HISTOGRAM':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in hist_obj.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        el_vec = np.sort(hist_obj.fixed_angle['data'])
+        el = el_vec[prdcfg['anglenr']]
+        ind_el = np.where(hist_obj.fixed_angle['data'] == el)[0][0]
+
+        timeformat = '%Y%m%d'
+        titl = (
+                '{:.1f}'.format(el)+' Deg. ' +
+                pyart.graph.common.generate_radar_time_begin(
+                    hist_obj).strftime('%Y-%m-%d') + '\n' +
+                get_field_name(hist_obj.fields[field_name], field_name))
+        if hist_type == 'instant':
+            timeformat = '%Y%m%d%H%M%S'
+            titl = (
+                '{:.1f}'.format(el)+' Deg. ' +
+                pyart.graph.common.generate_radar_time_begin(
+                    hist_obj).isoformat() + 'Z' + '\n' +
+                get_field_name(hist_obj.fields[field_name], field_name))
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'ppi', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['convertformat'], prdcfginfo='el'+'{:.1f}'.format(el),
+            timeinfo=prdcfg['timeinfo'], timeformat=timeformat)
+
+        labelx = get_colobar_label(hist_obj.fields[field_name], field_name)
+
+        sweep_start = hist_obj.sweep_start_ray_index['data'][ind_el]
+        sweep_end = hist_obj.sweep_end_ray_index['data'][ind_el]
+        values = hist_obj.fields[field_name]['data'][sweep_start:sweep_end, :]
+        plot_histogram2(
+            hist_obj.range['data'], np.sum(values, axis=0),
+            savedir+fname, labelx=labelx, labely='Number of Samples',
+            titl=titl)
+
+        print('saved figure: '+savedir+fname)
+
+        return savedir+fname
+
+    if prdcfg['type'] == 'ANGULAR_DENSITY':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in hist_obj.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        el_vec = np.sort(hist_obj.fixed_angle['data'])
+        el = el_vec[prdcfg['anglenr']]
+        ind_el = np.where(hist_obj.fixed_angle['data'] == el)[0][0]
+
+        timeformat = '%Y%m%d'
+        if hist_type == 'instant':
+            timeformat = '%Y%m%d%H%M%S'
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'ppi', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['convertformat'], prdcfginfo='el'+'{:.1f}'.format(el),
+            timeinfo=prdcfg['timeinfo'], timeformat=timeformat)
+
+        quantiles = np.array([25., 50., 75.])
+        ref_value = 0.
+        if 'quantiles' in prdcfg:
+            quantiles = prdcfg['quantiles']
+        if 'ref_value' in prdcfg:
+            ref_value = prdcfg['ref_value']
+
+        plot_density(
+            hist_obj, hist_type, field_name, ind_el, prdcfg, savedir+fname,
+            quantiles=quantiles, ref_value=ref_value)
+
+        print('saved figure: '+savedir+fname)
+
+        return savedir+fname
+
+    elif prdcfg['type'] == 'VOL_TS':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in hist_obj.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        csvtimeinfo = None
+        if hist_type == 'instant':
+            csvtimeinfo = prdcfg['timeinfo']
+
+        quantiles = np.array([25., 50., 75.])
+        ref_value = 0.
+        if 'quantiles' in prdcfg:
+            quantiles = prdcfg['quantiles']
+        if 'ref_value' in prdcfg:
+            ref_value = prdcfg['ref_value']
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['prdname'], timeinfo=csvtimeinfo)
+
+        csvfname = make_filename(
+            'ts', prdcfg['dstype'], prdcfg['voltype'], 'csv',
+            timeinfo=csvtimeinfo, timeformat='%Y%m%d')
+
+        quantiles, values = compute_quantiles_from_hist(
+            hist_obj.range['data'],
+            np.ma.sum(hist_obj.fields[field_name]['data'], axis=0),
+            quantiles=quantiles)
+
+        start_time = pyart.graph.common.generate_radar_time_begin(hist_obj)
+        np_t = np.ma.sum(hist_obj.fields[field_name]['data'], dtype=int)
+        if np.ma.getmaskarray(np_t):
+            np_t = 0
+
+        write_monitoring_ts(
+            start_time, np_t, values, quantiles, prdcfg['voltype'],
+            savedir+csvfname)
+        print('saved CSV file: '+savedir+csvfname)
+
+        date, np_t_vec, cquant_vec, lquant_vec, hquant_vec = (
+            read_monitoring_ts(savedir+csvfname))
+
+        if date is None:
+            warn(
+                'Unable to plot time series. No valid data')
+            return None
+
+        figtimeinfo = None
+        titldate = ''
+        if hist_type == 'instant':
+            figtimeinfo = date[0]
+            titldate = date[0].strftime('%Y-%m-%d')
+
+        figfname = make_filename(
+            'ts', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['convertformat'],
+            timeinfo=figtimeinfo, timeformat='%Y%m%d')
+
+        titl = ('Monitoring Time Series '+titldate)
+
+        labely = generate_field_name_str(prdcfg['voltype'])
+
+        plot_monitoring_ts(
+            date, cquant_vec, lquant_vec, hquant_vec, field_name,
+            savedir+figfname, ref_value=ref_value, labelx='Time UTC',
+            labely=labely, titl=titl)
+        print('saved figure: '+savedir+figfname)
+
+        return savedir+figfname
+
+    elif prdcfg['type'] == 'SAVEVOL':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in hist_obj.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        new_dataset = deepcopy(hist_obj)
+        new_dataset.fields = dict()
+        new_dataset.add_field(field_name, hist_obj.fields[field_name])
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'savevol', prdcfg['dstype'], prdcfg['voltype'], 'nc',
+            timeinfo=prdcfg['timeinfo'])
+
+        pyart.io.cfradial.write_cfradial(savedir+fname, new_dataset)
+        print('saved file: '+savedir+fname)
+
+        return savedir+fname
 
     else:
         warn(' Unsupported product type: ' + prdcfg['type'])

@@ -60,5 +60,8 @@ if __name__ == '__main__':
     for day in range(ndays):
         proc_starttime = proc_startdate + datetime.timedelta(days=day)
         proc_endtime = proc_starttime + datetime.timedelta(days=1)
-
-        main(args.proccfgfile, proc_starttime, proc_endtime)
+        # proc_endtime = proc_starttime + datetime.timedelta(minutes=10)
+        try:
+            main(args.proccfgfile, proc_starttime, proc_endtime)
+        except ValueError:
+            print(ValueError)

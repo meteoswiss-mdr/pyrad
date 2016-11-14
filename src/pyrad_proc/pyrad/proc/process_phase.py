@@ -6,8 +6,7 @@ Functions for PhiDP and KDP processing and attenuation correction
 
 .. autosummary::
     :toctree: generated/
-
-    process_estimate_phidp0
+    
     process_correct_phidp0
     process_smooth_phidp_single_window
     process_smooth_phidp_double_window
@@ -29,85 +28,6 @@ import numpy as np
 import pyart
 
 from ..io.io_aux import get_datatype_fields
-
-
-def process_estimate_phidp0(procstatus, dscfg, radar=None):
-    """
-    estimates the system differential phase offset at each ray
-
-    Parameters
-    ----------
-    procstatus : int
-        Processing status: 0 initializing, 1 processing volume,
-        2 post-processing
-
-    dscfg : dictionary of dictionaries
-        data set configuration. Accepted Configuration Keywords::
-
-        datatype : list of string. Dataset keyword
-            The input data types
-        rmin : float. Dataset keyword
-            The minimum range where to look for valid data [m]
-        rmax : float. Dataset keyword
-            The maximum range where to look for valid data [m]
-        rcell : float. Dataset keyword
-            The length of a continuous cell to consider it valid precip [m]
-        Zmin : float. Dataset keyword
-            The minimum reflectivity [dBZ]
-        Zmax : float. Dataset keyword
-            The maximum reflectivity [dBZ]
-
-    radar : Radar
-        Optional. Radar object
-
-    Returns
-    -------
-    new_dataset : Radar
-        radar object
-
-    """
-
-    if procstatus != 1:
-        return None
-
-    for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
-        if datatype == 'dBZ':
-            refl_field = 'reflectivity'
-        if datatype == 'dBZc':
-            refl_field = 'corrected_reflectivity'
-        if datatype == 'PhiDP':
-            psidp_field = 'differential_phase'
-        if datatype == 'PhiDPc':
-            psidp_field = 'corrected_differential_phase'
-        if datatype == 'uPhiDP':
-            psidp_field = 'uncorrected_differential_phase'
-
-    if (refl_field not in radar.fields) or (psidp_field not in radar.fields):
-        warn('Unable to estimate PhiDP system offset. Missing data')
-        return None
-
-    ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
-    ind_rmax = np.where(radar.range['data'] < dscfg['rmax'])[0][-1]
-    r_res = radar.range['data'][1]-radar.range['data'][0]
-    min_rcons = int(dscfg['rcell']/r_res)
-
-    phidp0, first_gates = pyart.correct.det_sys_phase_ray(
-        radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, min_rcons=min_rcons,
-        zmin=dscfg['Zmin'], zmax=dscfg['Zmax'], phidp_field=psidp_field,
-        refl_field=refl_field)
-
-    # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.range['data'] = np.array([0.])
-    new_dataset.ngates = 1
-
-    new_dataset.add_field('system_differential_phase', phidp0)
-    new_dataset.add_field('first_gate_differential_phase', first_gates)
-
-    return new_dataset
 
 
 def process_correct_phidp0(procstatus, dscfg, radar=None):

@@ -41,6 +41,8 @@ def get_product_type(product_type):
         func_name = 'generate_timeseries_products'
     elif product_type == 'SUN_HITS':
         func_name = 'generate_sun_hits_products'
+    elif product_type == 'MONITORING':
+        func_name = 'generate_monitoring_products'
     else:
         print('ERROR: Unknown dataset type')
 

@@ -59,8 +59,8 @@ Monitoring, calibration and noise correction
     process_sun_hits
     process_selfconsistency_kdp_phidp
     process_selfconsistency_bias
-    process_monitoring_rhohv
-    process_monitoring_zdr
+    process_monitoring
+    process_estimate_phidp0
 
 Retrievals
 ==========
@@ -83,7 +83,7 @@ from .process_echoclass import process_echo_id, process_echo_filter
 from .process_echoclass import process_filter_snr, process_filter_visibility
 from .process_echoclass import process_hydroclass
 
-from .process_phase import process_estimate_phidp0, process_correct_phidp0
+from .process_phase import process_correct_phidp0
 from .process_phase import process_smooth_phidp_single_window
 from .process_phase import process_smooth_phidp_double_window
 from .process_phase import process_kdp_leastsquare_single_window
@@ -93,7 +93,8 @@ from .process_phase import process_attenuation
 
 from .process_calib import process_correct_bias, process_correct_noise_rhohv
 from .process_calib import process_rhohv_rain, process_zdr_rain
-from .process_calib import process_monitoring_rhohv, process_monitoring_zdr
+from .process_calib import process_monitoring
+from .process_calib import process_estimate_phidp0
 from .process_calib import process_sun_hits
 from .process_calib import process_selfconsistency_kdp_phidp
 from .process_calib import process_selfconsistency_bias

@@ -71,9 +71,7 @@ def get_process_type(dataset_type):
     elif dataset_type == 'SNR_FILTER':
         func_name = 'process_filter_snr'
     elif dataset_type == 'VIS_FILTER':
-        func_name = 'process_filter_visibility'
-    elif dataset_type == 'PHIDP0_ESTIMATE':
-        func_name = 'process_estimate_phidp0'
+        func_name = 'process_filter_visibility'    
     elif dataset_type == 'PHIDP0_CORRECTION':
         func_name = 'process_correct_phidp0'
     elif dataset_type == 'PHIDP_SMOOTH_1W':
@@ -94,18 +92,19 @@ def get_process_type(dataset_type):
         func_name = 'process_rainrate'
     elif dataset_type == 'HYDROCLASS':
         func_name = 'process_hydroclass'
-    elif dataset_type == 'SELFCONSISTENCY_KDP_PHIDP':
-        func_name = 'process_selfconsistency_kdp_phidp'
-    elif dataset_type == 'SELFCONSISTENCY_BIAS':
-        func_name = 'process_selfconsistency_bias'
+    elif dataset_type == 'PHIDP0_ESTIMATE':
+        func_name = 'process_estimate_phidp0'        
     elif dataset_type == 'RHOHV_RAIN':
         func_name = 'process_rhohv_rain'
     elif dataset_type == 'ZDR_RAIN':
         func_name = 'process_zdr_rain'
-    elif dataset_type == 'MONITORING_RHOHV':
-        func_name = 'process_monitoring_rhohv'
-    elif dataset_type == 'MONITORING_ZDR':
-        func_name = 'process_monitoring_zdr'
+    elif dataset_type == 'SELFCONSISTENCY_KDP_PHIDP':
+        func_name = 'process_selfconsistency_kdp_phidp'
+    elif dataset_type == 'SELFCONSISTENCY_BIAS':
+        func_name = 'process_selfconsistency_bias'        
+    elif dataset_type == 'MONITORING':
+        func_name = 'process_monitoring'
+        dsformat = 'MONITORING'        
     elif dataset_type == 'SUN_HITS':
         func_name = 'process_sun_hits'
         dsformat = 'SUN_HITS'

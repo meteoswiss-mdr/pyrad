@@ -10,11 +10,14 @@ Functions to plot Pyrad datasets
     plot_ppi
     plot_rhi
     plot_bscope
+    plot_density
     plot_cappi
     plot_quantiles
     plot_histogram
+    plot_histogram2
     plot_timeseries
     plot_timeseries_comp
+    plot_monitoring_ts
     plot_sun_hits
     plot_sun_retrieval_ts
     get_colobar_label
@@ -22,6 +25,7 @@ Functions to plot Pyrad datasets
 
 """
 
+from copy import deepcopy
 from warnings import warn
 
 import matplotlib.pyplot as plt
@@ -30,6 +34,7 @@ import numpy as np
 import pyart
 
 from ..util.radar_utils import compute_quantiles_sweep
+from ..util.radar_utils import compute_quantiles_from_hist
 from ..util.radar_utils import compute_histogram_sweep
 
 
@@ -332,6 +337,131 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname):
     return fname
 
 
+def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg, fname,
+                 quantiles=[25., 50., 75.], ref_value=0.):
+    """
+    density plot (angle-values representation)
+
+    Parameters
+    ----------
+    hist_obj : histogram object
+        object containing the histogram data to plot
+    hist_type : str
+        type of histogram (instantaneous data or cumulative)
+    field_name : str
+        name of the radar field to plot
+    ind_sweep : int
+        sweep index to plot
+    prdcfg : dict
+        dictionary containing the product configuration
+    fname : str
+        name of the file where to store the plot
+    quantiles : array
+        the quantile lines to plot
+    ref_value : float
+        the reference value
+
+    Returns
+    -------
+    fname : str
+        the name of the created plot file
+
+    """
+    hist_obj_aux = hist_obj.extract_sweeps([ind_sweep])
+    if hist_obj_aux.scan_type == 'ppi':
+        ang = np.sort(hist_obj_aux.azimuth['data'])
+        ind_ang = np.argsort(hist_obj_aux.azimuth['data'])
+        ang_min = np.min(hist_obj_aux.azimuth['data'])
+        ang_max = np.max(hist_obj_aux.azimuth['data'])
+        field = hist_obj_aux.fields[field_name]['data'][ind_ang, :]
+        labelx = 'azimuth angle (degrees)'
+    elif hist_obj_aux.scan_type == 'rhi':
+        ang = np.sort(hist_obj_aux.elevation['data'])
+        ind_ang = np.argsort(hist_obj_aux.elevation['data'])
+        ang_min = np.min(hist_obj_aux.elevation['data'])
+        ang_max = np.max(hist_obj_aux.elevation['data'])
+        field = hist_obj_aux.fields[field_name]['data'][ind_ang, :]
+        labelx = 'elevation angle (degrees)'
+    else:
+        field = hist_obj_aux.fields[field_name]['data']
+        ang = np.array(range(hist_obj_aux.nrays))
+        ang_min = 0
+        ang_max = hist_obj_aux.nrays-1
+        labelx = 'ray number'
+
+    # compute percentiles of the histogram
+    az_percentile_ref = np.ma.empty(len(ang))
+    az_percentile_ref[:] = np.ma.masked
+    az_percentile_low = deepcopy(az_percentile_ref)
+    az_percentile_high = deepcopy(az_percentile_ref)
+    for ray in range(len(ang)):
+        quantiles, values_ray = compute_quantiles_from_hist(
+            hist_obj.range['data'], field[ray, :], quantiles=quantiles)
+
+        az_percentile_low[ray] = values_ray[0]
+        az_percentile_ref[ray] = values_ray[1]
+        az_percentile_high[ray] = values_ray[2]
+
+    quantiles, values_sweep = compute_quantiles_from_hist(
+        hist_obj.range['data'], np.ma.sum(field, axis=0),
+        quantiles=quantiles)
+
+    # mask 0 data
+    field = np.ma.masked_where(field == 0, field)
+
+    # display data
+    if hist_type == 'instant':
+        titl = pyart.graph.common.generate_title(
+            hist_obj_aux, field_name, ind_sweep)
+    else:
+        titl = (
+                '{:.1f}'.format(hist_obj_aux.fixed_angle['data'][0])+' Deg. ' +
+                pyart.graph.common.generate_radar_time_begin(
+                    hist_obj).strftime('%Y-%m-%d') + '\n' +
+                get_field_name(hist_obj.fields[field_name], field_name))
+    label = 'Number of Points'
+    labely = get_colobar_label(hist_obj_aux.fields[field_name], field_name)
+
+    fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
+                              prdcfg['ppiImageConfig']['ysize']],
+                     dpi=72)
+    ax = fig.add_subplot(111)
+
+    cmap = pyart.config.get_field_colormap(field_name)
+    vmin, vmax = pyart.config.get_field_limits(field_name)
+
+    rmin = hist_obj_aux.range['data'][0]/1000.
+    rmax = hist_obj_aux.range['data'][-1]/1000.
+    cax = ax.imshow(
+        np.ma.transpose(field), origin='lower', cmap=cmap, vmin=0.,
+        vmax=np.max(field), extent=(ang_min, ang_max, vmin, vmax),
+        aspect='auto', interpolation='none')
+
+    # plot reference
+    plt.plot(ang, np.zeros(len(ang))+ref_value, 'k--')
+
+    # plot quantiles
+    plt.plot(ang, np.zeros(len(ang))+values_sweep[1], 'r')
+    plt.plot(ang, np.zeros(len(ang))+values_sweep[0], 'r--')
+    plt.plot(ang, np.zeros(len(ang))+values_sweep[2], 'r--')
+
+    plt.plot(ang, az_percentile_ref, 'k')
+    plt.plot(ang, az_percentile_low, 'k--')
+    plt.plot(ang, az_percentile_high, 'k--')
+
+    plt.xlabel(labelx)
+    plt.ylabel(labely)
+    plt.title(titl)
+
+    cb = fig.colorbar(cax)
+    cb.set_label(label)
+
+    fig.savefig(fname)
+    plt.close()
+
+    return fname
+
+
 def plot_quantiles(quant, value, fname, labelx='quantile', labely='value',
                    titl='quantile'):
     """
@@ -342,7 +472,7 @@ def plot_quantiles(quant, value, fname, labelx='quantile', labely='value',
     quant : array
         quantiles to be plotted
     value : array
-        values of each quantie
+        values of each quantile
     fname : str
         name of the file where to store the plot
     labelx : str
@@ -373,14 +503,14 @@ def plot_quantiles(quant, value, fname, labelx='quantile', labely='value',
 def plot_histogram(bins, values, fname, labelx='bins',
                    labely='Number of Samples', titl='histogram'):
     """
-    plots histogram
+    computes and plots histogram
 
     Parameters
     ----------
-    quant : array
-        quantiles to be plotted
-    value : array
-        values of each quantie
+    bins : array
+        histogram bins
+    values : array
+        data values
     fname : str
         name of the file where to store the plot
     labelx : str
@@ -398,6 +528,44 @@ def plot_histogram(bins, values, fname, labelx='bins',
     """
     fig = plt.figure(figsize=[10, 6])
     plt.hist(values, bins=bins)
+    plt.xlabel(labelx)
+    plt.ylabel(labely)
+    plt.title(titl)
+
+    fig.savefig(fname)
+    plt.close()
+
+    return fname
+
+
+def plot_histogram2(bins, hist, fname, labelx='bins',
+                    labely='Number of Samples', titl='histogram'):
+    """
+    plots histogram
+
+    Parameters
+    ----------
+    quant : array
+        histogram bins
+    hist : array
+        values for each bin
+    fname : str
+        name of the file where to store the plot
+    labelx : str
+        The label of the X axis
+    labely : str
+        The label of the Y axis
+    titl : str
+        The figure title
+
+    Returns
+    -------
+    fname : str
+        the name of the created plot file
+
+    """
+    fig = plt.figure(figsize=[10, 6])
+    plt.bar(bins, hist, width=bins[1]-bins[0])
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)
@@ -522,6 +690,58 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname,
     return fname
 
 
+def plot_monitoring_ts(date, cquant, lquant, hquant, field_name, fname,
+                       ref_value=None, labelx='Time [UTC]', labely='Value',
+                       titl='Time Series'):
+    """
+    plots a time series of monitoring data
+
+    Parameters
+    ----------
+    date : datetime object
+        time of the time series
+    cquant, lquant, hquant : float array
+        values of the central, low and high quantiles
+    field_name : str
+        name of the field
+    fname : str
+        name of the file where to store the plot
+    ref_value : float
+        the reference value
+    labelx : str
+        The label of the X axis
+    labely : str
+        The label of the Y axis
+    titl : str
+        The figure title
+
+    Returns
+    -------
+    fname : str
+        the name of the created plot file
+
+    """
+    vmin, vmax = pyart.config.get_field_limits(field_name)
+
+    fig = plt.figure(figsize=[10, 6])
+    plt.plot(date, cquant)
+    plt.plot(date, lquant, 'r')
+    plt.plot(date, hquant, 'r')
+    if ref_value is not None:
+        plt.plot(date, np.zeros(len(date))+ref_value, 'k--')
+    plt.xlabel(labelx)
+    plt.ylabel(labely)
+    plt.title(titl)
+
+    axes = plt.gca()
+    axes.set_ylim([vmin, vmax])
+
+    fig.savefig(fname)
+    plt.close()
+
+    return fname
+
+
 def plot_sun_hits(field, field_name, fname, prdcfg):
     """
     plots the sun hits
@@ -624,7 +844,7 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname):
         value = sun_retrieval[2]
         labely = 'Number of sun hits H channel'
         vmin = 0
-        vmax = 30
+        vmax = np.max(sun_retrieval[2])+1
     elif data_type == 'el_width_h':
         value = sun_retrieval[3]
         labely = 'Elevation beamwidth H channel (Deg)'
@@ -659,13 +879,13 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname):
         value_std = sun_retrieval[8]
         ref = np.zeros(len(value))
         labely = 'Receiver bias H channel (dB)'
-        vmin = -2.
-        vmax = 2.
+        vmin = -5.
+        vmax = 5.
     elif data_type == 'nhits_v':
         value = sun_retrieval[9]
         labely = 'Number of sun hits V channel'
         vmin = 0
-        vmax = 30
+        vmax = np.max(sun_retrieval[9])+1
     elif data_type == 'el_width_v':
         value = sun_retrieval[10]
         labely = 'Elevation beamwidth V channel (Deg)'
@@ -700,13 +920,13 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname):
         value_std = sun_retrieval[15]
         ref = np.zeros(len(value))
         labely = 'Receiver bias V channel (dB)'
-        vmin = -2.
-        vmax = 2.
+        vmin = -5.
+        vmax = 5.
     elif data_type == 'nhits_zdr':
         value = sun_retrieval[16]
         labely = 'Number of sun hits ZDR'
         vmin = 0
-        vmax = 30
+        vmax = np.max(sun_retrieval[16])+1
     elif data_type == 'ZDR_sun_est':
         value = sun_retrieval[17]
         value_std = sun_retrieval[18]
@@ -726,7 +946,7 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname):
         plt.plot(date, value+value_std, 'r')
         plt.plot(date, value-value_std, 'r')
     if ref is not None:
-        plt.plot(date, ref, 'r')
+        plt.plot(date, ref, 'k--')
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)

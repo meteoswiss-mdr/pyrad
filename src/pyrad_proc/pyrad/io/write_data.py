@@ -8,6 +8,7 @@ Functions for writing pyrad output data
     :toctree: generated/
 
     write_timeseries
+    write_monitoring_ts
     write_sun_hits
     write_sun_retrieval
     generate_field_name_str
@@ -82,6 +83,76 @@ def write_timeseries(dataset, fname):
                  'el': dataset['used_antenna_coordinates_az_el_r'][1],
                  'r': dataset['used_antenna_coordinates_az_el_r'][2],
                  'value': dataset['value']})
+            csvfile.close()
+
+    return fname
+
+
+def write_monitoring_ts(start_time, np_t, values, quantiles, datatype, fname):
+    """
+    writes time series of data
+
+    Parameters
+    ----------
+    start_time : datetime object
+        the time of the monitoring
+    np_t : int
+        the total number of points
+    values: float array
+        the values at certain quantiles
+    quantiles: float array
+        the quantiles computed
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    values_aux = values.filled(fill_value=get_fillvalue())
+    filelist = glob.glob(fname)
+    if len(filelist) == 0:
+        with open(fname, 'w', newline='') as csvfile:
+            csvfile.write('# Weather radar monitoring timeseries data file\n')
+            csvfile.write('# Comment lines are preceded by "#"\n')
+            csvfile.write('# Description: \n')
+            csvfile.write('# Time series of a monitoring of weather radar' +
+                          ' data.\n')
+            csvfile.write(
+                '# Quantiles: '+str(quantiles[1])+', '+str(quantiles[0])+', ' +
+                str(quantiles[2])+' percent.\n')
+            csvfile.write(
+                '# Data: '+generate_field_name_str(datatype)+'\n')
+            csvfile.write('# Fill Value: '+str(get_fillvalue())+'\n')
+            csvfile.write(
+                '# Start: ' +
+                start_time.strftime('%Y-%m-%d %H:%M:%S UTC')+'\n')
+            csvfile.write('#\n')
+
+            fieldnames = ['date', 'NP', 'central_quantile', 'low_quantile',
+                          'high_quantile']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writeheader()
+            writer.writerow(
+                {'date': start_time.strftime('%Y%m%d%H%M%S'),
+                 'NP': np_t,
+                 'central_quantile': values_aux[1],
+                 'low_quantile': values_aux[0],
+                 'high_quantile': values_aux[2]})
+            csvfile.close()
+    else:
+        with open(fname, 'a', newline='') as csvfile:
+            fieldnames = ['date', 'NP', 'central_quantile', 'low_quantile',
+                          'high_quantile']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writerow(
+                {'date': start_time.strftime('%Y%m%d%H%M%S'),
+                 'NP': np_t,
+                 'central_quantile': values_aux[1],
+                 'low_quantile': values_aux[0],
+                 'high_quantile': values_aux[2]})
             csvfile.close()
 
     return fname
@@ -207,6 +278,8 @@ def write_sun_retrieval(sun_retrieval, fname):
         the name of the file where data has written
 
     """
+    first_hit_time = sun_retrieval['first_hit_time'].strftime('%Y%m%d%H%M%S')
+    last_hit_time = sun_retrieval['last_hit_time'].strftime('%Y%m%d%H%M%S')
     el_width_h = sun_retrieval['el_width_h'].filled(fill_value=get_fillvalue())
     az_width_h = sun_retrieval['az_width_h'].filled(fill_value=get_fillvalue())
     el_bias_h = sun_retrieval['el_bias_h'].filled(fill_value=get_fillvalue())
@@ -231,6 +304,9 @@ def write_sun_retrieval(sun_retrieval, fname):
         fill_value=get_fillvalue())
     dBm_sun_ref = sun_retrieval['dBm_sun_ref'].filled(
         fill_value=get_fillvalue())
+    ref_time = 'None'
+    if sun_retrieval['ref_time'] is not None:
+        ref_time = sun_retrieval['ref_time'].strftime('%Y%m%d%H%M%S')
 
     filelist = glob.glob(fname)
     if len(filelist) == 0:
@@ -246,15 +322,14 @@ def write_sun_retrieval(sun_retrieval, fname):
                 'el_bias_h', 'az_bias_h', 'dBm_sun_est', 'std(dBm_sun_est)',
                 'nhits_v', 'el_width_v', 'az_width_v',
                 'el_bias_v', 'az_bias_v', 'dBmv_sun_est', 'std(dBmv_sun_est)',
-                'nhits_zdr', 'ZDR_sun_est', 'std(ZDR_sun_est)', 'dBm_sun_ref']
+                'nhits_zdr', 'ZDR_sun_est', 'std(ZDR_sun_est)', 'dBm_sun_ref',
+                'ref_time']
 
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
             writer.writerow(
-                {'first_hit_time': sun_retrieval['first_hit_time'].strftime(
-                    '%Y%m%d%H%M%S'),
-                 'last_hit_time': sun_retrieval['last_hit_time'].strftime(
-                    '%Y%m%d%H%M%S'),
+                {'first_hit_time': first_hit_time,
+                 'last_hit_time': last_hit_time,
                  'nhits_h': sun_retrieval['nhits_h'],
                  'el_width_h': el_width_h,
                  'az_width_h': az_width_h,
@@ -272,7 +347,8 @@ def write_sun_retrieval(sun_retrieval, fname):
                  'nhits_zdr': sun_retrieval['nhits_zdr'],
                  'ZDR_sun_est': zdr_sun_est,
                  'std(ZDR_sun_est)': std_zdr_sun_est,
-                 'dBm_sun_ref': dBm_sun_ref})
+                 'dBm_sun_ref': dBm_sun_ref,
+                 'ref_time': ref_time})
             csvfile.close()
     else:
         with open(fname, 'a', newline='') as csvfile:
@@ -282,14 +358,13 @@ def write_sun_retrieval(sun_retrieval, fname):
                 'el_bias_h', 'az_bias_h', 'dBm_sun_est', 'std(dBm_sun_est)',
                 'nhits_v', 'el_width_v', 'az_width_v',
                 'el_bias_v', 'az_bias_v', 'dBmv_sun_est', 'std(dBmv_sun_est)',
-                'nhits_zdr', 'ZDR_sun_est', 'std(ZDR_sun_est)', 'dBm_sun_ref']
+                'nhits_zdr', 'ZDR_sun_est', 'std(ZDR_sun_est)', 'dBm_sun_ref',
+                'ref_time']
 
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writerow(
-                {'first_hit_time': sun_retrieval['first_hit_time'].strftime(
-                    '%Y%m%d%H%M%S'),
-                 'last_hit_time': sun_retrieval['last_hit_time'].strftime(
-                    '%Y%m%d%H%M%S'),
+                {'first_hit_time': first_hit_time,
+                 'last_hit_time': last_hit_time,
                  'nhits_h': sun_retrieval['nhits_h'],
                  'el_width_h': el_width_h,
                  'az_width_h': az_width_h,
@@ -307,7 +382,8 @@ def write_sun_retrieval(sun_retrieval, fname):
                  'nhits_zdr': sun_retrieval['nhits_zdr'],
                  'ZDR_sun_est': zdr_sun_est,
                  'std(ZDR_sun_est)': std_zdr_sun_est,
-                 'dBm_sun_ref': dBm_sun_ref})
+                 'dBm_sun_ref': dBm_sun_ref,
+                 'ref_time': ref_time})
             csvfile.close()
 
     return fname

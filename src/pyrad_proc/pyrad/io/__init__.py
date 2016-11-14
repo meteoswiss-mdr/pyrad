@@ -33,6 +33,7 @@ Reading other data
     read_rad4alp_cosmo
     read_rad4alp_vis
     read_timeseries
+    read_monitoring_ts
     get_sensor_data
     read_smn
     read_disdro_scattering
@@ -49,6 +50,7 @@ Writing data
     :toctree: generated/
 
     write_timeseries
+    write_monitoring_ts
     write_sun_hits
     write_sun_retrieval
 
@@ -75,13 +77,13 @@ from .config import read_config
 from .read_data_radar import get_data
 
 from .read_data_other import read_status, read_rad4alp_cosmo, read_rad4alp_vis
-from .read_data_other import read_timeseries
+from .read_data_other import read_timeseries, read_monitoring_ts
 from .read_data_other import get_sensor_data, read_smn, read_disdro_scattering
 from .read_data_other import read_sun_hits, read_sun_hits_multiple_days
 from .read_data_other import read_sun_retrieval, read_solar_flux
 from .read_data_other import read_selfconsistency
 
-from .write_data import write_timeseries
+from .write_data import write_timeseries, write_monitoring_ts
 from .write_data import write_sun_hits, write_sun_retrieval
 
 from .io_aux import get_save_dir, make_filename
