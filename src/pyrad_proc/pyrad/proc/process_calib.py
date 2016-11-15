@@ -11,10 +11,10 @@ Functions for monitoring data quality and correct bias and noise effects
     process_correct_noise_rhohv
     process_selfconsistency_kdp_phidp
     process_selfconsistency_bias
+    process_estimate_phidp0
     process_rhohv_rain
     process_zdr_rain
-    process_monitoring    
-    process_estimate_phidp0
+    process_monitoring
     process_sun_hits
 
 """
@@ -31,8 +31,7 @@ from ..io.read_data_other import read_selfconsistency
 from ..io.read_data_other import read_sun_hits_multiple_days, read_solar_flux
 from ..io.read_data_radar import interpol_field
 
-from ..util.radar_utils import compute_quantiles_sweep, get_closest_solar_flux
-from ..util.radar_utils import compute_histogram, get_histogram_bins
+from ..util.radar_utils import get_closest_solar_flux, get_histogram_bins
 
 
 def process_correct_bias(procstatus, dscfg, radar=None):
@@ -334,7 +333,7 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
 
     if procstatus != 1:
         return None
-    
+
     temp = None
     for datatypedescr in dscfg['datatype']:
         datagroup, datatype, dataset, product = get_datatype_fields(
@@ -357,19 +356,19 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
             rhohv = 'cross_correlation_ratio'
         if datatype == 'RhoHVc':
             rhohv = 'corrected_cross_correlation_ratio'
-    
+
     if ((refl not in radar.fields) or
             (zdr not in radar.fields) or
             (phidp not in radar.fields) or
             (rhohv not in radar.fields)):
         warn('Unable to estimate reflectivity bias using selfconsistency. ' +
-            'Missing data')
+             'Missing data')
         return None
-    
+
     if (temp is not None) and (temp not in radar.fields):
         warn('COSMO temperature field not available. ' +
-            'Using fixed freezing level height')
-    
+             'Using fixed freezing level height')
+
     fzl = None
     if (temp is None) or (temp not in radar.fields):
         if 'fzl' in dscfg:
@@ -377,8 +376,8 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
         else:
             fzl = 2000.
             warn('Freezing level height not defined. Using default ' +
-                str(fzl)+' m')
-    
+                 str(fzl)+' m')
+
     # default values
     rsmooth = 1000.
     min_rhohv = 0.92
@@ -387,7 +386,7 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
     rcell = 1000.
     dphidp_min = 2.
     dphidp_max = 16.
-    
+
     # get user defined values
     if 'rsmooth' in dscfg:
         rsmooth = dscfg['rsmooth']
@@ -403,36 +402,36 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
         dphidp_min = dscfg['dphidp_min']
     if 'dphidp_max' in dscfg:
         dphidp_max = dscfg['dphidp_max']
-    
+
     fname = (
         dscfg['configpath'] + 'selfconsistency/' +
         'selfconsistency_zdr_zhkdp_Xband_temp10_elev000_mu05.txt')
     zdr_kdpzh_table = read_selfconsistency(fname)
-    
+
     r_res = radar.range['data'][1]-radar.range['data'][0]
     smooth_wind_len = int(rsmooth/r_res)
     min_rcons = int(rcell/r_res)
-    
+
     step = None
     if 'step' in dscfg:
         step = dscfg['step']
-    
+
     refl_bias = pyart.correct.selfconsistency_bias(
         radar, zdr_kdpzh_table, min_rhohv=min_rhohv, max_phidp=max_phidp,
         smooth_wind_len=smooth_wind_len, doc=15, fzl=fzl,
         thickness=ml_thickness, min_rcons=min_rcons, dphidp_min=dphidp_min,
         dphidp_max=dphidp_max, refl_field=refl, phidp_field=phidp,
         zdr_field=zdr, temp_field=temp, rhohv_field=rhohv)
-     
+
     # prepare for exit
     new_dataset = deepcopy(radar)
     new_dataset.fields = dict()
-    
+
     new_dataset.add_field('reflectivity_bias', refl_bias)
-    
+
     return new_dataset
-    
-    
+
+
 def process_estimate_phidp0(procstatus, dscfg, radar=None):
     """
     estimates the system differential phase offset at each ray
@@ -470,8 +469,8 @@ def process_estimate_phidp0(procstatus, dscfg, radar=None):
     """
 
     if procstatus != 1:
-        return None    
-    
+        return None
+
     for datatypedescr in dscfg['datatype']:
         datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
@@ -485,25 +484,25 @@ def process_estimate_phidp0(procstatus, dscfg, radar=None):
             psidp_field = 'corrected_differential_phase'
         if datatype == 'uPhiDP':
             psidp_field = 'uncorrected_differential_phase'
-    
+
     if (refl_field not in radar.fields) or (psidp_field not in radar.fields):
         warn('Unable to estimate PhiDP system offset. Missing data')
         return None
-    
+
     ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
     ind_rmax = np.where(radar.range['data'] < dscfg['rmax'])[0][-1]
     r_res = radar.range['data'][1]-radar.range['data'][0]
     min_rcons = int(dscfg['rcell']/r_res)
-    
+
     step = None
     if 'step' in dscfg:
         step = dscfg['step']
-    
+
     phidp0, first_gates = pyart.correct.det_sys_phase_ray(
         radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, min_rcons=min_rcons,
         zmin=dscfg['Zmin'], zmax=dscfg['Zmax'], phidp_field=psidp_field,
         refl_field=refl_field)
-        
+
     # prepare for exit
     new_dataset = deepcopy(radar)
     new_dataset.fields = dict()
@@ -769,7 +768,7 @@ def process_zdr_rain(procstatus, dscfg, radar=None):
     new_dataset.add_field('differential_reflectivity_in_rain', zdr_rain)
 
     return new_dataset
-    
+
 
 def process_monitoring(procstatus, dscfg, radar=None):
     """
@@ -796,7 +795,7 @@ def process_monitoring(procstatus, dscfg, radar=None):
         radar object
 
     """
-    
+
     if procstatus == 0:
         return None
 
@@ -806,60 +805,60 @@ def process_monitoring(procstatus, dscfg, radar=None):
                 datatypedescr)
             field_name = get_fieldname_pyart(datatype)
             break
-    
+
         if field_name not in radar.fields:
             warn(field_name+' not available.')
             return None
-    
+
         step = None
         if 'step' in dscfg:
             step = dscfg['step']
-        
+
         bins = get_histogram_bins(field_name, step=step)
         nbins = len(bins)-1
-        
+
         radar_aux = deepcopy(radar)
         radar_aux.fields = dict()
         radar_aux.range['data'] = bins[0:-1]
         radar_aux.ngates = nbins
-        
-        field_dict = pyart.config.get_metadata(field_name)            
+
+        field_dict = pyart.config.get_metadata(field_name)
         field_dict['data'] = np.ma.zeros((radar.nrays, nbins), dtype=int)
-        
+
         for ray in range(radar.nrays):
             field_dict['data'][ray, :], bin_edges = np.histogram(
                 radar.fields[field_name]['data'][ray, :].compressed(),
                 bins=bins)
-        
+
         radar_aux.add_field(field_name, field_dict)
-        
+
         # keep histogram in Memory or add to existing histogram
         if dscfg['initialized'] == 0:
-            
+
             dscfg['global_data'] = radar_aux
             dscfg['initialized'] = 1
         else:
             field_interp = interpol_field(
-                dscfg['global_data'], radar_aux, field_name, fill_value=0)            
+                dscfg['global_data'], radar_aux, field_name, fill_value=0)
             dscfg['global_data'].fields[field_name]['data'] += (
                 field_interp['data'].filled(fill_value=0)).astype('int64')
-                
-        dataset = dict()        
+
+        dataset = dict()
         dataset.update({'hist_obj': radar_aux})
         dataset.update({'hist_type': 'instant'})
-        
+
         return dataset
-        
+
     if procstatus == 2:
         if dscfg['initialized'] == 0:
             return None
-        
-        dataset = dict()        
+
+        dataset = dict()
         dataset.update({'hist_obj': dscfg['global_data']})
         dataset.update({'hist_type': 'cumulative'})
-        
+
         return dataset
-        
+
 
 def process_sun_hits(procstatus, dscfg, radar=None):
     """
@@ -1047,7 +1046,7 @@ def process_sun_hits(procstatus, dscfg, radar=None):
 
         sun_pwr_h = sun_hits[7]
         sun_pwr_v = sun_hits[11]
-        
+
         sun_pwr_ref = np.ma.asarray(np.ma.masked)
         ref_time = None
         if (('pulse_width' in dscfg['global_data']) and

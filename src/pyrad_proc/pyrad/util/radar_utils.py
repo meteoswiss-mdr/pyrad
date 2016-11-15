@@ -59,8 +59,8 @@ def get_closest_solar_flux(hit_datetime_list, flux_datetime_list,
         # solar flux observation within 24h of sun hit
         time_diff = abs(flux_datetime_closest-datetime).total_seconds()
         if time_diff < 86400.:
-            flux_value_closest_list[i] = flux_value_list[
-                flux_datetime_list == flux_datetime_closest]
+            ind = flux_datetime_list.index(flux_datetime_closest)
+            flux_value_closest_list[i] = flux_value_list[ind]
         else:
             warn('Nearest solar flux observation further than ' +
                  str(time_diff)+' s in time')
