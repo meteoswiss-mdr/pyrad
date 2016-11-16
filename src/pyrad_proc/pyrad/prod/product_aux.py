@@ -7,7 +7,7 @@ Auxiliary functions to generate products
 .. autosummary::
     :toctree: generated/
 
-    get_product_type
+    get_product_func
 
 """
 
@@ -20,7 +20,7 @@ import numpy as np
 import pyart
 
 
-def get_product_type(product_type):
+def get_product_func(product_type):
     """
     maps the product type into its processing function
 

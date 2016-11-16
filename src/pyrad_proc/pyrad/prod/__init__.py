@@ -28,7 +28,7 @@ Product generation
 
 """
 
-from .product_aux import get_product_type
+from .product_aux import get_product_func
 
 from .process_product import generate_vol_products
 from .process_product import generate_timeseries_products

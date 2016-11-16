@@ -4,7 +4,7 @@
 Pyrad is a Python module containing
 the utilities that run the MeteoSwiss radar processing framework.
 It is designed so that it accepts a growing number of radar data types.
-The core of the processing is performed by the module Py-ART. 
+The core of the processing is performed by the module Py-ART.
 
 """
 
@@ -73,7 +73,7 @@ def git_version():
     try:
         out = _minimal_ext_cmd(['git', 'rev-parse', 'HEAD'])
         GIT_REVISION = out.strip().decode('ascii')
-    except OSError:
+    except OSError as ee:
         GIT_REVISION = "Unknown"
 
     return GIT_REVISION
@@ -105,7 +105,7 @@ if not release:
     # Adding the git rev number needs to be done inside write_version_py(),
     # otherwise the import of pyrad.version messes up the build under Python 3.
     FULLVERSION = VERSION
-    if os.path.exists('.git'):
+    if os.path.exists('../../.git'):
         GIT_REVISION = git_version()
     elif os.path.exists('pyrad/version.py'):
         # must be a source distribution, use existing version file

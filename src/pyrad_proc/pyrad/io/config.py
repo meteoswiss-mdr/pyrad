@@ -17,6 +17,8 @@ Functions for reading pyrad config files
 
 """
 
+import os
+import re
 import numpy as np
 from warnings import warn
 
@@ -40,6 +42,13 @@ def read_config(fname, cfg=None):
         dictionary of dictionaries containing the configuration parameters
 
     """
+
+    # Replace $HOME by the users home directory
+    if re.match("^\$HOME", fname) or re.match("^\$\{HOME\}", fname):
+        homedir = os.path.expanduser("~")
+        fname = fname.replace("{", "")
+        fname = fname.replace("}", "")
+        fname = fname.replace("$HOME", homedir)
 
     # check if the file can be read
     try:
