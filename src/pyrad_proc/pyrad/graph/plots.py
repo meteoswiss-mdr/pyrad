@@ -690,7 +690,7 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname,
     return fname
 
 
-def plot_monitoring_ts(date, cquant, lquant, hquant, field_name, fname,
+def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name, fname,
                        ref_value=None, labelx='Time [UTC]', labely='Value',
                        titl='Time Series'):
     """
@@ -724,17 +724,24 @@ def plot_monitoring_ts(date, cquant, lquant, hquant, field_name, fname,
     vmin, vmax = pyart.config.get_field_limits(field_name)
 
     fig = plt.figure(figsize=[10, 6])
+
+    ax = fig.add_subplot(2, 1, 1)
     plt.plot(date, cquant)
     plt.plot(date, lquant, 'r')
     plt.plot(date, hquant, 'r')
     if ref_value is not None:
         plt.plot(date, np.zeros(len(date))+ref_value, 'k--')
-    plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)
 
     axes = plt.gca()
     axes.set_ylim([vmin, vmax])
+
+    ax = fig.add_subplot(2, 1, 2)
+    plt.plot(date, np_t)
+
+    plt.ylabel('Number of Samples')
+    plt.xlabel(labelx)
 
     fig.savefig(fname)
     plt.close()

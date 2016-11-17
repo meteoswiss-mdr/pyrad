@@ -61,6 +61,7 @@ Monitoring, calibration and noise correction
     process_selfconsistency_bias
     process_monitoring
     process_estimate_phidp0
+    process_time_avg
 
 Retrievals
 ==========
@@ -93,7 +94,7 @@ from .process_phase import process_attenuation
 
 from .process_calib import process_correct_bias, process_correct_noise_rhohv
 from .process_calib import process_rhohv_rain, process_zdr_rain
-from .process_calib import process_monitoring
+from .process_calib import process_monitoring, process_time_avg
 from .process_calib import process_estimate_phidp0
 from .process_calib import process_sun_hits
 from .process_calib import process_selfconsistency_kdp_phidp

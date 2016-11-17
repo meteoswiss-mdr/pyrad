@@ -1012,7 +1012,7 @@ def generate_monitoring_products(dataset, prdcfg):
         labely = generate_field_name_str(prdcfg['voltype'])
 
         plot_monitoring_ts(
-            date, cquant_vec, lquant_vec, hquant_vec, field_name,
+            date, np_t_vec, cquant_vec, lquant_vec, hquant_vec, field_name,
             savedir+figfname, ref_value=ref_value, labelx='Time UTC',
             labely=labely, titl=titl)
         print('saved figure: '+savedir+figfname)

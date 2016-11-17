@@ -149,6 +149,8 @@ sun_hit_h = 'sun_hit_h'
 sun_hit_v = 'sun_hit_v'
 sun_hit_zdr = 'sun_hit_zdr'
 
+number_of_samples = 'number_of_samples'
+
 # COSMO data fields
 temperature = 'temperature'
 iso0 = 'iso0'
@@ -298,6 +300,7 @@ DEFAULT_FIELD_NAMES = {
     'northward_wind_component': northward_wind_component,
     'vertical_wind_component': vertical_wind_component,
     'height': height,
+    'number_of_samples': number_of_samples,
     'interpolated_profile': interpolated_profile,
 }
 
@@ -900,6 +903,12 @@ DEFAULT_METADATA = {
         'units': 'dB/km',
         'standard_name': 'specific_differential_attenuation',
         'long_name': 'Specific differential attenuation',
+        'coordinates': 'elevation azimuth range'},
+        
+    number_of_samples: {
+        'units': 'count',
+        'standard_name': 'number_of_samples',
+        'long_name': 'Number of samples in average',
         'coordinates': 'elevation azimuth range'},
 
     # COSMO model data

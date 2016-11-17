@@ -1,6 +1,6 @@
 # Name of this configuration:
 # Will be used in product generation save path
-name STRING mals_emm_vol
+name STRING mals_emm_vol_fvj
 
 # Base path of the raw data.
 # Note: Must have a trailing '/'

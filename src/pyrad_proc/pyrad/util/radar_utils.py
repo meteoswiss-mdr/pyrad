@@ -7,6 +7,7 @@ Miscellaneous functions dealing with radar data
 .. autosummary::
     :toctree: generated/
 
+    time_avg_range
     get_closest_solar_flux
     create_sun_hits_field
     create_sun_retrieval_field
@@ -18,10 +19,49 @@ Miscellaneous functions dealing with radar data
 
 """
 from warnings import warn
+from copy import deepcopy
+import datetime
 
 import numpy as np
 
 import pyart
+
+
+def time_avg_range(timeinfo, avg_starttime, avg_endtime, period):
+    """
+    finds the new start and end time of an averaging
+
+    Parameters
+    ----------
+    timeinfo : datetime
+        the current volume time
+    avg_starttime : datetime
+        the current average start time
+    avg_endtime: datetime
+        the current average end time
+    period: float
+        the averaging period
+
+    Returns
+    -------
+    new_starttime : datetime
+        the new average start time
+    new_endtime : datetime
+        the new average end time
+
+    """
+    new_starttime = deepcopy(avg_starttime)
+    new_endtime = deepcopy(avg_endtime)
+
+    within_range = False
+    while not within_range:
+        if timeinfo > new_endtime:
+            new_startime += datetime.timedelta(seconds=period)
+            new_endtime += datetime.timedelta(seconds=period)
+        else:
+            within_range = True
+
+    return new_starttime, new_endtime
 
 
 def get_closest_solar_flux(hit_datetime_list, flux_datetime_list,
