@@ -327,6 +327,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'radar_estimated_rain_rate'
     elif datatype == 'hydro':
         field_name = 'radar_echo_classification'
+    elif datatype == 'time_avg_flag':
+        field_name = 'time_avg_flag'
     else:
         raise ValueError('ERROR: Unknown data type '+datatype)
 

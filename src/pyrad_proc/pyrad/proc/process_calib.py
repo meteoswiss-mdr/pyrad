@@ -17,6 +17,7 @@ Functions for monitoring data quality and correct bias and noise effects
     process_monitoring
     process_time_avg
     process_weighted_time_avg
+    process_time_avg_flag
     process_sun_hits
 
 """
@@ -1188,6 +1189,191 @@ def process_weighted_time_avg(procstatus, dscfg, radar=None):
 
         dscfg['global_data']['radar_obj'].fields[field_name]['data'] /= (
             dscfg['global_data']['radar_obj'].fields[refl_name]['data'])
+
+        new_dataset = deepcopy(dscfg['global_data']['radar_obj'])
+
+        return new_dataset
+
+
+def process_time_avg_flag(procstatus, dscfg, radar=None):
+    """
+    computes a flag field describing the conditions of the data used while
+    averaging
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        period : float. Dataset keyword
+            the period to average [s]. Default 3600.
+        start_average : float. Dataset keyword
+            when to start the average [s from midnight UTC]. Default 0.
+        phidpmax: float. Dataset keyword
+            maximum PhiDP
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+    temp_name = None
+    hydro_name = None
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        if ((datatype == 'PhiDP') or (datatype == 'PhiDPc')):
+            phidp_name = get_fieldname_pyart(datatype)
+        elif datatype == 'echoID':
+            echo_name = get_fieldname_pyart(datatype)
+        elif datatype == 'hydro':
+            hydro_name = get_fieldname_pyart(datatype)
+        elif datatype == 'TEMP':
+            temp_name = get_fieldname_pyart(datatype)
+
+    if procstatus == 0:
+        return None
+
+    if procstatus == 1:
+        phidpmax = 60.
+        if 'phidpmax' in dscfg:
+            phidpmax = dscfg['phidpmax']
+
+        period = 3600.
+        if 'period' in dscfg:
+            period = dscfg['period']
+
+        time_avg_flag = pyart.config.get_metadata('time_avg_flag')
+        time_avg_flag['data'] = np.ma.zeros(
+            (radar.nrays, radar.ngates), dtype=int)
+
+        if phidp_name not in radar.fields:
+            warn('Missing PhiDP data')
+            time_avg_flag['data'] += 1
+        else:
+            phidp_field = radar.fields[phidp_name]
+            time_avg_flag['data'][phidp_field['data'] > phidpmax] += 1
+
+        if echo_name not in radar.fields:
+            warn('Missing echo ID data')
+            time_avg_flag['data'] += 100
+        else:
+            echo_field = radar.fields[echo_name]
+            time_avg_flag['data'][echo_field['data'] == 2] += 100
+
+        if hydro_name is not None:
+            if hydro_name not in radar.fields:
+                warn('Missing hydrometeor classification data')
+                time_avg_flag['data'] += 10000
+            else:
+                hydro_field = radar.fields[hydro_name]
+                is_not_rain = ((hydro_field['data'] != 3) and
+                               (hydro_field['data'] != 5))
+                time_avg_flag['data'][is_not_rain] += 10000
+        elif temp_name is not None:
+            if temp_name not in radar.fields:
+                warn('Missing temperature data')
+                time_avg_flag['data'] += 10000
+            else:
+                if 'radar_beam_width_h' in radar.instrument_parameters:
+                    beamwidth = (
+                        radar.instrument_parameters[
+                            'radar_beam_width_h']['data'][0])
+                else:
+                    warn('Unknown radar antenna beamwidth.')
+                    beamwidth = None
+
+                mask_fzl, end_gate_arr = get_mask_fzl(
+                    radar, fzl=None, doc=None, min_temp=0., thickness=700.,
+                    beamwidth=beamwidth, temp_field=temp_name)
+                time_avg_flag['data'][mask] += 10000
+
+        radar_aux = deepcopy(radar)
+        radar_aux.fields = dict()
+        radar_aux.add_field('time_avg_flag', time_avg_flag)
+
+        # first volume: initialize start and end time of averaging
+        if dscfg['initialized'] == 0:
+            start_average = 0.  # seconds from midnight
+            if 'start_average' in dscfg:
+                start_average = dscfg['start_average']
+
+            date_00 = dscfg['timeinfo'].replace(
+                hour=0, minute=0, second=0, microsecond=0)
+
+            avg_par = dict()
+            avg_par.update(
+                {'starttime': date_00+datetime.timedelta(
+                    seconds=start_average)})
+            avg_par.update(
+                {'endtime': avg_par['starttime']+datetime.timedelta(
+                    seconds=period)})
+            dscfg['global_data'] = avg_par
+            dscfg['initialized'] = 1
+
+        # no radar object in global data: create it
+        if 'radar_obj' not in dscfg['global_data']:
+            # get start and stop times of new radar object
+            (dscfg['global_data']['starttime'],
+             dscfg['global_data']['endtime']) = (
+                time_avg_range(
+                    dscfg['timeinfo'], dscfg['global_data']['starttime'],
+                    dscfg['global_data']['endtime'], period))
+
+            # check if volume time older than starttime
+            if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
+                dscfg['global_data'].update({'radar_obj': radar_aux})
+
+            return None
+
+        # still accumulating: add field to global field
+        if dscfg['timeinfo'] < dscfg['global_data']['endtime']:
+            flag_interp = interpol_field(
+                dscfg['global_data']['radar_obj'], radar_aux, 'time_avg_flag')
+            dscfg['global_data']['radar_obj'].fields[
+                'time_avg_flag']['data'] += (
+                    flag_interp['data'].filled(fill_value=0)).astype(int)
+
+            return None
+
+        # we have reached the end of the accumulation: start a new object
+        new_dataset = deepcopy(dscfg['global_data']['radar_obj'])
+
+        dscfg['global_data']['starttime'] += datetime.timedelta(
+            seconds=period)
+        dscfg['global_data']['endtime'] += datetime.timedelta(seconds=period)
+
+        # remove old radar object from global_data dictionary
+        dscfg['global_data'].pop('radar_obj', None)
+
+        # get start and stop times of new radar object
+        dscfg['global_data']['starttime'], dscfg['global_data']['endtime'] = (
+            time_avg_range(
+                dscfg['timeinfo'], dscfg['global_data']['starttime'],
+                dscfg['global_data']['endtime'], period))
+
+        # check if volume time older than starttime
+        if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
+            dscfg['global_data'].update({'radar_obj': radar_aux})
+
+        return new_dataset
+
+    # no more files to process if there is global data pack it up
+    if procstatus == 2:
+        if dscfg['initialized'] == 0:
+            return None
+        if 'radar_obj' not in dscfg['global_data']:
+            return None
 
         new_dataset = deepcopy(dscfg['global_data']['radar_obj'])
 

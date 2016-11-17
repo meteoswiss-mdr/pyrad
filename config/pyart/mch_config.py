@@ -150,6 +150,7 @@ sun_hit_v = 'sun_hit_v'
 sun_hit_zdr = 'sun_hit_zdr'
 
 number_of_samples = 'number_of_samples'
+time_avg_flag = 'time_avg_flag'
 
 # COSMO data fields
 temperature = 'temperature'
@@ -301,6 +302,7 @@ DEFAULT_FIELD_NAMES = {
     'vertical_wind_component': vertical_wind_component,
     'height': height,
     'number_of_samples': number_of_samples,
+    'time_avg_flag': time_avg_flag,
     'interpolated_profile': interpolated_profile,
 }
 
@@ -909,6 +911,12 @@ DEFAULT_METADATA = {
         'units': 'count',
         'standard_name': 'number_of_samples',
         'long_name': 'Number of samples in average',
+        'coordinates': 'elevation azimuth range'},
+        
+    time_avg_flag: {
+        'units': 'count',
+        'standard_name': 'time_avg_flag',
+        'long_name': 'Time average flag',
         'coordinates': 'elevation azimuth range'},
 
     # COSMO model data

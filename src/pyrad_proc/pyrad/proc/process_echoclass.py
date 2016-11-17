@@ -124,7 +124,8 @@ def process_echo_filter(procstatus, dscfg, radar=None):
         datatype : list of string. Dataset keyword
             The input data types
         echo_type : int
-            The type of echo to keep: 1 noise, 2 clutter, 3 precipitation
+            The type of echo to keep: 1 noise, 2 clutter, 3 precipitation.
+            Default 3
 
     radar : Radar
         Optional. Radar object
