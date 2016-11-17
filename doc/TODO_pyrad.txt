@@ -2,6 +2,7 @@ Pending modifications for current code in Pyrad
 -----------------------------------------------
 - In function process_echo_id: Add condition on differential reflectivity at low reflectivity values. Allow user to select the various thresholds. Add a speckle filter
 - In selfconsistency functions: get tables as a function of elevation, allow user to define the tresholds
+- In read_data_radar: ingest CFradial data
 
 Documentation
 -------------
