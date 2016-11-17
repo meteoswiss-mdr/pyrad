@@ -4,31 +4,32 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 2
-   dBZ
+dataSetList STRARR 3
    dBZ_avg
+   PhiDP_avg
+   RhoHV_avg
    
    
-dBZ STRUCT 3
-   type     STRING RAW
-   datatype STRING dBZ
-   products STRUCT 4      
-      EL00_7 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 0
-         voltype STRING dBZ
-      EL03_0 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 1
-         voltype STRING dBZ  
-      EL05_7 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 2
-         voltype STRING dBZ
-      EL08_2 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 3
-         voltype STRING dBZ
+#dBZ STRUCT 3
+#   type     STRING RAW
+#   datatype STRING dBZ
+#   products STRUCT 4      
+#      EL00_7 STRUCT 3
+#         type  STRING PPI_IMAGE
+#         anglenr INT 0
+#         voltype STRING dBZ
+#      EL03_0 STRUCT 3
+#         type  STRING PPI_IMAGE
+#         anglenr INT 1
+#         voltype STRING dBZ  
+#      EL05_7 STRUCT 3
+#         type  STRING PPI_IMAGE
+#         anglenr INT 2
+#         voltype STRING dBZ
+#      EL08_2 STRUCT 3
+#         type  STRING PPI_IMAGE
+#         anglenr INT 3
+#         voltype STRING dBZ
          
 dBZ_avg STRUCT 6
    type     STRING TIME_AVG
@@ -54,6 +55,57 @@ dBZ_avg STRUCT 6
          type  STRING PPI_IMAGE
          anglenr INT 3
          voltype STRING dBZ
+         
+PhiDP_avg STRUCT 5
+   type     STRING WEIGHTED_TIME_AVG
+   datatype STRARR 2
+      dBZ
+      PhiDP
+   start_average FLOAT 0.
+   period FLOAT 3600.
+   products STRUCT 4      
+      EL00_7 STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING PhiDP
+      EL03_0 STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 1
+         voltype STRING PhiDP  
+      EL05_7 STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING PhiDP
+      EL08_2 STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 3
+         voltype STRING PhiDP
+         
+RhoHV_avg STRUCT 5
+   type     STRING WEIGHTED_TIME_AVG
+   datatype STRARR 2
+      dBZ
+      RhoHV
+   start_average FLOAT 0.
+   period FLOAT 3600.
+   products STRUCT 4      
+      EL00_7 STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING RhoHV
+      EL03_0 STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 1
+         voltype STRING RhoHV  
+      EL05_7 STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING RhoHV
+      EL08_2 STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 3
+         voltype STRING RhoHV
+         
 #
 #ZDR STRUCT 3
 #   type     STRING RAW

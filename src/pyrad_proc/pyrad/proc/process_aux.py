@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 """
 pyrad.proc.process_aux
 =============================
@@ -10,7 +9,7 @@ determined points or regions of interest.
 .. autosummary::
     :toctree: generated/
 
-    get_process_type
+    get_process_func
     process_raw
     process_save_radar
     process_point_measurement
@@ -29,7 +28,7 @@ from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 from netCDF4 import num2date
 
 
-def get_process_type(dataset_type):
+def get_process_func(dataset_type):
     """
     maps the dataset type into its processing function and data set format
 
@@ -105,6 +104,8 @@ def get_process_type(dataset_type):
         func_name = 'process_selfconsistency_bias'
     elif dataset_type == 'TIME_AVG':
         func_name = 'process_time_avg'
+    elif dataset_type == 'WEIGHTED_TIME_AVG':
+        func_name = 'process_weighted_time_avg'
     elif dataset_type == 'MONITORING':
         func_name = 'process_monitoring'
         dsformat = 'MONITORING'

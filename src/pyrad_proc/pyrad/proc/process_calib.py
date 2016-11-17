@@ -16,6 +16,7 @@ Functions for monitoring data quality and correct bias and noise effects
     process_zdr_rain
     process_monitoring
     process_time_avg
+    process_weighted_time_avg
     process_sun_hits
 
 """
@@ -1031,6 +1032,162 @@ def process_time_avg(procstatus, dscfg, radar=None):
                 10.*np.ma.log10(
                     dscfg['global_data']['radar_obj'].fields[
                         field_name]['data']))
+
+        new_dataset = deepcopy(dscfg['global_data']['radar_obj'])
+
+        return new_dataset
+
+
+def process_weighted_time_avg(procstatus, dscfg, radar=None):
+    """
+    computes the temporal mean of a field weighted by the reflectivity
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        period : float. Dataset keyword
+            the period to average [s]. Default 3600.
+        start_average : float. Dataset keyword
+            when to start the average [s from midnight UTC]. Default 0.
+
+    radar : Radar
+        Optional. Radar object
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+    for datatypedescr in dscfg['datatype']:
+        datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        if ((datatype == 'dBZ') or (datatype == 'dBZc') or
+                (datatype == 'dBuZ') or (datatype == 'dBZv') or
+                (datatype == 'dBZvc') or (datatype == 'dBuZv')):
+            refl_name = get_fieldname_pyart(datatype)
+        else:
+            field_name = get_fieldname_pyart(datatype)
+
+    if procstatus == 0:
+        return None
+
+    if procstatus == 1:
+        if field_name not in radar.fields or refl_name not in radar.fields:
+            warn('Unable to compute weighted average. Missing data')
+            return None
+
+        period = 3600.
+        if 'period' in dscfg:
+            period = dscfg['period']
+
+        field = deepcopy(radar.fields[field_name])
+        field['data'] = field['data'].filled(fill_value=0.)
+        field['data'] = np.ma.asarray(field['data'])
+
+        refl_field = deepcopy(radar.fields[refl_name])
+        refl_field['data'] = np.ma.power(10., 0.1*refl_field['data'])
+        refl_field['data'] = refl_field['data'].filled(fill_value=0.)
+        refl_field['data'] = np.ma.asarray(refl_field['data'])
+
+        field['data'] *= refl_field['data']
+
+        radar_aux = deepcopy(radar)
+        radar_aux.fields = dict()
+        radar_aux.add_field(field_name, field)
+        radar_aux.add_field(refl_name, refl_field)
+
+        # first volume: initialize start and end time of averaging
+        if dscfg['initialized'] == 0:
+            start_average = 0.  # seconds from midnight
+            if 'start_average' in dscfg:
+                start_average = dscfg['start_average']
+
+            date_00 = dscfg['timeinfo'].replace(
+                hour=0, minute=0, second=0, microsecond=0)
+
+            avg_par = dict()
+            avg_par.update(
+                {'starttime': date_00+datetime.timedelta(
+                    seconds=start_average)})
+            avg_par.update(
+                {'endtime': avg_par['starttime']+datetime.timedelta(
+                    seconds=period)})
+            dscfg['global_data'] = avg_par
+            dscfg['initialized'] = 1
+
+        # no radar object in global data: create it
+        if 'radar_obj' not in dscfg['global_data']:
+            # get start and stop times of new radar object
+            (dscfg['global_data']['starttime'],
+             dscfg['global_data']['endtime']) = (
+                time_avg_range(
+                    dscfg['timeinfo'], dscfg['global_data']['starttime'],
+                    dscfg['global_data']['endtime'], period))
+
+            # check if volume time older than starttime
+            if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
+                dscfg['global_data'].update({'radar_obj': radar_aux})
+
+            return None
+
+        # still accumulating: add field to global field
+        if dscfg['timeinfo'] < dscfg['global_data']['endtime']:
+            field_interp = interpol_field(
+                dscfg['global_data']['radar_obj'], radar_aux, field_name)
+            dscfg['global_data']['radar_obj'].fields[field_name]['data'] += (
+                field_interp['data'].filled(fill_value=0))
+
+            refl_interp = interpol_field(
+                dscfg['global_data']['radar_obj'], radar_aux, refl_name)
+            dscfg['global_data']['radar_obj'].fields[refl_name]['data'] += (
+                refl_interp['data'].filled(fill_value=0))
+
+            return None
+
+        # we have reached the end of the accumulation period: do the averaging
+        # and start a new object
+        dscfg['global_data']['radar_obj'].fields[field_name]['data'] /= (
+            dscfg['global_data']['radar_obj'].fields[refl_name]['data'])
+
+        new_dataset = deepcopy(dscfg['global_data']['radar_obj'])
+
+        dscfg['global_data']['starttime'] += datetime.timedelta(
+            seconds=period)
+        dscfg['global_data']['endtime'] += datetime.timedelta(seconds=period)
+
+        # remove old radar object from global_data dictionary
+        dscfg['global_data'].pop('radar_obj', None)
+
+        # get start and stop times of new radar object
+        dscfg['global_data']['starttime'], dscfg['global_data']['endtime'] = (
+            time_avg_range(
+                dscfg['timeinfo'], dscfg['global_data']['starttime'],
+                dscfg['global_data']['endtime'], period))
+
+        # check if volume time older than starttime
+        if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
+            dscfg['global_data'].update({'radar_obj': radar_aux})
+
+        return new_dataset
+
+    # no more files to process if there is global data pack it up
+    if procstatus == 2:
+        if dscfg['initialized'] == 0:
+            return None
+        if 'radar_obj' not in dscfg['global_data']:
+            return None
+
+        dscfg['global_data']['radar_obj'].fields[field_name]['data'] /= (
+            dscfg['global_data']['radar_obj'].fields[refl_name]['data'])
 
         new_dataset = deepcopy(dscfg['global_data']['radar_obj'])
 
