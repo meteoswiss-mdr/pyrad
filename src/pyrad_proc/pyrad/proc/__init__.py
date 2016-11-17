@@ -13,7 +13,7 @@ Auxiliary functions
 .. autosummary::
     :toctree: generated/
 
-    get_process_type
+    get_process_func
     process_raw
     process_save_radar
     process_point_measurement
@@ -77,7 +77,7 @@ Retrievals
 
 """
 
-from .process_aux import get_process_type, process_raw, process_save_radar
+from .process_aux import get_process_func, process_raw, process_save_radar
 from .process_aux import process_point_measurement
 
 from .process_echoclass import process_echo_id, process_echo_filter

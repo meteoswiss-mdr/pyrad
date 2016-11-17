@@ -1,0 +1,75 @@
+#
+# Product generation configuration
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 5
+   traj
+   rainrate_traj
+   rainrate_traj_az
+   windshear_traj
+   windshear_traj_az
+
+
+traj STRUCT 3
+   type     STRING TRAJ
+   datatype STRING dBZ
+   products STRUCT 4
+      TS_RANGE STRUCT 2
+         type  STRING TRAJ_PLOT
+         datatype STRING RANGE
+      TS_EL STRUCT 2
+         type  STRING TRAJ_PLOT
+         datatype STRING EL
+      TS_AZ STRUCT 2
+         type  STRING TRAJ_PLOT
+         datatype STRING AZ
+      TS_TEXT STRUCT 1
+         type  STRING TRAJ_TEXT
+
+rainrate_traj STRUCT 3
+   type          STRING TRAJ_ATPLANE
+   datatype      STRING SAVED:RR_Zh,rainrate,VOLDATA
+   products      STRUCT 1
+      AT_PLANE STRUCT 3
+         type  STRING   PLOT_AND_WRITE
+         ymin  FLOAT    0.0
+         ymax  FLOAT    4.0
+
+rainrate_traj_az STRUCT 9
+   type          STRING TRAJ_ANTENNA_PATTERN
+   datatype      STRING SAVED:RR_Zh,rainrate,VOLDATA
+   dssavename    STRING rainrate_traj
+   antennaType   STRING AZIMUTH
+   use_nans      INT 0
+   nan_value     FLOAT 0.0
+   pattern_thres FLOAT 1.5
+   RANGE_ALL     INT 0
+   products      STRUCT 1
+      AZIMUTH_ANTENNA STRUCT 3
+         type  STRING   PLOT_AND_WRITE
+         ymin  FLOAT    0.0
+         ymax  FLOAT    4.0
+
+windshear_traj STRUCT 3
+   type     STRING TRAJ_ATPLANE
+   datatype STRING SAVED:dV,windshear,VOLDATA
+   products STRUCT 1
+      AT_PLANE STRUCT 1
+         type  STRING PLOT_AND_WRITE
+
+windshear_traj_az STRUCT 8
+   type     STRING TRAJ_ANTENNA_PATTERN
+   datatype STRING SAVED:dV,windshear,VOLDATA
+   dssavename STRING windshear_traj
+   antennaType STRING AZIMUTH
+   use_nans   INT 0
+   nan_value  FLOAT 0.0
+   pattern_thres FLOAT 1.5
+   products STRUCT 1
+      AZIMUTH_ANTENNA STRUCT 3
+         type  STRING   PLOT_AND_WRITE
+         ymin  FLOAT    -20.0
+         ymax  FLOAT     20.0
+

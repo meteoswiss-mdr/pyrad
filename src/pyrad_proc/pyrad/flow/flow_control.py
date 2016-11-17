@@ -8,6 +8,7 @@ functions to control the Pyrad data processing flow
     :toctree: generated/
 
     main
+    main_trajectory
     _create_cfg_dict
     _create_datacfg_dict
     _create_dscfg_dict
@@ -19,18 +20,23 @@ functions to control the Pyrad data processing flow
     _process_dataset
 
 """
+from __future__ import print_function
+import sys
 from warnings import warn
 import os
+from datetime import datetime
 
 from ..io.config import read_config
 from ..io.read_data_radar import get_data
 from ..io.io_aux import get_datetime, get_file_list
 from ..io.io_aux import get_dataset_fields, get_datatype_fields
 
-from ..proc.process_aux import get_process_type
-from ..prod.product_aux import get_product_type
+from ..proc.process_aux import get_process_func
+from ..prod.product_aux import get_product_func
 
 from pyrad import proc, prod
+from pyrad import version as pyrad_version
+from pyart import version as pyart_version
 
 
 def main(cfgfile, starttime, endtime):
@@ -49,6 +55,12 @@ def main(cfgfile, starttime, endtime):
     None
 
     """
+
+    print("====== PYRAD data processing started: %s" %
+          datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
+    print("- PYRAD version: " + pyrad_version.version)
+    print("- PYART version: " + pyart_version.version)
+
     cfg = _create_cfg_dict(cfgfile)
     datacfg = _create_datacfg_dict(cfg)
 
@@ -108,6 +120,50 @@ def main(cfgfile, starttime, endtime):
 
     print('\n\n\nThis is the end my friend! See you soon!')
 
+    print("====== PYRAD data processing finished: %s" %
+          datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
+
+
+def main_trajectory(cfgfile, trajfile, infostr="",
+                    starttime=None, endtime=None):
+    """
+    main flow control. Processes data over a given period of time
+
+    Parameters
+    ----------
+    cfgfile : str
+        path of the main config file
+    trajfile : str
+        path to file describing the trajectory
+    infostr : Information string about the actual data processing
+              (e.g. 'RUN57'). This sting is added to product files.
+    starttime, endtime : datetime object
+        start and end time of the data to be processed
+
+    Returns
+    -------
+    0 on success, -1 otherwise
+
+    """
+
+    print("====== PYRAD trajectory processing started: %s" %
+          datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
+    print("- PYRAD version: " + pyrad_version.version)
+    print("- PYART version: " + pyart_version.version)
+
+    cfg = _create_cfg_dict(cfgfile)
+    datacfg = _create_datacfg_dict(cfg)
+
+    datatypesdescr = _get_datatype_list(cfg)
+    dataset_levels = _get_datasets_list(cfg)
+
+    #XXX
+
+    print("====== PYRAD trajectory processing finished: %s" %
+          datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
+
+    return 0
+
 
 def _process_dataset(cfg, dscfg, proc_status=0, radar=None, voltime=None):
     """
@@ -133,7 +189,7 @@ def _process_dataset(cfg, dscfg, proc_status=0, radar=None, voltime=None):
 
     """
     dscfg['timeinfo'] = voltime
-    proc_func_name, dsformat = get_process_type(dscfg['type'])
+    proc_func_name, dsformat = get_process_func(dscfg['type'])
     proc_func = getattr(proc, proc_func_name)
     new_dataset = proc_func(proc_status, dscfg, radar=radar)
     if new_dataset is None:
@@ -147,7 +203,7 @@ def _process_dataset(cfg, dscfg, proc_status=0, radar=None, voltime=None):
         for product in dscfg['products']:
             prdcfg = _create_prdcfg_dict(
                 cfg, dscfg['dsname'], product, voltime=voltime)
-            prod_func_name = get_product_type(dsformat)
+            prod_func_name = get_product_func(dsformat)
             prod_func = getattr(prod, prod_func_name)
             result = prod_func(new_dataset, prdcfg)
 
@@ -170,9 +226,16 @@ def _create_cfg_dict(cfgfile):
 
     """
     cfg = dict({'configFile': cfgfile})
-    cfg = read_config(cfg['configFile'], cfg=cfg)
-    cfg = read_config(cfg['locationConfigFile'], cfg=cfg)
-    cfg = read_config(cfg['productConfigFile'], cfg=cfg)
+    try:
+        print("- Main config file : %s" % cfgfile)
+        cfg = read_config(cfg['configFile'], cfg=cfg)
+        print("- Location config file : %s" % cfg['locationConfigFile'])
+        cfg = read_config(cfg['locationConfigFile'], cfg=cfg)
+        print("- Product config file : %s" % cfg['productConfigFile'])
+        cfg = read_config(cfg['productConfigFile'], cfg=cfg)
+    except Exception as ee:
+        print(ee, file=sys.stderr)
+        sys.exit(1)
 
     # fill in defaults
     if 'cosmopath' not in cfg:
@@ -434,8 +497,8 @@ def _get_masterfile_list(masterscan, datatypesdescr, starttime, endtime,
     for datatypedescr in datatypesdescr:
         datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
-        if ((datagroup != 'COSMO') and (datagroup != 'RAD4ALPCOSMO')
-                and (datagroup != 'DEM') and (datagroup != 'RAD4ALPDEM')):
+        if ((datagroup != 'COSMO') and (datagroup != 'RAD4ALPCOSMO') and
+                (datagroup != 'DEM') and (datagroup != 'RAD4ALPDEM')):
             masterdatatypedescr = datatypedescr
             break
 
