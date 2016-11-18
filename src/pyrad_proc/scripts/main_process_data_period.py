@@ -7,15 +7,26 @@ Pyrad: The MeteoSwiss Radar Processing framework
 
 Welcome to Pyrad!
 
-This program does the daily processes over a period of time
+This program does the daily processing and post-processing over a period of \
+time.
 
 To run the processing framework type:
     python main_process_data.py \
-[config_file] [process_start_date] [process_end_date]
+[config_file] [process_start_date] [process_end_date] \
+--starttime [process_start_time] --endtime [process_end_time] \
+--postproc_cfgfile [postproc_config_file] --cfgpath [cfgpath]
+
+starttime is an optional argument with default: '000000'
+endtime is an optional argument with default: '235959'
+postproc_cfgfile is an optional argument with default: None
+cfgpath is an optional argument with default: \
+'/home/lom/users/fvj/pyrad/config/processing/'
+
 Example:
-    python main_process_data.py \
-'/home/lom/users/fvj/pyrad/config/processing/paradiso_fvj_vol.txt' \
-'20140523' '20140525'
+    python main_process_data.py 'paradiso_fvj_vol.txt' '20140523' '20140525' \
+--starttime '000000' --endtime '001000' \
+--postproc_cfgfile 'mals_emm_vol_postproc.txt' \
+--cfgpath '/home/lom/users/fvj/pyrad/config/processing/'
 
 """
 
@@ -37,31 +48,64 @@ if __name__ == '__main__':
         description='Entry to Pyrad processing framework')
 
     parser.add_argument(
-        'proccfgfile', type=str, help='path to main configuration file')
+        'proc_cfgfile', type=str, help='name of main configuration file')
     parser.add_argument(
-        'starttime', type=str,
+        'startdate', type=str,
         help='starting date of the data to be processed')
     parser.add_argument(
-        'endtime', type=str, help='end date of the data to be processed ')
+        'enddate', type=str, help='end date of the data to be processed ')
+
+    # keyword arguments
+    parser.add_argument(
+        '--starttime', type=str, default='000000',
+        help='starting date of the data to be processed')
+    parser.add_argument(
+        '--endtime', type=str, default='235959',
+        help='end date of the data to be processed ')
+
+    parser.add_argument(
+        '--postproc_cfgfile', type=str, default=None,
+        help='name of main post-processing configuration file')
+    parser.add_argument(
+        '--cfgpath', type=str,
+        default='/home/lom/users/fvj/pyrad/config/processing/',
+        help='configuration file path')
 
     args = parser.parse_args()
 
-    print('config file: '+args.proccfgfile)
-    print('start date: '+args.starttime)
-    print('end date: '+args.endtime)
+    print('config path: '+args.cfgpath)
+    print('config file: '+args.proc_cfgfile)
+    print('postproc config file: '+str(args.postproc_cfgfile))
+    print('start date: '+args.startdate)
+    print('end date: '+args.enddate)
+    print('start time each day: '+args.starttime)
+    print('end time each day: '+args.endtime)
 
     proc_startdate = datetime.datetime.strptime(
-        args.starttime, '%Y%m%d')
-    proc_enddate = datetime.datetime.strptime(args.endtime, '%Y%m%d')
+        args.startdate, '%Y%m%d')
+    proc_enddate = datetime.datetime.strptime(
+        args.enddate, '%Y%m%d')
+    proc_starttime = datetime.timedelta(
+        hours=float(args.starttime[0:2]), minutes=float(args.starttime[2:4]),
+        seconds=float(args.starttime[4:6]))
+    proc_endtime = datetime.timedelta(
+        hours=float(args.endtime[0:2]), minutes=float(args.endtime[2:4]),
+        seconds=float(args.endtime[4:6]))
+
+    cfgfile_proc = args.cfgpath+args.proc_cfgfile
+    if args.postproc_cfgfile is not None:
+        cfgfile_postproc = args.cfgpath+args.postproc_cfgfile
 
     ndays = (proc_enddate - proc_startdate).days + 1
     print('Number of days to process: '+str(ndays)+'\n\n')
 
     for day in range(ndays):
-        proc_starttime = proc_startdate + datetime.timedelta(days=day)
-        #proc_endtime = proc_starttime + datetime.timedelta(days=1)
-        proc_endtime = proc_starttime + datetime.timedelta(minutes=10)
+        current_date = proc_startdate + datetime.timedelta(days=day)
+        proc_startdatetime = current_date + proc_starttime
+        proc_enddatetime = current_date + proc_endtime
         try:
-            main(args.proccfgfile, proc_starttime, proc_endtime)
+            main(cfgfile_proc, proc_startdatetime, proc_enddatetime)
+            if args.postproc_cfgfile is not None:
+                main(cfgfile_postproc, proc_startdatetime, proc_enddatetime)
         except ValueError:
             print(ValueError)

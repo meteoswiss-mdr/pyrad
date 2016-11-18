@@ -335,26 +335,22 @@ def get_fieldname_pyart(datatype):
     return field_name
 
 
-def get_file_list(scan, datadescriptor, starttime, endtime, cfg):
+def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
     """
     gets the list of files with a time period
 
     Parameters
     ----------
-    scan : str
-        scan name
-
     datadescriptor : str
         radar field type. Format : [radar file type]:[datatype]
-
     startime : datetime object
         start of time period
-
     endtime : datetime object
         end of time period
-
     cfg: dictionary of dictionaries
         configuration info to figure out where the data is
+    scan : str
+        scan name
 
     Returns
     -------
@@ -371,6 +367,9 @@ def get_file_list(scan, datadescriptor, starttime, endtime, cfg):
     t_filelist = []
     for i in range(ndays):
         if datagroup == 'RAINBOW':
+            if scan is None:
+                warn('Unknown scan name')
+                return []
             daydir = (
                 starttime+datetime.timedelta(days=i)).strftime('%Y-%m-%d')
             dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%Y%m%d')
@@ -379,14 +378,24 @@ def get_file_list(scan, datadescriptor, starttime, endtime, cfg):
             for filename in dayfilelist:
                 t_filelist.append(filename)
         elif datagroup == 'RAD4ALP':
+            if scan is None:
+                warn('Unknown scan name')
+                return []
             dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%y%j')
             basename = 'P'+cfg['RadarRes']+cfg['RadarName']+dayinfo
             datapath = cfg['datapath']+dayinfo+'/'+basename+'/'
             dayfilelist = glob.glob(datapath+basename+'*.'+scan)
             for filename in dayfilelist:
                 t_filelist.append(filename)
-        elif datagroup == 'SAVED':
-            print('caca')
+        elif datagroup == 'CFRADIAL':
+            daydir = (
+                starttime+datetime.timedelta(days=i)).strftime('%Y-%m-%d')
+            dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%Y%m%d')
+            datapath = (cfg['loadbasepath']+cfg['loadname']+'/'+daydir+'/' +
+                        dataset+'/'+product+'/')
+            dayfilelist = glob.glob(datapath+dayinfo+'*'+datatype+'.nc')
+            for filename in dayfilelist:
+                t_filelist.append(filename)
 
     filelist = []
     for filename in t_filelist:
@@ -410,7 +419,7 @@ def get_datatype_fields(datadescriptor):
     Returns
     -------
     datagroup : str
-        data type group, i.e. RAINBOW, RAD4ALP, SAVED, COSMO, ...
+        data type group, i.e. RAINBOW, RAD4ALP, CFRADIAL, COSMO, ...
 
     datatype : str
         data type, i.e. dBZ, ZDR, ISO0, ...
@@ -429,7 +438,7 @@ def get_datatype_fields(datadescriptor):
         product = None
     else:
         datagroup = descrfields[0]
-        if datagroup == 'SAVED':
+        if datagroup == 'CFRADIAL':
             descrfields2 = descrfields[1].split(',')
             datatype = descrfields2[0]
             dataset = descrfields2[1]
@@ -491,14 +500,16 @@ def get_datetime(fname, datadescriptor):
 
     bfile = os.path.basename(fname)
     datagroup, datatype, dataset, product = get_datatype_fields(datadescriptor)
-    if datagroup == 'RAINBOW':
+    if datagroup == 'RAINBOW' or datagroup == 'CFRADIAL':
         datetimestr = bfile[0:14]
         fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d%H%M%S')
     elif datagroup == 'RAD4ALP':
         datetimestr = bfile[3:12]
         fdatetime = datetime.datetime.strptime(datetimestr, '%y%j%H%M')
-    elif datagroup == 'SAVED':
-        print('caca')
+    else:
+        warn('unknown data group')
+        return None
+
     return fdatetime
 
 

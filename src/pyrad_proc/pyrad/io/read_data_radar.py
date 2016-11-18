@@ -69,6 +69,9 @@ def get_data(voltime, datatypesdescr, cfg):
 
     datatype_rainbow = list()
     datatype_rad4alp = list()
+    datatype_cfradial = list()
+    dataset_cfradial = list()
+    product_cfradial = list()
     datatype_cosmo = list()
     datatype_rad4alpcosmo = list()
     datatype_dem = list()
@@ -80,6 +83,10 @@ def get_data(voltime, datatypesdescr, cfg):
             datatype_rainbow.append(datatype)
         elif datagroup == 'RAD4ALP':
             datatype_rad4alp.append(datatype)
+        elif datagroup == 'CFRADIAL':
+            datatype_cfradial.append(datatype)
+            dataset_cfradial.append(dataset)
+            product_cfradial.append(product)
         elif datagroup == 'COSMO':
             datatype_cosmo.append(datatype)
         elif datagroup == 'RAD4ALPCOSMO':
@@ -91,6 +98,7 @@ def get_data(voltime, datatypesdescr, cfg):
 
     ndatatypes_rainbow = len(datatype_rainbow)
     ndatatypes_rad4alp = len(datatype_rad4alp)
+    ndatatypes_cfradial = len(datatype_cfradial)
     ndatatypes_cosmo = len(datatype_cosmo)
     ndatatypes_rad4alpcosmo = len(datatype_rad4alpcosmo)
     ndatatypes_dem = len(datatype_dem)
@@ -106,6 +114,12 @@ def get_data(voltime, datatypesdescr, cfg):
         radar = merge_scans_rad4alp(
             cfg['datapath'], cfg['ScanList'], cfg['RadarName'],
             cfg['RadarRes'], voltime, datatype_rad4alp, cfg)
+
+    if ndatatypes_cfradial > 0:
+        radar_aux = merge_fields_cfradial(
+            cfg['loadbasepath'], cfg['loadname'], voltime, datatype_cfradial,
+            dataset_cfradial, product_cfradial)
+        radar = add_field(radar, radar_aux)
 
     # add COSMO files to the radar field
     if ndatatypes_cosmo > 0 and _WRADLIB_AVAILABLE:
@@ -200,7 +214,7 @@ def merge_scans_rainbow(basepath, scan_list, voltime, scan_period,
         endtime = voltime+datetime.timedelta(minutes=scan_period)
         for i in range(1, nscans):
             filelist = get_file_list(
-                scan_list[i], datadescriptor, voltime, endtime, cfg)
+                datadescriptor, voltime, endtime, cfg, scan=scan_list[i])
             scantime = get_datetime(filelist[0], datadescriptor)
 
             radar_aux = merge_fields_rainbow(
@@ -577,6 +591,64 @@ def merge_fields_rainbow(basepath, scan_name, voltime, datatype_list):
                     radar.add_field(field_name, radar_aux.fields[field_name])
                 except (ValueError, KeyError):
                     warn('Unable to add field '+field_name+' to radar object')
+
+    return radar
+
+
+def merge_fields_cfradial(basepath, loadname, voltime, datatype_list,
+                          dataset_list, product_list):
+    """
+    merge CF/Radial fields into a single radar object.
+
+    Parameters
+    ----------
+    basepath : str
+        name of the base path where to find the data
+    loadname: str
+        name of the saving directory
+    voltime : datetime object
+        reference time of the scan
+    datatype_list : list
+        list of data types to get
+    dataset_list : list
+        list of datasets that produced the data type to get.
+        Used to get path.
+    product_list : list
+        list of products. Used to get path
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+    datapath = (basepath+loadname+'/'+voltime.strftime('%Y-%m-%d')+'/' +
+                dataset_list[0]+'/'+product_list[0]+'/')
+    fdatetime = voltime.strftime('%Y%m%d%H%M%S')
+    filename = glob.glob(datapath+fdatetime+'*'+datatype_list[0]+'.nc')
+
+    # create radar object
+    radar = None
+    if not filename:
+        warn('No file found in '+datapath+fdatetime+'*'+datatype_list[0]
+             + '.nc')
+    else:
+        radar = pyart.io.read_cfradial(filename[0])
+
+    # add other fields in the same scan
+    for i in range(1, len(datatype_list)):
+        datapath = (basepath+loadname+'/'+voltime.strftime('%Y-%m-%d')+'/' +
+                    dataset_list[i]+'/'+product_list[i]+'/')
+        filename = glob.glob(datapath+fdatetime+'*'+datatype_list[i]+'.nc')
+        if not filename:
+            warn('No file found in '+datapath+fdatetime+'*'+datatype_list[0]
+                 + '.nc')
+        else:
+            radar_aux = pyart.io.read_cfradial(filename[0])
+            if radar is None:
+                radar = radar_aux
+            else:
+                add_field(radar, radar_aux)
 
     return radar
 

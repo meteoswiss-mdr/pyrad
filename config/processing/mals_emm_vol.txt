@@ -7,17 +7,22 @@ name STRING mals_emm_vol_fvj
 # ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
 datapath STRING /data/DX50/rawdata/
 
-# Base path of configuration files
-configpath STRING /home/lom/users/fvj/pyrad/config/
-
 # Base path for cosmo data
 cosmopath STRING /data/cosmo/
 
 # Base path for dem data
 dempath STRING /data/DEM/DX50_EMM/
 
-saveimg         INT 1
+# Loading of saved datasets
+loadbasepath STRING /data/pyrad_examples/
+loadname     STRING mals_emm_vol_fvj
+
+# Base path of configuration files
+configpath STRING /home/lom/users/fvj/pyrad/config/
+
+# Data output
 saveimgbasepath STRING /data/pyrad_examples/
+saveimg         INT 1
 imgformat       STRING eps
 convertimage    INT 1
 convertformat   STRING png

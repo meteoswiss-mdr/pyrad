@@ -63,11 +63,14 @@ def main(cfgfile, starttime, endtime):
 
     cfg = _create_cfg_dict(cfgfile)
     datacfg = _create_datacfg_dict(cfg)
+    masterscan = None
+    if cfg['ScanList'] is not None:
+        masterscan = cfg['ScanList'][0]
 
     datatypesdescr = _get_datatype_list(cfg)
     dataset_levels = _get_datasets_list(cfg)
     masterfilelist, masterdatatypedescr = _get_masterfile_list(
-        cfg['ScanList'][0], datatypesdescr, starttime, endtime, datacfg)
+        datatypesdescr, starttime, endtime, datacfg, masterscan=masterscan)
 
     nvolumes = len(masterfilelist)
     if nvolumes == 0:
@@ -157,7 +160,7 @@ def main_trajectory(cfgfile, trajfile, infostr="",
     datatypesdescr = _get_datatype_list(cfg)
     dataset_levels = _get_datasets_list(cfg)
 
-    #XXX
+    # XXX
 
     print("====== PYRAD trajectory processing finished: %s" %
           datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
@@ -238,6 +241,8 @@ def _create_cfg_dict(cfgfile):
         sys.exit(1)
 
     # fill in defaults
+    if 'ScanList' not in cfg:
+        cfg.update({'ScanList': None})
     if 'cosmopath' not in cfg:
         cfg.update({'cosmopath': None})
     if 'dempath' not in cfg:
@@ -469,21 +474,21 @@ def _get_datasets_list(cfg):
     return dataset_levels
 
 
-def _get_masterfile_list(masterscan, datatypesdescr, starttime, endtime,
-                         datacfg):
+def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
+                         masterscan=None):
     """
     get master file list
 
     Parameters
     ----------
-    masterscan : str
-        name of the master scan
     datatypesdescr : list
         list of unique data type descriptors
     starttime, endtime : datetime object
         start and end of processing period
     datacfg : dict
         data configuration dictionary
+    masterscan : str
+        name of the master scan
 
     Returns
     -------
@@ -521,7 +526,8 @@ def _get_masterfile_list(masterscan, datatypesdescr, starttime, endtime,
                 break
 
     masterfilelist = get_file_list(
-        masterscan, masterdatatypedescr, starttime, endtime, datacfg)
+        masterdatatypedescr, starttime, endtime, datacfg,
+        scan=masterscan)
 
     return masterfilelist, masterdatatypedescr
 
