@@ -478,16 +478,23 @@ def get_datatype_fields(datadescriptor):
         product = None
     elif descrfields[0].startswith('RADAR'):
         radarnr = descrfields[0]
-        datagroup = descrfields[1]
-        if datagroup == 'CFRADIAL':
-            descrfields2 = descrfields[2].split(',')
-            datatype = descrfields2[0]
-            dataset = descrfields2[1]
-            product = descrfields2[2]
-        else:
-            datatype = descrfields[2]
+        if len(descrfields) == 2:
+            radarnr = descrfields[0]
+            datagroup = 'RAINBOW'
+            datatype = descrfields[1]
             dataset = None
             product = None
+        else:
+            datagroup = descrfields[1]
+            if datagroup == 'CFRADIAL':
+                descrfields2 = descrfields[2].split(',')
+                datatype = descrfields2[0]
+                dataset = descrfields2[1]
+                product = descrfields2[2]
+            else:
+                datatype = descrfields[2]
+                dataset = None
+                product = None
     else:
         radarnr = 'RADAR001'
         datagroup = descrfields[0]

@@ -1,6 +1,6 @@
 # Name of this configuration:
 # Will be used in product generation save path
-name STRING paradiso_vol_fvj
+name STRING mals_emm_vol_fvj
 
 # ---------------------------------------------------------
 #  Raw data pathes
@@ -18,23 +18,14 @@ cosmopath STRARR 1
 
 # Base path for dem data
 dempath STRARR 1
-    /data/DEM/DX50_PAY/
+    /data/DEM/DX50_EMM/
 
 # Loading of saved datasets
 loadbasepath STRARR 1
     /data/pyrad_examples/
 
 loadname STRARR 1
-    paradiso_vol_fvj
-
-# ------------------------------------------------------------
-# Auxiliary data pathes
-# ------------------------------------------------------------
-# Base path for swissmetnet data
-smnpath STRING /data/meteo_products/SMNRetrieve/
-
-# Base path for disdrometer data
-disdropath STRING /data/scattering/dsd_ts/
+    mals_emm_vol_fvj
 
 # --------------------------------------------
 # Output data
@@ -43,7 +34,7 @@ saveimgbasepath STRING /data/pyrad_examples/
 saveimg         INT 1
 # Supported formats: eps, jpeg, jpg, pdf, pgf, png, ps, raw, rgba, svg, svgz, tif, tiff
 imgformat STRARR 1
-    png	
+    png
 
 # --------------------------------------------------------
 # configuration files pathes
@@ -53,7 +44,8 @@ imgformat STRARR 1
 configpath STRING /home/lom/users/fvj/pyrad/config/
 
 # Configuration of the radar location and approach direction
-locationConfigFile STRING /home/lom/users/fvj/pyrad/config/processing/paradiso_fvj_vol_loc.txt
+locationConfigFile STRING /home/lom/users/fvj/pyrad/config/processing/mals_emm_vol_intercomp_loc.txt
 
 # Configuration of the product generation
-productConfigFile STRING /home/lom/users/fvj/pyrad/config/processing/paradiso_fvj_vol_prod.txt
+productConfigFile STRING /home/lom/users/fvj/pyrad/config/processing/mals_emm_vol_intercomp_prod.txt
+

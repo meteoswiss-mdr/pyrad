@@ -66,7 +66,8 @@ def main(cfgfile, starttime, endtime):
                     "====== PYRAD data processing finished: ")
 
     print("- PYRAD version: %s (compiled %s by %s)" %
-          (pyrad_version.version, pyrad_version.compile_date_time, pyrad_version.username))
+          (pyrad_version.version, pyrad_version.compile_date_time,
+           pyrad_version.username))
     print("- PYART version: " + pyart_version.version)
 
     cfg = _create_cfg_dict(cfgfile)
@@ -86,8 +87,8 @@ def main(cfgfile, starttime, endtime):
     if nvolumes == 0:
         raise ValueError(
             'ERROR: Could not find any valid volume between ' +
-            starttime.strftime('%Y-%m-%d %H:%M:S')+' and ' +
-            endtime.strftime('%Y-%m-%d %H:%M:S') +
+            starttime.strftime('%Y-%m-%d %H:%M:%S')+' and ' +
+            endtime.strftime('%Y-%m-%d %H:%M:%S') +
             ' for master scan '+str(masterscan)+' and master data type ' +
             masterdatatypedescr)
     print('- Number of volumes to process: ' + str(nvolumes))
@@ -119,16 +120,17 @@ def main(cfgfile, starttime, endtime):
         for i in range(1, cfg['NumRadars']):
             filelist_ref, datatypedescr_ref, scan_ref = _get_masterfile_list(
                 datatypesdescr_list[i],
-                master_voltime-datetime.timedelta(seconds=cfg['TimeTol']),
-                master_voltime-datetime.timedelta(seconds=cfg['TimeTol']),
+                master_voltime-timedelta(seconds=cfg['TimeTol']),
+                master_voltime+timedelta(seconds=cfg['TimeTol']),
                 datacfg, scan_list=cfg['ScanList'])
+
             if len(filelist_ref) == 0:
                 warn('Could not find any valid volume for reference time ' +
-                     master_voltime.strftime('%Y-%m-%d %H:%M:S') +
-                     ' and radar RADAR'+'{:03d}'.format(i))
+                     master_voltime.strftime('%Y-%m-%d %H:%M:%S') +
+                     ' and radar RADAR'+'{:03d}'.format(i+1))
                 radar_list.append(None)
             else:
-                voltime_ref = get_datetime(filelist_ref, datatypedescr_ref)
+                voltime_ref = get_datetime(filelist_ref[0], datatypedescr_ref)
                 radar_list.append(
                     get_data(voltime_ref, datatypesdescr_list[i], datacfg))
 

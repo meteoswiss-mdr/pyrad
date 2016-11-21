@@ -2,19 +2,30 @@
 # Configuration for PARADISO tests at the airport Payerne
 
 # Number of radars to process
-NumRadars INT 1
+NumRadars INT 2
 
 # Time tolerance when processing multiple radars [s]
-TimeTol FLOAT 3600.
+TimeTol FLOAT 60.
 
 # Radar Name
-RadarName STRARR 1
+RadarName STRARR 2
     DX50
+	D
+	
+# rad4alp radar range resolution L: Low H: High
+RadarRes STRARR 2
+	-
+	L
 
 # Names of the radar scans in the specified sector
 # NOTE: Must have a trailing '/'
-ScanList STRARR 1
+ScanList STRARR 6
       RADAR001:MEE_PAY_360.vol/  # masterscan: first scan of a volume
+	  RADAR002:001
+	  RADAR002:002
+	  RADAR002:003
+	  RADAR002:004
+	  RADAR002:005
 
 # Repetition time of the scans [min]
 ScanPeriod INT 5
