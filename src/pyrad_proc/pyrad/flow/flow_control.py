@@ -18,6 +18,7 @@ functions to control the Pyrad data processing flow
     _get_masterfile_list
     _add_dataset
     _process_dataset
+    _print_end_msg
 
 """
 from __future__ import print_function
@@ -25,11 +26,14 @@ import sys
 from warnings import warn
 import os
 from datetime import datetime
+from datetime import timedelta
+import atexit
 
 from ..io.config import read_config
 from ..io.read_data_radar import get_data
 from ..io.io_aux import get_datetime, get_file_list
 from ..io.io_aux import get_dataset_fields, get_datatype_fields
+from ..io.trajectory import Trajectory
 
 from ..proc.process_aux import get_process_func
 from ..prod.product_aux import get_product_func
@@ -58,7 +62,11 @@ def main(cfgfile, starttime, endtime):
 
     print("====== PYRAD data processing started: %s" %
           datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
-    print("- PYRAD version: " + pyrad_version.version)
+    atexit.register(_print_end_msg,
+                    "====== PYRAD data processing finished: ")
+
+    print("- PYRAD version: %s (compiled %s by %s)" %
+          (pyrad_version.version, pyrad_version.compile_date_time, pyrad_version.username))
     print("- PYART version: " + pyart_version.version)
 
     cfg = _create_cfg_dict(cfgfile)
@@ -74,13 +82,12 @@ def main(cfgfile, starttime, endtime):
 
     nvolumes = len(masterfilelist)
     if nvolumes == 0:
-        raise ValueError(
-            'ERROR: Could not find any valid volume between ' +
-            starttime.strftime('%Y-%m-%d %H:%M:S')+' and ' +
-            endtime.strftime('%Y-%m-%d %H:%M:S') +
-            ' for master scan '+cfg['ScanList'][0]+' and master data type ' +
-            masterdatatypedescr)
-    print('Number of volumes to process: '+str(nvolumes)+'\n\n')
+        raise Exception("ERROR: Could not find any valid volumes between " +
+                        starttime.strftime('%Y-%m-%d %H:%M:%S') + " and " +
+                        endtime.strftime('%Y-%m-%d %H:%M:%S') + " for master scan '" +
+                        masterscan + "' and master data type '" +
+                        masterdatatypedescr + "'")
+    print('- Number of volumes to process: ' + str(nvolumes))
 
     # initial processing of the datasets
     print('\n\nInitializing datasets:')
@@ -123,9 +130,6 @@ def main(cfgfile, starttime, endtime):
 
     print('\n\n\nThis is the end my friend! See you soon!')
 
-    print("====== PYRAD data processing finished: %s" %
-          datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
-
 
 def main_trajectory(cfgfile, trajfile, infostr="",
                     starttime=None, endtime=None):
@@ -151,21 +155,63 @@ def main_trajectory(cfgfile, trajfile, infostr="",
 
     print("====== PYRAD trajectory processing started: %s" %
           datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
-    print("- PYRAD version: " + pyrad_version.version)
+
+    atexit.register(_print_end_msg,
+                    "====== PYRAD trajectory processing finished: ")
+
+    print("- PYRAD version: %s (compiled %s by %s)" %
+          (pyrad_version.version, pyrad_version.compile_date_time, pyrad_version.username))
     print("- PYART version: " + pyart_version.version)
 
+    # Read the config files
     cfg = _create_cfg_dict(cfgfile)
     datacfg = _create_datacfg_dict(cfg)
+
+    masterscan = None
+    if cfg['ScanList'] is not None:
+        masterscan = cfg['ScanList'][0]
 
     datatypesdescr = _get_datatype_list(cfg)
     dataset_levels = _get_datasets_list(cfg)
 
+    # Get the plane trajectory
+    print("- Trajectory file: " + trajfile)
+    try:
+        traj = Trajectory(trajfile, starttime=starttime, endtime=endtime)
+    except Exception as ee:
+        print(str(ee), file=sys.stderr)
+        sys.exit(1)
+
+    # Derive start and end time (if not specified by arguments)
+    if (starttime is None):
+        scanperiod_min = cfg['ScanPeriod'] * 1.1  # [min]
+        starttime = traj.get_start_time() - timedelta(minutes=scanperiod_min)
+    if (endtime is None):
+        scanperiod_min = cfg['ScanPeriod'] * 1.1  # [min]
+        endtime = traj.get_end_time() + timedelta(minutes=scanperiod_min)
+
+    print("- Start time: " + str(starttime))
+    print("- End time: " + str(endtime))
+
+    masterfilelist, masterdatatypedescr = _get_masterfile_list(
+        datatypesdescr, starttime, endtime, datacfg, masterscan=masterscan)
+
+    nvolumes = len(masterfilelist)
+    if nvolumes == 0:
+        raise Exception("ERROR: Could not find any valid volumes between " +
+                        starttime.strftime('%Y-%m-%d %H:%M:%S') + " and " +
+                        endtime.strftime('%Y-%m-%d %H:%M:%S') + " for master scan '" +
+                        masterscan + "' and master data type '" +
+                        masterdatatypedescr + "'")
+    print('- Number of volumes to process: ' + str(nvolumes))
+
     # XXX
 
-    print("====== PYRAD trajectory processing finished: %s" %
-          datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
-
     return 0
+
+
+def _print_end_msg(text):
+    print(text + datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
 
 
 def _process_dataset(cfg, dscfg, proc_status=0, radar=None, voltime=None):
@@ -307,6 +353,7 @@ def _create_datacfg_dict(cfg):
         data config dictionary
 
     """
+
     datacfg = dict({'datapath': cfg['datapath']})
     datacfg.update({'ScanList': cfg['ScanList']})
     datacfg.update({'cosmopath': cfg['cosmopath']})
@@ -503,7 +550,8 @@ def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
         datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if ((datagroup != 'COSMO') and (datagroup != 'RAD4ALPCOSMO') and
-                (datagroup != 'DEM') and (datagroup != 'RAD4ALPDEM')):
+                (datagroup != 'DEM') and (datagroup != 'RAD4ALPDEM') and
+                (datagroup != 'SAVED')):
             masterdatatypedescr = datatypedescr
             break
 
@@ -512,7 +560,7 @@ def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
         for datatypedescr in datatypesdescr:
             datagroup, datatype, dataset, product = (
                 get_datatype_fields(datatypedescr))
-            if datagroup == 'COSMO':
+            if ((datagroup == 'COSMO') or (datagroup == 'SAVED')):
                 masterdatatypedescr = 'RAINBOW:dBZ'
                 break
             elif datagroup == 'RAD4ALPCOSMO':

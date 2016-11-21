@@ -70,6 +70,14 @@ Auxiliary functions
     get_fieldname_rainbow
     generate_field_name_str
 
+Trajectory
+==========
+
+.. autosummary::
+    :toctree: generated/
+
+    Trajectory
+
 """
 
 from .config import read_config
@@ -91,5 +99,7 @@ from .io_aux import get_datetime, get_dataset_fields
 from .io_aux import get_file_list, get_datatype_fields
 from .io_aux import get_fieldname_pyart
 from .io_aux import generate_field_name_str
+
+from .trajectory import Trajectory
 
 __all__ = [s for s in dir() if not s.startswith('_')]
