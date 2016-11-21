@@ -359,8 +359,13 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
         radar index
 
     """
+
     if procstatus != 1:
         return None, None
+
+    if (not 'RR_METHOD' in dscfg):
+        raise Exception("ERROR: Undefined parameter 'RR_METHOD' for dataset '%s'"
+                        % dscfg['dsname'])
 
     if dscfg['RR_METHOD'] == 'Z':
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(

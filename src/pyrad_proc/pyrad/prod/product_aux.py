@@ -7,43 +7,48 @@ Auxiliary functions to generate products
 .. autosummary::
     :toctree: generated/
 
-    get_product_func
+    get_prodgen_func
 
 """
 
-import os
-from copy import deepcopy
-from warnings import warn
-
-import numpy as np
-
 import pyart
 
+from .process_product import generate_vol_products
+from .process_product import generate_timeseries_products
+from .process_product import generate_sun_hits_products
+from .process_product import generate_monitoring_products
 
-def get_product_func(product_type):
+from .process_traj_products import generate_traj_products
+
+
+def get_prodgen_func(dsformat, dsname, dstype):
     """
-    maps the product type into its processing function
+    maps the dataset format into its processing function
 
     Parameters
     ----------
-    product_type : str
-        product type, i.e. 'VOL', etc.
+    dsformat : str
+        dataset group, i.e. 'VOL', etc.
 
     Returns
     -------
-    func_name : str
-        pyrad function used to generate the product
+    func : function
+        pyrad function used to generate the products
 
     """
-    if product_type == 'VOL':
-        func_name = 'generate_vol_products'
-    elif product_type == 'TIMESERIES':
-        func_name = 'generate_timeseries_products'
-    elif product_type == 'SUN_HITS':
-        func_name = 'generate_sun_hits_products'
-    elif product_type == 'MONITORING':
-        func_name = 'generate_monitoring_products'
-    else:
-        print('ERROR: Unknown dataset type')
 
-    return func_name
+    if dsformat == 'VOL':
+        func = generate_vol_products
+    elif dsformat == 'TIMESERIES':
+        func = generate_timeseries_products
+    elif dsformat == 'SUN_HITS':
+        func = generate_sun_hits_products
+    elif dsformat == 'MONITORING':
+        func = generate_monitoring_products
+    elif dsformat == 'TRAJ_ONLY':
+        func = generate_traj_products
+    else:
+        raise ValueError("ERROR: Unknown dataset format '%s' of dataset '%s'"
+                         "(dataset type '%s')" % (dsformat, dsname, dstype))
+
+    return func

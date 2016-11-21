@@ -24,6 +24,7 @@ Functions for reading radar data files
 
 """
 
+import sys
 import glob
 import datetime
 import os
@@ -209,6 +210,7 @@ def merge_scans_rainbow(basepath, scan_list, voltime, scan_period,
         radar object
 
     """
+
     radar = merge_fields_rainbow(
         basepath, scan_list[0], voltime, datatype_list)
 
@@ -221,8 +223,14 @@ def merge_scans_rainbow(basepath, scan_list, voltime, scan_period,
             datadescriptor = radarnr+':RAINBOW:'+datatype_list[0]
         endtime = voltime+datetime.timedelta(minutes=scan_period)
         for i in range(1, nscans):
-            filelist = get_file_list(
-                datadescriptor, voltime, endtime, cfg, scan=scan_list[i])
+            filelist = get_file_list(datadescriptor, voltime, endtime,
+                                     cfg, scan=scan_list[i])
+
+            if (len(filelist) == 0):
+                print("ERROR: No data file found for scan '%s' "
+                      "between %s and %s" % (scan_list[i], voltime, endtime),
+                      file=sys.stderr)
+                continue
             scantime = get_datetime(filelist[0], datadescriptor)
 
             radar_aux = merge_fields_rainbow(
@@ -658,8 +666,8 @@ def merge_fields_cfradial(basepath, loadname, voltime, datatype_list,
     # create radar object
     radar = None
     if not filename:
-        warn('No file found in '+datapath+fdatetime+'*'+datatype_list[0]
-             + '.nc')
+        warn('No file found in '+datapath+fdatetime+'*'+datatype_list[0] +
+             '.nc')
     else:
         radar = pyart.io.read_cfradial(filename[0])
 
@@ -669,8 +677,8 @@ def merge_fields_cfradial(basepath, loadname, voltime, datatype_list,
                     dataset_list[i]+'/'+product_list[i]+'/')
         filename = glob.glob(datapath+fdatetime+'*'+datatype_list[i]+'.nc')
         if not filename:
-            warn('No file found in '+datapath+fdatetime+'*'+datatype_list[0]
-                 + '.nc')
+            warn('No file found in '+datapath+fdatetime+'*'+datatype_list[0] +
+                 '.nc')
         else:
             radar_aux = pyart.io.read_cfradial(filename[0])
             if radar is None:

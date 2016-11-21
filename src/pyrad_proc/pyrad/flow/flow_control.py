@@ -8,7 +8,6 @@ functions to control the Pyrad data processing flow
     :toctree: generated/
 
     main
-    main_trajectory
     _create_cfg_dict
     _create_datacfg_dict
     _create_dscfg_dict
@@ -36,14 +35,14 @@ from ..io.io_aux import get_dataset_fields, get_datatype_fields
 from ..io.trajectory import Trajectory
 
 from ..proc.process_aux import get_process_func
-from ..prod.product_aux import get_product_func
+from ..prod.product_aux import get_prodgen_func
 
 from pyrad import proc, prod
 from pyrad import version as pyrad_version
 from pyart import version as pyart_version
 
 
-def main(cfgfile, starttime, endtime):
+def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
     """
     main flow control. Processes data over a given period of time
 
@@ -53,17 +52,12 @@ def main(cfgfile, starttime, endtime):
         path of the main config file
     starttime, endtime : datetime object
         start and end time of the data to be processed
-
-    Returns
-    -------
-    None
+    trajfile : str
+        path to file describing the trajectory
+    infostr : Information string about the actual data processing
+              (e.g. 'RUN57'). This sting is added to product files.
 
     """
-
-    print("====== PYRAD data processing started: %s" %
-          datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
-    atexit.register(_print_end_msg,
-                    "====== PYRAD data processing finished: ")
 
     print("- PYRAD version: %s (compiled %s by %s)" %
           (pyrad_version.version, pyrad_version.compile_date_time,
@@ -72,6 +66,26 @@ def main(cfgfile, starttime, endtime):
 
     cfg = _create_cfg_dict(cfgfile)
     datacfg = _create_datacfg_dict(cfg)
+
+    # Get the plane trajectory
+    if (len(trajfile) > 0):
+        print("- Trajectory file: " + trajfile)
+        try:
+            traj = Trajectory(trajfile, starttime=starttime, endtime=endtime)
+        except Exception as ee:
+            print(str(ee), file=sys.stderr)
+            sys.exit(1)
+
+        # Derive start and end time (if not specified by arguments)
+        if (starttime is None):
+            scan_min = cfg['ScanPeriod'] * 1.1  # [min]
+            starttime = traj.get_start_time() - timedelta(minutes=scan_min)
+        if (endtime is None):
+            scan_min = cfg['ScanPeriod'] * 1.1  # [min]
+            endtime = traj.get_end_time() + timedelta(minutes=scan_min)
+
+    print("- Start time: " + str(starttime))
+    print("- End time: " + str(endtime))
 
     datatypesdescr_list = list()
     for i in range(1, cfg['NumRadars']+1):
@@ -85,22 +99,22 @@ def main(cfgfile, starttime, endtime):
 
     nvolumes = len(masterfilelist)
     if nvolumes == 0:
-        raise ValueError(
-            'ERROR: Could not find any valid volume between ' +
-            starttime.strftime('%Y-%m-%d %H:%M:%S')+' and ' +
-            endtime.strftime('%Y-%m-%d %H:%M:%S') +
-            ' for master scan '+str(masterscan)+' and master data type ' +
-            masterdatatypedescr)
+        raise ValueError("ERROR: Could not find any valid volumes between " +
+                         starttime.strftime('%Y-%m-%d %H:%M:%S') + " and " +
+                         endtime.strftime('%Y-%m-%d %H:%M:%S') + " for " +
+                         "master scan '" + str(masterscan) +
+                         "' and master data type '" + masterdatatypedescr +
+                         "'")
     print('- Number of volumes to process: ' + str(nvolumes))
 
     # initial processing of the datasets
-    print('\n\nInitializing datasets:')
+    print('- Initializing datasets:')
 
     dscfg = dict()
     for level in sorted(dataset_levels):
-        print('\nProcess level: '+level)
+        print('-- Process level: '+level)
         for dataset in dataset_levels[level]:
-            print('Processing dataset: '+dataset)
+            print('--- Processing dataset: '+dataset)
             dscfg.update({dataset: _create_dscfg_dict(cfg, dataset)})
             result = _process_dataset(
                 cfg, dscfg[dataset], proc_status=0, radar_list=None,
@@ -108,7 +122,7 @@ def main(cfgfile, starttime, endtime):
 
     # process all data files in file list
     for masterfile in masterfilelist:
-        print('\n\nmaster file: '+os.path.basename(masterfile))
+        print('- master file: ' + os.path.basename(masterfile))
         master_voltime = get_datetime(masterfile, masterdatatypedescr)
 
         # get data of master radar
@@ -136,120 +150,24 @@ def main(cfgfile, starttime, endtime):
 
         # process all data sets
         for level in sorted(dataset_levels):
-            print('\nProcess level: '+level)
+            print('-- Process level: '+level)
             for dataset in dataset_levels[level]:
-                print('Processing dataset: '+dataset)
+                print('-- Processing dataset: '+dataset)
                 result = _process_dataset(
                     cfg, dscfg[dataset], proc_status=1, radar_list=radar_list,
                     voltime=master_voltime)
 
     # post-processing of the datasets
-    print('\n\nPost-processing datasets')
+    print('- Post-processing datasets:')
     for level in sorted(dataset_levels):
-        print('\nProcess level: '+level)
+        print('-- Process level: '+level)
         for dataset in dataset_levels[level]:
-            print('Processing dataset: '+dataset)
+            print('--- Processing dataset: '+dataset)
             result = _process_dataset(
                 cfg, dscfg[dataset], proc_status=2, radar_list=None,
                 voltime=master_voltime)
 
-    print('\n\n\nThis is the end my friend! See you soon!')
-
-
-def main_trajectory(cfgfile, trajfile, infostr="",
-                    starttime=None, endtime=None):
-    """
-    main flow control. Processes data over a given period of time
-
-    Parameters
-    ----------
-    cfgfile : str
-        path of the main config file
-    trajfile : str
-        path to file describing the trajectory
-    infostr : Information string about the actual data processing
-              (e.g. 'RUN57'). This sting is added to product files.
-    starttime, endtime : datetime object
-        start and end time of the data to be processed
-
-    Returns
-    -------
-    0 on success, -1 otherwise
-
-    """
-
-    print("====== PYRAD trajectory processing started: %s" %
-          datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
-
-    atexit.register(_print_end_msg,
-                    "====== PYRAD trajectory processing finished: ")
-
-    print("- PYRAD version: %s (compiled %s by %s)" %
-          (pyrad_version.version, pyrad_version.compile_date_time, pyrad_version.username))
-    print("- PYART version: " + pyart_version.version)
-
-    # Read the config files
-    cfg = _create_cfg_dict(cfgfile)
-    datacfg = _create_datacfg_dict(cfg)
-
-    masterscan = None
-    if cfg['ScanList'] is not None:
-        masterscan = cfg['ScanList'][0]
-
-    datatypesdescr = _get_datatype_list(cfg)
-    dataset_levels = _get_datasets_list(cfg)
-
-    # Get the plane trajectory
-    print("- Trajectory file: " + trajfile)
-    try:
-        traj = Trajectory(trajfile, starttime=starttime, endtime=endtime)
-    except Exception as ee:
-        print(str(ee), file=sys.stderr)
-        sys.exit(1)
-
-    # Derive start and end time (if not specified by arguments)
-    if (starttime is None):
-        scanperiod_min = cfg['ScanPeriod'] * 1.1  # [min]
-        starttime = traj.get_start_time() - timedelta(minutes=scanperiod_min)
-    if (endtime is None):
-        scanperiod_min = cfg['ScanPeriod'] * 1.1  # [min]
-        endtime = traj.get_end_time() + timedelta(minutes=scanperiod_min)
-
-    print("- Start time: " + str(starttime))
-    print("- End time: " + str(endtime))
-
-    masterfilelist, masterdatatypedescr = _get_masterfile_list(
-        datatypesdescr, starttime, endtime, datacfg, masterscan=masterscan)
-
-    nvolumes = len(masterfilelist)
-    if nvolumes == 0:
-        raise Exception("ERROR: Could not find any valid volumes between " +
-                        starttime.strftime('%Y-%m-%d %H:%M:%S') + " and " +
-                        endtime.strftime('%Y-%m-%d %H:%M:%S') + " for master scan '" +
-                        masterscan + "' and master data type '" +
-                        masterdatatypedescr + "'")
-    print('- Number of volumes to process: ' + str(nvolumes))
-
-    # XXX
-
-    return 0
-
-
-def _print_end_msg(text):
-    """
-    prints end message
-
-    Parameters
-    ----------
-    text : str
-        the text to be printed
-
-    Returns
-    -------
-    Nothing
-
-    """
-    print(text + datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
+    print('- This is the end my friend! See you soon!')
 
 
 def _process_dataset(cfg, dscfg, proc_status=0, radar_list=None, voltime=None):
@@ -275,24 +193,34 @@ def _process_dataset(cfg, dscfg, proc_status=0, radar_list=None, voltime=None):
     0 if a new dataset has been created. None otherwise
 
     """
+
     dscfg['timeinfo'] = voltime
-    proc_func_name, dsformat = get_process_func(dscfg['type'])
-    proc_func = getattr(proc, proc_func_name)
-    new_dataset, ind_rad = proc_func(proc_status, dscfg, radar_list=radar_list)
+    proc_func_name, dsformat = get_process_func(dscfg['type'], dscfg['dsname'])
+    proc_ds_func = getattr(proc, proc_func_name)
+    new_dataset, ind_rad = proc_ds_func(proc_status, dscfg,
+                                        radar_list=radar_list)
     if new_dataset is None:
         return None
 
-    result = _add_dataset(
-        new_dataset, radar_list, ind_rad, make_global=dscfg['MAKE_GLOBAL'])
+    result = _add_dataset(new_dataset, radar_list, ind_rad,
+                          make_global=dscfg['MAKE_GLOBAL'])
+
+    try:
+        prod_func = get_prodgen_func(dsformat, dscfg['dsname'],
+                                     dscfg['type'])
+    except Exception as ee:
+        raise
 
     # create the data set products
     if 'products' in dscfg:
         for product in dscfg['products']:
-            prdcfg = _create_prdcfg_dict(
-                cfg, dscfg['dsname'], product, voltime=voltime)
-            prod_func_name = get_product_func(dsformat)
-            prod_func = getattr(prod, prod_func_name)
-            result = prod_func(new_dataset, prdcfg)
+            prdcfg = _create_prdcfg_dict(cfg, dscfg['dsname'], product,
+                                         voltime=voltime)
+            try:
+                result = prod_func(new_dataset, prdcfg)
+            except Exception as ee:
+                print(str(ee), file=sys.stderr)
+                continue
 
     return 0
 
@@ -324,6 +252,13 @@ def _create_cfg_dict(cfgfile):
         print(ee, file=sys.stderr)
         sys.exit(1)
 
+    # check for mandatory config parameters
+    param_must = ['name', 'datapath', 'configpath', 'saveimgbasepath',
+                  'RadarName', 'ScanList', 'dataSetList']
+    for param in param_must:
+        if param not in cfg:
+            raise Exception("ERROR config: Parameter '%s' undefined!" % param)
+
     # fill in defaults
     if 'NumRadars' not in cfg:
         cfg.update({'NumRadars': 1})
@@ -335,6 +270,8 @@ def _create_cfg_dict(cfgfile):
         cfg.update({'ScanList': get_scan_list(cfg['ScanList'])})
     if 'cosmopath' not in cfg:
         cfg.update({'cosmopath': None})
+    if 'psrpath' not in cfg:
+        cfg.update({'psrpath': None})
     if 'dempath' not in cfg:
         cfg.update({'dempath': None})
     if 'smnpath' not in cfg:
@@ -364,20 +301,24 @@ def _create_cfg_dict(cfgfile):
     if 'attg' not in cfg:
         cfg.update({'attg': None})
     if 'ScanPeriod' not in cfg:
-        warn(
-            'WARNING: Scan period not specified.' +
-            'Assumed default value 5 min')
+        warn('WARNING: Scan period not specified.' +
+             'Assumed default value 5 min')
         cfg.update({'ScanPeriod': 5})
     if 'CosmoRunFreq' not in cfg:
-        warn(
-            'WARNING: COSMO run frequency not specified.' +
-            'Assumed default value 3h')
+        warn('WARNING: COSMO run frequency not specified.' +
+             'Assumed default value 3h')
         cfg.update({'CosmoRunFreq': 3})
     if 'CosmoForecasted' not in cfg:
-        warn(
-            'WARNING: Hours forecasted by COSMO not specified.' +
-            'Assumed default value 7h (including analysis)')
+        warn('WARNING: Hours forecasted by COSMO not specified.' +
+             'Assumed default value 7h (including analysis)')
         cfg.update({'CosmoForecasted': 7})
+
+    # Convert the following strings to string arrays
+    strarr_list = ['datapath', 'cosmopath', 'dempath', 'loadbasepath',
+                   'loadname', 'RadarName', 'RadarRes', 'ScanList']
+    for param in strarr_list:
+        if (type(cfg[param]) is str):
+            cfg[param] = [cfg[param]]
 
     return cfg
 
@@ -598,7 +539,8 @@ def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if ((datagroup != 'COSMO') and (datagroup != 'RAD4ALPCOSMO') and
-                (datagroup != 'DEM') and (datagroup != 'RAD4ALPDEM')):
+                (datagroup != 'DEM') and (datagroup != 'RAD4ALPDEM') and
+                (datagroup != 'SAVED')):
             masterdatatypedescr = datatypedescr
             if scan_list is not None:
                 masterscan = scan_list[int(radarnr[5:8])-1][0]
@@ -609,7 +551,7 @@ def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
         for datatypedescr in datatypesdescr:
             radarnr, datagroup, datatype, dataset, product = (
                 get_datatype_fields(datatypedescr))
-            if datagroup == 'COSMO':
+            if ((datagroup == 'COSMO') or (datagroup == 'SAVED')):
                 masterdatatypedescr = radarnr+':RAINBOW:dBZ'
                 if scan_list is not None:
                     masterscan = scan_list[int(radarnr[5:8])-1][0]
