@@ -8,9 +8,6 @@ The core of the processing is performed by the module Py-ART.
 
 """
 
-
-DOCLINES = __doc__.split("\n")
-
 import os
 import shutil
 import sys
@@ -18,7 +15,10 @@ import re
 import subprocess
 import glob
 import builtins
+from datetime import datetime
+import getpass
 
+DOCLINES = __doc__.split("\n")
 
 CLASSIFIERS = """\
 Development Status :: 0 - Prototype
@@ -40,17 +40,19 @@ MAINTAINER = "Pyrad Developers"
 MAINTAINER_EMAIL = "jordi.figuerasiventura@meteoswiss.ch"
 DESCRIPTION = DOCLINES[0]
 LONG_DESCRIPTION = "\n".join(DOCLINES[2:])
-URL = "https://gitlab.meteoswiss.ch/MDR/pyrad"
-DOWNLOAD_URL = "https://gitlab.meteoswiss.ch/MDR/pyrad"
+URL = "https://github.com/meteoswiss-mdr/pyrad.git"
+DOWNLOAD_URL = "https://github.com/meteoswiss-mdr/pyrad.git"
 LICENSE = 'BSD'
 CLASSIFIERS = filter(None, CLASSIFIERS.split('\n'))
 PLATFORMS = ["Linux"]
 MAJOR = 0
 MINOR = 1
-MICRO = 0
+MICRO = 1
 ISRELEASED = False
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 SCRIPTS = glob.glob('scripts/*')
+COMPILE_DATE_TIME = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
+USERNAME = getpass.getuser()
 
 
 # Return the git revision as a string
@@ -97,6 +99,8 @@ short_version = '%(version)s'
 version = '%(version)s'
 full_version = '%(full_version)s'
 git_revision = '%(git_revision)s'
+compile_date_time = '%(compile_date_time)s'
+username = '%(username)s'
 release = %(isrelease)s
 
 if not release:
@@ -126,6 +130,8 @@ if not release:
         a.write(cnt % {'version': VERSION,
                        'full_version': FULLVERSION,
                        'git_revision': GIT_REVISION,
+                       'compile_date_time': COMPILE_DATE_TIME,
+                       'username': USERNAME,
                        'isrelease': str(ISRELEASED)})
     finally:
         a.close()

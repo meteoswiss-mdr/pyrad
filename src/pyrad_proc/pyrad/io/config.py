@@ -20,7 +20,6 @@ Functions for reading pyrad config files
 import os
 import re
 import numpy as np
-from warnings import warn
 
 
 def read_config(fname, cfg=None):
@@ -42,13 +41,6 @@ def read_config(fname, cfg=None):
         dictionary of dictionaries containing the configuration parameters
 
     """
-
-    # Replace $HOME by the users home directory
-    if re.match("^\$HOME", fname) or re.match("^\$\{HOME\}", fname):
-        homedir = os.path.expanduser("~")
-        fname = fname.replace("{", "")
-        fname = fname.replace("}", "")
-        fname = fname.replace("$HOME", homedir)
 
     # check if the file can be read
     try:
@@ -184,7 +176,15 @@ def string_to_datatype(type, strval):
     elif uptype == 'DOUBLE':
         return float(strval[0])
     elif uptype == 'STRING':
-        return str(strval[0])
+        # Replace $HOME or ${HOME} by the users home directory
+        sval = strval[0]
+        if re.match("^\$HOME", sval) or re.match("^\$\{HOME\}", sval):
+            homedir = os.path.expanduser("~")
+            sval = sval.replace("{", "")
+            sval = sval.replace("}", "")
+            sval = sval.replace("$HOME", homedir)
+
+        return str(sval)
     else:
         raise Exception("ERROR: Unexpected data type "+uptype)
 

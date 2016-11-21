@@ -91,16 +91,14 @@ def main():
                   file=sys.stderr)
             sys.exit(1)
 
-    print('Trajectory file: '+args.trajfile)
     if (len(args.infostr) > 0):
         print('Info string    : '+args.infostr)
-    if (len(args.starttime) > 0):
-        print('Start time     : '+args.starttime)
-    if (len(args.endtime) > 0):
-        print('End time       : '+args.endtime)
 
-    pyrad_main_trajectory(args.cfgfile, args.trajfile, args.infostr,
-                          dt_starttime, dt_endtime)
+    try:
+        pyrad_main_trajectory(args.cfgfile, args.trajfile, args.infostr,
+                              dt_starttime, dt_endtime)
+    except Exception as ee:
+        print(str(ee), file=sys.stderr)
 
 
 # ---------------------------------------------------------
