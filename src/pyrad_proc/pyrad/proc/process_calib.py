@@ -39,7 +39,7 @@ from ..util.radar_utils import get_closest_solar_flux, get_histogram_bins
 from ..util.radar_utils import time_avg_range
 
 
-def process_correct_bias(procstatus, dscfg, radar=None):
+def process_correct_bias(procstatus, dscfg, radar_list=None):
     """
     Corrects a bias on the data
 
@@ -48,7 +48,6 @@ def process_correct_bias(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -56,30 +55,37 @@ def process_correct_bias(procstatus, dscfg, radar=None):
             The data type to correct for bias
         bias : float. Dataset keyword
             The bias to be corrected [dB]. Default 0
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
     new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
 
     if procstatus != 1:
-        return None
+        return None, None
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         break
     field_name = get_fieldname_pyart(datatype)
 
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
     if field_name not in radar.fields:
         warn('Unable to correct for bias field ' + field_name +
              '. Field not available')
-        return None
+        return None, None
 
     bias = 0.
     if 'bias' in dscfg:
@@ -98,10 +104,10 @@ def process_correct_bias(procstatus, dscfg, radar=None):
     new_dataset.fields = dict()
     new_dataset.add_field(new_field_name, corrected_field)
 
-    return new_dataset
+    return new_dataset, ind_rad
 
 
-def process_correct_noise_rhohv(procstatus, dscfg, radar=None):
+def process_correct_noise_rhohv(procstatus, dscfg, radar_list=None):
     """
     identifies echoes as 0: No data, 1: Noise, 2: Clutter,
     3: Precipitation
@@ -111,28 +117,28 @@ def process_correct_noise_rhohv(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
         datatype : list of string. Dataset keyword
             The data types used in the correction
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
     new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
 
     if procstatus != 1:
-        return None
+        return None, None
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if datatype == 'uRhoHV':
             urhohv = 'uncorrected_cross_correlation_ratio'
@@ -147,13 +153,19 @@ def process_correct_noise_rhohv(procstatus, dscfg, radar=None):
         if datatype == 'Nv':
             nv = 'noisedBZ_vv'
 
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
     if ((urhohv not in radar.fields) or
             (snr not in radar.fields) or
             (zdr not in radar.fields) or
             (nh not in radar.fields) or
             (nv not in radar.fields)):
         warn('Unable to correct RhoHV field for noise. Missing fields')
-        return None
+        return None, None
 
     rhohv = pyart.correct.correct_noise_rhohv(
         radar, urhohv_field=urhohv, snr_field=snr, zdr_field=zdr,
@@ -164,10 +176,10 @@ def process_correct_noise_rhohv(procstatus, dscfg, radar=None):
     new_dataset.fields = dict()
     new_dataset.add_field('cross_correlation_ratio', rhohv)
 
-    return new_dataset
+    return new_dataset, ind_rad
 
 
-def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar=None):
+def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
     """
     Computes specific differential phase and differential phase in rain using
     the selfconsistency between Zdr, Zh and KDP
@@ -177,7 +189,6 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -195,23 +206,24 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar=None):
             The default freezing level height. It will be used if no
             temperature field name is specified or the temperature field is
             not in the radar object. Default 2000.
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
-    radar : Radar
+    new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
 
     if procstatus != 1:
-        return None
+        return None, None
 
     temp = None
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if datatype == 'dBZc':
             refl = 'corrected_reflectivity'
@@ -232,13 +244,19 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar=None):
         if datatype == 'RhoHVc':
             rhohv = 'corrected_cross_correlation_ratio'
 
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
     if ((refl not in radar.fields) or
             (zdr not in radar.fields) or
             (phidp not in radar.fields) or
             (rhohv not in radar.fields)):
         warn('Unable to estimate reflectivity bias using selfconsistency. ' +
              'Missing data')
-        return None
+        return None, None
 
     if (temp is not None) and (temp not in radar.fields):
         warn('COSMO temperature field not available. ' +
@@ -293,10 +311,10 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar=None):
     new_dataset.add_field(kdpsim_field, kdpsim)
     new_dataset.add_field(phidpsim_field, phidpsim)
 
-    return new_dataset
+    return new_dataset, ind_rad
 
 
-def process_selfconsistency_bias(procstatus, dscfg, radar=None):
+def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
     """
     Estimates the reflectivity bias by means of the selfconsistency
     algorithm by Gourley
@@ -306,7 +324,6 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -325,23 +342,24 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
             minimum phase shift [deg]. Default 2.
         dphidp_max : float. Dataset keyword
             maximum phase shift [deg]. Default 16.
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
-    radar : Radar
+    new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
 
     if procstatus != 1:
-        return None
+        return None, None
 
     temp = None
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if datatype == 'dBZc':
             refl = 'corrected_reflectivity'
@@ -362,13 +380,19 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
         if datatype == 'RhoHVc':
             rhohv = 'corrected_cross_correlation_ratio'
 
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
     if ((refl not in radar.fields) or
             (zdr not in radar.fields) or
             (phidp not in radar.fields) or
             (rhohv not in radar.fields)):
         warn('Unable to estimate reflectivity bias using selfconsistency. ' +
              'Missing data')
-        return None
+        return None, None
 
     if (temp is not None) and (temp not in radar.fields):
         warn('COSMO temperature field not available. ' +
@@ -434,10 +458,10 @@ def process_selfconsistency_bias(procstatus, dscfg, radar=None):
 
     new_dataset.add_field('reflectivity_bias', refl_bias)
 
-    return new_dataset
+    return new_dataset, ind_rad
 
 
-def process_estimate_phidp0(procstatus, dscfg, radar=None):
+def process_estimate_phidp0(procstatus, dscfg, radar_list=None):
     """
     estimates the system differential phase offset at each ray
 
@@ -446,7 +470,6 @@ def process_estimate_phidp0(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -462,22 +485,23 @@ def process_estimate_phidp0(procstatus, dscfg, radar=None):
             The minimum reflectivity [dBZ]
         Zmax : float. Dataset keyword
             The maximum reflectivity [dBZ]
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
     new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
 
     if procstatus != 1:
-        return None
+        return None, None
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if datatype == 'dBZ':
             refl_field = 'reflectivity'
@@ -490,9 +514,15 @@ def process_estimate_phidp0(procstatus, dscfg, radar=None):
         if datatype == 'uPhiDP':
             psidp_field = 'uncorrected_differential_phase'
 
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
     if (refl_field not in radar.fields) or (psidp_field not in radar.fields):
         warn('Unable to estimate PhiDP system offset. Missing data')
-        return None
+        return None, None
 
     ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
     ind_rmax = np.where(radar.range['data'] < dscfg['rmax'])[0][-1]
@@ -515,10 +545,10 @@ def process_estimate_phidp0(procstatus, dscfg, radar=None):
     new_dataset.add_field('system_differential_phase', phidp0)
     new_dataset.add_field('first_gate_differential_phase', first_gates)
 
-    return new_dataset
+    return new_dataset, ind_rad
 
 
-def process_rhohv_rain(procstatus, dscfg, radar=None):
+def process_rhohv_rain(procstatus, dscfg, radar_list=None):
     """
     Keeps only suitable data to evaluate the 80 percentile of RhoHV in rain
 
@@ -527,7 +557,6 @@ def process_rhohv_rain(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -549,23 +578,24 @@ def process_rhohv_rain(procstatus, dscfg, radar=None):
             The default freezing level height. It will be used if no
             temperature field name is specified or the temperature field is
             not in the radar object. Default 2000.
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
-    radar : Radar
+    new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
 
     if procstatus != 1:
-        return None
+        return None, None
 
     temp_field = None
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if datatype == 'RhoHV':
             rhohv_field = 'cross_correlation_ratio'
@@ -578,10 +608,16 @@ def process_rhohv_rain(procstatus, dscfg, radar=None):
         if datatype == 'TEMP':
             temp_field = 'temperature'
 
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
     if ((refl_field not in radar.fields) or
             (rhohv_field not in radar.fields)):
         warn('Unable to estimate RhoHV in rain. Missing data')
-        return None
+        return None, None
 
     if (temp_field is not None) and (temp_field not in radar.fields):
         warn('COSMO temperature field not available. ' +
@@ -629,10 +665,10 @@ def process_rhohv_rain(procstatus, dscfg, radar=None):
 
     new_dataset.add_field('cross_correlation_ratio_in_rain', rhohv_rain)
 
-    return new_dataset
+    return new_dataset, ind_rad
 
 
-def process_zdr_rain(procstatus, dscfg, radar=None):
+def process_zdr_rain(procstatus, dscfg, radar_list=None):
     """
     Keeps only suitable data to evaluate the differential reflectivity in
     moderate rain
@@ -642,7 +678,6 @@ def process_zdr_rain(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -673,23 +708,24 @@ def process_zdr_rain(procstatus, dscfg, radar=None):
             The default freezing level height. It will be used if no
             temperature field name is specified or the temperature field is
             not in the radar object. Default 2000.
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
-    radar : Radar
+    new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
 
     if procstatus != 1:
-        return None
+        return None, None
 
     temp_field = None
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if datatype == 'ZDR':
             zdr_field = 'differential_reflectivity'
@@ -710,10 +746,16 @@ def process_zdr_rain(procstatus, dscfg, radar=None):
         if datatype == 'TEMP':
             temp_field = 'temperature'
 
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
     if ((refl_field not in radar.fields) or
             (rhohv_field not in radar.fields)):
         warn('Unable to estimate ZDR in rain. Missing data')
-        return None
+        return None, None
 
     if (temp_field is not None) and (temp_field not in radar.fields):
         warn('COSMO temperature field not available. ' +
@@ -772,10 +814,10 @@ def process_zdr_rain(procstatus, dscfg, radar=None):
 
     new_dataset.add_field('differential_reflectivity_in_rain', zdr_rain)
 
-    return new_dataset
+    return new_dataset, ind_rad
 
 
-def process_monitoring(procstatus, dscfg, radar=None):
+def process_monitoring(procstatus, dscfg, radar_list=None):
     """
     computes monitoring statistics
 
@@ -784,7 +826,6 @@ def process_monitoring(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -793,30 +834,36 @@ def process_monitoring(procstatus, dscfg, radar=None):
         step : float. Dataset keyword
             The width of the histogram bin. Default is None. In that case the
             default step in function get_histogram_bins is used
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
-    radar : Radar
-        radar object
+    new_dataset : Radar
+        radar object containing histogram data
+    ind_rad : int
+        radar index
 
     """
 
     if procstatus == 0:
-        return None
+        return None, None
 
     if procstatus == 1:
         for datatypedescr in dscfg['datatype']:
-            datagroup, datatype, dataset, product = get_datatype_fields(
-                datatypedescr)
+            radarnr, datagroup, datatype, dataset, product = (
+                get_datatype_fields(datatypedescr))
             field_name = get_fieldname_pyart(datatype)
             break
+        ind_rad = int(radarnr[5:8])-1
+        if radar_list[ind_rad] is None:
+            warn('No valid radar')
+            return None, None
+        radar = radar_list[ind_rad]
 
         if field_name not in radar.fields:
             warn(field_name+' not available.')
-            return None
+            return None, None
 
         step = None
         if 'step' in dscfg:
@@ -855,20 +902,27 @@ def process_monitoring(procstatus, dscfg, radar=None):
         dataset.update({'hist_obj': radar_aux})
         dataset.update({'hist_type': 'instant'})
 
-        return dataset
+        return dataset, ind_rad
 
     if procstatus == 2:
         if dscfg['initialized'] == 0:
-            return None
+            return None, None
+
+        for datatypedescr in dscfg['datatype']:
+            radarnr, datagroup, datatype, dataset, product = (
+                get_datatype_fields(datatypedescr))
+            field_name = get_fieldname_pyart(datatype)
+            break
+        ind_rad = int(radarnr[5:8])-1
 
         dataset = dict()
         dataset.update({'hist_obj': dscfg['global_data']})
         dataset.update({'hist_type': 'cumulative'})
 
-        return dataset
+        return dataset, ind_rad
 
 
-def process_time_avg(procstatus, dscfg, radar=None):
+def process_time_avg(procstatus, dscfg, radar_list=None):
     """
     computes the temporal mean of a field
 
@@ -877,7 +931,6 @@ def process_time_avg(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -889,33 +942,40 @@ def process_time_avg(procstatus, dscfg, radar=None):
             when to start the average [s from midnight UTC]. Default 0.
         lin_trans: int. Dataset keyword
             If 1 apply linear transformation before averaging
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
-    radar : Radar
+    new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         field_name = get_fieldname_pyart(datatype)
         break
+    ind_rad = int(radarnr[5:8])-1
 
     lin_trans = 0
     if 'lin_trans' in dscfg:
         lin_trans = dscfg['lin_trans']
 
     if procstatus == 0:
-        return None
+        return None, None
 
     if procstatus == 1:
+        if radar_list[ind_rad] is None:
+            warn('No valid radar')
+            return None, None
+        radar = radar_list[ind_rad]
+
         if field_name not in radar.fields:
             warn(field_name+' not available.')
-            return None
+            return None, None
 
         period = 3600.
         if 'period' in dscfg:
@@ -968,7 +1028,7 @@ def process_time_avg(procstatus, dscfg, radar=None):
             if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
                 dscfg['global_data'].update({'radar_obj': radar_aux})
 
-            return None
+            return None, None
 
         # still accumulating: add field to global field
         if dscfg['timeinfo'] < dscfg['global_data']['endtime']:
@@ -983,7 +1043,7 @@ def process_time_avg(procstatus, dscfg, radar=None):
                 'number_of_samples']['data'] += (
                 npoints_interp['data'].filled(fill_value=0)).astype('int')
 
-            return None
+            return None, None
 
         # we have reached the end of the accumulation period: do the averaging
         # and start a new object
@@ -1015,14 +1075,14 @@ def process_time_avg(procstatus, dscfg, radar=None):
         if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
             dscfg['global_data'].update({'radar_obj': radar_aux})
 
-        return new_dataset
+        return new_dataset, ind_rad
 
     # no more files to process if there is global data pack it up
     if procstatus == 2:
         if dscfg['initialized'] == 0:
-            return None
+            return None, None
         if 'radar_obj' not in dscfg['global_data']:
-            return None
+            return None, None
 
         (dscfg['global_data']['radar_obj'].fields[field_name][
             'data']) /= (
@@ -1036,10 +1096,10 @@ def process_time_avg(procstatus, dscfg, radar=None):
 
         new_dataset = deepcopy(dscfg['global_data']['radar_obj'])
 
-        return new_dataset
+        return new_dataset, ind_rad
 
 
-def process_weighted_time_avg(procstatus, dscfg, radar=None):
+def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
     """
     computes the temporal mean of a field weighted by the reflectivity
 
@@ -1048,7 +1108,6 @@ def process_weighted_time_avg(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -1058,18 +1117,19 @@ def process_weighted_time_avg(procstatus, dscfg, radar=None):
             the period to average [s]. Default 3600.
         start_average : float. Dataset keyword
             when to start the average [s from midnight UTC]. Default 0.
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
-    radar : Radar
+    new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if ((datatype == 'dBZ') or (datatype == 'dBZc') or
                 (datatype == 'dBuZ') or (datatype == 'dBZv') or
@@ -1078,13 +1138,19 @@ def process_weighted_time_avg(procstatus, dscfg, radar=None):
         else:
             field_name = get_fieldname_pyart(datatype)
 
+    ind_rad = int(radarnr[5:8])-1
+
     if procstatus == 0:
-        return None
+        return None, None
 
     if procstatus == 1:
+        if radar_list[ind_rad] is None:
+            warn('No valid radar')
+            return None, None
+        radar = radar_list[ind_rad]
         if field_name not in radar.fields or refl_name not in radar.fields:
             warn('Unable to compute weighted average. Missing data')
-            return None
+            return None, None
 
         period = 3600.
         if 'period' in dscfg:
@@ -1138,7 +1204,7 @@ def process_weighted_time_avg(procstatus, dscfg, radar=None):
             if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
                 dscfg['global_data'].update({'radar_obj': radar_aux})
 
-            return None
+            return None, None
 
         # still accumulating: add field to global field
         if dscfg['timeinfo'] < dscfg['global_data']['endtime']:
@@ -1152,7 +1218,7 @@ def process_weighted_time_avg(procstatus, dscfg, radar=None):
             dscfg['global_data']['radar_obj'].fields[refl_name]['data'] += (
                 refl_interp['data'].filled(fill_value=0))
 
-            return None
+            return None, None
 
         # we have reached the end of the accumulation period: do the averaging
         # and start a new object
@@ -1178,24 +1244,24 @@ def process_weighted_time_avg(procstatus, dscfg, radar=None):
         if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
             dscfg['global_data'].update({'radar_obj': radar_aux})
 
-        return new_dataset
+        return new_dataset, ind_rad
 
     # no more files to process if there is global data pack it up
     if procstatus == 2:
         if dscfg['initialized'] == 0:
-            return None
+            return None, None
         if 'radar_obj' not in dscfg['global_data']:
-            return None
+            return None, None
 
         dscfg['global_data']['radar_obj'].fields[field_name]['data'] /= (
             dscfg['global_data']['radar_obj'].fields[refl_name]['data'])
 
         new_dataset = deepcopy(dscfg['global_data']['radar_obj'])
 
-        return new_dataset
+        return new_dataset, ind_rad
 
 
-def process_time_avg_flag(procstatus, dscfg, radar=None):
+def process_time_avg_flag(procstatus, dscfg, radar_list=None):
     """
     computes a flag field describing the conditions of the data used while
     averaging
@@ -1205,7 +1271,6 @@ def process_time_avg_flag(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -1217,20 +1282,21 @@ def process_time_avg_flag(procstatus, dscfg, radar=None):
             when to start the average [s from midnight UTC]. Default 0.
         phidpmax: float. Dataset keyword
             maximum PhiDP
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
-    radar : Radar
+    new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
     temp_name = None
     hydro_name = None
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if ((datatype == 'PhiDP') or (datatype == 'PhiDPc')):
             phidp_name = get_fieldname_pyart(datatype)
@@ -1241,10 +1307,17 @@ def process_time_avg_flag(procstatus, dscfg, radar=None):
         elif datatype == 'TEMP':
             temp_name = get_fieldname_pyart(datatype)
 
+    ind_rad = int(radarnr[5:8])-1
+
     if procstatus == 0:
-        return None
+        return None, None
 
     if procstatus == 1:
+        if radar_list[ind_rad] is None:
+            warn('No valid radar')
+            return None, None
+        radar = radar_list[ind_rad]
+
         phidpmax = 60.
         if 'phidpmax' in dscfg:
             phidpmax = dscfg['phidpmax']
@@ -1334,7 +1407,7 @@ def process_time_avg_flag(procstatus, dscfg, radar=None):
             if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
                 dscfg['global_data'].update({'radar_obj': radar_aux})
 
-            return None
+            return None, None
 
         # still accumulating: add field to global field
         if dscfg['timeinfo'] < dscfg['global_data']['endtime']:
@@ -1344,7 +1417,7 @@ def process_time_avg_flag(procstatus, dscfg, radar=None):
                 'time_avg_flag']['data'] += (
                     flag_interp['data'].filled(fill_value=0)).astype(int)
 
-            return None
+            return None, None
 
         # we have reached the end of the accumulation: start a new object
         new_dataset = deepcopy(dscfg['global_data']['radar_obj'])
@@ -1366,21 +1439,21 @@ def process_time_avg_flag(procstatus, dscfg, radar=None):
         if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
             dscfg['global_data'].update({'radar_obj': radar_aux})
 
-        return new_dataset
+        return new_dataset, ind_rad
 
     # no more files to process if there is global data pack it up
     if procstatus == 2:
         if dscfg['initialized'] == 0:
-            return None
+            return None, None
         if 'radar_obj' not in dscfg['global_data']:
-            return None
+            return None, None
 
         new_dataset = deepcopy(dscfg['global_data']['radar_obj'])
 
-        return new_dataset
+        return new_dataset, ind_rad
 
 
-def process_sun_hits(procstatus, dscfg, radar=None):
+def process_sun_hits(procstatus, dscfg, radar_list=None):
     """
     monitoring of the radar using sun hits
 
@@ -1389,7 +1462,6 @@ def process_sun_hits(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -1427,25 +1499,26 @@ def process_sun_hits(procstatus, dscfg, radar=None):
             [deg]. Default None
         ndays : int. Dataset keyword
             number of days used in sun retrieval. Default 1
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
     sun_hits_dict : dict
         dictionary containing a radar object, a sun_hits dict and a
         sun_retrieval dictionary
+    ind_rad : int
+        radar index
 
     """
 
     if procstatus == 0:
-        return None
+        return None, None
 
     if procstatus == 1:
         for datatypedescr in dscfg['datatype']:
-            datagroup, datatype, dataset, product = get_datatype_fields(
-                datatypedescr)
+            radarnr, datagroup, datatype, dataset, product = (
+                get_datatype_fields(datatypedescr))
             if datatype == 'dBm':
                 pwrh_field = 'signal_power_hh'
             if datatype == 'dBmv':
@@ -1455,11 +1528,17 @@ def process_sun_hits(procstatus, dscfg, radar=None):
             if datatype == 'ZDRuc':
                 zdr_field = 'corrected_unfiltered_differential_reflectivity'
 
+        ind_rad = int(radarnr[5:8])-1
+        if radar_list[ind_rad] is None:
+            warn('No valid radar')
+            return None, None
+        radar = radar_list[ind_rad]
+
         if ((pwrh_field not in radar.fields) or
                 (pwrv_field not in radar.fields) or
                 (zdr_field not in radar.fields)):
             warn('Unable to get sun hits. Missing data')
-            return None
+            return None, None
 
         # initialize dataset
         if dscfg['initialized'] == 0:
@@ -1531,15 +1610,22 @@ def process_sun_hits(procstatus, dscfg, radar=None):
             zdr_field=zdr_field)
 
         if sun_hits is None:
-            return None
+            return None, None
 
         sun_hits_dataset = dict()
         sun_hits_dataset.update({'sun_hits': sun_hits})
         sun_hits_dataset.update({'radar': new_radar})
 
-        return sun_hits_dataset
+        return sun_hits_dataset, ind_rad
 
     if procstatus == 2:
+        for datatypedescr in dscfg['datatype']:
+            radarnr, datagroup, datatype, dataset, product = (
+                get_datatype_fields(datatypedescr))
+            break
+
+        ind_rad = int(radarnr[5:8])-1
+
         # default values
         az_width_co = None
         el_width_co = None
@@ -1562,7 +1648,7 @@ def process_sun_hits(procstatus, dscfg, radar=None):
         sun_hits = read_sun_hits_multiple_days(dscfg, nfiles=nfiles)
 
         if sun_hits[0] is None:
-            return None
+            return None, None
 
         sun_pwr_h = sun_hits[7]
         sun_pwr_v = sun_hits[11]
@@ -1713,4 +1799,4 @@ def process_sun_hits(procstatus, dscfg, radar=None):
         sun_hits_dataset.update({'sun_hits_final': sun_hits_dict})
         sun_hits_dataset.update({'sun_retrieval': sun_retrieval_dict})
 
-        return sun_hits_dataset
+        return sun_hits_dataset, ind_rad

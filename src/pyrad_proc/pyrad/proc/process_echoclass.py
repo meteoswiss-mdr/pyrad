@@ -25,7 +25,7 @@ import pyart
 from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 
 
-def process_echo_id(procstatus, dscfg, radar=None):
+def process_echo_id(procstatus, dscfg, radar_list=None):
     """
     identifies echoes as 0: No data, 1: Noise, 2: Clutter,
     3: Precipitation
@@ -35,28 +35,28 @@ def process_echo_id(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
         datatype : list of string. Dataset keyword
             The input data types
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
     new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
 
     if procstatus != 1:
-        return None
+        return None, None
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if datatype == 'dBZ':
             refl_field = 'reflectivity'
@@ -71,12 +71,18 @@ def process_echo_id(procstatus, dscfg, radar=None):
         if datatype == 'uPhiDP':
             phi_field = 'uncorrected_differential_phase'
 
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
     if ((refl_field not in radar.fields) or
             (zdr_field not in radar.fields) or
             (rhv_field not in radar.fields) or
             (phi_field not in radar.fields)):
         warn('Unable to create radar_echo_id dataset. Missing data')
-        return None
+        return None, None
 
     id = np.zeros((radar.nrays, radar.ngates), dtype='int32')+3
 
@@ -104,10 +110,10 @@ def process_echo_id(procstatus, dscfg, radar=None):
     new_dataset.fields = dict()
     new_dataset.add_field('radar_echo_id', id_field)
 
-    return new_dataset
+    return new_dataset, ind_rad
 
 
-def process_echo_filter(procstatus, dscfg, radar=None):
+def process_echo_filter(procstatus, dscfg, radar_list=None):
     """
     Masks all echo types that are not of the class specified in
     keyword echo_type
@@ -117,7 +123,6 @@ def process_echo_filter(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -126,60 +131,76 @@ def process_echo_filter(procstatus, dscfg, radar=None):
         echo_type : int
             The type of echo to keep: 1 noise, 2 clutter, 3 precipitation.
             Default 3
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
     new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
 
     if procstatus != 1:
-        return None
+        return None, None
 
-    if 'radar_echo_id' not in radar.fields:
+    for datatypedescr in dscfg['datatype']:
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        if (datatype == 'echoID'):
+            echoid_field = get_fieldname_pyart(datatype)
+            break
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if echoid_field not in radar.fields:
         warn('Unable to filter data. Missing echo ID field')
-        return None
+        return None, None
 
     echo_type = 3
     if 'echo_type' in dscfg:
         echo_type = dscfg['echo_type']
 
-    mask = radar.fields['radar_echo_id']['data'] != echo_type
+    mask = radar.fields[echoid_field]['data'] != echo_type
 
     new_dataset = deepcopy(radar)
     new_dataset.fields = dict()
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         field_name = get_fieldname_pyart(datatype)
-        if field_name in radar.fields:
-            radar_field = deepcopy(radar.fields[field_name])
-            radar_field['data'] = np.ma.masked_where(mask, radar_field['data'])
+        if field_name not in echoid_field:
+            if field_name in radar.fields:
+                radar_field = deepcopy(radar.fields[field_name])
+                radar_field['data'] = np.ma.masked_where(
+                    mask, radar_field['data'])
 
-            if field_name.startswith('corrected_'):
-                new_field_name = field_name
-            elif field_name.startswith('uncorrected_'):
-                new_field_name = field_name.replace(
-                    'uncorrected_', 'corrected_', 1)
+                if field_name.startswith('corrected_'):
+                    new_field_name = field_name
+                elif field_name.startswith('uncorrected_'):
+                    new_field_name = field_name.replace(
+                        'uncorrected_', 'corrected_', 1)
+                else:
+                    new_field_name = 'corrected_'+field_name
+                new_dataset.add_field(new_field_name, radar_field)
             else:
-                new_field_name = 'corrected_'+field_name
-            new_dataset.add_field(new_field_name, radar_field)
-        else:
-            warn('Unable to filter '+field_name+' according to echo ID. ' +
-                 'No valid input fields')
+                warn('Unable to filter '+field_name+' according to echo ID. ' +
+                     'No valid input fields')
 
     if not new_dataset.fields:
-        return None
+        return None, None
 
-    return new_dataset
+    return new_dataset, ind_rad
 
 
-def process_filter_snr(procstatus, dscfg, radar=None):
+def process_filter_snr(procstatus, dscfg, radar_list=None):
     """
     filters out low SNR echoes
 
@@ -188,7 +209,6 @@ def process_filter_snr(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -196,40 +216,47 @@ def process_filter_snr(procstatus, dscfg, radar=None):
             The input data types
         SNRmin : float. Dataset keyword
             The minimum SNR to keep the data.
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
     new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
 
     if procstatus != 1:
-        return None
-
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+        return None, None
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if (datatype == 'SNRh') or (datatype == 'SNRv'):
             snr_field = get_fieldname_pyart(datatype)
             break
 
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+
     if snr_field not in radar.fields:
         warn('Unable to filter dataset according to SNR. Missing SNR field')
-        return None
+        return None, None
 
     gatefilter = pyart.filters.snr_based_gate_filter(
         radar, snr_field=snr_field, min_snr=dscfg['SNRmin'])
     is_lowSNR = gatefilter.gate_excluded == 1
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
 
         if (datatype != 'SNRh') and (datatype != 'SNRv'):
@@ -252,12 +279,12 @@ def process_filter_snr(procstatus, dscfg, radar=None):
                      ' according to SNR. '+'No valid input fields')
 
     if not new_dataset.fields:
-        return None
+        return None, None
 
-    return new_dataset
+    return new_dataset, ind_rad
 
 
-def process_filter_visibility(procstatus, dscfg, radar=None):
+def process_filter_visibility(procstatus, dscfg, radar_list=None):
     """
     filters out rays gates with low visibility and corrects the reflectivity
 
@@ -266,7 +293,6 @@ def process_filter_visibility(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -274,41 +300,48 @@ def process_filter_visibility(procstatus, dscfg, radar=None):
             The input data types
         VISmin : float. Dataset keyword
             The minimum visibility to keep the data.
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
     new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
 
     if procstatus != 1:
-        return None
-
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+        return None, None
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if datatype == 'VIS':
             vis_field = get_fieldname_pyart(datatype)
             break
 
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+
     if vis_field not in radar.fields:
         warn('Unable to filter dataset according to visibility. ' +
              'Missing visibility field')
-        return None
+        return None, None
 
     gatefilter = pyart.filters.visibility_based_gate_filter(
         radar, vis_field=vis_field, min_vis=dscfg['VISmin'])
     is_lowVIS = gatefilter.gate_excluded == 1
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
 
         if datatype != 'VIS':
@@ -339,12 +372,12 @@ def process_filter_visibility(procstatus, dscfg, radar=None):
                      ' according to visibility. No valid input fields')
 
     if not new_dataset.fields:
-        return None
+        return None, None
 
-    return new_dataset
+    return new_dataset, ind_rad
 
 
-def process_hydroclass(procstatus, dscfg, radar=None):
+def process_hydroclass(procstatus, dscfg, radar_list=None):
     """
     Classifies precipitation echoes
 
@@ -353,7 +386,6 @@ def process_hydroclass(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -366,23 +398,24 @@ def process_hydroclass(procstatus, dscfg, radar=None):
             Used with HYDRO_METHOD SEMISUPERVISED. The name of the radar of
             which the derived centroids will be used. One of the following: A
             Albis, L Lema, P Plaine Morte, DX50
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
-    radar : Radar
+    new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
     if procstatus != 1:
-        return None
+        return None, None
 
     if dscfg['HYDRO_METHOD'] == 'SEMISUPERVISED':
         for datatypedescr in dscfg['datatype']:
-            datagroup, datatype, dataset, product = get_datatype_fields(
-                datatypedescr)
+            radarnr, datagroup, datatype, dataset, product = (
+                get_datatype_fields(datatypedescr))
             if datatype == 'dBZ':
                 refl_field = 'reflectivity'
             if datatype == 'dBZc':
@@ -402,6 +435,12 @@ def process_hydroclass(procstatus, dscfg, radar=None):
             if datatype == 'TEMP':
                 temp_field = 'temperature'
 
+        ind_rad = int(radarnr[5:8])-1
+        if radar_list[ind_rad] is None:
+            warn('No valid radar')
+            return None, None
+        radar = radar_list[ind_rad]
+
         if ((refl_field not in radar.fields) or
                 (zdr_field not in radar.fields) or
                 (rhv_field not in radar.fields) or
@@ -409,7 +448,7 @@ def process_hydroclass(procstatus, dscfg, radar=None):
                 (temp_field not in radar.fields)):
             warn('Unable to create hydrometeor classification field. ' +
                  'Missing data')
-            return None
+            return None, None
 
         mass_centers = np.zeros((9, 5))
         if dscfg['RADARCENTROIDS'] == 'A':
@@ -509,4 +548,4 @@ def process_hydroclass(procstatus, dscfg, radar=None):
         new_dataset.fields = dict()
         new_dataset.add_field('radar_echo_classification', hydro)
 
-        return new_dataset
+        return new_dataset, ind_rad

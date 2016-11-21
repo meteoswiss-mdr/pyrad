@@ -38,7 +38,7 @@ from .io_aux import get_save_dir, make_filename
 from .io_aux import get_fieldname_pyart
 
 
-def read_status(voltime, cfg):
+def read_status(voltime, cfg, ind_rad=0):
     """
     Reads rad4alp xml status file.
 
@@ -49,6 +49,8 @@ def read_status(voltime, cfg):
 
     cfg: dictionary of dictionaries
         configuration info to figure out where the data is
+    ind_rad: int
+        radar index
 
     Returns
     -------
@@ -63,8 +65,8 @@ def read_status(voltime, cfg):
 
     dayinfo = voltime.strftime('%y%j')
     timeinfo = voltime.strftime('%H%M')
-    basename = 'ST'+cfg['RadarName']+dayinfo
-    datapath = cfg['datapath']+dayinfo+'/'+basename+'/'
+    basename = 'ST'+cfg['RadarName'][ind_rad]+dayinfo
+    datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
     filename = glob.glob(datapath+basename+timeinfo+'*.xml')
     root = et.parse(filename[0]).getroot()
 
@@ -323,13 +325,13 @@ def read_sun_hits_multiple_days(cfg, nfiles=1):
             cfg['sun_hits_dir'], timeinfo=timeinfo, create_dir=False)
 
         fname = make_filename(
-            'info', cfg['type'], 'detected', 'csv',
+            'info', cfg['type'], 'detected', ['csv'],
             timeinfo=timeinfo, timeformat='%Y%m%d')
 
         (date_aux, ray_aux, nrng_aux, rad_el_aux, rad_az_aux, sun_el_aux,
          sun_az_aux, ph_aux, ph_std_aux, nph_aux, nvalh_aux, pv_aux,
          pv_std_aux, npv_aux, nvalv_aux, zdr_aux, zdr_std_aux, nzdr_aux,
-         nvalzdr_aux) = read_sun_hits(savedir+fname)
+         nvalzdr_aux) = read_sun_hits(savedir+fname[0])
 
         if date_aux is None:
             return (None, None, None, None, None, None, None, None, None,

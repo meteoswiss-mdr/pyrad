@@ -1,13 +1,20 @@
 #
 # Configuration for MALS tests at the airport Payerne
 
+# Number of radars to process
+NumRadars INT 1
+
+# Time tolerance when processing multiple radars [s]
+TimeTol FLOAT 3600.
+
 # Radar Name
-RadarName STRING DX50
+RadarName STRARR 1
+    DX50
 
 # Names of the radar scans in the specified sector
 # NOTE: Must have a trailing '/'
 ScanList STRARR 1
-      MALS_EMM_VOL.vol/  # masterscan: first scan of a volume
+      RADAR001:MALS_EMM_VOL.vol/  # masterscan: first scan of a volume
 
 # Repetition time of the scans [min]
 ScanPeriod INT 10

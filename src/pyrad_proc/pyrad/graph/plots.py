@@ -38,7 +38,7 @@ from ..util.radar_utils import compute_quantiles_from_hist
 from ..util.radar_utils import compute_histogram_sweep
 
 
-def plot_ppi(radar, field_name, ind_el, prdcfg, fname, plot_type='PPI',
+def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
              step=None, quantiles=None):
     """
     plots a PPI
@@ -53,8 +53,8 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname, plot_type='PPI',
         sweep index to plot
     prdcfg : dict
         dictionary containing the product configuration
-    fname : str
-        name of the file where to store the plot
+    fname_list : list of str
+        list of names of the files where to store the plot
     plot_type : str
         type of plot (PPI, QUANTILES or HISTOGRAM)
     step : float
@@ -64,8 +64,8 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname, plot_type='PPI',
 
     Returns
     -------
-    fname : str
-        the name of the created plot file
+    fname_list : list of str
+        list of names of the created plots
 
     """
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
@@ -83,7 +83,8 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname, plot_type='PPI',
         display.plot_range_rings([10, 20, 30, 40])
         display.plot_cross_hair(5.)
 
-        fig.savefig(fname)
+        for i in range(len(fname_list)):
+            fig.savefig(fname_list[i])
         plt.close()
 
     elif plot_type == 'QUANTILES':
@@ -95,7 +96,7 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname, plot_type='PPI',
         titl = pyart.graph.common.generate_title(radar, field_name, ind_el)
         labely = get_colobar_label(radar.fields[field_name], field_name)
 
-        plot_quantiles(quantiles, values, fname, labelx='quantile',
+        plot_quantiles(quantiles, values, fname_list, labelx='quantile',
                        labely=labely, titl=titl)
 
     elif plot_type == 'HISTOGRAM':
@@ -107,13 +108,13 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname, plot_type='PPI',
         titl = pyart.graph.common.generate_title(radar, field_name, ind_el)
         labelx = get_colobar_label(radar.fields[field_name], field_name)
 
-        plot_histogram(bins, values, fname, labelx=labelx,
+        plot_histogram(bins, values, fname_list, labelx=labelx,
                        labely='Number of Samples', titl=titl)
 
-    return fname
+    return fname_list
 
 
-def plot_rhi(radar, field_name, ind_az, prdcfg, fname, plot_type='PPI',
+def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='PPI',
              step=None, quantiles=None):
     """
     plots an RHI
@@ -128,8 +129,8 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname, plot_type='PPI',
         sweep index to plot
     prdcfg : dict
         dictionary containing the product configuration
-    fname : str
-        name of the file where to store the plot
+    fname_list : list of str
+        list of names of the files where to store the plot
     plot_type : str
         type of plot (PPI, QUANTILES or HISTOGRAM)
     step : float
@@ -139,8 +140,8 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname, plot_type='PPI',
 
     Returns
     -------
-    fname : str
-        the name of the created plot file
+    fname_list : list of str
+        list of names of the created plots
 
     """
     fig = plt.figure(figsize=[prdcfg['rhiImageConfig']['xsize'],
@@ -157,7 +158,8 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname, plot_type='PPI',
                   prdcfg['rhiImageConfig']['xmax']])
         display.plot_cross_hair(5.)
 
-        fig.savefig(fname)
+        for i in range(len(fname_list)):
+            fig.savefig(fname_list[i])
         plt.close()
     elif plot_type == 'QUANTILES':
         quantiles, values = compute_quantiles_sweep(
@@ -168,7 +170,7 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname, plot_type='PPI',
         titl = pyart.graph.common.generate_title(radar, field_name, ind_az)
         labely = get_colobar_label(radar.fields[field_name], field_name)
 
-        plot_quantiles(quantiles, values, fname, labelx='quantile',
+        plot_quantiles(quantiles, values, fname_list, labelx='quantile',
                        labely=labely, titl=titl)
 
     elif plot_type == 'HISTOGRAM':
@@ -180,13 +182,13 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname, plot_type='PPI',
         titl = pyart.graph.common.generate_title(radar, field_name, ind_az)
         labelx = get_colobar_label(radar.fields[field_name], field_name)
 
-        plot_histogram(bins, values, fname, labelx=labelx,
+        plot_histogram(bins, values, fname_list, labelx=labelx,
                        labely='Number of Samples', titl=titl)
 
-    return fname
+    return fname_list
 
 
-def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname):
+def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
     """
     plots a B-Scope (angle-range representation)
 
@@ -194,23 +196,19 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname):
     ----------
     radar : Radar object
         object containing the radar data to plot
-
     field_name : str
         name of the radar field to plot
-
     ind_sweep : int
         sweep index to plot
-
     prdcfg : dict
         dictionary containing the product configuration
-
-    fname : str
-        name of the file where to store the plot
+    fname_list : list of str
+        list of names of the files where to store the plot
 
     Returns
     -------
-    fname : str
-        the name of the created plot file
+    fname_list : list of str
+        list of names of the created plots
 
     """
     radar_aux = radar.extract_sweeps([ind_sweep])
@@ -265,13 +263,14 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname):
         cb = fig.colorbar(cax)
         cb.set_label(label)
 
-    fig.savefig(fname)
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
     plt.close()
 
-    return fname
+    return fname_list
 
 
-def plot_cappi(radar, field_name, altitude, prdcfg, fname):
+def plot_cappi(radar, field_name, altitude, prdcfg, fname_list):
     """
     plots a Constant Altitude Plan Position Indicator CAPPI
 
@@ -279,23 +278,19 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname):
     ----------
     radar : Radar object
         object containing the radar data to plot
-
     field_name : str
         name of the radar field to plot
-
     altitude : float
         the altitude [m MSL] to be plotted
-
     prdcfg : dict
         dictionary containing the product configuration
-
-    fname : str
-        name of the file where to store the plot
+    fname_list : list of str
+        list of names of the files where to store the plot
 
     Returns
     -------
-    fname : str
-        the name of the created plot file
+    fname_list : list of str
+        list of names of the created plots
 
     """
     xmin = prdcfg['ppiImageConfig']['xmin']
@@ -331,14 +326,15 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname):
     cb = fig.colorbar(cax)
     cb.set_label(label)
 
-    fig.savefig(fname)
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
     plt.close()
 
-    return fname
+    return fname_list
 
 
-def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg, fname,
-                 quantiles=[25., 50., 75.], ref_value=0.):
+def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
+                 fname_list, quantiles=[25., 50., 75.], ref_value=0.):
     """
     density plot (angle-values representation)
 
@@ -354,8 +350,8 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg, fname,
         sweep index to plot
     prdcfg : dict
         dictionary containing the product configuration
-    fname : str
-        name of the file where to store the plot
+    fname_list : list of str
+        list of names of the files where to store the plot
     quantiles : array
         the quantile lines to plot
     ref_value : float
@@ -363,8 +359,8 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg, fname,
 
     Returns
     -------
-    fname : str
-        the name of the created plot file
+    fname_list : list of str
+        list of names of the created plots
 
     """
     hist_obj_aux = hist_obj.extract_sweeps([ind_sweep])
@@ -456,13 +452,14 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg, fname,
     cb = fig.colorbar(cax)
     cb.set_label(label)
 
-    fig.savefig(fname)
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
     plt.close()
 
-    return fname
+    return fname_list
 
 
-def plot_quantiles(quant, value, fname, labelx='quantile', labely='value',
+def plot_quantiles(quant, value, fname_list, labelx='quantile', labely='value',
                    titl='quantile'):
     """
     plots quantiles
@@ -473,8 +470,8 @@ def plot_quantiles(quant, value, fname, labelx='quantile', labely='value',
         quantiles to be plotted
     value : array
         values of each quantile
-    fname : str
-        name of the file where to store the plot
+    fname_list : list of str
+        list of names of the files where to store the plot
     labelx : str
         The label of the X axis
     labely : str
@@ -484,8 +481,8 @@ def plot_quantiles(quant, value, fname, labelx='quantile', labely='value',
 
     Returns
     -------
-    fname : str
-        the name of the created plot file
+    fname_list : list of str
+        list of names of the created plots
 
     """
     fig = plt.figure(figsize=[10, 6])
@@ -494,13 +491,14 @@ def plot_quantiles(quant, value, fname, labelx='quantile', labely='value',
     plt.ylabel(labely)
     plt.title(titl)
 
-    fig.savefig(fname)
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
     plt.close()
 
-    return fname
+    return fname_list
 
 
-def plot_histogram(bins, values, fname, labelx='bins',
+def plot_histogram(bins, values, fname_list, labelx='bins',
                    labely='Number of Samples', titl='histogram'):
     """
     computes and plots histogram
@@ -511,8 +509,8 @@ def plot_histogram(bins, values, fname, labelx='bins',
         histogram bins
     values : array
         data values
-    fname : str
-        name of the file where to store the plot
+    fname_list : list of str
+        list of names of the files where to store the plot
     labelx : str
         The label of the X axis
     labely : str
@@ -522,8 +520,8 @@ def plot_histogram(bins, values, fname, labelx='bins',
 
     Returns
     -------
-    fname : str
-        the name of the created plot file
+    fname_list : list of str
+        list of names of the created plots
 
     """
     fig = plt.figure(figsize=[10, 6])
@@ -532,13 +530,14 @@ def plot_histogram(bins, values, fname, labelx='bins',
     plt.ylabel(labely)
     plt.title(titl)
 
-    fig.savefig(fname)
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
     plt.close()
 
-    return fname
+    return fname_list
 
 
-def plot_histogram2(bins, hist, fname, labelx='bins',
+def plot_histogram2(bins, hist, fname_list, labelx='bins',
                     labely='Number of Samples', titl='histogram'):
     """
     plots histogram
@@ -549,8 +548,8 @@ def plot_histogram2(bins, hist, fname, labelx='bins',
         histogram bins
     hist : array
         values for each bin
-    fname : str
-        name of the file where to store the plot
+    fname_list : list of str
+        list of names of the files where to store the plot
     labelx : str
         The label of the X axis
     labely : str
@@ -560,8 +559,8 @@ def plot_histogram2(bins, hist, fname, labelx='bins',
 
     Returns
     -------
-    fname : str
-        the name of the created plot file
+    fname_list : list of str
+        list of names of the created plots
 
     """
     fig = plt.figure(figsize=[10, 6])
@@ -570,14 +569,16 @@ def plot_histogram2(bins, hist, fname, labelx='bins',
     plt.ylabel(labely)
     plt.title(titl)
 
-    fig.savefig(fname)
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
     plt.close()
 
-    return fname
+    return fname_list
 
 
-def plot_timeseries(date, value, fname, labelx='Time [UTC]', labely='Value',
-                    label1='Sensor', titl='Time Series', period=0):
+def plot_timeseries(date, value, fname_list, labelx='Time [UTC]',
+                    labely='Value', label1='Sensor', titl='Time Series',
+                    period=0):
     """
     plots a time series
 
@@ -587,8 +588,8 @@ def plot_timeseries(date, value, fname, labelx='Time [UTC]', labely='Value',
         time of the time series
     value : float array
         values of the time series
-    fname : str
-        name of the file where to store the plot
+    fname_list : list of str
+        list of names of the files where to store the plot
     labelx : str
         The label of the X axis
     labely : str
@@ -603,8 +604,8 @@ def plot_timeseries(date, value, fname, labelx='Time [UTC]', labely='Value',
 
     Returns
     -------
-    fname : str
-        the name of the created plot file
+    fname_list : list of str
+        list of names of the created plots
 
     """
     if period > 0:
@@ -617,13 +618,14 @@ def plot_timeseries(date, value, fname, labelx='Time [UTC]', labely='Value',
     plt.ylabel(labely)
     plt.title(titl)
 
-    fig.savefig(fname)
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
     plt.close()
 
-    return fname
+    return fname_list
 
 
-def plot_timeseries_comp(date1, value1, date2, value2, fname,
+def plot_timeseries_comp(date1, value1, date2, value2, fname_list,
                          labelx='Time [UTC]', labely='Value',
                          label1='Sensor 1', label2='Sensor 2',
                          titl='Time Series Comparison', period1=0, period2=0):
@@ -634,39 +636,30 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname,
     ----------
     date1 : datetime object
         time of the first time series
-
     value1 : float array
         values of the first time series
-
     date2 : datetime object
         time of the second time series
-
     value2 : float array
         values of the second time series
-
-    fname : str
-        name of the file where to store the plot
-
+    fname_list : list of str
+        list of names of the files where to store the plot
     labelx : str
         The label of the X axis
-
     labely : str
         The label of the Y axis
-
     label1, label2 : str
         legend label for each time series
-
     titl : str
         The figure title
-
      period1, period2 : float
         measurement period in seconds used to compute accumulation. If 0 no
         accumulation is computed
 
     Returns
     -------
-    fname : str
-        the name of the created plot file
+    fname_list : list of str
+        list of names of the created plots
 
     """
     if (period1 > 0) and (period2 > 0):
@@ -684,15 +677,16 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname,
     plt.ylabel(labely)
     plt.title(titl)
 
-    fig.savefig(fname)
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
     plt.close()
 
-    return fname
+    return fname_list
 
 
-def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name, fname,
-                       ref_value=None, labelx='Time [UTC]', labely='Value',
-                       titl='Time Series'):
+def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name,
+                       fname_list, ref_value=None, labelx='Time [UTC]',
+                       labely='Value', titl='Time Series'):
     """
     plots a time series of monitoring data
 
@@ -704,8 +698,8 @@ def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name, fname,
         values of the central, low and high quantiles
     field_name : str
         name of the field
-    fname : str
-        name of the file where to store the plot
+    fname_list : list of str
+        list of names of the files where to store the plot
     ref_value : float
         the reference value
     labelx : str
@@ -717,8 +711,8 @@ def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name, fname,
 
     Returns
     -------
-    fname : str
-        the name of the created plot file
+    fname_list : list of str
+        list of names of the created plots
 
     """
     vmin, vmax = pyart.config.get_field_limits(field_name)
@@ -743,13 +737,14 @@ def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name, fname,
     plt.ylabel('Number of Samples')
     plt.xlabel(labelx)
 
-    fig.savefig(fname)
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
     plt.close()
 
-    return fname
+    return fname_list
 
 
-def plot_sun_hits(field, field_name, fname, prdcfg):
+def plot_sun_hits(field, field_name, fname_list, prdcfg):
     """
     plots the sun hits
 
@@ -757,23 +752,19 @@ def plot_sun_hits(field, field_name, fname, prdcfg):
     ----------
     radar : Radar object
         object containing the radar data to plot
-
     field_name : str
         name of the radar field to plot
-
     altitude : float
         the altitude [m MSL] to be plotted
-
     prdcfg : dict
         dictionary containing the product configuration
-
-    fname : str
-        name of the file where to store the plot
+    fname_list : list of str
+        list of names of the files where to store the plot
 
     Returns
     -------
-    fname : str
-        the name of the created plot file
+    fname_list : list of str
+        list of names of the created plots
 
     """
     azmin = prdcfg['sunhitsImageConfig']['azmin']
@@ -805,13 +796,14 @@ def plot_sun_hits(field, field_name, fname, prdcfg):
     cb = fig.colorbar(cax)
     cb.set_label(label)
 
-    fig.savefig(fname)
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
     plt.close()
 
-    return fname
+    return fname_list
 
 
-def plot_sun_retrieval_ts(sun_retrieval, data_type, fname):
+def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list):
     """
     plots a time series
 
@@ -821,8 +813,8 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname):
         time of the time series
     value : float array
         values of the time series
-    fname : str
-        name of the file where to store the plot
+    fname_list : list of str
+        list of names of the files where to store the plot
     labelx : str
         The label of the X axis
     labely : str
@@ -837,8 +829,8 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname):
 
     Returns
     -------
-    fname : str
-        the name of the created plot file
+    fname_list : list of str
+        list of names of the created plots
 
     """
     labelx = 'Date'
@@ -944,7 +936,7 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname):
 
     mask = np.ma.getmaskarray(value)
     if mask.all():
-        warn('Unable to create figure '+fname+'. No valid data')
+        warn('Unable to create figure '+fname_list+'. No valid data')
         return None
 
     fig = plt.figure(figsize=[10, 6])
@@ -961,10 +953,11 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname):
     axes = plt.gca()
     axes.set_ylim([vmin, vmax])
 
-    fig.savefig(fname)
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
     plt.close()
 
-    return fname
+    return fname_list
 
 
 def get_colobar_label(field_dict, field_name):

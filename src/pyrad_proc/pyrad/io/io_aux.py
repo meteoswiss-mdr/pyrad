@@ -13,6 +13,7 @@ Auxiliary functions for reading/writing files
     get_datatype_metranet
     get_fieldname_pyart
     get_file_list
+    get_scan_list
     get_datatype_fields
     get_dataset_fields
     get_datetime
@@ -88,29 +89,23 @@ def make_filename(prdtype, dstype, dsname, ext, prdcfginfo=None,
     ----------
     timeinfo : datetime
         time info to generate the date directory
-
     prdtype : str
         product type, i.e. 'ppi', etc.
-
     dstype : str
         data set type, i.e. 'raw', etc.
-
     dsname : str
         data set name
-
-    ext : str
-        file name extension, i.e. 'png'
-
+    ext : array of str
+        file name extensions, i.e. 'png'
     prdcfginfo : str
         Optional. string to add product configuration information, i.e. 'el0.4'
-
     timeformat : str
         Optional. The time format
 
     Returns
     -------
-    fname : str
-        file name
+    fname_list : list of str
+        list of file names (as many as extensions)
 
     """
     if timeinfo is None:
@@ -123,9 +118,12 @@ def make_filename(prdtype, dstype, dsname, ext, prdcfginfo=None,
     else:
         cfgstr = '_'+prdcfginfo
 
-    fname = timeinfostr+prdtype+'_'+dstype+'_'+dsname+cfgstr+'.'+ext
+    fname_list = list()
+    for i in range(len(ext)):
+        fname_list.append(
+            timeinfostr+prdtype+'_'+dstype+'_'+dsname+cfgstr+'.'+ext[i])
 
-    return fname
+    return fname_list
 
 
 def generate_field_name_str(datatype):
@@ -359,7 +357,9 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
 
     """
     ndays = int(np.ceil(((endtime-starttime).total_seconds())/(3600.*24.)))
-    datagroup, datatype, dataset, product = get_datatype_fields(datadescriptor)
+    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+        datadescriptor)
+    ind_rad = int(radarnr[5:8])-1
 
     if (datatype == 'Nh') or (datatype == 'Nv'):
         datatype = 'dBZ'
@@ -373,7 +373,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
             daydir = (
                 starttime+datetime.timedelta(days=i)).strftime('%Y-%m-%d')
             dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%Y%m%d')
-            datapath = cfg['datapath']+scan+daydir+'/'
+            datapath = cfg['datapath'][ind_rad]+scan+daydir+'/'
             dayfilelist = glob.glob(datapath+dayinfo+'*'+datatype+'.*')
             for filename in dayfilelist:
                 t_filelist.append(filename)
@@ -382,8 +382,9 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
                 warn('Unknown scan name')
                 return []
             dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%y%j')
-            basename = 'P'+cfg['RadarRes']+cfg['RadarName']+dayinfo
-            datapath = cfg['datapath']+dayinfo+'/'+basename+'/'
+            basename = ('P'+cfg['RadarRes'][ind_rad] +
+                        cfg['RadarName'][ind_rad]+dayinfo)
+            datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
             dayfilelist = glob.glob(datapath+basename+'*.'+scan)
             for filename in dayfilelist:
                 t_filelist.append(filename)
@@ -391,8 +392,9 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
             daydir = (
                 starttime+datetime.timedelta(days=i)).strftime('%Y-%m-%d')
             dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%Y%m%d')
-            datapath = (cfg['loadbasepath']+cfg['loadname']+'/'+daydir+'/' +
-                        dataset+'/'+product+'/')
+            datapath = (
+                cfg['loadbasepath'][ind_rad]+cfg['loadname'][ind_rad]+'/' +
+                daydir+'/'+dataset+'/'+product+'/')
             dayfilelist = glob.glob(datapath+dayinfo+'*'+datatype+'.nc')
             for filename in dayfilelist:
                 t_filelist.append(filename)
@@ -407,6 +409,43 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
     return sorted(filelist)
 
 
+def get_scan_list(scandescriptor_list):
+    """
+    determine which is the scan list for each radar
+
+    Parameters
+    ----------
+    scandescriptor : list of string
+        the list of all scans for all radars
+
+    Returns
+    -------
+    scan_list : list of lists
+        the list of scans corresponding to each radar
+
+    """
+    descrfields = scandescriptor_list[0].split(':')
+    if len(descrfields) == 1:
+        # one radar
+        return [scandescriptor_list]
+
+    # one or more radars
+    # check how many radars are there
+    radar_list = set()
+    for scandescriptor in scandescriptor_list:
+        radar_list.add(scandescriptor.split(':')[0])
+    nradar = len(radar_list)
+
+    # create the list of lists
+    scan_list = [[] for i in range(nradar)]
+    for scandescriptor in scandescriptor_list:
+        descrfields = scandescriptor.split(':')
+        ind_rad = int(descrfields[0][5:8])-1
+        scan_list[ind_rad].append(descrfields[1])
+
+    return scan_list
+
+
 def get_datatype_fields(datadescriptor):
     """
     splits the data type descriptor and provides each individual member
@@ -418,12 +457,12 @@ def get_datatype_fields(datadescriptor):
 
     Returns
     -------
+    radarnr : str
+        radar number, i.e. RADAR1, RADAR2, ...
     datagroup : str
         data type group, i.e. RAINBOW, RAD4ALP, CFRADIAL, COSMO, ...
-
     datatype : str
         data type, i.e. dBZ, ZDR, ISO0, ...
-
     dataset : str
         dataset type (for saved data only)
     product : str
@@ -432,11 +471,25 @@ def get_datatype_fields(datadescriptor):
     """
     descrfields = datadescriptor.split(':')
     if len(descrfields) == 1:
+        radarnr = 'RADAR001'
         datagroup = 'RAINBOW'
         datatype = descrfields[0]
         dataset = None
         product = None
+    elif descrfields[0].startswith('RADAR'):
+        radarnr = descrfields[0]
+        datagroup = descrfields[1]
+        if datagroup == 'CFRADIAL':
+            descrfields2 = descrfields[2].split(',')
+            datatype = descrfields2[0]
+            dataset = descrfields2[1]
+            product = descrfields2[2]
+        else:
+            datatype = descrfields[2]
+            dataset = None
+            product = None
     else:
+        radarnr = 'RADAR001'
         datagroup = descrfields[0]
         if datagroup == 'CFRADIAL':
             descrfields2 = descrfields[1].split(',')
@@ -448,7 +501,7 @@ def get_datatype_fields(datadescriptor):
             dataset = None
             product = None
 
-    return datagroup, datatype, dataset, product
+    return radarnr, datagroup, datatype, dataset, product
 
 
 def get_dataset_fields(datasetdescr):
@@ -499,7 +552,8 @@ def get_datetime(fname, datadescriptor):
     """
 
     bfile = os.path.basename(fname)
-    datagroup, datatype, dataset, product = get_datatype_fields(datadescriptor)
+    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+        datadescriptor)
     if datagroup == 'RAINBOW' or datagroup == 'CFRADIAL':
         datetimestr = bfile[0:14]
         fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d%H%M%S')
@@ -513,7 +567,7 @@ def get_datetime(fname, datadescriptor):
     return fdatetime
 
 
-def find_cosmo_file(voltime, datatype, cfg, scanid):
+def find_cosmo_file(voltime, datatype, cfg, scanid, ind_rad=0):
     """
     Search a COSMO file
 
@@ -521,14 +575,14 @@ def find_cosmo_file(voltime, datatype, cfg, scanid):
     ----------
     voltime : datetime object
         volume scan time
-
-    datatype : type of COSMO data to look for
-
-    cfg: dictionary of dictionaries
+    datatype : str
+        type of COSMO data to look for
+    cfg : dictionary of dictionaries
         configuration info to figure out where the data is
-
-    scanid: str
+    scanid : str
         name of the scan
+    ind_rad : int
+        radar index
 
     Returns
     -------
@@ -552,7 +606,7 @@ def find_cosmo_file(voltime, datatype, cfg, scanid):
         runtimestr = runtime.strftime('%Y%m%d%H')+'000000'
 
         daydir = runtime.strftime('%Y-%m-%d')
-        datapath = cfg['cosmopath']+datatype+'/'+scanid+daydir+'/'
+        datapath = cfg['cosmopath'][ind_rad]+datatype+'/'+scanid+daydir+'/'
 
         search_name = (
             datapath+datatype+'_RUN'+runtimestr+'_DX50'+fdatetime+'.*')
@@ -569,7 +623,7 @@ def find_cosmo_file(voltime, datatype, cfg, scanid):
         return fname[0]
 
 
-def find_rad4alpcosmo_file(voltime, datatype, cfg, scanid):
+def find_rad4alpcosmo_file(voltime, datatype, cfg, scanid, ind_rad=0):
     """
     Search a COSMO file
 
@@ -577,11 +631,12 @@ def find_rad4alpcosmo_file(voltime, datatype, cfg, scanid):
     ----------
     voltime : datetime object
         volume scan time
-
-    datatype : type of COSMO data to look for
-
+    datatype : str
+        type of COSMO data to look for
     cfg: dictionary of dictionaries
         configuration info to figure out where the data is
+    ind_rad: int
+        radar index
 
     Returns
     -------
@@ -603,13 +658,13 @@ def find_rad4alpcosmo_file(voltime, datatype, cfg, scanid):
     # look for cosmo file
     found = False
     nruns_to_check = int((cfg['CosmoForecasted']-1)/cfg['CosmoRunFreq'])
-    id = 'P'+cfg['RadarRes']+cfg['RadarName']
+    id = 'P'+cfg['RadarRes'][ind_rad]+cfg['RadarName'][ind_rad]
     for i in range(nruns_to_check):
         runtime = runtime0-datetime.timedelta(hours=i * cfg['CosmoRunFreq'])
         runtimestr = runtime.strftime('%y%j%H')+'00'
 
         daydir = runtime.strftime('%y%j')
-        datapath = cfg['cosmopath']+datatype+'/'+id+'/'+daydir+'/'
+        datapath = cfg['cosmopath'][ind_rad]+datatype+'/'+id+'/'+daydir+'/'
 
         search_name = (
             datapath+datatype+'_RUN'+runtimestr+'_'+id+fdatetime+'.'+scanid +

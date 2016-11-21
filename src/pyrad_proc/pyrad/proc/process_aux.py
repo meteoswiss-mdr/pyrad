@@ -41,7 +41,6 @@ def get_process_func(dataset_type):
     -------
     func_name : str
         pyrad function used to process the data set type
-
     dsformat : str
         data set format, i.e.: 'VOL', etc.
 
@@ -123,7 +122,7 @@ def get_process_func(dataset_type):
     return func_name, dsformat
 
 
-def process_raw(procstatus, dscfg, radar=None):
+def process_raw(procstatus, dscfg, radar_list=None):
     """
     dummy function that returns the initial input data set
 
@@ -132,28 +131,37 @@ def process_raw(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
     new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
 
     if procstatus != 1:
-        return None
+        return None, None
 
-    new_dataset = deepcopy(radar)
-    return new_dataset
+    for datatypedescr in dscfg['datatype']:
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        break
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    new_dataset = deepcopy(radar_list[ind_rad])
+
+    return new_dataset, ind_rad
 
 
-def process_save_radar(procstatus, dscfg, radar=None):
+def process_save_radar(procstatus, dscfg, radar_list=None):
     """
     dummy function that allows to save the entire radar object
 
@@ -162,28 +170,37 @@ def process_save_radar(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
     new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
 
     if procstatus != 1:
-        return None
+        return None, None
 
-    new_dataset = deepcopy(radar)
-    return new_dataset
+    for datatypedescr in dscfg['datatype']:
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        break
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    new_dataset = deepcopy(radar_list[ind_rad])
+
+    return new_dataset, ind_rad
 
 
-def process_point_measurement(procstatus, dscfg, radar=None):
+def process_point_measurement(procstatus, dscfg, radar_list=None):
     """
     Obtains the radar data at a point measurement
 
@@ -192,7 +209,6 @@ def process_point_measurement(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -226,29 +242,35 @@ def process_point_measurement(procstatus, dscfg, radar=None):
             elevation tolerance to determine which radar elevation to use [deg]
         RngTol : float. Dataset keyword
             range tolerance to determine which radar bin to use [m]
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
     new_dataset : dict
         dictionary containing the data and metadata of the point of interest
+    ind_rad : int
+        radar index
 
     """
     if procstatus != 1:
-        return None
+        return None, None
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         break
     field_name = get_fieldname_pyart(datatype)
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
 
     if field_name not in radar.fields:
         warn('Unable to extract point measurement information. ' +
              'Field not available')
-        return None
+        return None, None
 
     projparams = dict()
     projparams.update({'proj': 'pyart_aeqd'})
@@ -294,7 +316,7 @@ def process_point_measurement(procstatus, dscfg, radar=None):
              str(az)+', '+str(el)+', '+str(r) +
              '). Minimum distance to radar azimuth '+str(d_az) +
              ' larger than tolerance')
-        return None
+        return None, None
 
     d_el = np.min(np.abs(radar.elevation['data'] - el))
     if d_el > dscfg['EleTol']:
@@ -302,7 +324,7 @@ def process_point_measurement(procstatus, dscfg, radar=None):
              str(az)+', '+str(el)+', '+str(r) +
              '). Minimum distance to radar elevation '+str(d_el) +
              ' larger than tolerance')
-        return None
+        return None, None
 
     d_r = np.min(np.abs(radar.range['data'] - r))
     if d_r > dscfg['RngTol']:
@@ -310,7 +332,7 @@ def process_point_measurement(procstatus, dscfg, radar=None):
              str(az)+', '+str(el)+', '+str(r) +
              '). Minimum distance to radar range bin '+str(d_r) +
              ' larger than tolerance')
-        return None
+        return None, None
 
     ind_ray = np.argmin(np.abs(radar.azimuth['data'] - az) +
                         np.abs(radar.elevation['data'] - el))
@@ -333,4 +355,4 @@ def process_point_measurement(procstatus, dscfg, radar=None):
          radar.elevation['data'][ind_ray],
          radar.range['data'][ind_r]]})
 
-    return new_dataset
+    return new_dataset, ind_rad

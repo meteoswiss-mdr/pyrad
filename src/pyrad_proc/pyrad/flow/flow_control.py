@@ -28,7 +28,7 @@ from datetime import datetime
 
 from ..io.config import read_config
 from ..io.read_data_radar import get_data
-from ..io.io_aux import get_datetime, get_file_list
+from ..io.io_aux import get_datetime, get_file_list, get_scan_list
 from ..io.io_aux import get_dataset_fields, get_datatype_fields
 
 from ..proc.process_aux import get_process_func
@@ -63,14 +63,16 @@ def main(cfgfile, starttime, endtime):
 
     cfg = _create_cfg_dict(cfgfile)
     datacfg = _create_datacfg_dict(cfg)
-    masterscan = None
-    if cfg['ScanList'] is not None:
-        masterscan = cfg['ScanList'][0]
 
-    datatypesdescr = _get_datatype_list(cfg)
+    datatypesdescr_list = list()
+    for i in range(1, cfg['NumRadars']+1):
+        datatypesdescr_list.append(
+            _get_datatype_list(cfg, radarnr='RADAR'+'{:03d}'.format(i)))
+
     dataset_levels = _get_datasets_list(cfg)
-    masterfilelist, masterdatatypedescr = _get_masterfile_list(
-        datatypesdescr, starttime, endtime, datacfg, masterscan=masterscan)
+    masterfilelist, masterdatatypedescr, masterscan = _get_masterfile_list(
+        datatypesdescr_list[0], starttime, endtime, datacfg,
+        scan_list=cfg['ScanList'])
 
     nvolumes = len(masterfilelist)
     if nvolumes == 0:
@@ -78,7 +80,7 @@ def main(cfgfile, starttime, endtime):
             'ERROR: Could not find any valid volume between ' +
             starttime.strftime('%Y-%m-%d %H:%M:S')+' and ' +
             endtime.strftime('%Y-%m-%d %H:%M:S') +
-            ' for master scan '+cfg['ScanList'][0]+' and master data type ' +
+            ' for master scan '+str(masterscan)+' and master data type ' +
             masterdatatypedescr)
     print('Number of volumes to process: '+str(nvolumes)+'\n\n')
 
@@ -92,15 +94,35 @@ def main(cfgfile, starttime, endtime):
             print('Processing dataset: '+dataset)
             dscfg.update({dataset: _create_dscfg_dict(cfg, dataset)})
             result = _process_dataset(
-                cfg, dscfg[dataset], proc_status=0, radar=None, voltime=None)
+                cfg, dscfg[dataset], proc_status=0, radar_list=None,
+                voltime=None)
 
     # process all data files in file list
     for masterfile in masterfilelist:
         print('\n\nmaster file: '+os.path.basename(masterfile))
-        voltime = get_datetime(masterfile, masterdatatypedescr)
+        master_voltime = get_datetime(masterfile, masterdatatypedescr)
 
-        # get all raw data
-        radar = get_data(voltime, datatypesdescr, datacfg)
+        # get data of master radar
+        radar_list = list()
+        radar_list.append(
+            get_data(master_voltime, datatypesdescr_list[0], datacfg))
+
+        # get data of rest of radars
+        for i in range(1, cfg['NumRadars']):
+            filelist_ref, datatypedescr_ref, scan_ref = _get_masterfile_list(
+                datatypesdescr_list[i],
+                master_voltime-datetime.timedelta(seconds=cfg['TimeTol']),
+                master_voltime-datetime.timedelta(seconds=cfg['TimeTol']),
+                datacfg, scan_list=cfg['ScanList'])
+            if len(filelist_ref) == 0:
+                warn('Could not find any valid volume for reference time ' +
+                     master_voltime.strftime('%Y-%m-%d %H:%M:S') +
+                     ' and radar RADAR'+'{:03d}'.format(i))
+                radar_list.append(None)
+            else:
+                voltime_ref = get_datetime(filelist_ref, datatypedescr_ref)
+                radar_list.append(
+                    get_data(voltime_ref, datatypesdescr_list[i], datacfg))
 
         # process all data sets
         for level in sorted(dataset_levels):
@@ -108,8 +130,8 @@ def main(cfgfile, starttime, endtime):
             for dataset in dataset_levels[level]:
                 print('Processing dataset: '+dataset)
                 result = _process_dataset(
-                    cfg, dscfg[dataset], proc_status=1, radar=radar,
-                    voltime=voltime)
+                    cfg, dscfg[dataset], proc_status=1, radar_list=radar_list,
+                    voltime=master_voltime)
 
     # post-processing of the datasets
     print('\n\nPost-processing datasets')
@@ -118,8 +140,8 @@ def main(cfgfile, starttime, endtime):
         for dataset in dataset_levels[level]:
             print('Processing dataset: '+dataset)
             result = _process_dataset(
-                cfg, dscfg[dataset], proc_status=2, radar=None,
-                voltime=voltime)
+                cfg, dscfg[dataset], proc_status=2, radar_list=None,
+                voltime=master_voltime)
 
     print('\n\n\nThis is the end my friend! See you soon!')
 
@@ -168,7 +190,7 @@ def main_trajectory(cfgfile, trajfile, infostr="",
     return 0
 
 
-def _process_dataset(cfg, dscfg, proc_status=0, radar=None, voltime=None):
+def _process_dataset(cfg, dscfg, proc_status=0, radar_list=None, voltime=None):
     """
     processes a dataset
 
@@ -194,12 +216,12 @@ def _process_dataset(cfg, dscfg, proc_status=0, radar=None, voltime=None):
     dscfg['timeinfo'] = voltime
     proc_func_name, dsformat = get_process_func(dscfg['type'])
     proc_func = getattr(proc, proc_func_name)
-    new_dataset = proc_func(proc_status, dscfg, radar=radar)
+    new_dataset, ind_rad = proc_func(proc_status, dscfg, radar_list=radar_list)
     if new_dataset is None:
         return None
 
     result = _add_dataset(
-        new_dataset, radar, make_global=dscfg['MAKE_GLOBAL'])
+        new_dataset, radar_list, ind_rad, make_global=dscfg['MAKE_GLOBAL'])
 
     # create the data set products
     if 'products' in dscfg:
@@ -241,8 +263,14 @@ def _create_cfg_dict(cfgfile):
         sys.exit(1)
 
     # fill in defaults
+    if 'NumRadars' not in cfg:
+        cfg.update({'NumRadars': 1})
+    if 'TimeTol' not in cfg:
+        cfg.update({'TimeTol': 3600.})
     if 'ScanList' not in cfg:
         cfg.update({'ScanList': None})
+    else:
+        cfg.update({'ScanList': get_scan_list(cfg['ScanList'])})
     if 'cosmopath' not in cfg:
         cfg.update({'cosmopath': None})
     if 'dempath' not in cfg:
@@ -394,7 +422,6 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime=None):
     prdcfg.update({'disdropath': cfg['disdropath']})
     prdcfg.update({'ScanPeriod': cfg['ScanPeriod']})
     prdcfg.update({'imgformat': cfg['imgformat']})
-    prdcfg.update({'convertformat': cfg['convertformat']})
     if 'ppiImageConfig' in cfg:
         prdcfg.update({'ppiImageConfig': cfg['ppiImageConfig']})
     if 'rhiImageConfig' in cfg:
@@ -411,7 +438,7 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime=None):
     return prdcfg
 
 
-def _get_datatype_list(cfg):
+def _get_datatype_list(cfg, radarnr='RADAR001'):
     """
     get list of unique input data types
 
@@ -419,6 +446,8 @@ def _get_datatype_list(cfg):
     ----------
     cfg : dict
         config dictionary
+    radarnr : str
+        radar number identifier
 
     Returns
     -------
@@ -432,15 +461,17 @@ def _get_datatype_list(cfg):
         proclevel, dataset = get_dataset_fields(datasetdescr)
         if 'datatype' in cfg[dataset]:
             if isinstance(cfg[dataset]['datatype'], str):
-                datagroup, datatype, dataset_save, product_save = (
+                (radarnr_descr, datagroup, datatype, dataset_save,
+                 product_save) = (
                     get_datatype_fields(cfg[dataset]['datatype']))
-                if datagroup != 'PROC':
+                if datagroup != 'PROC' and radarnr_descr == radarnr:
                     datatypesdescr.add(cfg[dataset]['datatype'])
             else:
                 for datatype in cfg[dataset]['datatype']:
-                    datagroup, datatype_aux, dataset_save, product_save = (
+                    (radarnr_descr, datagroup, datatype_aux, dataset_save,
+                     product_save) = (
                         get_datatype_fields(datatype))
-                    if datagroup != 'PROC':
+                    if datagroup != 'PROC' and radarnr_descr == radarnr:
                         datatypesdescr.add(datatype)
 
     datatypesdescr = list(datatypesdescr)
@@ -475,7 +506,7 @@ def _get_datasets_list(cfg):
 
 
 def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
-                         masterscan=None):
+                         scan_list=None):
     """
     get master file list
 
@@ -487,8 +518,8 @@ def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
         start and end of processing period
     datacfg : dict
         data configuration dictionary
-    masterscan : str
-        name of the master scan
+    scan_list : list
+        list of scans
 
     Returns
     -------
@@ -499,40 +530,51 @@ def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
 
     """
     masterdatatypedescr = None
+    masterscan = None
     for datatypedescr in datatypesdescr:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if ((datagroup != 'COSMO') and (datagroup != 'RAD4ALPCOSMO') and
                 (datagroup != 'DEM') and (datagroup != 'RAD4ALPDEM')):
             masterdatatypedescr = datatypedescr
+            if scan_list is not None:
+                masterscan = scan_list[int(radarnr[5:8])-1][0]
             break
 
     # if data type is not radar use dBZ as reference
     if masterdatatypedescr is None:
         for datatypedescr in datatypesdescr:
-            datagroup, datatype, dataset, product = (
+            radarnr, datagroup, datatype, dataset, product = (
                 get_datatype_fields(datatypedescr))
             if datagroup == 'COSMO':
-                masterdatatypedescr = 'RAINBOW:dBZ'
+                masterdatatypedescr = radarnr+':RAINBOW:dBZ'
+                if scan_list is not None:
+                    masterscan = scan_list[int(radarnr[5:8])-1][0]
                 break
             elif datagroup == 'RAD4ALPCOSMO':
-                masterdatatypedescr = 'RAD4ALP:dBZ'
+                masterdatatypedescr = radarnr+':RAD4ALP:dBZ'
+                if scan_list is not None:
+                    masterscan = scan_list[int(radarnr[5:8])-1][0]
                 break
             elif datagroup == 'DEM':
-                masterdatatypedescr = 'RAINBOW:dBZ'
+                masterdatatypedescr = radarnr+':RAINBOW:dBZ'
+                if scan_list is not None:
+                    masterscan = scan_list[int(radarnr[5:8])-1][0]
                 break
             elif datagroup == 'RAD4ALPDEM':
-                masterdatatypedescr = 'RAD4ALP:dBZ'
+                masterdatatypedescr = radarnr+':RAD4ALP:dBZ'
+                if scan_list is not None:
+                    masterscan = scan_list[int(radarnr[5:8])-1][0]
                 break
 
     masterfilelist = get_file_list(
         masterdatatypedescr, starttime, endtime, datacfg,
         scan=masterscan)
 
-    return masterfilelist, masterdatatypedescr
+    return masterfilelist, masterdatatypedescr, masterscan
 
 
-def _add_dataset(new_dataset, radar, make_global=True):
+def _add_dataset(new_dataset, radar_list, ind_rad, make_global=True):
     """
     adds a new field to an existing radar object
 
@@ -550,7 +592,7 @@ def _add_dataset(new_dataset, radar, make_global=True):
     0 if successful. None otherwise
 
     """
-    if radar is None:
+    if radar_list is None:
         return None
 
     if not make_global:
@@ -558,7 +600,7 @@ def _add_dataset(new_dataset, radar, make_global=True):
 
     for field in new_dataset.fields:
         print('Adding field: '+field)
-        radar.add_field(
+        radar_list[ind_rad].add_field(
             field, new_dataset.fields[field],
             replace_existing=True)
     return 0

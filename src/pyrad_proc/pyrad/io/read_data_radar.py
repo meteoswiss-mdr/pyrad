@@ -77,7 +77,7 @@ def get_data(voltime, datatypesdescr, cfg):
     datatype_dem = list()
     datatype_rad4alpdem = list()
     for datatypedescr in datatypesdescr:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if datagroup == 'RAINBOW':
             datatype_rainbow.append(datatype)
@@ -96,6 +96,8 @@ def get_data(voltime, datatypesdescr, cfg):
         elif datagroup == 'RAD4ALPDEM':
             datatype_rad4alpdem.append(datatype)
 
+    ind_rad = int(radarnr[5:8])-1
+
     ndatatypes_rainbow = len(datatype_rainbow)
     ndatatypes_rad4alp = len(datatype_rad4alp)
     ndatatypes_cfradial = len(datatype_cfradial)
@@ -107,27 +109,30 @@ def get_data(voltime, datatypesdescr, cfg):
     radar = None
     if ndatatypes_rainbow > 0 and _WRADLIB_AVAILABLE:
         radar = merge_scans_rainbow(
-            cfg['datapath'], cfg['ScanList'], voltime, cfg['ScanPeriod'],
-            datatype_rainbow, cfg)
+            cfg['datapath'][ind_rad], cfg['ScanList'][ind_rad], voltime,
+            cfg['ScanPeriod'], datatype_rainbow, cfg, radarnr=radarnr)
 
     elif ndatatypes_rad4alp > 0:
         radar = merge_scans_rad4alp(
-            cfg['datapath'], cfg['ScanList'], cfg['RadarName'],
-            cfg['RadarRes'], voltime, datatype_rad4alp, cfg)
+            cfg['datapath'][ind_rad], cfg['ScanList'][ind_rad],
+            cfg['RadarName'][ind_rad], cfg['RadarRes'][ind_rad], voltime,
+            datatype_rad4alp, cfg, ind_rad=ind_rad)
 
     if ndatatypes_cfradial > 0:
         radar_aux = merge_fields_cfradial(
-            cfg['loadbasepath'], cfg['loadname'], voltime, datatype_cfradial,
-            dataset_cfradial, product_cfradial)
+            cfg['loadbasepath'][ind_rad], cfg['loadname'][ind_rad], voltime,
+            datatype_cfradial, dataset_cfradial, product_cfradial)
         radar = add_field(radar, radar_aux)
 
     # add COSMO files to the radar field
     if ndatatypes_cosmo > 0 and _WRADLIB_AVAILABLE:
-        radar_aux = merge_scans_cosmo(voltime, datatype_cosmo, cfg)
+        radar_aux = merge_scans_cosmo(
+            voltime, datatype_cosmo, cfg, ind_rad=ind_rad)
         radar = add_field(radar, radar_aux)
 
     elif ndatatypes_rad4alpcosmo > 0:
-        if (cfg['RadarRes'] is None) or (cfg['RadarName'] is None):
+        if ((cfg['RadarRes'][ind_rad] is None) or
+                (cfg['RadarName'][ind_rad] is None)):
             raise ValueError(
                 'ERROR: Radar Name and Resolution ' +
                 'not specified in config file. ' +
@@ -135,7 +140,7 @@ def get_data(voltime, datatypesdescr, cfg):
 
         for i in range(ndatatypes_rad4alpcosmo):
             radar_aux = merge_scans_cosmo_rad4alp(
-                voltime, datatype_rad4alpcosmo[i], cfg)
+                voltime, datatype_rad4alpcosmo[i], cfg, ind_rad=ind_rad)
             if radar is None:
                 radar = radar_aux
             else:
@@ -147,23 +152,24 @@ def get_data(voltime, datatypesdescr, cfg):
     # add DEM files to the radar field
     if ndatatypes_dem > 0 and _WRADLIB_AVAILABLE:
         radar_aux = merge_scans_dem(
-            cfg['dempath'], cfg['ScanList'], datatype_dem, cfg)
+            cfg['dempath'][ind_rad], cfg['ScanList'][ind_rad], datatype_dem)
         radar = add_field(radar, radar_aux)
 
     elif ndatatypes_rad4alpdem > 0:
-        if (cfg['RadarRes'] is None) or (cfg['RadarName'] is None):
+        if ((cfg['RadarRes'][ind_rad] is None) or
+                (cfg['RadarName'][ind_rad] is None)):
             raise ValueError(
                 'ERROR: Radar Name and Resolution ' +
                 'not specified in config file. ' +
                 'Unable to load rad4alp DEM data')
 
-        if cfg['RadarRes'] != 'L':
+        if cfg['RadarRes'][ind_rad] != 'L':
             raise ValueError(
                 'ERROR: DEM files only available for rad4alp PL data')
 
         for i in range(ndatatypes_rad4alpdem):
             radar_aux = merge_scans_dem_rad4alp(
-                voltime, datatype_rad4alpdem[i], cfg)
+                voltime, datatype_rad4alpdem[i], cfg, ind_rad=ind_rad)
             if radar is None:
                 radar = radar_aux
             else:
@@ -176,7 +182,7 @@ def get_data(voltime, datatypesdescr, cfg):
 
 
 def merge_scans_rainbow(basepath, scan_list, voltime, scan_period,
-                        datatype_list, cfg):
+                        datatype_list, cfg, radarnr='RADAR001'):
     """
     merge rainbow scans
 
@@ -194,6 +200,8 @@ def merge_scans_rainbow(basepath, scan_list, voltime, scan_period,
         lists of data types to get
     cfg : dict
         configuration dictionary
+    radarnr : str
+        radar identifier number
 
     Returns
     -------
@@ -208,9 +216,9 @@ def merge_scans_rainbow(basepath, scan_list, voltime, scan_period,
     nscans = len(scan_list)
     if nscans > 1:
         if (datatype_list[0] == 'Nh') or (datatype_list[0] == 'Nv'):
-            datadescriptor = 'RAINBOW:dBZ'
+            datadescriptor = radarnr+':RAINBOW:dBZ'
         else:
-            datadescriptor = 'RAINBOW:'+datatype_list[0]
+            datadescriptor = radarnr+':RAINBOW:'+datatype_list[0]
         endtime = voltime+datetime.timedelta(minutes=scan_period)
         for i in range(1, nscans):
             filelist = get_file_list(
@@ -225,7 +233,7 @@ def merge_scans_rainbow(basepath, scan_list, voltime, scan_period,
     return radar
 
 
-def merge_scans_dem(basepath, scan_list, datatype_list, cfg):
+def merge_scans_dem(basepath, scan_list, datatype_list, radarnr='RADAR001'):
     """
     merge rainbow scans
 
@@ -237,8 +245,8 @@ def merge_scans_dem(basepath, scan_list, datatype_list, cfg):
         list of scans
     datatype_list : list
         lists of data types to get
-    cfg : dict
-        configuration dictionary
+    radarnr : str
+        radar identifier number
 
     Returns
     -------
@@ -246,6 +254,7 @@ def merge_scans_dem(basepath, scan_list, datatype_list, cfg):
         radar object
 
     """
+    ind_rad = int(radarnr[5:8])-1
     radar = merge_fields_dem(
         basepath, scan_list[0], datatype_list)
 
@@ -262,7 +271,7 @@ def merge_scans_dem(basepath, scan_list, datatype_list, cfg):
 
 
 def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
-                        datatype_list, cfg):
+                        datatype_list, cfg, ind_rad=0):
     """
     merge rad4alp data.
 
@@ -282,6 +291,8 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
         lists of data types to get
     cfg : dict
         configuration dictionary
+    ind_rad : int
+        radar index
 
     Returns
     -------
@@ -304,7 +315,7 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
         warn('No file found in '+datapath+basename+timeinfo+'*.'+scan_list[0])
     else:
         radar = get_data_rad4alp(
-            filename[0], datatype_list, scan_list[0], cfg)
+            filename[0], datatype_list, scan_list[0], cfg, ind_rad=ind_rad)
 
     nelevs = len(scan_list)
     # merge the elevations into a single radar instance
@@ -315,7 +326,7 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
                  scan_list[i])
         else:
             radar_aux = get_data_rad4alp(
-                filename[0], datatype_list, scan_list[i], cfg)
+                filename[0], datatype_list, scan_list[i], cfg, ind_rad=ind_rad)
 
             if radar is None:
                 radar = radar_aux
@@ -325,7 +336,7 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
     return radar
 
 
-def merge_scans_cosmo(voltime, datatype_list, cfg):
+def merge_scans_cosmo(voltime, datatype_list, cfg, ind_rad=0):
     """
     merge rainbow scans
 
@@ -337,6 +348,8 @@ def merge_scans_cosmo(voltime, datatype_list, cfg):
         lists of data types to get
     cfg : dict
         configuration dictionary
+    ind_rad : int
+        radar index
 
     Returns
     -------
@@ -350,7 +363,8 @@ def merge_scans_cosmo(voltime, datatype_list, cfg):
     filename_list = list()
     for i in range(ndatatypes):
         filename = find_cosmo_file(
-            voltime, datatype_list[i], cfg, cfg['ScanList'][0])
+            voltime, datatype_list[i], cfg, cfg['ScanList'][ind_rad][0],
+            ind_rad=ind_rad)
         if filename is not None:
             filename_list.append(filename)
 
@@ -360,14 +374,15 @@ def merge_scans_cosmo(voltime, datatype_list, cfg):
         radar = merge_fields_cosmo(filename_list)
 
     # merge scans into a single radar instance
-    nscans = len(cfg['ScanList'])
+    nscans = len(cfg['ScanList'][ind_rad])
     if nscans > 1:
         endtime = voltime+datetime.timedelta(minutes=cfg['ScanPeriod'])
         for i in range(1, nscans):
             filename_list = list()
             for j in range(ndatatypes):
                 filename = find_cosmo_file(
-                    voltime, datatype_list[j], cfg, cfg['ScanList'][i])
+                    voltime, datatype_list[j], cfg,
+                    cfg['ScanList'][ind_rad][i], ind_rad=ind_rad)
                 if filename is not None:
                     filename_list.append(filename)
 
@@ -384,7 +399,7 @@ def merge_scans_cosmo(voltime, datatype_list, cfg):
     return radar
 
 
-def merge_scans_cosmo_rad4alp(voltime, datatype, cfg):
+def merge_scans_cosmo_rad4alp(voltime, datatype, cfg, ind_rad=0):
     """
     merge cosmo rad4alp scans. If data for all the scans cannot be retrieved
     returns None
@@ -397,6 +412,8 @@ def merge_scans_cosmo_rad4alp(voltime, datatype, cfg):
         name of the data type to read
     cfg : dict
         configuration dictionary
+    ind_rad : int
+        radar index
 
     Returns
     -------
@@ -407,9 +424,9 @@ def merge_scans_cosmo_rad4alp(voltime, datatype, cfg):
     # look for rad4alp COSMO data. Data must be present in all scans
     # to consider the volume valid
     filename_list = list()
-    for i in range(len(cfg['ScanList'])):
+    for i in range(len(cfg['ScanList'][ind_rad])):
         filename = find_rad4alpcosmo_file(
-            voltime, datatype, cfg, cfg['ScanList'][i])
+            voltime, datatype, cfg, cfg['ScanList'][ind_rad][i])
         if filename is None:
             return None
         filename_list.append(filename)
@@ -418,17 +435,19 @@ def merge_scans_cosmo_rad4alp(voltime, datatype, cfg):
     # taking as reference the metranet polar file
     dayinfo = voltime.strftime('%y%j')
     timeinfo = voltime.strftime('%H%M')
-    basename = 'P'+cfg['RadarRes']+cfg['RadarName']+dayinfo
-    datapath = cfg['datapath']+dayinfo+'/'+basename+'/'
-    filename = glob.glob(datapath+basename+timeinfo+'*.'+cfg['ScanList'][0])
+    basename = 'P'+cfg['RadarRes'][ind_rad]+cfg['RadarName'][ind_rad]+dayinfo
+    datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
+    filename = glob.glob(
+        datapath+basename+timeinfo+'*.'+cfg['ScanList'][ind_rad][0])
 
     radar = None
     if not filename:
         warn('No file found in '+datapath+basename+timeinfo+'*.' +
-             cfg['ScanList'][0])
+             cfg['ScanList'][ind_rad][0])
     else:
         radar = get_data_rad4alp(
-            filename[0], ['dBZ'], cfg['ScanList'][0], cfg)
+            filename[0], ['dBZ'], cfg['ScanList'][ind_rad][0], cfg,
+            ind_rad=ind_rad)
         radar.fields = dict()
 
         cosmo_field = read_rad4alp_cosmo(filename_list[0], datatype)
@@ -438,15 +457,16 @@ def merge_scans_cosmo_rad4alp(voltime, datatype, cfg):
         radar.add_field(get_fieldname_pyart(datatype), cosmo_field)
 
     # add the other scans
-    for i in range(1, len(cfg['ScanList'])):
+    for i in range(1, len(cfg['ScanList'][ind_rad])):
         filename = glob.glob(
-            datapath+basename+timeinfo+'*.'+cfg['ScanList'][i])
+            datapath+basename+timeinfo+'*.'+cfg['ScanList'][ind_rad][i])
         if not filename:
             warn('No file found in '+datapath+basename+timeinfo+'*.' +
-                 cfg['ScanList'][i])
+                 cfg['ScanList'][ind_rad][i])
         else:
             radar_aux = get_data_rad4alp(
-                filename[0], ['dBZ'], cfg['ScanList'][i], cfg)
+                filename[0], ['dBZ'], cfg['ScanList'][ind_rad][i], cfg,
+                ind_rad=ind_rad)
             radar_aux.fields = dict()
 
             cosmo_field = read_rad4alp_cosmo(filename_list[i], datatype)
@@ -463,7 +483,7 @@ def merge_scans_cosmo_rad4alp(voltime, datatype, cfg):
     return radar
 
 
-def merge_scans_dem_rad4alp(voltime, datatype, cfg):
+def merge_scans_dem_rad4alp(voltime, datatype, cfg, ind_rad=0):
     """
     merge cosmo rad4alp scans. If data for all the scans cannot be retrieved
     returns None
@@ -476,6 +496,8 @@ def merge_scans_dem_rad4alp(voltime, datatype, cfg):
         name of the data type to read
     cfg : dict
         configuration dictionary
+    ind_rad : int
+        radar index
 
     Returns
     -------
@@ -485,7 +507,8 @@ def merge_scans_dem_rad4alp(voltime, datatype, cfg):
     """
     # read visibility data file
     vis_list = read_rad4alp_vis(
-        cfg['dempath']+cfg['RadarName']+'_visib_volume_40', datatype)
+        cfg['dempath'][ind_rad]+cfg['RadarName'][ind_rad]+'_visib_volume_40',
+        datatype)
     if vis_list is None:
         return None
 
@@ -493,37 +516,42 @@ def merge_scans_dem_rad4alp(voltime, datatype, cfg):
     # taking as reference the metranet polar file
     dayinfo = voltime.strftime('%y%j')
     timeinfo = voltime.strftime('%H%M')
-    basename = 'P'+cfg['RadarRes']+cfg['RadarName']+dayinfo
-    datapath = cfg['datapath']+dayinfo+'/'+basename+'/'
-    filename = glob.glob(datapath+basename+timeinfo+'*.'+cfg['ScanList'][0])
+    basename = 'P'+cfg['RadarRes'][ind_rad]+cfg['RadarName'][ind_rad]+dayinfo
+    datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
+    filename = glob.glob(
+        datapath+basename+timeinfo+'*.'+cfg['ScanList'][ind_rad][0])
 
     radar = None
     if not filename:
         warn('No file found in '+datapath+basename+timeinfo+'*.' +
-             cfg['ScanList'][0])
+             cfg['ScanList'][ind_rad][0])
     else:
-        radar = get_data_rad4alp(filename[0], ['dBZ'], cfg['ScanList'][0], cfg)
+        radar = get_data_rad4alp(
+            filename[0], ['dBZ'], cfg['ScanList'][ind_rad][0], cfg,
+            ind_rad=ind_rad)
         radar.fields = dict()
 
         # add visibility data for first scan
         radar.add_field(
-            get_fieldname_pyart(datatype), vis_list[int(cfg['ScanList'][0])-1])
+            get_fieldname_pyart(datatype),
+            vis_list[int(cfg['ScanList'][ind_rad][0])-1])
 
     # add the other scans
-    for i in range(1, len(cfg['ScanList'])):
+    for i in range(1, len(cfg['ScanList'][ind_rad])):
         filename = glob.glob(
-            datapath+basename+timeinfo+'*.'+cfg['ScanList'][i])
+            datapath+basename+timeinfo+'*.'+cfg['ScanList'][ind_rad][i])
         if not filename:
             warn('No file found in '+datapath+basename+timeinfo+'*.' +
-                 cfg['ScanList'][i])
+                 cfg['ScanList'][ind_rad][i])
         else:
             radar_aux = get_data_rad4alp(
-                filename[0], ['dBZ'], cfg['ScanList'][i], cfg)
+                filename[0], ['dBZ'], cfg['ScanList'][ind_rad][i], cfg,
+                ind_rad=ind_rad)
             radar_aux.fields = dict()
 
             radar_aux.add_field(
                 get_fieldname_pyart(datatype),
-                vis_list[int(cfg['ScanList'][i])-1])
+                vis_list[int(cfg['ScanList'][ind_rad][i])-1])
             if radar is None:
                 radar = radar_aux
             else:
@@ -778,7 +806,7 @@ def get_data_rainbow(filename, datatype):
     return radar
 
 
-def get_data_rad4alp(filename, datatype_list, scan_name, cfg):
+def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
     """
     gets rad4alp radar data
 
@@ -792,6 +820,8 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg):
         name of the elevation (001 to 020)
     cfg : dict
         configuration dictionary
+    ind_rad : int
+        radar index
 
     Returns
     -------
@@ -810,7 +840,7 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg):
     # create secondary moments
     if ('Nh' in datatype_list) or ('Nv' in datatype_list):
         # read radar information in status file
-        root = read_status(voltime, cfg)
+        root = read_status(voltime, cfg, ind_rad=ind_rad)
         sweep_number = int(scan_name)-1
 
         if 'Nh' in datatype_list:

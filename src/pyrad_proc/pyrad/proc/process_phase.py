@@ -6,7 +6,7 @@ Functions for PhiDP and KDP processing and attenuation correction
 
 .. autosummary::
     :toctree: generated/
-    
+
     process_correct_phidp0
     process_smooth_phidp_single_window
     process_smooth_phidp_double_window
@@ -30,7 +30,7 @@ import pyart
 from ..io.io_aux import get_datatype_fields
 
 
-def process_correct_phidp0(procstatus, dscfg, radar=None):
+def process_correct_phidp0(procstatus, dscfg, radar_list=None):
     """
     corrects phidp of the system phase
 
@@ -39,7 +39,6 @@ def process_correct_phidp0(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -55,22 +54,23 @@ def process_correct_phidp0(procstatus, dscfg, radar=None):
             The minimum reflectivity [dBZ]
         Zmax : float. Dataset keyword
             The maximum reflectivity [dBZ]
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
     new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
 
     if procstatus != 1:
-        return None
+        return None, None
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if datatype == 'dBZ':
             refl_field = 'reflectivity'
@@ -83,9 +83,15 @@ def process_correct_phidp0(procstatus, dscfg, radar=None):
         if datatype == 'uPhiDP':
             psidp_field = 'uncorrected_differential_phase'
 
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
     if (refl_field not in radar.fields) or (psidp_field not in radar.fields):
         warn('Unable to correct PhiDP system offset. Missing data')
-        return None
+        return None, None
 
     ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
     ind_rmax = np.where(radar.range['data'] < dscfg['rmax'])[0][-1]
@@ -109,10 +115,10 @@ def process_correct_phidp0(procstatus, dscfg, radar=None):
     new_dataset.fields = dict()
     new_dataset.add_field(phidp_field, phidp)
 
-    return new_dataset
+    return new_dataset, ind_rad
 
 
-def process_smooth_phidp_single_window(procstatus, dscfg, radar=None):
+def process_smooth_phidp_single_window(procstatus, dscfg, radar_list=None):
     """
     corrects phidp of the system phase and smoothes it using one window
 
@@ -121,7 +127,6 @@ def process_smooth_phidp_single_window(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -139,22 +144,23 @@ def process_smooth_phidp_single_window(procstatus, dscfg, radar=None):
             The minimum reflectivity [dBZ]
         Zmax : float. Dataset keyword
             The maximum reflectivity [dBZ]
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
     new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
 
     if procstatus != 1:
-        return None
+        return None, None
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if datatype == 'dBZ':
             refl_field = 'reflectivity'
@@ -167,9 +173,15 @@ def process_smooth_phidp_single_window(procstatus, dscfg, radar=None):
         if datatype == 'uPhiDP':
             psidp_field = 'uncorrected_differential_phase'
 
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
     if (refl_field not in radar.fields) or (psidp_field not in radar.fields):
         warn('Unable to smooth PhiDP. Missing data')
-        return None
+        return None, None
 
     ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
     ind_rmax = np.where(radar.range['data'] < dscfg['rmax'])[0][-1]
@@ -196,10 +208,10 @@ def process_smooth_phidp_single_window(procstatus, dscfg, radar=None):
     new_dataset.fields = dict()
     new_dataset.add_field(phidp_field, phidp)
 
-    return new_dataset
+    return new_dataset, ind_rad
 
 
-def process_smooth_phidp_double_window(procstatus, dscfg, radar=None):
+def process_smooth_phidp_double_window(procstatus, dscfg, radar_list=None):
     """
     corrects phidp of the system phase and smoothes it using one window
 
@@ -208,7 +220,6 @@ def process_smooth_phidp_double_window(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -230,22 +241,23 @@ def process_smooth_phidp_double_window(procstatus, dscfg, radar=None):
             The maximum reflectivity [dBZ]
         Zthr : float. Dataset keyword
             The threshold defining wich smoothed data to used [dBZ]
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
     new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
 
     if procstatus != 1:
-        return None
+        return None, None
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if datatype == 'dBZ':
             refl_field = 'reflectivity'
@@ -258,9 +270,15 @@ def process_smooth_phidp_double_window(procstatus, dscfg, radar=None):
         if datatype == 'uPhiDP':
             psidp_field = 'uncorrected_differential_phase'
 
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
     if (refl_field not in radar.fields) or (psidp_field not in radar.fields):
         warn('Unable to smooth PhiDP. Missing data')
-        return None
+        return None, None
 
     ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
     ind_rmax = np.where(radar.range['data'] < dscfg['rmax'])[0][-1]
@@ -290,10 +308,10 @@ def process_smooth_phidp_double_window(procstatus, dscfg, radar=None):
     new_dataset.fields = dict()
     new_dataset.add_field(phidp_field, phidp)
 
-    return new_dataset
+    return new_dataset, ind_rad
 
 
-def process_phidp_kdp_Maesaka(procstatus, dscfg, radar=None):
+def process_phidp_kdp_Maesaka(procstatus, dscfg, radar_list=None):
     """
     Estimates PhiDP and KDP using the method by Maesaka
 
@@ -302,7 +320,6 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -318,22 +335,23 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar=None):
             The minimum reflectivity [dBZ]
         Zmax : float. Dataset keyword
             The maximum reflectivity [dBZ]
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
     new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
 
     if procstatus != 1:
-        return None
+        return None, None
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if datatype == 'PhiDP':
             psidp_field = 'differential_phase'
@@ -348,12 +366,18 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar=None):
         if datatype == 'TEMP':
             temp_field = 'temperature'
 
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
     if ((refl_field not in radar.fields) or
             (psidp_field not in radar.fields) or
             (temp_field not in radar.fields)):
         warn('Unable to retrieve PhiDP KDP using the Maesaka approach. ' +
              'Missing data')
-        return None
+        return None, None
 
     phidp_field = 'corrected_differential_phase'
     kdp_field = 'corrected_specific_differential_phase'
@@ -405,10 +429,10 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar=None):
     new_dataset.add_field(phidp_field, phidpf)
     new_dataset.add_field(kdp_field, kdp)
 
-    return new_dataset
+    return new_dataset, ind_rad
 
 
-def process_phidp_kdp_lp(procstatus, dscfg, radar=None):
+def process_phidp_kdp_lp(procstatus, dscfg, radar_list=None):
     """
     Estimates PhiDP and KDP using a linear programming algorithm
 
@@ -417,28 +441,28 @@ def process_phidp_kdp_lp(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
         datatype : list of string. Dataset keyword
             The input data types
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
     new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
 
     if procstatus != 1:
-        return None
+        return None, None
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if datatype == 'PhiDP':
             psidp_field = 'differential_phase'
@@ -457,13 +481,19 @@ def process_phidp_kdp_lp(procstatus, dscfg, radar=None):
         if datatype == 'SNRh':
             snr_field = 'signal_to_noise_ratio_hh'
 
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
     if ((refl_field not in radar.fields) or
             (psidp_field not in radar.fields) or
             (rhv_field not in radar.fields) or
             (snr_field not in radar.fields)):
         warn('Unable to retrieve PhiDP and KDP using the LP approach. ' +
              'Missing data')
-        return None
+        return None, None
 
     mask = np.ma.getmaskarray(radar.fields[psidp_field]['data'])
 
@@ -488,10 +518,10 @@ def process_phidp_kdp_lp(procstatus, dscfg, radar=None):
     new_dataset.add_field(phidp_field, phidp)
     new_dataset.add_field(kdp_field, kdp)
 
-    return new_dataset
+    return new_dataset, ind_rad
 
 
-def process_kdp_leastsquare_single_window(procstatus, dscfg, radar=None):
+def process_kdp_leastsquare_single_window(procstatus, dscfg, radar_list=None):
     """
     Computes specific differential phase using a piecewise least square method
 
@@ -500,7 +530,6 @@ def process_kdp_leastsquare_single_window(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -508,21 +537,22 @@ def process_kdp_leastsquare_single_window(procstatus, dscfg, radar=None):
             The input data types
         rwind : float. Dataset keyword
             The length of the segment for the least square method [m]
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
-    radar : Radar
+    new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
     if procstatus != 1:
-        return None
+        return None, None
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if datatype == 'PhiDP':
             phidp_field = 'differential_phase'
@@ -531,10 +561,16 @@ def process_kdp_leastsquare_single_window(procstatus, dscfg, radar=None):
         if datatype == 'uPhiDP':
             phidp_field = 'uncorrected_differential_phase'
 
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
     if phidp_field not in radar.fields:
         warn('Unable to retrieve KDP from PhiDP using least square. ' +
              'Missing data')
-        return None
+        return None, None
 
     r_res = radar.range['data'][1]-radar.range['data'][0]
     wind_len = int(dscfg['rwind']/r_res)
@@ -550,10 +586,10 @@ def process_kdp_leastsquare_single_window(procstatus, dscfg, radar=None):
     new_dataset.fields = dict()
     new_dataset.add_field(kdp_field, kdp)
 
-    return new_dataset
+    return new_dataset, ind_rad
 
 
-def process_kdp_leastsquare_double_window(procstatus, dscfg, radar=None):
+def process_kdp_leastsquare_double_window(procstatus, dscfg, radar_list=None):
     """
     Computes specific differential phase using a piecewise least square method
 
@@ -562,7 +598,6 @@ def process_kdp_leastsquare_double_window(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -574,21 +609,22 @@ def process_kdp_leastsquare_double_window(procstatus, dscfg, radar=None):
             The length of the long segment for the least square method [m]
         Zthr : float. Dataset keyword
             The threshold defining which estimated data to use [dBZ]
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
-    radar : Radar
+    new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
     if procstatus != 1:
-        return None
+        return None, None
 
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if datatype == 'PhiDP':
             phidp_field = 'differential_phase'
@@ -601,10 +637,16 @@ def process_kdp_leastsquare_double_window(procstatus, dscfg, radar=None):
         if datatype == 'dBZc':
             refl_field = 'corrected_reflectivity'
 
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
     if (phidp_field not in radar.fields) or (refl_field not in radar.fields):
         warn('Unable to retrieve KDP from PhiDP using least square. ' +
              'Missing data')
-        return None
+        return None, None
 
     r_res = radar.range['data'][1]-radar.range['data'][0]
     swind_len = int(dscfg['rwinds']/r_res)
@@ -624,10 +666,10 @@ def process_kdp_leastsquare_double_window(procstatus, dscfg, radar=None):
     new_dataset.fields = dict()
     new_dataset.add_field(kdp_field, kdp)
 
-    return new_dataset
+    return new_dataset, ind_rad
 
 
-def process_attenuation(procstatus, dscfg, radar=None):
+def process_attenuation(procstatus, dscfg, radar_list=None):
     """
     Computes specific attenuation and specific differential attenuation using
     the Z-Phi method and corrects reflectivity and differential reflectivity
@@ -637,7 +679,6 @@ def process_attenuation(procstatus, dscfg, radar=None):
     procstatus : int
         Processing status: 0 initializing, 1 processing volume,
         2 post-processing
-
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
@@ -650,23 +691,24 @@ def process_attenuation(procstatus, dscfg, radar=None):
             The default freezing level height. It will be used if no
             temperature field name is specified or the temperature field is
             not in the radar object. Default 2000.
-
-    radar : Radar
-        Optional. Radar object
+    radar_list : list of Radar objects
+        Optional. list of radar objects
 
     Returns
     -------
-    radar : Radar
+    new_dataset : Radar
         radar object
+    ind_rad : int
+        radar index
 
     """
 
     if procstatus != 1:
-        return None
+        return None, None
 
     temp = None
     for datatypedescr in dscfg['datatype']:
-        datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if datatype == 'dBZc':
             refl = 'corrected_reflectivity'
@@ -683,12 +725,18 @@ def process_attenuation(procstatus, dscfg, radar=None):
         if datatype == 'TEMP':
             temp = 'temperature'
 
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
     if ((phidp not in radar.fields) or
             (refl not in radar.fields) or
             (zdr not in radar.fields)):
         warn('Unable to retrieve KDP from PhiDP using least square. ' +
              'Missing data')
-        return None
+        return None, None
 
     if (temp is not None) and (temp not in radar.fields):
         warn('COSMO temperature field not available. ' +
@@ -744,4 +792,4 @@ def process_attenuation(procstatus, dscfg, radar=None):
             ' Specific differential attenuation and attenuation ' +
             'corrected differential reflectivity not available')
 
-    return new_dataset
+    return new_dataset, ind_rad
