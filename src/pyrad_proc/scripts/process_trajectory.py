@@ -15,8 +15,9 @@ from __future__ import print_function
 import sys
 import argparse
 from datetime import datetime
+import atexit
 
-from pyrad.flow import main_trajectory as pyrad_main_trajectory
+from pyrad.flow import main as pyrad_main
 
 
 def main():
@@ -94,12 +95,33 @@ def main():
     if (len(args.infostr) > 0):
         print('Info string    : '+args.infostr)
 
-    try:
-        pyrad_main_trajectory(args.cfgfile, args.trajfile, args.infostr,
-                              dt_starttime, dt_endtime)
-    except Exception as ee:
-        print(str(ee), file=sys.stderr)
+    print("====== PYRAD trajectory processing started: %s" %
+          datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
 
+    atexit.register(_print_end_msg,
+                    "====== PYRAD trajectory processing finished: ")
+
+    #try:  #XXX
+    pyrad_main(args.cfgfile, dt_starttime, dt_endtime,
+               trajfile=args.trajfile, infostr=args.infostr)
+    #except Exception as ee:
+    #    print(str(ee), file=sys.stderr)
+
+def _print_end_msg(text):
+    """
+    prints end message
+
+    Parameters
+    ----------
+    text : str
+        the text to be printed
+
+    Returns
+    -------
+    Nothing
+
+    """
+    print(text + datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
 
 # ---------------------------------------------------------
 # Start main:

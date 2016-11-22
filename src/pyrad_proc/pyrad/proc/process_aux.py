@@ -13,6 +13,7 @@ determined points or regions of interest.
     process_raw
     process_save_radar
     process_point_measurement
+    process_trajectory
 
 """
 
@@ -28,7 +29,7 @@ from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 from netCDF4 import num2date
 
 
-def get_process_func(dataset_type):
+def get_process_func(dataset_type, dsname):
     """
     maps the dataset type into its processing function and data set format
 
@@ -36,6 +37,8 @@ def get_process_func(dataset_type):
     ----------
     dataset_type : str
         data set type, i.e. 'RAW', 'SAN', etc.
+    dsname : str
+        Name of dataset
 
     Returns
     -------
@@ -116,8 +119,12 @@ def get_process_func(dataset_type):
     elif dataset_type == 'POINT_MEASUREMENT':
         func_name = 'process_point_measurement'
         dsformat = 'TIMESERIES'
+    elif dataset_type == 'TRAJ':
+        func_name = 'process_trajectory'
+        dsformat = 'TRAJ_ONLY'
     else:
-        raise ValueError('ERROR: Unknown dataset type '+dataset_type)
+        raise ValueError("ERROR: Unknown dataset type '%s' of dataset '%s'"
+                         % (dataset_type, dsname))
 
     return func_name, dsformat
 
@@ -354,5 +361,46 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
         {'used_antenna_coordinates_az_el_r': [radar.azimuth['data'][ind_ray],
          radar.elevation['data'][ind_ray],
          radar.range['data'][ind_r]]})
+
+    return new_dataset, ind_rad
+
+
+def process_trajectory(procstatus, dscfg, radar_list=None):
+    """
+    dummy function that allows to save the entire radar object
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+    ind_rad : int
+        radar index
+
+    """
+
+    print("Process trajectory!! to be done!!!")   # XXX
+
+    if procstatus != 1:
+        return None, None
+
+    for datatypedescr in dscfg['datatype']:
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        break
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    new_dataset = deepcopy(radar_list[ind_rad])
 
     return new_dataset, ind_rad

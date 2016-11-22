@@ -30,6 +30,7 @@ Example:
 
 import datetime
 import argparse
+import atexit
 
 from pyrad.flow import main
 
@@ -61,6 +62,11 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    print("====== PYRAD data processing started: %s" %
+          datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
+    atexit.register(_print_end_msg,
+                    "====== PYRAD data processing finished: ")
+
     print('config path: '+args.cfgpath)
     print('config file: '+args.proc_cfgfile)
     print('postproc config file: '+str(args.postproc_cfgfile))
@@ -76,3 +82,20 @@ if __name__ == '__main__':
     if args.postproc_cfgfile is not None:
         cfgfile_postproc = args.cfgpath+args.postproc_cfgfile
         main(cfgfile_postproc, proc_starttime, proc_endtime)
+
+def _print_end_msg(text):
+    """
+    prints end message
+
+    Parameters
+    ----------
+    text : str
+        the text to be printed
+
+    Returns
+    -------
+    Nothing
+
+    """
+    print(text + datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
+

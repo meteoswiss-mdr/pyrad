@@ -5,7 +5,8 @@ name STRING mals_emm_rw22_traj
 # Base path of the raw data.
 # Note: Must have a trailing '/'
 # ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
-datapath STRING /data/DX50/rawdata/  # zueub222
+datapath STRARR 1
+    /data/DX50/rawdata/  # zueub222
 
 # Base path of configuration files
 configpath STRING $HOME/pyrad/config/
