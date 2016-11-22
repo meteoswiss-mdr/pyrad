@@ -2,31 +2,52 @@
 # Will be used in product generation save path
 name STRING rad4alp_PLD
 
+# ---------------------------------------------------------
+#  Raw data pathes
+# ---------------------------------------------------------
+
 # Base path of the raw data.
 # Note: Must have a trailing '/'
-datapath STRING /data/rad4alp/rawdata/
+# ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
+datapath STRARR 1
+    /data/rad4alp/rawdata/
+
+# Base path for cosmo data
+cosmopath STRARR 1
+    /data/cosmo/
+
+# Base path for dem data
+dempath STRARR 1
+    /data/rad4alp/visibRad4Alp/
+
+
+# ------------------------------------------------------------
+# Auxiliary data pathes
+# ------------------------------------------------------------
+# Base path for swissmetnet data
+smnpath STRING /data/meteo_products/SMNRetrieve/
+
+# Base path for disdrometer data
+disdropath STRING /data/scattering/dsd_ts/
+
+# --------------------------------------------
+# Output data
+# --------------------------------------------
+saveimgbasepath STRING /data/pyrad_examples/
+saveimg         INT 1
+# Supported formats: eps, jpeg, jpg, pdf, pgf, png, ps, raw, rgba, svg, svgz, tif, tiff
+imgformat STRARR 1
+    png	
+
+# --------------------------------------------------------
+# configuration files pathes
+# --------------------------------------------------------
 
 # Base path of configuration files
 configpath STRING /home/lom/users/fvj/pyrad/config/
-
-# Base path for cosmo data
-cosmopath STRING /data/cosmo/
-
-# Base path for dem data
-dempath STRING /data/rad4alp/visibRad4Alp/
-
-saveimg         INT 1
-saveimgbasepath STRING /data/pyrad_examples/
-imgformat       STRING eps
-convertimage    INT 1
-convertformat   STRING png
 
 # Configuration of the radar location and approach direction
 locationConfigFile STRING /home/lom/users/fvj/pyrad/config/processing/rad4alp_PLD_loc.txt
 
 # Configuration of the product generation
 productConfigFile STRING /home/lom/users/fvj/pyrad/config/processing/rad4alp_PLD_prod.txt
-
-# State after last run
-#lastStateFile STRING $HOME/realtime_idl/paradiso_vol_lastState.txt
-

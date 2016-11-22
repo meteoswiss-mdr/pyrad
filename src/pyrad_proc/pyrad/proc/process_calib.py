@@ -1345,13 +1345,18 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
             time_avg_flag['data'][echo_field['data'] == 2] += 100
 
         if hydro_name is not None:
-            if hydro_name not in radar.fields:
+            if ((hydro_name not in radar.fields) or
+                    (echo_name not in radar.fields)):
                 warn('Missing hydrometeor classification data')
                 time_avg_flag['data'] += 10000
             else:
                 hydro_field = radar.fields[hydro_name]
-                is_not_rain = ((hydro_field['data'] != 3) and
-                               (hydro_field['data'] != 5))
+                # check where is no rain
+                is_not_rain = np.logical_and(
+                    hydro_field['data'] != 3, hydro_field['data'] != 5)
+                # where is no rain should be precip
+                is_not_rain = np.logical_and(
+                    is_not_rain, echo_field['data'] == 3)
                 time_avg_flag['data'][is_not_rain] += 10000
         elif temp_name is not None:
             if temp_name not in radar.fields:

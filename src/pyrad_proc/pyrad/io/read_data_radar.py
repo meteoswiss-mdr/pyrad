@@ -840,6 +840,7 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
     # create secondary moments
     if ('Nh' in datatype_list) or ('Nv' in datatype_list):
         # read radar information in status file
+        voltime = get_datetime(filename, 'RAD4ALP:dBZ')
         root = read_status(voltime, cfg, ind_rad=ind_rad)
         sweep_number = int(scan_name)-1
 
