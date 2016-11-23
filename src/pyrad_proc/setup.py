@@ -17,7 +17,7 @@ import glob
 import builtins
 from datetime import datetime
 import getpass
-import setuptools
+import setuptools  # for 'develop' mode
 
 DOCLINES = __doc__.split("\n")
 

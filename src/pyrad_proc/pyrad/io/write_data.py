@@ -8,6 +8,7 @@ Functions for writing pyrad output data
     :toctree: generated/
 
     write_timeseries
+    write_ts_polar_data
     write_monitoring_ts
     write_sun_hits
     write_sun_retrieval
@@ -24,6 +25,10 @@ from .io_aux import generate_field_name_str
 
 
 def write_timeseries(dataset, fname):
+    print("write ts")  # XXX
+
+
+def write_ts_polar_data(dataset, fname):
     """
     writes time series of data
 

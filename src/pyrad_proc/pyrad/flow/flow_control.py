@@ -17,16 +17,18 @@ functions to control the Pyrad data processing flow
     _get_masterfile_list
     _add_dataset
     _process_dataset
-    _print_end_msg
+    _warning_format
 
 """
 from __future__ import print_function
 import sys
+import warnings
 from warnings import warn
 import os
 from datetime import datetime
 from datetime import timedelta
 import atexit
+import inspect
 
 from ..io.config import read_config
 from ..io.read_data_radar import get_data
@@ -64,6 +66,11 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
            pyrad_version.username))
     print("- PYART version: " + pyart_version.version)
 
+    # Definie behaviour of warnings
+    warnings.simplefilter('always')  # always print matching warnings
+    # warnings.simplefilter('error')  # turn matching warnings into exceptions
+    warnings.formatwarning = _warning_format  # define format
+
     cfg = _create_cfg_dict(cfgfile)
     datacfg = _create_datacfg_dict(cfg)
 
@@ -73,7 +80,7 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
         try:
             traj = Trajectory(trajfile, starttime=starttime, endtime=endtime)
         except Exception as ee:
-            print(str(ee), file=sys.stderr)
+            warn(str(ee))
             sys.exit(1)
 
         # Derive start and end time (if not specified by arguments)
@@ -83,9 +90,14 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
         if (endtime is None):
             scan_min = cfg['ScanPeriod'] * 1.1  # [min]
             endtime = traj.get_end_time() + timedelta(minutes=scan_min)
+    else:
+        traj = None
 
     print("- Start time: " + str(starttime))
     print("- End time: " + str(endtime))
+
+    if (len(infostr) > 0):
+        print('- Info string    : ' + infostr)
 
     datatypesdescr_list = list()
     for i in range(1, cfg['NumRadars']+1):
@@ -116,9 +128,13 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
         for dataset in dataset_levels[level]:
             print('--- Processing dataset: '+dataset)
             dscfg.update({dataset: _create_dscfg_dict(cfg, dataset)})
-            result = _process_dataset(
-                cfg, dscfg[dataset], proc_status=0, radar_list=None,
-                voltime=None)
+            try:
+                result = _process_dataset(cfg, dscfg[dataset], proc_status=0,
+                                          radar_list=None, voltime=None,
+                                          trajectory=traj, runinfo=infostr)
+            except Exception as ee:
+                warn(str(ee))
+                continue
 
     # process all data files in file list
     for masterfile in masterfilelist:
@@ -139,8 +155,8 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
                 datacfg, scan_list=cfg['ScanList'])
 
             if len(filelist_ref) == 0:
-                warn('Could not find any valid volume for reference time ' +
-                     master_voltime.strftime('%Y-%m-%d %H:%M:%S') +
+                warn("ERROR: Could not find any valid volume for reference " +
+                     "time " + master_voltime.strftime('%Y-%m-%d %H:%M:%S') +
                      ' and radar RADAR'+'{:03d}'.format(i+1))
                 radar_list.append(None)
             else:
@@ -152,10 +168,16 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
         for level in sorted(dataset_levels):
             print('-- Process level: '+level)
             for dataset in dataset_levels[level]:
-                print('-- Processing dataset: '+dataset)
-                result = _process_dataset(
-                    cfg, dscfg[dataset], proc_status=1, radar_list=radar_list,
-                    voltime=master_voltime)
+                print('--- Processing dataset: '+dataset)
+                try:
+                    result = _process_dataset(cfg, dscfg[dataset],
+                                              proc_status=1,
+                                              radar_list=radar_list,
+                                              voltime=master_voltime,
+                                              trajectory=traj, runinfo=infostr)
+                except Exception as ee:
+                    warn(str(ee))
+                    continue
 
     # post-processing of the datasets
     print('- Post-processing datasets:')
@@ -163,14 +185,19 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
         print('-- Process level: '+level)
         for dataset in dataset_levels[level]:
             print('--- Processing dataset: '+dataset)
-            result = _process_dataset(
-                cfg, dscfg[dataset], proc_status=2, radar_list=None,
-                voltime=master_voltime)
+            try:
+                result = _process_dataset(cfg, dscfg[dataset], proc_status=2,
+                                          radar_list=None, voltime=None,
+                                          trajectory=traj, runinfo=infostr)
+            except Exception as ee:
+                warn(str(ee))
+                continue
 
     print('- This is the end my friend! See you soon!')
 
 
-def _process_dataset(cfg, dscfg, proc_status=0, radar_list=None, voltime=None):
+def _process_dataset(cfg, dscfg, proc_status=0, radar_list=None, voltime=None,
+                     trajectory=None, runinfo=None):
     """
     processes a dataset
 
@@ -187,6 +214,8 @@ def _process_dataset(cfg, dscfg, proc_status=0, radar_list=None, voltime=None):
         radar object containing the data to be processed
     voltime : datetime object
         reference time of the radar
+    trajectory : Trajectory object
+        containing trajectory samples
 
     Returns
     -------
@@ -195,10 +224,24 @@ def _process_dataset(cfg, dscfg, proc_status=0, radar_list=None, voltime=None):
     """
 
     dscfg['timeinfo'] = voltime
-    proc_func_name, dsformat = get_process_func(dscfg['type'], dscfg['dsname'])
-    proc_ds_func = getattr(proc, proc_func_name)
-    new_dataset, ind_rad = proc_ds_func(proc_status, dscfg,
-                                        radar_list=radar_list)
+    try:
+        proc_ds_func, dsformat = get_process_func(dscfg['type'],
+                                                  dscfg['dsname'])
+    except Exception as ee:
+        raise
+
+    if (type(proc_ds_func) is str):
+        proc_ds_func = getattr(proc, proc_ds_func)
+
+    # Create dataset
+    if ('trajectory' in inspect.getfullargspec(proc_ds_func).args):
+        new_dataset, ind_rad = proc_ds_func(proc_status, dscfg,
+                                            radar_list=radar_list,
+                                            trajectory=trajectory)
+    else:
+        new_dataset, ind_rad = proc_ds_func(proc_status, dscfg,
+                                            radar_list=radar_list)
+
     if new_dataset is None:
         return None
 
@@ -214,12 +257,13 @@ def _process_dataset(cfg, dscfg, proc_status=0, radar_list=None, voltime=None):
     # create the data set products
     if 'products' in dscfg:
         for product in dscfg['products']:
+            print('---- Processing product: ' + product)
             prdcfg = _create_prdcfg_dict(cfg, dscfg['dsname'], product,
-                                         voltime=voltime)
+                                         voltime, runinfo=runinfo)
             try:
                 result = prod_func(new_dataset, prdcfg)
             except Exception as ee:
-                print(str(ee), file=sys.stderr)
+                warn(str(ee))
                 continue
 
     return 0
@@ -249,7 +293,7 @@ def _create_cfg_dict(cfgfile):
         print("- Product config file : %s" % cfg['productConfigFile'])
         cfg = read_config(cfg['productConfigFile'], cfg=cfg)
     except Exception as ee:
-        print(ee, file=sys.stderr)
+        warn(str(ee))
         sys.exit(1)
 
     # check for mandatory config parameters
@@ -389,7 +433,7 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
     dscfg.update({'timeinfo': None})
 
     # indicates the dataset has been initialized and aux data is available
-    dscfg.update({'initialized': 0})
+    dscfg.update({'initialized': False})
     dscfg.update({'global_data': None})
 
     if 'MAKE_GLOBAL' not in dscfg:
@@ -398,7 +442,7 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
     return dscfg
 
 
-def _create_prdcfg_dict(cfg, dataset, product, voltime=None):
+def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
     """
     creates a product configuration dictionary
 
@@ -419,6 +463,7 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime=None):
         product config dictionary
 
     """
+
     prdcfg = cfg[dataset]['products'][product]
     prdcfg.update({'procname': cfg['name']})
     prdcfg.update({'basepath': cfg['saveimgbasepath']})
@@ -435,9 +480,8 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime=None):
     prdcfg.update({'dsname': dataset})
     prdcfg.update({'dstype': cfg[dataset]['type']})
     prdcfg.update({'prdname': product})
-
-    if voltime is not None:
-        prdcfg.update({'timeinfo': voltime})
+    prdcfg.update({'timeinfo': voltime})
+    prdcfg.update({'runinfo': runinfo})
 
     return prdcfg
 
@@ -609,3 +653,7 @@ def _add_dataset(new_dataset, radar_list, ind_rad, make_global=True):
             field, new_dataset.fields[field],
             replace_existing=True)
     return 0
+
+
+def _warning_format(message, category, filename, lineno, file=None, line=None):
+    return '%s (%s:%s)\n' % (message, filename, lineno)

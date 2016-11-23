@@ -81,7 +81,8 @@ def get_save_dir(basepath, procname, dsname, prdname, timeinfo=None,
 
 
 def make_filename(prdtype, dstype, dsname, ext, prdcfginfo=None,
-                  timeinfo=None, timeformat='%Y%m%d%H%M%S'):
+                  timeinfo=None, timeformat='%Y%m%d%H%M%S',
+                  runinfo=None):
     """
     creates a product file name
 
@@ -101,6 +102,8 @@ def make_filename(prdtype, dstype, dsname, ext, prdcfginfo=None,
         Optional. string to add product configuration information, i.e. 'el0.4'
     timeformat : str
         Optional. The time format
+    runinfo : str
+        Optional. Additional information about the test (e.g. 'RUN01', 'TS011')
 
     Returns
     -------
@@ -116,12 +119,17 @@ def make_filename(prdtype, dstype, dsname, ext, prdcfginfo=None,
     if prdcfginfo is None:
         cfgstr = ''
     else:
-        cfgstr = '_'+prdcfginfo
+        cfgstr = '_' + prdcfginfo
+
+    if runinfo is None:
+        runstr = ''
+    else:
+        runstr = runinfo + '_'
 
     fname_list = list()
     for i in range(len(ext)):
-        fname_list.append(
-            timeinfostr+prdtype+'_'+dstype+'_'+dsname+cfgstr+'.'+ext[i])
+        fname_list.append(timeinfostr + runstr + prdtype + '_' +
+                          dstype + '_' + dsname + cfgstr + '.' + ext[i])
 
     return fname_list
 

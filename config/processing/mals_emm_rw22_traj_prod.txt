@@ -16,7 +16,8 @@ dataSetList STRARR 1
 
 traj STRUCT 3
    type     STRING TRAJ
-   datatype STRING dBZ
+   datatype STRARR 1
+       dBZ
    products STRUCT 4
       TS_RANGE STRUCT 2
          type  STRING TRAJ_PLOT

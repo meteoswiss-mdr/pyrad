@@ -28,7 +28,7 @@ from ..io.io_aux import generate_field_name_str
 from ..io.read_data_other import get_sensor_data, read_timeseries
 from ..io.read_data_other import read_sun_retrieval, read_monitoring_ts
 
-from ..io.write_data import write_timeseries, write_monitoring_ts
+from ..io.write_data import write_ts_polar_data, write_monitoring_ts
 from ..io.write_data import write_sun_hits, write_sun_retrieval
 
 from ..graph.plots import plot_ppi, plot_rhi, plot_cappi, plot_bscope
@@ -672,7 +672,7 @@ def generate_timeseries_products(dataset, prdcfg):
         for i in range(len(csvfname)):
             csvfname[i] = savedir+csvfname[i]
 
-        write_timeseries(dataset, csvfname[0])
+        write_ts_polar_data(dataset, csvfname[0])
         print('saved CSV file: '+csvfname[0])
 
         date, value = read_timeseries(csvfname[0])
