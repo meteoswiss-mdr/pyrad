@@ -36,6 +36,6 @@ from .process_product import generate_timeseries_products
 from .process_product import generate_sun_hits_products
 from .process_product import generate_monitoring_products
 
-from .process_traj_products import generate_traj_products
+from .process_traj_products import generate_traj_product
 
 __all__ = [s for s in dir() if not s.startswith('_')]

@@ -19,7 +19,7 @@ from .process_product import generate_sun_hits_products
 from .process_product import generate_monitoring_products
 from .process_product import generate_colocated_gates_products
 
-from .process_traj_products import generate_traj_products
+from .process_traj_products import generate_traj_product
 
 
 def get_prodgen_func(dsformat, dsname, dstype):
@@ -47,7 +47,7 @@ def get_prodgen_func(dsformat, dsname, dstype):
     elif dsformat == 'MONITORING':
         func = generate_monitoring_products
     elif dsformat == 'TRAJ_ONLY':
-        func = generate_traj_products
+        func = generate_traj_product
     elif dsformat == 'COLOCATED_GATES':
         func = generate_colocated_gates_products
     else:

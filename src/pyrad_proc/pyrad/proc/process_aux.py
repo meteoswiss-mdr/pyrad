@@ -42,7 +42,7 @@ def get_process_func(dataset_type, dsname):
 
     Returns
     -------
-    func_name : str
+    func_name : str or function
         pyrad function used to process the data set type
     dsformat : str
         data set format, i.e.: 'VOL', etc.
@@ -123,7 +123,7 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_point_measurement'
         dsformat = 'TIMESERIES'
     elif dataset_type == 'TRAJ':
-        func_name = 'process_trajectory'
+        func_name = process_trajectory
         dsformat = 'TRAJ_ONLY'
     else:
         raise ValueError("ERROR: Unknown dataset type '%s' of dataset '%s'"
@@ -163,8 +163,8 @@ def process_raw(procstatus, dscfg, radar_list=None):
             datatypedescr)
         break
     ind_rad = int(radarnr[5:8])-1
-    if radar_list[ind_rad] is None:
-        warn('No valid radar')
+    if ((radar_list is None) or (radar_list[ind_rad] is None)):
+        warn('ERROR: No valid radar')
         return None, None
     new_dataset = deepcopy(radar_list[ind_rad])
 
@@ -202,8 +202,8 @@ def process_save_radar(procstatus, dscfg, radar_list=None):
             datatypedescr)
         break
     ind_rad = int(radarnr[5:8])-1
-    if radar_list[ind_rad] is None:
-        warn('No valid radar')
+    if ((radar_list is None) or (radar_list[ind_rad] is None)):
+        warn('ERROR: No valid radar')
         return None, None
     new_dataset = deepcopy(radar_list[ind_rad])
 
@@ -272,8 +272,8 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
         break
     field_name = get_fieldname_pyart(datatype)
     ind_rad = int(radarnr[5:8])-1
-    if radar_list[ind_rad] is None:
-        warn('No valid radar')
+    if ((radar_list is None) or (radar_list[ind_rad] is None)):
+        warn('ERROR: No valid radar')
         return None, None
     radar = radar_list[ind_rad]
 
@@ -368,9 +368,9 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
     return new_dataset, ind_rad
 
 
-def process_trajectory(procstatus, dscfg, radar_list=None):
+def process_trajectory(procstatus, dscfg, radar_list=None, trajectory=None):
     """
-    dummy function that allows to save the entire radar object
+    Return trajectory
 
     Parameters
     ----------
@@ -381,29 +381,32 @@ def process_trajectory(procstatus, dscfg, radar_list=None):
         data set configuration
     radar_list : list of Radar objects
         Optional. list of radar objects
+    trajectory : Trajectory object
+        containing trajectory samples
 
     Returns
     -------
-    new_dataset : Radar
+    new_dataset : Trajectory object
         radar object
     ind_rad : int
-        radar index
+        None
 
     """
-
-    print("Process trajectory!! to be done!!!")   # XXX
 
     if procstatus != 1:
         return None, None
 
-    for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
-        break
-    ind_rad = int(radarnr[5:8])-1
-    if radar_list[ind_rad] is None:
-        warn('No valid radar')
-        return None, None
-    new_dataset = deepcopy(radar_list[ind_rad])
+    if (not dscfg['initialized']):
 
-    return new_dataset, ind_rad
+        if (trajectory is None):
+            raise Exception("ERROR: Undefined trajectory for dataset '%s'"
+                            % dscfg['dsname'])
+
+        if (radar_list is not None):
+            for radar in radar_list:
+                trajectory.add_radar(radar)
+
+        dscfg['initialized'] = True
+        return trajectory, None
+
+    return None, None

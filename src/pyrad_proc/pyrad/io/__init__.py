@@ -51,6 +51,7 @@ Writing data
 
     write_colocated_gates
     write_timeseries
+    write_ts_polar_data
     write_monitoring_ts
     write_sun_hits
     write_sun_retrieval
@@ -92,7 +93,8 @@ from .read_data_other import read_sun_hits, read_sun_hits_multiple_days
 from .read_data_other import read_sun_retrieval, read_solar_flux
 from .read_data_other import read_selfconsistency
 
-from .write_data import write_timeseries, write_monitoring_ts
+from .write_data import write_timeseries, write_ts_polar_data
+from .write_data import write_monitoring_ts
 from .write_data import write_sun_hits, write_sun_retrieval
 from .write_data import write_colocated_gates
 

@@ -92,9 +92,6 @@ def main():
                   file=sys.stderr)
             sys.exit(1)
 
-    if (len(args.infostr) > 0):
-        print('Info string    : '+args.infostr)
-
     print("====== PYRAD trajectory processing started: %s" %
           datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
 
