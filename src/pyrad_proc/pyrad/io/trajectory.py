@@ -106,19 +106,22 @@ class Trajectory(object):
 
         rad = _Radar_Trajectory(radar.latitude['data'][0],
                                 radar.longitude['data'][0],
-                                radar.altitude['data'][0],
-                                len(self.timevector))
+                                radar.altitude['data'][0])
         self.radar_list.append(rad)
 
-        proj = dict({'proj': 'pyart_aeqd',
-                     'lon_0': radar.longitude['data'][0],
-                     'lat_0': radar.latitude['data'][0]})
+        # Convert trajectory WGS84 points to polara radar coordiantes
+        rad.convert_radpos_to_swissgrid()
 
-        xvec, yvec = pyart.core.geographic_to_cartesian(
-            self.wgs84_lon_deg, self.wgs84_lat_deg, proj)
+        (chyvec, chxvec, chhvec) = pyart.core.wgs84_to_swissCH1903(
+            self.wgs84_lon_deg, self.wgs84_lat_deg,
+            self.wgs84_alt_m)
 
-        rvec, azvec, elvec = pyart.core.cartesian_to_antenna(
-            xvec, yvec, self.wgs84_alt_m - rad.altitude)
+        # Note: Earth curvature not considered yet!
+
+        (rvec, azvec, elvec) = pyart.core.cartesian_to_antenna(
+            chyvec-rad.ch_y, chxvec-rad.ch_x, chhvec-rad.ch_alt)
+
+        rad.assign_trajectory(elvec, azvec, rvec)
 
         return
 
@@ -257,6 +260,8 @@ class _Radar_Trajectory:
        WGS84 longitude [deg]
     altitude : float
        altitude [m] (non WGS84)
+    ch_y, ch_x, ch_alt : float
+       coordinates in swiss CH1903 coordinates
     elevation_vec : float list
        Elevation values of the trajectory samples
     azimuth_vec : float list
@@ -267,9 +272,11 @@ class _Radar_Trajectory:
     Methods:
     --------
     location_is_equal
+    assign_trajectory
+    convert_radpos_to_swissgrid
     """
 
-    def __init__(self, lat, lon, alt, nsamps):
+    def __init__(self, lat, lon, alt):
         """
         Initalize the object.
 
@@ -282,6 +289,11 @@ class _Radar_Trajectory:
         self.latitude = lat
         self.longitude = lon
         self.altitude = alt
+
+        self._swiss_coords_done = False
+        self.ch_y = None
+        self.ch_x = None
+        self.ch_alt = None
 
         self.elevation_vec = []
         self.azimuth_vec = []
@@ -311,16 +323,38 @@ class _Radar_Trajectory:
         else:
             return True
 
-    def add_traj_sample(self, el, az, rr):
+    def assign_trajectory(self, el, az, rr):
         """
-        Append a new trajectory sample in radar coordinates to the
-        trajectory vectors.
+        Assign a trajectory to the radar in polar radar
+        coordinates.
 
         Parameters
         ----------
-        el, az, rr : elevation, azimuth and range
+        el, az, rr : array-like
+           elevation, azimuth and range vectory
         """
 
-        self.elevation_vec.append(el)
-        self.azimuth_vec.append(az)
-        self.range_vec.append(rr)
+        self.elevation_vec = el
+        self.azimuth_vec = az
+        self.range_vec = rr
+
+    def convert_radpos_to_swissgrid(self):
+        """
+        Convert the radar location (in WGS84 coordinates) to
+        swiss CH1903 coordinates.
+
+        Parameters
+        ----------
+        lat, lon , alt : radar location coordinates
+        nsamps : number of samples
+        """
+
+        if (self._swiss_coords_done):
+            return
+
+        (self.ch_y, self.ch_x, self.ch_alt) = \
+            pyart.core.wgs84_to_swissCH1903(self.longitude,
+                                            self.latitude,
+                                            self.altitude,
+                                            no_altitude_transform=True)
+        self._swiss_coords_done = True
