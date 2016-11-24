@@ -80,6 +80,14 @@ Trajectory
 
     Trajectory
 
+TimeSeries
+==========
+
+.. autosummary::
+    :toctree: generated/
+
+    TimeSeries
+
 """
 
 from .config import read_config
@@ -105,5 +113,7 @@ from .io_aux import get_fieldname_pyart
 from .io_aux import generate_field_name_str
 
 from .trajectory import Trajectory
+
+from .timeseries import TimeSeries
 
 __all__ = [s for s in dir() if not s.startswith('_')]

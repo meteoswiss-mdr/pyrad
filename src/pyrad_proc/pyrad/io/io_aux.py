@@ -383,7 +383,10 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
             daydir = (
                 starttime+datetime.timedelta(days=i)).strftime('%Y-%m-%d')
             dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%Y%m%d')
-            datapath = cfg['datapath'][ind_rad]+scan+daydir+'/'
+            datapath = cfg['datapath'][ind_rad] + scan + daydir + '/'
+            if (not os.path.isdir(datapath)):
+                warn("WARNING: Unknown datapath '%s'" % datapath)
+                continue
             dayfilelist = glob.glob(datapath+dayinfo+'*'+datatype+'.*')
             for filename in dayfilelist:
                 t_filelist.append(filename)
@@ -395,6 +398,9 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
             basename = ('P'+cfg['RadarRes'][ind_rad] +
                         cfg['RadarName'][ind_rad]+dayinfo)
             datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
+            if (not os.path.isdir(datapath)):
+                warn("WARNING: Unknown datapath '%s'" % datapath)
+                continue
             dayfilelist = glob.glob(datapath+basename+'*.'+scan)
             for filename in dayfilelist:
                 t_filelist.append(filename)
@@ -405,6 +411,9 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
             datapath = (
                 cfg['loadbasepath'][ind_rad]+cfg['loadname'][ind_rad]+'/' +
                 daydir+'/'+dataset+'/'+product+'/')
+            if (not os.path.isdir(datapath)):
+                warn("WARNING: Unknown datapath '%s'" % datapath)
+                continue
             dayfilelist = glob.glob(datapath+dayinfo+'*'+datatype+'.nc')
             for filename in dayfilelist:
                 t_filelist.append(filename)

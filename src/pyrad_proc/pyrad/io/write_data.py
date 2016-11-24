@@ -17,6 +17,7 @@ Functions for writing pyrad output data
 
 """
 
+from __future__ import print_function
 import glob
 import csv
 
@@ -25,8 +26,57 @@ from pyart.config import get_fillvalue, get_metadata
 from .io_aux import generate_field_name_str
 
 
-def write_timeseries(dataset, fname):
-    print("write ts")  # XXX
+def write_timeseries(ts, fname):
+    """
+    """
+
+    print("----- write to '%s'" % fname)
+
+    try:
+        tsfile = open(fname, "w")
+    except:
+        raise Exception("ERROR: Could not create file '%s'" % fname)
+
+    print("# Weather radar timeseries data file", file=tsfile)
+    print("# Project: MALSplus", file=tsfile)
+    print("# Start : %s UTC" % ts.time_vector[0].strftime("%Y-%m-%d %H:%M:%S"),
+          file=tsfile)
+    print("# End   : %s UTC" % ts.time_vector[-1].strftime("%Y-%m-%d %H:%M:%S"),
+          file=tsfile)
+    print("# Header lines with comments are preceded by '#'", file=tsfile)
+    for line in ts.description:
+        print("# %s" % line, file=tsfile)
+    print("#", file=tsfile)
+
+    # Make raw header
+    if (ts.timeformat is None):
+        print("# Date, UTC [seconds since midnight]", end="", file=tsfile)
+    else:
+        print("# Date [%s]" % ts.timeformat, end="", file=tsfile)
+
+    for ds in ts.dataseries:
+        print(", %s [%s]" % (ds.label, ds.unit), end="", file=tsfile)
+    print("", file=tsfile)
+
+    # Store the data
+    nsample = len(ts.time_vector)
+    for kk in range(nsample):
+        if (ts.timeformat is None):
+            dt = ts.time_vector[kk]
+            daystr = dt.strftime("%d-%b-%Y")
+            secs = dt.hour*3600. + dt.minute*60. + dt.second + \
+                dt.microsecond/1000000.
+            print("%s, %14.4f" % (daystr, secs), end="", file=tsfile)
+        else:
+            print(ts.time_vector[kk].strftime(ts.timeformat), end="",
+                  file=tsfile)
+
+        for ds in ts.dataseries:
+            print(", %14.4f" % (ds.data[kk]), end="", file=tsfile)
+
+        print("", file=tsfile)
+
+    tsfile.close()
 
 
 def write_ts_polar_data(dataset, fname):
