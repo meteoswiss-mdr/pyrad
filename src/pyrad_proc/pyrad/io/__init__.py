@@ -49,6 +49,7 @@ Writing data
 .. autosummary::
     :toctree: generated/
 
+    write_colocated_gates
     write_timeseries
     write_monitoring_ts
     write_sun_hits
@@ -93,6 +94,7 @@ from .read_data_other import read_selfconsistency
 
 from .write_data import write_timeseries, write_monitoring_ts
 from .write_data import write_sun_hits, write_sun_retrieval
+from .write_data import write_colocated_gates
 
 from .io_aux import get_save_dir, make_filename
 from .io_aux import get_datetime, get_dataset_fields

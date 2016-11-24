@@ -327,6 +327,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'radar_echo_classification'
     elif datatype == 'time_avg_flag':
         field_name = 'time_avg_flag'
+    elif datatype == 'colocated_gates':
+        field_name = 'colocated_gates'
     else:
         raise ValueError('ERROR: Unknown data type '+datatype)
 

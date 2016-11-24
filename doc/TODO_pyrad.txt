@@ -2,11 +2,11 @@ Pending modifications for current code in Pyrad
 -----------------------------------------------
 - In function process_echo_id: Add condition on differential reflectivity at low reflectivity values. Allow user to select the various thresholds. Add a speckle filter
 - In selfconsistency functions: get tables as a function of elevation, allow user to define the tresholds
-- In read_data_radar: ingest CFradial data
+- Functions for PhiDP and KDP processing consume too much memory up to the point that they cannot handle rad4alp PH data. It is probably due to the rolling window creating a monstrous matrix.
+We should try to reduce the memory consumption.
 
 Documentation
 -------------
-- rename pyart-mch to master-mch
 - Change documentation to reflect that pull requests have to be done in specifically named branches. (You do not modify master)
 - Complete docstrings in Pyrad to specify the user defined keywords each function accepts. Make sure default values and the input data types are specified in the documentation
 

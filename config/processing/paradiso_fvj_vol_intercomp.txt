@@ -11,33 +11,31 @@ name STRING paradiso_vol_fvj
 # ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
 datapath STRARR 2
     /data/DX50/rawdata/
-	/data/rad4alp/rawdata/
-
-# Base path for cosmo data
-cosmopath STRARR 2
-    /data/cosmo/
-	/data/cosmo/
-
+    /data/rad4alp/rawdata/
+    
 # Base path for dem data
 dempath STRARR 2
     /data/DEM/DX50_PAY/
-	/data/rad4alp/visibRad4Alp/
-
+    /data/rad4alp/visibRad4Alp/
+    
 # Loading of saved datasets
-loadbasepath STRARR 1
+loadbasepath STRARR 2
+    /data/pyrad_examples/
     /data/pyrad_examples/
 
-loadname STRARR 1
+loadname STRARR 2
     paradiso_vol_fvj
+    rad4alp_PLD
+    
 
 # ------------------------------------------------------------
 # Auxiliary data pathes
 # ------------------------------------------------------------
 # Base path for swissmetnet data
-smnpath STRING /data/meteo_products/SMNRetrieve/
+#smnpath STRING /data/meteo_products/SMNRetrieve/
 
 # Base path for disdrometer data
-disdropath STRING /data/scattering/dsd_ts/
+#disdropath STRING /data/scattering/dsd_ts/
 
 # --------------------------------------------
 # Output data
@@ -45,18 +43,17 @@ disdropath STRING /data/scattering/dsd_ts/
 saveimgbasepath STRING /data/pyrad_examples/
 saveimg         INT 1
 # Supported formats: eps, jpeg, jpg, pdf, pgf, png, ps, raw, rgba, svg, svgz, tif, tiff
-imgformat STRARR 1
-    png	
+imgformat STRING png
 
 # --------------------------------------------------------
 # configuration files pathes
 # --------------------------------------------------------
 
 # Base path of configuration files
-configpath STRING /home/lom/users/fvj/pyrad/config/
+configpath STRING $HOME/pyrad/config/
 
 # Configuration of the radar location and approach direction
-locationConfigFile STRING /home/lom/users/fvj/pyrad/config/processing/paradiso_fvj_vol_intercomp_loc.txt
+locationConfigFile STRING $HOME/pyrad/config/processing/paradiso_fvj_vol_intercomp_loc.txt
 
 # Configuration of the product generation
-productConfigFile STRING /home/lom/users/fvj/pyrad/config/processing/paradiso_fvj_vol_intercomp_prod.txt
+productConfigFile STRING $HOME/pyrad/config/processing/paradiso_fvj_vol_intercomp_prod.txt

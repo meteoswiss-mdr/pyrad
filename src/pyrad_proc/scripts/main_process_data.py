@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """
 ================================================
@@ -32,12 +33,15 @@ import datetime
 import argparse
 import atexit
 
-from pyrad.flow import main
+from pyrad.flow import main as pyrad_main
 
 print(__doc__)
 
 
-if __name__ == '__main__':
+def main():
+    """
+    """
+
     # parse the arguments
     parser = argparse.ArgumentParser(
         description='Entry to Pyrad processing framework')
@@ -78,10 +82,11 @@ if __name__ == '__main__':
     proc_endtime = datetime.datetime.strptime(args.endtime, '%Y%m%d%H%M%S')
     cfgfile_proc = args.cfgpath+args.proc_cfgfile
 
-    main(cfgfile_proc, proc_starttime, proc_endtime)
+    pyrad_main(cfgfile_proc, proc_starttime, proc_endtime)
     if args.postproc_cfgfile is not None:
         cfgfile_postproc = args.cfgpath+args.postproc_cfgfile
-        main(cfgfile_postproc, proc_starttime, proc_endtime)
+        pyrad_main(cfgfile_postproc, proc_starttime, proc_endtime)
+
 
 def _print_end_msg(text):
     """
@@ -97,5 +102,11 @@ def _print_end_msg(text):
     Nothing
 
     """
-    print(text + datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
+    print(text + datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
 
+
+# ---------------------------------------------------------
+# Start main:
+# ---------------------------------------------------------
+if __name__ == "__main__":
+    main()

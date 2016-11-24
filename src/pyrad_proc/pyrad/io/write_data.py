@@ -9,6 +9,7 @@ Functions for writing pyrad output data
 
     write_timeseries
     write_monitoring_ts
+    write_colocated_gates
     write_sun_hits
     write_sun_retrieval
     generate_field_name_str
@@ -154,6 +155,47 @@ def write_monitoring_ts(start_time, np_t, values, quantiles, datatype, fname):
                  'low_quantile': values_aux[0],
                  'high_quantile': values_aux[2]})
             csvfile.close()
+
+    return fname
+
+
+def write_colocated_gates(coloc_gates, fname):
+    """
+    Writes the position of gates colocated with two radars
+
+    Parameters
+    ----------
+    coloc_gates : dict
+        dictionary containing the colocated gates parameters
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    ngates = len(coloc_gates['rad1_ele'])
+    with open(fname, 'w', newline='') as csvfile:
+        csvfile.write('# Colocated radar gates data file\n')
+        csvfile.write('# Comment lines are preceded by "#"\n')
+        csvfile.write('#\n')
+
+        fieldnames = [
+            'rad1_ele', 'rad1_azi', 'rad1_rng',
+            'rad2_ele', 'rad2_azi', 'rad2_rng']
+        writer = csv.DictWriter(csvfile, fieldnames)
+        writer.writeheader()
+        for i in range(ngates):
+            writer.writerow(
+                {'rad1_ele': coloc_gates['rad1_ele'][i],
+                 'rad1_azi': coloc_gates['rad1_azi'][i],
+                 'rad1_rng': coloc_gates['rad1_rng'][i],
+                 'rad2_ele': coloc_gates['rad2_ele'][i],
+                 'rad2_azi': coloc_gates['rad2_azi'][i],
+                 'rad2_rng': coloc_gates['rad2_rng'][i]})
+        csvfile.close()
 
     return fname
 

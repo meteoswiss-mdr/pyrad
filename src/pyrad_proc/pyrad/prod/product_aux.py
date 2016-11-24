@@ -17,6 +17,7 @@ from .process_product import generate_vol_products
 from .process_product import generate_timeseries_products
 from .process_product import generate_sun_hits_products
 from .process_product import generate_monitoring_products
+from .process_product import generate_colocated_gates_products
 
 from .process_traj_products import generate_traj_products
 
@@ -47,6 +48,8 @@ def get_prodgen_func(dsformat, dsname, dstype):
         func = generate_monitoring_products
     elif dsformat == 'TRAJ_ONLY':
         func = generate_traj_products
+    elif dsformat == 'COLOCATED_GATES':
+        func = generate_colocated_gates_products
     else:
         raise ValueError("ERROR: Unknown dataset format '%s' of dataset '%s'"
                          "(dataset type '%s')" % (dsformat, dsname, dstype))

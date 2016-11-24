@@ -850,39 +850,41 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
         # read radar information in status file
         voltime = get_datetime(filename, 'RAD4ALP:dBZ')
         root = read_status(voltime, cfg, ind_rad=ind_rad)
-        sweep_number = int(scan_name)-1
 
-        if 'Nh' in datatype_list:
-            noise_h_vec = root.findall(
-                "./sweep/RADAR/STAT/CALIB/noisepower_frontend_h_inuse")
-            rconst_h_vec = root.findall(
-                "./sweep/RADAR/STAT/CALIB/rconst_h")
+        if root is not None:
+            sweep_number = int(scan_name)-1
 
-            noisedBADU_h = 10.*np.log10(
-                float(noise_h_vec[sweep_number].attrib['value']))
-            rconst_h = float(rconst_h_vec[sweep_number].attrib['value'])
+            if 'Nh' in datatype_list:
+                noise_h_vec = root.findall(
+                    "./sweep/RADAR/STAT/CALIB/noisepower_frontend_h_inuse")
+                rconst_h_vec = root.findall(
+                    "./sweep/RADAR/STAT/CALIB/rconst_h")
 
-            noisedBZ_h = pyart.retrieve.compute_noisedBZ(
-                radar.nrays, noisedBADU_h+rconst_h, radar.range['data'],
-                100., noise_field='noisedBZ_hh')
+                noisedBADU_h = 10.*np.log10(
+                    float(noise_h_vec[sweep_number].attrib['value']))
+                rconst_h = float(rconst_h_vec[sweep_number].attrib['value'])
 
-            radar.add_field('noisedBZ_hh', noisedBZ_h)
+                noisedBZ_h = pyart.retrieve.compute_noisedBZ(
+                    radar.nrays, noisedBADU_h+rconst_h, radar.range['data'],
+                    100., noise_field='noisedBZ_hh')
 
-        if 'Nv' in datatype_list:
-            noise_v_vec = root.findall(
-                "./sweep/RADAR/STAT/CALIB/noisepower_frontend_v_inuse")
-            rconst_v_vec = root.findall(
-                "./sweep/RADAR/STAT/CALIB/rconst_v")
+                radar.add_field('noisedBZ_hh', noisedBZ_h)
 
-            noisedBADU_v = 10.*np.log10(
-                float(noise_v_vec[sweep_number].attrib['value']))
-            rconst_v = float(rconst_v_vec[sweep_number].attrib['value'])
+            if 'Nv' in datatype_list:
+                noise_v_vec = root.findall(
+                    "./sweep/RADAR/STAT/CALIB/noisepower_frontend_v_inuse")
+                rconst_v_vec = root.findall(
+                    "./sweep/RADAR/STAT/CALIB/rconst_v")
 
-            noisedBZ_v = pyart.retrieve.compute_noisedBZ(
-                radar.nrays, noisedBADU_v+rconst_v, radar.range['data'],
-                100., noise_field='noisedBZ_vv')
+                noisedBADU_v = 10.*np.log10(
+                    float(noise_v_vec[sweep_number].attrib['value']))
+                rconst_v = float(rconst_v_vec[sweep_number].attrib['value'])
 
-            radar.add_field('noisedBZ_vv', noisedBZ_v)
+                noisedBZ_v = pyart.retrieve.compute_noisedBZ(
+                    radar.nrays, noisedBADU_v+rconst_v, radar.range['data'],
+                    100., noise_field='noisedBZ_vv')
+
+                radar.add_field('noisedBZ_vv', noisedBZ_v)
 
     return radar
 

@@ -110,6 +110,9 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_weighted_time_avg'
     elif dataset_type == 'FLAG_TIME_AVG':
         func_name = 'process_time_avg_flag'
+    elif dataset_type == 'COLOCATED_GATES':
+        func_name = 'process_colocated_gates'
+        dsformat = 'COLOCATED_GATES'
     elif dataset_type == 'MONITORING':
         func_name = 'process_monitoring'
         dsformat = 'MONITORING'

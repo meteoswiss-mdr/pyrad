@@ -30,6 +30,7 @@ from ..io.read_data_other import read_sun_retrieval, read_monitoring_ts
 
 from ..io.write_data import write_timeseries, write_monitoring_ts
 from ..io.write_data import write_sun_hits, write_sun_retrieval
+from ..io.write_data import write_colocated_gates
 
 from ..graph.plots import plot_ppi, plot_rhi, plot_cappi, plot_bscope
 from ..graph.plots import plot_timeseries, plot_timeseries_comp
@@ -243,6 +244,57 @@ def generate_sun_hits_products(dataset, prdcfg):
     else:
         if 'radar' in dataset:
             generate_vol_products(dataset['radar'], prdcfg)
+
+
+def generate_colocated_gates_products(dataset, prdcfg):
+    """
+    generates colocated gates products
+
+    Parameters
+    ----------
+    dataset : tuple
+        radar object and sun hits dictionary
+
+    prdcfg : dictionary of dictionaries
+        product configuration dictionary of dictionaries
+
+    Returns
+    -------
+    filename : str
+        the name of the file created. None otherwise
+
+    """
+    if prdcfg['type'] == 'WRITE_COLOCATED_GATES':
+        if prdcfg['radar'] not in dataset:
+            return None
+        if 'coloc_dict' not in dataset[prdcfg['radar']]:
+            return None
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'info', prdcfg['dstype'], 'colocated_gates', ['csv'],
+            timeinfo=prdcfg['timeinfo'])
+
+        for i in range(len(fname)):
+            fname[i] = savedir+fname[i]
+
+        write_colocated_gates(
+            dataset[prdcfg['radar']]['coloc_dict'], fname[0])
+
+        print('saved colocated gates file: '+fname[0])
+
+        return fname[0]
+
+    else:
+        if prdcfg['radar'] not in dataset:
+            return None
+        if 'radar' not in dataset[prdcfg['radar']]:
+            return None
+
+        generate_vol_products(dataset[prdcfg['radar']]['radar'], prdcfg)
 
 
 def generate_vol_products(dataset, prdcfg):

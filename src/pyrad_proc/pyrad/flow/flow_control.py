@@ -253,8 +253,7 @@ def _create_cfg_dict(cfgfile):
         sys.exit(1)
 
     # check for mandatory config parameters
-    param_must = ['name', 'datapath', 'configpath', 'saveimgbasepath',
-                  'RadarName', 'ScanList', 'dataSetList']
+    param_must = ['name', 'configpath', 'saveimgbasepath', 'dataSetList']
     for param in param_must:
         if param not in cfg:
             raise Exception("ERROR config: Parameter '%s' undefined!" % param)
@@ -268,6 +267,8 @@ def _create_cfg_dict(cfgfile):
         cfg.update({'ScanList': None})
     else:
         cfg.update({'ScanList': get_scan_list(cfg['ScanList'])})
+    if 'datapath' not in cfg:
+        cfg.update({'datapath': None})
     if 'cosmopath' not in cfg:
         cfg.update({'cosmopath': None})
     if 'psrpath' not in cfg:
@@ -301,21 +302,22 @@ def _create_cfg_dict(cfgfile):
     if 'attg' not in cfg:
         cfg.update({'attg': None})
     if 'ScanPeriod' not in cfg:
-        warn('WARNING: Scan period not specified.' +
+        warn('WARNING: Scan period not specified. ' +
              'Assumed default value 5 min')
         cfg.update({'ScanPeriod': 5})
     if 'CosmoRunFreq' not in cfg:
-        warn('WARNING: COSMO run frequency not specified.' +
+        warn('WARNING: COSMO run frequency not specified. ' +
              'Assumed default value 3h')
         cfg.update({'CosmoRunFreq': 3})
     if 'CosmoForecasted' not in cfg:
-        warn('WARNING: Hours forecasted by COSMO not specified.' +
+        warn('WARNING: Hours forecasted by COSMO not specified. ' +
              'Assumed default value 7h (including analysis)')
         cfg.update({'CosmoForecasted': 7})
 
     # Convert the following strings to string arrays
     strarr_list = ['datapath', 'cosmopath', 'dempath', 'loadbasepath',
-                   'loadname', 'RadarName', 'RadarRes', 'ScanList']
+                   'loadname', 'RadarName', 'RadarRes', 'ScanList',
+                   'imgformat']
     for param in strarr_list:
         if (type(cfg[param]) is str):
             cfg[param] = [cfg[param]]
@@ -394,6 +396,13 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
 
     if 'MAKE_GLOBAL' not in dscfg:
         dscfg.update({'MAKE_GLOBAL': 0})
+
+    # Convert the following strings to string arrays
+    strarr_list = ['datatype']
+    for param in strarr_list:
+        if param in dscfg:
+            if (type(dscfg[param]) is str):
+                dscfg[param] = [dscfg[param]]
 
     return dscfg
 
