@@ -105,7 +105,7 @@ from .read_data_other import read_sun_retrieval, read_solar_flux
 from .read_data_other import read_selfconsistency, read_colocated_gates
 from .read_data_other import read_colocated_data
 
-from .write_data import write_timeseries, write_ts_polar_data
+from .write_data import write_ts_polar_data
 from .write_data import write_monitoring_ts
 from .write_data import write_sun_hits, write_sun_retrieval
 from .write_data import write_colocated_gates, write_colocated_data

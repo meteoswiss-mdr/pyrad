@@ -98,7 +98,7 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
     print("- End time: " + str(endtime))
 
     if (len(infostr) > 0):
-        print('- Info string    : ' + infostr)
+        print('- Info string : ' + infostr)
 
     datatypesdescr_list = list()
     for i in range(1, cfg['NumRadars']+1):

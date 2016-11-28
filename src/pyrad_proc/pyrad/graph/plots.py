@@ -641,7 +641,7 @@ def plot_histogram2(bins, hist, fname_list, labelx='bins',
 
 def plot_timeseries(date, value, fname_list, labelx='Time [UTC]',
                     labely='Value', label1='Sensor', titl='Time Series',
-                    period=0):
+                    period=0, timeformat=None):
     """
     plots a time series
 
@@ -664,6 +664,8 @@ def plot_timeseries(date, value, fname_list, labelx='Time [UTC]',
     period : float
         measurement period in seconds used to compute accumulation. If 0 no
         accumulation is computed
+    timeformat : str
+        Specifies the date and time format on the x axis
 
     Returns
     -------
@@ -675,11 +677,18 @@ def plot_timeseries(date, value, fname_list, labelx='Time [UTC]',
         value *= (period/3600.)
         value = np.ma.cumsum(value)
 
-    fig = plt.figure(figsize=[10, 6])
-    plt.plot(date, value, label=label1)
-    plt.xlabel(labelx)
-    plt.ylabel(labely)
-    plt.title(titl)
+    fig, ax = plt.subplots(figsize=[10, 6])
+    ax.plot(date, value, label=label1)
+    ax.set_title(titl)
+    ax.set_xlabel(labelx)
+    ax.set_ylabel(labely)
+
+    if (timeformat is not None):
+        ax.xaxis.set_major_formatter(mdates.DateFormatter(timeformat))
+
+    # rotates and right aligns the x labels, and moves the bottom of the
+    # axes up to make room for them
+    fig.autofmt_xdate()
 
     for i in range(len(fname_list)):
         fig.savefig(fname_list[i])
