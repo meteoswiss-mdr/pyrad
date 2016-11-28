@@ -11,6 +11,7 @@ Functions for writing pyrad output data
     write_ts_polar_data
     write_monitoring_ts
     write_colocated_gates
+    write_colocated_data
     write_sun_hits
     write_sun_retrieval
     generate_field_name_str
@@ -251,6 +252,68 @@ def write_colocated_gates(coloc_gates, fname):
                  'rad2_azi': coloc_gates['rad2_azi'][i],
                  'rad2_rng': coloc_gates['rad2_rng'][i]})
         csvfile.close()
+
+    return fname
+
+
+def write_colocated_data(coloc_data, fname):
+    """
+    Writes the position of gates colocated with two radars
+
+    Parameters
+    ----------
+    coloc_data : dict
+        dictionary containing the colocated data parameters
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    filelist = glob.glob(fname)
+    ngates = len(coloc_data['rad1_ele'])
+    if len(filelist) == 0:
+        with open(fname, 'w', newline='') as csvfile:
+            csvfile.write('# Colocated radar gates data file\n')
+            csvfile.write('# Comment lines are preceded by "#"\n')
+            csvfile.write('#\n')
+
+            fieldnames = [
+                'rad1_ele', 'rad1_azi', 'rad1_rng', 'rad1_val',
+                'rad2_ele', 'rad2_azi', 'rad2_rng', 'rad2_val']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writeheader()
+            for i in range(ngates):
+                writer.writerow(
+                    {'rad1_ele': coloc_data['rad1_ele'][i],
+                     'rad1_azi': coloc_data['rad1_azi'][i],
+                     'rad1_rng': coloc_data['rad1_rng'][i],
+                     'rad1_val': coloc_data['rad1_val'][i],
+                     'rad2_ele': coloc_data['rad2_ele'][i],
+                     'rad2_azi': coloc_data['rad2_azi'][i],
+                     'rad2_rng': coloc_data['rad2_rng'][i],
+                     'rad2_val': coloc_data['rad2_val'][i]})
+            csvfile.close()
+    else:
+        with open(fname, 'a', newline='') as csvfile:
+            fieldnames = [
+                'rad1_ele', 'rad1_azi', 'rad1_rng', 'rad1_val',
+                'rad2_ele', 'rad2_azi', 'rad2_rng', 'rad2_val']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            for i in range(ngates):
+                writer.writerow(
+                    {'rad1_ele': coloc_data['rad1_ele'][i],
+                     'rad1_azi': coloc_data['rad1_azi'][i],
+                     'rad1_rng': coloc_data['rad1_rng'][i],
+                     'rad1_val': coloc_data['rad1_val'][i],
+                     'rad2_ele': coloc_data['rad2_ele'][i],
+                     'rad2_azi': coloc_data['rad2_azi'][i],
+                     'rad2_rng': coloc_data['rad2_rng'][i],
+                     'rad2_val': coloc_data['rad2_val'][i]})
+            csvfile.close()
 
     return fname
 

@@ -10,6 +10,8 @@ Functions for reading auxiliary data
     read_status
     read_rad4alp_cosmo
     read_rad4alp_vis
+    read_colocated_gates
+    read_colocated_data
     read_timeseries
     read_monitoring_ts
     read_sun_hits_multiple_days
@@ -181,6 +183,108 @@ def read_rad4alp_vis(fname, datatype):
     except EnvironmentError:
         warn('Unable to read file '+fname)
         return None
+
+
+def read_colocated_gates(fname):
+    """
+    Reads a csv files containing the posistion of colocated gates
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    rad1_ele , rad1_azi, rad1_rng, rad2_ele, rad2_azi, rad2_rng : tupple
+        A tupple with the data read. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            nrows = sum(1 for row in reader)
+            rad1_ele = np.empty(nrows, dtype=float)
+            rad1_azi = np.empty(nrows, dtype=float)
+            rad1_rng = np.empty(nrows, dtype=float)
+            rad2_ele = np.empty(nrows, dtype=float)
+            rad2_azi = np.empty(nrows, dtype=float)
+            rad2_rng = np.empty(nrows, dtype=float)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            i = 0
+            for row in reader:
+                rad1_ele[i] = float(row['rad1_ele'])
+                rad1_azi[i] = float(row['rad1_azi'])
+                rad1_rng[i] = float(row['rad1_rng'])
+                rad2_ele[i] = float(row['rad2_ele'])
+                rad2_azi[i] = float(row['rad2_azi'])
+                rad2_rng[i] = float(row['rad2_rng'])
+                i += 1
+
+            return rad1_ele, rad1_azi, rad1_rng, rad2_ele, rad2_azi, rad2_rng
+    except EnvironmentError:
+        warn('Unable to read file '+fname)
+        return None, None, None, None, None, None
+
+
+def read_colocated_data(fname):
+    """
+    Reads a csv files containing colocated data
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    rad1_ele , rad1_azi, rad1_rng, rad1_val, rad2_ele, rad2_azi, rad2_rng,
+    rad2_val : tupple
+        A tupple with the data read. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            nrows = sum(1 for row in reader)
+            rad1_ele = np.empty(nrows, dtype=float)
+            rad1_azi = np.empty(nrows, dtype=float)
+            rad1_rng = np.empty(nrows, dtype=float)
+            rad1_val = np.empty(nrows, dtype=float)
+            rad2_ele = np.empty(nrows, dtype=float)
+            rad2_azi = np.empty(nrows, dtype=float)
+            rad2_rng = np.empty(nrows, dtype=float)
+            rad2_val = np.empty(nrows, dtype=float)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            i = 0
+            for row in reader:
+                rad1_ele[i] = float(row['rad1_ele'])
+                rad1_azi[i] = float(row['rad1_azi'])
+                rad1_rng[i] = float(row['rad1_rng'])
+                rad1_val[i] = float(row['rad1_val'])
+                rad2_ele[i] = float(row['rad2_ele'])
+                rad2_azi[i] = float(row['rad2_azi'])
+                rad2_rng[i] = float(row['rad2_rng'])
+                rad2_val[i] = float(row['rad2_val'])
+                i += 1
+
+            return (rad1_ele, rad1_azi, rad1_rng, rad1_val,
+                    rad2_ele, rad2_azi, rad2_rng, rad2_val)
+    except EnvironmentError:
+        warn('Unable to read file '+fname)
+        return None, None, None, None, None, None, None, None
 
 
 def read_timeseries(fname):

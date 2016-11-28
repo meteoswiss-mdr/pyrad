@@ -24,6 +24,7 @@ from __future__ import print_function
 import sys
 import warnings
 from warnings import warn
+import traceback
 import os
 from datetime import datetime
 from datetime import timedelta
@@ -133,7 +134,7 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
                                           radar_list=None, voltime=None,
                                           trajectory=traj, runinfo=infostr)
             except Exception as ee:
-                warn(str(ee))
+                traceback.print_exc()
                 continue
 
     # process all data files in file list
@@ -176,7 +177,7 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
                                               voltime=master_voltime,
                                               trajectory=traj, runinfo=infostr)
                 except Exception as ee:
-                    warn(str(ee))
+                    traceback.print_exc()
                     continue
 
     # post-processing of the datasets
@@ -190,7 +191,7 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
                                           radar_list=None, voltime=None,
                                           trajectory=traj, runinfo=infostr)
             except Exception as ee:
-                warn(str(ee))
+                traceback.print_exc()
                 continue
 
     print('- This is the end my friend! See you soon!')
@@ -263,7 +264,7 @@ def _process_dataset(cfg, dscfg, proc_status=0, radar_list=None, voltime=None,
             try:
                 result = prod_func(new_dataset, prdcfg)
             except Exception as ee:
-                warn(str(ee))
+                traceback.print_exc()
                 continue
 
     return 0
@@ -317,6 +318,8 @@ def _create_cfg_dict(cfgfile):
         cfg.update({'cosmopath': None})
     if 'psrpath' not in cfg:
         cfg.update({'psrpath': None})
+    if 'colocgatespath' not in cfg:
+        cfg.update({'colocgatespath': None})
     if 'dempath' not in cfg:
         cfg.update({'dempath': None})
     if 'smnpath' not in cfg:
@@ -422,13 +425,13 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
     dscfg = cfg[dataset]
     dscfg.update({'configpath': cfg['configpath']})
     dscfg.update({'solarfluxpath': cfg['solarfluxpath']})
+    dscfg.update({'colocgatespath': cfg['colocgatespath']})
     dscfg.update({'mflossh': cfg['mflossh']})
     dscfg.update({'mflossv': cfg['mflossv']})
     dscfg.update({'radconsth': cfg['radconsth']})
     dscfg.update({'radconstv': cfg['radconstv']})
     dscfg.update({'AntennaGain': cfg['AntennaGain']})
     dscfg.update({'attg': cfg['attg']})
-
     dscfg.update({'basepath': cfg['saveimgbasepath']})
     dscfg.update({'procname': cfg['name']})
     dscfg.update({'dsname': dataset})

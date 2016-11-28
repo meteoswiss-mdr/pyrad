@@ -10,8 +10,9 @@ Functions to plot Pyrad datasets
     plot_ppi
     plot_rhi
     plot_bscope
-    plot_density
     plot_cappi
+    plot_density
+    plot_scatter
     plot_quantiles
     plot_histogram
     plot_histogram2
@@ -444,6 +445,68 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
     plt.plot(ang, az_percentile_ref, 'k')
     plt.plot(ang, az_percentile_low, 'k--')
     plt.plot(ang, az_percentile_high, 'k--')
+
+    plt.xlabel(labelx)
+    plt.ylabel(labely)
+    plt.title(titl)
+
+    cb = fig.colorbar(cax)
+    cb.set_label(label)
+
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
+    plt.close()
+
+    return fname_list
+
+
+def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
+                 prdcfg):
+    """
+    2D histogram
+
+    Parameters
+    ----------
+    bins1, bins2 : float array2
+        the bins of each field
+    hist_2d : ndarray 2D
+        the 2D histogram
+    field_name1, field_name2 : str
+        the names of each field
+    fname_list : list of str
+        list of names of the files where to store the plot
+    prdcfg : dict
+        product configuration dictionary
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    """
+    # mask 0 data
+    hist_2d = np.ma.masked_where(hist_2d == 0, hist_2d)
+
+    # display data
+    titl = 'colocated radar gates'
+    label = 'Number of Points'
+    labelx = field_name1
+    labely = field_name2
+
+    fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
+                              prdcfg['ppiImageConfig']['ysize']],
+                     dpi=72)
+    ax = fig.add_subplot(111)
+
+    cmap = pyart.config.get_field_colormap(field_name1)
+
+    cax = ax.imshow(
+        hist_2d, origin='lower', cmap=cmap, vmin=0., vmax=np.max(hist_2d),
+        extent=(bins1[0], bins1[-1], bins2[0], bins2[-1]),
+        aspect='auto', interpolation='none')
+
+    # plot reference
+    plt.plot(bins1, bins2, 'k--')
 
     plt.xlabel(labelx)
     plt.ylabel(labely)

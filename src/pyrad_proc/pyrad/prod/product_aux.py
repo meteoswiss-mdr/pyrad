@@ -18,6 +18,7 @@ from .process_product import generate_timeseries_products
 from .process_product import generate_sun_hits_products
 from .process_product import generate_monitoring_products
 from .process_product import generate_colocated_gates_products
+from .process_product import generate_intercomp_products
 
 from .process_traj_products import generate_traj_product
 
@@ -46,6 +47,8 @@ def get_prodgen_func(dsformat, dsname, dstype):
         func = generate_sun_hits_products
     elif dsformat == 'MONITORING':
         func = generate_monitoring_products
+    elif dsformat == 'INTERCOMP':
+        func = generate_intercomp_products
     elif dsformat == 'TRAJ_ONLY':
         func = generate_traj_product
     elif dsformat == 'COLOCATED_GATES':

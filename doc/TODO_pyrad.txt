@@ -12,9 +12,9 @@ Documentation
 
 Processing functions to be implemented with highest priority:
 -------------------------------------------------------------
-- Intercomparison
 
 
 Product functions to be implemented with highest priority:
 ----------------------------------------------------------
-
+- time series of intercomparison
+- scatter plots of sensor-radar comparisons

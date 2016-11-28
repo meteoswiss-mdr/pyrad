@@ -7,8 +7,10 @@ Functions for obtaining Pyrad products from the datasets
 .. autosummary::
     :toctree: generated/
 
-    generate_vol_products
     generate_sun_hits_products
+    generate_intercomp_products
+    generate_colocated_gates_products
+    generate_vol_products
     generate_timeseries_products
     generate_monitoring_products
 
@@ -30,19 +32,19 @@ from ..io.read_data_other import read_sun_retrieval, read_monitoring_ts
 
 from ..io.write_data import write_ts_polar_data, write_monitoring_ts
 from ..io.write_data import write_sun_hits, write_sun_retrieval
-from ..io.write_data import write_colocated_gates
+from ..io.write_data import write_colocated_gates, write_colocated_data
 
 from ..graph.plots import plot_ppi, plot_rhi, plot_cappi, plot_bscope
 from ..graph.plots import plot_timeseries, plot_timeseries_comp
 from ..graph.plots import plot_quantiles, get_colobar_label, plot_sun_hits
 from ..graph.plots import plot_sun_retrieval_ts, plot_histogram
 from ..graph.plots import plot_histogram2, plot_density, plot_monitoring_ts
-from ..graph.plots import get_field_name, get_colobar_label
+from ..graph.plots import get_field_name, get_colobar_label, plot_scatter
 
 from ..util.radar_utils import create_sun_hits_field
 from ..util.radar_utils import create_sun_retrieval_field
 from ..util.radar_utils import compute_histogram, compute_quantiles
-from ..util.radar_utils import compute_quantiles_from_hist
+from ..util.radar_utils import compute_quantiles_from_hist, compute_2d_hist
 
 
 def generate_sun_hits_products(dataset, prdcfg):
@@ -207,14 +209,13 @@ def generate_sun_hits_products(dataset, prdcfg):
         fname = make_filename(
             'info', prdcfg['dstype'], 'retrieval', ['csv'])
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        fname = savedir + fname[0]
 
-        sun_retrieval = read_sun_retrieval(fname[0])
+        sun_retrieval = read_sun_retrieval(fname)
 
         if sun_retrieval[0] is None:
             warn(
-                'Unable to read sun retrieval file '+fname[0])
+                'Unable to read sun retrieval file '+fname)
             return None
 
         if len(sun_retrieval[0]) < 2:
@@ -246,6 +247,81 @@ def generate_sun_hits_products(dataset, prdcfg):
             generate_vol_products(dataset['radar'], prdcfg)
 
 
+def generate_intercomp_products(dataset, prdcfg):
+    """
+    generates radar intercomparison products
+
+    Parameters
+    ----------
+    dataset : tuple
+        values of colocated gates dictionary
+
+    prdcfg : dictionary of dictionaries
+        product configuration dictionary of dictionaries
+
+    Returns
+    -------
+    filename : str
+        the name of the file created. None otherwise
+
+    """
+    if prdcfg['type'] == 'WRITE_INTERCOMP':
+        if dataset['final']:
+            return None
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'colocated_data', prdcfg['dstype'], prdcfg['voltype'],
+            ['csv'], timeinfo=prdcfg['timeinfo'],
+            timeformat='%Y%m%d')
+
+        fname = savedir+fname[0]
+
+        write_colocated_data(dataset['intercomp_dict'], fname)
+
+        print('saved colocated data file: '+fname)
+
+        return fname
+    elif prdcfg['type'] == 'PLOT_SCATTER_INTERCOMP':
+        if not dataset['final']:
+            return None
+
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['prdname'], timeinfo=dataset['timeinfo'])
+
+        fname = make_filename(
+            'scatter', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], timeinfo=dataset['timeinfo'],
+            timeformat='%Y%m%d')
+
+        for i in range(len(fname)):
+            fname[i] = savedir+fname[i]
+
+        step = None
+        if 'step' in prdcfg:
+            step = prdcfg['step']
+
+        hist_2d, bins1, bins2 = compute_2d_hist(
+            np.ma.asarray(dataset['intercomp_dict']['rad1_val']),
+            np.ma.asarray(dataset['intercomp_dict']['rad2_val']),
+            field_name, field_name, step1=step, step2=step)
+
+        plot_scatter(bins1, bins2, np.ma.asarray(hist_2d), field_name,
+                     field_name, fname, prdcfg)
+
+        print('saved figures: '+' '.join(fname))
+
+        return fname
+    else:
+        warn(' Unsupported product type: ' + prdcfg['type'])
+        return None
+
+
 def generate_colocated_gates_products(dataset, prdcfg):
     """
     generates colocated gates products
@@ -253,7 +329,7 @@ def generate_colocated_gates_products(dataset, prdcfg):
     Parameters
     ----------
     dataset : tuple
-        radar object and sun hits dictionary
+        radar objects and colocated gates dictionary
 
     prdcfg : dictionary of dictionaries
         product configuration dictionary of dictionaries
@@ -271,22 +347,21 @@ def generate_colocated_gates_products(dataset, prdcfg):
             return None
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdcfg['basepath'], prdcfg['procname'], 'colocated_gates',
+            prdcfg['prdname'], timeinfo=None)
 
         fname = make_filename(
-            'info', prdcfg['dstype'], 'colocated_gates', ['csv'],
-            timeinfo=prdcfg['timeinfo'])
+            'info', prdcfg['dstype'], prdcfg['prdname'], ['csv'],
+            timeinfo=None)
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        fname = savedir+fname[0]
 
         write_colocated_gates(
-            dataset[prdcfg['radar']]['coloc_dict'], fname[0])
+            dataset[prdcfg['radar']]['coloc_dict'], fname)
 
-        print('saved colocated gates file: '+fname[0])
+        print('saved colocated gates file: '+fname)
 
-        return fname[0]
+        return fname
 
     else:
         if prdcfg['radar'] not in dataset:

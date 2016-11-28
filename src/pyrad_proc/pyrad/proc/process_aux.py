@@ -113,6 +113,9 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'COLOCATED_GATES':
         func_name = 'process_colocated_gates'
         dsformat = 'COLOCATED_GATES'
+    elif dataset_type == 'INTERCOMP':
+        func_name = 'process_intercomp'
+        dsformat = 'INTERCOMP'
     elif dataset_type == 'MONITORING':
         func_name = 'process_monitoring'
         dsformat = 'MONITORING'

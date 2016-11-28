@@ -27,6 +27,8 @@ loadname STRARR 2
     paradiso_vol_fvj
     rad4alp_PLD
     
+# Base path for colocated gates data
+colocgatespath STRING /data/pyrad_examples/paradiso_vol_fvj/colocated_gates/    
 
 # ------------------------------------------------------------
 # Auxiliary data pathes

@@ -87,15 +87,15 @@ AzimTol FLOAT 0.4
 ppiImageConfig STRUCT 6
    xsize      FLOAT   8.      # image size [inches] (default dots per inch (dpi):72)
    ysize      FLOAT   7.      # image size [inches] (default dots per inch (dpi):72)
-   xmin       FLOAT  -8.0   # Min distance on horizontal axis [km]
-   xmax       FLOAT  16.0   # Max distance on horizontal axis [km]
-   ymin       FLOAT -10.0   # Min distance on vertical axis [km]
-   ymax       FLOAT  14.0   # Max distance on vertical axis [km]
+   xmin       FLOAT -24.0   # Min distance on horizontal axis [km]
+   xmax       FLOAT   0.   # Max distance on horizontal axis [km]
+   ymin       FLOAT -32.0   # Min distance on vertical axis [km]
+   ymax       FLOAT  -8.0   # Max distance on vertical axis [km]
 
 rhiImageConfig STRUCT 6
    xsize      FLOAT  10.    # image size [inches]
    ysize      FLOAT   5.     # image size [inches]
-   xmin       FLOAT -16.0   # Min distance on horizontal axis [km]
-   xmax       FLOAT  16.0   # Max distance on horizontal axis [km]
+   xmin       FLOAT -45.0   # Min distance on horizontal axis [km]
+   xmax       FLOAT -11.0   # Max distance on horizontal axis [km]
    ymin       FLOAT   0.0   # Min distance on vertical axis [km]
-   ymax       FLOAT  10.0   # Max distance on vertical axis [km]
+   ymax       FLOAT  5.0   # Max distance on vertical axis [km]

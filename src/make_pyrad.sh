@@ -9,6 +9,11 @@ cd $HOME/.local/lib/python3.5/site-packages/
 rm -r pyrad
 rm mch_pyrad-*
 
+# clean pyrad
+echo 'icleaning build..'
+cd $HOME/pyrad/src/pyrad_proc
+python setup.py clean --all
+
 # recompile
 echo 'compiling...'
 cd $HOME/pyrad/src/pyrad_proc

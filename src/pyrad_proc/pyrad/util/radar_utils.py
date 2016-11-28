@@ -7,6 +7,9 @@ Miscellaneous functions dealing with radar data
 .. autosummary::
     :toctree: generated/
 
+    get_range_bins_to_avg
+    find_ray_index
+    find_rng_index
     time_avg_range
     get_closest_solar_flux
     create_sun_hits_field
@@ -16,6 +19,8 @@ Miscellaneous functions dealing with radar data
     compute_quantiles_sweep
     compute_histogram
     compute_histogram_sweep
+    compute_2d_hist
+    quantize_field
 
 """
 from warnings import warn
@@ -25,6 +30,108 @@ import datetime
 import numpy as np
 
 import pyart
+
+
+def get_range_bins_to_avg(rad1_rng, rad2_rng):
+    """
+    Compares the resolution of two radars and determines if and which radar
+    has to be averaged and the length of the averaging window
+
+    Parameters
+    ----------
+    rad1_rng : array
+        the range of radar 1
+    rad2_rng : datetime
+        the range of radar 2
+
+    Returns
+    -------
+    avg_rad1, avg_rad2 : Boolean
+        Booleans specifying if the radar data has to be average in range
+    avg_rad_lim : array with two elements
+        the limits to the average (centered on each range gate)
+
+    """
+    rad1_res = rad1_rng[1]-rad1_rng[0]
+    rad2_res = rad2_rng[1]-rad2_rng[0]
+    res_ratio = rad1_res/rad2_res
+
+    avg_rad1 = False
+    avg_rad2 = False
+    avg_rad_lim = None
+    if res_ratio > 1.5:
+        avg_rad2 = True
+        nbins = int(res_ratio)
+        if nbins % 2 == 0:
+            avg_rad_lim = [-int(nbins/2)-1, int(nbins/2)]
+        else:
+            avg_rad_lim = [-int((nbins-1)/2), int((nbins-1)/2)]
+    elif res_ratio < 1./1.5:
+        avg_rad1 = True
+        nbins = int(1./res_ratio)
+        if nbins % 2 == 0:
+            avg_rad_lim = [-int(nbins/2)-1, int(nbins/2)]
+        else:
+            avg_rad_lim = [-int((nbins-1)/2), int((nbins-1)/2)]
+
+    return avg_rad1, avg_rad2, avg_rad_lim
+
+
+def find_ray_index(ele_vec, azi_vec, ele, azi, ele_tol=0., azi_tol=0.):
+    """
+    Find the ray index corresponding to a particular elevation and azimuth
+
+    Parameters
+    ----------
+    ele_vec, azi_vec : float arrays
+        The elevation and azimuth data arrays where to look for
+    ele, azi : floats
+        The elevation and azimuth to search
+    ele_tol, azi_tol : floats
+        Tolerances [deg]
+
+    Returns
+    -------
+    ind_ray : int
+        The ray index
+
+    """
+    ind_ray = np.where(np.logical_and(
+        np.logical_and(ele_vec <= ele+ele_tol, ele_vec >= ele-ele_tol),
+        np.logical_and(azi_vec <= azi+azi_tol, azi_vec >= azi-azi_tol)))
+
+    if len(ind_ray[0]) == 0:
+        return None
+
+    return ind_ray[0]
+
+
+def find_rng_index(rng_vec, rng, rng_tol=0.):
+    """
+    Find the range index corresponding to a particular range
+
+    Parameters
+    ----------
+    rng_vec : float array
+        The range data array where to look for
+    rng : float
+        The range to search
+    rng_tol : float
+        Tolerance [m]
+
+    Returns
+    -------
+    ind_rng : int
+        The range index
+
+    """
+    ind_rng = np.where(np.logical_and(
+        rng_vec <= rng+rng_tol, rng_vec >= rng-rng_tol))
+
+    if len(ind_rng[0]) == 0:
+        return None
+
+    return ind_rng[0]
 
 
 def time_avg_range(timeinfo, avg_starttime, avg_endtime, period):
@@ -359,6 +466,63 @@ def compute_histogram(field, field_name, step=None):
     values = field.compressed()
 
     return bins, values
+
+
+def compute_2d_hist(field1, field2, field_name1, field_name2, step1=None,
+                    step2=None):
+    """
+    computes histogram of the data
+
+    Parameters
+    ----------
+    field : ndarray 2D
+        the radar field
+    field_name: str
+        name of the field
+    step : float
+        size of bin
+
+    Returns
+    -------
+    bins : float array
+        interval of each bin
+    values : float array
+        values at each bin
+
+    """
+    bins1 = get_histogram_bins(field_name1, step=step1)
+    bins2 = get_histogram_bins(field_name2, step=step2)
+    fill_value = pyart.config.get_fillvalue()
+    return np.histogram2d(
+        field1.filled(fill_value=fill_value),
+        field2.filled(fill_value=fill_value), bins=[bins1, bins2])
+
+
+def quantize_field(field, field_name, step):
+    """
+    quantizes data
+
+    Parameters
+    ----------
+    field : ndarray 2D
+        the radar field
+    field_name: str
+        name of the field
+    step : float
+        size of bin
+
+    Returns
+    -------
+    fieldq : ndarray 2D
+        The quantized field
+    values : float array
+        values at each bin
+
+    """
+    vmin, vmax = pyart.config.get_field_limits(field_name)
+    fieldq = ((field+vmin)/step+1).astype(int)
+
+    return fieldq.filled(fill_value=0)
 
 
 def compute_histogram_sweep(field, ray_start, ray_end, field_name, step=None):
