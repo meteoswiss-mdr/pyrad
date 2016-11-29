@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 """
 pyrad.graph.plots
 =================
