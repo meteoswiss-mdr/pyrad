@@ -33,7 +33,7 @@ class Trajectory(object):
         Start time of trajectory processing.
     endtime : datetime
         End time of trajectory processing.
-    timevector : Array of datetime objects
+    time_vector : Array of datetime objects
         Array containing the trajectory time samples
     wgs84_lat_deg : Array of floats
         WGS84 latitude samples in radian
@@ -47,6 +47,7 @@ class Trajectory(object):
     add_radar : Add a radar
     get_start_time : Return time of first trajectory sample
     get_end_time : Return time of last trajectory sample
+    get_samples_in_period : Get indices of samples within period
     _read_traj : Read trajectory from file
 
     """
@@ -71,7 +72,7 @@ class Trajectory(object):
         self.starttime = starttime
         self.endtime = endtime
 
-        self.timevector = np.array([], dtype=datetime.datetime)
+        self.time_vector = np.array([], dtype=datetime.datetime)
         self.wgs84_lat_deg = np.array([], dtype=float)
         self.wgs84_lon_deg = np.array([], dtype=float)
         self.wgs84_alt_m = np.array([], dtype=float)
@@ -110,8 +111,8 @@ class Trajectory(object):
             if (rad.location_is_equal(radar.latitude['data'][0],
                                       radar.longitude['data'][0],
                                       radar.altitude['data'][0])):
-                warn("WARNING: Tried to add the same radar twice to the"
-                     " radar list")
+                # warn("WARNING: Tried to add the same radar twice to the"
+                #      " radar list")
                 return rad
 
         rad = _Radar_Trajectory(radar.latitude['data'][0],
@@ -144,7 +145,7 @@ class Trajectory(object):
             raise Exception("ERROR: No trajectory assigned to radar object")
 
         dt_secs = np.vectorize(self._get_total_seconds)
-        dt = dt_secs(self.timevector[2:] - self.timevector[:-2])
+        dt = dt_secs(self.time_vector[2:] - self.time_vector[:-2])
 
         v_r = np.empty(self.nsamples, dtype=float)
         v_r[0] = v_r[-1] = np.nan
@@ -171,6 +172,22 @@ class Trajectory(object):
 
         radar.assign_velocity_vecs(v_abs, v_r, v_el, v_az)
 
+    def get_samples_in_period(self, start=None, end=None):
+        """"
+        Get indices of samples of the trajectory within given time
+        period.
+        """
+
+        if ((start is None) and (end is None)):
+            raise Exception("ERROR: Either start or end must be defined")
+        elif (start is None):
+            return np.where(self.time_vector < end)
+        elif (end is None):
+            return np.where(self.time_vector >= start)
+        else:
+            return np.where((self.time_vector >= start) &
+                            (self.time_vector < end))
+
     def get_start_time(self):
         """
         Get time of first trajectory sample.
@@ -180,7 +197,7 @@ class Trajectory(object):
         datetime object
         """
 
-        return self.timevector[0]
+        return self.time_vector[0]
 
     def get_end_time(self):
         """
@@ -191,7 +208,7 @@ class Trajectory(object):
         datetime object
         """
 
-        return self.timevector[-1]
+        return self.time_vector[-1]
 
     def _convert_traj_to_swissgrid(self):
         """
@@ -292,7 +309,7 @@ class Trajectory(object):
                     if (sday > self.endtime):
                         break
 
-                self.timevector = np.append(self.timevector, [sday])
+                self.time_vector = np.append(self.time_vector, [sday])
 
                 self.wgs84_lat_deg = np.append(
                     self.wgs84_lat_deg, [float(mm.group(3)) * 180. / np.pi])
@@ -307,7 +324,7 @@ class Trajectory(object):
             if loc_set:
                 locale.setlocale(locale.LC_ALL, loc)  # restore saved locale
 
-        self.nsamples = len(self.timevector)
+        self.nsamples = len(self.time_vector)
 
     def _get_total_seconds(self, x):
         """ Return total seconds of timedelta object"""

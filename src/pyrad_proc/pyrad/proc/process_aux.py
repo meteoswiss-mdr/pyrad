@@ -14,6 +14,7 @@ determined points or regions of interest.
     process_save_radar
     process_point_measurement
     process_trajectory
+    process_traj_atplane
 
 """
 
@@ -51,9 +52,9 @@ def get_process_func(dataset_type, dsname):
 
     dsformat = 'VOL'
     if dataset_type == 'RAW':
-        func_name = 'process_raw'
+        func_name = process_raw
     elif dataset_type == 'NCVOL':
-        func_name = 'process_save_radar'
+        func_name = process_save_radar
     elif dataset_type == 'PWR':
         func_name = 'process_signal_power'
     elif dataset_type == 'SNR':
@@ -126,11 +127,14 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_sun_hits'
         dsformat = 'SUN_HITS'
     elif dataset_type == 'POINT_MEASUREMENT':
-        func_name = 'process_point_measurement'
+        func_name = process_point_measurement
         dsformat = 'TIMESERIES'
     elif dataset_type == 'TRAJ':
         func_name = process_trajectory
         dsformat = 'TRAJ_ONLY'
+    elif dataset_type == 'TRAJ_ATPLANE':
+        func_name = process_traj_atplane
+        dsformat = 'TIMESERIES'
     else:
         raise ValueError("ERROR: Unknown dataset type '%s' of dataset '%s'"
                          % (dataset_type, dsname))
@@ -403,7 +407,6 @@ def process_trajectory(procstatus, dscfg, radar_list=None, trajectory=None):
         return None, None
 
     if (not dscfg['initialized']):
-
         if (trajectory is None):
             raise Exception("ERROR: Undefined trajectory for dataset '%s'"
                             % dscfg['dsname'])
@@ -412,8 +415,132 @@ def process_trajectory(procstatus, dscfg, radar_list=None, trajectory=None):
             for radar in radar_list:
                 rad = trajectory.add_radar(radar)
                 trajectory.calculate_velocities(rad)
+        else:
+            warn('ERROR: No valid radar found')
+            return None, None
 
         dscfg['initialized'] = True
         return trajectory, None
+
+    return None, None
+
+
+def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
+    """
+    Return time series according to trajectory
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+    trajectory : Trajectory object
+        containing trajectory samples
+
+    Returns
+    -------
+    new_dataset : Trajectory object
+        radar object
+    ind_rad : int
+        None
+
+    """
+
+    if procstatus == 0:
+        # first call: nothing to do
+        return None, None
+
+    if procstatus == 2:
+        # last call: do the products
+        # XXX
+        return None, None
+
+    # Process
+    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+        dscfg['datatype'][0])
+    field_name = get_fieldname_pyart(datatype)
+    ind_rad = int(radarnr[5:8])-1
+    if ((radar_list is None) or (radar_list[ind_rad] is None)):
+        warn('ERROR: No valid radar found')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if field_name not in radar.fields:
+        warn("Datatype '%s' not available in radar data" % field_name)
+        return None, None
+
+    ttask_start = radar.time['data'].min()
+    dt_task_start = num2date(ttask_start, radar.time['units'],
+                             radar.time['calendar'])
+    if (not dscfg['initialized']):
+        # init
+        if (trajectory is None):
+            raise Exception("ERROR: Undefined trajectory for dataset '%s'"
+                            % dscfg['dsname'])
+
+        rad_traj = trajectory.add_radar(radar)
+
+        trajdict = dict({
+                'radar_traj': rad_traj})
+        traj_ind = trajectory.get_samples_in_period(end=dt_task_start)
+
+        dscfg['traj_atplane_dict'] = trajdict
+        dscfg['initialized'] = True
+    else:
+        trajdict = dscfg['traj_atplane_dict']
+        rad_traj = trajdict['radar_traj']
+        traj_ind = trajectory.get_samples_in_period(
+            start=trajdict['last_task_start_dt'], end=dt_task_start)
+
+    for tind in np.nditer(traj_ind):
+        az = rad_traj.azimuth_vec[tind]
+
+        # 1. Find closest RHI scan (azimuth)
+        daz_min_ind = np.argmin(np.abs(radar.azimuth['data'] - az))
+        daz_min = np.abs(radar.azimuth['data'][daz_min_ind] - az)
+        if (daz_min > 3.0):
+            # print("INFO: Trajectory sample out of azimuth")
+            continue
+
+        daz_ind = np.where(np.abs(
+                radar.azimuth['data'] -
+                radar.azimuth['data'][daz_min_ind]) < 0.07)[0]
+
+        # 2. Find closest elevation
+        el = rad_traj.elevation_vec[tind]
+        del_min_ind = np.argmin(np.abs(radar.elevation['data'][daz_ind] - el))
+        ray_ind = daz_ind[del_min_ind]
+        del_min = np.abs(radar.elevation['data'][ray_ind] - el)
+        if (del_min > 2.0):
+            # print("INFO: Trajectory sample out of elevation")
+            continue
+
+        # XXX
+        # print(tind, az, el)
+        # print(ray_ind, radar.azimuth['data'][ray_ind],
+        #        radar.elevation['data'][ray_ind])
+
+        # 3. Find closest time
+
+        # 4. Find closest range bin
+
+    trajdict['last_task_start_dt'] = dt_task_start
+    trajdict['last_radar'] = radar
+
+    # XXX
+    # print(len(radar.azimuth['data']))
+    # print(radar.azimuth['data'])
+    # print(len(radar.elevation['data']))
+    # print(radar.elevation['data'])
+    # print(len(radar.range['data']))
+    # print(radar.range['data'])
+    # print(len(radar.time['data']))
+    # print(radar.time['data'][0])
+    # print(len(radar.fields[field_name]['data'].data[0]))
+    # print(radar.fields[field_name]['data'].data[40])
 
     return None, None

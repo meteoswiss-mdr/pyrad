@@ -34,13 +34,14 @@ def generate_traj_product(traj, prdcfg):
 
     if prdcfg['type'] == 'TRAJ_PLOT':
 
-        timeinfo = traj.timevector[0]
+        timeinfo = traj.time_vector[0]
 
         savedir = get_save_dir(prdcfg['basepath'], prdcfg['procname'],
                                prdcfg['dsname'], prdcfg['prdname'],
                                timeinfo=timeinfo)
 
-        ts = TimeSeries("", traj.timevector, timeformat="%Y-%m-%d %H:%M:%S.%f")
+        ts = TimeSeries("", traj.time_vector,
+                        timeformat="%Y-%m-%d %H:%M:%S.%f")
 
         if (prdcfg['datatype'] == 'EL'):
             fname = make_filename('ts', prdcfg['dstype'], 'TRAJ',
@@ -81,7 +82,7 @@ def generate_traj_product(traj, prdcfg):
 
     elif prdcfg['type'] == 'TRAJ_TEXT':
 
-        timeinfo = traj.timevector[0]
+        timeinfo = traj.time_vector[0]
 
         savedir = get_save_dir(prdcfg['basepath'], prdcfg['procname'],
                                prdcfg['dsname'], prdcfg['prdname'],
@@ -96,7 +97,7 @@ def generate_traj_product(traj, prdcfg):
                        "Time series of a plane trajectory in radar "
                        "coordinates."]
 
-        ts = TimeSeries(description, traj.timevector,
+        ts = TimeSeries(description, traj.time_vector,
                         timeformat="%Y-%m-%d %H:%M:%S.%f")
         ts.add_dataseries("Elevation", "deg", traj.radar_list[0].elevation_vec)
         ts.add_dataseries("Azimuth", "deg", traj.radar_list[0].azimuth_vec)
