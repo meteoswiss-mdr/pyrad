@@ -410,7 +410,8 @@ def process_trajectory(procstatus, dscfg, radar_list=None, trajectory=None):
 
         if (radar_list is not None):
             for radar in radar_list:
-                trajectory.add_radar(radar)
+                rad = trajectory.add_radar(radar)
+                trajectory.calculate_velocities(rad)
 
         dscfg['initialized'] = True
         return trajectory, None

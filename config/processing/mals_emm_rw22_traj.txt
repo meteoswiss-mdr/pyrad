@@ -30,7 +30,7 @@ dempath STRING /data/DEM/DX50_EMM/
 
 saveimg         INT 1
 saveimgbasepath STRING /data/pyrad_products/
-imgformat       STRING eps
+imgformat       STRING png
 convertimage    INT 1
 convertformat   STRING png
 
