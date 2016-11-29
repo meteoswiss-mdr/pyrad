@@ -276,47 +276,70 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
             warn('Freezing level height not defined. Using default ' +
                  str(fzl)+' m')
 
-    fname = (
-        dscfg['configpath'] + 'selfconsistency/' +
-        'selfconsistency_zdr_zhkdp_Xband_temp10_elev000_mu05.txt')
-    zdr_kdpzh_table = read_selfconsistency(fname)
+    if dscfg['initialized'] == 0:
+        # find unique elevations
+        el_vec = np.unique(
+            (10.*radar.elevation['data'].astype(int)).astype(int))
+        zdr_kdpzh_list = list()
+        el_list = list()
+        for i in range(len(el_vec)):
+            fname = (
+                dscfg['configpath'] + 'selfconsistency/' +
+                'selfconsistency_zdr_zhkdp_Xband_temp10_elev' +
+                '{:03d}'.format(el_vec[i])+'_mu05.txt')
+            zdr_kdpzh_table = read_selfconsistency(fname)
+            if zdr_kdpzh_table is not None:
+                zdr_kdpzh_list.append(zdr_kdpzh_table)
+                el_list.append((el_vec[i]/10.).astype(int))
+        if not el_list:
+            warn('Unable to retrieve PhiDP and KDP using self-consistency. ' +
+                 'No selfconsistency files for the radar elevations.')
 
-    # default values
-    rsmooth = 1000.
-    min_rhohv = 0.92
-    max_phidp = 20.
-    ml_thickness = 700.
+            return None
 
-    # get user defined values
-    if 'rsmooth' in dscfg:
-        rsmooth = dscfg['rsmooth']
-    if 'min_rhohv' in dscfg:
-        min_rhohv = dscfg['min_rhohv']
-    if 'max_phidp' in dscfg:
-        max_phidp = dscfg['max_phidp']
-    if 'ml_thickness' in dscfg:
-        ml_thickness = dscfg['ml_thickness']
+        zdr_kdpzh_dict = {'zdr_kdpzh': zdr_kdpzh_list,
+                          'elev': el_list}
+        dscfg['global_data'] = zdr_kdpzh_dict
+        dscfg['initialized'] = 1
 
-    kdpsim_field = 'specific_differential_phase'
-    phidpsim_field = 'differential_phase'
-    r_res = radar.range['data'][1]-radar.range['data'][0]
-    smooth_wind_len = int(rsmooth/r_res)
+    if dscfg['initialized'] == 1:
+        # default values
+        rsmooth = 1000.
+        min_rhohv = 0.92
+        max_phidp = 20.
+        ml_thickness = 700.
 
-    kdpsim, phidpsim = pyart.correct.selfconsistency_kdp_phidp(
-        radar, zdr_kdpzh_table, min_rhohv=min_rhohv, max_phidp=max_phidp,
-        smooth_wind_len=smooth_wind_len, doc=15, fzl=fzl,
-        thickness=ml_thickness, refl_field=refl, phidp_field=phidp,
-        zdr_field=zdr, temp_field=temp, rhohv_field=rhohv,
-        kdpsim_field=kdpsim_field, phidpsim_field=phidpsim_field)
+        # get user defined values
+        if 'rsmooth' in dscfg:
+            rsmooth = dscfg['rsmooth']
+        if 'min_rhohv' in dscfg:
+            min_rhohv = dscfg['min_rhohv']
+        if 'max_phidp' in dscfg:
+            max_phidp = dscfg['max_phidp']
+        if 'ml_thickness' in dscfg:
+            ml_thickness = dscfg['ml_thickness']
 
-    # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+        kdpsim_field = 'specific_differential_phase'
+        phidpsim_field = 'differential_phase'
+        r_res = radar.range['data'][1]-radar.range['data'][0]
+        smooth_wind_len = int(rsmooth/r_res)
 
-    new_dataset.add_field(kdpsim_field, kdpsim)
-    new_dataset.add_field(phidpsim_field, phidpsim)
+        kdpsim, phidpsim = pyart.correct.selfconsistency_kdp_phidp(
+            radar, dscfg['global_data'], min_rhohv=min_rhohv,
+            max_phidp=max_phidp, smooth_wind_len=smooth_wind_len, doc=15,
+            fzl=fzl, thickness=ml_thickness, refl_field=refl,
+            phidp_field=phidp, zdr_field=zdr, temp_field=temp,
+            rhohv_field=rhohv, kdpsim_field=kdpsim_field,
+            phidpsim_field=phidpsim_field)
 
-    return new_dataset, ind_rad
+        # prepare for exit
+        new_dataset = deepcopy(radar)
+        new_dataset.fields = dict()
+
+        new_dataset.add_field(kdpsim_field, kdpsim)
+        new_dataset.add_field(phidpsim_field, phidpsim)
+
+        return new_dataset, ind_rad
 
 
 def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
@@ -412,58 +435,81 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
             warn('Freezing level height not defined. Using default ' +
                  str(fzl)+' m')
 
-    # default values
-    rsmooth = 1000.
-    min_rhohv = 0.92
-    max_phidp = 20.
-    ml_thickness = 700.
-    rcell = 1000.
-    dphidp_min = 2.
-    dphidp_max = 16.
+    if dscfg['initialized'] == 0:
+        # find unique elevations
+        el_vec = np.unique(
+            (10.*radar.elevation['data'].astype(int)).astype(int))
+        zdr_kdpzh_list = list()
+        el_list = list()
+        for i in range(len(el_vec)):
+            fname = (
+                dscfg['configpath'] + 'selfconsistency/' +
+                'selfconsistency_zdr_zhkdp_Xband_temp10_elev' +
+                '{:03d}'.format(el_vec[i])+'_mu05.txt')
+            zdr_kdpzh_table = read_selfconsistency(fname)
+            if zdr_kdpzh_table is not None:
+                zdr_kdpzh_list.append(zdr_kdpzh_table)
+                el_list.append((el_vec[i]/10.).astype(int))
+        if not el_list:
+            warn('Unable to retrieve PhiDP and KDP using self-consistency. ' +
+                 'No selfconsistency files for the radar elevations.')
 
-    # get user defined values
-    if 'rsmooth' in dscfg:
-        rsmooth = dscfg['rsmooth']
-    if 'min_rhohv' in dscfg:
-        min_rhohv = dscfg['min_rhohv']
-    if 'max_phidp' in dscfg:
-        max_phidp = dscfg['max_phidp']
-    if 'ml_thickness' in dscfg:
-        ml_thickness = dscfg['ml_thickness']
-    if 'rcell' in dscfg:
-        rcell = dscfg['rcell']
-    if 'dphidp_min' in dscfg:
-        dphidp_min = dscfg['dphidp_min']
-    if 'dphidp_max' in dscfg:
-        dphidp_max = dscfg['dphidp_max']
+            return None
 
-    fname = (
-        dscfg['configpath'] + 'selfconsistency/' +
-        'selfconsistency_zdr_zhkdp_Xband_temp10_elev000_mu05.txt')
-    zdr_kdpzh_table = read_selfconsistency(fname)
+        zdr_kdpzh_dict = {'zdr_kdpzh': zdr_kdpzh_list,
+                          'elev': el_list}
+        dscfg['global_data'] = zdr_kdpzh_dict
+        dscfg['initialized'] = 1
 
-    r_res = radar.range['data'][1]-radar.range['data'][0]
-    smooth_wind_len = int(rsmooth/r_res)
-    min_rcons = int(rcell/r_res)
+    if dscfg['initialized'] == 1:
+        # default values
+        rsmooth = 1000.
+        min_rhohv = 0.92
+        max_phidp = 20.
+        ml_thickness = 700.
+        rcell = 1000.
+        dphidp_min = 2.
+        dphidp_max = 16.
 
-    step = None
-    if 'step' in dscfg:
-        step = dscfg['step']
+        # get user defined values
+        if 'rsmooth' in dscfg:
+            rsmooth = dscfg['rsmooth']
+        if 'min_rhohv' in dscfg:
+            min_rhohv = dscfg['min_rhohv']
+        if 'max_phidp' in dscfg:
+            max_phidp = dscfg['max_phidp']
+        if 'ml_thickness' in dscfg:
+            ml_thickness = dscfg['ml_thickness']
+        if 'rcell' in dscfg:
+            rcell = dscfg['rcell']
+        if 'dphidp_min' in dscfg:
+            dphidp_min = dscfg['dphidp_min']
+        if 'dphidp_max' in dscfg:
+            dphidp_max = dscfg['dphidp_max']
 
-    refl_bias = pyart.correct.selfconsistency_bias(
-        radar, zdr_kdpzh_table, min_rhohv=min_rhohv, max_phidp=max_phidp,
-        smooth_wind_len=smooth_wind_len, doc=15, fzl=fzl,
-        thickness=ml_thickness, min_rcons=min_rcons, dphidp_min=dphidp_min,
-        dphidp_max=dphidp_max, refl_field=refl, phidp_field=phidp,
-        zdr_field=zdr, temp_field=temp, rhohv_field=rhohv)
+        r_res = radar.range['data'][1]-radar.range['data'][0]
+        smooth_wind_len = int(rsmooth/r_res)
+        min_rcons = int(rcell/r_res)
 
-    # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+        step = None
+        if 'step' in dscfg:
+            step = dscfg['step']
 
-    new_dataset.add_field('reflectivity_bias', refl_bias)
+        refl_bias = pyart.correct.selfconsistency_bias(
+            radar, dscfg['global_data'], min_rhohv=min_rhohv,
+            max_phidp=max_phidp, smooth_wind_len=smooth_wind_len, doc=15,
+            fzl=fzl, thickness=ml_thickness, min_rcons=min_rcons,
+            dphidp_min=dphidp_min, dphidp_max=dphidp_max, refl_field=refl,
+            phidp_field=phidp, zdr_field=zdr, temp_field=temp,
+            rhohv_field=rhohv)
 
-    return new_dataset, ind_rad
+        # prepare for exit
+        new_dataset = deepcopy(radar)
+        new_dataset.fields = dict()
+
+        new_dataset.add_field('reflectivity_bias', refl_bias)
+
+        return new_dataset, ind_rad
 
 
 def process_estimate_phidp0(procstatus, dscfg, radar_list=None):
@@ -894,18 +940,22 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
 
         # keep histogram in Memory or add to existing histogram
         if dscfg['initialized'] == 0:
-
-            dscfg['global_data'] = radar_aux
+            dscfg['global_data'] = {'hist_obj': radar_aux,
+                                    'timeinfo': dscfg['timeinfo']}
             dscfg['initialized'] = 1
         else:
             field_interp = interpol_field(
-                dscfg['global_data'], radar_aux, field_name, fill_value=0)
-            dscfg['global_data'].fields[field_name]['data'] += (
+                dscfg['global_data']['hist_obj'], radar_aux, field_name,
+                fill_value=0)
+            dscfg['global_data']['hist_obj'].fields[field_name]['data'] += (
                 field_interp['data'].filled(fill_value=0)).astype('int64')
+
+            dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
 
         dataset = dict()
         dataset.update({'hist_obj': radar_aux})
         dataset.update({'hist_type': 'instant'})
+        dataset.update({'timeinfo': dscfg['timeinfo']})
 
         return dataset, ind_rad
 
@@ -921,8 +971,9 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
         ind_rad = int(radarnr[5:8])-1
 
         dataset = dict()
-        dataset.update({'hist_obj': dscfg['global_data']})
+        dataset.update({'hist_obj': dscfg['global_data']['hist_obj']})
         dataset.update({'hist_type': 'cumulative'})
+        dataset.update({'timeinfo': dscfg['global_data']['timeinfo']})
 
         return dataset, ind_rad
 
@@ -1017,9 +1068,11 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
             avg_par.update(
                 {'endtime': avg_par['starttime']+datetime.timedelta(
                     seconds=period)})
+            avg_par.update({'timeinfo': dscfg['timeinfo']})
             dscfg['global_data'] = avg_par
             dscfg['initialized'] = 1
 
+        dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
         # no radar object in global data: create it
         if 'radar_obj' not in dscfg['global_data']:
             # get start and stop times of new radar object
@@ -1061,7 +1114,9 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
                     dscfg['global_data']['radar_obj'].fields[
                         field_name]['data']))
 
-        new_dataset = deepcopy(dscfg['global_data']['radar_obj'])
+        new_dataset = {
+            'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
+            'timeinfo': dscfg['global_data']['timeinfo']}
 
         dscfg['global_data']['starttime'] += datetime.timedelta(
             seconds=period)
@@ -1099,7 +1154,9 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
                     dscfg['global_data']['radar_obj'].fields[
                         field_name]['data']))
 
-        new_dataset = deepcopy(dscfg['global_data']['radar_obj'])
+        new_dataset = {
+            'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
+            'timeinfo': dscfg['global_data']['timeinfo']}
 
         return new_dataset, ind_rad
 
@@ -1193,9 +1250,11 @@ def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
             avg_par.update(
                 {'endtime': avg_par['starttime']+datetime.timedelta(
                     seconds=period)})
+            avg_par.update({'timeinfo': dscfg['timeinfo']})
             dscfg['global_data'] = avg_par
             dscfg['initialized'] = 1
 
+        dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
         # no radar object in global data: create it
         if 'radar_obj' not in dscfg['global_data']:
             # get start and stop times of new radar object
@@ -1230,7 +1289,9 @@ def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
         dscfg['global_data']['radar_obj'].fields[field_name]['data'] /= (
             dscfg['global_data']['radar_obj'].fields[refl_name]['data'])
 
-        new_dataset = deepcopy(dscfg['global_data']['radar_obj'])
+        new_dataset = {
+            'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
+            'timeinfo': dscfg['global_data']['timeinfo']}
 
         dscfg['global_data']['starttime'] += datetime.timedelta(
             seconds=period)
@@ -1261,7 +1322,9 @@ def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
         dscfg['global_data']['radar_obj'].fields[field_name]['data'] /= (
             dscfg['global_data']['radar_obj'].fields[refl_name]['data'])
 
-        new_dataset = deepcopy(dscfg['global_data']['radar_obj'])
+        new_dataset = {
+            'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
+            'timeinfo': dscfg['global_data']['timeinfo']}
 
         return new_dataset, ind_rad
 
@@ -1401,9 +1464,11 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
             avg_par.update(
                 {'endtime': avg_par['starttime']+datetime.timedelta(
                     seconds=period)})
+            avg_par.update({'timeinfo': dscfg['timeinfo']})
             dscfg['global_data'] = avg_par
             dscfg['initialized'] = 1
 
+        dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
         # no radar object in global data: create it
         if 'radar_obj' not in dscfg['global_data']:
             # get start and stop times of new radar object
@@ -1430,7 +1495,9 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
             return None, None
 
         # we have reached the end of the accumulation: start a new object
-        new_dataset = deepcopy(dscfg['global_data']['radar_obj'])
+        new_dataset = {
+            'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
+            'timeinfo': dscfg['global_data']['timeinfo']}
 
         dscfg['global_data']['starttime'] += datetime.timedelta(
             seconds=period)
@@ -1458,7 +1525,9 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
         if 'radar_obj' not in dscfg['global_data']:
             return None, None
 
-        new_dataset = deepcopy(dscfg['global_data']['radar_obj'])
+        new_dataset = {
+            'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
+            'timeinfo': dscfg['global_data']['timeinfo']}
 
         return new_dataset, ind_rad
 
@@ -1984,8 +2053,11 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
                 radar_par.update(
                     {'angle_step': (radar.ray_angle_res['data'][0])})
 
+            radar_par.update({'timeinfo': dscfg['timeinfo']})
             dscfg['global_data'] = radar_par
             dscfg['initialized'] = 1
+
+        dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
 
         # default values
         rmin = 20.
@@ -2026,6 +2098,7 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
         sun_hits_dataset = dict()
         sun_hits_dataset.update({'sun_hits': sun_hits})
         sun_hits_dataset.update({'radar': new_radar})
+        sun_hits_dataset.update({'timeinfo': dscfg['timeinfo']})
 
         return sun_hits_dataset, ind_rad
 
@@ -2056,7 +2129,8 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
         if 'ndays' in dscfg:
             nfiles = dscfg['ndays']
 
-        sun_hits = read_sun_hits_multiple_days(dscfg, nfiles=nfiles)
+        sun_hits = read_sun_hits_multiple_days(
+            dscfg, dscfg['global_data']['timeinfo'], nfiles=nfiles)
 
         if sun_hits[0] is None:
             return None, None
@@ -2209,5 +2283,7 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
         sun_hits_dataset = dict()
         sun_hits_dataset.update({'sun_hits_final': sun_hits_dict})
         sun_hits_dataset.update({'sun_retrieval': sun_retrieval_dict})
+        sun_hits_dataset.update(
+            {'timeinfo': dscfg['global_data']['timeinfo']})
 
         return sun_hits_dataset, ind_rad

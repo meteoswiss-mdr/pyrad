@@ -18,3 +18,17 @@ Product functions to be implemented with highest priority:
 ----------------------------------------------------------
 - time series of intercomparison
 - scatter plots of sensor-radar comparisons
+
+
+Things to check before making it operational:
+---------------------------------------------
+- Sun monitoring:
+    - Check if transmission losses have to be subtracted from received power
+    - Check if conversion from solar flux to received power is done properly
+- Polarimetric data monitoring:
+    - Add metadata in the density and histogram plot
+    - Check what happens to data that is out of the range of the histogram
+- Rainfall rate estimation:
+    - Distinguish between the various rainfall rate estimators (no single datatype RR)
+- Intercomparison:
+    - Add metadata in the plot

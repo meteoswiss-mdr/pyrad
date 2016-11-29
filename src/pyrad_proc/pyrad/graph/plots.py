@@ -446,6 +446,8 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
     plt.plot(ang, az_percentile_low, 'k--')
     plt.plot(ang, az_percentile_high, 'k--')
 
+    plt.autoscale(enable=True, axis='both', tight=True)
+
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)
@@ -461,7 +463,7 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
 
 
 def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
-                 prdcfg):
+                 prdcfg, metadata=None):
     """
     2D histogram
 
@@ -477,6 +479,8 @@ def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
         list of names of the files where to store the plot
     prdcfg : dict
         product configuration dictionary
+    metadata : str
+        a string with metadata to write in the plot
 
     Returns
     -------
@@ -507,6 +511,7 @@ def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
 
     # plot reference
     plt.plot(bins1, bins2, 'k--')
+    plt.autoscale(enable=True, axis='both', tight=True)
 
     plt.xlabel(labelx)
     plt.ylabel(labely)
@@ -514,6 +519,10 @@ def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
 
     cb = fig.colorbar(cax)
     cb.set_label(label)
+
+    if metadata is not None:
+        plt.text(0.05, 0.95, metadata, horizontalalignment='left',
+                 verticalalignment='top', transform=ax.transAxes)
 
     for i in range(len(fname_list)):
         fig.savefig(fname_list[i])

@@ -5,33 +5,26 @@
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
 dataSetList STRARR 1
-   dBZ  
+   TEMP
 
 
-dBZ STRUCT 3
-   type     STRING RAW
-   datatype STRARR 1
-        dBZ
-   products STRUCT 5
-      SAVEVOL STRUCT 2
-         type   STRING SAVEVOL
-         voltype STRING dBZ
-      EL00_7 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 0
-         voltype STRING dBZ
-      EL03_0 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 1
-         voltype STRING dBZ  
-      EL05_7 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 2
-         voltype STRING dBZ
-      EL08_2 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 3
-         voltype STRING dBZ      
+TEMP STRUCT 3
+    type STRING RAW
+    datatype STRARR 1
+        COSMO:TEMP
+    products STRUCT 3        
+        EL003_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 1
+            voltype STRING TEMP  
+        EL005_7 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING TEMP
+        EL008_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 3
+            voltype STRING TEMP
 
 #ZDR STRUCT 3
 #   type     STRING RAW

@@ -19,6 +19,7 @@ Miscellaneous functions dealing with radar data
     compute_quantiles_sweep
     compute_histogram
     compute_histogram_sweep
+    compute_2d_stats
     compute_2d_hist
     quantize_field
 
@@ -466,6 +467,48 @@ def compute_histogram(field, field_name, step=None):
     values = field.compressed()
 
     return bins, values
+
+
+def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
+                     step2=None):
+    """
+    computes histogram of the data
+
+    Parameters
+    ----------
+    field : ndarray 2D
+        the radar field
+    field_name: str
+        name of the field
+    step : float
+        size of bin
+
+    Returns
+    -------
+    bins : float array
+        interval of each bin
+    values : float array
+        values at each bin
+
+    """
+    hist_2d, bins1, bins2 = compute_2d_hist(
+        field1, field2, field_name1, field_name2, step1=step1, step2=step2)
+    npoints = len(field1)
+    meanbias = 10.*np.ma.log10(
+        np.ma.mean(np.ma.power(10., 0.1*field2)) /
+        np.ma.mean(np.ma.power(10., 0.1*field1)))
+    medianbias = np.ma.median(field2-field1)
+    ind_max_val1, ind_max_val2 = np.where(hist_2d == np.ma.amax(hist_2d))
+    modebias = bins2[ind_max_val2[0]]-bins1[ind_max_val1[0]]
+
+    stats = {
+        'npoints': npoints,
+        'meanbias': meanbias,
+        'medianbias': medianbias,
+        'modebias': modebias
+    }
+
+    return hist_2d, bins1, bins2, stats
 
 
 def compute_2d_hist(field1, field2, field_name1, field_name2, step1=None,

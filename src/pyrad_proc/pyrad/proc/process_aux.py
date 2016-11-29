@@ -106,10 +106,13 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_selfconsistency_bias'
     elif dataset_type == 'TIME_AVG':
         func_name = 'process_time_avg'
+        dsformat = 'TIMEAVG'
     elif dataset_type == 'WEIGHTED_TIME_AVG':
         func_name = 'process_weighted_time_avg'
+        dsformat = 'TIMEAVG'
     elif dataset_type == 'FLAG_TIME_AVG':
         func_name = 'process_time_avg_flag'
+        dsformat = 'TIMEAVG'
     elif dataset_type == 'COLOCATED_GATES':
         func_name = 'process_colocated_gates'
         dsformat = 'COLOCATED_GATES'

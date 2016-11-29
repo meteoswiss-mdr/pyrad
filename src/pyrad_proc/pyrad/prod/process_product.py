@@ -10,6 +10,7 @@ Functions for obtaining Pyrad products from the datasets
     generate_sun_hits_products
     generate_intercomp_products
     generate_colocated_gates_products
+    generate_time_avg_products
     generate_vol_products
     generate_timeseries_products
     generate_monitoring_products
@@ -44,7 +45,7 @@ from ..graph.plots import get_field_name, get_colobar_label, plot_scatter
 from ..util.radar_utils import create_sun_hits_field
 from ..util.radar_utils import create_sun_retrieval_field
 from ..util.radar_utils import compute_histogram, compute_quantiles
-from ..util.radar_utils import compute_quantiles_from_hist, compute_2d_hist
+from ..util.radar_utils import compute_quantiles_from_hist, compute_2d_stats
 
 
 def generate_sun_hits_products(dataset, prdcfg):
@@ -71,11 +72,11 @@ def generate_sun_hits_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
         fname = make_filename(
             'info', prdcfg['dstype'], 'detected', ['csv'],
-            timeinfo=prdcfg['timeinfo'], timeformat='%Y%m%d')
+            timeinfo=dataset['timeinfo'], timeformat='%Y%m%d')
 
         for i in range(len(fname)):
             fname[i] = savedir+fname[i]
@@ -101,11 +102,11 @@ def generate_sun_hits_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
         fname = make_filename(
             'detected', prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'], timeinfo=prdcfg['timeinfo'],
+            prdcfg['imgformat'], timeinfo=dataset['timeinfo'],
             timeformat='%Y%m%d')
 
         for i in range(len(fname)):
@@ -172,11 +173,11 @@ def generate_sun_hits_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
         fname = make_filename(
             'retrieval', prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'], timeinfo=prdcfg['timeinfo'],
+            prdcfg['imgformat'], timeinfo=dataset['timeinfo'],
             timeformat='%Y%m%d')
 
         for i in range(len(fname)):
@@ -306,13 +307,20 @@ def generate_intercomp_products(dataset, prdcfg):
         if 'step' in prdcfg:
             step = prdcfg['step']
 
-        hist_2d, bins1, bins2 = compute_2d_hist(
+        hist_2d, bins1, bins2, stats = compute_2d_stats(
             np.ma.asarray(dataset['intercomp_dict']['rad1_val']),
             np.ma.asarray(dataset['intercomp_dict']['rad2_val']),
             field_name, field_name, step1=step, step2=step)
 
+        metadata = (
+            'npoints: '+str(stats['npoints'])+'\n' +
+            'mode bias: '+str(stats['modebias'])+'\n' +
+            'median bias: '+str(stats['medianbias'])+'\n' +
+            'mean bias: '+str(stats['meanbias'])+'\n' +
+            'corr: '+str(stats['npoints'])+'\n')
+
         plot_scatter(bins1, bins2, np.ma.asarray(hist_2d), field_name,
-                     field_name, fname, prdcfg)
+                     field_name, fname, prdcfg, metadata=metadata)
 
         print('saved figures: '+' '.join(fname))
 
@@ -370,6 +378,29 @@ def generate_colocated_gates_products(dataset, prdcfg):
             return None
 
         generate_vol_products(dataset[prdcfg['radar']]['radar'], prdcfg)
+
+
+def generate_time_avg_products(dataset, prdcfg):
+    """
+    generates time average products
+
+    Parameters
+    ----------
+    dataset : tuple
+        radar objects and colocated gates dictionary
+
+    prdcfg : dictionary of dictionaries
+        product configuration dictionary of dictionaries
+
+    Returns
+    -------
+    filename : str
+        the name of the file created. None otherwise
+
+    """
+    prdcfg['timeinfo'] = dataset['timeinfo']
+
+    return generate_vol_products(dataset['radar_obj'], prdcfg)
 
 
 def generate_vol_products(dataset, prdcfg):
@@ -827,7 +858,7 @@ def generate_timeseries_products(dataset, prdcfg):
             labely=labely, label1=label1, titl=titl)
         print('saved figures: '+' '.join(figfname))
 
-        return savedir+figfname
+        return figfname
 
     elif prdcfg['type'] == 'PLOT_CUMULATIVE_POINT':
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
@@ -940,8 +971,8 @@ def generate_timeseries_products(dataset, prdcfg):
         gateinfo = ('az'+az+'r'+r+'el'+el)
 
         savedir_ts = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['timeinfo'],
-            prdcfg['dsname'], prdcfg['prdid'])
+            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['prdid'], timeinfo=prdcfg['timeinfo'])
 
         csvfname = make_filename(
             'ts', prdcfg['dstype'], dataset['datatype'], ['csv'],
@@ -1033,12 +1064,12 @@ def generate_monitoring_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
         fname = make_filename(
             'histogram', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
-            timeinfo=prdcfg['timeinfo'], timeformat=timeformat)
+            timeinfo=dataset['timeinfo'], timeformat=timeformat)
 
         for i in range(len(fname)):
             fname[i] = savedir+fname[i]
@@ -1084,12 +1115,12 @@ def generate_monitoring_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
         fname = make_filename(
             'ppi', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
-            timeinfo=prdcfg['timeinfo'], timeformat=timeformat)
+            timeinfo=dataset['timeinfo'], timeformat=timeformat)
 
         for i in range(len(fname)):
             fname[i] = savedir+fname[i]
@@ -1127,12 +1158,12 @@ def generate_monitoring_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
         fname = make_filename(
             'ppi', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
-            timeinfo=prdcfg['timeinfo'], timeformat=timeformat)
+            timeinfo=dataset['timeinfo'], timeformat=timeformat)
 
         for i in range(len(fname)):
             fname[i] = savedir+fname[i]
@@ -1247,11 +1278,11 @@ def generate_monitoring_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
         fname = make_filename(
             'savevol', prdcfg['dstype'], prdcfg['voltype'], ['nc'],
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=dataset['timeinfo'])
 
         for i in range(len(fname)):
             fname[i] = savedir+fname[i]

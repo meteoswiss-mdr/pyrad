@@ -386,7 +386,7 @@ def read_monitoring_ts(fname):
         return None, None
 
 
-def read_sun_hits_multiple_days(cfg, nfiles=1):
+def read_sun_hits_multiple_days(cfg, time_ref, nfiles=1):
     """
     Reads sun hits data from multiple file sources
 
@@ -394,6 +394,8 @@ def read_sun_hits_multiple_days(cfg, nfiles=1):
     ----------
     cfg : dict
         dictionary with configuration data to find out the right file
+    time_ref : datetime object
+        reference time
     nfiles : int
         number of files to read
 
@@ -405,7 +407,7 @@ def read_sun_hits_multiple_days(cfg, nfiles=1):
         a variable
 
     """
-    timeinfo = cfg['timeinfo'] - datetime.timedelta(days=nfiles-1)
+    timeinfo = time_ref - datetime.timedelta(days=nfiles-1)
 
     date = list()
     ray = list()
