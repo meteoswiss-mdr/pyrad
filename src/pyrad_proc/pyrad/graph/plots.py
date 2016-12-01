@@ -29,6 +29,7 @@ Functions to plot Pyrad datasets
 from copy import deepcopy
 from warnings import warn
 
+import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
 

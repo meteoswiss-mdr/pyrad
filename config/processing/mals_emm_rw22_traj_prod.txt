@@ -4,8 +4,9 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 1
+dataSetList STRARR 2
    l0:traj
+   l0:reflectivity_traj
 #   l0:rainrate
 #   l0:windshear
 #   l1:rainrate_traj
@@ -30,6 +31,15 @@ traj STRUCT 3
          datatype STRING AZ
       TS_TEXT STRUCT 1
          type  STRING TRAJ_TEXT
+
+reflectivity_traj STRUCT 3
+   type          STRING TRAJ_ATPLANE
+   datatype      STRING RAINBOW:dBZ
+   products      STRUCT 1
+      AT_PLANE STRUCT 3
+         type  STRING   PLOT_AND_WRITE
+         ymin  FLOAT    0.0
+         ymax  FLOAT    50.0
 
 rainrate_traj STRUCT 3
    type          STRING TRAJ_ATPLANE

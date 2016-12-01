@@ -625,8 +625,9 @@ def merge_fields_rainbow(basepath, scan_name, voltime, datatype_list):
                     break
                 try:
                     radar.add_field(field_name, radar_aux.fields[field_name])
-                except (ValueError, KeyError):
-                    warn('Unable to add field '+field_name+' to radar object')
+                except (ValueError, KeyError) as ee:
+                    warn("Unable to add field '"+field_name+"' to radar object"
+                         ": (%s)" % str(ee))
 
     return radar
 

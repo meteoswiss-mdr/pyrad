@@ -18,6 +18,7 @@ Auxiliary functions
     process_save_radar
     process_point_measurement
     process_trajectory
+    process_traj_atplane
 
 Echo classification and filtering
 =================================
@@ -84,7 +85,7 @@ Retrievals
 
 from .process_aux import get_process_func, process_raw, process_save_radar
 from .process_aux import process_point_measurement
-from .process_aux import process_trajectory
+from .process_aux import process_trajectory, process_traj_atplane
 
 from .process_echoclass import process_echo_id, process_echo_filter
 from .process_echoclass import process_filter_snr, process_filter_visibility

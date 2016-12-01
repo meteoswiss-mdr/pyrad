@@ -525,14 +525,24 @@ def _get_datatype_list(cfg, radarnr='RADAR001'):
                  product_save) = (
                     get_datatype_fields(cfg[dataset]['datatype']))
                 if datagroup != 'PROC' and radarnr_descr == radarnr:
-                    datatypesdescr.add(cfg[dataset]['datatype'])
+                    if ((dataset_save is None) and (product_save is None)):
+                        datatypesdescr.add(datagroup+":"+datatype)
+                    else:
+                        datatypesdescr.add(datagroup + ":" + datatype +
+                                           "," + dataset_save + "," +
+                                           product_save)
             else:
                 for datatype in cfg[dataset]['datatype']:
                     (radarnr_descr, datagroup, datatype_aux, dataset_save,
                      product_save) = (
                         get_datatype_fields(datatype))
                     if datagroup != 'PROC' and radarnr_descr == radarnr:
-                        datatypesdescr.add(datatype)
+                        if ((dataset_save is None) and (product_save is None)):
+                            datatypesdescr.add(datagroup+":"+datatype_aux)
+                        else:
+                            datatypesdescr.add(datagroup + ":" + datatype +
+                                               "," + dataset_save + "," +
+                                               product_save)
 
     datatypesdescr = list(datatypesdescr)
 
