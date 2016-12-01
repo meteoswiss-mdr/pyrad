@@ -464,6 +464,8 @@ def compute_histogram(field, field_name, step=None):
 
     """
     bins = get_histogram_bins(field_name, step=step)
+    field[field < bins[0]] = bins[0]
+    field[field > bins[-1]] = bins[-1]
     values = field.compressed()
 
     return bins, values
@@ -535,6 +537,13 @@ def compute_2d_hist(field1, field2, field_name1, field_name2, step1=None,
     """
     bins1 = get_histogram_bins(field_name1, step=step1)
     bins2 = get_histogram_bins(field_name2, step=step2)
+
+    field1[field1 < bins1[0]] = bins1[0]
+    field1[field1 > bins1[-1]] = bins1[-1]
+
+    field2[field2 < bins2[0]] = bins2[0]
+    field2[field2 > bins2[-1]] = bins2[-1]
+
     fill_value = pyart.config.get_fillvalue()
     return np.histogram2d(
         field1.filled(fill_value=fill_value),
@@ -563,6 +572,8 @@ def quantize_field(field, field_name, step):
 
     """
     vmin, vmax = pyart.config.get_field_limits(field_name)
+    field[field < vmin] = vmin
+    field[field > vmax] = vmax
     fieldq = ((field+vmin)/step+1).astype(int)
 
     return fieldq.filled(fill_value=0)
@@ -592,7 +603,10 @@ def compute_histogram_sweep(field, ray_start, ray_end, field_name, step=None):
 
     """
     bins = get_histogram_bins(field_name, step=step)
-    values = field[ray_start:ray_end+1, :].compressed()
+    field_sweep = field[ray_start:ray_end+1, :]
+    field_sweep[field_sweep < bins[0]] = bins[0]
+    field_sweep[field_sweep > bins[-1]] = bins[-1]
+    values = field_sweep[ray_start:ray_end+1, :].compressed()
 
     return bins, values
 

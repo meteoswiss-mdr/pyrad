@@ -4,7 +4,7 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 25
+dataSetList STRARR 29
     l0:dBmu
     l0:dBmvu
     l1:sun_hits
@@ -15,7 +15,11 @@ dataSetList STRARR 25
     l5:visibilityFilter2
     l3:Att_ZPhi 
     l6:hydroclass
+    l4:RR_Z
     l7:RR_hydro
+    l5:rgLUZ_RR_Z
+    l5:rgPIL_RR_Z
+    l5:rgCHZ_RR_Z
     l8:rgLUZ_RR_hydro
     l8:rgPIL_RR_hydro
     l8:rgCHZ_RR_hydro
@@ -267,6 +271,21 @@ hydroclass STRUCT 5
 # ==========================================================================================
 #               rainfall rate
 # ==========================================================================================
+RR_Z STRUCT 5
+    type STRING RAINRATE
+    datatype STRARR 1
+        PROC:dBZc
+    RR_METHOD STRING Z
+    MAKE_GLOBAL INT 1
+    products STRUCT 2
+        SAVEVOL STRUCT 2
+            type  STRING SAVEVOL
+            voltype STRING RR
+        EL003_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 1
+            voltype STRING RR
+            
 RR_hydro STRUCT 5
     type STRING RAINRATE
     datatype STRARR 3
@@ -289,6 +308,94 @@ RR_hydro STRUCT 5
 #               sensor comparison
 # ==========================================================================================
 
+# ---------------------- rain gauge LUZ -------------------------------------------
+# 454.0, 47.036, 8.301 LUZ (Luzern)
+rgLUZ_RR_Z STRUCT 12
+    type STRING POINT_MEASUREMENT
+    datatype STRARR 1
+        PROC:RR
+    latlon INT 1
+    truealt INT 0
+    lat FLOAT 47.036
+    lon FLOAT 8.301
+    alt FLOAT 454.0
+    ele FLOAT 3.
+    AziTol FLOAT 1.
+    EleTol FLOAT 1.
+    RngTol FLOAT 30.
+    products STRUCT 3
+        RR STRUCT 1
+            type STRING PLOT_AND_WRITE_POINT
+        RRcomp STRUCT 4
+            type STRING COMPARE_POINT
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING LUZ
+        RRcumcomp STRUCT 4
+            type STRING COMPARE_CUMULATIVE_POINT
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING LUZ
+
+# ---------------------- rain gauge PIL -------------------------------------------
+# 2106.0, 46.979, 8.252 (Pilatus)
+rgPIL_RR_Z STRUCT 12
+    type STRING POINT_MEASUREMENT
+    datatype STRARR 1
+        PROC:RR
+    latlon INT 1
+    truealt INT 0
+    lat FLOAT 46.979
+    lon FLOAT 8.252
+    alt FLOAT 2106.0
+    ele FLOAT 8.2
+    AziTol FLOAT 1.
+    EleTol FLOAT 1.
+    RngTol FLOAT 30.
+    products STRUCT 3
+        RR STRUCT 1
+            type STRING PLOT_AND_WRITE_POINT
+        RRcomp STRUCT 4
+            type STRING COMPARE_POINT
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING PIL
+        RRcumcomp STRUCT 4
+            type STRING COMPARE_CUMULATIVE_POINT
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING PIL
+
+# ---------------------- rain gauge CHZ -------------------------------------------
+# 444.0, 47.188, 8.465 (CHZ)
+rgCHZ_RR_Z STRUCT 12
+    type STRING POINT_MEASUREMENT
+    datatype STRARR 1
+        PROC:RR
+    latlon INT 1
+    truealt INT 0
+    lat FLOAT 47.188
+    lon FLOAT 8.465
+    alt FLOAT 444.0
+    ele FLOAT 3.
+    AziTol FLOAT 1.
+    EleTol FLOAT 1.
+    RngTol FLOAT 30.
+    products STRUCT 3
+        RR STRUCT 1
+            type STRING PLOT_AND_WRITE_POINT
+        RRcomp STRUCT 4
+            type STRING COMPARE_POINT
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING CHZ
+        RRcumcomp STRUCT 4
+            type STRING COMPARE_CUMULATIVE_POINT
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING CHZ
+
+            
 # ---------------------- rain gauge LUZ -------------------------------------------
 # 454.0, 47.036, 8.301 LUZ (Luzern)
 rgLUZ_RR_hydro STRUCT 12
@@ -329,7 +436,7 @@ rgPIL_RR_hydro STRUCT 12
     lat FLOAT 46.979
     lon FLOAT 8.252
     alt FLOAT 2106.0
-    ele FLOAT 3.
+    ele FLOAT 8.2
     AziTol FLOAT 1.
     EleTol FLOAT 1.
     RngTol FLOAT 30.

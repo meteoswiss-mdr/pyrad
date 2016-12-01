@@ -68,7 +68,7 @@ if __name__ == '__main__':
         help='name of main post-processing configuration file')
     parser.add_argument(
         '--cfgpath', type=str,
-        default='/home/lom/users/fvj/pyrad/config/processing/',
+        default=os.path.expanduser('~')+'/pyrad/config/processing/',
         help='configuration file path')
 
     args = parser.parse_args()

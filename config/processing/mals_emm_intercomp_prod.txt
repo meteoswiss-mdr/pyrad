@@ -1,0 +1,70 @@
+#
+# Product generation configuration
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 1    
+    DX50_PLD_coloc_gates
+
+
+# ==========================================================================================
+#                 colocated gates
+# ==========================================================================================         
+DX50_PLD_coloc_gates STRUCT 9
+	type STRING COLOCATED_GATES
+	datatype STRARR 4
+		RADAR001:CFRADIAL:dBZc,dBZ_avg,SAVEVOL
+        RADAR001:DEM:VIS
+        RADAR002:CFRADIAL:dBZc,dBZ_avg,SAVEVOL
+        RADAR002:RAD4ALPDEM:VIS
+    h_tol FLOAT 100.
+    latlon_tol FLOAT 0.005
+    vol_d_tol FLOAT 100.
+    vismin FLOAT 100.
+    hmax FLOAT 10000.
+    elmax FLOAT 20.
+    products STRUCT 8
+        DX50_PLA STRUCT 2
+            type STRING WRITE_COLOCATED_GATES
+            radar STRING RADAR001
+        PLA_DX50 STRUCT 2
+            type STRING WRITE_COLOCATED_GATES
+            radar STRING RADAR002       
+        DX50_EL003_0 STRUCT 5         
+            type STRING PPI_IMAGE
+            radar STRING RADAR001
+            plot_type STRING PPI
+            voltype STRING colocated_gates
+            anglenr INT 1
+        DX50_EL005_7 STRUCT 5         
+            type STRING PPI_IMAGE
+            radar STRING RADAR001
+            plot_type STRING PPI
+            voltype STRING colocated_gates
+            anglenr INT 2
+        DX50_EL008_2 STRUCT 5         
+            type STRING PPI_IMAGE
+            radar STRING RADAR001
+            plot_type STRING PPI
+            voltype STRING colocated_gates
+            anglenr INT 3
+        DX50_EL011_2 STRUCT 5         
+            type STRING PPI_IMAGE
+            radar STRING RADAR001
+            plot_type STRING PPI
+            voltype STRING colocated_gates
+            anglenr INT 4
+        DX50_EL014_9 STRUCT 5         
+            type STRING PPI_IMAGE
+            radar STRING RADAR001
+            plot_type STRING PPI
+            voltype STRING colocated_gates
+            anglenr INT 5
+        DX50_EL019_5 STRUCT 5         
+            type STRING PPI_IMAGE
+            radar STRING RADAR001
+            plot_type STRING PPI
+            voltype STRING colocated_gates
+            anglenr INT 6
+ 

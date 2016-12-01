@@ -931,6 +931,10 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
         field_dict = pyart.config.get_metadata(field_name)
         field_dict['data'] = np.ma.zeros((radar.nrays, nbins), dtype=int)
 
+        field = deepcopy(radar.fields[field_name]['data'])
+        field[field < bins[0]] = bins[0]
+        field[field > bins[-1]] = bins[-1]
+
         for ray in range(radar.nrays):
             field_dict['data'][ray, :], bin_edges = np.histogram(
                 radar.fields[field_name]['data'][ray, :].compressed(),
