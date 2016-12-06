@@ -458,9 +458,9 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
 
     metadata = (
             'npoints: '+str(np.ma.sum(field))+'\n' +
-            str(quantiles[1])' quant: '+str(values_sweep[1])+'\n' +
-            str(quantiles[0])' quant: '+str(values_sweep[0])+'\n' +
-            str(quantiles[2])' quant: '+str(values_sweep[2])+'\n')
+            str(quantiles[1])+' quant: '+str(values_sweep[1])+'\n' +
+            str(quantiles[0])+' quant: '+str(values_sweep[0])+'\n' +
+            str(quantiles[2])+' quant: '+str(values_sweep[2])+'\n')
 
     plt.text(0.05, 0.95, metadata, horizontalalignment='left',
              verticalalignment='top', transform=ax.transAxes)
