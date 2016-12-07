@@ -27,7 +27,7 @@ import pyart
 
 from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 
-from netCDF4 import num2date
+from netCDF4 import num2date, date2num
 
 
 def get_process_func(dataset_type, dsname):
@@ -485,7 +485,10 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
         rad_traj = trajectory.add_radar(radar)
 
         trajdict = dict({
-                'radar_traj': rad_traj})
+                'radar_traj': rad_traj,
+                'radar_old': None,
+                'radar_old2': None,
+                'last_task_start_dt': None})
         traj_ind = trajectory.get_samples_in_period(end=dt_task_start)
 
         dscfg['traj_atplane_dict'] = trajdict
@@ -496,51 +499,106 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
         traj_ind = trajectory.get_samples_in_period(
             start=trajdict['last_task_start_dt'], end=dt_task_start)
 
+    traj_time_vec = date2num(trajectory.time_vector, radar.time['units'],
+                    radar.time['calendar'])
+        
     for tind in np.nditer(traj_ind):
         az = rad_traj.azimuth_vec[tind]
-
-        # 1. Find closest RHI scan (azimuth)
-        daz_min_ind = np.argmin(np.abs(radar.azimuth['data'] - az))
-        daz_min = np.abs(radar.azimuth['data'][daz_min_ind] - az)
-        if (daz_min > 3.0):
-            # print("INFO: Trajectory sample out of azimuth")
-            continue
-
-        daz_ind = np.where(np.abs(
-                radar.azimuth['data'] -
-                radar.azimuth['data'][daz_min_ind]) < 0.07)[0]
-
-        # 2. Find closest elevation
         el = rad_traj.elevation_vec[tind]
-        del_min_ind = np.argmin(np.abs(radar.elevation['data'][daz_ind] - el))
-        ray_ind = daz_ind[del_min_ind]
-        del_min = np.abs(radar.elevation['data'][ray_ind] - el)
-        if (del_min > 2.0):
-            # print("INFO: Trajectory sample out of elevation")
+        rr = rad_traj.range_vec[tind]
+        tt = traj_time_vec[tind]
+
+        # Find closest azimuth and elevation ray
+        daz = np.abs(radar.azimuth['data'] - az)
+        dele = np.abs(radar.elevation['data'] - el)
+        dangle = np.sqrt(daz**2 + dele**2)
+        ray_ind = np.argmin(dangle)
+        dangle_min = dangle[ray_ind]
+        dt = tt - radar.time['data'][ray_ind]
+
+        # XXX
+        if (dangle_min > 3.0):
+            # print("INFO: Trajectory sample out of angle")
             continue
 
         # XXX
-        # print(tind, az, el)
-        # print(ray_ind, radar.azimuth['data'][ray_ind],
-        #        radar.elevation['data'][ray_ind])
+        print("=== ", end="")
+        print(tind, az, el, rr, tt)
+        #print(ray_ind, radar.azimuth['data'][ray_ind],
+        #      radar.elevation['data'][ray_ind], dt)
 
-        # 3. Find closest time
+        if (trajdict['radar_old'] is not None):
+            rad_old = trajdict['radar_old']
 
-        # 4. Find closest range bin
+            daz_old = np.abs(rad_old.azimuth['data'] - az)
+            dele_old = np.abs(rad_old.elevation['data'] - el)
+            dangle_old = np.sqrt(daz_old**2 + dele_old**2)
+            ray_ind_old = np.argmin(dangle_old)
+            dangle_min_old = dangle[ray_ind_old]
+            dt_old = tt - rad_old.time['data'][ray_ind_old]
+
+            # XXX
+            #print(ray_ind_old, rad_old.azimuth['data'][ray_ind_old],
+            #      rad_old.elevation['data'][ray_ind_old], dt_old)
+
+            # Find closest time
+
+            if ((dt_old < 0.) and (trajdict['radar_old2'] is not None)):
+                rad_old2 = trajdict['radar_old2']
+                daz_old2 = np.abs(rad_old2.azimuth['data'] - az)
+                dele_old2 = np.abs(rad_old2.elevation['data'] - el)
+                dangle_old2 = np.sqrt(daz_old2**2 + dele_old2**2)
+                ray_ind_old2 = np.argmin(dangle_old2)
+                dangle_min_old2 = dangle[ray_ind_old2]
+                dt_old2 = tt - rad_old2.time['data'][ray_ind_old2]
+
+                # XXX
+                #print(ray_ind_old2, rad_old2.azimuth['data'][ray_ind_old2],
+                #      rad_old2.elevation['data'][ray_ind_old2], dt_old2)
+
+                if ((np.abs(dt_old) < np.abs(dt_old2))):
+                    radar_sel = rad_old
+                    ray_sel = ray_ind_old
+                else:
+                    radar_sel = rad_old2
+                    ray_sel = ray_ind_old2
+            else:
+                if ((np.abs(dt) < np.abs(dt_old))):
+                    radar_sel = radar
+                    ray_sel = ray_ind
+                else:
+                    radar_sel = rad_old
+                    ray_sel = ray_ind_old
+        else:
+            radar_sel = radar
+            ray_sel = ray_ind
+
+        # Find closest range bin
+        rr_ind = np.argmin(np.abs(radar_sel.range['data'] - rr))
+        rr_min = radar_sel.range['data'][rr_ind]
+
+        print(rr_ind, rr_min) # XXX
+
+        # Get sample at bin
+        val = radar_sel.fields[field_name]['data'].data[ray_sel, rr_ind]
+
+        #print(val) # XXX
+
+        # Get samples around this cell (3x3 box)
+
+        #print(radar_sel.elevation['data']) #XXX
+        el_vec = np.sort(np.unique(radar_sel.elevation['data'].round(decimals=1)))
+        print(el_vec) #XXX
+
+        #print(radar_sel.azimuth['data']) #XXX
+        az_vec = np.sort(np.unique(radar_sel.azimuth['data'].round(decimals=1)))
+        print(az_vec) #XXX
+
+
+        # end loop over traj samples within period
 
     trajdict['last_task_start_dt'] = dt_task_start
-    trajdict['last_radar'] = radar
-
-    # XXX
-    # print(len(radar.azimuth['data']))
-    # print(radar.azimuth['data'])
-    # print(len(radar.elevation['data']))
-    # print(radar.elevation['data'])
-    # print(len(radar.range['data']))
-    # print(radar.range['data'])
-    # print(len(radar.time['data']))
-    # print(radar.time['data'][0])
-    # print(len(radar.fields[field_name]['data'].data[0]))
-    # print(radar.fields[field_name]['data'].data[40])
+    trajdict['radar_old2'] = trajdict['radar_old']
+    trajdict['radar_old'] = radar
 
     return None, None
