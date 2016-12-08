@@ -17,12 +17,12 @@ To run the processing framework type:
 
 postproc_cfgfile is an optional argument with default: None
 cfgpath is an optional argument with default: \
-'/home/lom/users/fvj/pyrad/config/processing/'
+'$HOME/pyrad/config/processing/'
 
 Example:
     python main_process_data.py 'paradiso_fvj_vol.txt' '20140523000000' \
 '20140523001000' --postproc_cfgfile 'paradiso_fvj_vol_postproc.txt' \
---cfgpath '/home/lom/users/fvj/pyrad/config/processing/'
+--cfgpath '$HOME/pyrad/config/processing/'
 
 """
 
@@ -52,9 +52,9 @@ def main():
         'proc_cfgfile', type=str, help='name of main configuration file')
     parser.add_argument(
         'starttime', type=str,
-        help='starting time of the data to be processed')
+        help='starting time of the data to be processed. Format ''YYYYMMDDhhmmss''')
     parser.add_argument(
-        'endtime', type=str, help='end time of the data to be processed ')
+        'endtime', type=str, help='end time of the data to be processed. Format ''YYYYMMDDhhmmss''')
 
     # keyword arguments
     parser.add_argument(
