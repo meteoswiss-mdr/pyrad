@@ -15,7 +15,7 @@ dBZ STRUCT 3
     datatype STRARR 1
        RAD4ALP:dBZ
     products STRUCT 1 	  
-      EL001_0 STRUCT 4
+      EL001_0 STRUCT 3
          type STRING PPI_IMAGE
          anglenr INT 2
          voltype STRING dBZ
