@@ -20,13 +20,13 @@ starttime is an optional argument with default: '000000'
 endtime is an optional argument with default: '235959'
 postproc_cfgfile is an optional argument with default: None
 cfgpath is an optional argument with default: \
-'/home/lom/users/fvj/pyrad/config/processing/'
+'$HOME/pyrad/config/processing/'
 
 Example:
     python main_process_data.py 'paradiso_fvj_vol.txt' '20140523' '20140525' \
 --starttime '000000' --endtime '001000' \
 --postproc_cfgfile 'mals_emm_vol_postproc.txt' \
---cfgpath '/home/lom/users/fvj/pyrad/config/processing/'
+--cfgpath '$HOME/pyrad/config/processing/'
 
 """
 
@@ -51,17 +51,17 @@ if __name__ == '__main__':
         'proc_cfgfile', type=str, help='name of main configuration file')
     parser.add_argument(
         'startdate', type=str,
-        help='starting date of the data to be processed')
+        help='starting date of the data to be processed. Format ''YYYYMMDD'' ')
     parser.add_argument(
-        'enddate', type=str, help='end date of the data to be processed ')
+        'enddate', type=str, help='end date of the data to be processed. Format ''YYYYMMDD'' ')
 
     # keyword arguments
     parser.add_argument(
         '--starttime', type=str, default='000000',
-        help='starting date of the data to be processed')
+        help='starting date of the data to be processed. Format ''hhmmss'' ')
     parser.add_argument(
         '--endtime', type=str, default='235959',
-        help='end date of the data to be processed ')
+        help='end date of the data to be processed. Format ''hhmmss'' ')
 
     parser.add_argument(
         '--postproc_cfgfile', type=str, default=None,
