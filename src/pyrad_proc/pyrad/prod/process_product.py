@@ -431,7 +431,7 @@ def generate_vol_products(dataset, prdcfg):
 
         el_vec = np.sort(dataset.fixed_angle['data'])
         el = el_vec[prdcfg['anglenr']]
-        ind_el = np.where(dataset.fixed_angle['data'] == el)[0][0]
+        ind_el = np.where(np.round(dataset.fixed_angle['data']) == np.round(el))[0][0] # because in MXPOL even the fixed angle changes 
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
