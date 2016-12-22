@@ -11,6 +11,7 @@ Functions for writing pyrad output data
     write_monitoring_ts
     write_colocated_gates
     write_colocated_data
+    write_colocated_data_time_avg
     write_sun_hits
     write_sun_retrieval
     generate_field_name_str
@@ -204,7 +205,7 @@ def write_colocated_gates(coloc_gates, fname):
 
 def write_colocated_data(coloc_data, fname):
     """
-    Writes the position of gates colocated with two radars
+    Writes the data of gates colocated with two radars
 
     Parameters
     ----------
@@ -259,6 +260,82 @@ def write_colocated_data(coloc_data, fname):
                      'rad2_azi': coloc_data['rad2_azi'][i],
                      'rad2_rng': coloc_data['rad2_rng'][i],
                      'rad2_val': coloc_data['rad2_val'][i]})
+            csvfile.close()
+
+    return fname
+
+
+def write_colocated_data_time_avg(coloc_data, fname):
+    """
+    Writes the time averaged data of gates colocated with two radars
+
+    Parameters
+    ----------
+    coloc_data : dict
+        dictionary containing the colocated data parameters
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    filelist = glob.glob(fname)
+    ngates = len(coloc_data['rad1_ele'])
+    if len(filelist) == 0:
+        with open(fname, 'w', newline='') as csvfile:
+            csvfile.write('# Colocated radar gates data file\n')
+            csvfile.write('# Comment lines are preceded by "#"\n')
+            csvfile.write('#\n')
+
+            fieldnames = [
+                'rad1_ele', 'rad1_azi', 'rad1_rng',
+                'rad1_dBZavg', 'rad1_PhiDPavg', 'rad1_Flagavg',
+                'rad2_ele', 'rad2_azi', 'rad2_rng',
+                'rad2_dBZavg', 'rad2_PhiDPavg', 'rad2_Flagavg']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writeheader()
+            for i in range(ngates):
+                writer.writerow(
+                    {'rad1_ele': coloc_data['rad1_ele'][i],
+                     'rad1_azi': coloc_data['rad1_azi'][i],
+                     'rad1_rng': coloc_data['rad1_rng'][i],
+                     'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
+                     'rad1_PhiDPavg': coloc_data['rad1_PhiDPavg'][i],
+                     'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
+                     'rad1_Flagavg': coloc_data['rad1_Flagavg'][i],
+                     'rad2_ele': coloc_data['rad2_ele'][i],
+                     'rad2_azi': coloc_data['rad2_azi'][i],
+                     'rad2_rng': coloc_data['rad2_rng'][i],
+                     'rad2_dBZavg': coloc_data['rad2_dBZavg'][i],
+                     'rad2_PhiDPavg': coloc_data['rad2_PhiDPavg'][i],
+                     'rad2_Flagavg': coloc_data['rad2_Flagavg'][i]})
+            csvfile.close()
+    else:
+        with open(fname, 'a', newline='') as csvfile:
+            fieldnames = [
+                'rad1_ele', 'rad1_azi', 'rad1_rng',
+                'rad1_dBZavg', 'rad1_PhiDPavg', 'rad1_Flagavg',
+                'rad2_ele', 'rad2_azi', 'rad2_rng',
+                'rad2_dBZavg', 'rad2_PhiDPavg', 'rad2_Flagavg']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            for i in range(ngates):
+                writer.writerow(
+                    {'rad1_ele': coloc_data['rad1_ele'][i],
+                     'rad1_azi': coloc_data['rad1_azi'][i],
+                     'rad1_rng': coloc_data['rad1_rng'][i],
+                     'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
+                     'rad1_PhiDPavg': coloc_data['rad1_PhiDPavg'][i],
+                     'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
+                     'rad1_Flagavg': coloc_data['rad1_Flagavg'][i],
+                     'rad2_ele': coloc_data['rad2_ele'][i],
+                     'rad2_azi': coloc_data['rad2_azi'][i],
+                     'rad2_rng': coloc_data['rad2_rng'][i],
+                     'rad2_dBZavg': coloc_data['rad2_dBZavg'][i],
+                     'rad2_PhiDPavg': coloc_data['rad2_PhiDPavg'][i],
+                     'rad2_Flagavg': coloc_data['rad2_Flagavg'][i]})
             csvfile.close()
 
     return fname

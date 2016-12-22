@@ -5,7 +5,7 @@
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
 dataSetList STRARR 1
-    DX50_PLD_intercomp
+    DX50_PLD_dBZ_avg_intercomp
 
 # ==========================================================================================
 #                 colocated gates
@@ -65,24 +65,51 @@ dataSetList STRARR 1
 # ==========================================================================================
 #                 intercomparison
 # ==========================================================================================
-DX50_PLD_intercomp STRUCT 8
-	type STRING INTERCOMP
-	datatype STRARR 2
+#DX50_PLD_intercomp STRUCT 8
+#	type STRING INTERCOMP
+#	datatype STRARR 2
+#		RADAR001:CFRADIAL:dBZc,dBZ_avg,SAVEVOL
+#        RADAR002:CFRADIAL:dBZc,dBZ_avg,SAVEVOL
+#    coloc_data_dir STRING DX50_PLD_DATA  # must be the same as product WRITE_INTERCOMP
+#    coloc_radars_name STRING DX50_PLD
+#    ele_tol FLOAT 0.5
+#    azi_tol FLOAT 0.5
+#    rng_tol FLOAT 100.
+#    products STRUCT 2        
+#        DX50_PLD_PLOT STRUCT 3
+#            type STRING PLOT_SCATTER_INTERCOMP
+#            voltype STRING dBZc
+#            step FLOAT 0.5
+#        DX50_PLD_DATA STRUCT 2
+#            type STRING WRITE_INTERCOMP
+#            voltype STRING dBZc
+            
+DX50_PLD_dBZ_avg_intercomp STRUCT 12
+	type STRING INTERCOMP_TIME_AVG
+	datatype STRARR 6
 		RADAR001:CFRADIAL:dBZc,dBZ_avg,SAVEVOL
+        RADAR001:CFRADIAL:PhiDPc,PhiDP_avg,SAVEVOL
+        RADAR001:CFRADIAL:time_avg_flag,flag_avg,SAVEVOL
         RADAR002:CFRADIAL:dBZc,dBZ_avg,SAVEVOL
+        RADAR002:CFRADIAL:PhiDPc,PhiDP_avg,SAVEVOL
+        RADAR002:CFRADIAL:time_avg_flag,flag_avg,SAVEVOL
     coloc_data_dir STRING DX50_PLD_DATA  # must be the same as product WRITE_INTERCOMP
     coloc_radars_name STRING DX50_PLD
     ele_tol FLOAT 0.5
     azi_tol FLOAT 0.5
     rng_tol FLOAT 100.
-    products STRUCT 1        
+    clt_max INT 0
+    phi_excess_max INT 0
+    non_rain_max INT 100
+    phi_avg_max FLOAT 20.
+    products STRUCT 2        
         DX50_PLD_PLOT STRUCT 3
             type STRING PLOT_SCATTER_INTERCOMP
             voltype STRING dBZc
             step FLOAT 0.5
-#        DX50_PLD_DATA STRUCT 2
-#            type STRING WRITE_INTERCOMP
-#            voltype STRING dBZc
+        DX50_PLD_DATA STRUCT 2
+            type STRING WRITE_INTERCOMP_TIME_AVG
+            voltype STRING dBZc
         
         
         

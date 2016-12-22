@@ -120,6 +120,9 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'INTERCOMP':
         func_name = 'process_intercomp'
         dsformat = 'INTERCOMP'
+    elif dataset_type == 'INTERCOMP_TIME_AVG':
+        func_name = 'process_intercomp_time_avg'
+        dsformat = 'INTERCOMP'
     elif dataset_type == 'MONITORING':
         func_name = 'process_monitoring'
         dsformat = 'MONITORING'
@@ -501,7 +504,7 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
 
     traj_time_vec = date2num(trajectory.time_vector, radar.time['units'],
                     radar.time['calendar'])
-        
+
     for tind in np.nditer(traj_ind):
         az = rad_traj.azimuth_vec[tind]
         el = rad_traj.elevation_vec[tind]

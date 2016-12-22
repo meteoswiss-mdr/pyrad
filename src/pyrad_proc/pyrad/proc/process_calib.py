@@ -20,6 +20,7 @@ Functions for monitoring data quality and correct bias and noise effects
     process_time_avg_flag
     process_colocated_gates
     process_intercomp
+    process_intercomp_time_avg
     process_sun_hits
 
 """
@@ -37,6 +38,7 @@ from ..io.io_aux import get_save_dir, make_filename
 from ..io.read_data_other import read_selfconsistency, read_colocated_gates
 from ..io.read_data_other import read_sun_hits_multiple_days, read_solar_flux
 from ..io.read_data_other import read_colocated_data
+from ..io.read_data_other import read_colocated_data_time_avg
 from ..io.read_data_radar import interpol_field
 
 from ..util.radar_utils import get_closest_solar_flux, get_histogram_bins
@@ -1735,14 +1737,25 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
 
         datatype : list of string. Dataset keyword
             The input data types
+        coloc_data_dir : string. Dataset keyword
+            name of the directory containing the csv file with colocated data
+        coloc_radars_name : string. Dataset keyword
+            string identifying the radar names
+        azi_tol : float. Dataset keyword
+            azimuth tolerance between the two radars. Default 0.5 deg
+        ele_tol : float. Dataset keyword
+            elevation tolerance between the two radars. Default 0.5 deg
+        rng_tol : float. Dataset keyword
+            range tolerance between the two radars. Default 50 m
     radar_list : list of Radar objects
         Optional. list of radar objects
 
     Returns
     -------
-    sun_hits_dict : dict
-        dictionary containing a radar object, a sun_hits dict and a
-        sun_retrieval dictionary
+    new_dataset : dict
+        dictionary containing a dictionary with intercomparison data and the
+        key "final" which contains a boolean that is true when all volumes
+        have been processed
     ind_rad : int
         radar index
 
@@ -1925,10 +1938,359 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
             'rad1_azi': coloc_data[1],
             'rad1_rng': coloc_data[2],
             'rad1_val': coloc_data[3],
-            'rad2_ele': coloc_data[4],
-            'rad2_azi': coloc_data[5],
-            'rad2_rng': coloc_data[6],
-            'rad2_val': coloc_data[7]}
+            'rad2_ele': coloc_data[6],
+            'rad2_azi': coloc_data[7],
+            'rad2_rng': coloc_data[8],
+            'rad2_val': coloc_data[9]}
+
+        new_dataset = {'intercomp_dict': intercomp_dict,
+                       'timeinfo': dscfg['global_data']['timeinfo'],
+                       'final': True}
+
+        return new_dataset, None
+
+
+def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
+    """
+    intercomparison between the average reflectivity of two radars
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        coloc_data_dir : string. Dataset keyword
+            name of the directory containing the csv file with colocated data
+        coloc_radars_name : string. Dataset keyword
+            string identifying the radar names
+        azi_tol : float. Dataset keyword
+            azimuth tolerance between the two radars. Default 0.5 deg
+        ele_tol : float. Dataset keyword
+            elevation tolerance between the two radars. Default 0.5 deg
+        rng_tol : float. Dataset keyword
+            range tolerance between the two radars. Default 50 m
+        clt_max : int. Dataset keyword
+            maximum number of samples that can be clutter contaminated.
+            Default 100 i.e. all
+        phi_excess_max : int. Dataset keyword
+            maximum number of samples that can have excess instantaneous
+            PhiDP. Default 100 i.e. all
+        non_rain_max : int. Dataset keyword
+            maximum number of samples that can be no rain. Default 100 i.e. all
+        phi_avg_max : float. Dataset keyword
+            maximum average PhiDP allowed. Default 600 deg i.e. any
+
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing a dictionary with intercomparison data and the
+        key "final" which contains a boolean that is true when all volumes
+        have been processed
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus == 0:
+        savedir = dscfg['colocgatespath']+dscfg['coloc_radars_name']+'/'
+
+        fname = make_filename(
+            'info', 'COLOCATED_GATES', dscfg['coloc_radars_name'], ['csv'],
+            timeinfo=None)
+
+        (rad1_ele, rad1_azi, rad1_rng,
+         rad2_ele, rad2_azi, rad2_rng) = read_colocated_gates(savedir+fname[0])
+
+        if rad1_ele is None:
+            raise ValueError('Unable to intercompare radars. ' +
+                             'Missing colocated gates file')
+
+        dscfg['global_data'] = {
+            'rad1_ele': rad1_ele,
+            'rad1_azi': rad1_azi,
+            'rad1_rng': rad1_rng,
+            'rad2_ele': rad2_ele,
+            'rad2_azi': rad2_azi,
+            'rad2_rng': rad2_rng}
+
+        return None, None
+
+    if procstatus == 1:
+        # check how many radars are there
+        ind_radar_list = set()
+        for datatypedescr in dscfg['datatype']:
+            radarnr = datatypedescr.split(':')[0]
+            ind_radar_list.add(int(radarnr[5:8])-1)
+
+        ind_radar_list = list(ind_radar_list)
+
+        if (len(ind_radar_list) != 2) or (len(radar_list) < 2):
+            warn('Intercomparison requires data from two different radars')
+            return None, None
+
+        radarnr_list = ['RADAR'+'{:03d}'.format(ind_radar_list[0]+1),
+                        'RADAR'+'{:03d}'.format(ind_radar_list[1]+1)]
+
+        # get field names
+        for datatypedescr in dscfg['datatype']:
+            radarnr, datagroup, datatype, dataset, product = (
+                get_datatype_fields(datatypedescr))
+            if radarnr == radarnr_list[0]:
+                if ((datatype == 'dBZ') or (datatype == 'dBZc') or
+                        (datatype == 'dBuZ') or (datatype == 'dBZv') or
+                        (datatype == 'dBZvc') or (datatype == 'dBuZv')):
+                    rad1_refl_field = get_fieldname_pyart(datatype)
+                elif (datatype == 'PhiDP') or (datatype == 'PhiDPc'):
+                    rad1_phidp_field = get_fieldname_pyart(datatype)
+                elif datatype == 'time_avg_flag':
+                    rad1_flag_field = get_fieldname_pyart(datatype)
+            elif radarnr == radarnr_list[1]:
+                if ((datatype == 'dBZ') or (datatype == 'dBZc') or
+                        (datatype == 'dBuZ') or (datatype == 'dBZv') or
+                        (datatype == 'dBZvc') or (datatype == 'dBuZv')):
+                    rad2_refl_field = get_fieldname_pyart(datatype)
+                elif (datatype == 'PhiDP') or (datatype == 'PhiDPc'):
+                    rad2_phidp_field = get_fieldname_pyart(datatype)
+                elif datatype == 'time_avg_flag':
+                    rad2_flag_field = get_fieldname_pyart(datatype)
+
+        radar1 = radar_list[ind_radar_list[0]]
+        radar2 = radar_list[ind_radar_list[1]]
+
+        if ((rad1_refl_field not in radar1.fields) or
+                (rad1_phidp_field not in radar1.fields) or
+                (rad1_flag_field not in radar1.fields) or
+                (rad2_refl_field not in radar2.fields) or
+                (rad2_phidp_field not in radar2.fields) or
+                (rad2_flag_field not in radar2.fields)):
+            warn('Unable to compare radar time avg fields. ' +
+                 'Fields missing')
+            return None, None
+
+        if not dscfg['initialized']:
+            dscfg['global_data'].update({'timeinfo': dscfg['timeinfo']})
+            dscfg['initialized'] = 1
+
+        refl1 = radar1.fields[rad1_refl_field]['data']
+        refl2 = radar2.fields[rad2_refl_field]['data']
+
+        phidp1 = radar1.fields[rad1_phidp_field]['data']
+        phidp2 = radar2.fields[rad2_phidp_field]['data']
+
+        flag1 = radar1.fields[rad1_flag_field]['data']
+        flag2 = radar2.fields[rad2_flag_field]['data']
+
+        azi_tol = 0.5
+        ele_tol = 0.5
+        rng_tol = 50.
+
+        if 'azi_tol' in dscfg:
+            azi_tol = dscfg['azi_tol']
+        if 'ele_tol' in dscfg:
+            ele_tol = dscfg['ele_tol']
+        if 'rng_tol' in dscfg:
+            rng_tol = dscfg['rng_tol']
+
+        intercomp_dict = {
+            'rad1_ele': [],
+            'rad1_azi': [],
+            'rad1_rng': [],
+            'rad1_dBZavg': [],
+            'rad1_PhiDPavg': [],
+            'rad1_Flagavg': [],
+            'rad2_ele': [],
+            'rad2_azi': [],
+            'rad2_rng': [],
+            'rad2_dBZavg': [],
+            'rad2_PhiDPavg': [],
+            'rad2_Flagavg': []}
+
+        # determine if radar data has to be averaged
+        avg_rad1, avg_rad2, avg_rad_lim = get_range_bins_to_avg(
+            radar1.range['data'], radar2.range['data'])
+
+        for i in range(len(dscfg['global_data']['rad1_ele'])):
+            ind_ray_rad1 = find_ray_index(
+                radar1.elevation['data'], radar1.azimuth['data'],
+                dscfg['global_data']['rad1_ele'][i],
+                dscfg['global_data']['rad1_azi'][i],
+                ele_tol=ele_tol, azi_tol=azi_tol)
+            if ind_ray_rad1 is None:
+                continue
+            ind_rng_rad1 = find_rng_index(
+                radar1.range['data'], dscfg['global_data']['rad1_rng'][i],
+                rng_tol=rng_tol)
+            if ind_rng_rad1 is None:
+                continue
+
+            ind_ray_rad2 = find_ray_index(
+                radar2.elevation['data'], radar2.azimuth['data'],
+                dscfg['global_data']['rad2_ele'][i],
+                dscfg['global_data']['rad2_azi'][i],
+                ele_tol=ele_tol, azi_tol=azi_tol)
+            if ind_ray_rad2 is None:
+                continue
+            ind_rng_rad2 = find_rng_index(
+                radar2.range['data'], dscfg['global_data']['rad2_rng'][i],
+                rng_tol=rng_tol)
+            if ind_rng_rad2 is None:
+                continue
+
+            refl1_val = np.ma.asarray(refl1[ind_ray_rad1[0], ind_rng_rad1[0]])
+            refl2_val = np.ma.asarray(refl2[ind_ray_rad2[0], ind_rng_rad2[0]])
+
+            phidp1_val = np.ma.asarray(
+                phidp1[ind_ray_rad1[0], ind_rng_rad1[0]])
+            phidp2_val = np.ma.asarray(
+                phidp2[ind_ray_rad2[0], ind_rng_rad2[0]])
+
+            flag1_val = flag1[ind_ray_rad1[0], ind_rng_rad1[0]]
+            flag2_val = flag2[ind_ray_rad2[0], ind_rng_rad2[0]]
+
+            if avg_rad1:
+                if (ind_rng_rad1[0]+avg_rad_lim[1] >= radar1.ngates or
+                        ind_rng_rad1[0]+avg_rad_lim[0] < 0):
+                    continue
+                ind_rng = list(range(
+                    ind_rng_rad1[0]+avg_rad_lim[0],
+                    ind_rng_rad1[0]+avg_rad_lim[1]+1))
+                refl1_val = np.ma.asarray(np.ma.mean(
+                    refl1[ind_ray_rad1[0], ind_rng]))
+                phidp1_val = np.ma.asarray(np.ma.mean(
+                    phidp1[ind_ray_rad1[0], ind_rng]))
+
+                rad1_flag = flag1[ind_ray_rad1[0], ind_rng_rad1[0]]
+
+                rad1_excess_phi = rad1_flag % 100
+                rad1_clt = ((rad1_flag-rad1_excess_phi) % 10000) / 100
+                rad1_prec = (
+                    ((rad1_flag-rad1_clt*100-rad1_excess_phi) % 1000000) /
+                    10000)
+
+                flag1_val = int(
+                    10000*np.max(rad1_prec)+100*np.max(rad1_clt) +
+                    np.max(rad1_excess_phi))
+
+            elif avg_rad2:
+                if (ind_rng_rad2[0]+avg_rad_lim[1] >= radar2.ngates or
+                        ind_rng_rad2[0]+avg_rad_lim[0] < 0):
+                    continue
+                ind_rng = list(range(
+                    ind_rng_rad2[0]+avg_rad_lim[0],
+                    ind_rng_rad2[0]+avg_rad_lim[1]+1))
+                refl2_val = np.ma.asarray(np.ma.mean(
+                    refl2[ind_ray_rad2[0], ind_rng]))
+                phidp2_val = np.ma.asarray(np.ma.mean(
+                    phidp2[ind_ray_rad1[0], ind_rng]))
+
+                rad2_flag = flag2[ind_ray_rad1[0], ind_rng_rad1[0]]
+
+                rad2_excess_phi = rad2_flag % 100
+                rad2_clt = ((rad2_flag-rad2_excess_phi) % 10000) / 100
+                rad2_prec = (
+                    ((rad2_flag-rad2_clt*100-rad2_excess_phi) % 1000000) /
+                    10000)
+
+                flag2_val = int(
+                    10000*np.max(rad2_prec)+100*np.max(rad2_clt) +
+                    np.max(rad2_excess_phi))
+
+            if (refl1_val.mask or refl2_val.mask or phidp1_val.mask or
+                    phidp2_val.mask):
+                continue
+
+            intercomp_dict['rad1_ele'].append(
+                radar1.elevation['data'][ind_ray_rad1[0]])
+            intercomp_dict['rad1_azi'].append(
+                radar1.azimuth['data'][ind_ray_rad1[0]])
+            intercomp_dict['rad1_rng'].append(
+                radar1.range['data'][ind_rng_rad1[0]])
+            intercomp_dict['rad1_dBZavg'].append(refl1_val)
+            intercomp_dict['rad1_PhiDPavg'].append(phidp1_val)
+            intercomp_dict['rad1_Flagavg'].append(flag1_val)
+
+            intercomp_dict['rad2_ele'].append(
+                radar2.elevation['data'][ind_ray_rad2[0]])
+            intercomp_dict['rad2_azi'].append(
+                radar2.azimuth['data'][ind_ray_rad2[0]])
+            intercomp_dict['rad2_rng'].append(
+                radar2.range['data'][ind_rng_rad2[0]])
+            intercomp_dict['rad2_dBZavg'].append(refl2_val)
+            intercomp_dict['rad2_PhiDPavg'].append(phidp2_val)
+            intercomp_dict['rad2_Flagavg'].append(flag2_val)
+
+        new_dataset = {'intercomp_dict': intercomp_dict,
+                       'final': False}
+        return new_dataset, None
+
+    if procstatus == 2:
+        savedir = get_save_dir(
+            dscfg['basepath'], dscfg['procname'], dscfg['dsname'],
+            dscfg['coloc_data_dir'],
+            timeinfo=dscfg['global_data']['timeinfo'], create_dir=False)
+
+        fname = make_filename(
+            'colocated_data', dscfg['type'], 'dBZc', ['csv'],
+            timeinfo=dscfg['global_data']['timeinfo'], timeformat='%Y%m%d')
+
+        fname = savedir+fname[0]
+
+        (rad1_ele, rad1_azi, rad1_rng, rad1_dBZ, rad1_phi, rad1_flag,
+         rad2_ele, rad2_azi, rad2_rng, rad2_dBZ, rad2_phi, rad2_flag) = (
+            read_colocated_data_time_avg(fname))
+
+        rad1_excess_phi = (rad1_flag % 100).astype(int)
+        rad2_excess_phi = (rad2_flag % 100).astype(int)
+
+        rad1_clt = (((rad1_flag-rad1_excess_phi) % 10000) / 100).astype(int)
+        rad2_clt = (((rad2_flag-rad2_excess_phi) % 10000) / 100).astype(int)
+
+        rad1_non_rain = (
+            ((rad1_flag-rad1_clt*100-rad1_excess_phi) % 1000000) /
+            10000).astype(int)
+        rad2_non_rain = (
+            ((rad2_flag-rad2_clt*100-rad2_excess_phi) % 1000000) /
+            10000).astype(int)
+
+        clt_max = 100
+        phi_excess_max = 100
+        non_rain_max = 100
+        phi_avg_max = 600.
+
+        if 'clt_max' in dscfg:
+            clt_max = dscfg['clt_max']
+        if 'phi_excess_max' in dscfg:
+            phi_excess_max = dscfg['phi_excess_max']
+        if 'non_rain_max' in dscfg:
+            non_rain_max = dscfg['non_rain_max']
+        if 'phi_avg_max' in dscfg:
+            phi_avg_max = dscfg['phi_avg_max']
+
+        # filter out invalid data
+        ind_val = np.where(
+            np.logical_and.reduce((
+                rad1_clt <= clt_max, rad2_clt <= clt_max,
+                rad1_excess_phi <= phi_excess_max,
+                rad2_excess_phi <= phi_excess_max,
+                rad1_non_rain <= non_rain_max, rad2_non_rain <= non_rain_max,
+                rad1_phi <= phi_avg_max, rad2_phi <= phi_avg_max)))[0]
+
+        intercomp_dict = {
+            'rad1_ele': rad1_ele[ind_val],
+            'rad1_azi': rad1_azi[ind_val],
+            'rad1_rng': rad1_rng[ind_val],
+            'rad1_val': rad1_dBZ[ind_val],
+            'rad2_ele': rad2_ele[ind_val],
+            'rad2_azi': rad2_azi[ind_val],
+            'rad2_rng': rad2_rng[ind_val],
+            'rad2_val': rad2_dBZ[ind_val]}
 
         new_dataset = {'intercomp_dict': intercomp_dict,
                        'timeinfo': dscfg['global_data']['timeinfo'],

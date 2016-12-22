@@ -29,6 +29,7 @@ from copy import deepcopy
 import datetime
 
 import numpy as np
+import scipy
 
 import pyart
 
@@ -493,6 +494,10 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
         values at each bin
 
     """
+    if len(field1) == 0 or len(field2) == 0:
+        warn('Unable to compute 2D histogram. Empty field')
+        return None, None, None, None
+
     hist_2d, bins1, bins2 = compute_2d_hist(
         field1, field2, field_name1, field_name2, step1=step1, step2=step2)
     npoints = len(field1)
@@ -502,12 +507,19 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
     medianbias = np.ma.median(field2-field1)
     ind_max_val1, ind_max_val2 = np.where(hist_2d == np.ma.amax(hist_2d))
     modebias = bins2[ind_max_val2[0]]-bins1[ind_max_val1[0]]
+    slope, intercep, corr, pval, stderr = scipy.stats.linregress(
+        field1, y=field2)
+    intercep_slope_1 = np.ma.mean(field2-field1)
 
     stats = {
         'npoints': npoints,
         'meanbias': meanbias,
         'medianbias': medianbias,
-        'modebias': modebias
+        'modebias': modebias,
+        'corr': corr,
+        'slope': slope,
+        'intercep': intercep,
+        'intercep_slope_1': intercep_slope_1
     }
 
     return hist_2d, bins1, bins2, stats

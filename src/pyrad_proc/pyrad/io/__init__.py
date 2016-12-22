@@ -53,6 +53,7 @@ Writing data
 
     write_colocated_gates
     write_colocated_data
+    write_colocated_data_time_avg
     write_timeseries
     write_ts_polar_data
     write_monitoring_ts
@@ -109,6 +110,7 @@ from .write_data import write_ts_polar_data
 from .write_data import write_monitoring_ts
 from .write_data import write_sun_hits, write_sun_retrieval
 from .write_data import write_colocated_gates, write_colocated_data
+from .write_data import write_colocated_data_time_avg
 
 from .io_aux import get_save_dir, make_filename
 from .io_aux import get_datetime, get_dataset_fields

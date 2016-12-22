@@ -34,6 +34,7 @@ from ..io.read_data_other import read_sun_retrieval, read_monitoring_ts
 from ..io.write_data import write_ts_polar_data, write_monitoring_ts
 from ..io.write_data import write_sun_hits, write_sun_retrieval
 from ..io.write_data import write_colocated_gates, write_colocated_data
+from ..io.write_data import write_colocated_data_time_avg
 
 from ..graph.plots import plot_ppi, plot_rhi, plot_cappi, plot_bscope
 from ..graph.plots import plot_timeseries, plot_timeseries_comp
@@ -286,6 +287,26 @@ def generate_intercomp_products(dataset, prdcfg):
         print('saved colocated data file: '+fname)
 
         return fname
+    if prdcfg['type'] == 'WRITE_INTERCOMP_TIME_AVG':
+        if dataset['final']:
+            return None
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'colocated_data', prdcfg['dstype'], prdcfg['voltype'],
+            ['csv'], timeinfo=prdcfg['timeinfo'],
+            timeformat='%Y%m%d')
+
+        fname = savedir+fname[0]
+
+        write_colocated_data_time_avg(dataset['intercomp_dict'], fname)
+
+        print('saved colocated time averaged data file: '+fname)
+
+        return fname
     elif prdcfg['type'] == 'PLOT_SCATTER_INTERCOMP':
         if not dataset['final']:
             return None
@@ -311,16 +332,23 @@ def generate_intercomp_products(dataset, prdcfg):
             np.ma.asarray(dataset['intercomp_dict']['rad1_val']),
             np.ma.asarray(dataset['intercomp_dict']['rad2_val']),
             field_name, field_name, step1=step, step2=step)
+        if hist_2d is None:
+            return None
 
         metadata = (
             'npoints: '+str(stats['npoints'])+'\n' +
             'mode bias: '+str(stats['modebias'])+'\n' +
             'median bias: '+str(stats['medianbias'])+'\n' +
             'mean bias: '+str(stats['meanbias'])+'\n' +
-            'corr: '+str(stats['npoints'])+'\n')
+            'corr: '+str(stats['corr'])+'\n' +
+            'slope: '+str(stats['slope'])+'\n' +
+            'intercep: '+str(stats['intercep'])+'\n' +
+            'intercep slope 1: '+str(stats['intercep_slope_1'])+'\n')
 
         plot_scatter(bins1, bins2, np.ma.asarray(hist_2d), field_name,
-                     field_name, fname, prdcfg, metadata=metadata)
+                     field_name, fname, prdcfg, metadata=metadata,
+                     lin_regr=[stats['slope'], stats['intercep']],
+                     lin_regr_slope1=stats['intercep_slope_1'])
 
         print('saved figures: '+' '.join(fname))
 

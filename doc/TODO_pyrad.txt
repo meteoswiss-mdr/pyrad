@@ -1,7 +1,6 @@
 Pending modifications for current code in Pyrad
 -----------------------------------------------
 - In function process_echo_id: Add condition on differential reflectivity at low reflectivity values. Allow user to select the various thresholds. Add a speckle filter
-- In selfconsistency functions: get tables as a function of elevation, allow user to define the tresholds
 - Functions for PhiDP and KDP processing consume too much memory up to the point that they cannot handle rad4alp PH data. It is probably due to the rolling window creating a monstrous matrix.
 We should try to reduce the memory consumption.
 
@@ -26,9 +25,6 @@ Things to check before making it operational:
     - Check if transmission losses have to be subtracted from received power
     - Check if conversion from solar flux to received power is done properly
 - Polarimetric data monitoring:
-    - Add metadata in the density and histogram plot
-    - Check what happens to data that is out of the range of the histogram
+    - Add metadata in the density and histogram plot    
 - Rainfall rate estimation:
     - Distinguish between the various rainfall rate estimators (no single datatype RR)
-- Intercomparison:
-    - Add metadata in the plot

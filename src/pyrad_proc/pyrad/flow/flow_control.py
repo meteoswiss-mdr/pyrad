@@ -521,14 +521,14 @@ def _get_datatype_list(cfg, radarnr='RADAR001'):
         proclevel, dataset = get_dataset_fields(datasetdescr)
         if 'datatype' in cfg[dataset]:
             if isinstance(cfg[dataset]['datatype'], str):
-                (radarnr_descr, datagroup, datatype, dataset_save,
+                (radarnr_descr, datagroup, datatype_aux, dataset_save,
                  product_save) = (
                     get_datatype_fields(cfg[dataset]['datatype']))
                 if datagroup != 'PROC' and radarnr_descr == radarnr:
                     if ((dataset_save is None) and (product_save is None)):
-                        datatypesdescr.add(datagroup+":"+datatype)
+                        datatypesdescr.add(datagroup+":"+datatype_aux)
                     else:
-                        datatypesdescr.add(datagroup + ":" + datatype +
+                        datatypesdescr.add(datagroup + ":" + datatype_aux +
                                            "," + dataset_save + "," +
                                            product_save)
             else:
@@ -540,7 +540,7 @@ def _get_datatype_list(cfg, radarnr='RADAR001'):
                         if ((dataset_save is None) and (product_save is None)):
                             datatypesdescr.add(datagroup+":"+datatype_aux)
                         else:
-                            datatypesdescr.add(datagroup + ":" + datatype +
+                            datatypesdescr.add(datagroup + ":" + datatype_aux +
                                                "," + dataset_save + "," +
                                                product_save)
 
@@ -605,8 +605,7 @@ def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if ((datagroup != 'COSMO') and (datagroup != 'RAD4ALPCOSMO') and
-                (datagroup != 'DEM') and (datagroup != 'RAD4ALPDEM') and
-                (datagroup != 'SAVED')):
+                (datagroup != 'DEM') and (datagroup != 'RAD4ALPDEM')):
             masterdatatypedescr = datatypedescr
             if scan_list is not None:
                 masterscan = scan_list[int(radarnr[5:8])-1][0]
@@ -617,7 +616,7 @@ def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
         for datatypedescr in datatypesdescr:
             radarnr, datagroup, datatype, dataset, product = (
                 get_datatype_fields(datatypedescr))
-            if ((datagroup == 'COSMO') or (datagroup == 'SAVED')):
+            if datagroup == 'COSMO':
                 masterdatatypedescr = radarnr+':RAINBOW:dBZ'
                 if scan_list is not None:
                     masterscan = scan_list[int(radarnr[5:8])-1][0]

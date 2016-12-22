@@ -68,6 +68,7 @@ Monitoring, calibration and noise correction
     process_time_avg_flag
     process_colocated_gates
     process_intercomp
+    process_intercomp_time_avg
 
 Retrievals
 ==========
@@ -108,6 +109,7 @@ from .process_calib import process_monitoring
 from .process_calib import process_time_avg, process_weighted_time_avg
 from .process_calib import process_time_avg_flag
 from .process_calib import process_colocated_gates, process_intercomp
+from .process_calib import process_intercomp_time_avg
 from .process_calib import process_sun_hits
 
 from .process_retrieve import process_signal_power, process_snr

@@ -475,7 +475,7 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
 
 
 def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
-                 prdcfg, metadata=None):
+                 prdcfg, metadata=None,  lin_regr=None, lin_regr_slope1=None):
     """
     2D histogram
 
@@ -523,6 +523,13 @@ def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
 
     # plot reference
     plt.plot(bins1, bins2, 'k--')
+
+    # plot linear regression
+    if lin_regr is not None:
+        plt.plot(bins1, lin_regr[0]*bins1+lin_regr[1], 'r')
+    if lin_regr_slope1 is not None:
+        plt.plot(bins1, bins1+lin_regr_slope1, 'g')
+
     plt.autoscale(enable=True, axis='both', tight=True)
 
     plt.xlabel(labelx)

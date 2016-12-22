@@ -12,6 +12,7 @@ Functions for reading auxiliary data
     read_rad4alp_vis
     read_colocated_gates
     read_colocated_data
+    read_colocated_data_time_avg
     read_timeseries
     read_monitoring_ts
     read_sun_hits_multiple_days
@@ -285,6 +286,71 @@ def read_colocated_data(fname):
     except EnvironmentError:
         warn('Unable to read file '+fname)
         return None, None, None, None, None, None, None, None
+
+
+def read_colocated_data_time_avg(fname):
+    """
+    Reads a csv files containing time averaged colocated data
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    rad1_ele , rad1_azi, rad1_rng, rad1_val, rad2_ele, rad2_azi, rad2_rng,
+    rad2_val : tupple
+        A tupple with the data read. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            nrows = sum(1 for row in reader)
+            rad1_ele = np.empty(nrows, dtype=float)
+            rad1_azi = np.empty(nrows, dtype=float)
+            rad1_rng = np.empty(nrows, dtype=float)
+            rad1_dBZavg = np.empty(nrows, dtype=float)
+            rad1_PhiDPavg = np.empty(nrows, dtype=float)
+            rad1_Flagavg = np.empty(nrows, dtype=float)
+            rad2_ele = np.empty(nrows, dtype=float)
+            rad2_azi = np.empty(nrows, dtype=float)
+            rad2_rng = np.empty(nrows, dtype=float)
+            rad2_dBZavg = np.empty(nrows, dtype=float)
+            rad2_PhiDPavg = np.empty(nrows, dtype=float)
+            rad2_Flagavg = np.empty(nrows, dtype=float)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            i = 0
+            for row in reader:
+                rad1_ele[i] = float(row['rad1_ele'])
+                rad1_azi[i] = float(row['rad1_azi'])
+                rad1_rng[i] = float(row['rad1_rng'])
+                rad1_dBZavg[i] = float(row['rad1_dBZavg'])
+                rad1_PhiDPavg[i] = float(row['rad1_PhiDPavg'])
+                rad1_Flagavg[i] = float(row['rad1_Flagavg'])
+                rad2_ele[i] = float(row['rad2_ele'])
+                rad2_azi[i] = float(row['rad2_azi'])
+                rad2_rng[i] = float(row['rad2_rng'])
+                rad2_dBZavg[i] = float(row['rad2_dBZavg'])
+                rad2_PhiDPavg[i] = float(row['rad2_PhiDPavg'])
+                rad2_Flagavg[i] = float(row['rad2_Flagavg'])
+                i += 1
+
+            return (rad1_ele, rad1_azi, rad1_rng,
+                    rad1_dBZavg, rad1_PhiDPavg, rad1_Flagavg,
+                    rad2_ele, rad2_azi, rad2_rng,
+                    rad2_dBZavg, rad2_PhiDPavg, rad2_Flagavg)
+    except EnvironmentError:
+        warn('Unable to read file '+fname)
+        return (None, None, None, None, None, None, None, None, None, None,
+                None, None)
 
 
 def read_timeseries(fname):

@@ -44,7 +44,7 @@ dempath STRARR 2
 # --------------------------------------------
 # Output data
 # -----------------------------------------------
-saveimgbasepath STRING /data/pyrad_products/
+saveimgbasepath STRING /data/pyrad_examples/
 saveimg         INT 1
 imgformat       STRING png
 
