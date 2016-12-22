@@ -12,7 +12,69 @@ under the utilities section
 
 """
 
+# radar information 
+
+MCH_elev=[-0.2,0.4,1,1.6,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,11,13,16,20,25,30,35,40]
+NYQUIST_VEL=[8.3, 9.6,8.3,12.4,11.0,12.4,13.8,12.4,13.8,16.5,16.5,16.5,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6]
+ 
+RADAR_INFO = {
+    'coordinates' : {
+        'ALB' : [47.284,8.512],
+        'DOL' : [46.425,6.099],
+        'PPM' : [46.371,7.487],
+        'MLE' : [46.041,8.833],
+        'DX50' : [46.8425,6.9184],
+        'MXPOL' : [46.8133,6.9428]
+        },
+    'altitude': {
+        'ALB' : 938,
+        'DOL' : 1682,
+        'PPM' : 2937,
+        'MLE' : 1626,
+        'DX50': 451,
+        'MXPOL': 489
+        },
+    'searchkey' : {
+        'ALB' : 'PHA*hdf*',
+        'DOL' : 'PHD*hdf*',
+        'PPM' : 'PHP*hdf*',
+        'MLE' : 'PHL*hdf*',
+        'DX50' : None,
+        'MXPOL' : None        
+        },
+    'radarID' : {
+        'ALB' : 'ALB',
+        'A':'ALB',
+        'DOL' : 'DOL',
+        'D':'DOL',
+        'PPM' : 'PPM',
+        'P':'PPM',
+        'MLE' : 'MLE',
+        'M':'MLE',
+        'DX50' : 'DX50',
+        'MXPOL' : 'MXPOL'
+        },
+    'dbbeam' : {
+        'ALB' : 1.,
+        'DOL' : 1.,
+        'PPM' : 1.,
+        'MLE' : 1.,
+        'MXPOL' : 1.4,
+        'DX50' : 1.27
+        },
+    'elevations': {
+        'ALB': MCH_elev,
+        'DOL': MCH_elev,
+        'PPM': MCH_elev,
+        'MLE' : MCH_elev,
+        'DX50': None,
+        'MXPOL': None
+        }
+    }
+
 MY_METADATA = {
+
+        'nyq_vel' : NYQUIST_VEL,
 
         # Metadata for instrument tables
 
@@ -21,7 +83,6 @@ MY_METADATA = {
             'coordinates' : None,
             'altitude' : None, 
             'dbbeam' : None,
-            'filepath' : None,
             'radarID' : None},
             
         'Parsivel_info' : {

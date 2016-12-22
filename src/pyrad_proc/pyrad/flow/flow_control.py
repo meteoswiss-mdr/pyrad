@@ -41,8 +41,8 @@ from ..proc.process_aux import get_process_func
 from ..prod.product_aux import get_prodgen_func
 
 from pyrad import proc, prod
-from pyrad import version as pyrad_version
-from pyart import version as pyart_version
+#from pyrad import version as pyrad_version
+#from pyart import version as pyart_version
 
 
 def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
@@ -62,10 +62,10 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
 
     """
 
-    print("- PYRAD version: %s (compiled %s by %s)" %
+    """print("- PYRAD version: %s (compiled %s by %s)" %
           (pyrad_version.version, pyrad_version.compile_date_time,
            pyrad_version.username))
-    print("- PYART version: " + pyart_version.version)
+    print("- PYART version: " + pyart_version.version)"""
 
     # Definie behaviour of warnings
     warnings.simplefilter('always')  # always print matching warnings

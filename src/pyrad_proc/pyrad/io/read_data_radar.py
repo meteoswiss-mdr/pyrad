@@ -41,11 +41,12 @@ except:
     _WRADLIB_AVAILABLE = False
 
 from .read_data_other import read_status, read_rad4alp_cosmo, read_rad4alp_vis
-from .read_data_mxpol import pyrad_MXPOL
+from .read_data_mxpol import pyrad_MXPOL, pyrad_MCH
 
 from .io_aux import get_datatype_metranet, get_fieldname_pyart, get_file_list
 from .io_aux import get_datatype_fields, get_datetime
 from .io_aux import find_cosmo_file, find_rad4alpcosmo_file
+
 
 
 def get_data(voltime, datatypesdescr, cfg):
@@ -347,13 +348,13 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
     nelevs = len(scan_list)
     # merge the elevations into a single radar instance
     for i in range(1, nelevs):
-        filename = glob.glob(datapath+basename+timeinfo+'*.'+scan_list[i])
+        filename = glob.glob(datapath+basename+timeinfo+'*.'+scan_list[i] + '*')
         if not filename:
             warn('No file found in '+datapath+basename+timeinfo+'*.' +
                  scan_list[i])
         else:
             radar_aux = get_data_rad4alp(
-                filename[0], datatype_list, scan_list[i], cfg, ind_rad=ind_rad)
+                filename[0], datatype_list, scan_list[i], cfg, ind_rad=ind_rad, lteconvention = lteconvention)
 
             if radar is None:
                 radar = radar_aux
@@ -912,7 +913,7 @@ def get_data_rainbow(filename, datatype):
     return radar
 
 
-def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
+def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0, lteconvention = True):
     """
     gets rad4alp radar data
 
@@ -928,6 +929,8 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
         configuration dictionary
     ind_rad : int
         radar index
+    lteconvention : bool
+        set to True to use lte file storage convention
 
     Returns
     -------
@@ -939,9 +942,12 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
     for datatype in datatype_list:
         if (datatype != 'Nh') and (datatype != 'Nv'):
             metranet_field_names.update(get_datatype_metranet(datatype))
-
-    radar = pyart.aux_io.read_metranet(
-        filename, field_names=metranet_field_names)
+    
+    if lteconvention is True:
+        radar = pyrad_MCH(filename, field_names=metranet_field_names)
+    else:
+        radar = pyart.aux_io.read_metranet(
+            filename, field_names=metranet_field_names)
 
     # create secondary moments
     if ('Nh' in datatype_list) or ('Nv' in datatype_list):
