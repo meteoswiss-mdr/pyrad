@@ -64,10 +64,14 @@ def process_echo_id(procstatus, dscfg, radar_list=None):
             refl_field = 'unfiltered_reflectivity'
         if datatype == 'ZDR':
             zdr_field = 'differential_reflectivity'
+        if datatype == 'ZDRc':
+            zdr_field = 'corrected_differential_reflectivity'
         if datatype == 'ZDRu':
             zdr_field = 'unfiltered_differential_reflectivity'
         if datatype == 'RhoHV':
             rhv_field = 'cross_correlation_ratio'
+        if datatype == 'uRhoHV':
+            rhv_field = 'uncorrected_cross_correlation_ratio'
         if datatype == 'uPhiDP':
             phi_field = 'uncorrected_differential_phase'
 

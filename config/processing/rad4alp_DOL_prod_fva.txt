@@ -4,51 +4,53 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 4    
-    l1:ZDRc
+dataSetList STRARR 5    
+    l0:dBZ
+    l0:ZDR
+    l0:uPhiDP
+    l0:uRhoHV
     l1:echoID
-    l1:echoFilter
-    l1:RRZh_noattcorr 
+  
 
 
 # ==========================================================================================
 #                 raw data products
 # ==========================================================================================
-#dBZ STRUCT 3
-#    type STRING RAW
-#    datatype STRING MXPOL:dBZ
-#    products STRUCT 1
-#      EL002_5 STRUCT 3
-#         type STRING RHI_IMAGE
-#         anglenr INT 0
-#         voltype STRING dBZ
+dBZ STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:dBZ
+    products STRUCT 1
+      EL002_5 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 1
+         voltype STRING dBZ
+
+ZDR STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:ZDR
+    products STRUCT 1
+      EL002_5 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 4
+         voltype STRING ZDR
 #
-#ZDR STRUCT 3
-#    type STRING RAW
-#    datatype STRING RAD4ALP:ZDR
-#    products STRUCT 1
-#      EL002_5 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 4
-#         voltype STRING ZDR
+uRhoHV STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:uRhoHV
+    products STRUCT 1
+      EL002_5 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 4
+         voltype STRING uRhoHV
 #
-#uRhoHV STRUCT 3
-#    type STRING RAW
-#    datatype STRING RAD4ALP:uRhoHV
-#    products STRUCT 1
-#      EL002_5 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 4
-#         voltype STRING uRhoHV
-#
-#uPhiDP STRUCT 3
-#    type STRING RAW
-#    datatype STRING RAD4ALP:uPhiDP
-#    products STRUCT 1
-#      EL002_5 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 4
-#         voltype STRING uPhiDP
+uPhiDP STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:uPhiDP
+    products STRUCT 1
+      EL002_5 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 4
+         voltype STRING uPhiDP
 #         
 #Nh STRUCT 3
 #    type STRING RAW
@@ -100,18 +102,17 @@ dataSetList STRARR 4
 # ==========================================================================================
 #
 ## --- bias on 2015-10-06 -----
-ZDRc STRUCT 5
-   type STRING BIAS_CORRECTION
-   datatype STRARR 1
-      MXPOL:ZDR
-   bias FLOAT -0.1
-   MAKE_GLOBAL INT 1
-   products STRUCT 1
-       EL002_5 STRUCT 3
-         type STRING RHI_IMAGE
-         anglenr INT 0
-         voltype STRING ZDRc
-#
+#ZDRc STRUCT 5
+#   type STRING BIAS_CORRECTION
+#   datatype STRARR 1
+#      RAD4ALP:ZDR
+#   bias FLOAT -0.1
+#   MAKE_GLOBAL INT 1
+#   products STRUCT 1
+#       EL002_5 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 4
+#         voltype STRING ZDRc
 #
 # ==========================================================================================
 #                 secondary moments products
@@ -128,7 +129,7 @@ ZDRc STRUCT 5
 #         type STRING PPI_IMAGE
 #         anglenr INT 4
 #         voltype STRING SNRh
-         
+#         
 #SNRv STRUCT 4
 #    type STRING SNR
 #    datatype STRARR 2
@@ -144,16 +145,16 @@ ZDRc STRUCT 5
 #RhoHV STRUCT 4
 #    type STRING RHOHV_CORRECTION
 #    datatype STRARR 5
-#        MXPOL:uRhoHV
+#        RAD4ALP:uRhoHV
 #        PROC:ZDRc
-#        MXPOL:Nh
-#        MXPOL:Nv
+#        RAD4ALP:Nh
+#        RAD4ALP:Nv
 #        PROC:SNRh
 #    MAKE_GLOBAL INT 1
 #    products STRUCT 1
 #      EL002_5 STRUCT 3
-#         type STRING RHI_IMAGE
-#         anglenr INT 0
+#         type STRING PPI_IMAGE
+#         anglenr INT 4
 #         voltype STRING RhoHV
 #         
 #L STRUCT 3
@@ -216,35 +217,21 @@ ZDRc STRUCT 5
 # ==========================================================================================
 #                 echo identification
 # ==========================================================================================
-#echoID STRUCT 4
-#   type        STRING SAN
-#   datatype    STRARR 4
-#      MXPOL:dBZ
-#      PROC:ZDRc
-#      MXPOL:uPhiDP
-#      PROC:RhoHV
-#   MAKE_GLOBAL INT 1
-#   products STRUCT 2
-#       EL002_5 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 4
-#         voltype STRING echoID
-#       ELN00_2 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 0
-#         voltype STRING echoID
-#
 echoID STRUCT 4
-   type STRING SAN
-   datatype STRARR 4
-      MXPOL:dBZ
-      PROC:ZDRc
-      MXPOL:uPhiDP
-      MXPOL:uRhoHV
+   type        STRING SAN
+   datatype    STRARR 4
+      RAD4ALP:dBZ
+      RAD4ALP:ZDR
+      RAD4ALP:uPhiDP
+      RAD4ALP:uRhoHV
    MAKE_GLOBAL INT 1
-   products STRUCT 1
+   products STRUCT 2
        EL002_5 STRUCT 3
-         type STRING RHI_IMAGE
+         type STRING PPI_IMAGE
+         anglenr INT 4
+         voltype STRING echoID
+       ELN00_2 STRUCT 3
+         type STRING PPI_IMAGE
          anglenr INT 0
          voltype STRING echoID
 #
@@ -254,15 +241,15 @@ echoID STRUCT 4
 #echoFilter STRUCT 4
 #   type STRING ECHO_FILTER
 #   datatype STRARR 4
-#      MXPOL:dBZ
+#      RAD4ALP:dBZ
 #      PROC:ZDRc
 #      PROC:RhoHV
-#      MXPOL:uPhiDP
+#      RAD4ALP:uPhiDP
 #   MAKE_GLOBAL INT 1
-#   products STRUCT 1
-#      EL002_5_dBZc STRUCT 3
-#         type STRING RHI_IMAGE
-#         anglenr INT 0
+#   products STRUCT 4
+#	  EL002_5_dBZc STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 4
 #         voltype STRING dBZc
 #      EL002_5_ZDRc STRUCT 3
 #         type STRING PPI_IMAGE
@@ -276,29 +263,6 @@ echoID STRUCT 4
 #         type STRING PPI_IMAGE
 #         anglenr INT 4
 #         voltype STRING RhoHVc
-#
-echoFilter STRUCT 4
-   type STRING ECHO_FILTER
-   datatype STRARR 5
-      MXPOL:dBZ
-      PROC:ZDRc
-      MXPOL:uRhoHV
-      MXPOL:uPhiDP
-      PROC:echoID
-   MAKE_GLOBAL INT 1
-   products STRUCT 3
-      EL002_5_dBZc STRUCT 3
-         type STRING RHI_IMAGE
-         anglenr INT 0
-         voltype STRING dBZc
-      EL002_5_PhiDPc STRUCT 3
-	 type STRING RHI_IMAGE
-	 anglenr INT 0
-	 voltype STRING PhiDPc
-      EL002_5_RhoHVc STRUCT 3
-	 type STRING RHI_IMAGE
-	 anglenr INT 0
-	 voltype STRING RhoHVc
 #
 #echoFilter2 STRUCT 3
 #   type STRING ECHO_FILTER
@@ -482,14 +446,14 @@ echoFilter STRUCT 4
 RRZh_noattcorr STRUCT 5
    type STRING RAINRATE
    datatype STRARR 1
-     PROC:dBZc
+     Proc:dBZ
    RR_METHOD STRING Z
    MAKE_GLOBAL INT 1
    products STRUCT 1
      EL002_5 STRUCT 3
-        type STRING RHI_IMAGE
+        type STRING PPI_IMAGE
         voltype STRING RR
-        anglenr INT 0
+ 	anglenr INT 1
 
 #RRZh STRUCT 4
 #   type STRING RAINRATE
