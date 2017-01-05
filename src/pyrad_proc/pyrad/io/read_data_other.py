@@ -23,7 +23,7 @@ Functions for reading auxiliary data
     read_smn
     read_disdro_scattering
     read_selfconsistency
-
+    read_antenna_pattern
 """
 
 import os
@@ -1060,3 +1060,48 @@ def read_selfconsistency(fname):
     except EnvironmentError:
         warn('Unable to read file '+fname)
         return None
+
+
+def read_antenna_pattern(fname, linear=False, twoway=False):
+    """
+    Read antenna pattern from file
+    """
+
+    try:
+        pfile = open(fname, "r")
+    except:
+        raise Exception("ERROR: Could not find|open antenna file '" +
+                        fname+"'")
+
+    # Get array length
+    linenum = 0
+    for line in pfile:
+        if (line.startswith("# CRC:")):
+            break
+        linenum += 1
+
+    pattern = {
+        'angle': np.empty(linenum),
+        'attenuation': np.empty(linenum)
+    }
+
+    pfile.seek(0)
+    cnt = 0
+    for line in pfile:
+        if (line.startswith("# CRC:")):
+            break
+        line = line.strip()
+        fields = line.split(',')
+        pattern['angle'][cnt] = float(fields[0])
+        pattern['attenuation'][cnt] = float(fields[1])
+        cnt += 1
+
+    pfile.close()
+
+    if (twoway):
+        pattern['attenuation'] = 2. * pattern['attenuation']
+
+    if (linear):
+        pattern['attenuation'] = 10.**(pattern['attenuation']/10.)
+
+    return pattern

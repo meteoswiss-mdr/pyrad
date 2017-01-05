@@ -4,9 +4,10 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 2
+dataSetList STRARR 3
    l0:traj
    l0:reflectivity_traj
+   l0:reflectivity_traj_az
 #   l0:rainrate
 #   l0:windshear
 #   l1:rainrate_traj
@@ -40,6 +41,21 @@ reflectivity_traj STRUCT 3
          type  STRING   PLOT_AND_WRITE
          ymin  FLOAT    0.0
          ymax  FLOAT    50.0
+
+reflectivity_traj_az STRUCT 9
+   type          STRING TRAJ_ANTENNA_PATTERN
+   datatype      STRING RAINBOW:dBZ
+   dssavename    STRING rainrate_traj
+   antennaType   STRING AZIMUTH
+   use_nans      INT 0
+   nan_value     FLOAT 0.0
+   pattern_thres FLOAT 1.5
+   RANGE_ALL     INT 0
+   products      STRUCT 1
+      AZIMUTH_ANTENNA STRUCT 3
+         type  STRING   PLOT_AND_WRITE
+         ymin  FLOAT    0.0
+         ymax  FLOAT    4.0
 
 rainrate_traj STRUCT 3
    type          STRING TRAJ_ATPLANE

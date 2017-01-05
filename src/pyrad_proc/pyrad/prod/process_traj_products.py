@@ -50,9 +50,9 @@ def generate_traj_product(traj, prdcfg):
                                   timeformat='%Y%m%d%H%M%S',
                                   runinfo=prdcfg['runinfo'])
 
-            ts.add_dataseries("Elevation", "deg",
+            ts.add_dataseries("Elevation", "Elevation", "deg",
                               traj.radar_list[0].elevation_vec)
-            ts.plot(savedir + fname[0], "Elevation")
+            ts.plot(savedir + fname[0])
 
         elif (prdcfg['datatype'] == 'AZ'):
             fname = make_filename('ts', prdcfg['dstype'], 'TRAJ',
@@ -61,8 +61,8 @@ def generate_traj_product(traj, prdcfg):
                                   timeformat='%Y%m%d%H%M%S',
                                   runinfo=prdcfg['runinfo'])
 
-            ts.add_dataseries("Azimuth", "deg", traj.radar_list[0].azimuth_vec)
-            ts.plot(savedir + fname[0], "Azimuth")
+            ts.add_dataseries("Azimuth", "Azimuth", "deg", traj.radar_list[0].azimuth_vec)
+            ts.plot(savedir + fname[0])
 
         elif (prdcfg['datatype'] == 'RANGE'):
             fname = make_filename('ts', prdcfg['dstype'], 'TRAJ',
@@ -71,8 +71,8 @@ def generate_traj_product(traj, prdcfg):
                                   timeformat='%Y%m%d%H%M%S',
                                   runinfo=prdcfg['runinfo'])
 
-            ts.add_dataseries("Range", "m", traj.radar_list[0].range_vec)
-            ts.plot(savedir + fname[0], "Range")
+            ts.add_dataseries("Range", "Range", "m", traj.radar_list[0].range_vec)
+            ts.plot(savedir + fname[0])
 
         else:
             raise Exception("ERROR: Unknown datatype '%s' (dataset: '%s')" %

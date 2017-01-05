@@ -12,11 +12,10 @@ dataSetList STRARR 6
    KDP
    TEMP
 
-   
 reflectivity STRUCT 3
    type     STRING RAW
    datatype STRING dBZ
-   products STRUCT 4      
+   products STRUCT 4
       AZ033 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 4
@@ -34,11 +33,11 @@ reflectivity STRUCT 3
          angle FLOAT 6.
          EleTol FLOAT 1.
          voltype STRING dBZ
-         
+
 ZDR STRUCT 3
    type     STRING RAW
    datatype STRING ZDR
-   products STRUCT 4      
+   products STRUCT 4
       AZ033 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 4
@@ -56,11 +55,11 @@ ZDR STRUCT 3
          angle FLOAT 6.
          EleTol FLOAT 1.
          voltype STRING ZDR
-         
+
 RhoHV STRUCT 3
    type     STRING RAW
    datatype STRING RhoHV
-   products STRUCT 4      
+   products STRUCT 4
       AZ033 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 4
@@ -78,11 +77,11 @@ RhoHV STRUCT 3
          angle FLOAT 6.
          EleTol FLOAT 1.
          voltype STRING RhoHV
-         
+
 PhiDP STRUCT 3
    type     STRING RAW
    datatype STRING PhiDP
-   products STRUCT 4      
+   products STRUCT 4
       AZ033 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 4
@@ -100,12 +99,12 @@ PhiDP STRUCT 3
          angle FLOAT 6.
          EleTol FLOAT 1.
          voltype STRING PhiDP
-         
-         
+
+
 KDP STRUCT 3
    type     STRING RAW
    datatype STRING KDP
-   products STRUCT 4      
+   products STRUCT 4
       AZ033 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 4
@@ -123,11 +122,11 @@ KDP STRUCT 3
          angle FLOAT 6.
          EleTol FLOAT 1.
          voltype STRING KDP
-         
+
 TEMP STRUCT 3
    type     STRING RAW
    datatype STRING COSMO:TEMP
-   products STRUCT 4      
+   products STRUCT 4
       AZ033 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 4

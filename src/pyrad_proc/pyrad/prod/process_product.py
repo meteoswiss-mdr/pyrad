@@ -882,8 +882,8 @@ def generate_timeseries_products(dataset, prdcfg):
         labely = generate_field_name_str(dataset['datatype'])
 
         plot_timeseries(
-            date, value, figfname, labelx='Time UTC',
-            labely=labely, label1=label1, titl=titl)
+            date, [value], figfname, labelx='Time UTC',
+            labely=labely, labels=[label1], title=titl)
         print('saved figures: '+' '.join(figfname))
 
         return figfname
@@ -927,8 +927,8 @@ def generate_timeseries_products(dataset, prdcfg):
         labely = 'Radar estimated rainfall accumulation (mm)'
 
         plot_timeseries(
-            date, value, figfname, labelx='Time UTC',
-            labely=labely, label1=label1, titl=titl,
+            date, [value], figfname, labelx='Time UTC',
+            labely=labely, labels=[label1], title=titl,
             period=prdcfg['ScanPeriod']*60.)
         print('saved figures: '+' '.join(figfname))
 
@@ -1052,9 +1052,45 @@ def generate_timeseries_products(dataset, prdcfg):
 
         return figfname
 
-    else:
-        warn(' Unsupported product type: ' + prdcfg['type'])
+    # ================================================================
+    elif prdcfg['type'] == 'PLOT_AND_WRITE':
+
+        timeinfo = dataset.time_vector[0]
+
+        savedir = get_save_dir(prdcfg['basepath'], prdcfg['procname'],
+                               prdcfg['dsname'], prdcfg['prdname'],
+                               timeinfo=timeinfo)
+
+        dstype_str = prdcfg['dstype'].lower().replace('_', '')
+        fname = make_filename('ts', dstype_str, dataset.datatype,
+                              ['csv'],
+                              prdcfginfo=None, timeinfo=timeinfo,
+                              timeformat='%Y%m%d%H%M%S',
+                              runinfo=prdcfg['runinfo'])
+
+        dataset.write(savedir + fname[0])
+
+        fname = make_filename('ts', dstype_str, dataset.datatype,
+                              prdcfg['imgformat'],
+                              prdcfginfo=None, timeinfo=timeinfo,
+                              timeformat='%Y%m%d%H%M%S',
+                              runinfo=prdcfg['runinfo'])
+
+        ymin = None
+        ymax = None
+        if ('ymin' in prdcfg):
+            ymin = prdcfg['ymin']
+        if ('ymax' in prdcfg):
+            ymax = prdcfg['ymax']
+
+        dataset.plot(savedir + fname[0], ymin=ymin, ymax=ymax)
+
         return None
+
+    # ================================================================
+    else:
+        raise Exception("ERROR: Unsupported product type: '%s' of dataset '%s'"
+                        % (prdcfg['type'], prdcfg['dsname']))
 
 
 def generate_monitoring_products(dataset, prdcfg):

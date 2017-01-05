@@ -667,17 +667,18 @@ def plot_histogram2(bins, hist, fname_list, labelx='bins',
     return fname_list
 
 
-def plot_timeseries(date, value, fname_list, labelx='Time [UTC]',
-                    labely='Value', label1='Sensor', titl='Time Series',
-                    period=0, timeformat=None):
+def plot_timeseries(tvec, data, fname_list, labelx='Time [UTC]',
+                    labely='Value', labels=['Sensor'], title='Time Series',
+                    period=0, timeformat=None, colors=None, linestyles=None,
+                    ymin=None, ymax=None):
     """
     plots a time series
 
     Parameters
     ----------
-    date : datetime object
+    tvec : datetime object
         time of the time series
-    value : float array
+    data : list of float array
         values of the time series
     fname_list : list of str
         list of names of the files where to store the plot
@@ -685,7 +686,7 @@ def plot_timeseries(date, value, fname_list, labelx='Time [UTC]',
         The label of the X axis
     labely : str
         The label of the Y axis
-    label1 : str
+    labels : array of str
         The label of the legend
     titl : str
         The figure title
@@ -693,7 +694,13 @@ def plot_timeseries(date, value, fname_list, labelx='Time [UTC]',
         measurement period in seconds used to compute accumulation. If 0 no
         accumulation is computed
     timeformat : str
-        Specifies the date and time format on the x axis
+        Specifies the tvec and time format on the x axis
+    colors : array of str
+        Specifies the colors of each line
+    linestyles : array of str
+        Specifies the line style of each line
+    ymin, ymax: float
+        Lower/Upper limit of y axis
 
     Returns
     -------
@@ -702,14 +709,28 @@ def plot_timeseries(date, value, fname_list, labelx='Time [UTC]',
 
     """
     if period > 0:
-        value *= (period/3600.)
-        value = np.ma.cumsum(value)
+        for kk in range(len(data)):
+            data[kk] *= (period/3600.)
+            data[kk] = np.ma.cumsum(data[kk])
 
     fig, ax = plt.subplots(figsize=[10, 6])
-    ax.plot(date, value, label=label1)
-    ax.set_title(titl)
+
+    lab = None
+    col = None
+    lstyle = None
+    for kk in range(len(data)):
+        if (labels is not None):
+            lab = labels[kk]
+        if (colors is not None):
+            col = colors[kk]
+        if (linestyles is not None):
+            lstyle = linestyles[kk]
+        ax.plot(tvec, data[kk], label=lab, color=col, linestyle=lstyle)
+
+    ax.set_title(title)
     ax.set_xlabel(labelx)
     ax.set_ylabel(labely)
+    ax.set_ylim(bottom=ymin, top=ymax)
 
     if (timeformat is not None):
         ax.xaxis.set_major_formatter(mdates.DateFormatter(timeformat))

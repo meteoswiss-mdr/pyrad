@@ -396,7 +396,7 @@ def _create_datacfg_dict(cfg):
     datacfg.update({'loadname': cfg['loadname']})
     datacfg.update({'RadarName': cfg['RadarName']})
     datacfg.update({'RadarRes': cfg['RadarRes']})
-    datacfg.update({'ScanPeriod': int(cfg['ScanPeriod'])})
+    datacfg.update({'ScanPeriod': cfg['ScanPeriod']})
     datacfg.update({'CosmoRunFreq': int(cfg['CosmoRunFreq'])})
     datacfg.update({'CosmoForecasted': int(cfg['CosmoForecasted'])})
 
@@ -436,6 +436,10 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
     dscfg.update({'procname': cfg['name']})
     dscfg.update({'dsname': dataset})
     dscfg.update({'timeinfo': None})
+    if ('par_azimuth_antenna' in cfg):
+        dscfg.update({'par_azimuth_antenna': cfg['par_azimuth_antenna']})
+    if ('par_elevation_antenna' in cfg):
+        dscfg.update({'par_elevation_antenna': cfg['par_elevation_antenna']})
 
     # indicates the dataset has been initialized and aux data is available
     dscfg.update({'initialized': False})

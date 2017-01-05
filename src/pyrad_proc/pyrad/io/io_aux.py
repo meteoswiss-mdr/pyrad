@@ -12,6 +12,8 @@ Auxiliary functions for reading/writing files
     generate_field_name_str
     get_datatype_metranet
     get_fieldname_pyart
+    get_field_unit
+    get_field_name
     get_file_list
     get_scan_list
     get_datatype_fields
@@ -156,6 +158,50 @@ def generate_field_name_str(datatype):
     field_str += ' ('+field_dic['units']+')'
 
     return field_str
+
+
+def get_field_name(datatype):
+    """
+    Return long name of datatype.
+
+    Parameters
+    ----------
+    datatype : str
+        The data type
+
+    Returns
+    -------
+    name : str
+        The name
+
+    """
+    field_name = get_fieldname_pyart(datatype)
+    field_dic = get_metadata(field_name)
+    name = field_dic['long_name'].replace('_', ' ')
+    name = name[0].upper() + name[1:]
+
+    return name
+
+
+def get_field_unit(datatype):
+    """
+    Return unit of datatype.
+
+    Parameters
+    ----------
+    datatype : str
+        The data type
+
+    Returns
+    -------
+    unit : str
+        The unit
+
+    """
+    field_name = get_fieldname_pyart(datatype)
+    field_dic = get_metadata(field_name)
+
+    return field_dic['units']
 
 
 def get_datatype_metranet(datatype):
