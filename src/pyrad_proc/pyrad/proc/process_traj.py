@@ -193,18 +193,20 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
                                   rr_ind, el_vec_rnd, az_vec_rnd)):
             continue
 
-        # ========================================================================
+        # =====================================================================
         # Get sample at bin
         rdata = radar_sel.fields[field_name]['data'].data
         val = rdata[ray_sel, rr_ind]
 
-        # ========================================================================
+        # =====================================================================
         # Get samples around this cell (3x3 box)
         el_res = np.median(np.diff(el_vec_rnd))
         az_res = np.median(np.diff(az_vec_rnd))
 
-        d_el = np.abs(radar_sel.elevation['data'] - radar_sel.elevation['data'][ray_sel])
-        d_az = np.abs(radar_sel.azimuth['data'] - radar_sel.azimuth['data'][ray_sel])
+        d_el = np.abs(radar_sel.elevation['data'] -
+                      radar_sel.elevation['data'][ray_sel])
+        d_az = np.abs(radar_sel.azimuth['data'] -
+                      radar_sel.azimuth['data'][ray_sel])
         cell_ind = np.where((d_el < el_res*ang_tol) & (d_az < az_res*ang_tol))
 
         rr_min = rr_ind-1
@@ -214,7 +216,7 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
 
         nvals_tot = cell_vals.size
 
-        # ========================================================================
+        # =====================================================================
         # Exclude undefined values
 
         fill_val = radar_sel.fields[field_name]['_FillValue']
@@ -224,7 +226,7 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
         val_min = np.min(cell_vals)
         val_max = np.max(cell_vals)
 
-        # ========================================================================
+        # =====================================================================
         # Add to time series
 
         ts.add_timesample(trajectory.time_vector[tind],
@@ -239,7 +241,8 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
     return None, None
 
 
-def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None, trajectory=None):
+def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
+                                 trajectory=None):
     """
     Process a new array of data volumes considering a plane
     trajectory. As result a timeseries with the values
@@ -297,7 +300,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None, trajectory=
     dt_task_start = num2date(ttask_start, radar.time['units'],
                              radar.time['calendar'])
     if (not dscfg['initialized']):
-        # init
+        # === init ============================================================
         if (trajectory is None):
             raise Exception("ERROR: Undefined trajectory for dataset '%s'"
                             % dscfg['dsname'])
@@ -321,13 +324,13 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None, trajectory=
                 "Time series of a weather radar data type at the location",
                 "of the plane weighted by the antenna pattern of the PAR",
                 "antenna.",
-                "The time samples where the plane was out of the weather radar",
-                "sector are NOT included in this file.",
+                "The time samples where the plane was out of the weather",
+                "radar sector are NOT included in this file.",
                 "NaN (Not a number): No rain detected at the plane location."
             ]
             if ('par_azimuth_antenna' not in dscfg):
-                raise Exception("ERROR: Undefined 'par_azimuth_antenna' for dataset '%s'"
-                                % dscfg['dsname'])
+                raise Exception("ERROR: Undefined 'par_azimuth_antenna' for"
+                                " dataset '%s'" % dscfg['dsname'])
 
             patternfile = dscfg['configpath'] + 'antenna/' \
                 + dscfg['par_azimuth_antenna']['elPatternFile']
@@ -347,19 +350,20 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None, trajectory=
             ]
 
             if ('par_elevation_antenna' not in dscfg):
-                raise Exception("ERROR: Undefined 'par_elevation_antenna' for dataset '%s'"
-                                % dscfg['dsname'])
+                raise Exception("ERROR: Undefined 'par_elevation_antenna' for"
+                                " dataset '%s'" % dscfg['dsname'])
 
             patternfile = dscfg['configpath'] + 'antenna/' \
                 + dscfg['par_elevation_antenna']['azPatternFile']
             fixed_angle = dscfg['par_elevation_antenna']['fixed_angle']
         else:
-            raise Exception("ERROR: Unexpected antenna type '%s' for dataset '%s'"
-                            % (dscfg['antennaType'], dscfg['dsname']))
+            raise Exception("ERROR: Unexpected antenna type '%s' for dataset"
+                            " '%s'" % (dscfg['antennaType'], dscfg['dsname']))
 
         # Get antenna pattern and make weight vector
         try:
-            antpattern = read_antenna_pattern(patternfile, linear=True, twoway=True)
+            antpattern = read_antenna_pattern(patternfile, linear=True,
+                                              twoway=True)
         except:
             raise
         pattern_angles = antpattern['angle'] + fixed_angle
@@ -368,9 +372,11 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None, trajectory=
         pattern_angles[pattern_angles >= 360.] -= 360.
 
         if (is_azimuth_antenna):
-            scan_angles = np.sort(np.unique(radar.elevation['data'].round(decimals=1)))
+            scan_angles = np.sort(np.unique(
+                    radar.elevation['data'].round(decimals=1)))
         else:
-            scan_angles = np.sort(np.unique(radar.azimuth['data'].round(decimals=1)))
+            scan_angles = np.sort(np.unique(
+                    radar.azimuth['data'].round(decimals=1)))
 
         weightvec = np.empty(scan_angles.size, dtype=float)
         for kk in range(scan_angles.size):
@@ -382,8 +388,24 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None, trajectory=
 
         unit = get_field_unit(datatype)
         name = get_field_name(datatype)
+        # Quantiles of interest
+        quantiles = [{"val":0.1, "plot":False, "color":None, "ltype":None},
+                     {"val":0.2, "plot":True, "color":'k', "ltype":None},
+                     {"val":0.3, "plot":False, "color":None, "ltype":None},
+                     {"val":0.4, "plot":False, "color":None, "ltype":None},
+                     {"val":0.5, "plot":True, "color":'r', "ltype":':'},
+                     {"val":0.6, "plot":False, "color":None, "ltype":None},
+                     {"val":0.7, "plot":False, "color":None, "ltype":None},
+                     {"val":0.8, "plot":True, "color":'k', "ltype":':'},
+                     {"val":0.9, "plot":False, "color":None, "ltype":None},
+                     {"val":0.95, "plot":False, "color":None, "ltype":None}]
 
-        # XXX
+        ts.add_dataseries("Weigthed average", name, unit, color='b')
+        for qq in quantiles:
+            label = "Quantile_%4.2f" % qq["val"]
+            ts.add_dataseries(label, name, unit, plot=qq["plot"],
+                              color=qq["color"], linestyle=qq["ltype"])
+        ts.add_dataseries("#Valid", "", "", plot=False)
 
         tadict = dict({
                 'radar_traj': rad_traj,
@@ -393,6 +415,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None, trajectory=
                 'ind_rad': ind_rad,
                 'is_azimuth_antenna': is_azimuth_antenna,
                 'info': info,
+                'scan_angles': scan_angles,
                 'weightvec': weightvec,
                 'ts': ts})
         traj_ind = trajectory.get_samples_in_period(end=dt_task_start)
@@ -405,6 +428,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None, trajectory=
         tadict = dscfg['traj_antenna_dict']
         rad_traj = tadict['radar_traj']
         is_azimuth_antenna = tadict['is_azimuth_antenna']
+        scan_angles = tadict['scan_angles']
         weightvec = tadict['weightvec']
         ts = tadict['ts']
 
@@ -429,6 +453,41 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None, trajectory=
                                   rr_ind, el_vec_rnd, az_vec_rnd)):
             continue
 
+        # =====================================================================
+        # Get sample at bin
+        print("====") #XXX
+        print(az, el, rr)#XXX
+        print(radar_sel.azimuth['data'][ray_sel], radar_sel.elevation['data'][ray_sel],
+              radar_sel.range['data'][rr_ind])#XXX
+
+
+        if is_azimuth_antenna:
+            angles = radar_sel.azimuth['data']
+            angles_scan = radar_sel.elevation['data']
+            ray_angle = radar_sel.azimuth['data'][ray_sel]
+        else:
+            angles = radar_sel.elevation['data']
+            angles_scan = radar_sel.azimuth['data']
+            ray_angle = radar_sel.elevation['data'][ray_sel]
+
+        d_angle = np.abs(angles - ray_angle)
+        ray_inds = np.where(d_angle < 0.09)[0]
+        angles_sortind = np.argsort(angles_scan[ray_inds])
+
+        ray_inds = ray_inds[angles_sortind]
+        angles_sorted = angles_scan[ray_inds]
+
+        if ((scan_angles.size != angles_sorted.size) or
+            (np.max(np.abs(scan_angles - angles_sorted)) > 0.1)):
+            print("WARNING: Scan angle mismatch!", file=sys.stderr)
+            continue
+
+        # XXX Set rr_ind_min
+
+        rdata = radar_sel.fields[field_name]['data'].data
+        values = rdata[ray_inds, rr_ind-1:rr_ind+1] #XXX
+
+        a = quantiles_weighted(values, weigth_vector=weightvec)
         # XXX
 
         # end loop over traj samples within period
@@ -488,8 +547,10 @@ def _get_closests_bin(az, el, rr, tt, radar, tdict):
     # Find closest range bin
     rr_ind = np.argmin(np.abs(radar_sel.range['data'] - rr))
 
-    el_vec_rnd = np.sort(np.unique(radar_sel.elevation['data'].round(decimals=1)))
-    az_vec_rnd = np.sort(np.unique(radar_sel.azimuth['data'].round(decimals=1)))
+    el_vec_rnd = np.sort(np.unique(
+            radar_sel.elevation['data'].round(decimals=1)))
+    az_vec_rnd = np.sort(np.unique(
+            radar_sel.azimuth['data'].round(decimals=1)))
 
     return (radar_sel, ray_sel, rr_ind, el_vec_rnd, az_vec_rnd)
 
@@ -515,3 +576,18 @@ def _sample_out_of_sector(az, el, rr, radar_sel, ray_sel, rr_ind,
         return True
 
     return False
+
+
+def quantiles_weighted(values, weigth_vector=[1.0]):
+    """
+    """
+
+    print(type(values))
+    print(values.shape)
+    print(values.ndim)
+    print(type(weigth_vector))
+    print(weigth_vector.shape)
+    print(weigth_vector.ndim)
+
+    return None
+
