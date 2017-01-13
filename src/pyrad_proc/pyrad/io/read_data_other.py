@@ -21,6 +21,7 @@ Functions for reading auxiliary data
     read_solar_flux
     get_sensor_data
     read_smn
+    read_smn2
     read_disdro_scattering
     read_selfconsistency
     read_antenna_pattern
@@ -939,6 +940,63 @@ def read_smn(fname):
         return None, None, None, None, None, None, None, None
 
 
+def read_smn2(fname):
+    """
+    Reads SwissMetNet data contained in a csv file with format
+    station,time,value
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    id, date , value : tupple
+        The read values
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # skip the first 2 lines
+            next(csvfile)
+            next(csvfile)
+
+            # first count the lines
+            reader = csv.DictReader(
+                csvfile, fieldnames=['StationID', 'DateTime', 'Value'])
+            nrows = sum(1 for row in reader)
+
+            if nrows == 0:
+                warn('Empty file '+fname)
+                return None, None, None
+            id = np.ma.empty(nrows, dtype=int)
+            value = np.ma.empty(nrows, dtype=float)
+
+            # now read the data
+            csvfile.seek(0)
+
+            # skip the first 2 lines
+            next(csvfile)
+            next(csvfile)
+
+            reader = csv.DictReader(
+                csvfile, fieldnames=['StationID', 'DateTime', 'Value'])
+            i = 0
+            date = list()
+            for row in reader:
+                id[i] = float(row['StationID'])
+                date.append(datetime.datetime.strptime(
+                    row['DateTime'], '%Y%m%d%H%M%S'))
+                value[i] = float(row['Value'])
+                i += 1
+
+            return id, date, value
+    except EnvironmentError:
+        warn('Unable to read file '+fname)
+        return None, None, None
+
+
 def read_disdro_scattering(fname):
     """
     Reads scattering parameters computed from disdrometer data contained in a
@@ -951,7 +1009,8 @@ def read_disdro_scattering(fname):
 
     Returns
     -------
-    id, date , pressure, temp, rh, precip, wspeed, wdir : arrays
+    date, preciptype, lwc, rr, zh, zv, zdr, ldr, ah, av, adiff, kdp, deltaco,
+    rhohv : tupple
         The read values
 
     """

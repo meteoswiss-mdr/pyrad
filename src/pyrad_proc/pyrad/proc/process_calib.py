@@ -2345,6 +2345,9 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
             [deg]. Default None
         ndays : int. Dataset keyword
             number of days used in sun retrieval. Default 1
+        coeff_band : float. Dataset keyword
+            multiplicate coefficient to transform pulse width into receiver
+            bandwidth
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -2482,6 +2485,7 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
         az_width_cross = None
         el_width_cross = None
         nfiles = 1
+        coeff_band = 1.2
 
         # user values
         if 'az_width_co' in dscfg:
@@ -2494,6 +2498,8 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
             el_width_cross = dscfg['el_width_cross']
         if 'ndays' in dscfg:
             nfiles = dscfg['ndays']
+        if 'coeff_band' in dscfg:
+            coeff_band = dscfg['coeff_band']
 
         sun_hits = read_sun_hits_multiple_days(
             dscfg, dscfg['global_data']['timeinfo'], nfiles=nfiles)
@@ -2523,7 +2529,7 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
                     flx_val_closest, dscfg['global_data']['pulse_width'],
                     dscfg['global_data']['wavelen'], dscfg['AntennaGain'],
                     dscfg['global_data']['angle_step'],
-                    dscfg['global_data']['beamwidth'])
+                    dscfg['global_data']['beamwidth'], coeff_band=coeff_band)
 
                 sun_pwr_ref = np.ma.asarray(sun_pwr_drao[-1])
                 ref_time = flx_dt_closest[-1]

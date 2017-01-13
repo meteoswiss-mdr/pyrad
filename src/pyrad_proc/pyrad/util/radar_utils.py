@@ -7,6 +7,7 @@ Miscellaneous functions dealing with radar data
 .. autosummary::
     :toctree: generated/
 
+    time_series_statistics
     get_range_bins_to_avg
     find_ray_index
     find_rng_index
@@ -29,9 +30,45 @@ from copy import deepcopy
 import datetime
 
 import numpy as np
+import pandas as pd
 import scipy
 
 import pyart
+
+
+def time_series_statistics(t_in_vec, val_in_vec, avg_time=3600,
+                           base_time=1800, method='mean'):
+    """
+    Computes statistics over a time-averaged series
+
+    Parameters
+    ----------
+    t_in_vec : datetime array
+        the input date and time array
+    val_in_vec : float array
+        the input values array
+    avg_time : int
+        averaging time [s]
+    base_time : int
+        base time [s]
+    method : str
+        statistical method
+
+    Returns
+    -------
+    t_out_vec : datetime array
+        the output date and time array
+    val_out_vec : float array
+        the output values array
+
+    """
+    df_in = pd.DataFrame(data=val_in_vec, index=pd.DatetimeIndex(t_in_vec))
+    df_out = getattr(df_in.resample(str(avg_time)+'S', closed='right',
+                     label='right', base=base_time), method)()
+    t_out_vec = df_out.index.to_pydatetime()
+    val_out_vec = df_out.values.flatten()
+
+    return t_out_vec, val_out_vec
 
 
 def get_range_bins_to_avg(rad1_rng, rad2_rng):
