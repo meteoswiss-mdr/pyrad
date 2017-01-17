@@ -35,6 +35,7 @@ Example:
 
 import datetime
 import argparse
+import os
 
 from pyrad.flow import main
 
@@ -53,7 +54,8 @@ if __name__ == '__main__':
         'startdate', type=str,
         help='starting date of the data to be processed. Format ''YYYYMMDD'' ')
     parser.add_argument(
-        'enddate', type=str, help='end date of the data to be processed. Format ''YYYYMMDD'' ')
+        'enddate', type=str,
+        help='end date of the data to be processed. Format ''YYYYMMDD'' ')
 
     # keyword arguments
     parser.add_argument(

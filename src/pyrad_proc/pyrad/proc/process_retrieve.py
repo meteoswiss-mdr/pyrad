@@ -45,12 +45,26 @@ def process_signal_power(procstatus, dscfg, radar_list=None):
         radconstv : float. Global keyword
             The vertical channel radar constant. Used if input is vertical
             reflectivity
+        lrxv : float. Global keyword
+            The receiver losses from the antenna feed to the reference point.
+            [dB] positive value
+            Used if input is vertical reflectivity
+        lradomev : float. Global keyword
+            The 1-way dry radome losses [dB] positive value.
+            Used if input is vertical reflectivity
         mflossh : float. Global keyword
             The matching filter losses of the vertical channel. Used if input
             is horizontal reflectivity
         radconsth : float. Global keyword
             The horizontal channel radar constant. Used if input is horizontal
             reflectivity
+        lrxh : float. Global keyword
+            The receiver losses from the antenna feed to the reference point.
+            [dB] positive value
+            Used if input is horizontal reflectivity
+        lradomeh : float. Global keyword
+            The 1-way dry radome losses [dB] positive value.
+            Used if input is horizontal reflectivity
         attg : float. Dataset keyword
             The gas attenuation
     radar_list : list of Radar objects
@@ -106,6 +120,14 @@ def process_signal_power(procstatus, dscfg, radar_list=None):
         radconst = None
         if 'radconstv' in dscfg:
             radconst = dscfg['radconstv']
+
+        lrx = 0.
+        if 'lrxv' in dscfg:
+            lrx = dscfg['lrxv']
+
+        lradome = 0.
+        if 'lradomev' in dscfg:
+            lradome = dscfg['lradomev']
     else:
         pwr_field = 'signal_power_hh'
 
@@ -117,13 +139,20 @@ def process_signal_power(procstatus, dscfg, radar_list=None):
         if 'radconsth' in dscfg:
             radconst = dscfg['radconsth']
 
+        lrx = 0.
+        if 'lrxh' in dscfg:
+            lrx = dscfg['lrxh']
+
+        if 'lradomeh' in dscfg:
+            lradome = dscfg['lradomeh']
+
     attg = None
     if 'attg' in dscfg:
         attg = dscfg['attg']
 
     s_pwr = pyart.retrieve.compute_signal_power(
-        radar, lmf=lmf, attg=attg, radconst=radconst, refl_field=refl_field,
-        pwr_field=pwr_field)
+        radar, lmf=lmf, attg=attg, radconst=radconst, lrx=lrx,
+        lradome=lradome, refl_field=refl_field, pwr_field=pwr_field)
 
     # prepare for exit
     new_dataset = deepcopy(radar)
@@ -363,7 +392,7 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
-    if (not 'RR_METHOD' in dscfg):
+    if ('RR_METHOD' not in dscfg):
         raise Exception("ERROR: Undefined parameter 'RR_METHOD' for dataset '%s'"
                         % dscfg['dsname'])
 
