@@ -278,9 +278,8 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
         if (not dscfg['initialized']):
             warn('ERROR: No trajectory dataset available!')
             return None, None
-        # XXX
         tadict = dscfg['traj_antenna_dict']
-        return None, None
+        return tadict['ts'], tadict['ind_rad']
 
     # Process
     radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
@@ -390,22 +389,24 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
         name = get_field_name(datatype)
         # Quantiles of interest
         quantiles = [{"val":0.1, "plot":False, "color":None, "ltype":None},
-                     {"val":0.2, "plot":True, "color":'k', "ltype":None},
+                     {"val":0.2, "plot":True, "color":'k', "ltype":':'},
                      {"val":0.3, "plot":False, "color":None, "ltype":None},
                      {"val":0.4, "plot":False, "color":None, "ltype":None},
-                     {"val":0.5, "plot":True, "color":'r', "ltype":':'},
+                     {"val":0.5, "plot":True, "color":'r', "ltype":None},
                      {"val":0.6, "plot":False, "color":None, "ltype":None},
                      {"val":0.7, "plot":False, "color":None, "ltype":None},
                      {"val":0.8, "plot":True, "color":'k', "ltype":':'},
                      {"val":0.9, "plot":False, "color":None, "ltype":None},
                      {"val":0.95, "plot":False, "color":None, "ltype":None}]
 
-        ts.add_dataseries("Weigthed average", name, unit, color='b')
+        ts.add_dataseries("Weighted average", name, unit, color='b')
         for qq in quantiles:
             label = "Quantile_%4.2f" % qq["val"]
             ts.add_dataseries(label, name, unit, plot=qq["plot"],
                               color=qq["color"], linestyle=qq["ltype"])
         ts.add_dataseries("#Valid", "", "", plot=False)
+
+        quants = np.array([ee['val'] for ee in quantiles])
 
         tadict = dict({
                 'radar_traj': rad_traj,
@@ -417,6 +418,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
                 'info': info,
                 'scan_angles': scan_angles,
                 'weightvec': weightvec,
+                'quantiles': quants,
                 'ts': ts})
         traj_ind = trajectory.get_samples_in_period(end=dt_task_start)
 
@@ -455,11 +457,6 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
 
         # =====================================================================
         # Get sample at bin
-        print("====") #XXX
-        print(az, el, rr)#XXX
-        print(radar_sel.azimuth['data'][ray_sel], radar_sel.elevation['data'][ray_sel],
-              radar_sel.range['data'][rr_ind])#XXX
-
 
         if is_azimuth_antenna:
             angles = radar_sel.azimuth['data']
@@ -486,9 +483,19 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
 
         rdata = radar_sel.fields[field_name]['data'].data
         values = rdata[ray_inds, rr_ind-1:rr_ind+1] #XXX
+        fill_val = radar_sel.fields[field_name]['_FillValue']
 
-        a = quantiles_weighted(values, weigth_vector=weightvec)
-        # XXX
+        try:
+            (avg, qvals, nvals_valid) = quantiles_weighted(
+                values,
+                weight_vector=tadict['weightvec'],
+                quantiles=tadict['quantiles'],
+                fill_value=fill_val)
+        except Exception:
+            raise
+
+        ts.add_timesample(trajectory.time_vector[tind],
+                          (np.concatenate([[avg], qvals, [nvals_valid]])))
 
         # end loop over traj samples within period
 
@@ -578,16 +585,62 @@ def _sample_out_of_sector(az, el, rr, radar_sel, ray_sel, rr_ind,
     return False
 
 
-def quantiles_weighted(values, weigth_vector=[1.0]):
+def quantiles_weighted(values, weight_vector=None, quantiles=np.array([0.5]),
+                       fill_value=None, weight_threshold=None):
     """
+    Given a set of values and weights, compute the weighted
+    quantile(s).
     """
 
-    print(type(values))
-    print(values.shape)
-    print(values.ndim)
-    print(type(weigth_vector))
-    print(weigth_vector.shape)
-    print(weigth_vector.ndim)
+    if (weight_vector is not None):
+        if (weight_vector.size != values.shape[0]):
+            raise Exception("ERROR: Unexpected size of weight vector "
+                            "(%d instead of %d)" % (weight_vector.size, values.shape[0]))
+    else:
+        weight_vector = np.ones(values.shape[0], dtype=float)
 
-    return None
+    if (len(values.shape) > 1):
+        # repeat weight vec
+        weight_vector = np.repeat(weight_vector, values.shape[1]) \
+            .reshape(weight_vector.size, values.shape[1])
+
+        values = values.reshape(-1)
+        weight_vector = weight_vector.reshape(-1)
+
+    # remove nans
+    if (fill_value is not None):
+        values_ma = np.ma.masked_values(values, fill_value)
+        if (values_ma.mask.any()):
+            values = values_ma[~values_ma.mask]
+            weight_vector = weight_vector[~values_ma.mask]
+
+    nvalid = weight_vector.size
+    if (nvalid < 3):
+        return (None, None, None)
+
+    total_weight = np.sum(weight_vector)
+
+    # Average
+    avg = np.sum(np.multiply(values, weight_vector)) / total_weight
+
+    sorter = np.argsort(values, axis=None)
+    values = values[sorter]
+    weight_vector = weight_vector[sorter]
+
+    if (weight_threshold is not None):
+        if (total_weight < weight_threshold):
+            return (avg, None, nvalid)
+
+    weighted_quantiles = np.cumsum(weight_vector) - 0.5 * weight_vector
+
+    weighted_quantiles /= total_weight
+
+    # As done by np.percentile():
+    #weighted_quantiles -= weighted_quantiles[0]
+    #weighted_quantiles /= weighted_quantiles[-1]
+
+    # Note: Does not extrapolate
+    quants = np.interp(quantiles, weighted_quantiles, values)
+
+    return (avg, quants, nvalid)
 
