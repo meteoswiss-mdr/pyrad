@@ -13,6 +13,8 @@ Radar Utilities
 .. autosummary::
     :toctree: generated/
 
+    time_series_statistics
+    join_time_series
     get_range_bins_to_avg
     find_ray_index
     find_rng_index
@@ -37,5 +39,6 @@ from .radar_utils import compute_quantiles, compute_quantiles_sweep
 from .radar_utils import compute_quantiles_from_hist, get_range_bins_to_avg
 from .radar_utils import find_ray_index, find_rng_index, compute_2d_hist
 from .radar_utils import compute_2d_stats
+from .radar_utils import time_series_statistics, join_time_series
 
 __all__ = [s for s in dir() if not s.startswith('_')]

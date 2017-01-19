@@ -193,18 +193,20 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
                                   rr_ind, el_vec_rnd, az_vec_rnd)):
             continue
 
-        # ========================================================================
+        # =====================================================================
         # Get sample at bin
         rdata = radar_sel.fields[field_name]['data'].data
         val = rdata[ray_sel, rr_ind]
 
-        # ========================================================================
+        # =====================================================================
         # Get samples around this cell (3x3 box)
         el_res = np.median(np.diff(el_vec_rnd))
         az_res = np.median(np.diff(az_vec_rnd))
 
-        d_el = np.abs(radar_sel.elevation['data'] - radar_sel.elevation['data'][ray_sel])
-        d_az = np.abs(radar_sel.azimuth['data'] - radar_sel.azimuth['data'][ray_sel])
+        d_el = np.abs(radar_sel.elevation['data'] -
+                      radar_sel.elevation['data'][ray_sel])
+        d_az = np.abs(radar_sel.azimuth['data'] -
+                      radar_sel.azimuth['data'][ray_sel])
         cell_ind = np.where((d_el < el_res*ang_tol) & (d_az < az_res*ang_tol))
 
         rr_min = rr_ind-1
@@ -214,7 +216,7 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
 
         nvals_tot = cell_vals.size
 
-        # ========================================================================
+        # =====================================================================
         # Exclude undefined values
 
         fill_val = radar_sel.fields[field_name]['_FillValue']
@@ -224,7 +226,7 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
         val_min = np.min(cell_vals)
         val_max = np.max(cell_vals)
 
-        # ========================================================================
+        # =====================================================================
         # Add to time series
 
         ts.add_timesample(trajectory.time_vector[tind],
@@ -239,7 +241,8 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
     return None, None
 
 
-def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None, trajectory=None):
+def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
+                                 trajectory=None):
     """
     Process a new array of data volumes considering a plane
     trajectory. As result a timeseries with the values
@@ -275,9 +278,8 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None, trajectory=
         if (not dscfg['initialized']):
             warn('ERROR: No trajectory dataset available!')
             return None, None
-        # XXX
         tadict = dscfg['traj_antenna_dict']
-        return None, None
+        return tadict['ts'], tadict['ind_rad']
 
     # Process
     radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
@@ -297,7 +299,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None, trajectory=
     dt_task_start = num2date(ttask_start, radar.time['units'],
                              radar.time['calendar'])
     if (not dscfg['initialized']):
-        # init
+        # === init ============================================================
         if (trajectory is None):
             raise Exception("ERROR: Undefined trajectory for dataset '%s'"
                             % dscfg['dsname'])
@@ -321,13 +323,13 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None, trajectory=
                 "Time series of a weather radar data type at the location",
                 "of the plane weighted by the antenna pattern of the PAR",
                 "antenna.",
-                "The time samples where the plane was out of the weather radar",
-                "sector are NOT included in this file.",
+                "The time samples where the plane was out of the weather",
+                "radar sector are NOT included in this file.",
                 "NaN (Not a number): No rain detected at the plane location."
             ]
             if ('par_azimuth_antenna' not in dscfg):
-                raise Exception("ERROR: Undefined 'par_azimuth_antenna' for dataset '%s'"
-                                % dscfg['dsname'])
+                raise Exception("ERROR: Undefined 'par_azimuth_antenna' for"
+                                " dataset '%s'" % dscfg['dsname'])
 
             patternfile = dscfg['configpath'] + 'antenna/' \
                 + dscfg['par_azimuth_antenna']['elPatternFile']
@@ -347,19 +349,20 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None, trajectory=
             ]
 
             if ('par_elevation_antenna' not in dscfg):
-                raise Exception("ERROR: Undefined 'par_elevation_antenna' for dataset '%s'"
-                                % dscfg['dsname'])
+                raise Exception("ERROR: Undefined 'par_elevation_antenna' for"
+                                " dataset '%s'" % dscfg['dsname'])
 
             patternfile = dscfg['configpath'] + 'antenna/' \
                 + dscfg['par_elevation_antenna']['azPatternFile']
             fixed_angle = dscfg['par_elevation_antenna']['fixed_angle']
         else:
-            raise Exception("ERROR: Unexpected antenna type '%s' for dataset '%s'"
-                            % (dscfg['antennaType'], dscfg['dsname']))
+            raise Exception("ERROR: Unexpected antenna type '%s' for dataset"
+                            " '%s'" % (dscfg['antennaType'], dscfg['dsname']))
 
         # Get antenna pattern and make weight vector
         try:
-            antpattern = read_antenna_pattern(patternfile, linear=True, twoway=True)
+            antpattern = read_antenna_pattern(patternfile, linear=True,
+                                              twoway=True)
         except:
             raise
         pattern_angles = antpattern['angle'] + fixed_angle
@@ -368,9 +371,11 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None, trajectory=
         pattern_angles[pattern_angles >= 360.] -= 360.
 
         if (is_azimuth_antenna):
-            scan_angles = np.sort(np.unique(radar.elevation['data'].round(decimals=1)))
+            scan_angles = np.sort(np.unique(
+                    radar.elevation['data'].round(decimals=1)))
         else:
-            scan_angles = np.sort(np.unique(radar.azimuth['data'].round(decimals=1)))
+            scan_angles = np.sort(np.unique(
+                    radar.azimuth['data'].round(decimals=1)))
 
         weightvec = np.empty(scan_angles.size, dtype=float)
         for kk in range(scan_angles.size):
@@ -382,8 +387,26 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None, trajectory=
 
         unit = get_field_unit(datatype)
         name = get_field_name(datatype)
+        # Quantiles of interest
+        quantiles = [{"val":0.1, "plot":False, "color":None, "ltype":None},
+                     {"val":0.2, "plot":True, "color":'k', "ltype":':'},
+                     {"val":0.3, "plot":False, "color":None, "ltype":None},
+                     {"val":0.4, "plot":False, "color":None, "ltype":None},
+                     {"val":0.5, "plot":True, "color":'r', "ltype":None},
+                     {"val":0.6, "plot":False, "color":None, "ltype":None},
+                     {"val":0.7, "plot":False, "color":None, "ltype":None},
+                     {"val":0.8, "plot":True, "color":'k', "ltype":':'},
+                     {"val":0.9, "plot":False, "color":None, "ltype":None},
+                     {"val":0.95, "plot":False, "color":None, "ltype":None}]
 
-        # XXX
+        ts.add_dataseries("Weighted average", name, unit, color='b')
+        for qq in quantiles:
+            label = "Quantile_%4.2f" % qq["val"]
+            ts.add_dataseries(label, name, unit, plot=qq["plot"],
+                              color=qq["color"], linestyle=qq["ltype"])
+        ts.add_dataseries("#Valid", "", "", plot=False)
+
+        quants = np.array([ee['val'] for ee in quantiles])
 
         tadict = dict({
                 'radar_traj': rad_traj,
@@ -393,7 +416,9 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None, trajectory=
                 'ind_rad': ind_rad,
                 'is_azimuth_antenna': is_azimuth_antenna,
                 'info': info,
+                'scan_angles': scan_angles,
                 'weightvec': weightvec,
+                'quantiles': quants,
                 'ts': ts})
         traj_ind = trajectory.get_samples_in_period(end=dt_task_start)
 
@@ -405,6 +430,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None, trajectory=
         tadict = dscfg['traj_antenna_dict']
         rad_traj = tadict['radar_traj']
         is_azimuth_antenna = tadict['is_azimuth_antenna']
+        scan_angles = tadict['scan_angles']
         weightvec = tadict['weightvec']
         ts = tadict['ts']
 
@@ -429,7 +455,47 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None, trajectory=
                                   rr_ind, el_vec_rnd, az_vec_rnd)):
             continue
 
-        # XXX
+        # =====================================================================
+        # Get sample at bin
+
+        if is_azimuth_antenna:
+            angles = radar_sel.azimuth['data']
+            angles_scan = radar_sel.elevation['data']
+            ray_angle = radar_sel.azimuth['data'][ray_sel]
+        else:
+            angles = radar_sel.elevation['data']
+            angles_scan = radar_sel.azimuth['data']
+            ray_angle = radar_sel.elevation['data'][ray_sel]
+
+        d_angle = np.abs(angles - ray_angle)
+        ray_inds = np.where(d_angle < 0.09)[0]
+        angles_sortind = np.argsort(angles_scan[ray_inds])
+
+        ray_inds = ray_inds[angles_sortind]
+        angles_sorted = angles_scan[ray_inds]
+
+        if ((scan_angles.size != angles_sorted.size) or
+            (np.max(np.abs(scan_angles - angles_sorted)) > 0.1)):
+            print("WARNING: Scan angle mismatch!", file=sys.stderr)
+            continue
+
+        # XXX Set rr_ind_min
+
+        rdata = radar_sel.fields[field_name]['data'].data
+        values = rdata[ray_inds, rr_ind-1:rr_ind+1] #XXX
+        fill_val = radar_sel.fields[field_name]['_FillValue']
+
+        try:
+            (avg, qvals, nvals_valid) = quantiles_weighted(
+                values,
+                weight_vector=tadict['weightvec'],
+                quantiles=tadict['quantiles'],
+                fill_value=fill_val)
+        except Exception:
+            raise
+
+        ts.add_timesample(trajectory.time_vector[tind],
+                          (np.concatenate([[avg], qvals, [nvals_valid]])))
 
         # end loop over traj samples within period
 
@@ -488,8 +554,10 @@ def _get_closests_bin(az, el, rr, tt, radar, tdict):
     # Find closest range bin
     rr_ind = np.argmin(np.abs(radar_sel.range['data'] - rr))
 
-    el_vec_rnd = np.sort(np.unique(radar_sel.elevation['data'].round(decimals=1)))
-    az_vec_rnd = np.sort(np.unique(radar_sel.azimuth['data'].round(decimals=1)))
+    el_vec_rnd = np.sort(np.unique(
+            radar_sel.elevation['data'].round(decimals=1)))
+    az_vec_rnd = np.sort(np.unique(
+            radar_sel.azimuth['data'].round(decimals=1)))
 
     return (radar_sel, ray_sel, rr_ind, el_vec_rnd, az_vec_rnd)
 
@@ -515,3 +583,64 @@ def _sample_out_of_sector(az, el, rr, radar_sel, ray_sel, rr_ind,
         return True
 
     return False
+
+
+def quantiles_weighted(values, weight_vector=None, quantiles=np.array([0.5]),
+                       fill_value=None, weight_threshold=None):
+    """
+    Given a set of values and weights, compute the weighted
+    quantile(s).
+    """
+
+    if (weight_vector is not None):
+        if (weight_vector.size != values.shape[0]):
+            raise Exception("ERROR: Unexpected size of weight vector "
+                            "(%d instead of %d)" % (weight_vector.size, values.shape[0]))
+    else:
+        weight_vector = np.ones(values.shape[0], dtype=float)
+
+    if (len(values.shape) > 1):
+        # repeat weight vec
+        weight_vector = np.repeat(weight_vector, values.shape[1]) \
+            .reshape(weight_vector.size, values.shape[1])
+
+        values = values.reshape(-1)
+        weight_vector = weight_vector.reshape(-1)
+
+    # remove nans
+    if (fill_value is not None):
+        values_ma = np.ma.masked_values(values, fill_value)
+        if (values_ma.mask.any()):
+            values = values_ma[~values_ma.mask]
+            weight_vector = weight_vector[~values_ma.mask]
+
+    nvalid = weight_vector.size
+    if (nvalid < 3):
+        return (None, None, None)
+
+    total_weight = np.sum(weight_vector)
+
+    # Average
+    avg = np.sum(np.multiply(values, weight_vector)) / total_weight
+
+    sorter = np.argsort(values, axis=None)
+    values = values[sorter]
+    weight_vector = weight_vector[sorter]
+
+    if (weight_threshold is not None):
+        if (total_weight < weight_threshold):
+            return (avg, None, nvalid)
+
+    weighted_quantiles = np.cumsum(weight_vector) - 0.5 * weight_vector
+
+    weighted_quantiles /= total_weight
+
+    # As done by np.percentile():
+    #weighted_quantiles -= weighted_quantiles[0]
+    #weighted_quantiles /= weighted_quantiles[-1]
+
+    # Note: Does not extrapolate
+    quants = np.interp(quantiles, weighted_quantiles, values)
+
+    return (avg, quants, nvalid)
+

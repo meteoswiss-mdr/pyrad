@@ -7,6 +7,7 @@ Functions for writing pyrad output data
 .. autosummary::
     :toctree: generated/
 
+    write_smn
     write_ts_polar_data
     write_monitoring_ts
     write_colocated_gates
@@ -25,6 +26,42 @@ import csv
 from pyart.config import get_fillvalue, get_metadata
 
 from .io_aux import generate_field_name_str
+
+
+def write_smn(datetime_vec, value_avg_vec, value_std_vec, fname):
+    """
+    writes SwissMetNet data in format datetime,avg_value, std_value
+
+    Parameters
+    ----------
+    datetime_vec : datetime array
+        array containing the measurement time
+    value_avg_vec : float array
+        array containing the average value
+    value_std_vec : float array
+        array containing the standard deviation
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    nvalues = len(value_avg_vec)
+    with open(fname, 'w', newline='') as csvfile:
+        fieldnames = ['datetime', 'avg', 'std']
+        writer = csv.DictWriter(csvfile, fieldnames)
+        writer.writeheader()
+        for i in range(nvalues):
+            writer.writerow(
+                {'datetime': datetime_vec[i].strftime('%Y%m%d%H%M%S'),
+                 'avg': value_avg_vec[i],
+                 'std': value_std_vec[i]})
+        csvfile.close()
+
+    return fname
 
 
 def write_ts_polar_data(dataset, fname):

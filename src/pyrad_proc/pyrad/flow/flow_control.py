@@ -344,6 +344,14 @@ def _create_cfg_dict(cfgfile):
         cfg.update({'radconsth': None})
     if 'radconstv' not in cfg:
         cfg.update({'radconstv': None})
+    if 'lrxh' not in cfg:
+        cfg.update({'lrxh': None})
+    if 'lrxv' not in cfg:
+        cfg.update({'lrxv': None})
+    if 'lradomeh' not in cfg:
+        cfg.update({'lradomeh': None})
+    if 'lradomev' not in cfg:
+        cfg.update({'lradomev': None})
     if 'AntennaGain' not in cfg:
         cfg.update({'AntennaGain': None})
     if 'attg' not in cfg:
@@ -430,6 +438,10 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
     dscfg.update({'mflossv': cfg['mflossv']})
     dscfg.update({'radconsth': cfg['radconsth']})
     dscfg.update({'radconstv': cfg['radconstv']})
+    dscfg.update({'lrxh': cfg['lrxh']})
+    dscfg.update({'lrxv': cfg['lrxv']})
+    dscfg.update({'lradomeh': cfg['lradomeh']})
+    dscfg.update({'lradomev': cfg['lradomev']})
     dscfg.update({'AntennaGain': cfg['AntennaGain']})
     dscfg.update({'attg': cfg['attg']})
     dscfg.update({'basepath': cfg['saveimgbasepath']})
