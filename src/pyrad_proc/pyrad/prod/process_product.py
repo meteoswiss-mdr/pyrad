@@ -348,7 +348,9 @@ def generate_intercomp_products(dataset, prdcfg):
         plot_scatter(bins1, bins2, np.ma.asarray(hist_2d), field_name,
                      field_name, fname, prdcfg, metadata=metadata,
                      lin_regr=[stats['slope'], stats['intercep']],
-                     lin_regr_slope1=stats['intercep_slope_1'])
+                     lin_regr_slope1=stats['intercep_slope_1'],
+                     rad1_name=dataset['intercomp_dict']['rad1_name'],
+                     rad2_name=dataset['intercomp_dict']['rad2_name'],)
 
         print('saved figures: '+' '.join(fname))
 

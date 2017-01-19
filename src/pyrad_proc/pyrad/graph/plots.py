@@ -76,7 +76,7 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
         fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                          prdcfg['ppiImageConfig']['ysize']],
                          dpi=72)
-                     
+
         display = pyart.graph.RadarDisplay(radar)
         display.plot_ppi(field_name, sweep=ind_el)
         display.set_limits(
@@ -474,7 +474,8 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
 
 
 def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
-                 prdcfg, metadata=None,  lin_regr=None, lin_regr_slope1=None):
+                 prdcfg, metadata=None, lin_regr=None, lin_regr_slope1=None,
+                 rad1_name='RADAR001', rad2_name='RADAR002'):
     """
     2D histogram
 
@@ -492,6 +493,12 @@ def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
         product configuration dictionary
     metadata : str
         a string with metadata to write in the plot
+    lin_regr : tupple with 2 values
+        the coefficients for a linear regression
+    lin_regr_slope1 : float
+        the intercep point of a linear regression of slope 1
+    rad1_name, rad2_name : str
+        name of the radars which data is used
 
     Returns
     -------
@@ -505,8 +512,8 @@ def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
     # display data
     titl = 'colocated radar gates'
     label = 'Number of Points'
-    labelx = field_name1
-    labely = field_name2
+    labelx = rad1_name+' '+field_name1
+    labely = rad2_name+' '+field_name2
 
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                               prdcfg['ppiImageConfig']['ysize']],
@@ -516,7 +523,8 @@ def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
     cmap = pyart.config.get_field_colormap(field_name1)
 
     cax = ax.imshow(
-        hist_2d, origin='lower', cmap=cmap, vmin=0., vmax=np.max(hist_2d),
+        np.ma.transpose(hist_2d), origin='lower', cmap=cmap, vmin=0.,
+        vmax=np.max(hist_2d),
         extent=(bins1[0], bins1[-1], bins2[0], bins2[-1]),
         aspect='auto', interpolation='none')
 

@@ -15,7 +15,7 @@ datapath STRARR 2
     
 # Base path for dem data
 dempath STRARR 2
-    /data/DEM/DX50_PAY/
+    /data/DEM/DX50_PARADISO/
     /data/rad4alp/visibRad4Alp/
     
 # Loading of saved datasets

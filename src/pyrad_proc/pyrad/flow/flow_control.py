@@ -434,6 +434,7 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
     dscfg.update({'configpath': cfg['configpath']})
     dscfg.update({'solarfluxpath': cfg['solarfluxpath']})
     dscfg.update({'colocgatespath': cfg['colocgatespath']})
+    dscfg.update({'RadarName': cfg['RadarName']})
     dscfg.update({'mflossh': cfg['mflossh']})
     dscfg.update({'mflossv': cfg['mflossv']})
     dscfg.update({'radconsth': cfg['radconsth']})
@@ -554,11 +555,12 @@ def _get_datatype_list(cfg, radarnr='RADAR001'):
                         get_datatype_fields(datatype))
                     if datagroup != 'PROC' and radarnr_descr == radarnr:
                         if ((dataset_save is None) and (product_save is None)):
-                            datatypesdescr.add(datagroup+":"+datatype_aux)
+                            datatypesdescr.add(
+                                radarnr_descr+":"+datagroup+":"+datatype_aux)
                         else:
-                            datatypesdescr.add(datagroup + ":" + datatype_aux +
-                                               "," + dataset_save + "," +
-                                               product_save)
+                            datatypesdescr.add(
+                                radarnr_descr+":"+datagroup+":"+datatype_aux +
+                                ","+dataset_save+","+product_save)
 
     datatypesdescr = list(datatypesdescr)
 
