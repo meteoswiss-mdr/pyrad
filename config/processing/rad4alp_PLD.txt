@@ -9,16 +9,13 @@ name STRING rad4alp_PLD
 # Base path of the raw data.
 # Note: Must have a trailing '/'
 # ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
-datapath STRARR 1
-    /data/rad4alp/rawdata/
+datapath STRING /data/rad4alp/rawdata/
 
 # Base path for cosmo data
-cosmopath STRARR 1
-    /data/cosmo/
+cosmopath STRING /data/cosmo/
 
 # Base path for dem data
-dempath STRARR 1
-    /data/rad4alp/visibRad4Alp/
+dempath STRING /data/rad4alp/visibRad4Alp/
 
 
 # ------------------------------------------------------------
@@ -36,18 +33,17 @@ disdropath STRING /data/scattering/dsd_ts/
 saveimgbasepath STRING /data/pyrad_examples/
 saveimg         INT 1
 # Supported formats: eps, jpeg, jpg, pdf, pgf, png, ps, raw, rgba, svg, svgz, tif, tiff
-imgformat STRARR 1
-    png	
+imgformat STRING png	
 
 # --------------------------------------------------------
 # configuration files pathes
 # --------------------------------------------------------
 
 # Base path of configuration files
-configpath STRING /home/lom/users/fvj/pyrad/config/
+configpath STRING $HOME/pyrad/config/
 
 # Configuration of the radar location and approach direction
-locationConfigFile STRING /home/lom/users/fvj/pyrad/config/processing/rad4alp_PLD_loc.txt
+locationConfigFile STRING $HOME/pyrad/config/processing/rad4alp_PLD_loc.txt
 
 # Configuration of the product generation
-productConfigFile STRING /home/lom/users/fvj/pyrad/config/processing/rad4alp_PLD_prod.txt
+productConfigFile STRING $HOME/pyrad/config/processing/rad4alp_PLD_prod.txt

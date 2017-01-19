@@ -72,11 +72,11 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
         list of names of the created plots
 
     """
-    fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
-                              prdcfg['ppiImageConfig']['ysize']],
-                     dpi=72)
-
     if plot_type == 'PPI':
+        fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
+                         prdcfg['ppiImageConfig']['ysize']],
+                         dpi=72)
+                     
         display = pyart.graph.RadarDisplay(radar)
         display.plot_ppi(field_name, sweep=ind_el)
         display.set_limits(
@@ -148,11 +148,10 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='PPI',
         list of names of the created plots
 
     """
-    fig = plt.figure(figsize=[prdcfg['rhiImageConfig']['xsize'],
-                              prdcfg['rhiImageConfig']['ysize']],
-                     dpi=72)
-
     if plot_type == 'RHI':
+        fig = plt.figure(figsize=[prdcfg['rhiImageConfig']['xsize'],
+                         prdcfg['rhiImageConfig']['ysize']],
+                         dpi=72)
         display = pyart.graph.RadarDisplay(radar)
         display.plot_rhi(field_name, sweep=ind_az, reverse_xaxis=False)
         display.set_limits(

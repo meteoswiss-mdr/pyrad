@@ -1122,7 +1122,7 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
 
         new_dataset = {
             'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
-            'timeinfo': dscfg['global_data']['timeinfo']}
+            'timeinfo': dscfg['global_data']['endtime']}
 
         dscfg['global_data']['starttime'] += datetime.timedelta(
             seconds=period)
@@ -1162,7 +1162,7 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
 
         new_dataset = {
             'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
-            'timeinfo': dscfg['global_data']['timeinfo']}
+            'timeinfo': dscfg['global_data']['endtime']}
 
         return new_dataset, ind_rad
 
@@ -1297,7 +1297,7 @@ def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
 
         new_dataset = {
             'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
-            'timeinfo': dscfg['global_data']['timeinfo']}
+            'timeinfo': dscfg['global_data']['endtime']}
 
         dscfg['global_data']['starttime'] += datetime.timedelta(
             seconds=period)
@@ -1330,7 +1330,7 @@ def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
 
         new_dataset = {
             'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
-            'timeinfo': dscfg['global_data']['timeinfo']}
+            'timeinfo': dscfg['global_data']['endtime']}
 
         return new_dataset, ind_rad
 
@@ -1503,7 +1503,7 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
         # we have reached the end of the accumulation: start a new object
         new_dataset = {
             'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
-            'timeinfo': dscfg['global_data']['timeinfo']}
+            'timeinfo': dscfg['global_data']['endtime']}
 
         dscfg['global_data']['starttime'] += datetime.timedelta(
             seconds=period)
@@ -1533,7 +1533,7 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
 
         new_dataset = {
             'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
-            'timeinfo': dscfg['global_data']['timeinfo']}
+            'timeinfo': dscfg['global_data']['endtime']}
 
         return new_dataset, ind_rad
 
@@ -1938,10 +1938,10 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
             'rad1_azi': coloc_data[1],
             'rad1_rng': coloc_data[2],
             'rad1_val': coloc_data[3],
-            'rad2_ele': coloc_data[6],
-            'rad2_azi': coloc_data[7],
-            'rad2_rng': coloc_data[8],
-            'rad2_val': coloc_data[9]}
+            'rad2_ele': coloc_data[4],
+            'rad2_azi': coloc_data[5],
+            'rad2_rng': coloc_data[6],
+            'rad2_val': coloc_data[7]}
 
         new_dataset = {'intercomp_dict': intercomp_dict,
                        'timeinfo': dscfg['global_data']['timeinfo'],

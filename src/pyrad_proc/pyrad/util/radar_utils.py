@@ -8,6 +8,7 @@ Miscellaneous functions dealing with radar data
     :toctree: generated/
 
     time_series_statistics
+    join_time_series
     get_range_bins_to_avg
     find_ray_index
     find_rng_index
@@ -37,7 +38,7 @@ import pyart
 
 
 def time_series_statistics(t_in_vec, val_in_vec, avg_time=3600,
-                           base_time=1800, method='mean'):
+                           base_time=1800, method='mean', dropnan=False):
     """
     Computes statistics over a time-averaged series
 
@@ -53,6 +54,8 @@ def time_series_statistics(t_in_vec, val_in_vec, avg_time=3600,
         base time [s]
     method : str
         statistical method
+    dropnan : boolean
+        if True remove NaN from the time series
 
     Returns
     -------
@@ -65,11 +68,52 @@ def time_series_statistics(t_in_vec, val_in_vec, avg_time=3600,
     df_in = pd.DataFrame(data=val_in_vec, index=pd.DatetimeIndex(t_in_vec))
     df_out = getattr(df_in.resample(str(avg_time)+'S', closed='right',
                      label='right', base=base_time), method)()
+    if dropnan is True:
+        df_out = df_out.dropna(how='any')
     t_out_vec = df_out.index.to_pydatetime()
     val_out_vec = df_out.values.flatten()
 
     return t_out_vec, val_out_vec
+    
+    
+def join_time_series(t1, val1, t2, val2, dropnan=False):
+    """
+    joins time_series
 
+    Parameters
+    ----------
+    t1 : datetime array
+        time of first series
+    val1 : float array
+        value of first series
+    t2 : datetime array
+        time of second series
+    val2 : float array
+        value of second series    
+    dropnan : boolean
+        if True remove NaN from the time series
+
+    Returns
+    -------
+    t_out_vec : datetime array
+        the resultant date time after joining the series
+    val1_out_vec : float array
+        value of first series
+    val2_out_vec : float array
+        value of second series
+
+    """
+    df1 = pd.DataFrame(data=val1, index=pd.DatetimeIndex(t1))
+    df2 = pd.DataFrame(data=val2, index=pd.DatetimeIndex(t2))
+    df_out = pd.concat([df1, df2], join='outer', axis=1)
+    if dropnan is True:
+        df_out = df_out.dropna(how='any')
+    t_out_vec = df_out.index.to_pydatetime()
+    val1_out_vec = df_out.values[:, 0].flatten()
+    val2_out_vec = df_out.values[:, 1].flatten()
+    
+    return t_out_vec, val1_out_vec, val2_out_vec
+    
 
 def get_range_bins_to_avg(rad1_rng, rad2_rng):
     """

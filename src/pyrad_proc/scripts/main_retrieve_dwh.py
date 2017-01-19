@@ -21,7 +21,7 @@ from subprocess import run
 
 from pyrad.io import read_smn2, write_smn
 from pyrad.graph import plot_timeseries
-from pyrad.util import time_series_statistics
+from pyrad.util import time_series_statistics, join_time_series
 
 print(__doc__)
 
@@ -30,7 +30,7 @@ def main():
     """
     """
 
-    file_path = '/data/FLORAKO/'
+    file_path = '/data/FLORAKO/v2/'
     img_ext = 'png'
     avg_time = 3600
     base_time = 0
@@ -83,13 +83,16 @@ def main():
 
                 date_avg, value_avg = time_series_statistics(
                     date, value, avg_time=avg_time, base_time=base_time,
-                    method='mean')
-                date_avg, value_std = time_series_statistics(
+                    method='mean', dropnan=True)
+                date_std, value_std = time_series_statistics(
                     date, value, avg_time=avg_time, base_time=base_time,
-                    method='std')
+                    method='std', dropnan=True)
+                    
+                date_series, value_avg, value_std = join_time_series(
+                    date_avg, value_avg, date_std, value_std, dropnan=True)
 
                 plot_timeseries(
-                    date_avg,
+                    date_series,
                     [value_avg, value_avg+value_std, value_avg-value_std],
                     [file_path+base_name+'_avg'+str(avg_time)+'s.'+img_ext],
                     labelx='Time [UTC]', labely=param, labels=None,
@@ -99,7 +102,7 @@ def main():
                     ymin=ymin, ymax=ymax)
 
                 write_smn(
-                    date_avg, value_avg, value_std,
+                    date_series, value_avg, value_std,
                     file_path+base_name+'_avg'+str(avg_time)+'s.csv')
 
 

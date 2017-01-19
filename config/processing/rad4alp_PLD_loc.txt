@@ -8,12 +8,10 @@ NumRadars INT 1
 TimeTol FLOAT 3600.
 
 # rad4alp radar name
-RadarName STRARR 1
-	D
+RadarName STRING D
 
 # rad4alp radar range resolution L:Low H:High
-RadarRes STRARR 1
-	L
+RadarRes STRING	L
 
 # Names of the radar scans in the specified sector
 ScanList STRARR 6
