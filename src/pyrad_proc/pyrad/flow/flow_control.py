@@ -434,6 +434,7 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
     dscfg.update({'configpath': cfg['configpath']})
     dscfg.update({'solarfluxpath': cfg['solarfluxpath']})
     dscfg.update({'colocgatespath': cfg['colocgatespath']})
+    dscfg.update({'RadarName': cfg['RadarName']})
     dscfg.update({'mflossh': cfg['mflossh']})
     dscfg.update({'mflossv': cfg['mflossv']})
     dscfg.update({'radconsth': cfg['radconsth']})
@@ -492,6 +493,9 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
 
     """
 
+    # Ugly copying of dataset config parameters to product
+    # config dict. Better: Make dataset config dict available to
+    # the product generation.
     prdcfg = cfg[dataset]['products'][product]
     prdcfg.update({'procname': cfg['name']})
     prdcfg.update({'basepath': cfg['saveimgbasepath']})
@@ -510,6 +514,8 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
     prdcfg.update({'prdname': product})
     prdcfg.update({'timeinfo': voltime})
     prdcfg.update({'runinfo': runinfo})
+    if 'dssavename' in cfg[dataset]:
+        prdcfg.update({'dssavename': cfg[dataset]['dssavename']})
 
     return prdcfg
 
@@ -554,11 +560,12 @@ def _get_datatype_list(cfg, radarnr='RADAR001'):
                         get_datatype_fields(datatype))
                     if datagroup != 'PROC' and radarnr_descr == radarnr:
                         if ((dataset_save is None) and (product_save is None)):
-                            datatypesdescr.add(datagroup+":"+datatype_aux)
+                            datatypesdescr.add(
+                                radarnr_descr+":"+datagroup+":"+datatype_aux)
                         else:
-                            datatypesdescr.add(datagroup + ":" + datatype_aux +
-                                               "," + dataset_save + "," +
-                                               product_save)
+                            datatypesdescr.add(
+                                radarnr_descr+":"+datagroup+":"+datatype_aux +
+                                ","+dataset_save+","+product_save)
 
     datatypesdescr = list(datatypesdescr)
 

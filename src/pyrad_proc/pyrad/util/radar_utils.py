@@ -74,8 +74,8 @@ def time_series_statistics(t_in_vec, val_in_vec, avg_time=3600,
     val_out_vec = df_out.values.flatten()
 
     return t_out_vec, val_out_vec
-    
-    
+
+
 def join_time_series(t1, val1, t2, val2, dropnan=False):
     """
     joins time_series
@@ -89,7 +89,7 @@ def join_time_series(t1, val1, t2, val2, dropnan=False):
     t2 : datetime array
         time of second series
     val2 : float array
-        value of second series    
+        value of second series
     dropnan : boolean
         if True remove NaN from the time series
 
@@ -111,9 +111,9 @@ def join_time_series(t1, val1, t2, val2, dropnan=False):
     t_out_vec = df_out.index.to_pydatetime()
     val1_out_vec = df_out.values[:, 0].flatten()
     val2_out_vec = df_out.values[:, 1].flatten()
-    
+
     return t_out_vec, val1_out_vec, val2_out_vec
-    
+
 
 def get_range_bins_to_avg(rad1_rng, rad2_rng):
     """

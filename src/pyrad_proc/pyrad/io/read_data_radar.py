@@ -67,7 +67,6 @@ def get_data(voltime, datatypesdescr, cfg):
         radar object
 
     """
-
     datatype_rainbow = list()
     datatype_rad4alp = list()
     datatype_cfradial = list()
@@ -166,7 +165,9 @@ def get_data(voltime, datatypesdescr, cfg):
 
         if cfg['RadarRes'][ind_rad] != 'L':
             raise ValueError(
-                'ERROR: DEM files only available for rad4alp PL data')
+                'ERROR: DEM files only available for rad4alp PL data. ' +
+                'Current radar '+cfg['RadarName'][ind_rad] +
+                cfg['RadarRes'][ind_rad])
 
         for i in range(ndatatypes_rad4alpdem):
             radar_aux = merge_scans_dem_rad4alp(

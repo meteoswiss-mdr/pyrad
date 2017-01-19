@@ -1574,10 +1574,14 @@ def process_colocated_gates(procstatus, dscfg, radar_list=None):
             Minimum elevation angle [deg]. Default None.
         elmax : float. Dataset keyword
             Maximum elevation angle [deg]. Default None.
-        azmin : float. Dataset keyword
-            Minimum azimuth angle [deg]. Default None.
-        azmax : float. Dataset keyword
-            Maximum azimuth angle [deg]. Default None.
+        azrad1min : float. Dataset keyword
+            Minimum azimuth angle [deg] for radar 1. Default None.
+        azrad1max : float. Dataset keyword
+            Maximum azimuth angle [deg] for radar 1. Default None.
+        azrad2min : float. Dataset keyword
+            Minimum azimuth angle [deg] for radar 2. Default None.
+        azrad2max : float. Dataset keyword
+            Maximum azimuth angle [deg] for radar 2. Default None.
 
     radar_list : list of Radar objects
         Optional. list of radar objects
@@ -1659,13 +1663,21 @@ def process_colocated_gates(procstatus, dscfg, radar_list=None):
     if 'elmax' in dscfg:
         elmax = dscfg['elmax']
 
-    azmin = None
-    if 'azmin' in dscfg:
-        azmin = dscfg['azmin']
+    azrad1min = None
+    if 'azrad1min' in dscfg:
+        azrad1min = dscfg['azrad1min']
 
-    azmax = None
-    if 'azmax' in dscfg:
-        azmax = dscfg['azmax']
+    azrad1max = None
+    if 'azrad1max' in dscfg:
+        azrad1max = dscfg['azrad1max']
+
+    azrad2min = None
+    if 'azrad2min' in dscfg:
+        azrad2min = dscfg['azrad2min']
+
+    azrad2max = None
+    if 'azrad2max' in dscfg:
+        azrad2max = dscfg['azrad2max']
 
     visib_field = None
     if 'visibility' in radarnr_dict['RADAR'+'{:03d}'.format(
@@ -1675,7 +1687,7 @@ def process_colocated_gates(procstatus, dscfg, radar_list=None):
         radar1, radar2,
         h_tol=h_tol, latlon_tol=latlon_tol, vol_d_tol=vol_d_tol,
         vismin=vismin, hmin=hmin, hmax=hmax, rmin=rmin, rmax=rmax,
-        elmin=elmin, elmax=elmax, azmin=azmin, azmax=azmax,
+        elmin=elmin, elmax=elmax, azmin=azrad1min, azmax=azrad1max,
         visib_field=visib_field, intersec_field=coloc_gates_field)
 
     visib_field = None
@@ -1686,7 +1698,7 @@ def process_colocated_gates(procstatus, dscfg, radar_list=None):
         radar2, radar1,
         h_tol=h_tol, latlon_tol=latlon_tol, vol_d_tol=vol_d_tol,
         vismin=vismin, hmin=hmin, hmax=hmax, rmin=rmin, rmax=rmax,
-        elmin=elmin, elmax=elmax, azmin=azmin, azmax=azmax,
+        elmin=elmin, elmax=elmax, azmin=azrad2min, azmax=azrad2max,
         visib_field=visib_field, intersec_field=coloc_gates_field)
 
     new_rad1 = deepcopy(radar1)
@@ -1818,6 +1830,10 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
 
         if not dscfg['initialized']:
             dscfg['global_data'].update({'timeinfo': dscfg['timeinfo']})
+            dscfg['global_data'].update(
+                {'rad1_name': dscfg['RadarName'][ind_radar_list[0]]})
+            dscfg['global_data'].update(
+                {'rad2_name': dscfg['RadarName'][ind_radar_list[1]]})
             dscfg['initialized'] = 1
 
         rad1_field = radar1.fields[field_name]['data']
@@ -1934,10 +1950,12 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
         coloc_data = read_colocated_data(fname)
 
         intercomp_dict = {
+            'rad1_name': dscfg['global_data']['rad1_name'],
             'rad1_ele': coloc_data[0],
             'rad1_azi': coloc_data[1],
             'rad1_rng': coloc_data[2],
             'rad1_val': coloc_data[3],
+            'rad2_name': dscfg['global_data']['rad2_name'],
             'rad2_ele': coloc_data[4],
             'rad2_azi': coloc_data[5],
             'rad2_rng': coloc_data[6],
@@ -2076,6 +2094,10 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
 
         if not dscfg['initialized']:
             dscfg['global_data'].update({'timeinfo': dscfg['timeinfo']})
+            dscfg['global_data'].update(
+                {'rad1_name': dscfg['RadarName'][ind_radar_list[0]]})
+            dscfg['global_data'].update(
+                {'rad2_name': dscfg['RadarName'][ind_radar_list[1]]})
             dscfg['initialized'] = 1
 
         refl1 = radar1.fields[rad1_refl_field]['data']
@@ -2283,10 +2305,12 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
                 rad1_phi <= phi_avg_max, rad2_phi <= phi_avg_max)))[0]
 
         intercomp_dict = {
+            'rad1_name': dscfg['global_data']['rad1_name'],
             'rad1_ele': rad1_ele[ind_val],
             'rad1_azi': rad1_azi[ind_val],
             'rad1_rng': rad1_rng[ind_val],
             'rad1_val': rad1_dBZ[ind_val],
+            'rad2_name': dscfg['global_data']['rad2_name'],
             'rad2_ele': rad2_ele[ind_val],
             'rad2_azi': rad2_azi[ind_val],
             'rad2_rng': rad2_rng[ind_val],

@@ -19,28 +19,14 @@ RadarRes STRARR 2
     
 # Names of the radar scans in the specified sector
 # NOTE: Must have a trailing '/'
-ScanList STRARR 21
+ScanList STRARR 7
       RADAR001:MEE_PAY_360.vol/  # masterscan: first scan of a volume
       RADAR002:001  # masterscan: first scan of a volume
 	  RADAR002:002
 	  RADAR002:003
 	  RADAR002:004
 	  RADAR002:005
-	  RADAR002:006
-	  RADAR002:007
-	  RADAR002:008
-	  RADAR002:009
-	  RADAR002:010
-	  RADAR002:011
-	  RADAR002:012
-	  RADAR002:013
-	  RADAR002:014
-	  RADAR002:015
-	  RADAR002:016
-	  RADAR002:017
-	  RADAR002:018
-	  RADAR002:019
-	  RADAR002:020
+	  RADAR002:006	  
 
 # angles from 001 to 020
 # ['-0.2', '0.4',  '1.0',  '1.6',  '2.5',  '3.5',  '4.5',  '5.5',  '6.5',  '7.5',
