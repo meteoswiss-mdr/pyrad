@@ -67,12 +67,17 @@ def generate_sun_hits_products(dataset, prdcfg):
         the name of the file created. None otherwise
 
     """
+
+    dssavedir = prdcfg['dsname']
+    if ('dssavename' in prdcfg):
+        dssavedir = prdcfg['dssavename']
+
     if prdcfg['type'] == 'WRITE_SUN_HITS':
         if 'sun_hits' not in dataset:
             return None
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
         fname = make_filename(
@@ -102,7 +107,7 @@ def generate_sun_hits_products(dataset, prdcfg):
             return None
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
         fname = make_filename(
@@ -129,7 +134,7 @@ def generate_sun_hits_products(dataset, prdcfg):
 
         plot_sun_hits(field, field_name, fname, prdcfg)
 
-        print('saved figures: '+' '.join(fname))
+        print('----- save to '+' '.join(fname))
 
         return savedir+fname
 
@@ -138,7 +143,7 @@ def generate_sun_hits_products(dataset, prdcfg):
             return None
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=None)
 
         fname = make_filename(
@@ -173,7 +178,7 @@ def generate_sun_hits_products(dataset, prdcfg):
                 prdcfg['type'])
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
         fname = make_filename(
@@ -196,7 +201,7 @@ def generate_sun_hits_products(dataset, prdcfg):
         if field is not None:
             plot_sun_hits(field, field_name, fname, prdcfg)
 
-        print('saved figures: '+' '.join(fname))
+        print('----- save to '+' '.join(fname))
 
         return fname
 
@@ -205,7 +210,7 @@ def generate_sun_hits_products(dataset, prdcfg):
             return None
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdid'], timeinfo=None)
 
         fname = make_filename(
@@ -227,7 +232,7 @@ def generate_sun_hits_products(dataset, prdcfg):
             return None
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=None)
 
         fname = make_filename(
@@ -240,7 +245,7 @@ def generate_sun_hits_products(dataset, prdcfg):
         plot_sun_retrieval_ts(
             sun_retrieval, prdcfg['voltype'], fname)
 
-        print('saved figures: '+' '.join(fname))
+        print('----- save to '+' '.join(fname))
 
         return fname
 
@@ -267,12 +272,17 @@ def generate_intercomp_products(dataset, prdcfg):
         the name of the file created. None otherwise
 
     """
+
+    dssavedir = prdcfg['dsname']
+    if ('dssavename' in prdcfg):
+        dssavedir = prdcfg['dssavename']
+
     if prdcfg['type'] == 'WRITE_INTERCOMP':
         if dataset['final']:
             return None
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname = make_filename(
@@ -292,7 +302,7 @@ def generate_intercomp_products(dataset, prdcfg):
             return None
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname = make_filename(
@@ -313,7 +323,7 @@ def generate_intercomp_products(dataset, prdcfg):
 
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
         fname = make_filename(
@@ -352,7 +362,7 @@ def generate_intercomp_products(dataset, prdcfg):
                      rad1_name=dataset['intercomp_dict']['rad1_name'],
                      rad2_name=dataset['intercomp_dict']['rad2_name'],)
 
-        print('saved figures: '+' '.join(fname))
+        print('----- save to '+' '.join(fname))
 
         return fname
     else:
@@ -378,6 +388,11 @@ def generate_colocated_gates_products(dataset, prdcfg):
         the name of the file created. None otherwise
 
     """
+
+    dssavedir = prdcfg['dsname']
+    if ('dssavename' in prdcfg):
+        dssavedir = prdcfg['dssavename']
+
     if prdcfg['type'] == 'WRITE_COLOCATED_GATES':
         if prdcfg['radar'] not in dataset:
             return None
@@ -450,6 +465,11 @@ def generate_vol_products(dataset, prdcfg):
     no return
 
     """
+
+    dssavedir = prdcfg['dsname']
+    if ('dssavename' in prdcfg):
+        dssavedir = prdcfg['dssavename']
+
     if prdcfg['type'] == 'PPI_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset.fields:
@@ -464,7 +484,7 @@ def generate_vol_products(dataset, prdcfg):
         ind_el = np.where(dataset.fixed_angle['data'] == el)[0][0]
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname = make_filename(
@@ -488,7 +508,7 @@ def generate_vol_products(dataset, prdcfg):
         plot_ppi(dataset, field_name, ind_el, prdcfg, fname,
                  plot_type=plot_type, step=step, quantiles=quantiles)
 
-        print('saved figures: '+' '.join(fname))
+        print('----- save to '+' '.join(fname))
 
         return fname
 
@@ -506,7 +526,7 @@ def generate_vol_products(dataset, prdcfg):
         ind_az = np.where(dataset.fixed_angle['data'] == az)[0][0]
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname = make_filename(
@@ -530,7 +550,7 @@ def generate_vol_products(dataset, prdcfg):
         plot_rhi(dataset, field_name, ind_az, prdcfg, fname,
                  plot_type=plot_type, step=step, quantiles=quantiles)
 
-        print('saved figures: '+' '.join(fname))
+        print('----- save to '+' '.join(fname))
 
         return fname
 
@@ -548,7 +568,7 @@ def generate_vol_products(dataset, prdcfg):
                 dataset, [prdcfg['angle']], el_tol=prdcfg['EleTol'])
 
             savedir = get_save_dir(
-                prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+                prdcfg['basepath'], prdcfg['procname'], dssavedir,
                 prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
             fname = make_filename(
@@ -573,7 +593,7 @@ def generate_vol_products(dataset, prdcfg):
             plot_ppi(xsect, field_name, 0, prdcfg, fname,
                      plot_type=plot_type, step=step, quantiles=quantiles)
 
-            print('saved figures: '+' '.join(fname))
+            print('----- save to '+' '.join(fname))
 
             return fname
         except EnvironmentError:
@@ -597,7 +617,7 @@ def generate_vol_products(dataset, prdcfg):
                 dataset, [prdcfg['angle']], az_tol=prdcfg['AziTol'])
 
             savedir = get_save_dir(
-                prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+                prdcfg['basepath'], prdcfg['procname'], dssavedir,
                 prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
             fname = make_filename(
@@ -622,7 +642,7 @@ def generate_vol_products(dataset, prdcfg):
             plot_rhi(xsect, field_name, 0, prdcfg, fname,
                      plot_type=plot_type, step=step, quantiles=quantiles)
 
-            print('saved figures: '+' '.join(fname))
+            print('----- save to '+' '.join(fname))
 
             return fname
         except EnvironmentError:
@@ -642,7 +662,7 @@ def generate_vol_products(dataset, prdcfg):
             return None
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname = make_filename(
@@ -655,7 +675,7 @@ def generate_vol_products(dataset, prdcfg):
             fname[i] = savedir+fname[i]
 
         plot_cappi(dataset, field_name, prdcfg['altitude'], prdcfg, fname)
-        print('saved figures: '+' '.join(fname))
+        print('----- save to '+' '.join(fname))
 
         return fname
 
@@ -673,7 +693,7 @@ def generate_vol_products(dataset, prdcfg):
         ind_ang = np.where(dataset.fixed_angle['data'] == ang)[0][0]
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname = make_filename(
@@ -686,7 +706,7 @@ def generate_vol_products(dataset, prdcfg):
             fname[i] = savedir+fname[i]
 
         plot_bscope(dataset, field_name, ind_ang, prdcfg, fname)
-        print('saved figures: '+' '.join(fname))
+        print('----- save to '+' '.join(fname))
 
         return fname
 
@@ -704,7 +724,7 @@ def generate_vol_products(dataset, prdcfg):
             step = prdcfg['step']
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname = make_filename(
@@ -728,7 +748,7 @@ def generate_vol_products(dataset, prdcfg):
         plot_histogram(bins, values, fname, labelx=labelx,
                        labely='Number of Samples', titl=titl)
 
-        print('saved figures: '+' '.join(fname))
+        print('----- save to '+' '.join(fname))
 
         return fname
 
@@ -746,7 +766,7 @@ def generate_vol_products(dataset, prdcfg):
             quantiles = prdcfg['quantiles']
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname = make_filename(
@@ -770,7 +790,7 @@ def generate_vol_products(dataset, prdcfg):
         plot_quantiles(quantiles, values, fname, labelx='quantile',
                        labely=labely, titl=titl)
 
-        print('saved figures: '+' '.join(fname))
+        print('----- save to '+' '.join(fname))
 
         return fname
 
@@ -788,7 +808,7 @@ def generate_vol_products(dataset, prdcfg):
         new_dataset.add_field(field_name, dataset.fields[field_name])
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname = make_filename(
@@ -805,7 +825,7 @@ def generate_vol_products(dataset, prdcfg):
 
     elif prdcfg['type'] == 'SAVEALL':
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname = make_filename(
@@ -842,6 +862,11 @@ def generate_timeseries_products(dataset, prdcfg):
     no return
 
     """
+
+    dssavedir = prdcfg['dsname']
+    if ('dssavename' in prdcfg):
+        dssavedir = prdcfg['dssavename']
+
     if prdcfg['type'] == 'PLOT_AND_WRITE_POINT':
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
@@ -849,7 +874,7 @@ def generate_timeseries_products(dataset, prdcfg):
         gateinfo = ('az'+az+'r'+r+'el'+el)
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dsavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         csvfname = make_filename(
@@ -886,7 +911,7 @@ def generate_timeseries_products(dataset, prdcfg):
         plot_timeseries(
             date, [value], figfname, labelx='Time UTC',
             labely=labely, labels=[label1], title=titl)
-        print('saved figures: '+' '.join(figfname))
+        print('----- save to '+' '.join(figfname))
 
         return figfname
 
@@ -897,7 +922,7 @@ def generate_timeseries_products(dataset, prdcfg):
         gateinfo = ('az'+az+'r'+r+'el'+el)
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdid'], timeinfo=prdcfg['timeinfo'])
 
         csvfname = make_filename(
@@ -932,7 +957,7 @@ def generate_timeseries_products(dataset, prdcfg):
             date, [value], figfname, labelx='Time UTC',
             labely=labely, labels=[label1], title=titl,
             period=prdcfg['ScanPeriod']*60.)
-        print('saved figures: '+' '.join(figfname))
+        print('----- save to '+' '.join(figfname))
 
         return figfname
 
@@ -943,7 +968,7 @@ def generate_timeseries_products(dataset, prdcfg):
         gateinfo = ('az'+az+'r'+r+'el'+el)
 
         savedir_ts = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdid'], timeinfo=prdcfg['timeinfo'])
 
         csvfname = make_filename(
@@ -970,7 +995,7 @@ def generate_timeseries_products(dataset, prdcfg):
             return None
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=radardate[0])
 
         figfname = make_filename(
@@ -990,7 +1015,7 @@ def generate_timeseries_products(dataset, prdcfg):
             radardate, radarvalue, sensordate, sensorvalue, figfname,
             labelx='Time UTC', labely=labely, label1=label1, label2=label2,
             titl=titl)
-        print('saved figures: '+' '.join(figfname))
+        print('----- save to '+' '.join(figfname))
 
         return figfname
 
@@ -1001,7 +1026,7 @@ def generate_timeseries_products(dataset, prdcfg):
         gateinfo = ('az'+az+'r'+r+'el'+el)
 
         savedir_ts = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdid'], timeinfo=prdcfg['timeinfo'])
 
         csvfname = make_filename(
@@ -1028,7 +1053,7 @@ def generate_timeseries_products(dataset, prdcfg):
             return None
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=radardate[0])
 
         figfname = make_filename(
@@ -1050,7 +1075,7 @@ def generate_timeseries_products(dataset, prdcfg):
             figfname, labelx='Time UTC', labely=labely,
             label1=label1, label2=label2, titl=titl,
             period1=prdcfg['ScanPeriod']*60., period2=period2)
-        print('saved figures: '+' '.join(figfname))
+        print('----- save to '+' '.join(figfname))
 
         return figfname
 
@@ -1060,7 +1085,7 @@ def generate_timeseries_products(dataset, prdcfg):
         timeinfo = dataset.time_vector[0]
 
         savedir = get_save_dir(prdcfg['basepath'], prdcfg['procname'],
-                               prdcfg['dsname'], prdcfg['prdname'],
+                               dssavedir, prdcfg['prdname'],
                                timeinfo=timeinfo)
 
         dstype_str = prdcfg['dstype'].lower().replace('_', '')
@@ -1107,6 +1132,10 @@ def generate_monitoring_products(dataset, prdcfg):
 
     hist_obj = dataset['hist_obj']
 
+    dssavedir = prdcfg['dsname']
+    if ('dssavename' in prdcfg):
+        dssavedir = prdcfg['dssavename']
+
     if prdcfg['type'] == 'VOL_HISTOGRAM':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in hist_obj.fields:
@@ -1129,7 +1158,7 @@ def generate_monitoring_products(dataset, prdcfg):
                 get_field_name(hist_obj.fields[field_name], field_name))
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
         fname = make_filename(
@@ -1148,7 +1177,7 @@ def generate_monitoring_products(dataset, prdcfg):
             fname, labelx=labelx, labely='Number of Samples',
             titl=titl)
 
-        print('saved figures: '+' '.join(fname))
+        print('----- save to '+' '.join(fname))
 
         return fname
 
@@ -1180,7 +1209,7 @@ def generate_monitoring_products(dataset, prdcfg):
                 get_field_name(hist_obj.fields[field_name], field_name))
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
         fname = make_filename(
@@ -1201,7 +1230,7 @@ def generate_monitoring_products(dataset, prdcfg):
             fname, labelx=labelx, labely='Number of Samples',
             titl=titl)
 
-        print('saved figures: '+' '.join(fname))
+        print('----- save to '+' '.join(fname))
 
         return fname
 
@@ -1223,7 +1252,7 @@ def generate_monitoring_products(dataset, prdcfg):
             timeformat = '%Y%m%d%H%M%S'
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
         fname = make_filename(
@@ -1245,7 +1274,7 @@ def generate_monitoring_products(dataset, prdcfg):
             hist_obj, hist_type, field_name, ind_el, prdcfg, fname,
             quantiles=quantiles, ref_value=ref_value)
 
-        print('saved figures: '+' '.join(fname))
+        print('----- save to '+' '.join(fname))
 
         return fname
 
@@ -1270,7 +1299,7 @@ def generate_monitoring_products(dataset, prdcfg):
             ref_value = prdcfg['ref_value']
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=csvtimeinfo)
 
         csvfname = make_filename(
@@ -1325,7 +1354,7 @@ def generate_monitoring_products(dataset, prdcfg):
             date, np_t_vec, cquant_vec, lquant_vec, hquant_vec, field_name,
             figfname, ref_value=ref_value, labelx='Time UTC',
             labely=labely, titl=titl)
-        print('saved figures: '+' '.join(figfname))
+        print('----- save to '+' '.join(figfname))
 
         return figfname
 
@@ -1343,7 +1372,7 @@ def generate_monitoring_products(dataset, prdcfg):
         new_dataset.add_field(field_name, hist_obj.fields[field_name])
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], prdcfg['dsname'],
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
         fname = make_filename(

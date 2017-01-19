@@ -408,7 +408,7 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
         radar = radar_list[ind_rad]
 
         if refl_field not in radar.fields:
-            warn('Unable to compute rainfall rate. Missing data')
+            warn('ERROR: Unable to compute rainfall rate. Missing data')
             return None, None
 
         rain = pyart.retrieve.est_rain_rate_z(

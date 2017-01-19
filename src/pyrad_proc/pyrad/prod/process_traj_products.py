@@ -32,12 +32,16 @@ def generate_traj_product(traj, prdcfg):
 
     """
 
+    dssavedir = prdcfg['dsname']
+    if ('dssavename' in prdcfg):
+        dssavedir = prdcfg['dssavename']
+
     if prdcfg['type'] == 'TRAJ_PLOT':
 
         timeinfo = traj.time_vector[0]
 
         savedir = get_save_dir(prdcfg['basepath'], prdcfg['procname'],
-                               prdcfg['dsname'], prdcfg['prdname'],
+                               dssavedir, prdcfg['prdname'],
                                timeinfo=timeinfo)
 
         ts = TimeSeries("", traj.time_vector,
@@ -85,7 +89,7 @@ def generate_traj_product(traj, prdcfg):
         timeinfo = traj.time_vector[0]
 
         savedir = get_save_dir(prdcfg['basepath'], prdcfg['procname'],
-                               prdcfg['dsname'], prdcfg['prdname'],
+                               dssavedir, prdcfg['prdname'],
                                timeinfo=timeinfo)
 
         fname = make_filename('ts', prdcfg['dstype'], 'TRAJ', ['csv'],
