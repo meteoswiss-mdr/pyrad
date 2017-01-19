@@ -8,7 +8,7 @@ dataSetList STRARR 4
    l0:traj
    l0:reflectivity_traj
    l0:reflectivity_traj_az
-#   l0:rainrate
+   l0:rainrate
 #   l1:rainrate_traj
 #   l1:rainrate_traj_az
 #   l0:windshear
