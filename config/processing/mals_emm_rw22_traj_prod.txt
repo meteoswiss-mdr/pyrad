@@ -4,14 +4,14 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 3
+dataSetList STRARR 4
    l0:traj
    l0:reflectivity_traj
    l0:reflectivity_traj_az
 #   l0:rainrate
-#   l0:windshear
 #   l1:rainrate_traj
 #   l1:rainrate_traj_az
+#   l0:windshear
 #   l1:windshear_traj
 #   l1:windshear_traj_az
 
@@ -45,17 +45,17 @@ reflectivity_traj STRUCT 3
 reflectivity_traj_az STRUCT 9
    type          STRING TRAJ_ANTENNA_PATTERN
    datatype      STRING RAINBOW:dBZ
-   dssavename    STRING rainrate_traj
+   dssavename    STRING reflectivity_traj
    antennaType   STRING AZIMUTH
    use_nans      INT 0
    nan_value     FLOAT 0.0
    pattern_thres FLOAT 1.5
-   RANGE_ALL     INT 0
+   range_all     INT 0
    products      STRUCT 1
-      AZIMUTH_ANTENNA STRUCT 3
+      AZIMUTH_ANTENNA STRUCT 1
          type  STRING   PLOT_AND_WRITE
-         ymin  FLOAT    0.0
-         ymax  FLOAT    4.0
+#         ymin  FLOAT    0.0
+#         ymax  FLOAT    4.0
 
 rainrate_traj STRUCT 3
    type          STRING TRAJ_ATPLANE
@@ -102,79 +102,34 @@ windshear_traj_az STRUCT 8
          ymin  FLOAT    -20.0
          ymax  FLOAT     20.0
 
-rainrate STRUCT 4
+rainrate STRUCT 5
    type     STRING RAINRATE
-   datatype STRARR 2
-        PROC:dBZc
-        COSMO:ISO0
+   RR_METHOD STRING Z
+   datatype STRARR 1
+        RAINBOW:dBZ
    IGNORE_MISSING_VOLS INT 1
-   products STRUCT 10
-      AZ033 STRUCT 3
+   products STRUCT 4
+      AZ033 STRUCT 4
          type  STRING RHI_IMAGE
          anglenr INT 4
          NOSANITY INT 0
-      AZ037 STRUCT 3
+         voltype STRING RR
+      AZ037 STRUCT 4
          type  STRING RHI_IMAGE
          anglenr INT 6
          NOSANITY INT 0
-      AZ041 STRUCT 3
+         voltype STRING RR
+      AZ041 STRUCT 4
          type  STRING RHI_IMAGE
          anglenr INT 8
          NOSANITY INT 0
-      EL06 STRUCT 4
+         voltype STRING RR
+      EL06 STRUCT 5
          type  STRING PPI_IMAGE
          anglenr INT 5
          transparent INT 0
          NOSANITY INT 0
-      ALT1000 STRUCT 3
-         type  STRING CAPPI
-         altitude FLOAT 1000
-         NOSANITY INT 0
-      ALT2500 STRUCT 3
-         type  STRING CAPPI
-         altitude FLOAT 2500
-         NOSANITY INT 0
-      ALT5000 STRUCT 3
-         type  STRING CAPPI
-         altitude FLOAT 5000
-         NOSANITY INT 0
-      CDF_PRECIP STRUCT 6
-         type       STRING CDF_STAT2
-         PHASE   STRING precip
-         use_nans   INT   0
-         nan_value  FLOAT 0.0
-         absolute   INT   0
-         sector     STRUCT 8
-            rangeStart FLOAT        0
-            rangeStop  FLOAT   100000
-            azStart    FLOAT        0
-            azStop     FLOAT      360
-            elStart    FLOAT        0
-            elStop     FLOAT       90
-            hmin       FLOAT        0
-            hmax       FLOAT    20000
-      CDF_RAIN STRUCT 6
-         type       STRING CDF_STAT2
-         PHASE      STRING liquid
-         use_nans   INT   0
-         nan_value  FLOAT 0.0
-         absolute   INT   0
-         sector     STRUCT 8
-            rangeStart FLOAT     5000
-            rangeStop  FLOAT    20000
-            azStart    FLOAT        0
-            azStop     FLOAT      360
-            elStart    FLOAT        0
-            elStop     FLOAT       90
-            hmin       FLOAT        0
-            hmax       FLOAT       -1 # use COSMO ISO0
-      RTS_TRAJ STRUCT 6
-           type           STRING PLOT_LINES
-           MODE           STRING ALONG_R
-           FIX_AZ_ANGLES  FLOAT 41 # to be checked!
-           FIX_EL_ANGLES  FLOAT 4
-           START_VALUE    FLOAT 0.5
-           STOP_VALUE     FLOAT 50
+         voltype STRING RR
 
 windshear STRUCT 4
    type     STRING WINDSHEAR

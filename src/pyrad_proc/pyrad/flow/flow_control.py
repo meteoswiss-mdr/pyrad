@@ -492,6 +492,9 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
 
     """
 
+    # Ugly copying of dataset config parameters to product
+    # config dict. Better: Make dataset config dict available to
+    # the product generation.
     prdcfg = cfg[dataset]['products'][product]
     prdcfg.update({'procname': cfg['name']})
     prdcfg.update({'basepath': cfg['saveimgbasepath']})
@@ -510,6 +513,8 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
     prdcfg.update({'prdname': product})
     prdcfg.update({'timeinfo': voltime})
     prdcfg.update({'runinfo': runinfo})
+    if 'dssavename' in cfg[dataset]:
+        prdcfg.update({'dssavename': cfg[dataset]['dssavename']})
 
     return prdcfg
 
