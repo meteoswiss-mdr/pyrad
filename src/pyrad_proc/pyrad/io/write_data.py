@@ -10,6 +10,7 @@ Functions for writing pyrad output data
     write_smn
     write_ts_polar_data
     write_monitoring_ts
+    write_intercomp_scores_ts
     write_colocated_gates
     write_colocated_data
     write_colocated_data_time_avg
@@ -194,6 +195,98 @@ def write_monitoring_ts(start_time, np_t, values, quantiles, datatype, fname):
                  'central_quantile': values_aux[1],
                  'low_quantile': values_aux[0],
                  'high_quantile': values_aux[2]})
+            csvfile.close()
+
+    return fname
+
+
+def write_intercomp_scores_ts(start_time, stats, field_name, fname,
+                              rad1_name='RADAR001', rad2_name='RADAR002'):
+    """
+    writes time series of radar intercomparison scores
+
+    Parameters
+    ----------
+    start_time : datetime object
+        the time of the intercomparison
+    stats : dict
+        dictionary containing the statistics
+    field_name : str
+        The name of the field
+    fname : str
+        file name where to store the data
+    rad1_name, rad2_name : str
+        Name of the radars intercompared
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    meanbias = stats['meanbias'].filled(fill_value=get_fillvalue())
+    medianbias = stats['medianbias'].filled(fill_value=get_fillvalue())
+    modebias = stats['modebias'].filled(fill_value=get_fillvalue())
+    corr = stats['corr'].filled(fill_value=get_fillvalue())
+    slope = stats['slope'].filled(fill_value=get_fillvalue())
+    intercep = stats['intercep'].filled(fill_value=get_fillvalue())
+    intercep_slope_1 = stats['intercep_slope_1'].filled(
+        fill_value=get_fillvalue())
+
+    filelist = glob.glob(fname)
+    if len(filelist) == 0:
+        with open(fname, 'w', newline='') as csvfile:
+            csvfile.write('# Weather radar intercomparison scores ' +
+                          'timeseries file\n')
+            csvfile.write('# Comment lines are preceded by "#"\n')
+            csvfile.write('# Description: \n')
+            csvfile.write(
+                '# Time series of the intercomparison between two radars.\n')
+            csvfile.write('# Radar 1: '+rad1_name+'\n')
+            csvfile.write('# Radar 2: '+rad2_name+'\n')
+            csvfile.write('# Fill Value: '+str(get_fillvalue())+'\n')
+            csvfile.write(
+                '# Start: ' +
+                start_time.strftime('%Y-%m-%d %H:%M:%S UTC')+'\n')
+            csvfile.write('#\n')
+
+            fieldnames = ['date', 'NP', 'mean_bias', 'median_bias',
+                          'mode_bias', 'corr', 'slope_of_linear_regression',
+                          'intercep_of_linear_regression',
+                          'intercep_of_linear_regression_of_slope_1']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writeheader()
+
+            writer.writerow(
+                {'date': start_time.strftime('%Y%m%d%H%M%S'),
+                 'NP': stats['npoints'],
+                 'mean_bias': meanbias,
+                 'median_bias': medianbias,
+                 'mode_bias': modebias,
+                 'corr': corr,
+                 'slope_of_linear_regression': slope,
+                 'intercep_of_linear_regression': intercep,
+                 'intercep_of_linear_regression_of_slope_1': intercep_slope_1
+                 })
+            csvfile.close()
+    else:
+        with open(fname, 'a', newline='') as csvfile:
+            fieldnames = ['date', 'NP', 'mean_bias', 'median_bias',
+                          'mode_bias', 'corr', 'slope_of_linear_regression',
+                          'intercep_of_linear_regression',
+                          'intercep_of_linear_regression_of_slope_1']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writerow(
+                {'date': start_time.strftime('%Y%m%d%H%M%S'),
+                 'NP': stats['npoints'],
+                 'mean_bias': meanbias,
+                 'median_bias': medianbias,
+                 'mode_bias': modebias,
+                 'corr': corr,
+                 'slope_of_linear_regression': slope,
+                 'intercep_of_linear_regression': intercep,
+                 'intercep_of_linear_regression_of_slope_1': intercep_slope_1
+                 })
             csvfile.close()
 
     return fname

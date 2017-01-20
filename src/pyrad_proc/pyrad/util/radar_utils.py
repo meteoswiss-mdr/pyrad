@@ -577,7 +577,17 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
     """
     if len(field1) == 0 or len(field2) == 0:
         warn('Unable to compute 2D histogram. Empty field')
-        return None, None, None, None
+        stats = {
+            'npoints': 0,
+            'meanbias': np.ma.asarray(np.ma.masked),
+            'medianbias': np.ma.asarray(np.ma.masked),
+            'modebias': np.ma.asarray(np.ma.masked),
+            'corr': np.ma.asarray(np.ma.masked),
+            'slope': np.ma.asarray(np.ma.masked),
+            'intercep': np.ma.asarray(np.ma.masked),
+            'intercep_slope_1': np.ma.asarray(np.ma.masked)
+        }
+        return None, None, None, stats
 
     hist_2d, bins1, bins2 = compute_2d_hist(
         field1, field2, field_name1, field_name2, step1=step1, step2=step2)
@@ -594,13 +604,13 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
 
     stats = {
         'npoints': npoints,
-        'meanbias': meanbias,
-        'medianbias': medianbias,
-        'modebias': modebias,
-        'corr': corr,
-        'slope': slope,
-        'intercep': intercep,
-        'intercep_slope_1': intercep_slope_1
+        'meanbias': np.ma.asarray(meanbias),
+        'medianbias': np.ma.asarray(medianbias),
+        'modebias': np.ma.asarray(modebias),
+        'corr': np.ma.asarray(corr),
+        'slope': np.ma.asarray(slope),
+        'intercep': np.ma.asarray(intercep),
+        'intercep_slope_1': np.ma.asarray(intercep_slope_1)
     }
 
     return hist_2d, bins1, bins2, stats

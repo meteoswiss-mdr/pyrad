@@ -19,6 +19,7 @@ Functions to plot Pyrad datasets
     plot_timeseries
     plot_timeseries_comp
     plot_monitoring_ts
+    plot_intercomp_scores_ts
     plot_sun_hits
     plot_sun_retrieval_ts
     get_colobar_label
@@ -805,6 +806,10 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname_list,
     plt.ylabel(labely)
     plt.title(titl)
 
+    # rotates and right aligns the x labels, and moves the bottom of the
+    # axes up to make room for them
+    fig.autofmt_xdate()
+
     for i in range(len(fname_list)):
         fig.savefig(fname_list[i])
     plt.close()
@@ -822,6 +827,8 @@ def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name,
     ----------
     date : datetime object
         time of the time series
+    np_t : int array
+        number of points
     cquant, lquant, hquant : float array
         values of the central, low and high quantiles
     field_name : str
@@ -864,6 +871,86 @@ def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name,
 
     plt.ylabel('Number of Samples')
     plt.xlabel(labelx)
+
+    # rotates and right aligns the x labels, and moves the bottom of the
+    # axes up to make room for them
+    fig.autofmt_xdate()
+
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
+    plt.close()
+
+    return fname_list
+
+
+def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
+                             modebias_vec, corr_vec, slope_vec, intercep_vec,
+                             intercep_slope1_vec, fname_list, ref_value=0.,
+                             labelx='Time UTC',
+                             titl='RADAR001-RADAR002 intercomparison'):
+    """
+    plots a time series of radar intercomparison scores
+
+    Parameters
+    ----------
+    date_vec : datetime object
+        time of the time series
+    np_vec : int array
+        number of points
+    meanbias_vec, medianbias_vec, modebias_vec : float array
+        mean, median and mode bias
+    corr_vec : float array
+        correlation
+    slope_vec, intercep_vec : float array
+        slope and intercep of a linear regression
+    intercep_slope1_vec : float
+        the intercep point of a inear regression of slope 1
+    ref_value : float
+        the reference value
+    labelx : str
+        The label of the X axis
+    titl : str
+        The figure title
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    """
+    fig = plt.figure(figsize=[10, 16])
+
+    ax = fig.add_subplot(3, 1, 1)
+    plt.plot(date_vec, meanbias_vec, 'b', label='mean')
+    plt.plot(date_vec, medianbias_vec, 'r', label='median')
+    plt.plot(date_vec, modebias_vec, 'g', label='mode')
+    plt.plot(date_vec, intercep_slope1_vec, 'y',
+             label='intercep of slope 1 LR')
+    if ref_value is not None:
+        plt.plot(date_vec, np.zeros(len(date_vec))+ref_value, 'k--')
+    plt.legend(loc='best')
+    plt.ylabel('bias [dB]')
+    plt.title(titl)
+
+    axes = plt.gca()
+    axes.set_ylim([-5., 5.])
+
+    ax = fig.add_subplot(3, 1, 2)
+    plt.plot(date_vec, corr_vec)
+
+    plt.ylabel('correlation')
+    axes = plt.gca()
+    axes.set_ylim([0., 1.])
+
+    ax = fig.add_subplot(3, 1, 3)
+    plt.plot(date_vec, np_vec)
+
+    plt.ylabel('Number of Samples')
+    plt.xlabel(labelx)
+
+    # rotates and right aligns the x labels, and moves the bottom of the
+    # axes up to make room for them
+    fig.autofmt_xdate()
 
     for i in range(len(fname_list)):
         fig.savefig(fname_list[i])
@@ -933,27 +1020,16 @@ def plot_sun_hits(field, field_name, fname_list, prdcfg):
 
 def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list):
     """
-    plots a time series
+    plots sun retrieval time series series
 
     Parameters
     ----------
-    date : datetime object
-        time of the time series
-    value : float array
-        values of the time series
+    sun_retrieval : tuple
+        tuple containing the retrieved parameters
+    data_type : str
+        parameter to be plotted
     fname_list : list of str
         list of names of the files where to store the plot
-    labelx : str
-        The label of the X axis
-    labely : str
-        The label of the Y axis
-    label1 : str
-        The label of the legend
-    titl : str
-        The figure title
-    period : float
-        measurement period in seconds used to compute accumulation. If 0 no
-        accumulation is computed
 
     Returns
     -------
@@ -1080,6 +1156,10 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list):
 
     axes = plt.gca()
     axes.set_ylim([vmin, vmax])
+
+    # rotates and right aligns the x labels, and moves the bottom of the
+    # axes up to make room for them
+    fig.autofmt_xdate()
 
     for i in range(len(fname_list)):
         fig.savefig(fname_list[i])

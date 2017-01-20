@@ -15,6 +15,7 @@ Functions for reading auxiliary data
     read_colocated_data_time_avg
     read_timeseries
     read_monitoring_ts
+    read_intercomp_scores_ts
     read_sun_hits_multiple_days
     read_sun_hits
     read_sun_retrieval
@@ -451,6 +452,82 @@ def read_monitoring_ts(fname):
     except EnvironmentError:
         warn('Unable to read file '+fname)
         return None, None
+
+
+def read_intercomp_scores_ts(fname):
+    """
+    Reads a radar intercomparison scores csv file
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    date_vec, np_vec, meanbias_vec, medianbias_vec, modebias_vec, corr_vec,
+    slope_vec, intercep_vec, intercep_slope1_vec : tupple
+        The read data. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            nrows = sum(1 for row in reader)
+
+            np_vec = np.zeros(nrows, dtype=int)
+            meanbias_vec = np.ma.empty(nrows, dtype=float)
+            medianbias_vec = np.ma.empty(nrows, dtype=float)
+            modebias_vec = np.ma.empty(nrows, dtype=float)
+            corr_vec = np.ma.empty(nrows, dtype=float)
+            slope_vec = np.ma.empty(nrows, dtype=float)
+            intercep_vec = np.ma.empty(nrows, dtype=float)
+            intercep_slope1_vec = np.ma.empty(nrows, dtype=float)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#')
+                )
+            i = 0
+            date_vec = list()
+            for row in reader:
+                date_vec.append(datetime.datetime.strptime(
+                    row['date'], '%Y%m%d%H%M%S'))
+                np_vec[i] = int(row['NP'])
+                meanbias_vec[i] = float(row['mean_bias'])
+                medianbias_vec[i] = float(row['median_bias'])
+                modebias_vec[i] = float(row['mode_bias'])
+                corr_vec[i] = float(row['corr'])
+                slope_vec[i] = float(row['slope_of_linear_regression'])
+                intercep_vec[i] = float(row['intercep_of_linear_regression'])
+                intercep_slope1_vec[i] = float(
+                    row['intercep_of_linear_regression_of_slope_1'])
+                i += 1
+
+            meanbias_vec = np.ma.masked_values(
+                meanbias_vec, get_fillvalue())
+            medianbias_vec = np.ma.masked_values(
+                medianbias_vec, get_fillvalue())
+            modebias_vec = np.ma.masked_values(
+                modebias_vec, get_fillvalue())
+            corr_vec = np.ma.masked_values(
+                corr_vec, get_fillvalue())
+            slope_vec = np.ma.masked_values(
+                slope_vec, get_fillvalue())
+            intercep_vec = np.ma.masked_values(
+                intercep_vec, get_fillvalue())
+            intercep_slope1_vec = np.ma.masked_values(
+                intercep_slope1_vec, get_fillvalue())
+
+            return (date_vec, np_vec, meanbias_vec, medianbias_vec,
+                    modebias_vec, corr_vec, slope_vec, intercep_vec,
+                    intercep_slope1_vec)
+    except EnvironmentError:
+        warn('Unable to read file '+fname)
+        return None, None, None, None, None, None, None, None, None
 
 
 def read_sun_hits_multiple_days(cfg, time_ref, nfiles=1):

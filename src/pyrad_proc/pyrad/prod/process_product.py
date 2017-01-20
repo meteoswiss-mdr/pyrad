@@ -30,11 +30,13 @@ from ..io.io_aux import generate_field_name_str
 
 from ..io.read_data_other import get_sensor_data, read_timeseries
 from ..io.read_data_other import read_sun_retrieval, read_monitoring_ts
+from ..io.read_data_other import read_intercomp_scores_ts
 
 from ..io.write_data import write_ts_polar_data, write_monitoring_ts
 from ..io.write_data import write_sun_hits, write_sun_retrieval
 from ..io.write_data import write_colocated_gates, write_colocated_data
 from ..io.write_data import write_colocated_data_time_avg
+from ..io.write_data import write_intercomp_scores_ts
 
 from ..graph.plots import plot_ppi, plot_rhi, plot_cappi, plot_bscope
 from ..graph.plots import plot_timeseries, plot_timeseries_comp
@@ -42,6 +44,7 @@ from ..graph.plots import plot_quantiles, get_colobar_label, plot_sun_hits
 from ..graph.plots import plot_sun_retrieval_ts, plot_histogram
 from ..graph.plots import plot_histogram2, plot_density, plot_monitoring_ts
 from ..graph.plots import get_field_name, get_colobar_label, plot_scatter
+from ..graph.plots import plot_intercomp_scores_ts
 
 from ..util.radar_utils import create_sun_hits_field
 from ..util.radar_utils import create_sun_retrieval_field
@@ -347,24 +350,82 @@ def generate_intercomp_products(dataset, prdcfg):
 
         metadata = (
             'npoints: '+str(stats['npoints'])+'\n' +
-            'mode bias: '+str(stats['modebias'])+'\n' +
-            'median bias: '+str(stats['medianbias'])+'\n' +
-            'mean bias: '+str(stats['meanbias'])+'\n' +
-            'corr: '+str(stats['corr'])+'\n' +
-            'slope: '+str(stats['slope'])+'\n' +
-            'intercep: '+str(stats['intercep'])+'\n' +
-            'intercep slope 1: '+str(stats['intercep_slope_1'])+'\n')
+            'mode bias: '+'{:.2f}'.format(float(stats['modebias']))+'\n' +
+            'median bias: '+'{:.2f}'.format(float(stats['medianbias']))+'\n' +
+            'mean bias: '+'{:.2f}'.format(float(stats['meanbias']))+'\n' +
+            'intercep slope 1: '+'{:.2f}'.format(
+                float(stats['intercep_slope_1']))+'\n' +
+            'corr: '+'{:.2f}'.format(float(stats['corr']))+'\n' +
+            'slope: '+'{:.2f}'.format(float(stats['slope']))+'\n' +
+            'intercep: '+'{:.2f}'.format(float(stats['intercep']))+'\n')
 
         plot_scatter(bins1, bins2, np.ma.asarray(hist_2d), field_name,
                      field_name, fname, prdcfg, metadata=metadata,
                      lin_regr=[stats['slope'], stats['intercep']],
                      lin_regr_slope1=stats['intercep_slope_1'],
                      rad1_name=dataset['intercomp_dict']['rad1_name'],
-                     rad2_name=dataset['intercomp_dict']['rad2_name'],)
+                     rad2_name=dataset['intercomp_dict']['rad2_name'])
 
         print('----- save to '+' '.join(fname))
 
         return fname
+    elif prdcfg['type'] == 'PLOT_AND_WRITE_INTERCOMP_TS':
+        if not dataset['final']:
+            return None
+
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        step = None
+        if 'step' in prdcfg:
+            step = prdcfg['step']
+
+        rad1_name = dataset['intercomp_dict']['rad1_name']
+        rad2_name = dataset['intercomp_dict']['rad2_name']
+
+        hist_2d, bins1, bins2, stats = compute_2d_stats(
+            np.ma.asarray(dataset['intercomp_dict']['rad1_val']),
+            np.ma.asarray(dataset['intercomp_dict']['rad2_val']),
+            field_name, field_name, step1=step, step2=step)
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=None)
+
+        csvfname = make_filename(
+            'ts', prdcfg['dstype'], prdcfg['voltype'], ['csv'],
+            timeinfo=None, timeformat='%Y%m%d')[0]
+
+        csvfname = savedir+csvfname
+
+        write_intercomp_scores_ts(
+            dataset['timeinfo'], stats, field_name, csvfname,
+            rad1_name=rad1_name, rad2_name=rad2_name)
+        print('saved CSV file: '+csvfname)
+
+        (date_vec, np_vec, meanbias_vec, medianbias_vec, modebias_vec,
+         corr_vec, slope_vec, intercep_vec, intercep_slope1_vec) = (
+            read_intercomp_scores_ts(csvfname))
+
+        if date_vec is None:
+            warn(
+                'Unable to plot time series. No valid data')
+            return None
+
+        figfname = make_filename(
+            'ts', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'],
+            timeinfo=None, timeformat='%Y%m%d')
+
+        for i in range(len(figfname)):
+            figfname[i] = savedir+figfname[i]
+
+        titl = rad1_name+'-'+rad2_name+' '+field_name+' intercomparison'
+        plot_intercomp_scores_ts(
+            date_vec, np_vec, meanbias_vec, medianbias_vec, modebias_vec,
+            corr_vec, slope_vec, intercep_vec, intercep_slope1_vec, figfname,
+            ref_value=0., labelx='Time UTC', titl=titl)
+        print('----- save to '+' '.join(figfname))
+
+        return figfname
     else:
         warn(' Unsupported product type: ' + prdcfg['type'])
         return None
@@ -874,7 +935,7 @@ def generate_timeseries_products(dataset, prdcfg):
         gateinfo = ('az'+az+'r'+r+'el'+el)
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], dsavedir,
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         csvfname = make_filename(
@@ -1304,10 +1365,7 @@ def generate_monitoring_products(dataset, prdcfg):
 
         csvfname = make_filename(
             'ts', prdcfg['dstype'], prdcfg['voltype'], ['csv'],
-            timeinfo=csvtimeinfo, timeformat='%Y%m%d')
-
-        for i in range(len(csvfname)):
-            csvfname[i] = savedir+csvfname[i]
+            timeinfo=csvtimeinfo, timeformat='%Y%m%d')[0]
 
         quantiles, values = compute_quantiles_from_hist(
             hist_obj.range['data'],
@@ -1321,11 +1379,11 @@ def generate_monitoring_products(dataset, prdcfg):
 
         write_monitoring_ts(
             start_time, np_t, values, quantiles, prdcfg['voltype'],
-            csvfname[0])
-        print('saved CSV file: '+csvfname[0])
+            csvfname)
+        print('saved CSV file: '+csvfname)
 
         date, np_t_vec, cquant_vec, lquant_vec, hquant_vec = (
-            read_monitoring_ts(csvfname[0]))
+            read_monitoring_ts(csvfname))
 
         if date is None:
             warn(
