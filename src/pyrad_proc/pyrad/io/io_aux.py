@@ -275,6 +275,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'corrected_unfiltered_reflectivity'
     elif datatype == 'dBZv':
         field_name = 'reflectivity_vv'
+    elif datatype == 'dBZvc':
+        field_name = 'corrected_reflectivity_vv'
     elif datatype == 'dBuZv':
         field_name = 'unfiltered_reflectivity_vv'
     elif datatype == 'dBuZvc':

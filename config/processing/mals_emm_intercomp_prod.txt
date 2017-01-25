@@ -5,13 +5,13 @@
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
 dataSetList STRARR 1    
-    DX50_PLD_coloc_gates
+    DX50_PLA_coloc_gates
 
 
 # ==========================================================================================
 #                 colocated gates
 # ==========================================================================================         
-DX50_PLD_coloc_gates STRUCT 9
+DX50_PLA_coloc_gates STRUCT 9
 	type STRING COLOCATED_GATES
 	datatype STRARR 4
 		RADAR001:CFRADIAL:dBZc,dBZ_avg,SAVEVOL
@@ -19,9 +19,9 @@ DX50_PLD_coloc_gates STRUCT 9
         RADAR002:CFRADIAL:dBZc,dBZ_avg,SAVEVOL
         RADAR002:RAD4ALPDEM:VIS
     h_tol FLOAT 100.
-    latlon_tol FLOAT 0.005
+    latlon_tol FLOAT 0.005  # approx. 500 m tolerance
     vol_d_tol FLOAT 100.
-    vismin FLOAT 100.
+    vismin FLOAT 99.
     hmax FLOAT 10000.
     elmax FLOAT 20.
     products STRUCT 8

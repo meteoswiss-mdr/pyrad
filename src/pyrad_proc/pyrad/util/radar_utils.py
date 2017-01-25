@@ -246,7 +246,7 @@ def time_avg_range(timeinfo, avg_starttime, avg_endtime, period):
     within_range = False
     while not within_range:
         if timeinfo > new_endtime:
-            new_startime += datetime.timedelta(seconds=period)
+            new_starttime += datetime.timedelta(seconds=period)
             new_endtime += datetime.timedelta(seconds=period)
         else:
             within_range = True

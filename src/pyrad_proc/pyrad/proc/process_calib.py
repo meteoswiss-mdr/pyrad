@@ -1078,6 +1078,9 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
             dscfg['global_data'] = avg_par
             dscfg['initialized'] = 1
 
+        if dscfg['initialized'] == 0:
+            return None, None
+
         dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
         # no radar object in global data: create it
         if 'radar_obj' not in dscfg['global_data']:
@@ -1259,6 +1262,9 @@ def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
             avg_par.update({'timeinfo': dscfg['timeinfo']})
             dscfg['global_data'] = avg_par
             dscfg['initialized'] = 1
+
+        if dscfg['initialized'] == 0:
+            return None, None
 
         dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
         # no radar object in global data: create it
@@ -1473,6 +1479,9 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
             avg_par.update({'timeinfo': dscfg['timeinfo']})
             dscfg['global_data'] = avg_par
             dscfg['initialized'] = 1
+
+        if dscfg['initialized'] == 0:
+            return None, None
 
         dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
         # no radar object in global data: create it

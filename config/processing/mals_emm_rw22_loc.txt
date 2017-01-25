@@ -23,7 +23,7 @@ ScanList STRARR 13
       MALS_EMM_049_dw.ele/
 
 # Repetition time of the scans [min]
-ScanPeriod FLOAT 2.5
+ScanPeriod FLOAT 2
 
 # Frequency of cosmo run [h]
 CosmoRunFreq INT 3

@@ -15,7 +15,7 @@ import numpy as np
 
 
 def quantiles_weighted(values, weight_vector=None, quantiles=np.array([0.5]),
-                       fill_value=None, weight_threshold=None):
+                       weight_threshold=None):
     """
     Given a set of values and weights, compute the weighted
     quantile(s).
@@ -23,8 +23,9 @@ def quantiles_weighted(values, weight_vector=None, quantiles=np.array([0.5]),
 
     if (weight_vector is not None):
         if (weight_vector.size != values.shape[0]):
-            raise Exception("ERROR: Unexpected size of weight vector "
-                            "(%d instead of %d)" % (weight_vector.size, values.shape[0]))
+            raise Exception(
+                "ERROR: Unexpected size of weight vector "
+                "(%d instead of %d)" % (weight_vector.size, values.shape[0]))
     else:
         weight_vector = np.ones(values.shape[0], dtype=float)
 
@@ -36,29 +37,31 @@ def quantiles_weighted(values, weight_vector=None, quantiles=np.array([0.5]),
         values = values.reshape(-1)
         weight_vector = weight_vector.reshape(-1)
 
-    # remove nans
-    if (fill_value is not None):
-        values_ma = np.ma.masked_values(values, fill_value)
-        if (values_ma.mask.any()):
-            values = values_ma[~values_ma.mask]
-            weight_vector = weight_vector[~values_ma.mask]
-
-    nvalid = weight_vector.size
+    # there must be more than 3 valid values
+    mask = np.ma.getmaskarray(values)
+    nvalid = np.count_nonzero(np.logical_not(mask))
     if (nvalid < 3):
         return (None, np.array([None] * quantiles.size), None)
 
-    total_weight = np.sum(weight_vector)
+    # mask weights in non-valid data
+    weight_vector[mask] = np.ma.masked
+
+    total_weight = np.ma.sum(weight_vector)
 
     # Average
-    avg = np.sum(np.multiply(values, weight_vector)) / total_weight
-
-    sorter = np.argsort(values, axis=None)
-    values = values[sorter]
-    weight_vector = weight_vector[sorter]
+    avg = np.ma.sum(values*weight_vector) / total_weight
 
     if (weight_threshold is not None):
         if (total_weight < weight_threshold):
             return (avg, np.array([None] * quantiles.size), nvalid)
+
+    # sort the valid data
+    values = values[~mask]
+    weight_vector = weight_vector[~mask]
+
+    sorter = np.argsort(values, axis=None)
+    values = values[sorter]
+    weight_vector = weight_vector[sorter]
 
     weighted_quantiles = np.cumsum(weight_vector) - 0.5 * weight_vector
 

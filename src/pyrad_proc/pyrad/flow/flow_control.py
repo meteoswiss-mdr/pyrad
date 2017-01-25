@@ -57,8 +57,9 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
         start and end time of the data to be processed
     trajfile : str
         path to file describing the trajectory
-    infostr : Information string about the actual data processing
-              (e.g. 'RUN57'). This sting is added to product files.
+    infostr : str
+        Information string about the actual data processing
+        (e.g. 'RUN57'). This string is added to product files.
 
     """
 

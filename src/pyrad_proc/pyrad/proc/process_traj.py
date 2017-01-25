@@ -197,7 +197,7 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
 
         # =====================================================================
         # Get sample at bin
-        rdata = radar_sel.fields[field_name]['data'].data
+        rdata = radar_sel.fields[field_name]['data']
         val = rdata[ray_sel, rr_ind]
 
         # =====================================================================
@@ -216,18 +216,14 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
             rr_min = 0
         cell_vals = rdata[cell_ind, rr_min:rr_ind+2]
 
-        nvals_tot = cell_vals.size
-
         # =====================================================================
-        # Exclude undefined values
+        # Compute statistics and get number of valid data
+        val_mean = np.ma.mean(cell_vals)
+        val_min = np.ma.min(cell_vals)
+        val_max = np.ma.max(cell_vals)
 
-        fill_val = radar_sel.fields[field_name]['_FillValue']
-        cell_vals = np.ma.masked_values(cell_vals, fill_val)
-        nvals_valid = cell_vals.count()
-        val_mean = np.mean(cell_vals)
-        val_min = np.min(cell_vals)
-        val_max = np.max(cell_vals)
-
+        nvals_valid = np.count_nonzero(
+            np.logical_not(np.ma.getmaskarray(cell_vals)))
         # =====================================================================
         # Add to time series
 
@@ -345,8 +341,8 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
                 "Time series of a weather radar data type at the location",
                 "of the plane weighted by the antenna pattern of the PAR",
                 "antenna.",
-                "The time samples where the plane was out of the weather radar",
-                "sector are NOT included in this file.",
+                "The time samples where the plane was out of the weather ",
+                "radar sector are NOT included in this file.",
                 "NaN (Not a number): No rain detected at the plane location."
             ]
 
@@ -399,7 +395,8 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
                      {"val": 0.7, "plot": False, "color": None, "ltype": None},
                      {"val": 0.8, "plot": True, "color": 'k', "ltype": ':'},
                      {"val": 0.9, "plot": False, "color": None, "ltype": None},
-                     {"val": 0.95, "plot": False, "color": None, "ltype": None}]
+                     {"val": 0.95, "plot": False, "color": None,
+                      "ltype": None}]
 
         ts.add_dataseries("Weighted average", name, unit, color='b')
         for qq in quantiles:
@@ -518,21 +515,18 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
         else:
             rr_ind_min = rr_ind
 
-        rdata = radar_sel.fields[field_name]['data'].data
+        rdata = radar_sel.fields[field_name]['data']
         values = rdata[ray_inds, rr_ind_min:rr_ind+1]
-        fill_val = radar_sel.fields[field_name]['_FillValue']
 
         if (use_nans):
-            values_ma = np.ma.masked_values(values, fill_val)
-            if (values_ma.mask.any()):
-                values[values_ma.mask is True] = nan_value
+            values_ma = np.ma.getmaskarray(values)
+            values[values_ma] = nan_value
 
         try:
             (avg, qvals, nvals_valid) = quantiles_weighted(
                 values,
                 weight_vector=tadict['weightvec'],
                 quantiles=tadict['quantiles'],
-                fill_value=fill_val,
                 weight_threshold=weight_threshold)
         except Exception as ee:
             warn(str(ee))

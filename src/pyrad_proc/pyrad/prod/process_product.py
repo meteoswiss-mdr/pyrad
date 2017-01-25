@@ -483,6 +483,7 @@ def generate_colocated_gates_products(dataset, prdcfg):
         if 'radar' not in dataset[prdcfg['radar']]:
             return None
 
+        prdcfg['timeinfo'] = None
         generate_vol_products(dataset[prdcfg['radar']]['radar'], prdcfg)
 
 
