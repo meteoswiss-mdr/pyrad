@@ -35,6 +35,9 @@ loadbasepath STRARR 2
 loadname STRARR 2
     mals_emm_dataquality
     rad4alp_PLA
+    
+# Base path for colocated gates data
+colocgatespath STRING /data/pyrad_products/mals_emm_dataquality/colocated_gates/
 
 
 # ------------------------------------------------

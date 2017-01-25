@@ -2262,13 +2262,28 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
         return new_dataset, None
 
     if procstatus == 2:
+        # get field name
+        refl_type = None
+        for datatypedescr in dscfg['datatype']:
+            radarnr, datagroup, datatype, dataset, product = (
+                get_datatype_fields(datatypedescr))
+            if ((datatype == 'dBZ') or (datatype == 'dBZc') or
+                    (datatype == 'dBuZ') or (datatype == 'dBZv') or
+                    (datatype == 'dBZvc') or (datatype == 'dBuZv')):
+                refl_type = datatype
+                break
+
+        if refl_type is None:
+            warn('Unknown reflectivity type')
+            return None, None
+
         savedir = get_save_dir(
             dscfg['basepath'], dscfg['procname'], dscfg['dsname'],
             dscfg['coloc_data_dir'],
             timeinfo=dscfg['global_data']['timeinfo'], create_dir=False)
 
         fname = make_filename(
-            'colocated_data', dscfg['type'], 'dBZc', ['csv'],
+            'colocated_data', dscfg['type'], refl_type, ['csv'],
             timeinfo=dscfg['global_data']['timeinfo'], timeformat='%Y%m%d')
 
         fname = savedir+fname[0]

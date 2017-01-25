@@ -46,6 +46,7 @@ total_power = 'total_power'
 
 unfiltered_reflectivity = 'unfiltered_reflectivity'
 reflectivity_vv = 'reflectivity_vv'
+corrected_reflectivity_vv = 'corrected_reflectivity_vv'
 unfiltered_reflectivity_vv = 'unfiltered_reflectivity_vv'
 
 reflectivity_bias = 'reflectivity_bias'
@@ -225,6 +226,7 @@ DEFAULT_FIELD_NAMES = {
     'total_power': total_power,
     'unfiltered_reflectivity': unfiltered_reflectivity,
     'reflectivity_vv': reflectivity_vv,
+    'corrected_reflectivity_vv': corrected_reflectivity_vv,
     'unfiltered_reflectivity_vv': unfiltered_reflectivity_vv,
     'reflectivity_bias': reflectivity_bias,
     'signal_power_hh': signal_power_hh,
@@ -601,6 +603,18 @@ DEFAULT_METADATA = {
         'units': 'dBZ',
         'standard_name': 'corrected_equivalent_reflectivity_factor',
         'long_name': 'Corrected reflectivity',
+        'coordinates': 'elevation azimuth range'},
+        
+    reflectivity_vv: {
+        'units': 'dBZ',
+        'standard_name': 'equivalent_reflectivity_factor_vertical_polarization',
+        'long_name': 'Reflectivity vertical',
+        'coordinates': 'elevation azimuth range'},
+        
+    corrected_reflectivity_vv: {
+        'units': 'dBZ',
+        'standard_name': 'corrected_equivalent_reflectivity_factor_vertical_polarization',
+        'long_name': 'Corrected reflectivity vertical',
         'coordinates': 'elevation azimuth range'},
 
     total_power: {
@@ -1684,6 +1698,7 @@ DEFAULT_FIELD_COLORMAP = {
     total_power: 'pyart_NWSRef',
     unfiltered_reflectivity: 'pyart_NWSRef',
     reflectivity_vv: 'pyart_NWSRef',
+    corrected_reflectivity_vv: 'pyart_NWSRef',
     unfiltered_reflectivity_vv: 'pyart_NWSRef',
     reflectivity_bias: 'pyart_NWSRef',
     signal_power_hh: 'pyart_NWSRef',
@@ -1798,6 +1813,7 @@ DEFAULT_FIELD_LIMITS = {
     total_power: (-30., 75.),
     unfiltered_reflectivity: (-30., 75.),
     reflectivity_vv: (-30., 75.),
+    corrected_reflectivity_vv: (-30., 75.),
     unfiltered_reflectivity_vv: (-30., 75.),
     signal_to_noise_ratio: (-5., 30.),
     signal_to_noise_ratio_hh: (-5., 30.),
