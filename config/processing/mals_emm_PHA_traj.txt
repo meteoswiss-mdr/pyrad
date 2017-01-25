@@ -1,6 +1,6 @@
 # Name of this configuration:
 # Will be used in product generation save path
-name STRING rad4alp_PHA
+name STRING mals_emm_PHA_traj
 
 # ---------------------------------------------------------
 #  Raw data pathes
@@ -39,8 +39,8 @@ imgformat STRING png
 configpath STRING $HOME/pyrad/config/
 
 # Configuration of the radar location and approach direction
-locationConfigFile STRING $HOME/pyrad/config/processing/rad4alp_PHA_loc.txt
+locationConfigFile STRING $HOME/pyrad/config/processing/mals_emm_PHA_traj_loc.txt
 
 # Configuration of the product generation
-productConfigFile STRING $HOME/pyrad/config/processing/rad4alp_PHA_prod.txt
+productConfigFile STRING $HOME/pyrad/config/processing/mals_emm_PHA_traj_prod.txt
 
