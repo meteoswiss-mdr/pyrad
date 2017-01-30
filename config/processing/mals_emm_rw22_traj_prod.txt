@@ -4,18 +4,116 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 6
-   l0:traj
-   l0:reflectivity_traj
-   l0:reflectivity_traj_az
-   l0:rainrate
-   l1:rainrate_traj
-   l1:rainrate_traj_az
+dataSetList STRARR 11
+   l0:echoID
+   l1:echoFilter
+   l3:echoFilter_Ah   
+   l2:Att_ZPhi
+   l3:hydroclass
+   l4:RR_hydro   
+   l0:traj   
+   l3:reflectivity_traj
+   l3:reflectivity_traj_az
+   l5:rainrate_traj
+   l5:rainrate_traj_az
 #   l0:windshear
 #   l1:windshear_traj
 #   l1:windshear_traj_az
 
 
+# ==========================================================================================
+#                 echo identification
+# ==========================================================================================
+echoID STRUCT 3
+    type STRING SAN
+    datatype STRARR 4
+        dBZ
+        ZDR
+        uPhiDP
+        RhoHV
+    MAKE_GLOBAL INT 1
+
+
+# ==========================================================================================
+#                 clutter and noise suppression
+# ==========================================================================================
+# echo type 3 : precip, 2 : clutter, 1 : noise
+echoFilter STRUCT 4
+    type STRING ECHO_FILTER
+    datatype STRARR 7
+        PROC:echoID
+        dBZ
+        dBZv
+        ZDR
+        RhoHV
+        PhiDP
+        KDP
+    echo_type INT 3
+    MAKE_GLOBAL INT 1
+
+echoFilter_Ah STRUCT 4
+    type STRING ECHO_FILTER
+    datatype STRARR 2
+        PROC:echoID
+        PROC:Ah
+    echo_type INT 3
+    MAKE_GLOBAL INT 1
+
+    
+# ==========================================================================================
+#                 Attenuation
+# ==========================================================================================
+Att_ZPhi STRUCT 5
+    type STRING ATTENUATION
+    datatype STRARR 4
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:PhiDPc
+        COSMO:TEMP
+    ATT_METHOD STRING ZPhi
+    fzl FLOAT 2000.
+    MAKE_GLOBAL INT 1
+    
+    
+# ==========================================================================================
+#                 hydrometeor classification products
+# ==========================================================================================
+hydroclass STRUCT 5
+    type STRING HYDROCLASS
+    datatype STRARR 5
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:RhoHVc
+        PROC:KDPc
+        COSMO:TEMP
+    HYDRO_METHOD STRING SEMISUPERVISED
+    RADARCENTROIDS STRING DX50
+    MAKE_GLOBAL INT 1
+
+
+# ==========================================================================================
+#               rainfall rate
+# ==========================================================================================
+RR_hydro STRUCT 5
+    type STRING RAINRATE
+    datatype STRARR 3
+        PROC:dBZc
+        PROC:Ahc
+        PROC:hydro
+    RR_METHOD STRING hydro
+    MAKE_GLOBAL INT 1
+    products STRUCT 2
+        SAVEVOL STRUCT 2
+            type  STRING SAVEVOL
+            voltype STRING RR
+        EL003_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 1
+            voltype STRING RR
+
+# ==========================================================================================
+#               trajectory processing
+# ========================================================================================== 
 traj STRUCT 3
    type     STRING TRAJ
    datatype STRARR 1
@@ -35,7 +133,7 @@ traj STRUCT 3
 
 reflectivity_traj STRUCT 3
    type          STRING TRAJ_ATPLANE
-   datatype      STRING RAINBOW:dBZ
+   datatype      STRING PROC:dBZc
    products      STRUCT 1
       AT_PLANE STRUCT 3
          type  STRING   PLOT_AND_WRITE
@@ -44,7 +142,7 @@ reflectivity_traj STRUCT 3
 
 reflectivity_traj_az STRUCT 9
    type          STRING TRAJ_ANTENNA_PATTERN
-   datatype      STRING RAINBOW:dBZ
+   datatype      STRING PROC:dBZc
    dssavename    STRING reflectivity_traj
    antennaType   STRING AZIMUTH
    use_nans      INT 0
@@ -56,31 +154,31 @@ reflectivity_traj_az STRUCT 9
          type  STRING   PLOT_AND_WRITE
 #         ymin  FLOAT    0.0
 #         ymax  FLOAT    4.0
-
-rainrate STRUCT 5
-   type     STRING RAINRATE
-   RR_METHOD STRING Z
-   datatype STRARR 1
-        RAINBOW:dBZ
-   MAKE_GLOBAL INT 1
-   products STRUCT 4
-      AZ033 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 4         
-         voltype STRING RR
-      AZ037 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 6         
-         voltype STRING RR
-      AZ041 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 8         
-         voltype STRING RR
-      EL06 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 5         
-         voltype STRING RR
          
+rainrate_traj STRUCT 3
+   type          STRING TRAJ_ATPLANE
+   datatype      STRING PROC:RR
+   products      STRUCT 1
+      AT_PLANE STRUCT 3
+         type  STRING   PLOT_AND_WRITE
+         ymin  FLOAT    0.0
+         ymax  FLOAT    4.0
+
+rainrate_traj_az STRUCT 9
+   type          STRING TRAJ_ANTENNA_PATTERN
+   datatype      STRING PROC:RR
+   dssavename    STRING rainrate_traj
+   antennaType   STRING AZIMUTH
+   use_nans      INT 0
+   nan_value     FLOAT 0.0
+   pattern_thres FLOAT 1.5
+   RANGE_ALL     INT 0
+   products      STRUCT 1
+      AZIMUTH_ANTENNA STRUCT 3
+         type  STRING   PLOT_AND_WRITE
+         ymin  FLOAT    0.0
+         ymax  FLOAT    4.0
+
 #windshear STRUCT 4
 #   type     STRING WINDSHEAR
 #   datatype STRING V
@@ -125,30 +223,6 @@ rainrate STRUCT 5
 #            elStop     FLOAT       90
 #            hmin       FLOAT        0
 #            hmax       FLOAT    20000
-         
-rainrate_traj STRUCT 3
-   type          STRING TRAJ_ATPLANE
-   datatype      STRING PROC:RR
-   products      STRUCT 1
-      AT_PLANE STRUCT 3
-         type  STRING   PLOT_AND_WRITE
-         ymin  FLOAT    0.0
-         ymax  FLOAT    4.0
-
-rainrate_traj_az STRUCT 9
-   type          STRING TRAJ_ANTENNA_PATTERN
-   datatype      STRING PROC:RR
-   dssavename    STRING rainrate_traj
-   antennaType   STRING AZIMUTH
-   use_nans      INT 0
-   nan_value     FLOAT 0.0
-   pattern_thres FLOAT 1.5
-   RANGE_ALL     INT 0
-   products      STRUCT 1
-      AZIMUTH_ANTENNA STRUCT 3
-         type  STRING   PLOT_AND_WRITE
-         ymin  FLOAT    0.0
-         ymax  FLOAT    4.0
 
 #windshear_traj STRUCT 3
 #   type     STRING TRAJ_ATPLANE
