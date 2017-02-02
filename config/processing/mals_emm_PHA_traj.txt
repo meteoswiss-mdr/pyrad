@@ -13,6 +13,10 @@ datapath STRING /data/rad4alp/rawdata/
 
 # Base path for cosmo data
 cosmopath STRING /data/cosmo/
+
+# Loading of saved datasets
+loadbasepath STRING /data/pyrad_examples/
+loadname STRING  mals_emm_PHA_traj
     
 # ------------------------------------------------------------
 # Auxiliary data pathes

@@ -83,7 +83,7 @@ class TimeSeries(object):
                 raise Exception("ERROR: Number of data series sample do "
                                 "not correspond to time vector ('%s')" % label)
         else:
-            dataseries = np.empty(self.maxlength)
+            dataseries = np.ma.empty(self.maxlength)
 
         ds = _DataSeries(label, unit_name, unit, dataseries,
                          plot=plot, color=color, linestyle=linestyle)
@@ -149,7 +149,8 @@ class TimeSeries(object):
                       file=tsfile)
 
             for ds in self.dataseries:
-                print(", %14.4f" % (ds.data[kk]), end="", file=tsfile)
+                print(", %14.4f" % (ds.data.filled(fill_value=np.nan)[kk]),
+                      end="", file=tsfile)
 
             print("", file=tsfile)
 

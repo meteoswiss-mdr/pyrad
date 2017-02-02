@@ -180,6 +180,10 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
     traj_time_vec = date2num(trajectory.time_vector, radar.time['units'],
                              radar.time['calendar'])
 
+    if np.size(traj_ind) == 0:
+        warn('No trajectory samples within current period')
+        return None, None
+
     for tind in np.nditer(traj_ind):
         az = rad_traj.azimuth_vec[tind]
         el = rad_traj.elevation_vec[tind]
@@ -463,6 +467,10 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
 
     traj_time_vec = date2num(trajectory.time_vector, radar.time['units'],
                              radar.time['calendar'])
+
+    if np.size(traj_ind) == 0:
+        warn('No trajectory samples within current period')
+        return None, None
 
     for tind in np.nditer(traj_ind):
         az = rad_traj.azimuth_vec[tind]

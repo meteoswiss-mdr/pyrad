@@ -30,6 +30,7 @@ from datetime import datetime
 from datetime import timedelta
 import atexit
 import inspect
+import gc
 
 from ..io.config import read_config
 from ..io.read_data_radar import get_data
@@ -138,6 +139,9 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
                 traceback.print_exc()
                 continue
 
+    # manual garbage collection after initial processing
+    gc.collect()
+
     # process all data files in file list
     for masterfile in masterfilelist:
         print('- master file: ' + os.path.basename(masterfile))
@@ -181,6 +185,9 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
                     traceback.print_exc()
                     continue
 
+        # manual garbage collection after processing each radar volume
+        gc.collect()
+
     # post-processing of the datasets
     print('- Post-processing datasets:')
     for level in sorted(dataset_levels):
@@ -194,6 +201,9 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
             except Exception as ee:
                 traceback.print_exc()
                 continue
+
+    # manual garbage collection after post-processing
+    gc.collect()
 
     print('- This is the end my friend! See you soon!')
 
