@@ -357,8 +357,16 @@ def get_fieldname_pyart(datatype):
 
     elif datatype == 'V':
         field_name = 'velocity'
+    elif datatype == 'Vc':
+        field_name = 'corrected_velocity'
     elif datatype == 'W':
         field_name = 'spectrum_width'
+    elif datatype == 'wind_vel_h_az':
+        field_name = 'azimuthal_horizontal_wind_component'
+    elif datatype == 'wind_vel_v':
+        field_name = 'vertical_wind_component'
+    elif datatype == 'windshear_v':
+        field_name = 'vertical_wind_shear'
 
     elif datatype == 'Ah':
         field_name = 'specific_attenuation'

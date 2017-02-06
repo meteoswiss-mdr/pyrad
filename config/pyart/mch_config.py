@@ -172,6 +172,8 @@ reflectivity_texture = 'reflectivity_texture'
 eastward_wind_component = 'eastward_wind_component'
 northward_wind_component = 'northward_wind_component'
 vertical_wind_component = 'vertical_wind_component'
+azimuthal_horizontal_wind_component = 'azimuthal_horizontal_wind_component'
+vertical_wind_shear = 'vertical_wind_shear'
 
 # profile variables
 height = 'height'
@@ -303,6 +305,9 @@ DEFAULT_FIELD_NAMES = {
     'eastward_wind_component': eastward_wind_component,
     'northward_wind_component': northward_wind_component,
     'vertical_wind_component': vertical_wind_component,
+	'azimuthal_horizontal_wind_component':
+		azimuthal_horizontal_wind_component,
+    'vertical_wind_shear': vertical_wind_shear,
     'height': height,
     'number_of_samples': number_of_samples,
     'colocated_gates': colocated_gates,
@@ -1000,6 +1005,16 @@ DEFAULT_METADATA = {
         'units': 'meters_per_second',
         'standard_name': 'vertical_wind_component',
         'long_name': 'Vertical wind component'},
+		
+	azimuthal_horizontal_wind_component: {
+        'units': 'meters_per_second',
+        'standard_name': 'azimuthal_horizontal_wind_component',
+        'long_name': 'Azimuthal horizontal wind component'},
+        
+    vertical_wind_shear: {
+        'units': 'meters_per_second_per_km',
+        'standard_name': 'vertical_wind_shear',
+        'long_name': 'Vertical wind shear'},
 
     # profile variables
     height: {
@@ -1731,6 +1746,8 @@ DEFAULT_FIELD_COLORMAP = {
     eastward_wind_component: 'pyart_BuDRd18',
     northward_wind_component: 'pyart_BuDRd18',
     vertical_wind_component: 'pyart_BuDRd18',
+	azimuthal_horizontal_wind_component: 'pyart_BuDRd18',
+    vertical_wind_shear: 'pyart_BuDRd18',
 
     spectrum_width: 'pyart_NWS_SPW',
     unfiltered_spectrum_width: 'pyart_NWS_SPW',
@@ -1841,6 +1858,8 @@ DEFAULT_FIELD_LIMITS = {
     eastward_wind_component: velocity_limit,
     northward_wind_component: velocity_limit,
     vertical_wind_component: velocity_limit,
+	azimuthal_horizontal_wind_component: velocity_limit,
+    vertical_wind_shear: velocity_limit,
 
     spectrum_width: spectrum_width_limit,
     unfiltered_spectrum_width: spectrum_width_limit,

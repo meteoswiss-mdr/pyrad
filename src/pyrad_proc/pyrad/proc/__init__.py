@@ -28,6 +28,7 @@ Echo classification and filtering
     process_echo_filter
     process_filter_snr
     process_filter_visibility
+    process_outlier_filter
     process_hydroclass
 
 Phase processing and attenuation correction
@@ -79,6 +80,8 @@ Retrievals
     process_l
     process_cdr
     process_rainrate
+    process_wind_vel
+    process_windshear
 
 Trajectory functions
 ====================
@@ -99,7 +102,7 @@ from .process_traj import process_trajectory, process_traj_atplane, \
 
 from .process_echoclass import process_echo_id, process_echo_filter
 from .process_echoclass import process_filter_snr, process_filter_visibility
-from .process_echoclass import process_hydroclass
+from .process_echoclass import process_outlier_filter, process_hydroclass
 
 from .process_phase import process_correct_phidp0
 from .process_phase import process_smooth_phidp_single_window
@@ -123,6 +126,7 @@ from .process_calib import process_sun_hits
 
 from .process_retrieve import process_signal_power, process_snr
 from .process_retrieve import process_l, process_cdr
-from .process_retrieve import process_rainrate
+from .process_retrieve import process_rainrate, process_wind_vel
+from .process_retrieve import process_windshear
 
 __all__ = [s for s in dir() if not s.startswith('_')]

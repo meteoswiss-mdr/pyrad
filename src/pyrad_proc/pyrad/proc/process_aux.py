@@ -72,6 +72,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_filter_snr'
     elif dataset_type == 'VIS_FILTER':
         func_name = 'process_filter_visibility'
+    elif dataset_type == 'OUTLIER_FILTER':
+        func_name = 'process_outlier_filter'
     elif dataset_type == 'PHIDP0_CORRECTION':
         func_name = 'process_correct_phidp0'
     elif dataset_type == 'PHIDP_SMOOTH_1W':
@@ -90,6 +92,10 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_attenuation'
     elif dataset_type == 'RAINRATE':
         func_name = 'process_rainrate'
+    elif dataset_type == 'WIND_VEL':
+        func_name = 'process_wind_vel'
+    elif dataset_type == 'WINDSHEAR':
+        func_name = 'process_windshear'
     elif dataset_type == 'HYDROCLASS':
         func_name = 'process_hydroclass'
     elif dataset_type == 'PHIDP0_ESTIMATE':
