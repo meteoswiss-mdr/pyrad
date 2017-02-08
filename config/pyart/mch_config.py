@@ -91,6 +91,7 @@ cross_correlation_ratio = 'cross_correlation_ratio'
 
 unfiltered_cross_correlation_ratio = 'unfiltered_cross_correlation_ratio'
 uncorrected_cross_correlation_ratio = 'uncorrected_cross_correlation_ratio'
+corrected_cross_correlation_ratio = 'corrected_cross_correlation_ratio'
 logarithmic_cross_correlation_ratio = 'logarithmic_cross_correlation_ratio'
 
 cross_correlation_ratio_in_rain = 'cross_correlation_ratio_in_rain'
@@ -144,7 +145,10 @@ radar_estimated_rain_rate = 'radar_estimated_rain_rate'
 radar_echo_classification = 'radar_echo_classification'
 radar_echo_id = 'radar_echo_id'
 specific_attenuation = 'specific_attenuation'
+corrected_specific_attenuation = 'corrected_specific_attenuation'
 specific_differential_attenuation = 'specific_differential_attenuation'
+corrected_specific_differential_attenuation = (
+    'corrected_specific_differential_attenuation')
 
 sun_hit_h = 'sun_hit_h'
 sun_hit_v = 'sun_hit_v'
@@ -254,6 +258,7 @@ DEFAULT_FIELD_NAMES = {
         unfiltered_differential_reflectivity),
     'differential_reflectivity_in_rain': differential_reflectivity_in_rain,
     'cross_correlation_ratio': cross_correlation_ratio,
+    'corrected_cross_correlation_ratio': corrected_cross_correlation_ratio,
     'unfiltered_cross_correlation_ratio': unfiltered_cross_correlation_ratio,
     'uncorrected_cross_correlation_ratio': uncorrected_cross_correlation_ratio,
     'logarithmic_cross_correlation_ratio': logarithmic_cross_correlation_ratio,
@@ -295,6 +300,9 @@ DEFAULT_FIELD_NAMES = {
     'radar_echo_id': radar_echo_id,
     'specific_attenuation': specific_attenuation,
     'specific_differential_attenuation': specific_differential_attenuation,
+    'corrected_specific_attenuation': corrected_specific_attenuation,
+    'corrected_specific_differential_attenuation': (
+        corrected_specific_differential_attenuation),
     'temperature': temperature,
     'iso0': iso0,
     'visibility': visibility,
@@ -305,8 +313,8 @@ DEFAULT_FIELD_NAMES = {
     'eastward_wind_component': eastward_wind_component,
     'northward_wind_component': northward_wind_component,
     'vertical_wind_component': vertical_wind_component,
-	'azimuthal_horizontal_wind_component':
-		azimuthal_horizontal_wind_component,
+    'azimuthal_horizontal_wind_component':
+        azimuthal_horizontal_wind_component,
     'vertical_wind_shear': vertical_wind_shear,
     'height': height,
     'number_of_samples': number_of_samples,
@@ -609,16 +617,18 @@ DEFAULT_METADATA = {
         'standard_name': 'corrected_equivalent_reflectivity_factor',
         'long_name': 'Corrected reflectivity',
         'coordinates': 'elevation azimuth range'},
-        
+
     reflectivity_vv: {
         'units': 'dBZ',
-        'standard_name': 'equivalent_reflectivity_factor_vertical_polarization',
+        'standard_name': (
+            'equivalent_reflectivity_factor_vertical_polarization'),
         'long_name': 'Reflectivity vertical',
         'coordinates': 'elevation azimuth range'},
-        
+
     corrected_reflectivity_vv: {
         'units': 'dBZ',
-        'standard_name': 'corrected_equivalent_reflectivity_factor_vertical_polarization',
+        'standard_name': (
+            'corrected_equivalent_reflectivity_factor_vertical_polarization'),
         'long_name': 'Corrected reflectivity vertical',
         'coordinates': 'elevation azimuth range'},
 
@@ -715,7 +725,7 @@ DEFAULT_METADATA = {
         'standard_name': 'corrected_log_differential_reflectivity_hv',
         'long_name': 'Corrected differential reflectivity',
         'coordinates': 'elevation azimuth range'},
-        
+
     differential_reflectivity_in_rain: {
         'units': 'dB',
         'standard_name': 'log_differential_reflectivity_hv_in_rain',
@@ -726,6 +736,12 @@ DEFAULT_METADATA = {
         'units': 'ratio',
         'standard_name': 'cross_correlation_ratio_hv',
         'long_name': 'Cross correlation ratio (RHOHV)',
+        'coordinates': 'elevation azimuth range'},
+
+    corrected_cross_correlation_ratio: {
+        'units': 'ratio',
+        'standard_name': 'corrected_cross_correlation_ratio_hv',
+        'long_name': 'Corrected cross correlation ratio (RHOHV)',
         'coordinates': 'elevation azimuth range'},
 
     unfiltered_cross_correlation_ratio: {
@@ -927,19 +943,31 @@ DEFAULT_METADATA = {
         'standard_name': 'specific_differential_attenuation',
         'long_name': 'Specific differential attenuation',
         'coordinates': 'elevation azimuth range'},
-        
+
+    corrected_specific_attenuation: {
+        'units': 'dB/km',
+        'standard_name': 'corrected_specific_attenuation',
+        'long_name': 'Corrected specific attenuation',
+        'coordinates': 'elevation azimuth range'},
+
+    corrected_specific_differential_attenuation: {
+        'units': 'dB/km',
+        'standard_name': 'corrected_specific_differential_attenuation',
+        'long_name': 'Corrected specific differential attenuation',
+        'coordinates': 'elevation azimuth range'},
+
     number_of_samples: {
         'units': 'count',
         'standard_name': 'number_of_samples',
         'long_name': 'Number of samples in average',
         'coordinates': 'elevation azimuth range'},
-        
+
     time_avg_flag: {
         'units': 'count',
         'standard_name': 'time_avg_flag',
         'long_name': 'Time average flag',
         'coordinates': 'elevation azimuth range'},
-        
+
     colocated_gates: {
         'units': 'flag',
         'standard_name': 'colocated_gates',
@@ -958,13 +986,13 @@ DEFAULT_METADATA = {
         'standard_name': 'iso0',
         'long_name': 'Position of the range bin respect to the iso0 level',
         'coordinates': 'elevation azimuth range'},
-        
+
     visibility: {
         'units': 'percentage',
         'standard_name': 'visibility',
         'long_name': 'visibility',
         'coordinates': 'elevation azimuth range'},
-        
+
     # Textures
     differential_phase_texture: {
         'units': 'degrees',
@@ -1005,12 +1033,12 @@ DEFAULT_METADATA = {
         'units': 'meters_per_second',
         'standard_name': 'vertical_wind_component',
         'long_name': 'Vertical wind component'},
-		
-	azimuthal_horizontal_wind_component: {
+
+    azimuthal_horizontal_wind_component: {
         'units': 'meters_per_second',
         'standard_name': 'azimuthal_horizontal_wind_component',
         'long_name': 'Azimuthal horizontal wind component'},
-        
+
     vertical_wind_shear: {
         'units': 'meters_per_second_per_km',
         'standard_name': 'vertical_wind_shear',
@@ -1722,7 +1750,7 @@ DEFAULT_FIELD_COLORMAP = {
     signal_to_noise_ratio: 'pyart_Carbone17',
     signal_to_noise_ratio_hh: 'pyart_Carbone17',
     signal_to_noise_ratio_vv: 'pyart_Carbone17',
-    
+
     visibility: 'pyart_Carbone17',
 
     noisedBZ_hh: 'pyart_NWSRef',
@@ -1746,7 +1774,7 @@ DEFAULT_FIELD_COLORMAP = {
     eastward_wind_component: 'pyart_BuDRd18',
     northward_wind_component: 'pyart_BuDRd18',
     vertical_wind_component: 'pyart_BuDRd18',
-	azimuthal_horizontal_wind_component: 'pyart_BuDRd18',
+    azimuthal_horizontal_wind_component: 'pyart_BuDRd18',
     vertical_wind_shear: 'pyart_BuDRd18',
 
     spectrum_width: 'pyart_NWS_SPW',
@@ -1762,6 +1790,7 @@ DEFAULT_FIELD_COLORMAP = {
     differential_reflectivity_in_rain: 'pyart_RefDiff',
 
     cross_correlation_ratio: 'pyart_RefDiff',
+    corrected_cross_correlation_ratio:  'pyart_RefDiff',
     unfiltered_cross_correlation_ratio: 'pyart_RefDiff',
     uncorrected_cross_correlation_ratio: 'pyart_RefDiff',
     logarithmic_cross_correlation_ratio: 'pyart_RefDiff',
@@ -1797,6 +1826,8 @@ DEFAULT_FIELD_COLORMAP = {
 
     specific_attenuation: 'pyart_Carbone17',
     specific_differential_attenuation: 'pyart_Carbone17',
+    corrected_specific_attenuation: 'pyart_Carbone17',
+    corrected_specific_differential_attenuation: 'pyart_Carbone17',
 
     differential_phase_texture: 'pyart_BlueBrown11',
     differential_reflectivity_texture: 'pyart_BlueBrown11',
@@ -1858,7 +1889,7 @@ DEFAULT_FIELD_LIMITS = {
     eastward_wind_component: velocity_limit,
     northward_wind_component: velocity_limit,
     vertical_wind_component: velocity_limit,
-	azimuthal_horizontal_wind_component: velocity_limit,
+    azimuthal_horizontal_wind_component: velocity_limit,
     vertical_wind_shear: velocity_limit,
 
     spectrum_width: spectrum_width_limit,
@@ -1874,6 +1905,7 @@ DEFAULT_FIELD_LIMITS = {
     differential_reflectivity_in_rain: (-2., 2.),
 
     cross_correlation_ratio: (0.7, 1.),
+    corrected_cross_correlation_ratio: (0.7, 1.),
     unfiltered_cross_correlation_ratio: (0.7, 1.),
     uncorrected_cross_correlation_ratio: (0.7, 1.),
     logarithmic_cross_correlation_ratio: (0, 4),
@@ -1910,12 +1942,14 @@ DEFAULT_FIELD_LIMITS = {
 
     specific_attenuation: (0., 1.),
     specific_differential_attenuation: (0., 0.3),
+    corrected_specific_attenuation: (0., 1.),
+    corrected_specific_differential_attenuation: (0., 0.3),
 
     differential_phase_texture: (0, 180.),
 
     height: (0, 20000),
     interpolated_profile: (0, 10000),
-    
+
     visibility: (0, 100),
 
     # Additional reflectivity like fields

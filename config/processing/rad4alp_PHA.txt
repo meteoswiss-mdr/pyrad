@@ -1,6 +1,6 @@
 # Name of this configuration:
 # Will be used in product generation save path
-name STRING rad4alp_PHA
+name STRING rad4alp_PHA_example
 
 # ---------------------------------------------------------
 #  Raw data pathes
