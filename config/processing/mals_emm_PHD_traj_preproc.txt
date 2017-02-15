@@ -1,6 +1,6 @@
 # Name of this configuration:
 # Will be used in product generation save path
-name STRING mals_emm_PHA_traj
+name STRING mals_emm_PHD_traj
 
 # ---------------------------------------------------------
 #  Raw data pathes
@@ -13,10 +13,6 @@ datapath STRING /data/rad4alp/rawdata/
 
 # Base path for cosmo data
 cosmopath STRING /data/cosmo/
-
-# Loading of saved datasets
-loadbasepath STRING /data/pyrad_examples/
-loadname STRING  mals_emm_PHA_traj
     
 # ------------------------------------------------------------
 # Auxiliary data pathes
@@ -43,8 +39,8 @@ imgformat STRING png
 configpath STRING $HOME/pyrad/config/
 
 # Configuration of the radar location and approach direction
-locationConfigFile STRING $HOME/pyrad/config/processing/mals_emm_PHA_traj_loc.txt
+locationConfigFile STRING $HOME/pyrad/config/processing/mals_emm_PHD_traj_loc.txt
 
 # Configuration of the product generation
-productConfigFile STRING $HOME/pyrad/config/processing/mals_emm_PHA_traj_postproc_prod.txt
+productConfigFile STRING $HOME/pyrad/config/processing/mals_emm_PHD_traj_preproc_prod.txt
 
