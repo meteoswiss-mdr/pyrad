@@ -78,7 +78,7 @@ echoFilter_Ah STRUCT 5
         PROC:echoID
         PROC:Ah
     echo_type INT 3
-    MAKE_GLOBAL INT 1
+    MAKE_GLOBAL INT 0
     products STRUCT 1
         SAVEVOL_Ahc STRUCT 2
             type  STRING SAVEVOL
@@ -166,7 +166,7 @@ Att_ZPhi STRUCT 6
         RAD4ALPCOSMO:TEMP
     ATT_METHOD STRING ZPhi
     fzl FLOAT 2000.
-    MAKE_GLOBAL INT 0
+    MAKE_GLOBAL INT 1
     products STRUCT 2
         SAVEVOL_dBZc STRUCT 2
             type  STRING SAVEVOL
