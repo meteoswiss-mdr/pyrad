@@ -75,6 +75,8 @@ def generate_sun_hits_products(dataset, prdcfg):
     if ('dssavename' in prdcfg):
         dssavedir = prdcfg['dssavename']
 
+    prdcfg['timeinfo'] = dataset['timeinfo']
+
     if prdcfg['type'] == 'WRITE_SUN_HITS':
         if 'sun_hits' not in dataset:
             return None
@@ -1367,6 +1369,8 @@ def generate_monitoring_products(dataset, prdcfg):
         csvfname = make_filename(
             'ts', prdcfg['dstype'], prdcfg['voltype'], ['csv'],
             timeinfo=csvtimeinfo, timeformat='%Y%m%d')[0]
+
+        csvfname = savedir+csvfname
 
         quantiles, values = compute_quantiles_from_hist(
             hist_obj.range['data'],

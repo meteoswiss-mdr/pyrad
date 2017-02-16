@@ -29,6 +29,10 @@ lrxv FLOAT 1.97
 lradomeh FLOAT 0.3
 lradomev FLOAT 0.3
 
+# matched filter losses [dB]
+mflossh FLOAT 1.
+mflossv FLOAT 1.
+
 # Image config
 ppiImageConfig STRUCT 6
    xsize      FLOAT   8.      # image size [inches] (default dots per inch (dpi):72)
