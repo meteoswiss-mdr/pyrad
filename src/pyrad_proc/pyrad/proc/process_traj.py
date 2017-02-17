@@ -357,6 +357,46 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             patternfile = dscfg['configpath'] + 'antenna/' \
                 + dscfg['par_elevation_antenna']['azPatternFile']
             fixed_angle = dscfg['par_elevation_antenna']['fixed_angle']
+        elif (dscfg['antennaType'] == 'LOWBEAM'):
+            is_azimuth_antenna = True
+            info = 'asrLowBeamAnt'
+            description = [
+                "Antenna: ASR low beam antenna",
+                "Description:",
+                "Time series of a weather radar data type at the location",
+                "of the plane weighted by the antenna pattern of the ASR",
+                "antenna.",
+                "The time samples where the plane was out of the weather",
+                "radar sector are NOT included in this file.",
+                "NaN (Not a number): No rain detected at the plane location."
+            ]
+            if ('asr_lowbeam_antenna' not in dscfg):
+                raise Exception("ERROR: Undefined 'asr_lowbeam_antenna' for"
+                                " dataset '%s'" % dscfg['dsname'])
+
+            patternfile = dscfg['configpath'] + 'antenna/' \
+                + dscfg['asr_lowbeam_antenna']['elPatternFile']
+            fixed_angle = dscfg['asr_lowbeam_antenna']['fixed_angle']
+        elif (dscfg['antennaType'] == 'HIGHBEAM'):
+            is_azimuth_antenna = True
+            info = 'asrHighBeamAnt'
+            description = [
+                "Antenna: ASR high beam antenna",
+                "Description:",
+                "Time series of a weather radar data type at the location",
+                "of the plane weighted by the antenna pattern of the ASR",
+                "antenna.",
+                "The time samples where the plane was out of the weather",
+                "radar sector are NOT included in this file.",
+                "NaN (Not a number): No rain detected at the plane location."
+            ]
+            if ('asr_highbeam_antenna' not in dscfg):
+                raise Exception("ERROR: Undefined 'asr_highbeam_antenna' for"
+                                " dataset '%s'" % dscfg['dsname'])
+
+            patternfile = dscfg['configpath'] + 'antenna/' \
+                + dscfg['asr_highbeam_antenna']['elPatternFile']
+            fixed_angle = dscfg['asr_highbeam_antenna']['fixed_angle']
         else:
             raise Exception("ERROR: Unexpected antenna type '%s' for dataset"
                             " '%s'" % (dscfg['antennaType'], dscfg['dsname']))

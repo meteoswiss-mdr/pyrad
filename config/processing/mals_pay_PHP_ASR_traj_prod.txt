@@ -101,7 +101,7 @@ reflectivity_traj_az STRUCT 9
    type          STRING TRAJ_ANTENNA_PATTERN
    datatype      STRING CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
    dssavename    STRING reflectivity_traj
-   antennaType   STRING AZIMUTH
+   antennaType   STRING LOWBEAM
    use_nans      INT 0
    nan_value     FLOAT 0.0
    pattern_thres FLOAT 1.5
@@ -125,7 +125,7 @@ rainrate_traj_az STRUCT 9
    type          STRING TRAJ_ANTENNA_PATTERN
    datatype      STRING PROC:RR
    dssavename    STRING rainrate_traj
-   antennaType   STRING AZIMUTH
+   antennaType   STRING LOWBEAM
    use_nans      INT 0
    nan_value     FLOAT 0.0
    pattern_thres FLOAT 1.5
@@ -147,7 +147,7 @@ windshear_traj_az STRUCT 8
    type     STRING TRAJ_ANTENNA_PATTERN
    datatype STRING PROC:windshear_v
    dssavename STRING windshear_traj
-   antennaType STRING AZIMUTH
+   antennaType STRING LOWBEAM
    use_nans   INT 0
    nan_value  FLOAT 0.0
    pattern_thres FLOAT 1.5

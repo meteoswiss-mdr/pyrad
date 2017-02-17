@@ -1,6 +1,6 @@
 # Name of this configuration:
 # Will be used in product generation save path
-name STRING mals_emm_PHP_traj
+name STRING mals_pay_PHD_ASR_traj
 
 # ---------------------------------------------------------
 #  Raw data pathes
@@ -26,7 +26,7 @@ disdropath STRING /data/scattering/dsd_ts/
 # --------------------------------------------
 # Output data
 # --------------------------------------------
-saveimgbasepath STRING /data/pyrad_examples/
+saveimgbasepath STRING /data/pyrad_products/
 saveimg         INT 1
 # Supported formats: eps, jpeg, jpg, pdf, pgf, png, ps, raw, rgba, svg, svgz, tif, tiff
 imgformat STRING png	
@@ -39,8 +39,8 @@ imgformat STRING png
 configpath STRING $HOME/pyrad/config/
 
 # Configuration of the radar location and approach direction
-locationConfigFile STRING $HOME/pyrad/config/processing/mals_emm_PHP_traj_loc.txt
+locationConfigFile STRING $HOME/pyrad/config/processing/mals_pay_PHD_ASR_traj_loc.txt
 
 # Configuration of the product generation
-productConfigFile STRING $HOME/pyrad/config/processing/mals_emm_PHP_traj_preproc_prod.txt
+productConfigFile STRING $HOME/pyrad/config/processing/mals_pay_PHD_ASR_traj_preproc_prod.txt
 

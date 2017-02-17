@@ -1201,6 +1201,21 @@ def read_selfconsistency(fname):
 def read_antenna_pattern(fname, linear=False, twoway=False):
     """
     Read antenna pattern from file
+
+    Parameters
+    ----------
+    fname : str
+        path of the antenna pattern file
+    linear : boolean
+        if true the antenna pattern is given in linear units
+    twoway : boolean
+        if true the attenuation is two-way
+
+    Returns
+    -------
+    pattern : dict
+        dictionary with the fields angle and attenuation
+
     """
 
     try:

@@ -16,6 +16,7 @@ Functions to plot Pyrad datasets
     plot_quantiles
     plot_histogram
     plot_histogram2
+    plot_antenna_pattern
     plot_timeseries
     plot_timeseries_comp
     plot_monitoring_ts
@@ -667,6 +668,71 @@ def plot_histogram2(bins, hist, fname_list, labelx='bins',
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)
+
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
+    plt.close()
+
+    return fname_list
+
+
+def plot_antenna_pattern(antpattern, fname_list, labelx='Angle [Deg]',
+                         linear=False, twoway=False, title='Antenna Pattern',
+                         ymin=None, ymax=None):
+    """
+    plots an antenna pattern
+
+    Parameters
+    ----------
+    antpattern : dict
+        dictionary with the angle and the attenuation
+    value : float array
+        values of the time series
+    fname_list : list of str
+        list of names of the files where to store the plot
+    labelx : str
+        The label of the X axis
+    linear : boolean
+        if true data is in linear units
+    linear : boolean
+        if true data represents the two way attenuation
+    titl : str
+        The figure title
+    ymin, ymax: float
+        Lower/Upper limit of y axis
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    """
+    waystr = 'One-way '
+    if twoway:
+        waystr = 'Two-way '
+
+    linstr = 'Att [dB]'
+    if linear:
+        linstr = 'Att [-]'
+        mainbeam = (
+            antpattern['angle'][antpattern['attenuation'] >= 10.**(-0.3)])
+    else:
+        mainbeam = antpattern['angle'][antpattern['attenuation'] >= -3.]
+    beamwidth = np.abs(np.max(mainbeam)-np.min(mainbeam))
+
+    labely = waystr+linstr
+
+    fig, ax = plt.subplots(figsize=[10, 6])
+
+    ax.plot(antpattern['angle'], antpattern['attenuation'])
+    ax.set_title(title)
+    ax.set_xlabel(labelx)
+    ax.set_ylabel(labely)
+    ax.set_ylim(bottom=ymin, top=ymax)
+
+    metadata = '3-dB beamwidth: '+'{:.2f}'.format(float(beamwidth))
+    ax.text(0.05, 0.95, metadata, horizontalalignment='left',
+            verticalalignment='top', transform=ax.transAxes)
 
     for i in range(len(fname_list)):
         fig.savefig(fname_list[i])
