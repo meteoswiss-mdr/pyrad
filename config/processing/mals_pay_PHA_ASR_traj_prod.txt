@@ -158,7 +158,7 @@ windshear_traj_lb STRUCT 8
          type  STRING   PLOT_AND_WRITE
          ymin  FLOAT    -20.0
          ymax  FLOAT     20.0
-         
+
 temperature_traj STRUCT 3
    type     STRING TRAJ_ATPLANE
    datatype STRING RAD4ALPCOSMO:TEMP

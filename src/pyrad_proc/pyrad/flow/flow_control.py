@@ -464,6 +464,10 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
         dscfg.update({'par_azimuth_antenna': cfg['par_azimuth_antenna']})
     if ('par_elevation_antenna' in cfg):
         dscfg.update({'par_elevation_antenna': cfg['par_elevation_antenna']})
+    if ('asr_highbeam_antenna' in cfg):
+        dscfg.update({'asr_highbeam_antenna': cfg['asr_highbeam_antenna']})
+    if ('asr_lowbeam_antenna' in cfg):
+        dscfg.update({'asr_lowbeam_antenna': cfg['asr_lowbeam_antenna']})
 
     # indicates the dataset has been initialized and aux data is available
     dscfg.update({'initialized': False})
