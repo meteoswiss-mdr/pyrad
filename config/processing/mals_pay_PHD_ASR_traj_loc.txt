@@ -99,7 +99,12 @@ rhiImageConfig STRUCT 6
    xmax       FLOAT -11.0   # Max distance on horizontal axis [km]
    ymin       FLOAT   0.0   # Min distance on vertical axis [km]
    ymax       FLOAT  5.0   # Max distance on vertical axis [km]
-   
+
+# ASR position   
+asr_position STRUCT 3
+    latitude FLOAT 46.769615 # WGS84 [deg]
+    longitude FLOAT 6.954204 # WGS84 [deg]
+    altitude FLOAT 745.9     # m MSL (795.5 m WGS84)
    
 # ASR antenna pattern
 asr_highbeam_antenna STRUCT 3

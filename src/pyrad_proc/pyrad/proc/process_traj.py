@@ -17,6 +17,8 @@ from warnings import warn
 import numpy as np
 from netCDF4 import num2date, date2num
 
+import pyart
+
 from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 from ..io.io_aux import get_field_unit, get_field_name
 from ..io.timeseries import TimeSeries
@@ -304,9 +306,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
         # === init ============================================================
         if (trajectory is None):
             raise Exception("ERROR: Undefined trajectory for dataset '%s'"
-                            % dscfg['dsname'])
-
-        rad_traj = trajectory.add_radar(radar)
+                            % dscfg['dsname'])        
 
         # Check config
         if ('antennaType' not in dscfg):
@@ -315,6 +315,27 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
         if ('configpath' not in dscfg):
             raise Exception("ERROR: Undefined 'configpath' for dataset '%s'"
                             % dscfg['dsname'])
+                            
+        if dscfg['antennaType'] == 'AZIMUTH' or dscfg['antennaType'] == 'ELEVATION':
+            rad_traj = trajectory.add_radar(radar)
+        else:
+            if 'asr_position' not in dscfg:
+                raise Exception("ERROR: Undefined ASR position")
+                
+            # create dummy radar object with ASR specs
+            latitude = pyart.config.get_metadata('latitude')
+            longitude = pyart.config.get_metadata('longitude')
+            altitude = pyart.config.get_metadata('altitude')
+            
+            latitude['data'] = np.array([dscfg['asr_position']['latitude']], dtype='float64')
+            longitude['data'] = np.array([dscfg['asr_position']['longitude']], dtype='float64')
+            altitude['data'] = np.array([dscfg['asr_position']['altitude']], dtype='float64')
+            
+            radar_asr = Radar_ASR(latitude, longitude, altitude)
+            
+            print(radar_asr)
+            print(radar_asr.latitude)
+            rad_traj = trajectory.add_radar(radar_asr)
 
         if (dscfg['antennaType'] == 'AZIMUTH'):
             is_azimuth_antenna = True
@@ -668,3 +689,12 @@ def _sample_out_of_sector(az, el, rr, radar_sel, ray_sel, rr_ind,
         return True
 
     return False
+    
+class Radar_ASR:
+    """
+    
+    """
+    def __init__(self, latitude, longitude, altitude):
+        self.latitude = latitude
+        self.longitude = longitude
+        self.altitude = altitude
