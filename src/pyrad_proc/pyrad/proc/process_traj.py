@@ -17,7 +17,9 @@ from warnings import warn
 import numpy as np
 from netCDF4 import num2date, date2num
 
-import pyart
+from pyart.config import get_metadata
+from pyart.core import Radar
+from pyart.util import colocated_gates
 
 from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 from ..io.io_aux import get_field_unit, get_field_name
@@ -306,7 +308,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
         # === init ============================================================
         if (trajectory is None):
             raise Exception("ERROR: Undefined trajectory for dataset '%s'"
-                            % dscfg['dsname'])        
+                            % dscfg['dsname'])
 
         # Check config
         if ('antennaType' not in dscfg):
@@ -315,27 +317,31 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
         if ('configpath' not in dscfg):
             raise Exception("ERROR: Undefined 'configpath' for dataset '%s'"
                             % dscfg['dsname'])
-                            
+
         if dscfg['antennaType'] == 'AZIMUTH' or dscfg['antennaType'] == 'ELEVATION':
             rad_traj = trajectory.add_radar(radar)
+            radar_asr = None
+            radar_antenna_atsameplace = True
         else:
             if 'asr_position' not in dscfg:
-                raise Exception("ERROR: Undefined ASR position")
-                
+                raise Exception("ERROR: Undefined ASR position for dataset '%s'"
+                                % dscfg['dsname'])
+
+            radar_antenna_atsameplace = False
+
             # create dummy radar object with ASR specs
-            latitude = pyart.config.get_metadata('latitude')
-            longitude = pyart.config.get_metadata('longitude')
-            altitude = pyart.config.get_metadata('altitude')
-            
+            latitude = get_metadata('latitude')
+            longitude = get_metadata('longitude')
+            altitude = get_metadata('altitude')
+
             latitude['data'] = np.array([dscfg['asr_position']['latitude']], dtype='float64')
             longitude['data'] = np.array([dscfg['asr_position']['longitude']], dtype='float64')
             altitude['data'] = np.array([dscfg['asr_position']['altitude']], dtype='float64')
-            
+
             radar_asr = Radar_ASR(latitude, longitude, altitude)
-            
-            print(radar_asr)
-            print(radar_asr.latitude)
+
             rad_traj = trajectory.add_radar(radar_asr)
+            rad_traj_xxx = trajectory.add_radar(radar)
 
         if (dscfg['antennaType'] == 'AZIMUTH'):
             is_azimuth_antenna = True
@@ -433,12 +439,17 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             pattern_angles[pattern_angles < 0] += 360.
         pattern_angles[pattern_angles >= 360.] -= 360.
 
-        if (is_azimuth_antenna):
-            scan_angles = np.sort(np.unique(
-                    radar.elevation['data'].round(decimals=1)))
+        if radar_antenna_atsameplace:
+            if (is_azimuth_antenna):
+                scan_angles = np.sort(np.unique(
+                        radar.elevation['data'].round(decimals=1)))
+            else:
+                scan_angles = np.sort(np.unique(
+                        radar.azimuth['data'].round(decimals=1)))
         else:
-            scan_angles = np.sort(np.unique(
-                    radar.azimuth['data'].round(decimals=1)))
+            # XXX set from config:
+            el_res = 0.5
+            scan_angles = np.arange(0, 90, el_res, dtype=float)
 
         weightvec = np.empty(scan_angles.size, dtype=float)
         for kk in range(scan_angles.size):
@@ -493,17 +504,20 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
                 'radar_traj': rad_traj,
                 'radar_old': None,
                 'radar_old2': None,
+                'radar_asr': radar_asr,
                 'last_task_start_dt': None,
                 'ind_rad': ind_rad,
                 'is_azimuth_antenna': is_azimuth_antenna,
                 'info': info,
                 'scan_angles': scan_angles,
+                'radar_antenna_atsameplace': radar_antenna_atsameplace,
                 'weightvec': weightvec,
                 'quantiles': quants,
                 'use_nans': use_nans,
                 'nan_value': nan_value,
                 'weight_threshold': weight_threshold,
                 'do_all_ranges': do_all_ranges,
+                'radar_traj_xxx': rad_traj_xxx,
                 'ts': ts})
         traj_ind = trajectory.get_samples_in_period(end=dt_task_start)
 
@@ -516,12 +530,15 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
         rad_traj = tadict['radar_traj']
         is_azimuth_antenna = tadict['is_azimuth_antenna']
         scan_angles = tadict['scan_angles']
+        radar_antenna_atsameplace = tadict['radar_antenna_atsameplace']
         weightvec = tadict['weightvec']
         nan_value = tadict['nan_value']
         use_nans = tadict['use_nans']
         weight_threshold = tadict['weight_threshold']
         do_all_ranges = tadict['do_all_ranges']
         ts = tadict['ts']
+        radar_asr = tadict['radar_asr']
+        rad_traj_xxx = tadict['radar_traj_xxx']
 
         traj_ind = trajectory.get_samples_in_period(
             start=tadict['last_task_start_dt'], end=dt_task_start)
@@ -539,53 +556,109 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
         rr = rad_traj.range_vec[tind]
         tt = traj_time_vec[tind]
 
-        # Find closest azimuth and elevation ray
-        (radar_sel, ray_sel, rr_ind, el_vec_rnd, az_vec_rnd) = \
-            _get_closests_bin(az, el, rr, tt, radar, tadict)
+        if radar_antenna_atsameplace:
+            # =====================================================================
+            # Radar and scanning antenna are at the SAME place
+            # ===================================================================
 
-        # Check if traj sample is within scan sector
-        if (_sample_out_of_sector(az, el, rr, radar_sel, ray_sel,
-                                  rr_ind, el_vec_rnd, az_vec_rnd)):
-            continue
+            # Find closest azimuth and elevation ray
+            (radar_sel, ray_sel, rr_ind, el_vec_rnd, az_vec_rnd) = \
+                _get_closests_bin(az, el, rr, tt, radar, tadict)
 
-        # =====================================================================
-        # Get sample at bin
+            # Check if traj sample is within scan sector
+            if (_sample_out_of_sector(az, el, rr, radar_sel, ray_sel,
+                                      rr_ind, el_vec_rnd, az_vec_rnd)):
+                continue
 
-        if is_azimuth_antenna:
-            angles = radar_sel.azimuth['data']
-            angles_scan = radar_sel.elevation['data']
-            ray_angle = radar_sel.azimuth['data'][ray_sel]
-        else:
-            angles = radar_sel.elevation['data']
-            angles_scan = radar_sel.azimuth['data']
-            ray_angle = radar_sel.elevation['data'][ray_sel]
+            # =====================================================================
+            # Get sample at bin
 
-        d_angle = np.abs(angles - ray_angle)
-        ray_inds = np.where(d_angle < 0.09)[0]
-        angles_sortind = np.argsort(angles_scan[ray_inds])
+            if is_azimuth_antenna:
+                angles = radar_sel.azimuth['data']
+                angles_scan = radar_sel.elevation['data']
+                ray_angle = radar_sel.azimuth['data'][ray_sel]
+            else:
+                angles = radar_sel.elevation['data']
+                angles_scan = radar_sel.azimuth['data']
+                ray_angle = radar_sel.elevation['data'][ray_sel]
 
-        ray_inds = ray_inds[angles_sortind]
-        angles_sorted = angles_scan[ray_inds]
+            d_angle = np.abs(angles - ray_angle)
+            ray_inds = np.where(d_angle < 0.09)[0]
+            angles_sortind = np.argsort(angles_scan[ray_inds])
 
-        # Set default values
-        avg = None
-        qvals = np.array([None] * tadict['quantiles'].size)
-        nvals_valid = None
+            ray_inds = ray_inds[angles_sortind]
+            angles_sorted = angles_scan[ray_inds]
 
-        if ((scan_angles.size != angles_sorted.size) or
+            # Set default values
+            avg = None
+            qvals = np.array([None] * tadict['quantiles'].size)
+            nvals_valid = None
+
+            if ((scan_angles.size != angles_sorted.size) or
                 (np.max(np.abs(scan_angles - angles_sorted)) > 0.1)):
-            print("WARNING: Scan angle mismatch!", file=sys.stderr)
-            ts.add_timesample(trajectory.time_vector[tind],
-                              (np.concatenate([[avg], qvals, [nvals_valid]])))
-            continue
+                print("WARNING: Scan angle mismatch!", file=sys.stderr)
+                ts.add_timesample(trajectory.time_vector[tind],
+                                  (np.concatenate([[avg], qvals, [nvals_valid]])))
+                continue
 
-        if (do_all_ranges):
-            rr_ind_min = 0
+            if (do_all_ranges):
+                rr_ind_min = 0
+            else:
+                rr_ind_min = rr_ind
+
+            rdata = radar_sel.fields[field_name]['data']
+            values = rdata[ray_inds, rr_ind_min:rr_ind+1]
+
         else:
-            rr_ind_min = rr_ind
+            # ===================================================================
+            # Radar and scanning antenna are NOT at the same place
+            # ===================================================================
+            # XXX
 
-        rdata = radar_sel.fields[field_name]['data']
-        values = rdata[ray_inds, rr_ind_min:rr_ind+1]
+            # Create dummy Radar object with fix az and r, and all elevations
+            print("====== asr pol coord:")
+            print(az, el, rr)
+            azx = rad_traj_xxx.azimuth_vec[tind]
+            elx = rad_traj_xxx.elevation_vec[tind]
+            rrx = rad_traj_xxx.range_vec[tind]
+            print(azx, elx, rrx)
+
+            n_rays = scan_angles.size
+
+            r_time = {'data': [tt * n_rays]}
+            r_range = {'data': [rr]}
+            r_azimuth = get_metadata('azimuth')
+            r_azimuth['data'] = np.ones(n_rays) * az
+            r_elevation = {'data': scan_angles}
+            r_sweep_number = {'data': [0]}
+            r_fields = { 'colocated_gates': get_metadata('colocated_gates')}
+            r_fields['colocated_gates']['data'] = np.ma.ones((n_rays, 1), dtype=float)
+
+            r_radar = Radar(r_time, r_range, r_fields, None, 'rhi',
+                            radar_asr.latitude, radar_asr.longitude, radar_asr.altitude,
+                            r_sweep_number, None, None, None, None,
+                            r_azimuth, r_elevation)
+
+            # XXX todo: max altitude from config
+            r_radar.fields['colocated_gates']['data'][r_radar.gate_altitude['data'] > 12000.] = 0
+
+            rad_field = get_metadata('colocated_gates')
+            rad_field['data'] = np.ma.ones((radar.nrays, radar.ngates), dtype=float)
+            radar.add_field('colocated_gates', rad_field)
+
+            # XXX todo: h_tol and latlon_tol from config
+            (colgates, dummy) = colocated_gates(r_radar, radar, h_tol=20000, latlon_tol=0.005*8)
+
+        #XXX ind = np.where((radar.azimuth['data'] > 67.) & (radar.azimuth['data'] < 68.) & (radar.elevation['data'] < 0.))
+        #XXX print(radar.azimuth['data'][ind])
+        #XXX print(radar.elevation['data'][ind])
+        #XXX print(radar.fields['colocated_gates']['data'][ind])
+
+            print(colgates)
+
+            # XXX todo:
+            # - set values: of field_name info format of values of quantiles
+            # - convert log values to lin before averaging
 
         if (use_nans):
             values_ma = np.ma.getmaskarray(values)
@@ -689,10 +762,10 @@ def _sample_out_of_sector(az, el, rr, radar_sel, ray_sel, rr_ind,
         return True
 
     return False
-    
+
 class Radar_ASR:
     """
-    
+
     """
     def __init__(self, latitude, longitude, altitude):
         self.latitude = latitude

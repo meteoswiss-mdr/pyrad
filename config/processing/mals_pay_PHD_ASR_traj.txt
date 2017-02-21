@@ -1,6 +1,6 @@
 # Name of this configuration:
 # Will be used in product generation save path
-name STRING mals_pay_PHD_ASR_traj
+name STRING mals_pay_PHD_ASR_traj_lea
 
 # ---------------------------------------------------------
 #  Raw data pathes
@@ -17,7 +17,7 @@ cosmopath STRING /data/cosmo/
 # Loading of saved datasets
 loadbasepath STRING /data/pyrad_products/
 loadname STRING  mals_pay_PHD_ASR_traj
-    
+
 # ------------------------------------------------------------
 # Auxiliary data pathes
 # ------------------------------------------------------------
@@ -33,7 +33,7 @@ disdropath STRING /data/scattering/dsd_ts/
 saveimgbasepath STRING /data/pyrad_products/
 saveimg         INT 1
 # Supported formats: eps, jpeg, jpg, pdf, pgf, png, ps, raw, rgba, svg, svgz, tif, tiff
-imgformat STRING png	
+imgformat STRING png
 
 # --------------------------------------------------------
 # configuration files pathes
