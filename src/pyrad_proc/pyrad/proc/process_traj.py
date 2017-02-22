@@ -332,9 +332,6 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             altitude['data'] = np.array([dscfg['asr_position']['altitude']], dtype='float64')
             
             radar_asr = Radar_ASR(latitude, longitude, altitude)
-            
-            print(radar_asr)
-            print(radar_asr.latitude)
             rad_traj = trajectory.add_radar(radar_asr)
 
         if (dscfg['antennaType'] == 'AZIMUTH'):
