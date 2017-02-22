@@ -1900,24 +1900,24 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
             if ind_rng_rad2 is None:
                 continue
 
-            val1 = np.ma.asarray(rad1_field[ind_ray_rad1[0], ind_rng_rad1[0]])
-            val2 = np.ma.asarray(rad2_field[ind_ray_rad2[0], ind_rng_rad2[0]])
+            val1 = np.ma.asarray(rad1_field[ind_ray_rad1[0], ind_rng_rad1])
+            val2 = np.ma.asarray(rad2_field[ind_ray_rad2[0], ind_rng_rad2])
             if avg_rad1:
-                if (ind_rng_rad1[0]+avg_rad_lim[1] >= radar1.ngates or
-                        ind_rng_rad1[0]+avg_rad_lim[0] < 0):
+                if (ind_rng_rad1+avg_rad_lim[1] >= radar1.ngates or
+                        ind_rng_rad1+avg_rad_lim[0] < 0):
                     continue
                 ind_rng = list(range(
-                    ind_rng_rad1[0]+avg_rad_lim[0],
-                    ind_rng_rad1[0]+avg_rad_lim[1]+1))
+                    ind_rng_rad1+avg_rad_lim[0],
+                    ind_rng_rad1+avg_rad_lim[1]+1))
                 val1 = np.ma.asarray(np.ma.mean(
                     rad1_field[ind_ray_rad1[0], ind_rng]))
             elif avg_rad2:
-                if (ind_rng_rad2[0]+avg_rad_lim[1] >= radar2.ngates or
-                        ind_rng_rad2[0]+avg_rad_lim[0] < 0):
+                if (ind_rng_rad2+avg_rad_lim[1] >= radar2.ngates or
+                        ind_rng_rad2+avg_rad_lim[0] < 0):
                     continue
                 ind_rng = list(range(
-                    ind_rng_rad2[0]+avg_rad_lim[0],
-                    ind_rng_rad2[0]+avg_rad_lim[1]+1))
+                    ind_rng_rad2+avg_rad_lim[0],
+                    ind_rng_rad2+avg_rad_lim[1]+1))
                 val2 = np.ma.asarray(np.ma.mean(
                     rad2_field[ind_ray_rad2[0], ind_rng]))
 
@@ -1929,7 +1929,7 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
             intercomp_dict['rad1_azi'].append(
                 radar1.azimuth['data'][ind_ray_rad1[0]])
             intercomp_dict['rad1_rng'].append(
-                radar1.range['data'][ind_rng_rad1[0]])
+                radar1.range['data'][ind_rng_rad1])
             intercomp_dict['rad1_val'].append(val1)
 
             intercomp_dict['rad2_ele'].append(
@@ -1937,7 +1937,7 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
             intercomp_dict['rad2_azi'].append(
                 radar2.azimuth['data'][ind_ray_rad2[0]])
             intercomp_dict['rad2_rng'].append(
-                radar2.range['data'][ind_rng_rad2[0]])
+                radar2.range['data'][ind_rng_rad2])
             intercomp_dict['rad2_val'].append(val2)
 
         new_dataset = {'intercomp_dict': intercomp_dict,
@@ -2174,30 +2174,30 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
             if ind_rng_rad2 is None:
                 continue
 
-            refl1_val = np.ma.asarray(refl1[ind_ray_rad1[0], ind_rng_rad1[0]])
-            refl2_val = np.ma.asarray(refl2[ind_ray_rad2[0], ind_rng_rad2[0]])
+            refl1_val = np.ma.asarray(refl1[ind_ray_rad1[0], ind_rng_rad1])
+            refl2_val = np.ma.asarray(refl2[ind_ray_rad2[0], ind_rng_rad2])
 
             phidp1_val = np.ma.asarray(
-                phidp1[ind_ray_rad1[0], ind_rng_rad1[0]])
+                phidp1[ind_ray_rad1[0], ind_rng_rad1])
             phidp2_val = np.ma.asarray(
-                phidp2[ind_ray_rad2[0], ind_rng_rad2[0]])
+                phidp2[ind_ray_rad2[0], ind_rng_rad2])
 
-            flag1_val = flag1[ind_ray_rad1[0], ind_rng_rad1[0]]
-            flag2_val = flag2[ind_ray_rad2[0], ind_rng_rad2[0]]
+            flag1_val = flag1[ind_ray_rad1[0], ind_rng_rad1]
+            flag2_val = flag2[ind_ray_rad2[0], ind_rng_rad2]
 
             if avg_rad1:
-                if (ind_rng_rad1[0]+avg_rad_lim[1] >= radar1.ngates or
-                        ind_rng_rad1[0]+avg_rad_lim[0] < 0):
+                if (ind_rng_rad1+avg_rad_lim[1] >= radar1.ngates or
+                        ind_rng_rad1+avg_rad_lim[0] < 0):
                     continue
                 ind_rng = list(range(
-                    ind_rng_rad1[0]+avg_rad_lim[0],
-                    ind_rng_rad1[0]+avg_rad_lim[1]+1))
+                    ind_rng_rad1+avg_rad_lim[0],
+                    ind_rng_rad1+avg_rad_lim[1]+1))
                 refl1_val = np.ma.asarray(np.ma.mean(
                     refl1[ind_ray_rad1[0], ind_rng]))
                 phidp1_val = np.ma.asarray(np.ma.mean(
                     phidp1[ind_ray_rad1[0], ind_rng]))
 
-                rad1_flag = flag1[ind_ray_rad1[0], ind_rng_rad1[0]]
+                rad1_flag = flag1[ind_ray_rad1[0], ind_rng_rad1]
 
                 rad1_excess_phi = rad1_flag % 100
                 rad1_clt = ((rad1_flag-rad1_excess_phi) % 10000) / 100
@@ -2210,18 +2210,18 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
                     np.max(rad1_excess_phi))
 
             elif avg_rad2:
-                if (ind_rng_rad2[0]+avg_rad_lim[1] >= radar2.ngates or
-                        ind_rng_rad2[0]+avg_rad_lim[0] < 0):
+                if (ind_rng_rad2+avg_rad_lim[1] >= radar2.ngates or
+                        ind_rng_rad2+avg_rad_lim[0] < 0):
                     continue
                 ind_rng = list(range(
-                    ind_rng_rad2[0]+avg_rad_lim[0],
-                    ind_rng_rad2[0]+avg_rad_lim[1]+1))
+                    ind_rng_rad2+avg_rad_lim[0],
+                    ind_rng_rad2+avg_rad_lim[1]+1))
                 refl2_val = np.ma.asarray(np.ma.mean(
                     refl2[ind_ray_rad2[0], ind_rng]))
                 phidp2_val = np.ma.asarray(np.ma.mean(
                     phidp2[ind_ray_rad1[0], ind_rng]))
 
-                rad2_flag = flag2[ind_ray_rad1[0], ind_rng_rad1[0]]
+                rad2_flag = flag2[ind_ray_rad1[0], ind_rng_rad1]
 
                 rad2_excess_phi = rad2_flag % 100
                 rad2_clt = ((rad2_flag-rad2_excess_phi) % 10000) / 100
@@ -2242,7 +2242,7 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
             intercomp_dict['rad1_azi'].append(
                 radar1.azimuth['data'][ind_ray_rad1[0]])
             intercomp_dict['rad1_rng'].append(
-                radar1.range['data'][ind_rng_rad1[0]])
+                radar1.range['data'][ind_rng_rad1])
             intercomp_dict['rad1_dBZavg'].append(refl1_val)
             intercomp_dict['rad1_PhiDPavg'].append(phidp1_val)
             intercomp_dict['rad1_Flagavg'].append(flag1_val)
@@ -2252,7 +2252,7 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
             intercomp_dict['rad2_azi'].append(
                 radar2.azimuth['data'][ind_ray_rad2[0]])
             intercomp_dict['rad2_rng'].append(
-                radar2.range['data'][ind_rng_rad2[0]])
+                radar2.range['data'][ind_rng_rad2])
             intercomp_dict['rad2_dBZavg'].append(refl2_val)
             intercomp_dict['rad2_PhiDPavg'].append(phidp2_val)
             intercomp_dict['rad2_Flagavg'].append(flag2_val)

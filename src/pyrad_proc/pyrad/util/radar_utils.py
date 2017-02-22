@@ -208,13 +208,12 @@ def find_rng_index(rng_vec, rng, rng_tol=0.):
         The range index
 
     """
-    ind_rng = np.where(np.logical_and(
-        rng_vec <= rng+rng_tol, rng_vec >= rng-rng_tol))
-
-    if len(ind_rng[0]) == 0:
+    dist = np.abs(rng_vec-rng)
+    ind_rng = np.argmin(dist)
+    if dist[ind_rng] > rng_tol:
         return None
 
-    return ind_rng[0]
+    return ind_rng
 
 
 def time_avg_range(timeinfo, avg_starttime, avg_endtime, period):
