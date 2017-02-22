@@ -160,7 +160,8 @@ def get_range_bins_to_avg(rad1_rng, rad2_rng):
     return avg_rad1, avg_rad2, avg_rad_lim
 
 
-def find_ray_index(ele_vec, azi_vec, ele, azi, ele_tol=0., azi_tol=0.):
+def find_ray_index(ele_vec, azi_vec, ele, azi, ele_tol=0., azi_tol=0.,
+                   nearest='azi'):
     """
     Find the ray index corresponding to a particular elevation and azimuth
 
@@ -172,6 +173,9 @@ def find_ray_index(ele_vec, azi_vec, ele, azi, ele_tol=0., azi_tol=0.):
         The elevation and azimuth to search
     ele_tol, azi_tol : floats
         Tolerances [deg]
+    nearest : str
+        criteria to define wich ray to keep if multiple rays are within
+        tolerance. azi: nearest azimuth, ele: nearest elevation
 
     Returns
     -------
@@ -185,8 +189,15 @@ def find_ray_index(ele_vec, azi_vec, ele, azi, ele_tol=0., azi_tol=0.):
 
     if len(ind_ray[0]) == 0:
         return None
+    if len(ind_ray[0]) == 1:
+        return ind_ray[0]
 
-    return ind_ray[0]
+    if nearest == 'azi':
+        ind_min = np.argmin(np.abs(azi_vec[ind_ray]-azi))
+    else:
+        ind_min = np.argmin(np.abs(ele_vec[ind_ray]-ele))
+
+    return ind_ray[ind_min]
 
 
 def find_rng_index(rng_vec, rng, rng_tol=0.):
