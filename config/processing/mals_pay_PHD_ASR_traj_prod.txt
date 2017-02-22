@@ -4,10 +4,12 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 1
+dataSetList STRARR 2
+    l0:reflectivity_traj
     l0:reflectivity_traj_lb
-    
-    
+
+
+
 #   l0:hydroclass
 #   l1:RR_hydro
 #   l0:windshear_v
@@ -21,7 +23,7 @@ dataSetList STRARR 1
 #   l0:temperature_traj
 #   l0:temperature_traj_lb
 
-    
+
 ## ==========================================================================================
 ##                 hydrometeor classification products
 ## ==========================================================================================
@@ -40,8 +42,8 @@ dataSetList STRARR 1
 #        SAVEVOL_hydro STRUCT 2
 #            type  STRING SAVEVOL
 #            voltype STRING hydro
-#    
-#    
+#
+#
 ## ==========================================================================================
 ##               rainfall rate
 ## ==========================================================================================
@@ -52,30 +54,30 @@ dataSetList STRARR 1
 #        CFRADIAL:Ahc,echoFilter_Ah,SAVEVOL_Ahc
 #        PROC:hydro
 #    RR_METHOD STRING hydro
-#    MAKE_GLOBAL INT 1   
+#    MAKE_GLOBAL INT 1
 #    products STRUCT 1
 #        SAVEVOL_RR_hydro STRUCT 2
 #            type  STRING SAVEVOL
 #            voltype STRING RR
 #
-#            
+#
 ## ==========================================================================================
 ##               wind shear
 ## ==========================================================================================
 #windshear_v STRUCT 4
 #    type STRING WINDSHEAR
 #    datatype STRARR 1
-#        CFRADIAL:wind_vel_h_az,wind_vel_h_az,SAVEVOL_wind_vel_h_az    
+#        CFRADIAL:wind_vel_h_az,wind_vel_h_az,SAVEVOL_wind_vel_h_az
 #    MAKE_GLOBAL INT 1
 #    products STRUCT 1
 #        SAVEVOL_windshear_v STRUCT 2
 #            type  STRING SAVEVOL
-#            voltype STRING windshear_v            
-#            
-#            
+#            voltype STRING windshear_v
+#
+#
 ## ==========================================================================================
 ##               trajectory processing
-## ==========================================================================================    
+## ==========================================================================================
 #traj STRUCT 3
 #   type     STRING TRAJ
 #   datatype STRARR 1
@@ -93,16 +95,17 @@ dataSetList STRARR 1
 #      TS_TEXT STRUCT 1
 #         type  STRING TRAJ_TEXT
 #
-#reflectivity_traj STRUCT 3
-#   type          STRING TRAJ_ATPLANE
-#   datatype      STRING CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
-#   products      STRUCT 1
-#      AT_PLANE STRUCT 3
-#         type  STRING   PLOT_AND_WRITE
-#         ymin  FLOAT    0.0
-#         ymax  FLOAT    50.0
-#
-reflectivity_traj_lb STRUCT 9
+reflectivity_traj STRUCT 4
+   type          STRING TRAJ_ATPLANE
+   datatype      STRING CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
+   data_is_log   INT   1
+   products      STRUCT 1
+      AT_PLANE STRUCT 3
+         type  STRING   PLOT_AND_WRITE
+         ymin  FLOAT    0.0
+         ymax  FLOAT    50.0
+
+reflectivity_traj_lb STRUCT 14
    type          STRING TRAJ_ANTENNA_PATTERN
    datatype      STRING CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
    dssavename    STRING reflectivity_traj
@@ -111,6 +114,11 @@ reflectivity_traj_lb STRUCT 9
    nan_value     FLOAT 0.0
    pattern_thres FLOAT 1.5
    range_all     INT 0
+   max_altitude  FLOAT 11000.0  # [m]
+   rhi_resolution FLOAT 0.4  # [deg]
+   latlon_tol    FLOAT 0.03  # [deg]
+   alt_tol       FLOAT 1000  # [m]
+   data_is_log   INT   1
    products      STRUCT 1
       LOWBEAM_ANTENNA STRUCT 1
          type  STRING   PLOT_AND_WRITE
@@ -181,4 +189,4 @@ reflectivity_traj_lb STRUCT 9
 #      LOWBEAM_ANTENNA STRUCT 1
 #         type  STRING   PLOT_AND_WRITE
 ##         ymin  FLOAT    -20.0
-##         ymax  FLOAT     20.0         
+##         ymax  FLOAT     20.0

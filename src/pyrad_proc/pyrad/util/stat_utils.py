@@ -15,7 +15,7 @@ import numpy as np
 
 
 def quantiles_weighted(values, weight_vector=None, quantiles=np.array([0.5]),
-                       weight_threshold=None):
+                       weight_threshold=None, data_is_log=False):
     """
     Given a set of values and weights, compute the weighted
     quantile(s).
@@ -48,11 +48,18 @@ def quantiles_weighted(values, weight_vector=None, quantiles=np.array([0.5]),
 
     total_weight = np.ma.sum(weight_vector)
 
+    if data_is_log:
+        # Convert log to lin
+        values = 10.**(values/10.)
+
     # Average
     avg = np.ma.sum(values*weight_vector) / total_weight
 
     if (weight_threshold is not None):
         if (total_weight < weight_threshold):
+            if data_is_log:
+                # Convert lin to log
+                avg = 10. * np.log10(avg)
             return (avg, np.array([None] * quantiles.size), nvalid)
 
     # sort the valid data
@@ -73,5 +80,10 @@ def quantiles_weighted(values, weight_vector=None, quantiles=np.array([0.5]),
 
     # Note: Does not extrapolate
     quants = np.interp(quantiles, weighted_quantiles, values)
+
+    if data_is_log:
+        # Convert lin to log
+        avg = 10. * np.log10(avg)
+        quants = 10. * np.log10(quants)
 
     return (avg, quants, nvalid)
