@@ -4,9 +4,11 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 2
-    l0:reflectivity_traj
-    l0:reflectivity_traj_lb
+dataSetList STRARR 4   
+    reflectivity_traj_lb
+    rainrate_traj_lb
+    windshear_traj_lb    
+    temperature_traj_lb
 
 
 
@@ -95,16 +97,16 @@ dataSetList STRARR 2
 #      TS_TEXT STRUCT 1
 #         type  STRING TRAJ_TEXT
 #
-reflectivity_traj STRUCT 4
-   type          STRING TRAJ_ATPLANE
-   datatype      STRING CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
-   data_is_log   INT   1
-   products      STRUCT 1
-      AT_PLANE STRUCT 3
-         type  STRING   PLOT_AND_WRITE
-         ymin  FLOAT    0.0
-         ymax  FLOAT    50.0
-
+#reflectivity_traj STRUCT 4
+#   type          STRING TRAJ_ATPLANE
+#   datatype      STRING CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
+#   data_is_log   INT   1
+#   products      STRUCT 1
+#      AT_PLANE STRUCT 3
+#         type  STRING   PLOT_AND_WRITE
+#         ymin  FLOAT    0.0
+#         ymax  FLOAT    50.0
+#
 reflectivity_traj_lb STRUCT 14
    type          STRING TRAJ_ANTENNA_PATTERN
    datatype      STRING CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
@@ -134,21 +136,26 @@ reflectivity_traj_lb STRUCT 14
 #         ymin  FLOAT    0.0
 #         ymax  FLOAT    4.0
 #
-#rainrate_traj_lb STRUCT 9
-#   type          STRING TRAJ_ANTENNA_PATTERN
-#   datatype      STRING PROC:RR
-#   dssavename    STRING rainrate_traj
-#   antennaType   STRING LOWBEAM
-#   use_nans      INT 0
-#   nan_value     FLOAT 0.0
-#   pattern_thres FLOAT 1.5
-#   RANGE_ALL     INT 0
-#   products      STRUCT 1
-#      LOWBEAM_ANTENNA STRUCT 3
-#         type  STRING   PLOT_AND_WRITE
-#         ymin  FLOAT    0.0
-#         ymax  FLOAT    4.0
-#
+rainrate_traj_lb STRUCT 14
+   type          STRING TRAJ_ANTENNA_PATTERN
+   datatype      STRING CFRADIAL:RR,RR_hydro,SAVEVOL_RR_hydro
+   dssavename    STRING rainrate_traj
+   antennaType   STRING LOWBEAM
+   use_nans      INT 0
+   nan_value     FLOAT 0.0
+   pattern_thres FLOAT 1.5
+   range_all     INT 0
+   max_altitude  FLOAT 11000.0  # [m]
+   rhi_resolution FLOAT 0.4  # [deg]
+   latlon_tol    FLOAT 0.03  # [deg]
+   alt_tol       FLOAT 1000  # [m]
+   data_is_log   INT   0
+   products      STRUCT 1
+      LOWBEAM_ANTENNA STRUCT 3
+         type  STRING   PLOT_AND_WRITE
+         ymin  FLOAT    0.0
+         ymax  FLOAT    4.0
+
 #windshear_traj STRUCT 3
 #   type     STRING TRAJ_ATPLANE
 #   datatype STRING PROC:windshear_v
@@ -156,37 +163,49 @@ reflectivity_traj_lb STRUCT 14
 #      AT_PLANE STRUCT 1
 #         type  STRING PLOT_AND_WRITE
 #
-#windshear_traj_lb STRUCT 8
-#   type     STRING TRAJ_ANTENNA_PATTERN
-#   datatype STRING PROC:windshear_v
-#   dssavename STRING windshear_traj
-#   antennaType STRING LOWBEAM
-#   use_nans   INT 0
-#   nan_value  FLOAT 0.0
-#   pattern_thres FLOAT 1.5
-#   products STRUCT 1
-#      LOWBEAM_ANTENNA STRUCT 3
-#         type  STRING   PLOT_AND_WRITE
+windshear_traj_lb STRUCT 14
+   type     STRING TRAJ_ANTENNA_PATTERN
+   datatype STRING CFRADIAL:windshear_v,windshear_v,SAVEVOL_windshear_v
+   dssavename STRING windshear_traj
+   antennaType STRING LOWBEAM
+   use_nans   INT 0
+   nan_value  FLOAT 0.0
+   pattern_thres FLOAT 1.5
+   range_all     INT 0
+   max_altitude  FLOAT 11000.0  # [m]
+   rhi_resolution FLOAT 0.4  # [deg]
+   latlon_tol    FLOAT 0.03  # [deg]
+   alt_tol       FLOAT 1000  # [m]
+   data_is_log   INT   0
+   products STRUCT 1
+      LOWBEAM_ANTENNA STRUCT 3
+         type  STRING   PLOT_AND_WRITE
+         ymin  FLOAT    -20.0
+         ymax  FLOAT     20.0
+
+# temperature_traj STRUCT 3
+#    type     STRING TRAJ_ATPLANE
+#    datatype STRING RAD4ALPCOSMO:TEMP
+#    products STRUCT 1
+#       AT_PLANE STRUCT 1
+#          type  STRING PLOT_AND_WRITE
+
+temperature_traj_lb STRUCT 14
+   type     STRING TRAJ_ANTENNA_PATTERN
+   datatype STRING RAD4ALPCOSMO:TEMP
+   dssavename STRING temperature_traj
+   antennaType STRING LOWBEAM
+   use_nans   INT 0
+   nan_value  FLOAT 0.0
+   pattern_thres FLOAT 1.5
+   range_all     INT 0
+   max_altitude  FLOAT 11000.0  # [m]
+   rhi_resolution FLOAT 0.4  # [deg]
+   latlon_tol    FLOAT 0.03  # [deg]
+   alt_tol       FLOAT 1000  # [m]
+   data_is_log   INT   0
+   products STRUCT 1
+      LOWBEAM_ANTENNA STRUCT 1
+         type  STRING   PLOT_AND_WRITE
 #         ymin  FLOAT    -20.0
 #         ymax  FLOAT     20.0
-#
-#temperature_traj STRUCT 3
-#   type     STRING TRAJ_ATPLANE
-#   datatype STRING RAD4ALPCOSMO:TEMP
-#   products STRUCT 1
-#      AT_PLANE STRUCT 1
-#         type  STRING PLOT_AND_WRITE
-#
-#temperature_traj_lb STRUCT 8
-#   type     STRING TRAJ_ANTENNA_PATTERN
-#   datatype STRING RAD4ALPCOSMO:TEMP
-#   dssavename STRING temperature_traj
-#   antennaType STRING LOWBEAM
-#   use_nans   INT 0
-#   nan_value  FLOAT 0.0
-#   pattern_thres FLOAT 1.5
-#   products STRUCT 1
-#      LOWBEAM_ANTENNA STRUCT 1
-#         type  STRING   PLOT_AND_WRITE
-##         ymin  FLOAT    -20.0
-##         ymax  FLOAT     20.0

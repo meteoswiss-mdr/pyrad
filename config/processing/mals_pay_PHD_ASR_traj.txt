@@ -1,6 +1,6 @@
 # Name of this configuration:
 # Will be used in product generation save path
-name STRING mals_pay_PHD_ASR_traj_lea
+name STRING mals_pay_PHD_ASR_traj
 
 # ---------------------------------------------------------
 #  Raw data pathes
