@@ -684,7 +684,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             
             # flag regions with colocated usable data in radar_sel
             gate_coloc_radar_sel = intersection(
-                radar_sel, r_radar, h_tol=alt_tol, latlon_tol=latlon_tol
+                radar_sel, r_radar, h_tol=alt_tol, latlon_tol=latlon_tol,
                 vol_d_tol=None, vismin=None, hmin=None, hmax=max_altitude,
                 rmin=None, rmax=None, elmin=None, elmax=None, azmin=None,
                 azmax=None, visib_field=None,

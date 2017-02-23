@@ -4,10 +4,11 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 4   
+dataSetList STRARR 5
     reflectivity_traj_lb
     rainrate_traj_lb
     windshear_traj_lb    
+    temperature_traj
     temperature_traj_lb
 
 
@@ -124,9 +125,9 @@ reflectivity_traj_lb STRUCT 14
    products      STRUCT 1
       LOWBEAM_ANTENNA STRUCT 1
          type  STRING   PLOT_AND_WRITE
-#         ymin  FLOAT    0.0
-#         ymax  FLOAT    4.0
-#
+         ymin  FLOAT    0.0
+         ymax  FLOAT    4.0
+
 #rainrate_traj STRUCT 3
 #   type          STRING TRAJ_ATPLANE
 #   datatype      STRING PROC:RR
@@ -135,7 +136,7 @@ reflectivity_traj_lb STRUCT 14
 #         type  STRING   PLOT_AND_WRITE
 #         ymin  FLOAT    0.0
 #         ymax  FLOAT    4.0
-#
+
 rainrate_traj_lb STRUCT 14
    type          STRING TRAJ_ANTENNA_PATTERN
    datatype      STRING CFRADIAL:RR,RR_hydro,SAVEVOL_RR_hydro
@@ -162,7 +163,7 @@ rainrate_traj_lb STRUCT 14
 #   products STRUCT 1
 #      AT_PLANE STRUCT 1
 #         type  STRING PLOT_AND_WRITE
-#
+
 windshear_traj_lb STRUCT 14
    type     STRING TRAJ_ANTENNA_PATTERN
    datatype STRING CFRADIAL:windshear_v,windshear_v,SAVEVOL_windshear_v
@@ -183,12 +184,12 @@ windshear_traj_lb STRUCT 14
          ymin  FLOAT    -20.0
          ymax  FLOAT     20.0
 
-# temperature_traj STRUCT 3
-#    type     STRING TRAJ_ATPLANE
-#    datatype STRING RAD4ALPCOSMO:TEMP
-#    products STRUCT 1
-#       AT_PLANE STRUCT 1
-#          type  STRING PLOT_AND_WRITE
+temperature_traj STRUCT 3
+    type     STRING TRAJ_ATPLANE
+    datatype STRING RAD4ALPCOSMO:TEMP
+    products STRUCT 1
+       AT_PLANE STRUCT 1
+          type  STRING PLOT_AND_WRITE
 
 temperature_traj_lb STRUCT 14
    type     STRING TRAJ_ANTENNA_PATTERN
@@ -209,3 +210,39 @@ temperature_traj_lb STRUCT 14
          type  STRING   PLOT_AND_WRITE
 #         ymin  FLOAT    -20.0
 #         ymax  FLOAT     20.0
+
+#dBZ_traj STRUCT 3
+#    type     STRING TRAJ_ATPLANE
+#    datatype STRING RAD4ALP:dBZ
+#    products STRUCT 1
+#       AT_PLANE STRUCT 1
+#          type  STRING PLOT_AND_WRITE
+#          
+#dBZv_traj STRUCT 3
+#    type     STRING TRAJ_ATPLANE
+#    datatype STRING RAD4ALP:dBZv
+#    products STRUCT 1
+#       AT_PLANE STRUCT 1
+#          type  STRING PLOT_AND_WRITE
+#          
+#ZDR_traj STRUCT 3
+#    type     STRING TRAJ_ATPLANE
+#    datatype STRING RAD4ALP:ZDR
+#    products STRUCT 1
+#       AT_PLANE STRUCT 1
+#          type  STRING PLOT_AND_WRITE
+#          
+#uRhoHV_traj STRUCT 3
+#    type     STRING TRAJ_ATPLANE
+#    datatype STRING RAD4ALP:uRhoHV
+#    products STRUCT 1
+#       AT_PLANE STRUCT 1
+#          type  STRING PLOT_AND_WRITE
+#          
+#uPhiDP_traj STRUCT 3
+#    type     STRING TRAJ_ATPLANE
+#    datatype STRING RAD4ALP:uPhiDP
+#    products STRUCT 1
+#       AT_PLANE STRUCT 1
+#          type  STRING PLOT_AND_WRITE
+          
