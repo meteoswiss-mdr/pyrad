@@ -10,7 +10,7 @@ TimeTol FLOAT 600.
 # Radar Name
 RadarName STRARR 2
     DX50
-    D
+    A
 
 # rad4alp radar range resolution L: Low H: High
 RadarRes STRARR 2
@@ -19,8 +19,8 @@ RadarRes STRARR 2
     
 # Names of the radar scans in the specified sector
 # NOTE: Must have a trailing '/'
-ScanList STRARR 2
-    MALS_EMM_VOL.vol/  # masterscan: first scan of a volume
+ScanList STRARR 21
+    RADAR001:MALS_EMM_VOL.vol/  # masterscan: first scan of a volume
     RADAR002:001  # masterscan: first scan of a volume
 	RADAR002:002
 	RADAR002:003

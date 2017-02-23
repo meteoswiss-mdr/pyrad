@@ -23,7 +23,7 @@ ScanList STRARR 13
       MALS_EMM_049_dw.ele/
 
 # Repetition time of the scans [min]
-ScanPeriod INT 2
+ScanPeriod FLOAT 2
 
 # Frequency of cosmo run [h]
 CosmoRunFreq INT 3
@@ -47,3 +47,14 @@ rhiImageConfig STRUCT 6
    xmax       FLOAT  40.0   # Max distance on horizontal axis [km]
    ymin       FLOAT   0.0   # Min distance on vertical axis [km]
    ymax       FLOAT   7.5   # Max distance on vertical axis [km]
+
+# PAR antenna pattern
+par_azimuth_antenna STRUCT 3
+   azPatternFile STRING PAR_AzAntenna_AzimuthPattern.csv
+   elPatternFile STRING PAR_AzAntenna_ElevationPattern.csv
+   fixed_angle FLOAT 9.5    # elevation angle of azimuth [deg]
+
+par_elevation_antenna STRUCT 3
+   azPatternFile STRING PAR_ElAntenna_AzimuthPattern.csv
+   elPatternFile STRING PAR_ElAntenna_ElevationPattern.csv
+   fixed_angle FLOAT 49.0    # azimuth angle of azimuth [deg]

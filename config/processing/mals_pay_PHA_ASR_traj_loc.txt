@@ -54,8 +54,8 @@ CosmoRunFreq INT 3
 CosmoForecasted INT 7
 
 # radar constant
-radconsth FLOAT 71.67
-radconstv FLOAT 72.27
+radconsth FLOAT 73.23
+radconstv FLOAT 73.33
 
 # radar constant h, v (20141125)
 # A 72.78, 72.98
@@ -85,12 +85,12 @@ AzimTol FLOAT 0.4
 
 # Image config
 ppiImageConfig STRUCT 6
-   xsize      FLOAT   8.   # image size [inches] (default dots per inch (dpi):72)
-   ysize      FLOAT   7.   # image size [inches] (default dots per inch (dpi):72)
-   xmin       FLOAT -50.   # Min distance on horizontal axis [km]
-   xmax       FLOAT  50.   # Max distance on horizontal axis [km]
-   ymin       FLOAT -50.   # Min distance on vertical axis [km]
-   ymax       FLOAT  50.   # Max distance on vertical axis [km]
+   xsize      FLOAT   8.      # image size [inches] (default dots per inch (dpi):72)
+   ysize      FLOAT   7.      # image size [inches] (default dots per inch (dpi):72)
+   xmin       FLOAT -24.0   # Min distance on horizontal axis [km]
+   xmax       FLOAT   0.   # Max distance on horizontal axis [km]
+   ymin       FLOAT -32.0   # Min distance on vertical axis [km]
+   ymax       FLOAT  -8.0   # Max distance on vertical axis [km]
 
 rhiImageConfig STRUCT 6
    xsize      FLOAT  10.    # image size [inches]
@@ -101,13 +101,13 @@ rhiImageConfig STRUCT 6
    ymax       FLOAT  5.0   # Max distance on vertical axis [km]
    
    
-# PAR antenna pattern
-par_azimuth_antenna STRUCT 3
-   azPatternFile STRING PAR_AzAntenna_AzimuthPattern.csv
-   elPatternFile STRING PAR_AzAntenna_ElevationPattern.csv
-   fixed_angle FLOAT 9.5    # elevation angle of azimuth [deg]
+# ASR antenna pattern
+asr_highbeam_antenna STRUCT 3
+   azPatternFile STRING ASR_HighBeamAzimuthPattern.csv
+   elPatternFile STRING ASR_HighBeamElevationPattern.csv
+   fixed_angle FLOAT 2.7    # elevation angle [deg]
 
-par_elevation_antenna STRUCT 3
-   azPatternFile STRING PAR_ElAntenna_AzimuthPattern.csv
-   elPatternFile STRING PAR_ElAntenna_ElevationPattern.csv
-   fixed_angle FLOAT 49.0    # azimuth angle of azimuth [deg]
+asr_lowbeam_antenna STRUCT 3
+   azPatternFile STRING ASR_LowBeamAzimuthPattern.csv
+   elPatternFile STRING ASR_LowBeamElevationPattern.csv
+   fixed_angle FLOAT 2.7    # elevation angle [deg]

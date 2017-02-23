@@ -29,6 +29,7 @@ def main():
         description="Create PYRAD products using a plane trajectory",
         epilog="Example:\n"
         "  process_trajectory.py -c $HOME/pyrad/config/processing/mals_emm_rw22_traj.txt\n"
+        "     --preproc_cfgfile $HOME/pyrad/config/processing/mals_emm_rw22_traj_preproc.txt\n"
         "     -i TS011 /data/mals_plane_traj/EMM/gnv_20161026_ts011_seat_emmen_flt01_ADS.txt",
         formatter_class=argparse.RawDescriptionHelpFormatter)
 
@@ -36,6 +37,11 @@ def main():
     parser.add_argument("-c", "--cfgfile", type=str,
                         help="Main configuration file. Defines the ",
                         default="")
+
+    parser.add_argument(
+        '--preproc_cfgfile', type=str, default=None,
+        help='name of main pre-processing configuration file')
+
     parser.add_argument("trajfile", type=str,
                         help="Definition file of plane trajectory. "
                         "Configuration of scan sector, products, ...")
@@ -53,7 +59,7 @@ def main():
 
     parser.add_argument("-i", "--infostr",
                         help="Information string about the actual data "
-                        "processing (e.g. 'RUN57'). This sting is added "
+                        "processing (e.g. 'RUN57'). This string is added "
                         "to the filenames of the product files.",
                         default="")
 
@@ -98,11 +104,16 @@ def main():
     atexit.register(_print_end_msg,
                     "====== PYRAD trajectory processing finished: ")
 
-    #try:  #XXX
+    # try:  #XXX
+    if args.preproc_cfgfile is not None:
+        pyrad_main(args.preproc_cfgfile, dt_starttime, dt_endtime,
+                   trajfile=args.trajfile, infostr=args.infostr)
+
     pyrad_main(args.cfgfile, dt_starttime, dt_endtime,
                trajfile=args.trajfile, infostr=args.infostr)
-    #except Exception as ee:
+    # except Exception as ee:
     #    print(str(ee), file=sys.stderr)
+
 
 def _print_end_msg(text):
     """

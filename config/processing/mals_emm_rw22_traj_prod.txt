@@ -4,21 +4,178 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 2
-   l0:traj
-   l0:reflectivity_traj
-#   l0:rainrate
-#   l0:windshear
-#   l1:rainrate_traj
-#   l1:rainrate_traj_az
-#   l1:windshear_traj
-#   l1:windshear_traj_az
+dataSetList STRARR 16
+   l0:echoID
+   l1:echoFilter
+   l3:echoFilter_Ah 
+   l2:outlierFilter   
+   l2:Att_ZPhi
+   l3:hydroclass
+   l4:RR_hydro   
+   l3:wind_vel_h_az
+   l4:windshear_v
+   l0:traj   
+   l3:reflectivity_traj
+   l3:reflectivity_traj_az
+   l5:rainrate_traj
+   l5:rainrate_traj_az
+   l5:windshear_traj
+   l5:windshear_traj_az
 
 
+# ==========================================================================================
+#                 echo identification
+# ==========================================================================================
+echoID STRUCT 3
+    type STRING SAN
+    datatype STRARR 4
+        dBZ
+        ZDR
+        uPhiDP
+        RhoHV
+    MAKE_GLOBAL INT 1
+
+
+# ==========================================================================================
+#                 clutter and noise suppression
+# ==========================================================================================
+# echo type 3 : precip, 2 : clutter, 1 : noise
+echoFilter STRUCT 5
+    type STRING ECHO_FILTER
+    datatype STRARR 7
+        PROC:echoID
+        dBZ        
+        ZDR
+        RhoHV
+        PhiDP
+        KDP
+        V
+    echo_type INT 3
+    MAKE_GLOBAL INT 1
+    products STRUCT 1        
+        AZ037_0_V STRUCT 3
+            type  STRING RHI_IMAGE
+            anglenr INT 6
+            voltype STRING Vc
+    
+
+echoFilter_Ah STRUCT 4
+    type STRING ECHO_FILTER
+    datatype STRARR 2
+        PROC:echoID
+        PROC:Ah
+    echo_type INT 3
+    MAKE_GLOBAL INT 1
+
+
+# ==========================================================================================
+#                 outlier filter
+# ==========================================================================================    
+outlierFilter STRUCT 9
+    type STRING OUTLIER_FILTER
+    datatype STRARR 1
+        PROC:Vc
+    threshold FLOAT 10.
+    nb INT 2
+    nb_min INT 3
+    percentile_min FLOAT 5.
+    percentile_max float 95.
+    MAKE_GLOBAL INT 1
+    products STRUCT 1        
+        AZ037_0_V STRUCT 3
+            type  STRING RHI_IMAGE
+            anglenr INT 6
+            voltype STRING Vc
+
+    
+# ==========================================================================================
+#                 Attenuation
+# ==========================================================================================
+Att_ZPhi STRUCT 5
+    type STRING ATTENUATION
+    datatype STRARR 4
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:PhiDPc
+        COSMO:TEMP
+    ATT_METHOD STRING ZPhi
+    fzl FLOAT 2000.
+    MAKE_GLOBAL INT 1
+    
+    
+# ==========================================================================================
+#                 hydrometeor classification products
+# ==========================================================================================
+hydroclass STRUCT 5
+    type STRING HYDROCLASS
+    datatype STRARR 5
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:RhoHVc
+        PROC:KDPc
+        COSMO:TEMP
+    HYDRO_METHOD STRING SEMISUPERVISED
+    RADARCENTROIDS STRING DX50
+    MAKE_GLOBAL INT 1
+
+
+# ==========================================================================================
+#               rainfall rate
+# ==========================================================================================
+RR_hydro STRUCT 4
+    type STRING RAINRATE
+    datatype STRARR 3
+        PROC:dBZc
+        PROC:Ahc
+        PROC:hydro
+    RR_METHOD STRING hydro
+    MAKE_GLOBAL INT 1
+    
+			
+# ==========================================================================================
+#               wind velocity
+# ==========================================================================================
+wind_vel_h_az STRUCT 5
+    type STRING WIND_VEL
+    datatype STRARR 1
+        PROC:Vc
+    vert_proj INT 0
+    MAKE_GLOBAL INT 1
+    products STRUCT 2
+        SAVEVOL STRUCT 2
+            type  STRING SAVEVOL
+            voltype STRING wind_vel_h_az
+        AZ037_0 STRUCT 3
+            type  STRING RHI_IMAGE
+            anglenr INT 6
+            voltype STRING wind_vel_h_az
+            
+            
+# ==========================================================================================
+#               wind shear
+# ==========================================================================================
+windshear_v STRUCT 4
+    type STRING WINDSHEAR
+    datatype STRARR 1
+        PROC:wind_vel_h_az    
+    MAKE_GLOBAL INT 1
+    products STRUCT 2
+        SAVEVOL STRUCT 2
+            type  STRING SAVEVOL
+            voltype STRING windshear_v
+        AZ037_0 STRUCT 3
+            type  STRING RHI_IMAGE
+            anglenr INT 6
+            voltype STRING windshear_v
+            
+
+# ==========================================================================================
+#               trajectory processing
+# ========================================================================================== 
 traj STRUCT 3
    type     STRING TRAJ
    datatype STRARR 1
-       dBZ
+       RAINBOW:dBZ
    products STRUCT 4
       TS_RANGE STRUCT 2
          type  STRING TRAJ_PLOT
@@ -34,16 +191,31 @@ traj STRUCT 3
 
 reflectivity_traj STRUCT 3
    type          STRING TRAJ_ATPLANE
-   datatype      STRING RAINBOW:dBZ
+   datatype      STRING PROC:dBZc
    products      STRUCT 1
       AT_PLANE STRUCT 3
          type  STRING   PLOT_AND_WRITE
          ymin  FLOAT    0.0
          ymax  FLOAT    50.0
 
+reflectivity_traj_az STRUCT 9
+   type          STRING TRAJ_ANTENNA_PATTERN
+   datatype      STRING PROC:dBZc
+   dssavename    STRING reflectivity_traj
+   antennaType   STRING AZIMUTH
+   use_nans      INT 0
+   nan_value     FLOAT 0.0
+   pattern_thres FLOAT 1.5
+   range_all     INT 0
+   products      STRUCT 1
+      AZIMUTH_ANTENNA STRUCT 1
+         type  STRING   PLOT_AND_WRITE
+#         ymin  FLOAT    0.0
+#         ymax  FLOAT    4.0
+         
 rainrate_traj STRUCT 3
    type          STRING TRAJ_ATPLANE
-   datatype      STRING PROC:rainrate
+   datatype      STRING PROC:RR
    products      STRUCT 1
       AT_PLANE STRUCT 3
          type  STRING   PLOT_AND_WRITE
@@ -52,7 +224,7 @@ rainrate_traj STRUCT 3
 
 rainrate_traj_az STRUCT 9
    type          STRING TRAJ_ANTENNA_PATTERN
-   datatype      STRING PROC:rainrate
+   datatype      STRING PROC:RR
    dssavename    STRING rainrate_traj
    antennaType   STRING AZIMUTH
    use_nans      INT 0
@@ -67,14 +239,14 @@ rainrate_traj_az STRUCT 9
 
 windshear_traj STRUCT 3
    type     STRING TRAJ_ATPLANE
-   datatype STRING PROC:windshear
+   datatype STRING PROC:windshear_v
    products STRUCT 1
       AT_PLANE STRUCT 1
          type  STRING PLOT_AND_WRITE
 
 windshear_traj_az STRUCT 8
    type     STRING TRAJ_ANTENNA_PATTERN
-   datatype STRING PROC:windshear
+   datatype STRING PROC:windshear_v
    dssavename STRING windshear_traj
    antennaType STRING AZIMUTH
    use_nans   INT 0
@@ -85,122 +257,3 @@ windshear_traj_az STRUCT 8
          type  STRING   PLOT_AND_WRITE
          ymin  FLOAT    -20.0
          ymax  FLOAT     20.0
-
-rainrate STRUCT 4
-   type     STRING RAINRATE
-   datatype STRARR 2
-        PROC:dBZc
-        COSMO:ISO0
-   IGNORE_MISSING_VOLS INT 1
-   products STRUCT 10
-      AZ033 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 4
-         NOSANITY INT 0
-      AZ037 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 6
-         NOSANITY INT 0
-      AZ041 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 8
-         NOSANITY INT 0
-      EL06 STRUCT 4
-         type  STRING PPI_IMAGE
-         anglenr INT 5
-         transparent INT 0
-         NOSANITY INT 0
-      ALT1000 STRUCT 3
-         type  STRING CAPPI
-         altitude FLOAT 1000
-         NOSANITY INT 0
-      ALT2500 STRUCT 3
-         type  STRING CAPPI
-         altitude FLOAT 2500
-         NOSANITY INT 0
-      ALT5000 STRUCT 3
-         type  STRING CAPPI
-         altitude FLOAT 5000
-         NOSANITY INT 0
-      CDF_PRECIP STRUCT 6
-         type       STRING CDF_STAT2
-         PHASE   STRING precip
-         use_nans   INT   0
-         nan_value  FLOAT 0.0
-         absolute   INT   0
-         sector     STRUCT 8
-            rangeStart FLOAT        0
-            rangeStop  FLOAT   100000
-            azStart    FLOAT        0
-            azStop     FLOAT      360
-            elStart    FLOAT        0
-            elStop     FLOAT       90
-            hmin       FLOAT        0
-            hmax       FLOAT    20000
-      CDF_RAIN STRUCT 6
-         type       STRING CDF_STAT2
-         PHASE      STRING liquid
-         use_nans   INT   0
-         nan_value  FLOAT 0.0
-         absolute   INT   0
-         sector     STRUCT 8
-            rangeStart FLOAT     5000
-            rangeStop  FLOAT    20000
-            azStart    FLOAT        0
-            azStop     FLOAT      360
-            elStart    FLOAT        0
-            elStop     FLOAT       90
-            hmin       FLOAT        0
-            hmax       FLOAT       -1 # use COSMO ISO0
-      RTS_TRAJ STRUCT 6
-           type           STRING PLOT_LINES
-           MODE           STRING ALONG_R
-           FIX_AZ_ANGLES  FLOAT 41 # to be checked!
-           FIX_EL_ANGLES  FLOAT 4
-           START_VALUE    FLOAT 0.5
-           STOP_VALUE     FLOAT 50
-
-windshear STRUCT 4
-   type     STRING WINDSHEAR
-   datatype STRING V
-   INPUTPROCESSING STRUCT 3
-      rmclutter STRUCT 2
-         TYPE STRING REMOVE_CLUTTER
-         ENABLE INT 1
-      rmoutliers STRUCT 3
-         TYPE STRING OUTLIERS_REMOVAL
-         ENABLE INT 0
-         THRESHOLD FLOAT 10.0
-      blur STRUCT 5
-         TYPE STRING BLUR
-         ENABLE INT 0
-         BLURTYPE STRING GAUSS
-         SIZE INT 3
-         SIGMA FLOAT 0.6
-   products STRUCT 4
-      AZ033 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 4
-         NOSANITY INT 0
-      AZ037 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 6
-         NOSANITY INT 0
-      AZ041 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 8
-         NOSANITY INT 0
-      CDF_PRECIP STRUCT 5
-         type  STRING CDF_STAT
-         use_nans   INT 0
-         nan_value  FLOAT 0.0
-         absolute   INT 1
-         sector STRUCT 8
-            rangeStart FLOAT        0
-            rangeStop  FLOAT   100000
-            azStart    FLOAT        0
-            azStop     FLOAT      360
-            elStart    FLOAT        0
-            elStop     FLOAT       90
-            hmin       FLOAT        0
-            hmax       FLOAT    20000

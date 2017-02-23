@@ -4,13 +4,35 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 1
-    DX50_PLD_intercomp
+dataSetList STRARR 1    
+    DX50_PLD_dBZ_avg_intercomp
+
+    
+# =====================================
+#               Raw data
+# =====================================
+#VIS STRUCT 3
+#   type     STRING RAW
+#   datatype STRING RADAR001:DEM:VIS
+#   products STRUCT 3
+#      EL004_0 STRUCT 3
+#         type  STRING PPI_IMAGE
+#         anglenr INT 0
+#         voltype STRING VIS
+#      EL006_0 STRUCT 3
+#         type  STRING PPI_IMAGE
+#         anglenr INT 1
+#         voltype STRING VIS
+#      EL025_0 STRUCT 3
+#         type  STRING PPI_IMAGE
+#         anglenr INT 2
+#         voltype STRING VIS
+#
 
 # ==========================================================================================
 #                 colocated gates
 # ==========================================================================================         
-#DX50_PLD_coloc_gates STRUCT 9
+#DX50_PLD_coloc_gates STRUCT 13
 #	type STRING COLOCATED_GATES
 #	datatype STRARR 4
 #		RADAR001:CFRADIAL:dBZc,dBZ_avg,SAVEVOL
@@ -20,9 +42,13 @@ dataSetList STRARR 1
 #    h_tol FLOAT 100.
 #    latlon_tol FLOAT 0.005
 #    vol_d_tol FLOAT 100.
-#    vismin FLOAT 100.
+#    vismin FLOAT 99.
 #    hmax FLOAT 10000.
 #    elmax FLOAT 20.
+#    azrad1min FLOAT 190.
+#    azrad1max FLOAT 80.
+#    azrad2min FLOAT 40.
+#    azrad2max FLOAT 24.
 #    products STRUCT 7
 #       DX50_EL004_0 STRUCT 5         
 #         type STRING PPI_IMAGE
@@ -65,24 +91,55 @@ dataSetList STRARR 1
 # ==========================================================================================
 #                 intercomparison
 # ==========================================================================================
-DX50_PLD_intercomp STRUCT 8
-	type STRING INTERCOMP
-	datatype STRARR 2
+#DX50_PLD_dBZ_intercomp STRUCT 8
+#	type STRING INTERCOMP
+#	datatype STRARR 2
+#		RADAR001:CFRADIAL:dBZc,dBZ_avg,SAVEVOL
+#        RADAR002:CFRADIAL:dBZc,dBZ_avg,SAVEVOL
+#    coloc_data_dir STRING DX50_PLD_DATA  # must be the same as product WRITE_INTERCOMP
+#    coloc_radars_name STRING DX50_PLD
+#    ele_tol FLOAT 0.5
+#    azi_tol FLOAT 0.5
+#    rng_tol FLOAT 100.
+#    products STRUCT 2        
+#        DX50_PLD_PLOT STRUCT 3
+#            type STRING PLOT_SCATTER_INTERCOMP
+#            voltype STRING dBZc
+#            step FLOAT 0.5
+#        DX50_PLD_DATA STRUCT 2
+#            type STRING WRITE_INTERCOMP
+#            voltype STRING dBZc
+            
+DX50_PLD_dBZ_avg_intercomp STRUCT 12
+	type STRING INTERCOMP_TIME_AVG
+	datatype STRARR 6
 		RADAR001:CFRADIAL:dBZc,dBZ_avg,SAVEVOL
+        RADAR001:CFRADIAL:PhiDPc,PhiDP_avg,SAVEVOL
+        RADAR001:CFRADIAL:time_avg_flag,flag_avg,SAVEVOL
         RADAR002:CFRADIAL:dBZc,dBZ_avg,SAVEVOL
+        RADAR002:CFRADIAL:PhiDPc,PhiDP_avg,SAVEVOL
+        RADAR002:CFRADIAL:time_avg_flag,flag_avg,SAVEVOL
     coloc_data_dir STRING DX50_PLD_DATA  # must be the same as product WRITE_INTERCOMP
     coloc_radars_name STRING DX50_PLD
     ele_tol FLOAT 0.5
     azi_tol FLOAT 0.5
     rng_tol FLOAT 100.
-    products STRUCT 1        
+    clt_max INT 0
+    phi_excess_max INT 100
+    non_rain_max INT 100
+    phi_avg_max FLOAT 600.
+    products STRUCT 3        
         DX50_PLD_PLOT STRUCT 3
             type STRING PLOT_SCATTER_INTERCOMP
             voltype STRING dBZc
             step FLOAT 0.5
-#        DX50_PLD_DATA STRUCT 2
-#            type STRING WRITE_INTERCOMP
-#            voltype STRING dBZc
+        DX50_PLD_DATA STRUCT 2
+            type STRING WRITE_INTERCOMP_TIME_AVG
+            voltype STRING dBZc
+        DX50_PLD_INTERCOMP_TS STRUCT 3
+            type STRING PLOT_AND_WRITE_INTERCOMP_TS
+            step FLOAT 0.5
+            voltype STRING dBZc
         
         
         

@@ -1,0 +1,158 @@
+#
+# Product generation configuration
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 10
+   l0:hydroclass
+   l1:RR_hydro
+   l0:windshear_v
+   l0:traj
+   l0:reflectivity_traj
+   l0:reflectivity_traj_az
+   l2:rainrate_traj
+   l2:rainrate_traj_az
+   l1:windshear_traj
+   l1:windshear_traj_az
+
+    
+# ==========================================================================================
+#                 hydrometeor classification products
+# ==========================================================================================
+hydroclass STRUCT 6
+    type STRING HYDROCLASS
+    datatype STRARR 5
+        CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
+        CFRADIAL:ZDRc,Att_ZPhi,SAVEVOL_ZDRc
+        CFRADIAL:RhoHVc,echoFilter,SAVEVOL_RhoHVc
+        CFRADIAL:KDPc,KDPc,SAVEVOL_KDPc
+        RAD4ALPCOSMO:TEMP
+    HYDRO_METHOD STRING SEMISUPERVISED
+    RADARCENTROIDS STRING A
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        SAVEVOL_hydro STRUCT 2
+            type  STRING SAVEVOL
+            voltype STRING hydro
+    
+    
+# ==========================================================================================
+#               rainfall rate
+# ==========================================================================================
+RR_hydro STRUCT 5
+    type STRING RAINRATE
+    datatype STRARR 3
+        CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
+        CFRADIAL:Ahc,echoFilter_Ah,SAVEVOL_Ahc
+        PROC:hydro
+    RR_METHOD STRING hydro
+    MAKE_GLOBAL INT 1   
+    products STRUCT 1
+        SAVEVOL_RR_hydro STRUCT 2
+            type  STRING SAVEVOL
+            voltype STRING RR
+
+            
+# ==========================================================================================
+#               wind shear
+# ==========================================================================================
+windshear_v STRUCT 4
+    type STRING WINDSHEAR
+    datatype STRARR 1
+        CFRADIAL:wind_vel_h_az,wind_vel_h_az,SAVEVOL_wind_vel_h_az    
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        SAVEVOL_windshear_v STRUCT 2
+            type  STRING SAVEVOL
+            voltype STRING windshear_v            
+            
+            
+# ==========================================================================================
+#               trajectory processing
+# ==========================================================================================    
+traj STRUCT 3
+   type     STRING TRAJ
+   datatype STRARR 1
+       CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
+   products STRUCT 4
+      TS_RANGE STRUCT 2
+         type  STRING TRAJ_PLOT
+         datatype STRING RANGE
+      TS_EL STRUCT 2
+         type  STRING TRAJ_PLOT
+         datatype STRING EL
+      TS_AZ STRUCT 2
+         type  STRING TRAJ_PLOT
+         datatype STRING AZ
+      TS_TEXT STRUCT 1
+         type  STRING TRAJ_TEXT
+
+reflectivity_traj STRUCT 3
+   type          STRING TRAJ_ATPLANE
+   datatype      STRING CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
+   products      STRUCT 1
+      AT_PLANE STRUCT 3
+         type  STRING   PLOT_AND_WRITE
+         ymin  FLOAT    0.0
+         ymax  FLOAT    50.0
+
+reflectivity_traj_az STRUCT 9
+   type          STRING TRAJ_ANTENNA_PATTERN
+   datatype      STRING CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
+   dssavename    STRING reflectivity_traj
+   antennaType   STRING AZIMUTH
+   use_nans      INT 0
+   nan_value     FLOAT 0.0
+   pattern_thres FLOAT 1.5
+   range_all     INT 0
+   products      STRUCT 1
+      AZIMUTH_ANTENNA STRUCT 1
+         type  STRING   PLOT_AND_WRITE
+#         ymin  FLOAT    0.0
+#         ymax  FLOAT    4.0
+
+rainrate_traj STRUCT 3
+   type          STRING TRAJ_ATPLANE
+   datatype      STRING PROC:RR
+   products      STRUCT 1
+      AT_PLANE STRUCT 3
+         type  STRING   PLOT_AND_WRITE
+         ymin  FLOAT    0.0
+         ymax  FLOAT    4.0
+
+rainrate_traj_az STRUCT 9
+   type          STRING TRAJ_ANTENNA_PATTERN
+   datatype      STRING PROC:RR
+   dssavename    STRING rainrate_traj
+   antennaType   STRING AZIMUTH
+   use_nans      INT 0
+   nan_value     FLOAT 0.0
+   pattern_thres FLOAT 1.5
+   RANGE_ALL     INT 0
+   products      STRUCT 1
+      AZIMUTH_ANTENNA STRUCT 3
+         type  STRING   PLOT_AND_WRITE
+         ymin  FLOAT    0.0
+         ymax  FLOAT    4.0
+
+windshear_traj STRUCT 3
+   type     STRING TRAJ_ATPLANE
+   datatype STRING PROC:windshear_v
+   products STRUCT 1
+      AT_PLANE STRUCT 1
+         type  STRING PLOT_AND_WRITE
+
+windshear_traj_az STRUCT 8
+   type     STRING TRAJ_ANTENNA_PATTERN
+   datatype STRING PROC:windshear_v
+   dssavename STRING windshear_traj
+   antennaType STRING AZIMUTH
+   use_nans   INT 0
+   nan_value  FLOAT 0.0
+   pattern_thres FLOAT 1.5
+   products STRUCT 1
+      AZIMUTH_ANTENNA STRUCT 3
+         type  STRING   PLOT_AND_WRITE
+         ymin  FLOAT    -20.0
+         ymax  FLOAT     20.0

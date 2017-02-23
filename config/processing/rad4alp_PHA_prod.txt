@@ -4,8 +4,23 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 1
-	dBZ
+dataSetList STRARR 16
+	l0:dBZ
+	l0:uPhiDP
+	l0:uRhoHV
+	l0:ZDR
+	l0:TEMP
+	l0:SNRh
+	l1:RhoHV
+	l2:echoID
+	l3:echoFilter
+	l7:echoFilter_Ah
+	l4:SNRFilter
+	l5:PhiDPc_smooth2w
+	l6:KDPc
+	l6:Att_ZPhi
+	l7:hydroclass
+	l8:RR_hydro
 
 # ==========================================================================================
 #                 raw data products
@@ -15,448 +30,268 @@ dBZ STRUCT 3
     datatype STRARR 1
        RAD4ALP:dBZ
     products STRUCT 1 	  
-      EL001_0 STRUCT 4
+      EL001_0 STRUCT 3
          type STRING PPI_IMAGE
          anglenr INT 2
          voltype STRING dBZ
-               
 
-#uPhiDP STRUCT 3
-#    type STRING RAW
-#    datatype STRARR 1
-#       RAD4ALP:uPhiDP
-#    products STRUCT 12 	  
-#      PAR_RHI_214_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING uPhiDP
-#         angle FLOAT 214.
-#         AziTol FLOAT 0.5      
-#      PAR_RHI_215_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING uPhiDP
-#         angle FLOAT 215.
-#         AziTol FLOAT 0.5      
-#      PAR_RHI_216_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING uPhiDP
-#         angle FLOAT 216.
-#         AziTol FLOAT 0.5
-#      PAR_RHI_217_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING uPhiDP
-#         angle FLOAT 217.
-#         AziTol FLOAT 0.5      
-#      PAR_RHI_218_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING uPhiDP
-#         angle FLOAT 218.
-#         AziTol FLOAT 0.5 
-#      PAR_CAPPI_1600 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING uPhiDP
-#         altitude FLOAT 1600         
-#      PAR_CAPPI_1700 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING uPhiDP
-#         altitude FLOAT 1700         
-#      PAR_CAPPI_1800 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING uPhiDP
-#         altitude FLOAT 1800         
-#      PAR_CAPPI_1900 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING uPhiDP
-#         altitude FLOAT 1900         
-#      PAR_CAPPI_2000 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING uPhiDP
-#         altitude FLOAT 2000         
-#      PAR_CAPPI_2100 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING uPhiDP
-#         altitude FLOAT 2100         
-#      PAR_CAPPI_2200 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING uPhiDP
-#         altitude FLOAT 2100
-#
-#
-#uRhoHV STRUCT 3
-#    type STRING RAW
-#    datatype STRARR 1
-#       RAD4ALP:uRhoHV
-#    products STRUCT 12 	  
-#      PAR_RHI_214_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING uRhoHV
-#         angle FLOAT 214.
-#         AziTol FLOAT 0.5      
-#      PAR_RHI_215_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING uRhoHV
-#         angle FLOAT 215.
-#         AziTol FLOAT 0.5      
-#      PAR_RHI_216_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING uRhoHV
-#         angle FLOAT 216.
-#         AziTol FLOAT 0.5
-#      PAR_RHI_217_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING uRhoHV
-#         angle FLOAT 217.
-#         AziTol FLOAT 0.5      
-#      PAR_RHI_218_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING uRhoHV
-#         angle FLOAT 218.
-#         AziTol FLOAT 0.5 
-#      PAR_CAPPI_1600 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING uRhoHV
-#         altitude FLOAT 1600         
-#      PAR_CAPPI_1700 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING uRhoHV
-#         altitude FLOAT 1700         
-#      PAR_CAPPI_1800 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING uRhoHV
-#         altitude FLOAT 1800         
-#      PAR_CAPPI_1900 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING uRhoHV
-#         altitude FLOAT 1900         
-#      PAR_CAPPI_2000 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING uRhoHV
-#         altitude FLOAT 2000         
-#      PAR_CAPPI_2100 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING uRhoHV
-#         altitude FLOAT 2100         
-#      PAR_CAPPI_2200 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING uRhoHV
-#         altitude FLOAT 2100
-#
-#ZDR STRUCT 3
-#    type STRING RAW
-#    datatype STRARR 1
-#       RAD4ALP:ZDR
-#    products STRUCT 12 	  
-#      PAR_RHI_214_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING ZDR
-#         angle FLOAT 214.
-#         AziTol FLOAT 0.5      
-#      PAR_RHI_215_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING ZDR
-#         angle FLOAT 215.
-#         AziTol FLOAT 0.5      
-#      PAR_RHI_216_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING ZDR
-#         angle FLOAT 216.
-#         AziTol FLOAT 0.5
-#      PAR_RHI_217_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING ZDR
-#         angle FLOAT 217.
-#         AziTol FLOAT 0.5      
-#      PAR_RHI_218_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING ZDR
-#         angle FLOAT 218.
-#         AziTol FLOAT 0.5 
-#      PAR_CAPPI_1600 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING ZDR
-#         altitude FLOAT 1600         
-#      PAR_CAPPI_1700 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING ZDR
-#         altitude FLOAT 1700         
-#      PAR_CAPPI_1800 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING ZDR
-#         altitude FLOAT 1800         
-#      PAR_CAPPI_1900 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING ZDR
-#         altitude FLOAT 1900         
-#      PAR_CAPPI_2000 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING ZDR
-#         altitude FLOAT 2000         
-#      PAR_CAPPI_2100 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING ZDR
-#         altitude FLOAT 2100         
-#      PAR_CAPPI_2200 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING ZDR
-#         altitude FLOAT 2100         
-#
-#
-#
-#
-#
-#
-## ==========================================================================================
-##                 secondary moments products
-## ==========================================================================================
-#SNRh STRUCT 4
-#    type STRING SNR
-#    datatype STRARR 2
-#        RAD4ALP:dBZ
-#        RAD4ALP:Nh
-#    output_type STRING SNRh
-#    MAKE_GLOBAL INT 1
-#	
-#	
-#RhoHV STRUCT 3
-#    type STRING RHOHV_CORRECTION
-#    datatype STRARR 5
-#        RAD4ALP:uRhoHV
-#        RAD4ALP:ZDR
-#        RAD4ALP:Nh
-#        RAD4ALP:Nv
-#        PROC:SNRh
-#    MAKE_GLOBAL INT 1
-#
-#
-## ==========================================================================================
-##                 echo identification
-## ==========================================================================================
-#echoID STRUCT 4
-#   type STRING SAN
-#   datatype STRARR 4      
-#      RAD4ALP:dBZ
-#      RAD4ALP:ZDR
-#      RAD4ALP:uPhiDP
-#      PROC:RhoHV
-#   MAKE_GLOBAL INT 1
-#   products STRUCT 1      
-# 	  SAVEVOL_echoID STRUCT 2
-#         type   STRING SAVEVOL
-#         voltype STRING echoID
-#
-#
-## ==========================================================================================
-##                 clutter and noise suppression
-## ==========================================================================================
-## echo type 3 : precip, 2 : clutter, 1 : noise
-#echoFilter STRUCT 5
-#   type STRING ECHO_FILTER
-#   datatype STRARR 5
-#      PROC:echoID
-#      RAD4ALP:dBZ
-#	  RAD4ALP:ZDR
-#	  PROC:RhoHV
-#      RAD4ALP:uPhiDP
-#   echo_type INT 3
-#   MAKE_GLOBAL INT 1
-#   products STRUCT 3      
-# 	  SAVEVOL_dBZc STRUCT 2
-#         type   STRING SAVEVOL
-#         voltype STRING dBZc
-#      SAVEVOL_ZDRc STRUCT 2
-#         type   STRING SAVEVOL
-#         voltype STRING ZDRc
-#      SAVEVOL_RhoHVc STRUCT 2
-#         type   STRING SAVEVOL
-#         voltype STRING RhoHVc
-#   
-#   
-## echo type 3 : precip, 2 : clutter, 1 : noise
-#echoFilter2 STRUCT 4
-#   type STRING ECHO_FILTER
-#   datatype STRARR 2
-#      PROC:echoID      
-#	  PROC:Ah
-#   echo_type INT 3
-#   MAKE_GLOBAL INT 1
-#
-#
-## ==========================================================================================
-##                 filtration based on SNR
-## ==========================================================================================
-#SNRFilter STRUCT 5
-#   type STRING SNR_FILTER
-#   datatype STRARR 2
-#      PROC:SNRh
-#      PROC:PhiDPc
-#   SNRmin FLOAT 10.
-#   MAKE_GLOBAL INT 1
-#   products STRUCT 1      
-# 	  SAVEVOL_PhiDPc STRUCT 2
-#         type   STRING SAVEVOL
-#         voltype STRING PhiDPc
-#   
-#
-## ==========================================================================================
-##                 PHIDP processing
-## ==========================================================================================   
-#PhiDPc_smooth2w STRUCT 11
-#    type STRING PHIDP_SMOOTH_2W
-#    datatype STRARR 2
-#        PROC:PhiDPc
-#        PROC:dBZc
-#    rmin FLOAT 1000.
-#    rmax FLOAT 50000.
-#    rcell FLOAT 1000.
-#    Zmin FLOAT 20.
-#    Zmax FLOAT 40.
-#    rwinds FLOAT 1000.
-#    rwindl FLOAT 3000.
-#    Zthr FLOAT 40.    
-#    MAKE_GLOBAL INT 1
-#	
-#	
-## ==========================================================================================
-##                 KDP processing
-## ==========================================================================================   
-#KDPc STRUCT 6
-#    type STRING KDP_LEASTSQUARE_2W
-#    datatype STRARR 2
-#        PROC:PhiDPc
-#        PROC:dBZc
-#    rwinds FLOAT 1000.
-#    rwindl FLOAT 3000.
-#    Zthr FLOAT 40.    
-#    MAKE_GLOBAL INT 1
-#
-#
-## ==========================================================================================
-##                 Attenuation
-## ==========================================================================================
-#Att_ZPhi STRUCT 4
-#	type STRING ATTENUATION
-#	datatype STRARR 4
-#        PROC:dBZc
-#        PROC:ZDRc
-#        PROC:PhiDPc
-#        RAD4ALPCOSMO:TEMP    
-#    MAKE_GLOBAL INT 1
-#    ATT_METHOD STRING ZPhi
-#	
-#	
-## ==========================================================================================
-##                 hydrometeor classification products
-## ==========================================================================================
-#hydroclass STRUCT 6
-#   type STRING HYDROCLASS
-#   datatype STRARR 5
-#      PROC:dBZc
-#	  PROC:ZDRc
-#	  PROC:RhoHVc
-#	  PROC:KDPc
-#	  RAD4ALPCOSMO:TEMP
-#   HYDRO_METHOD STRING SEMISUPERVISED
-#   RADARCENTROIDS STRING A
-#   MAKE_GLOBAL INT 1
-#   products STRUCT 3
-# 	  CAPPI_2250 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING hydro
-# 		 altitude FLOAT 2250
-#      RHI_040_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING hydro
-#         angle FLOAT 40.
-#         AziTol FLOAT 0.5
-#      RHI_220_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING hydro
-#         angle FLOAT 220.
-#         AziTol FLOAT 0.5
-#
-#
-## ==========================================================================================
-##                 rainfall rate products
-## ==========================================================================================         
-#RR_hydro STRUCT 4
-#    type STRING RAINRATE
-#    datatype STRARR 3
-#       PROC:dBZc
-#       PROC:Ahc
-#       PROC:hydro
-#    RR_METHOD STRING hydro
-#    products STRUCT 2
-# 	  CAPPI_2250 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING RR
-# 		 altitude FLOAT 2250
-#      RHI_040_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING RR
-#         angle FLOAT 40.
-#         AziTol FLOAT 0.5
-#      RHI_220_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING RR
-#         angle FLOAT 220.
-#         AziTol FLOAT 0.5
-#
-#RR_Z STRUCT 4
-#    type STRING RAINRATE
-#    datatype STRARR 1
-#      RAD4ALP:dBZ
-#    RR_METHOD STRING Z
-#    products STRUCT 12 	  
-#      PAR_RHI_214_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING RR
-#         angle FLOAT 214.
-#         AziTol FLOAT 0.5      
-#      PAR_RHI_215_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING RR
-#         angle FLOAT 215.
-#         AziTol FLOAT 0.5      
-#      PAR_RHI_216_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING RR
-#         angle FLOAT 216.
-#         AziTol FLOAT 0.5
-#      PAR_RHI_217_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING RR
-#         angle FLOAT 217.
-#         AziTol FLOAT 0.5      
-#      PAR_RHI_218_0 STRUCT 4
-#         type STRING PSEUDORHI_IMAGE
-#         voltype STRING RR
-#         angle FLOAT 218.
-#         AziTol FLOAT 0.5 
-#      PAR_CAPPI_1600 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING RR
-#          altitude FLOAT 1600         
-#      PAR_CAPPI_1700 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING RR
-#          altitude FLOAT 1700         
-#      PAR_CAPPI_1800 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING RR
-#         altitude FLOAT 1800         
-#      PAR_CAPPI_1900 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING RR
-#         altitude FLOAT 1900         
-#      PAR_CAPPI_2000 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING RR
-#         altitude FLOAT 2000         
-#      PAR_CAPPI_2100 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING RR
-#         altitude FLOAT 2100         
-#      PAR_CAPPI_2200 STRUCT 3
-#         type   STRING CAPPI_IMAGE
-#         voltype STRING RR
-#         altitude FLOAT 2200
+uPhiDP STRUCT 3
+    type STRING RAW
+    datatype STRARR 1
+       RAD4ALP:uPhiDP
+    products STRUCT 1 	  
+      EL001_0 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING uPhiDP
+
+uRhoHV STRUCT 3
+    type STRING RAW
+    datatype STRARR 1
+       RAD4ALP:uRhoHV
+    products STRUCT 1 	  
+      EL001_0 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING uRhoHV
+
+ZDR STRUCT 3
+    type STRING RAW
+    datatype STRARR 1
+       RAD4ALP:ZDR
+    products STRUCT 1 	  
+      EL001_0 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING ZDR
 		 
+TEMP STRUCT 3
+    type STRING RAW
+    datatype STRARR 1
+       RAD4ALPCOSMO:TEMP
+    products STRUCT 2 	  
+      RHI_040_0 STRUCT 4
+         type STRING PSEUDORHI_IMAGE
+         voltype STRING TEMP
+         angle FLOAT 40.
+         AziTol FLOAT 0.5
+      RHI_220_0 STRUCT 4
+         type STRING PSEUDORHI_IMAGE
+         voltype STRING TEMP
+         angle FLOAT 220.
+         AziTol FLOAT 0.5
+
+		 
+# ==========================================================================================
+#                 secondary moments products
+# ==========================================================================================
+SNRh STRUCT 5
+    type STRING SNR
+    datatype STRARR 2
+        RAD4ALP:dBZ
+        RAD4ALP:Nh
+    output_type STRING SNRh
+    MAKE_GLOBAL INT 1
+    products STRUCT 1 	  
+      EL001_0 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING SNRh
+	
+RhoHV STRUCT 4
+    type STRING RHOHV_CORRECTION
+    datatype STRARR 5
+        RAD4ALP:uRhoHV
+        RAD4ALP:ZDR
+        RAD4ALP:Nh
+        RAD4ALP:Nv
+        PROC:SNRh
+    MAKE_GLOBAL INT 1
+	products STRUCT 1 	  
+      EL001_0 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING RhoHV
+
+
+# ==========================================================================================
+#                 echo identification
+# ==========================================================================================
+echoID STRUCT 4
+   type STRING SAN
+   datatype STRARR 4      
+      RAD4ALP:dBZ
+      RAD4ALP:ZDR
+      RAD4ALP:uPhiDP
+      PROC:RhoHV
+   MAKE_GLOBAL INT 1
+   products STRUCT 1 	  
+      EL001_0_echoID STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING echoID     
+
+
+# ==========================================================================================
+#                 clutter and noise suppression
+# ==========================================================================================
+# echo type 3 : precip, 2 : clutter, 1 : noise
+echoFilter STRUCT 5
+   type STRING ECHO_FILTER
+   datatype STRARR 5
+      PROC:echoID
+      RAD4ALP:dBZ
+	  RAD4ALP:ZDR
+	  PROC:RhoHV
+      RAD4ALP:uPhiDP
+   echo_type INT 3
+   MAKE_GLOBAL INT 1
+   products STRUCT 1 	  
+      EL001_0_RhoHV STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING RhoHVc        
+   
+# echo type 3 : precip, 2 : clutter, 1 : noise
+echoFilter_Ah STRUCT 5
+   type STRING ECHO_FILTER
+   datatype STRARR 2
+      PROC:echoID      
+	  PROC:Ah
+   echo_type INT 3
+   MAKE_GLOBAL INT 1
+   products STRUCT 1 	  
+      EL001_0 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING Ahc
+
+
+# ==========================================================================================
+#                 filtration based on SNR
+# ==========================================================================================
+SNRFilter STRUCT 4
+   type STRING SNR_FILTER
+   datatype STRARR 2
+      PROC:SNRh
+      PROC:PhiDPc
+   SNRmin FLOAT 10.
+   MAKE_GLOBAL INT 1   
+   
+
+# ==========================================================================================
+#                 PHIDP processing
+# ==========================================================================================   
+PhiDPc_smooth2w STRUCT 12
+    type STRING PHIDP_SMOOTH_2W
+    datatype STRARR 2
+        PROC:PhiDPc
+        PROC:dBZc
+    rmin FLOAT 1000.
+    rmax FLOAT 50000.
+    rcell FLOAT 1000.
+    Zmin FLOAT 20.
+    Zmax FLOAT 40.
+    rwinds FLOAT 1000.
+    rwindl FLOAT 3000.
+    Zthr FLOAT 40.    
+    MAKE_GLOBAL INT 1
+	products STRUCT 1 	  
+      EL001_0 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING PhiDPc
+	
+	
+# ==========================================================================================
+#                 KDP processing
+# ==========================================================================================   
+KDPc STRUCT 7
+    type STRING KDP_LEASTSQUARE_2W
+    datatype STRARR 2
+        PROC:PhiDPc
+        PROC:dBZc
+    rwinds FLOAT 1000.
+    rwindl FLOAT 3000.
+    Zthr FLOAT 40.    
+    MAKE_GLOBAL INT 1
+	products STRUCT 1 	  
+      EL001_0 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING KDPc
+
+
+# ==========================================================================================
+#                 Attenuation
+# ==========================================================================================
+Att_ZPhi STRUCT 5
+	type STRING ATTENUATION
+	datatype STRARR 4
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:PhiDPc
+        RAD4ALPCOSMO:TEMP    
+    MAKE_GLOBAL INT 1
+    ATT_METHOD STRING ZPhi
+	products STRUCT 2 	  
+      EL001_0_dBZc STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING dBZc
+      EL001_0_ZDRc STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING ZDRc
+	
+	
+# ==========================================================================================
+#                 hydrometeor classification products
+# ==========================================================================================
+hydroclass STRUCT 6
+   type STRING HYDROCLASS
+   datatype STRARR 5
+      PROC:dBZc
+	  PROC:ZDRc
+	  PROC:RhoHVc
+	  PROC:KDPc
+	  RAD4ALPCOSMO:TEMP
+   HYDRO_METHOD STRING SEMISUPERVISED
+   RADARCENTROIDS STRING A
+   MAKE_GLOBAL INT 1
+   products STRUCT 3
+ 	  EL001_0 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING hydro
+      RHI_040_0 STRUCT 4
+         type STRING PSEUDORHI_IMAGE
+         voltype STRING hydro
+         angle FLOAT 40.
+         AziTol FLOAT 0.5
+      RHI_220_0 STRUCT 4
+         type STRING PSEUDORHI_IMAGE
+         voltype STRING hydro
+         angle FLOAT 220.
+         AziTol FLOAT 0.5
+
+
+# ==========================================================================================
+#                 rainfall rate products
+# ==========================================================================================         
+RR_hydro STRUCT 4
+    type STRING RAINRATE
+    datatype STRARR 3
+       PROC:dBZc
+       PROC:Ahc
+       PROC:hydro
+    RR_METHOD STRING hydro
+    products STRUCT 2
+ 	  EL001_0 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING RR
+	  CAPPI_2000 STRUCT 3
+         type   STRING CAPPI_IMAGE
+         voltype STRING RR
+ 		 altitude FLOAT 2000

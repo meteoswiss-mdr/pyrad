@@ -4,7 +4,7 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 29
+dataSetList STRARR 30
     l0:dBmu
     l0:dBmvu
     l1:sun_hits
@@ -24,6 +24,7 @@ dataSetList STRARR 29
     l8:rgPIL_RR_hydro
     l8:rgCHZ_RR_hydro
     l7:dBZ_avg
+    l7:dBZv_avg
     l7:PhiDP_avg
     l7:flag_avg
     l4:PhiDP0_estimation
@@ -196,9 +197,10 @@ echoID STRUCT 3
 # echo type 3 : precip, 2 : clutter, 1 : noise
 echoFilter STRUCT 4
     type STRING ECHO_FILTER
-    datatype STRARR 6
+    datatype STRARR 7
         PROC:echoID
         dBZ
+        dBZv
         ZDR
         RhoHV
         PhiDP
@@ -220,9 +222,10 @@ echoFilter2 STRUCT 4
 # ==========================================================================================
 visibilityFilter STRUCT 4
     type STRING VIS_FILTER
-    datatype STRARR 5
+    datatype STRARR 6
         DEM:VIS
         PROC:dBZc
+        PROC:dBZvc
         PROC:ZDRc
         PROC:PhiDPc
         PROC:RhoHVc
@@ -498,6 +501,18 @@ dBZ_avg STRUCT 6
         SAVEVOL STRUCT 2
             type  STRING SAVEVOL
             voltype STRING dBZc
+            
+dBZv_avg STRUCT 6
+    type STRING TIME_AVG
+    datatype STRARR 1
+        PROC:dBZvc
+    start_average FLOAT 0.
+    period FLOAT 3600.
+    lin_trans INT 1
+    products STRUCT 1
+        SAVEVOL STRUCT 2
+            type  STRING SAVEVOL
+            voltype STRING dBZvc
 
 PhiDP_avg STRUCT 5
     type STRING WEIGHTED_TIME_AVG

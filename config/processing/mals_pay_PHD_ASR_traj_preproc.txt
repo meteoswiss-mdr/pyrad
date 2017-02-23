@@ -1,6 +1,6 @@
 # Name of this configuration:
 # Will be used in product generation save path
-name STRING mals_emm_rw22_traj
+name STRING mals_pay_PHD_ASR_traj
 
 # ---------------------------------------------------------
 #  Raw data pathes
@@ -9,22 +9,27 @@ name STRING mals_emm_rw22_traj
 # Base path of the raw data.
 # Note: Must have a trailing '/'
 # ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
-datapath STRING /data/DX50/rawdata/  # zueub222
+datapath STRING /data/rad4alp/rawdata/
 
 # Base path for cosmo data
 cosmopath STRING /data/cosmo/
+    
+# ------------------------------------------------------------
+# Auxiliary data pathes
+# ------------------------------------------------------------
+# Base path for swissmetnet data
+smnpath STRING /data/meteo_products/SMNRetrieve/
 
-# Base path for dem data
-dempath STRING /data/DEM/DX50_EMM/
-
+# Base path for disdrometer data
+disdropath STRING /data/scattering/dsd_ts/
 
 # --------------------------------------------
 # Output data
-# -----------------------------------------------
+# --------------------------------------------
+saveimgbasepath STRING /data/pyrad_products/
 saveimg         INT 1
-saveimgbasepath STRING /data/pyrad_examples/
-imgformat       STRING png
-
+# Supported formats: eps, jpeg, jpg, pdf, pgf, png, ps, raw, rgba, svg, svgz, tif, tiff
+imgformat STRING png	
 
 # --------------------------------------------------------
 # configuration files pathes
@@ -34,8 +39,8 @@ imgformat       STRING png
 configpath STRING $HOME/pyrad/config/
 
 # Configuration of the radar location and approach direction
-locationConfigFile STRING $HOME/pyrad/config/processing/mals_emm_rw22_loc.txt
+locationConfigFile STRING $HOME/pyrad/config/processing/mals_pay_PHD_ASR_traj_loc.txt
 
 # Configuration of the product generation
-productConfigFile STRING $HOME/pyrad/config/processing/mals_emm_rw22_traj_prod.txt
+productConfigFile STRING $HOME/pyrad/config/processing/mals_pay_PHD_ASR_traj_preproc_prod.txt
 

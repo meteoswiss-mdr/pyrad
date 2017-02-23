@@ -21,6 +21,18 @@ CosmoForecasted INT 7
 # antenna gain [dB]
 AntennaGain FLOAT 42.2
 
+# receiver losses from antenna feed to reference point [dB]
+lrxh FLOAT 1.84
+lrxv FLOAT 1.97
+
+# dry radome losses [dB]
+lradomeh FLOAT 0.3
+lradomev FLOAT 0.3
+
+# matched filter losses [dB]
+mflossh FLOAT 1.
+mflossv FLOAT 1.
+
 # Image config
 ppiImageConfig STRUCT 6
    xsize      FLOAT   8.      # image size [inches] (default dots per inch (dpi):72)
