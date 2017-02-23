@@ -11,6 +11,7 @@ Functions for echo classification and filtering
     process_echo_filter
     process_filter_snr
     process_filter_visibility
+    process_outlier_filter
     process_hydroclass
 
 """
@@ -64,14 +65,10 @@ def process_echo_id(procstatus, dscfg, radar_list=None):
             refl_field = 'unfiltered_reflectivity'
         if datatype == 'ZDR':
             zdr_field = 'differential_reflectivity'
-        if datatype == 'ZDRc':
-            zdr_field = 'corrected_differential_reflectivity'
         if datatype == 'ZDRu':
             zdr_field = 'unfiltered_differential_reflectivity'
         if datatype == 'RhoHV':
             rhv_field = 'cross_correlation_ratio'
-        if datatype == 'uRhoHV':
-            rhv_field = 'uncorrected_cross_correlation_ratio'
         if datatype == 'uPhiDP':
             phi_field = 'uncorrected_differential_phase'
 
@@ -377,6 +374,134 @@ def process_filter_visibility(procstatus, dscfg, radar_list=None):
 
     if not new_dataset.fields:
         return None, None
+
+    return new_dataset, ind_rad
+
+
+def process_outlier_filter(procstatus, dscfg, radar_list=None):
+    """
+    filters out gates which are outliers respect to the surrounding
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        threshold : float. Dataset keyword
+            The distance between the value of the examined range gate and the
+            median of the surrounding gates to consider the gate an outlier
+        nb : int. Dataset keyword
+            The number of neighbours (to one side) to analyse. i.e. 2 would
+            correspond to 24 gates
+        nb_min : int. Dataset keyword
+            Minimum number of neighbouring gates to consider the examined gate
+            valid
+        percentile_min, percentile_max : float. Dataset keyword
+            gates below (above) these percentiles (computed over the sweep) are
+            considered potential outliers and further examined
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+        dscfg['datatype'][0])
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    field_name = get_fieldname_pyart(datatype)
+    if field_name not in radar.fields:
+        warn('Unable to perform outlier removal. No valid data')
+        return None, None
+
+    threshold = 10.
+    if 'threshold' in dscfg:
+        threshold = dscfg['threshold']
+    nb = 2
+    if 'nb' in dscfg:
+        nb = dscfg['nb']
+    nb_min = 3
+    if 'nb_min' in dscfg:
+        nb_min = dscfg['nb_min']
+    percentile_min = 5.
+    if 'percentile_min' in dscfg:
+        percentile_min = dscfg['percentile_min']
+    percentile_max = 95.
+    if 'percentile_max' in dscfg:
+        percentile_max = dscfg['percentile_max']
+
+    field = radar.fields[field_name]
+    field_out = deepcopy(field)
+    for sweep in range(radar.nsweeps):
+        # find gates suspected to be outliers
+        sweep_start = radar.sweep_start_ray_index['data'][sweep]
+        sweep_end = radar.sweep_end_ray_index['data'][sweep]
+        nrays_sweep = radar.rays_per_sweep['data'][sweep]
+        data_sweep = field['data'][sweep_start:sweep_end+1, :]
+        percent_vals = np.nanpercentile(
+            data_sweep.filled(fill_value=np.nan),
+            (percentile_min, percentile_max))
+        ind_ray, ind_rng = np.ma.where(
+            np.ma.logical_or(
+                data_sweep < percent_vals[0], data_sweep > percent_vals[1]))
+
+        for gate in range(len(ind_ray)):
+            # find neighbours of suspected outlier gate
+            data_cube = []
+            for ray_nb in range(-nb, nb+1):
+                for rng_nb in range(-nb, nb+1):
+                    if ray_nb == 0 and rng_nb == 0:
+                        continue
+                    if ((ind_ray[gate]+ray_nb >= 0) and
+                            (ind_ray[gate]+ray_nb < nrays_sweep) and
+                            (ind_rng[gate]+rng_nb >= 0) and
+                            (ind_rng[gate]+rng_nb < radar.ngates)):
+                        if (data_sweep[ind_ray[gate]+ray_nb,
+                                       ind_rng[gate]+rng_nb] is not
+                                np.ma.masked):
+                            data_cube.append(
+                                data_sweep[ind_ray[gate]+ray_nb,
+                                           ind_rng[gate]+rng_nb])
+
+            # remove data far from median of neighbours or with not enough
+            # valid neighbours
+            if len(data_cube) < nb_min:
+                field_out['data'][
+                    sweep_start+ind_ray[gate], ind_rng[gate]] = np.ma.masked
+            elif abs(np.ma.median(data_cube)-data_sweep[ind_ray[gate],
+                     ind_rng[gate]]) > threshold:
+                field_out['data'][
+                    sweep_start+ind_ray[gate], ind_rng[gate]] = np.ma.masked
+
+    if field_name.startswith('corrected_'):
+        new_field_name = field_name
+    elif field_name.startswith('uncorrected_'):
+        new_field_name = field_name.replace(
+            'uncorrected_', 'corrected_', 1)
+    else:
+        new_field_name = 'corrected_'+field_name
+
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.add_field(new_field_name, field_out)
 
     return new_dataset, ind_rad
 

@@ -12,17 +12,20 @@ Functions for reading auxiliary data
     read_rad4alp_vis
     read_colocated_gates
     read_colocated_data
+    read_colocated_data_time_avg
     read_timeseries
     read_monitoring_ts
+    read_intercomp_scores_ts
     read_sun_hits_multiple_days
     read_sun_hits
     read_sun_retrieval
     read_solar_flux
     get_sensor_data
     read_smn
+    read_smn2
     read_disdro_scattering
     read_selfconsistency
-
+    read_antenna_pattern
 """
 
 import os
@@ -287,6 +290,71 @@ def read_colocated_data(fname):
         return None, None, None, None, None, None, None, None
 
 
+def read_colocated_data_time_avg(fname):
+    """
+    Reads a csv files containing time averaged colocated data
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    rad1_ele , rad1_azi, rad1_rng, rad1_val, rad2_ele, rad2_azi, rad2_rng,
+    rad2_val : tupple
+        A tupple with the data read. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            nrows = sum(1 for row in reader)
+            rad1_ele = np.empty(nrows, dtype=float)
+            rad1_azi = np.empty(nrows, dtype=float)
+            rad1_rng = np.empty(nrows, dtype=float)
+            rad1_dBZavg = np.empty(nrows, dtype=float)
+            rad1_PhiDPavg = np.empty(nrows, dtype=float)
+            rad1_Flagavg = np.empty(nrows, dtype=float)
+            rad2_ele = np.empty(nrows, dtype=float)
+            rad2_azi = np.empty(nrows, dtype=float)
+            rad2_rng = np.empty(nrows, dtype=float)
+            rad2_dBZavg = np.empty(nrows, dtype=float)
+            rad2_PhiDPavg = np.empty(nrows, dtype=float)
+            rad2_Flagavg = np.empty(nrows, dtype=float)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            i = 0
+            for row in reader:
+                rad1_ele[i] = float(row['rad1_ele'])
+                rad1_azi[i] = float(row['rad1_azi'])
+                rad1_rng[i] = float(row['rad1_rng'])
+                rad1_dBZavg[i] = float(row['rad1_dBZavg'])
+                rad1_PhiDPavg[i] = float(row['rad1_PhiDPavg'])
+                rad1_Flagavg[i] = float(row['rad1_Flagavg'])
+                rad2_ele[i] = float(row['rad2_ele'])
+                rad2_azi[i] = float(row['rad2_azi'])
+                rad2_rng[i] = float(row['rad2_rng'])
+                rad2_dBZavg[i] = float(row['rad2_dBZavg'])
+                rad2_PhiDPavg[i] = float(row['rad2_PhiDPavg'])
+                rad2_Flagavg[i] = float(row['rad2_Flagavg'])
+                i += 1
+
+            return (rad1_ele, rad1_azi, rad1_rng,
+                    rad1_dBZavg, rad1_PhiDPavg, rad1_Flagavg,
+                    rad2_ele, rad2_azi, rad2_rng,
+                    rad2_dBZavg, rad2_PhiDPavg, rad2_Flagavg)
+    except EnvironmentError:
+        warn('Unable to read file '+fname)
+        return (None, None, None, None, None, None, None, None, None, None,
+                None, None)
+
+
 def read_timeseries(fname):
     """
     Reads a time series contained in a csv file
@@ -384,6 +452,82 @@ def read_monitoring_ts(fname):
     except EnvironmentError:
         warn('Unable to read file '+fname)
         return None, None
+
+
+def read_intercomp_scores_ts(fname):
+    """
+    Reads a radar intercomparison scores csv file
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    date_vec, np_vec, meanbias_vec, medianbias_vec, modebias_vec, corr_vec,
+    slope_vec, intercep_vec, intercep_slope1_vec : tupple
+        The read data. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            nrows = sum(1 for row in reader)
+
+            np_vec = np.zeros(nrows, dtype=int)
+            meanbias_vec = np.ma.empty(nrows, dtype=float)
+            medianbias_vec = np.ma.empty(nrows, dtype=float)
+            modebias_vec = np.ma.empty(nrows, dtype=float)
+            corr_vec = np.ma.empty(nrows, dtype=float)
+            slope_vec = np.ma.empty(nrows, dtype=float)
+            intercep_vec = np.ma.empty(nrows, dtype=float)
+            intercep_slope1_vec = np.ma.empty(nrows, dtype=float)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#')
+                )
+            i = 0
+            date_vec = list()
+            for row in reader:
+                date_vec.append(datetime.datetime.strptime(
+                    row['date'], '%Y%m%d%H%M%S'))
+                np_vec[i] = int(row['NP'])
+                meanbias_vec[i] = float(row['mean_bias'])
+                medianbias_vec[i] = float(row['median_bias'])
+                modebias_vec[i] = float(row['mode_bias'])
+                corr_vec[i] = float(row['corr'])
+                slope_vec[i] = float(row['slope_of_linear_regression'])
+                intercep_vec[i] = float(row['intercep_of_linear_regression'])
+                intercep_slope1_vec[i] = float(
+                    row['intercep_of_linear_regression_of_slope_1'])
+                i += 1
+
+            meanbias_vec = np.ma.masked_values(
+                meanbias_vec, get_fillvalue())
+            medianbias_vec = np.ma.masked_values(
+                medianbias_vec, get_fillvalue())
+            modebias_vec = np.ma.masked_values(
+                modebias_vec, get_fillvalue())
+            corr_vec = np.ma.masked_values(
+                corr_vec, get_fillvalue())
+            slope_vec = np.ma.masked_values(
+                slope_vec, get_fillvalue())
+            intercep_vec = np.ma.masked_values(
+                intercep_vec, get_fillvalue())
+            intercep_slope1_vec = np.ma.masked_values(
+                intercep_slope1_vec, get_fillvalue())
+
+            return (date_vec, np_vec, meanbias_vec, medianbias_vec,
+                    modebias_vec, corr_vec, slope_vec, intercep_vec,
+                    intercep_slope1_vec)
+    except EnvironmentError:
+        warn('Unable to read file '+fname)
+        return None, None, None, None, None, None, None, None, None
 
 
 def read_sun_hits_multiple_days(cfg, time_ref, nfiles=1):
@@ -873,6 +1017,63 @@ def read_smn(fname):
         return None, None, None, None, None, None, None, None
 
 
+def read_smn2(fname):
+    """
+    Reads SwissMetNet data contained in a csv file with format
+    station,time,value
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    id, date , value : tupple
+        The read values
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # skip the first 2 lines
+            next(csvfile)
+            next(csvfile)
+
+            # first count the lines
+            reader = csv.DictReader(
+                csvfile, fieldnames=['StationID', 'DateTime', 'Value'])
+            nrows = sum(1 for row in reader)
+
+            if nrows == 0:
+                warn('Empty file '+fname)
+                return None, None, None
+            id = np.ma.empty(nrows, dtype=int)
+            value = np.ma.empty(nrows, dtype=float)
+
+            # now read the data
+            csvfile.seek(0)
+
+            # skip the first 2 lines
+            next(csvfile)
+            next(csvfile)
+
+            reader = csv.DictReader(
+                csvfile, fieldnames=['StationID', 'DateTime', 'Value'])
+            i = 0
+            date = list()
+            for row in reader:
+                id[i] = float(row['StationID'])
+                date.append(datetime.datetime.strptime(
+                    row['DateTime'], '%Y%m%d%H%M%S'))
+                value[i] = float(row['Value'])
+                i += 1
+
+            return id, date, value
+    except EnvironmentError:
+        warn('Unable to read file '+fname)
+        return None, None, None
+
+
 def read_disdro_scattering(fname):
     """
     Reads scattering parameters computed from disdrometer data contained in a
@@ -885,7 +1086,8 @@ def read_disdro_scattering(fname):
 
     Returns
     -------
-    id, date , pressure, temp, rh, precip, wspeed, wdir : arrays
+    date, preciptype, lwc, rr, zh, zv, zdr, ldr, ah, av, adiff, kdp, deltaco,
+    rhohv : tupple
         The read values
 
     """
@@ -994,3 +1196,63 @@ def read_selfconsistency(fname):
     except EnvironmentError:
         warn('Unable to read file '+fname)
         return None
+
+
+def read_antenna_pattern(fname, linear=False, twoway=False):
+    """
+    Read antenna pattern from file
+
+    Parameters
+    ----------
+    fname : str
+        path of the antenna pattern file
+    linear : boolean
+        if true the antenna pattern is given in linear units
+    twoway : boolean
+        if true the attenuation is two-way
+
+    Returns
+    -------
+    pattern : dict
+        dictionary with the fields angle and attenuation
+
+    """
+
+    try:
+        pfile = open(fname, "r")
+    except:
+        raise Exception("ERROR: Could not find|open antenna file '" +
+                        fname+"'")
+
+    # Get array length
+    linenum = 0
+    for line in pfile:
+        if (line.startswith("# CRC:")):
+            break
+        linenum += 1
+
+    pattern = {
+        'angle': np.empty(linenum),
+        'attenuation': np.empty(linenum)
+    }
+
+    pfile.seek(0)
+    cnt = 0
+    for line in pfile:
+        if (line.startswith("# CRC:")):
+            break
+        line = line.strip()
+        fields = line.split(',')
+        pattern['angle'][cnt] = float(fields[0])
+        pattern['attenuation'][cnt] = float(fields[1])
+        cnt += 1
+
+    pfile.close()
+
+    if (twoway):
+        pattern['attenuation'] = 2. * pattern['attenuation']
+
+    if (linear):
+        pattern['attenuation'] = 10.**(pattern['attenuation']/10.)
+
+    return pattern

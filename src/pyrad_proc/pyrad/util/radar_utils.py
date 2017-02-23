@@ -7,6 +7,8 @@ Miscellaneous functions dealing with radar data
 .. autosummary::
     :toctree: generated/
 
+    time_series_statistics
+    join_time_series
     get_range_bins_to_avg
     find_ray_index
     find_rng_index
@@ -29,8 +31,88 @@ from copy import deepcopy
 import datetime
 
 import numpy as np
+import pandas as pd
+import scipy
 
 import pyart
+
+
+def time_series_statistics(t_in_vec, val_in_vec, avg_time=3600,
+                           base_time=1800, method='mean', dropnan=False):
+    """
+    Computes statistics over a time-averaged series
+
+    Parameters
+    ----------
+    t_in_vec : datetime array
+        the input date and time array
+    val_in_vec : float array
+        the input values array
+    avg_time : int
+        averaging time [s]
+    base_time : int
+        base time [s]
+    method : str
+        statistical method
+    dropnan : boolean
+        if True remove NaN from the time series
+
+    Returns
+    -------
+    t_out_vec : datetime array
+        the output date and time array
+    val_out_vec : float array
+        the output values array
+
+    """
+    df_in = pd.DataFrame(data=val_in_vec, index=pd.DatetimeIndex(t_in_vec))
+    df_out = getattr(df_in.resample(str(avg_time)+'S', closed='right',
+                     label='right', base=base_time), method)()
+    if dropnan is True:
+        df_out = df_out.dropna(how='any')
+    t_out_vec = df_out.index.to_pydatetime()
+    val_out_vec = df_out.values.flatten()
+
+    return t_out_vec, val_out_vec
+
+
+def join_time_series(t1, val1, t2, val2, dropnan=False):
+    """
+    joins time_series
+
+    Parameters
+    ----------
+    t1 : datetime array
+        time of first series
+    val1 : float array
+        value of first series
+    t2 : datetime array
+        time of second series
+    val2 : float array
+        value of second series
+    dropnan : boolean
+        if True remove NaN from the time series
+
+    Returns
+    -------
+    t_out_vec : datetime array
+        the resultant date time after joining the series
+    val1_out_vec : float array
+        value of first series
+    val2_out_vec : float array
+        value of second series
+
+    """
+    df1 = pd.DataFrame(data=val1, index=pd.DatetimeIndex(t1))
+    df2 = pd.DataFrame(data=val2, index=pd.DatetimeIndex(t2))
+    df_out = pd.concat([df1, df2], join='outer', axis=1)
+    if dropnan is True:
+        df_out = df_out.dropna(how='any')
+    t_out_vec = df_out.index.to_pydatetime()
+    val1_out_vec = df_out.values[:, 0].flatten()
+    val2_out_vec = df_out.values[:, 1].flatten()
+
+    return t_out_vec, val1_out_vec, val2_out_vec
 
 
 def get_range_bins_to_avg(rad1_rng, rad2_rng):
@@ -78,7 +160,8 @@ def get_range_bins_to_avg(rad1_rng, rad2_rng):
     return avg_rad1, avg_rad2, avg_rad_lim
 
 
-def find_ray_index(ele_vec, azi_vec, ele, azi, ele_tol=0., azi_tol=0.):
+def find_ray_index(ele_vec, azi_vec, ele, azi, ele_tol=0., azi_tol=0.,
+                   nearest='azi'):
     """
     Find the ray index corresponding to a particular elevation and azimuth
 
@@ -90,6 +173,9 @@ def find_ray_index(ele_vec, azi_vec, ele, azi, ele_tol=0., azi_tol=0.):
         The elevation and azimuth to search
     ele_tol, azi_tol : floats
         Tolerances [deg]
+    nearest : str
+        criteria to define wich ray to keep if multiple rays are within
+        tolerance. azi: nearest azimuth, ele: nearest elevation
 
     Returns
     -------
@@ -103,8 +189,15 @@ def find_ray_index(ele_vec, azi_vec, ele, azi, ele_tol=0., azi_tol=0.):
 
     if len(ind_ray[0]) == 0:
         return None
+    if len(ind_ray[0]) == 1:
+        return ind_ray[0]
 
-    return ind_ray[0]
+    if nearest == 'azi':
+        ind_min = np.argmin(np.abs(azi_vec[ind_ray]-azi))
+    else:
+        ind_min = np.argmin(np.abs(ele_vec[ind_ray]-ele))
+
+    return ind_ray[ind_min]
 
 
 def find_rng_index(rng_vec, rng, rng_tol=0.):
@@ -126,13 +219,12 @@ def find_rng_index(rng_vec, rng, rng_tol=0.):
         The range index
 
     """
-    ind_rng = np.where(np.logical_and(
-        rng_vec <= rng+rng_tol, rng_vec >= rng-rng_tol))
-
-    if len(ind_rng[0]) == 0:
+    dist = np.abs(rng_vec-rng)
+    ind_rng = np.argmin(dist)
+    if dist[ind_rng] > rng_tol:
         return None
 
-    return ind_rng[0]
+    return ind_rng
 
 
 def time_avg_range(timeinfo, avg_starttime, avg_endtime, period):
@@ -164,7 +256,7 @@ def time_avg_range(timeinfo, avg_starttime, avg_endtime, period):
     within_range = False
     while not within_range:
         if timeinfo > new_endtime:
-            new_startime += datetime.timedelta(seconds=period)
+            new_starttime += datetime.timedelta(seconds=period)
             new_endtime += datetime.timedelta(seconds=period)
         else:
             within_range = True
@@ -493,6 +585,20 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
         values at each bin
 
     """
+    if len(field1) == 0 or len(field2) == 0:
+        warn('Unable to compute 2D histogram. Empty field')
+        stats = {
+            'npoints': 0,
+            'meanbias': np.ma.asarray(np.ma.masked),
+            'medianbias': np.ma.asarray(np.ma.masked),
+            'modebias': np.ma.asarray(np.ma.masked),
+            'corr': np.ma.asarray(np.ma.masked),
+            'slope': np.ma.asarray(np.ma.masked),
+            'intercep': np.ma.asarray(np.ma.masked),
+            'intercep_slope_1': np.ma.asarray(np.ma.masked)
+        }
+        return None, None, None, stats
+
     hist_2d, bins1, bins2 = compute_2d_hist(
         field1, field2, field_name1, field_name2, step1=step1, step2=step2)
     npoints = len(field1)
@@ -502,12 +608,19 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
     medianbias = np.ma.median(field2-field1)
     ind_max_val1, ind_max_val2 = np.where(hist_2d == np.ma.amax(hist_2d))
     modebias = bins2[ind_max_val2[0]]-bins1[ind_max_val1[0]]
+    slope, intercep, corr, pval, stderr = scipy.stats.linregress(
+        field1, y=field2)
+    intercep_slope_1 = np.ma.mean(field2-field1)
 
     stats = {
         'npoints': npoints,
-        'meanbias': meanbias,
-        'medianbias': medianbias,
-        'modebias': modebias
+        'meanbias': np.ma.asarray(meanbias),
+        'medianbias': np.ma.asarray(medianbias),
+        'modebias': np.ma.asarray(modebias),
+        'corr': np.ma.asarray(corr),
+        'slope': np.ma.asarray(slope),
+        'intercep': np.ma.asarray(intercep),
+        'intercep_slope_1': np.ma.asarray(intercep_slope_1)
     }
 
     return hist_2d, bins1, bins2, stats

@@ -32,12 +32,16 @@ def generate_traj_product(traj, prdcfg):
 
     """
 
+    dssavedir = prdcfg['dsname']
+    if ('dssavename' in prdcfg):
+        dssavedir = prdcfg['dssavename']
+
     if prdcfg['type'] == 'TRAJ_PLOT':
 
         timeinfo = traj.time_vector[0]
 
         savedir = get_save_dir(prdcfg['basepath'], prdcfg['procname'],
-                               prdcfg['dsname'], prdcfg['prdname'],
+                               dssavedir, prdcfg['prdname'],
                                timeinfo=timeinfo)
 
         ts = TimeSeries("", traj.time_vector,
@@ -50,9 +54,9 @@ def generate_traj_product(traj, prdcfg):
                                   timeformat='%Y%m%d%H%M%S',
                                   runinfo=prdcfg['runinfo'])
 
-            ts.add_dataseries("Elevation", "deg",
+            ts.add_dataseries("Elevation", "Elevation", "deg",
                               traj.radar_list[0].elevation_vec)
-            ts.plot(savedir + fname[0], "Elevation")
+            ts.plot(savedir + fname[0])
 
         elif (prdcfg['datatype'] == 'AZ'):
             fname = make_filename('ts', prdcfg['dstype'], 'TRAJ',
@@ -61,8 +65,8 @@ def generate_traj_product(traj, prdcfg):
                                   timeformat='%Y%m%d%H%M%S',
                                   runinfo=prdcfg['runinfo'])
 
-            ts.add_dataseries("Azimuth", "deg", traj.radar_list[0].azimuth_vec)
-            ts.plot(savedir + fname[0], "Azimuth")
+            ts.add_dataseries("Azimuth", "Azimuth", "deg", traj.radar_list[0].azimuth_vec)
+            ts.plot(savedir + fname[0])
 
         elif (prdcfg['datatype'] == 'RANGE'):
             fname = make_filename('ts', prdcfg['dstype'], 'TRAJ',
@@ -71,8 +75,8 @@ def generate_traj_product(traj, prdcfg):
                                   timeformat='%Y%m%d%H%M%S',
                                   runinfo=prdcfg['runinfo'])
 
-            ts.add_dataseries("Range", "m", traj.radar_list[0].range_vec)
-            ts.plot(savedir + fname[0], "Range")
+            ts.add_dataseries("Range", "Range", "m", traj.radar_list[0].range_vec)
+            ts.plot(savedir + fname[0])
 
         else:
             raise Exception("ERROR: Unknown datatype '%s' (dataset: '%s')" %
@@ -85,7 +89,7 @@ def generate_traj_product(traj, prdcfg):
         timeinfo = traj.time_vector[0]
 
         savedir = get_save_dir(prdcfg['basepath'], prdcfg['procname'],
-                               prdcfg['dsname'], prdcfg['prdname'],
+                               dssavedir, prdcfg['prdname'],
                                timeinfo=timeinfo)
 
         fname = make_filename('ts', prdcfg['dstype'], 'TRAJ', ['csv'],

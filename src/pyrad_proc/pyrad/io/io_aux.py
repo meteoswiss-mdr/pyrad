@@ -12,6 +12,8 @@ Auxiliary functions for reading/writing files
     generate_field_name_str
     get_datatype_metranet
     get_fieldname_pyart
+    get_field_unit
+    get_field_name
     get_file_list
     get_scan_list
     get_datatype_fields
@@ -159,6 +161,50 @@ def generate_field_name_str(datatype):
     return field_str
 
 
+def get_field_name(datatype):
+    """
+    Return long name of datatype.
+
+    Parameters
+    ----------
+    datatype : str
+        The data type
+
+    Returns
+    -------
+    name : str
+        The name
+
+    """
+    field_name = get_fieldname_pyart(datatype)
+    field_dic = get_metadata(field_name)
+    name = field_dic['long_name'].replace('_', ' ')
+    name = name[0].upper() + name[1:]
+
+    return name
+
+
+def get_field_unit(datatype):
+    """
+    Return unit of datatype.
+
+    Parameters
+    ----------
+    datatype : str
+        The data type
+
+    Returns
+    -------
+    unit : str
+        The unit
+
+    """
+    field_name = get_fieldname_pyart(datatype)
+    field_dic = get_metadata(field_name)
+
+    return field_dic['units']
+
+
 def get_datatype_metranet(datatype):
     """
     maps de config file radar data type name into the corresponding metranet
@@ -230,6 +276,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'corrected_unfiltered_reflectivity'
     elif datatype == 'dBZv':
         field_name = 'reflectivity_vv'
+    elif datatype == 'dBZvc':
+        field_name = 'corrected_reflectivity_vv'
     elif datatype == 'dBuZv':
         field_name = 'unfiltered_reflectivity_vv'
     elif datatype == 'dBuZvc':
@@ -310,8 +358,16 @@ def get_fieldname_pyart(datatype):
 
     elif datatype == 'V':
         field_name = 'velocity'
+    elif datatype == 'Vc':
+        field_name = 'corrected_velocity'
     elif datatype == 'W':
         field_name = 'spectrum_width'
+    elif datatype == 'wind_vel_h_az':
+        field_name = 'azimuthal_horizontal_wind_component'
+    elif datatype == 'wind_vel_v':
+        field_name = 'vertical_wind_component'
+    elif datatype == 'windshear_v':
+        field_name = 'vertical_wind_shear'
 
     elif datatype == 'Ah':
         field_name = 'specific_attenuation'
@@ -319,6 +375,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'corrected_specific_attenuation'
     elif datatype == 'Adp':
         field_name = 'specific_differential_attenuation'
+    elif datatype == 'Adpc':
+        field_name = 'corrected_specific_differential_attenuation'
 
     elif datatype == 'TEMP':
         field_name = 'temperature'
@@ -344,7 +402,7 @@ def get_fieldname_pyart(datatype):
     return field_name
 
 
-def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None, lteconvention = True):
+def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
     """
     gets the list of files with a time period
 
@@ -360,8 +418,6 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None, lteconvent
         configuration info to figure out where the data is
     scan : str
         scan name
-    lteconvention : bool
-        set to True to use lte file storage convention
 
     Returns
     -------
@@ -382,7 +438,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None, lteconvent
         if datagroup == 'RAINBOW':
             if scan is None:
                 warn('Unknown scan name')
-                return []
+                return None
             daydir = (
                 starttime+datetime.timedelta(days=i)).strftime('%Y-%m-%d')
             dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%Y%m%d')
@@ -396,18 +452,18 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None, lteconvent
         elif datagroup == 'RAD4ALP':
             if scan is None:
                 warn('Unknown scan name')
-                return []
+                return None
             dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%y%j')
             basename = ('P'+cfg['RadarRes'][ind_rad] +
                         cfg['RadarName'][ind_rad]+dayinfo)
-            if lteconvention is True:
+            if cfg['path_convention'] == 'LTE':
                 yy  = dayinfo[0:2]
                 dy = dayinfo[2:]
-                subf = ('P'+cfg['RadarRes'][ind_rad] +
-                        cfg['RadarName'][ind_rad]+ yy + 'hdf'+dy)
-                datapath = cfg['datapath'][ind_rad]+subf+'/'
+                subf = ('P' + cfg['RadarRes'][ind_rad] +
+                        cfg['RadarName'][ind_rad] + yy + 'hdf' + dy)
+                datapath = cfg['datapath'][ind_rad] + subf + '/'
             else:
-                datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
+                datapath = cfg['datapath'][ind_rad] + dayinfo + '/' + basename + '/'
             if (not os.path.isdir(datapath)):
                 warn("WARNING: Unknown datapath '%s'" % datapath)
                 continue
@@ -430,8 +486,8 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None, lteconvent
         elif datagroup == 'MXPOL':
             if scan is None:
                 warn('Unknown scan name')
-                return []
-            if lteconvention is True:
+                return None
+            if cfg['path_convention'] == 'LTE':
                 sub1 = str(starttime.year)
                 sub2 = starttime.strftime('%m')
                 sub3 = starttime.strftime('%d')
@@ -440,7 +496,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None, lteconvent
                 dayfilelist = glob.glob(datapath+basename)
             else:
                 warn("insert MCH convention here")
-                return []
+                return None
             for filename in dayfilelist:
                 t_filelist.append(filename)
     filelist = []

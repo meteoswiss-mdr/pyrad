@@ -16,9 +16,11 @@ Functions to plot Pyrad datasets
     plot_quantiles
     plot_histogram
     plot_histogram2
+    plot_antenna_pattern
     plot_timeseries
     plot_timeseries_comp
     plot_monitoring_ts
+    plot_intercomp_scores_ts
     plot_sun_hits
     plot_sun_retrieval_ts
     get_colobar_label
@@ -72,11 +74,11 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
         list of names of the created plots
 
     """
-    fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
-                              prdcfg['ppiImageConfig']['ysize']],
-                     dpi=72)
-
     if plot_type == 'PPI':
+        fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
+                         prdcfg['ppiImageConfig']['ysize']],
+                         dpi=72)
+
         display = pyart.graph.RadarDisplay(radar)
         display.plot_ppi(field_name, sweep=ind_el)
         display.set_limits(
@@ -148,11 +150,10 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='PPI',
         list of names of the created plots
 
     """
-    fig = plt.figure(figsize=[prdcfg['rhiImageConfig']['xsize'],
-                              prdcfg['rhiImageConfig']['ysize']],
-                     dpi=72)
-
     if plot_type == 'RHI':
+        fig = plt.figure(figsize=[prdcfg['rhiImageConfig']['xsize'],
+                         prdcfg['rhiImageConfig']['ysize']],
+                         dpi=72)
         display = pyart.graph.RadarDisplay(radar)
         display.plot_rhi(field_name, sweep=ind_az, reverse_xaxis=False)
         display.set_limits(
@@ -460,9 +461,9 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
 
     metadata = (
             'npoints: '+str(np.ma.sum(field))+'\n' +
-            str(quantiles[1]) + ' quant: '+str(values_sweep[1])+'\n' +
-            str(quantiles[0]) + ' quant: '+str(values_sweep[0])+'\n' +
-            str(quantiles[2]) + ' quant: '+str(values_sweep[2])+'\n')
+            str(quantiles[1])+' quant: '+str(values_sweep[1])+'\n' +
+            str(quantiles[0])+' quant: '+str(values_sweep[0])+'\n' +
+            str(quantiles[2])+' quant: '+str(values_sweep[2])+'\n')
 
     plt.text(0.05, 0.95, metadata, horizontalalignment='left',
              verticalalignment='top', transform=ax.transAxes)
@@ -475,7 +476,8 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
 
 
 def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
-                 prdcfg, metadata=None):
+                 prdcfg, metadata=None, lin_regr=None, lin_regr_slope1=None,
+                 rad1_name='RADAR001', rad2_name='RADAR002'):
     """
     2D histogram
 
@@ -493,6 +495,12 @@ def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
         product configuration dictionary
     metadata : str
         a string with metadata to write in the plot
+    lin_regr : tupple with 2 values
+        the coefficients for a linear regression
+    lin_regr_slope1 : float
+        the intercep point of a linear regression of slope 1
+    rad1_name, rad2_name : str
+        name of the radars which data is used
 
     Returns
     -------
@@ -506,8 +514,8 @@ def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
     # display data
     titl = 'colocated radar gates'
     label = 'Number of Points'
-    labelx = field_name1
-    labely = field_name2
+    labelx = rad1_name+' '+field_name1
+    labely = rad2_name+' '+field_name2
 
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                               prdcfg['ppiImageConfig']['ysize']],
@@ -517,12 +525,20 @@ def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
     cmap = pyart.config.get_field_colormap(field_name1)
 
     cax = ax.imshow(
-        hist_2d, origin='lower', cmap=cmap, vmin=0., vmax=np.max(hist_2d),
+        np.ma.transpose(hist_2d), origin='lower', cmap=cmap, vmin=0.,
+        vmax=np.max(hist_2d),
         extent=(bins1[0], bins1[-1], bins2[0], bins2[-1]),
         aspect='auto', interpolation='none')
 
     # plot reference
     plt.plot(bins1, bins2, 'k--')
+
+    # plot linear regression
+    if lin_regr is not None:
+        plt.plot(bins1, lin_regr[0]*bins1+lin_regr[1], 'r')
+    if lin_regr_slope1 is not None:
+        plt.plot(bins1, bins1+lin_regr_slope1, 'g')
+
     plt.autoscale(enable=True, axis='both', tight=True)
 
     plt.xlabel(labelx)
@@ -660,17 +676,83 @@ def plot_histogram2(bins, hist, fname_list, labelx='bins',
     return fname_list
 
 
-def plot_timeseries(date, value, fname_list, labelx='Time [UTC]',
-                    labely='Value', label1='Sensor', titl='Time Series',
-                    period=0, timeformat=None):
+def plot_antenna_pattern(antpattern, fname_list, labelx='Angle [Deg]',
+                         linear=False, twoway=False, title='Antenna Pattern',
+                         ymin=None, ymax=None):
+    """
+    plots an antenna pattern
+
+    Parameters
+    ----------
+    antpattern : dict
+        dictionary with the angle and the attenuation
+    value : float array
+        values of the time series
+    fname_list : list of str
+        list of names of the files where to store the plot
+    labelx : str
+        The label of the X axis
+    linear : boolean
+        if true data is in linear units
+    linear : boolean
+        if true data represents the two way attenuation
+    titl : str
+        The figure title
+    ymin, ymax: float
+        Lower/Upper limit of y axis
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    """
+    waystr = 'One-way '
+    if twoway:
+        waystr = 'Two-way '
+
+    linstr = 'Att [dB]'
+    if linear:
+        linstr = 'Att [-]'
+        mainbeam = (
+            antpattern['angle'][antpattern['attenuation'] >= 10.**(-0.3)])
+    else:
+        mainbeam = antpattern['angle'][antpattern['attenuation'] >= -3.]
+    beamwidth = np.abs(np.max(mainbeam)-np.min(mainbeam))
+
+    labely = waystr+linstr
+
+    fig, ax = plt.subplots(figsize=[10, 6])
+
+    ax.plot(antpattern['angle'], antpattern['attenuation'])
+    ax.set_title(title)
+    ax.set_xlabel(labelx)
+    ax.set_ylabel(labely)
+    ax.set_ylim(bottom=ymin, top=ymax)
+
+    metadata = '3-dB beamwidth: '+'{:.2f}'.format(float(beamwidth))
+    ax.text(0.05, 0.95, metadata, horizontalalignment='left',
+            verticalalignment='top', transform=ax.transAxes)
+
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
+    plt.close()
+
+    return fname_list
+
+
+def plot_timeseries(tvec, data, fname_list, labelx='Time [UTC]',
+                    labely='Value', labels=['Sensor'], title='Time Series',
+                    period=0, timeformat=None, colors=None, linestyles=None,
+                    ymin=None, ymax=None):
     """
     plots a time series
 
     Parameters
     ----------
-    date : datetime object
+    tvec : datetime object
         time of the time series
-    value : float array
+    data : list of float array
         values of the time series
     fname_list : list of str
         list of names of the files where to store the plot
@@ -678,7 +760,7 @@ def plot_timeseries(date, value, fname_list, labelx='Time [UTC]',
         The label of the X axis
     labely : str
         The label of the Y axis
-    label1 : str
+    labels : array of str
         The label of the legend
     titl : str
         The figure title
@@ -686,7 +768,13 @@ def plot_timeseries(date, value, fname_list, labelx='Time [UTC]',
         measurement period in seconds used to compute accumulation. If 0 no
         accumulation is computed
     timeformat : str
-        Specifies the date and time format on the x axis
+        Specifies the tvec and time format on the x axis
+    colors : array of str
+        Specifies the colors of each line
+    linestyles : array of str
+        Specifies the line style of each line
+    ymin, ymax: float
+        Lower/Upper limit of y axis
 
     Returns
     -------
@@ -695,14 +783,28 @@ def plot_timeseries(date, value, fname_list, labelx='Time [UTC]',
 
     """
     if period > 0:
-        value *= (period/3600.)
-        value = np.ma.cumsum(value)
+        for kk in range(len(data)):
+            data[kk] *= (period/3600.)
+            data[kk] = np.ma.cumsum(data[kk])
 
     fig, ax = plt.subplots(figsize=[10, 6])
-    ax.plot(date, value, label=label1)
-    ax.set_title(titl)
+
+    lab = None
+    col = None
+    lstyle = None
+    for kk in range(len(data)):
+        if (labels is not None):
+            lab = labels[kk]
+        if (colors is not None):
+            col = colors[kk]
+        if (linestyles is not None):
+            lstyle = linestyles[kk]
+        ax.plot(tvec, data[kk], label=lab, color=col, linestyle=lstyle)
+
+    ax.set_title(title)
     ax.set_xlabel(labelx)
     ax.set_ylabel(labely)
+    ax.set_ylim(bottom=ymin, top=ymax)
 
     if (timeformat is not None):
         ax.xaxis.set_major_formatter(mdates.DateFormatter(timeformat))
@@ -770,6 +872,10 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname_list,
     plt.ylabel(labely)
     plt.title(titl)
 
+    # rotates and right aligns the x labels, and moves the bottom of the
+    # axes up to make room for them
+    fig.autofmt_xdate()
+
     for i in range(len(fname_list)):
         fig.savefig(fname_list[i])
     plt.close()
@@ -787,6 +893,8 @@ def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name,
     ----------
     date : datetime object
         time of the time series
+    np_t : int array
+        number of points
     cquant, lquant, hquant : float array
         values of the central, low and high quantiles
     field_name : str
@@ -829,6 +937,86 @@ def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name,
 
     plt.ylabel('Number of Samples')
     plt.xlabel(labelx)
+
+    # rotates and right aligns the x labels, and moves the bottom of the
+    # axes up to make room for them
+    fig.autofmt_xdate()
+
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
+    plt.close()
+
+    return fname_list
+
+
+def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
+                             modebias_vec, corr_vec, slope_vec, intercep_vec,
+                             intercep_slope1_vec, fname_list, ref_value=0.,
+                             labelx='Time UTC',
+                             titl='RADAR001-RADAR002 intercomparison'):
+    """
+    plots a time series of radar intercomparison scores
+
+    Parameters
+    ----------
+    date_vec : datetime object
+        time of the time series
+    np_vec : int array
+        number of points
+    meanbias_vec, medianbias_vec, modebias_vec : float array
+        mean, median and mode bias
+    corr_vec : float array
+        correlation
+    slope_vec, intercep_vec : float array
+        slope and intercep of a linear regression
+    intercep_slope1_vec : float
+        the intercep point of a inear regression of slope 1
+    ref_value : float
+        the reference value
+    labelx : str
+        The label of the X axis
+    titl : str
+        The figure title
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    """
+    fig = plt.figure(figsize=[10, 16])
+
+    ax = fig.add_subplot(3, 1, 1)
+    plt.plot(date_vec, meanbias_vec, 'b', label='mean')
+    plt.plot(date_vec, medianbias_vec, 'r', label='median')
+    plt.plot(date_vec, modebias_vec, 'g', label='mode')
+    plt.plot(date_vec, intercep_slope1_vec, 'y',
+             label='intercep of slope 1 LR')
+    if ref_value is not None:
+        plt.plot(date_vec, np.zeros(len(date_vec))+ref_value, 'k--')
+    plt.legend(loc='best')
+    plt.ylabel('bias [dB]')
+    plt.title(titl)
+
+    axes = plt.gca()
+    axes.set_ylim([-5., 5.])
+
+    ax = fig.add_subplot(3, 1, 2)
+    plt.plot(date_vec, corr_vec)
+
+    plt.ylabel('correlation')
+    axes = plt.gca()
+    axes.set_ylim([0., 1.])
+
+    ax = fig.add_subplot(3, 1, 3)
+    plt.plot(date_vec, np_vec)
+
+    plt.ylabel('Number of Samples')
+    plt.xlabel(labelx)
+
+    # rotates and right aligns the x labels, and moves the bottom of the
+    # axes up to make room for them
+    fig.autofmt_xdate()
 
     for i in range(len(fname_list)):
         fig.savefig(fname_list[i])
@@ -898,27 +1086,16 @@ def plot_sun_hits(field, field_name, fname_list, prdcfg):
 
 def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list):
     """
-    plots a time series
+    plots sun retrieval time series series
 
     Parameters
     ----------
-    date : datetime object
-        time of the time series
-    value : float array
-        values of the time series
+    sun_retrieval : tuple
+        tuple containing the retrieved parameters
+    data_type : str
+        parameter to be plotted
     fname_list : list of str
         list of names of the files where to store the plot
-    labelx : str
-        The label of the X axis
-    labely : str
-        The label of the Y axis
-    label1 : str
-        The label of the legend
-    titl : str
-        The figure title
-    period : float
-        measurement period in seconds used to compute accumulation. If 0 no
-        accumulation is computed
 
     Returns
     -------
@@ -1045,6 +1222,10 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list):
 
     axes = plt.gca()
     axes.set_ylim([vmin, vmax])
+
+    # rotates and right aligns the x labels, and moves the bottom of the
+    # axes up to make room for them
+    fig.autofmt_xdate()
 
     for i in range(len(fname_list)):
         fig.savefig(fname_list[i])

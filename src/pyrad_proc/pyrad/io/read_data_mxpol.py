@@ -57,8 +57,8 @@ class pyrad_MXPOL(pyart.core.Radar):
         elif 'RHI' in fname_basename:
             scan_type='rhi'
             
-        strdate=re.findall(r"([0-9]{8}-[0-9]{6})",fname_basename)[0]
-        date=datetime.datetime.strptime(strdate,'%Y%m%d-%H%M%S')
+        strdate = re.findall(r"([0-9]{8}-[0-9]{6})", fname_basename)[0]
+        date = datetime.datetime.strptime(strdate, '%Y%m%d-%H%M%S')
         
         # if field name is None, take all available fields
         
@@ -91,79 +91,79 @@ class pyrad_MXPOL(pyart.core.Radar):
             
         # initiate empty vectors
             
-        N_sweeps=len(all_files)
-        fields={}
-        fixed_angle={}
-        fixed_angle['data']=np.zeros(N_sweeps,)
+        N_sweeps = len(all_files)
+        fields = {}
+        fixed_angle = {}
+        fixed_angle['data'] = np.zeros(N_sweeps, )
         
-        sweep_start_ray_index={}
-        sweep_start_ray_index['data']=[]
-        sweep_stop_ray_index={}
-        sweep_stop_ray_index['data']=[]
+        sweep_start_ray_index = {}
+        sweep_start_ray_index['data'] = []
+        sweep_stop_ray_index = {}
+        sweep_stop_ray_index['data'] = []
         
         for i,k in enumerate(varnames):
-            fields[k]={}
-            fields[k]['data']=[]
-            fields[k]['long_name']=long_names[i]
+            fields[k] = {}
+            fields[k]['data'] = []
+            fields[k]['long_name'] = long_names[i]
             fields[k]['standard_name'] = standard_names[i]
-            fields[k]['units']=units[i]
-            fields[k]['valid_min']=vmin[i]
-            fields[k]['valid_max']=vmax[i]
+            fields[k]['units'] = units[i]
+            fields[k]['valid_min'] = vmin[i]
+            fields[k]['valid_max'] = vmax[i]
             
-        idx_start=0
-        idx_stop=0
-        elevations=[]
-        azimuths=[]
-        nyquist=[]
+        idx_start = 0
+        idx_stop = 0
+        elevations = []
+        azimuths = []
+        nyquist = []
         
         # read data and create dictionaries
 
         for i in range(N_sweeps):
-            metadata, data = readMXPOLRadData(all_files[i],varnames,max_range)
+            metadata, data = readMXPOLRadData(all_files[i], varnames, max_range)
             if scan_type == 'rhi':
-                fixed_angle['data'][i] = np.round(np.mean(data['azimuth']))
+                fixed_angle['data'][i] = np.round( np.mean(data['azimuth']) )
             elif scan_type == 'ppi':
-                fixed_angle['data'][i] = np.round(np.mean(data['elevation']))
+                fixed_angle['data'][i] = np.round( np.mean(data['elevation']) )
                 
-            [N_az,N_ranges]=data[varnames[0]].shape
-            idx_stop=idx_start+N_az-1
+            [N_az,N_ranges] = data[varnames[0]].shape
+            idx_stop = idx_start + N_az - 1
             sweep_start_ray_index['data'].append(idx_start)
             sweep_stop_ray_index['data'].append(idx_stop)
-            idx_start=idx_stop+1
-            elevations.extend(list(data['elevation']))
-            nyquist.extend([data['nyquist_vel']]*N_az)
-            azimuths.extend(list(data['azimuth']))
+            idx_start=idx_stop + 1
+            elevations.extend( list(data['elevation']) )
+            nyquist.extend( [data['nyquist_vel']]*N_az )
+            azimuths.extend( list(data['azimuth']) )
             
             for j,v in enumerate(varnames):
                 if v in data.keys():
                     if not len(fields[v]['data']):
-                        fields[v]['data']=data[v]
+                        fields[v]['data'] = data[v]
                     else:
-                        fields[v]['data']=row_stack(fields[v]['data'],data[v])
+                        fields[v]['data'] = row_stack( fields[v]['data'],data[v] )
                 else:
                     print('Variable '+v+' was not found in file!')
         
         # mask NaNs
             
         for v in varnames:
-            fields[v]['data']=np.ma.masked_equal(fields[v]['data'], -99900.0)
+            fields[v]['data'] = np.ma.masked_equal(fields[v]['data'], -99900.0)
             
-        [a,N_ranges]=fields[varnames[0]]['data'].shape
+        [a,N_ranges] = fields[varnames[0]]['data'].shape
         
         # create dictionaries according to pyART standard  
         
-        latitude={'data' : np.array([data['latitude']]), 'units' : data['lat_units']}
-        longitude={'data' :np.array([data['longitude']]), 'units' : data['lon_units']}    
-        altitude={'data' : np.array([data['altitude']]), 'units' : data['alt_units']}     
-        sweep_number={'data' : np.arange(0,len(all_files))}     
-        sweep_mode={'data' : [scan_type]*N_sweeps}   
-        instrument_parameters={'nyquist_velocity': {'data':np.array(nyquist)}}
-        azimuth={'data' : np.array(azimuths), 'units' : data['azim_units']}
-        rrange={'data':np.arange(N_ranges)*data['resolution'], 'units' : data['range_units']}
-        elevation={'data' :np.array(elevations), 'units' : data['elev_units']}
+        latitude = {'data' : np.array([data['latitude']]), 'units' : data['lat_units']}
+        longitude = {'data' :np.array([data['longitude']]), 'units' : data['lon_units']}    
+        altitude = {'data' : np.array([data['altitude']]), 'units' : data['alt_units']}     
+        sweep_number = {'data' : np.arange(0,len(all_files))}     
+        sweep_mode = {'data' : [scan_type]*N_sweeps}   
+        instrument_parameters = {'nyquist_velocity': {'data':np.array(nyquist)}}
+        azimuth = {'data' : np.array(azimuths), 'units' : data['azim_units']}
+        rrange = {'data':np.arange(N_ranges)*data['resolution'], 'units' : data['range_units']}
+        elevation = {'data' :np.array(elevations), 'units' : data['elev_units']}
         
-        time_units='seconds since '+str(date)
-        time={'data' : data['time'],'units': time_units}
+        time_units = 'seconds since ' + str(date)
+        time = {'data' : data['time'],'units': time_units}
             
         # change keys to match pyART metranet keys
         fields_copy = deepcopy(fields)
@@ -185,12 +185,12 @@ class pyrad_MCH(pyart.core.Radar):
         # find information based on filename
         
         all_files = [filename]
-        N_sweeps=len(all_files)
+        N_sweeps = len(all_files)
         
-        fname_basename=os.path.basename(filename)
+        fname_basename = os.path.basename(filename)
         
         # Get name of radar
-        index_letter=fname_basename[2]
+        index_letter = fname_basename[2]
         
         radar_info = generate_radar_table(index_letter)
         radar_name = radar_info['radarID']
@@ -199,13 +199,13 @@ class pyrad_MCH(pyart.core.Radar):
         # Get radar resolution
             
         if fname_basename[1] == 'L':
-            rres=500.
+            rres = 500.
         else:
-            rres=83.3
+            rres = 83.3
             
-        scan_type='ppi'
+        scan_type = 'ppi'
         
-        scandate=datetime.datetime.strptime(fname_basename[3:12],'%y%j%H%M')
+        scandate = datetime.datetime.strptime(fname_basename[3:12], '%y%j%H%M')
         self.scan_date = scandate.timetuple()
         
         # if field name is None, take all available fields
@@ -238,30 +238,30 @@ class pyrad_MCH(pyart.core.Radar):
             
         # initiate empty vectors
             
-        fields={}
-        fixed_angle={}
-        fixed_angle['data']=np.zeros(N_sweeps,)
+        fields = {}
+        fixed_angle = {}
+        fixed_angle['data'] = np.zeros(N_sweeps, )
         
-        sweep_start_ray_index={}
-        sweep_start_ray_index['data']=[]
-        sweep_stop_ray_index={}
-        sweep_stop_ray_index['data']=[]
+        sweep_start_ray_index = {}
+        sweep_start_ray_index['data'] = []
+        sweep_stop_ray_index = {}
+        sweep_stop_ray_index['data'] = []
         
         for i,k in enumerate(varnames):
-            fields[k]={}
-            fields[k]['data']=[]
-            fields[k]['long_name']=long_names[i]
+            fields[k] = {}
+            fields[k]['data'] = []
+            fields[k]['long_name'] = long_names[i]
             fields[k]['standard_name'] = standard_names[i]
-            fields[k]['units']=units[i]
-            fields[k]['valid_min']=vmin[i]
-            fields[k]['valid_max']=vmax[i]
+            fields[k]['units'] = units[i]
+            fields[k]['valid_min'] = vmin[i]
+            fields[k]['valid_max'] = vmax[i]
             
         # Initialize
-        idx_start=0
-        idx_stop=0
-        elevations=[]
-        azimuths=[]
-        nyquist=[]
+        idx_start = 0
+        idx_stop = 0
+        elevations = []
+        azimuths = []
+        nyquist = []
         time_lapse = []
         
         # read and organise data
@@ -269,14 +269,14 @@ class pyrad_MCH(pyart.core.Radar):
         for i in range(N_sweeps):
             data = readCHRadData(all_files[i],radar_name, varnames,rres,max_range)
             fixed_angle['data'][i] = data['elevation']
-            [N_ranges,N_az]=data[varnames[0]].shape
-            idx_stop=idx_start+N_az-1
+            [N_ranges,N_az] = data[varnames[0]].shape
+            idx_stop = idx_start + N_az - 1
             sweep_start_ray_index['data'].append(idx_start)
             sweep_stop_ray_index['data'].append(idx_stop)
-            idx_start=idx_stop+1
-            elevations.extend([data['elevation']]*N_az)
-            nyquist.extend([data['nyquist_vel']]*N_az)
-            azimuths.extend(list(data['azimuth']))
+            idx_start = idx_stop + 1
+            elevations.extend( [data['elevation']]*N_az )
+            nyquist.extend( [data['nyquist_vel']]*N_az )
+            azimuths.extend( list(data['azimuth']) )
             # create list of times at the center of each ray
             sweep_rank = int(re.findall(r"\.([0-9]{3})\.",all_files[i])[0])
             starttime, endtime = findTimes(sweep_rank)
@@ -284,39 +284,39 @@ class pyrad_MCH(pyart.core.Radar):
             time_lapse.extend( np.arange(starttime+(0.5*interval), endtime,interval) )
             for j,v in enumerate(varnames):
                 if not len(fields[v]['data']):
-                    fields[v]['data']=data[v].T		
+                    fields[v]['data'] = data[v].T		
                 else:
-                    fields[v]['data']=row_stack(fields[v]['data'],data[v].T)
+                    fields[v]['data'] = row_stack(fields[v]['data'],data[v].T)
                     
         # mask nans             
         for v in varnames:
-            fields[v]['data']=np.ma.array(fields[v]['data'],mask=np.isnan(fields[v]['data']))
+            fields[v]['data'] = np.ma.array(fields[v]['data'],mask=np.isnan(fields[v]['data']))
         
         sweep_start_ray_index['data'] = np.asarray(sweep_start_ray_index['data'])
         sweep_stop_ray_index['data'] = np.asarray(sweep_stop_ray_index['data'])        
-        metadata={}
+        metadata = {}
         
-        [a,N_ranges]=fields[varnames[0]]['data'].shape
+        [a,N_ranges] = fields[varnames[0]]['data'].shape
         
-        latitude={'data' : np.array([radar_info['coordinates'][0]]), 'units' : "DegreesNorth" }
-        longitude={'data' : np.array([radar_info['coordinates'][1]]), 'units' : "DegreesEast"}    
-        altitude={'data' : np.array([radar_info['altitude']]), 'units' : "MetersAboveSeaLevel"}     
-        sweep_number={'data' : np.arange(0,len(all_files))}     
-        sweep_mode={'data' : np.asarray(['ppi']*N_sweeps)}   
-        instrument_parameters={'nyquist_velocity': {'data':np.array(nyquist)}}
+        latitude = {'data' : np.array([radar_info['coordinates'][0]]), 'units' : "DegreesNorth" }
+        longitude = {'data' : np.array([radar_info['coordinates'][1]]), 'units' : "DegreesEast"}    
+        altitude = {'data' : np.array([radar_info['altitude']]), 'units' : "MetersAboveSeaLevel"}     
+        sweep_number = {'data' : np.arange(0,len(all_files))}     
+        sweep_mode = {'data' : np.asarray(['ppi']*N_sweeps)}   
+        instrument_parameters = {'nyquist_velocity': {'data':np.array(nyquist)}}
         
         metadata['Source'] = "Operational radar data processed at MeteoSwiss Locarno-Monti"
         metadata['Institution'] = "MeteoSwiss, MDR, Locarno-Monti, Switzerland"
         metadata['History'] =  ["created: %s, " % time.ctime(os.path.getctime(filename)) + "last modified: %s" % time.ctime(os.path.getmtime(filename))]
         metadata['ContactInformation'] = "marc.schneebeli@meteosvizzera.ch"
         
-        azimuth={'data' : np.array(azimuths), 'units' : "Degrees"}
-        rrange={'data':np.arange(N_ranges)*data['resolution'], 'units' : "Meters"}
-        elevation={'data' :np.array(elevations), 'units' : "Degrees"}
+        azimuth = {'data' : np.array(azimuths), 'units' : "Degrees"}
+        rrange = {'data':np.arange(N_ranges)*data['resolution'], 'units' : "Meters"}
+        elevation = {'data' :np.array(elevations), 'units' : "Degrees"}
         
-        time_units='seconds since '+str(scandate)
+        time_units = 'seconds since '+str(scandate)
         time_lapse = np.asarray(time_lapse)
-        scantime={'data' : time_lapse,'units': time_units}
+        scantime = {'data' : time_lapse,'units': time_units}
         
         # change keys to match pyART metranet keys
         fields_copy = deepcopy(fields)
@@ -351,13 +351,13 @@ def row_stack(a1,a2):
         stacked destination and additional array, with uniform shape
     
     """
-    [N1,M1]=a1.shape
-    [N2,M2]=a2.shape
+    [N1,M1] = a1.shape
+    [N2,M2] = a2.shape
 
     if M1>M2:       
-        a2=np.pad(a2,((0,0),(0,M1-M2)),mode='constant',constant_values=-9999999)
+        a2 = np.pad(a2,((0,0),(0,M1-M2)),mode='constant',constant_values=-9999999)
     elif M2<M1:     
-        a1=np.pad(a2,((0,0),(0,M2-M1)),mode='constant',constant_values=-9999999)
+        a1 = np.pad(a2,((0,0),(0,M2-M1)),mode='constant',constant_values=-9999999)
     
     out = np.vstack((a1,a2))
     out[out == -9999999] = np.nan
@@ -437,22 +437,22 @@ def int2float_radar(data, varname, index_angle):
     
     output=np.zeros(data.shape)
     if varname in ['ZH','ZV', 'Z']:
-        output[data!=0]=(data[data!=0]-64)*0.5
-        output[data==0]=float('nan')
+        output[data!=0] = (data[data!=0]-64)*0.5
+        output[data==0] = float('nan')
     elif varname == 'VEL':
-        output[data!=0]=(data[data!=0]-128)/127*NYQUIST_VEL[index_angle]
-        output[data==0]=float('nan')
+        output[data!=0] = (data[data!=0]-128)/127*NYQUIST_VEL[index_angle]
+        output[data==0] = float('nan')
     elif varname == 'WID':
         output = data/255*NYQUIST_VEL[index_angle]
     elif varname == 'ZDR':
-        output[data!=0]=data[data!=0]*1.0/16.1259842 - 7.9375
-        output[data==0]=float('nan')
+        output[data!=0] = data[data!=0]*1.0/16.1259842 - 7.9375
+        output[data==0] = float('nan')
     elif varname == 'RHO':
-        output[data!=0]=1.003-10**(-(data[data!=0]-1.0)/100)
-        output[data==0]=float('nan')
+        output[data!=0] = 1.003-10**(-(data[data!=0]-1.0)/100)
+        output[data==0] = float('nan')
     elif varname == 'PHI':
-        output[data!=0]=(data[data!=0]-32768)/32767*180
-        output[data==0]=float('nan')
+        output[data!=0] = (data[data!=0]-32768)/32767*180
+        output[data==0] = float('nan')
     elif varname == 'CLUT':
         output=data
     else:
@@ -481,47 +481,47 @@ def readMXPOLRadData(filename, variableList, max_range=np.Inf,min_range=0):
         
     """
 
-    varPol={}
-    metadata={}
-    ncid=netCDF4.Dataset(filename)
+    varPol = {}
+    metadata = {}
+    ncid = netCDF4.Dataset(filename)
     
-    time=ncid.variables['Time']
-    time-=time[0] # To get time in seconds from beginning of scan
+    time = ncid.variables['Time']
+    time -= time[0] # To get time in seconds from beginning of scan
 
-    rrange= ncid.variables['Range'][:]
+    rrange = ncid.variables['Range'][:]
         
     # Get indexes between min_range and max_range
-    idx2keep=np.where(np.logical_and(rrange<max_range,rrange>min_range))[0]
-    rrange=rrange[idx2keep]
+    idx2keep = np.where(np.logical_and(rrange<max_range,rrange>min_range))[0]
+    rrange = rrange[idx2keep]
     
     # Get variables in polar coordinates
     for varname in variableList:
         try:
-            varPol[varname]=ncid.variables[varname][:].T
+            varPol[varname] = ncid.variables[varname][:].T
         except:
             pass
         
-    varPol['resolution']=ncid.__dict__['RangeResolution-value']
-    varPol['range']=rrange
+    varPol['resolution'] = ncid.__dict__['RangeResolution-value']
+    varPol['range'] = rrange
     varPol['range_units'] = ncid.__dict__['RangeResolution-unit']
-    varPol['azimuth']=ncid.variables['Azimuth'][:]
+    varPol['azimuth'] = ncid.variables['Azimuth'][:]
     try:
-        varPol['azim_units']=ncid.__dict__['Azimuth-unit'] 
+        varPol['azim_units'] = ncid.__dict__['Azimuth-unit'] 
     except KeyError:
-        varPol['azim_units']=ncid.variables['Azimuth'].Units
-    varPol['elevation']=ncid.variables['Elevation'][:]
+        varPol['azim_units'] = ncid.variables['Azimuth'].Units
+    varPol['elevation'] = ncid.variables['Elevation'][:]
     try:
-        varPol['elev_units']=ncid.__dict__['Elevation-unit']
+        varPol['elev_units'] = ncid.__dict__['Elevation-unit']
     except KeyError:
-        varPol['elev_units']=ncid.variables['Elevation'].Units
-    varPol['nyquist_vel']=ncid.__dict__['NyquistVelocity-value']
-    varPol['longitude']=ncid.__dict__['Longitude-value']
+        varPol['elev_units'] = ncid.variables['Elevation'].Units
+    varPol['nyquist_vel'] = ncid.__dict__['NyquistVelocity-value']
+    varPol['longitude'] = ncid.__dict__['Longitude-value']
     varPol['lon_units'] = ncid.__dict__['Longitude-unit']
-    varPol['latitude']=ncid.__dict__['Latitude-value']   
-    varPol['lat_units']=ncid.__dict__['Latitude-unit']
-    varPol['altitude']=ncid.__dict__['Altitude-value']
-    varPol['alt_units']=ncid.__dict__['Altitude-unit']
-    varPol['time']=time
+    varPol['latitude'] = ncid.__dict__['Latitude-value']   
+    varPol['lat_units'] = ncid.__dict__['Latitude-unit']
+    varPol['altitude'] = ncid.__dict__['Altitude-value']
+    varPol['alt_units'] = ncid.__dict__['Altitude-unit']
+    varPol['time'] = time
     
     metadata['Source'] = ncid.__dict__['Source']
     metadata['Institution'] = ncid.__dict__['Institution']
@@ -563,8 +563,8 @@ def readCHRadData(filename, radar_name, variableList, radial_resolution, max_ran
         the projected variables, the azimuth and the range
     """
 
-    varPol={}
-    h5id=h5py.File(filename,'r')
+    varPol = {}
+    h5id = h5py.File(filename,'r')
     
     ELEVATION_ANGLES = get_elevation_metadata(radar_name)
     radar_info = generate_radar_table(radar_name)
@@ -573,30 +573,30 @@ def readCHRadData(filename, radar_name, variableList, radial_resolution, max_ran
     
 
     # Get dimensions
-    siz=h5id['moments']['Z'].shape
+    siz = h5id['moments']['Z'].shape
     range = np.arange(0,siz[1])*radial_resolution
-    idx2keep=np.where(np.logical_and(range<max_range,range>min_range))[0]
-    range=range[idx2keep]
+    idx2keep = np.where(np.logical_and(range<max_range,range>min_range))[0]
+    range = range[idx2keep]
     azimuth = np.arange(0,siz[0])*ANG_RES
-    index_angle=int(re.findall(r"\.([0-9]{3})\.",filename)[0])-1
-    elevation=ELEVATION_ANGLES[index_angle]    
+    index_angle = int(re.findall(r"\.([0-9]{3})\.",filename)[0])-1
+    elevation = ELEVATION_ANGLES[index_angle]    
     # Get variables in polar coordinates
     for varname in variableList:
         varname = convert_polvar_name('MCH', varname)
-        data=[]
+        data = []
         data = h5id['moments'][varname][:].T	
-        data=np.asarray(data)
-        data=data.astype(float)
-        clut= h5id['moments']['CLUT'][:].T		
-        data[clut>=100]=float('nan') # Remove clutter
-        data=data[idx2keep,:]
-        varPol[varname]=int2float_radar(data,varname,index_angle)
+        data = np.asarray(data)
+        data = data.astype(float)
+        clut = h5id['moments']['CLUT'][:].T		
+        data[clut>=100] = float('nan') # Remove clutter
+        data = data[idx2keep,:]
+        varPol[varname] = int2float_radar(data,varname,index_angle)
     
-    varPol['resolution']=range[3]-range[2]
-    varPol['range']=range
-    varPol['azimuth']=azimuth
-    varPol['elevation']=elevation
-    varPol['nyquist_vel']=NYQUIST_VEL[index_angle] 
+    varPol['resolution'] = range[3]-range[2]
+    varPol['range'] = range
+    varPol['azimuth'] = azimuth
+    varPol['elevation'] = elevation
+    varPol['nyquist_vel'] = NYQUIST_VEL[index_angle] 
     # Close netcdf
     h5id.close()
 

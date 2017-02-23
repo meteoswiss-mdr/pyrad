@@ -107,7 +107,7 @@ ZDRc STRUCT 5
    bias FLOAT -0.1
    MAKE_GLOBAL INT 1
    products STRUCT 1
-       EL002_5 STRUCT 3
+       AZ0040 STRUCT 3
          type STRING RHI_IMAGE
          anglenr INT 0
          voltype STRING ZDRc
@@ -243,7 +243,7 @@ echoID STRUCT 4
       MXPOL:uRhoHV
    MAKE_GLOBAL INT 1
    products STRUCT 1
-       EL002_5 STRUCT 3
+       AZ0040 STRUCT 3
          type STRING RHI_IMAGE
          anglenr INT 0
          voltype STRING echoID
@@ -287,15 +287,15 @@ echoFilter STRUCT 4
       PROC:echoID
    MAKE_GLOBAL INT 1
    products STRUCT 3
-      EL002_5_dBZc STRUCT 3
+      AZ0040_dBZc STRUCT 3
          type STRING RHI_IMAGE
          anglenr INT 0
          voltype STRING dBZc
-      EL002_5_PhiDPc STRUCT 3
+      AZ0040_PhiDPc STRUCT 3
 	 type STRING RHI_IMAGE
 	 anglenr INT 0
 	 voltype STRING PhiDPc
-      EL002_5_RhoHVc STRUCT 3
+      AZ0040_RhoHVc STRUCT 3
 	 type STRING RHI_IMAGE
 	 anglenr INT 0
 	 voltype STRING RhoHVc
@@ -486,7 +486,7 @@ RRZh_noattcorr STRUCT 5
    RR_METHOD STRING Z
    MAKE_GLOBAL INT 1
    products STRUCT 1
-     EL002_5 STRUCT 3
+     AZ0040 STRUCT 3
         type STRING RHI_IMAGE
         voltype STRING RR
         anglenr INT 0

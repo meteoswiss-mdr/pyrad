@@ -7,10 +7,13 @@ Functions for writing pyrad output data
 .. autosummary::
     :toctree: generated/
 
+    write_smn
     write_ts_polar_data
     write_monitoring_ts
+    write_intercomp_scores_ts
     write_colocated_gates
     write_colocated_data
+    write_colocated_data_time_avg
     write_sun_hits
     write_sun_retrieval
     generate_field_name_str
@@ -24,6 +27,42 @@ import csv
 from pyart.config import get_fillvalue, get_metadata
 
 from .io_aux import generate_field_name_str
+
+
+def write_smn(datetime_vec, value_avg_vec, value_std_vec, fname):
+    """
+    writes SwissMetNet data in format datetime,avg_value, std_value
+
+    Parameters
+    ----------
+    datetime_vec : datetime array
+        array containing the measurement time
+    value_avg_vec : float array
+        array containing the average value
+    value_std_vec : float array
+        array containing the standard deviation
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    nvalues = len(value_avg_vec)
+    with open(fname, 'w', newline='') as csvfile:
+        fieldnames = ['datetime', 'avg', 'std']
+        writer = csv.DictWriter(csvfile, fieldnames)
+        writer.writeheader()
+        for i in range(nvalues):
+            writer.writerow(
+                {'datetime': datetime_vec[i].strftime('%Y%m%d%H%M%S'),
+                 'avg': value_avg_vec[i],
+                 'std': value_std_vec[i]})
+        csvfile.close()
+
+    return fname
 
 
 def write_ts_polar_data(dataset, fname):
@@ -161,6 +200,98 @@ def write_monitoring_ts(start_time, np_t, values, quantiles, datatype, fname):
     return fname
 
 
+def write_intercomp_scores_ts(start_time, stats, field_name, fname,
+                              rad1_name='RADAR001', rad2_name='RADAR002'):
+    """
+    writes time series of radar intercomparison scores
+
+    Parameters
+    ----------
+    start_time : datetime object
+        the time of the intercomparison
+    stats : dict
+        dictionary containing the statistics
+    field_name : str
+        The name of the field
+    fname : str
+        file name where to store the data
+    rad1_name, rad2_name : str
+        Name of the radars intercompared
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    meanbias = stats['meanbias'].filled(fill_value=get_fillvalue())
+    medianbias = stats['medianbias'].filled(fill_value=get_fillvalue())
+    modebias = stats['modebias'].filled(fill_value=get_fillvalue())
+    corr = stats['corr'].filled(fill_value=get_fillvalue())
+    slope = stats['slope'].filled(fill_value=get_fillvalue())
+    intercep = stats['intercep'].filled(fill_value=get_fillvalue())
+    intercep_slope_1 = stats['intercep_slope_1'].filled(
+        fill_value=get_fillvalue())
+
+    filelist = glob.glob(fname)
+    if len(filelist) == 0:
+        with open(fname, 'w', newline='') as csvfile:
+            csvfile.write('# Weather radar intercomparison scores ' +
+                          'timeseries file\n')
+            csvfile.write('# Comment lines are preceded by "#"\n')
+            csvfile.write('# Description: \n')
+            csvfile.write(
+                '# Time series of the intercomparison between two radars.\n')
+            csvfile.write('# Radar 1: '+rad1_name+'\n')
+            csvfile.write('# Radar 2: '+rad2_name+'\n')
+            csvfile.write('# Fill Value: '+str(get_fillvalue())+'\n')
+            csvfile.write(
+                '# Start: ' +
+                start_time.strftime('%Y-%m-%d %H:%M:%S UTC')+'\n')
+            csvfile.write('#\n')
+
+            fieldnames = ['date', 'NP', 'mean_bias', 'median_bias',
+                          'mode_bias', 'corr', 'slope_of_linear_regression',
+                          'intercep_of_linear_regression',
+                          'intercep_of_linear_regression_of_slope_1']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writeheader()
+
+            writer.writerow(
+                {'date': start_time.strftime('%Y%m%d%H%M%S'),
+                 'NP': stats['npoints'],
+                 'mean_bias': meanbias,
+                 'median_bias': medianbias,
+                 'mode_bias': modebias,
+                 'corr': corr,
+                 'slope_of_linear_regression': slope,
+                 'intercep_of_linear_regression': intercep,
+                 'intercep_of_linear_regression_of_slope_1': intercep_slope_1
+                 })
+            csvfile.close()
+    else:
+        with open(fname, 'a', newline='') as csvfile:
+            fieldnames = ['date', 'NP', 'mean_bias', 'median_bias',
+                          'mode_bias', 'corr', 'slope_of_linear_regression',
+                          'intercep_of_linear_regression',
+                          'intercep_of_linear_regression_of_slope_1']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writerow(
+                {'date': start_time.strftime('%Y%m%d%H%M%S'),
+                 'NP': stats['npoints'],
+                 'mean_bias': meanbias,
+                 'median_bias': medianbias,
+                 'mode_bias': modebias,
+                 'corr': corr,
+                 'slope_of_linear_regression': slope,
+                 'intercep_of_linear_regression': intercep,
+                 'intercep_of_linear_regression_of_slope_1': intercep_slope_1
+                 })
+            csvfile.close()
+
+    return fname
+
+
 def write_colocated_gates(coloc_gates, fname):
     """
     Writes the position of gates colocated with two radars
@@ -204,7 +335,7 @@ def write_colocated_gates(coloc_gates, fname):
 
 def write_colocated_data(coloc_data, fname):
     """
-    Writes the position of gates colocated with two radars
+    Writes the data of gates colocated with two radars
 
     Parameters
     ----------
@@ -259,6 +390,82 @@ def write_colocated_data(coloc_data, fname):
                      'rad2_azi': coloc_data['rad2_azi'][i],
                      'rad2_rng': coloc_data['rad2_rng'][i],
                      'rad2_val': coloc_data['rad2_val'][i]})
+            csvfile.close()
+
+    return fname
+
+
+def write_colocated_data_time_avg(coloc_data, fname):
+    """
+    Writes the time averaged data of gates colocated with two radars
+
+    Parameters
+    ----------
+    coloc_data : dict
+        dictionary containing the colocated data parameters
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    filelist = glob.glob(fname)
+    ngates = len(coloc_data['rad1_ele'])
+    if len(filelist) == 0:
+        with open(fname, 'w', newline='') as csvfile:
+            csvfile.write('# Colocated radar gates data file\n')
+            csvfile.write('# Comment lines are preceded by "#"\n')
+            csvfile.write('#\n')
+
+            fieldnames = [
+                'rad1_ele', 'rad1_azi', 'rad1_rng',
+                'rad1_dBZavg', 'rad1_PhiDPavg', 'rad1_Flagavg',
+                'rad2_ele', 'rad2_azi', 'rad2_rng',
+                'rad2_dBZavg', 'rad2_PhiDPavg', 'rad2_Flagavg']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writeheader()
+            for i in range(ngates):
+                writer.writerow(
+                    {'rad1_ele': coloc_data['rad1_ele'][i],
+                     'rad1_azi': coloc_data['rad1_azi'][i],
+                     'rad1_rng': coloc_data['rad1_rng'][i],
+                     'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
+                     'rad1_PhiDPavg': coloc_data['rad1_PhiDPavg'][i],
+                     'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
+                     'rad1_Flagavg': coloc_data['rad1_Flagavg'][i],
+                     'rad2_ele': coloc_data['rad2_ele'][i],
+                     'rad2_azi': coloc_data['rad2_azi'][i],
+                     'rad2_rng': coloc_data['rad2_rng'][i],
+                     'rad2_dBZavg': coloc_data['rad2_dBZavg'][i],
+                     'rad2_PhiDPavg': coloc_data['rad2_PhiDPavg'][i],
+                     'rad2_Flagavg': coloc_data['rad2_Flagavg'][i]})
+            csvfile.close()
+    else:
+        with open(fname, 'a', newline='') as csvfile:
+            fieldnames = [
+                'rad1_ele', 'rad1_azi', 'rad1_rng',
+                'rad1_dBZavg', 'rad1_PhiDPavg', 'rad1_Flagavg',
+                'rad2_ele', 'rad2_azi', 'rad2_rng',
+                'rad2_dBZavg', 'rad2_PhiDPavg', 'rad2_Flagavg']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            for i in range(ngates):
+                writer.writerow(
+                    {'rad1_ele': coloc_data['rad1_ele'][i],
+                     'rad1_azi': coloc_data['rad1_azi'][i],
+                     'rad1_rng': coloc_data['rad1_rng'][i],
+                     'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
+                     'rad1_PhiDPavg': coloc_data['rad1_PhiDPavg'][i],
+                     'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
+                     'rad1_Flagavg': coloc_data['rad1_Flagavg'][i],
+                     'rad2_ele': coloc_data['rad2_ele'][i],
+                     'rad2_azi': coloc_data['rad2_azi'][i],
+                     'rad2_rng': coloc_data['rad2_rng'][i],
+                     'rad2_dBZavg': coloc_data['rad2_dBZavg'][i],
+                     'rad2_PhiDPavg': coloc_data['rad2_PhiDPavg'][i],
+                     'rad2_Flagavg': coloc_data['rad2_Flagavg'][i]})
             csvfile.close()
 
     return fname

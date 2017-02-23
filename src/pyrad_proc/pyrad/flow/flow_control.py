@@ -30,6 +30,7 @@ from datetime import datetime
 from datetime import timedelta
 import atexit
 import inspect
+import gc
 
 from ..io.config import read_config
 from ..io.read_data_radar import get_data
@@ -41,8 +42,8 @@ from ..proc.process_aux import get_process_func
 from ..prod.product_aux import get_prodgen_func
 
 from pyrad import proc, prod
-#from pyrad import version as pyrad_version
-#from pyart import version as pyart_version
+from pyrad import version as pyrad_version
+from pyart import version as pyart_version
 
 
 def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
@@ -57,15 +58,16 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
         start and end time of the data to be processed
     trajfile : str
         path to file describing the trajectory
-    infostr : Information string about the actual data processing
-              (e.g. 'RUN57'). This sting is added to product files.
+    infostr : str
+        Information string about the actual data processing
+        (e.g. 'RUN57'). This string is added to product files.
 
     """
 
-    """print("- PYRAD version: %s (compiled %s by %s)" %
+    print("- PYRAD version: %s (compiled %s by %s)" %
           (pyrad_version.version, pyrad_version.compile_date_time,
            pyrad_version.username))
-    print("- PYART version: " + pyart_version.version)"""
+    print("- PYART version: " + pyart_version.version)
 
     # Definie behaviour of warnings
     warnings.simplefilter('always')  # always print matching warnings
@@ -137,6 +139,9 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
                 traceback.print_exc()
                 continue
 
+    # manual garbage collection after initial processing
+    gc.collect()
+
     # process all data files in file list
     for masterfile in masterfilelist:
         print('- master file: ' + os.path.basename(masterfile))
@@ -180,6 +185,9 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
                     traceback.print_exc()
                     continue
 
+        # manual garbage collection after processing each radar volume
+        gc.collect()
+
     # post-processing of the datasets
     print('- Post-processing datasets:')
     for level in sorted(dataset_levels):
@@ -193,6 +201,9 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
             except Exception as ee:
                 traceback.print_exc()
                 continue
+
+    # manual garbage collection after post-processing
+    gc.collect()
 
     print('- This is the end my friend! See you soon!')
 
@@ -344,6 +355,14 @@ def _create_cfg_dict(cfgfile):
         cfg.update({'radconsth': None})
     if 'radconstv' not in cfg:
         cfg.update({'radconstv': None})
+    if 'lrxh' not in cfg:
+        cfg.update({'lrxh': None})
+    if 'lrxv' not in cfg:
+        cfg.update({'lrxv': None})
+    if 'lradomeh' not in cfg:
+        cfg.update({'lradomeh': None})
+    if 'lradomev' not in cfg:
+        cfg.update({'lradomev': None})
     if 'AntennaGain' not in cfg:
         cfg.update({'AntennaGain': None})
     if 'attg' not in cfg:
@@ -396,9 +415,10 @@ def _create_datacfg_dict(cfg):
     datacfg.update({'loadname': cfg['loadname']})
     datacfg.update({'RadarName': cfg['RadarName']})
     datacfg.update({'RadarRes': cfg['RadarRes']})
-    datacfg.update({'ScanPeriod': int(cfg['ScanPeriod'])})
+    datacfg.update({'ScanPeriod': cfg['ScanPeriod']})
     datacfg.update({'CosmoRunFreq': int(cfg['CosmoRunFreq'])})
     datacfg.update({'CosmoForecasted': int(cfg['CosmoForecasted'])})
+    datacfg.update({'path_convention': cfg['path_convention']})
 
     return datacfg
 
@@ -426,16 +446,31 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
     dscfg.update({'configpath': cfg['configpath']})
     dscfg.update({'solarfluxpath': cfg['solarfluxpath']})
     dscfg.update({'colocgatespath': cfg['colocgatespath']})
+    dscfg.update({'RadarName': cfg['RadarName']})
     dscfg.update({'mflossh': cfg['mflossh']})
     dscfg.update({'mflossv': cfg['mflossv']})
     dscfg.update({'radconsth': cfg['radconsth']})
     dscfg.update({'radconstv': cfg['radconstv']})
+    dscfg.update({'lrxh': cfg['lrxh']})
+    dscfg.update({'lrxv': cfg['lrxv']})
+    dscfg.update({'lradomeh': cfg['lradomeh']})
+    dscfg.update({'lradomev': cfg['lradomev']})
     dscfg.update({'AntennaGain': cfg['AntennaGain']})
     dscfg.update({'attg': cfg['attg']})
     dscfg.update({'basepath': cfg['saveimgbasepath']})
     dscfg.update({'procname': cfg['name']})
     dscfg.update({'dsname': dataset})
     dscfg.update({'timeinfo': None})
+    if ('par_azimuth_antenna' in cfg):
+        dscfg.update({'par_azimuth_antenna': cfg['par_azimuth_antenna']})
+    if ('par_elevation_antenna' in cfg):
+        dscfg.update({'par_elevation_antenna': cfg['par_elevation_antenna']})
+    if ('asr_highbeam_antenna' in cfg):
+        dscfg.update({'asr_highbeam_antenna': cfg['asr_highbeam_antenna']})
+    if ('asr_lowbeam_antenna' in cfg):
+        dscfg.update({'asr_lowbeam_antenna': cfg['asr_lowbeam_antenna']})
+    if ('asr_position' in cfg):
+        dscfg.update({'asr_position': cfg['asr_position']})
 
     # indicates the dataset has been initialized and aux data is available
     dscfg.update({'initialized': False})
@@ -476,6 +511,9 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
 
     """
 
+    # Ugly copying of dataset config parameters to product
+    # config dict. Better: Make dataset config dict available to
+    # the product generation.
     prdcfg = cfg[dataset]['products'][product]
     prdcfg.update({'procname': cfg['name']})
     prdcfg.update({'basepath': cfg['saveimgbasepath']})
@@ -494,6 +532,8 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
     prdcfg.update({'prdname': product})
     prdcfg.update({'timeinfo': voltime})
     prdcfg.update({'runinfo': runinfo})
+    if 'dssavename' in cfg[dataset]:
+        prdcfg.update({'dssavename': cfg[dataset]['dssavename']})
 
     return prdcfg
 
@@ -521,16 +561,17 @@ def _get_datatype_list(cfg, radarnr='RADAR001'):
         proclevel, dataset = get_dataset_fields(datasetdescr)
         if 'datatype' in cfg[dataset]:
             if isinstance(cfg[dataset]['datatype'], str):
-                (radarnr_descr, datagroup, datatype, dataset_save,
+                (radarnr_descr, datagroup, datatype_aux, dataset_save,
                  product_save) = (
                     get_datatype_fields(cfg[dataset]['datatype']))
                 if datagroup != 'PROC' and radarnr_descr == radarnr:
                     if ((dataset_save is None) and (product_save is None)):
-                        datatypesdescr.add(datagroup+":"+datatype)
+                        datatypesdescr.add(
+                            radarnr_descr+":"+datagroup+":"+datatype_aux)
                     else:
-                        datatypesdescr.add(datagroup + ":" + datatype +
-                                           "," + dataset_save + "," +
-                                           product_save)
+                        datatypesdescr.add(
+                            radarnr_descr+":"+datagroup+":"+datatype_aux+"," +
+                            dataset_save+","+product_save)
             else:
                 for datatype in cfg[dataset]['datatype']:
                     (radarnr_descr, datagroup, datatype_aux, dataset_save,
@@ -538,11 +579,12 @@ def _get_datatype_list(cfg, radarnr='RADAR001'):
                         get_datatype_fields(datatype))
                     if datagroup != 'PROC' and radarnr_descr == radarnr:
                         if ((dataset_save is None) and (product_save is None)):
-                            datatypesdescr.add(datagroup+":"+datatype_aux)
+                            datatypesdescr.add(
+                                radarnr_descr+":"+datagroup+":"+datatype_aux)
                         else:
-                            datatypesdescr.add(datagroup + ":" + datatype +
-                                               "," + dataset_save + "," +
-                                               product_save)
+                            datatypesdescr.add(
+                                radarnr_descr+":"+datagroup+":"+datatype_aux +
+                                ","+dataset_save+","+product_save)
 
     datatypesdescr = list(datatypesdescr)
 
@@ -605,8 +647,7 @@ def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if ((datagroup != 'COSMO') and (datagroup != 'RAD4ALPCOSMO') and
-                (datagroup != 'DEM') and (datagroup != 'RAD4ALPDEM') and
-                (datagroup != 'SAVED')):
+                (datagroup != 'DEM') and (datagroup != 'RAD4ALPDEM')):
             masterdatatypedescr = datatypedescr
             if scan_list is not None:
                 masterscan = scan_list[int(radarnr[5:8])-1][0]
@@ -617,7 +658,7 @@ def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
         for datatypedescr in datatypesdescr:
             radarnr, datagroup, datatype, dataset, product = (
                 get_datatype_fields(datatypedescr))
-            if ((datagroup == 'COSMO') or (datagroup == 'SAVED')):
+            if datagroup == 'COSMO':
                 masterdatatypedescr = radarnr+':RAINBOW:dBZ'
                 if scan_list is not None:
                     masterscan = scan_list[int(radarnr[5:8])-1][0]

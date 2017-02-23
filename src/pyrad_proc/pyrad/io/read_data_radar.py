@@ -69,7 +69,6 @@ def get_data(voltime, datatypesdescr, cfg):
         radar object
 
     """
-
     datatype_rainbow = list()
     datatype_rad4alp = list()
     datatype_cfradial = list()
@@ -177,7 +176,9 @@ def get_data(voltime, datatypesdescr, cfg):
 
         if cfg['RadarRes'][ind_rad] != 'L':
             raise ValueError(
-                'ERROR: DEM files only available for rad4alp PL data')
+                'ERROR: DEM files only available for rad4alp PL data. ' +
+                'Current radar '+cfg['RadarName'][ind_rad] +
+                cfg['RadarRes'][ind_rad])
 
         for i in range(ndatatypes_rad4alpdem):
             radar_aux = merge_scans_dem_rad4alp(
@@ -290,7 +291,7 @@ def merge_scans_dem(basepath, scan_list, datatype_list, radarnr='RADAR001'):
 
 
 def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
-                        datatype_list, cfg, ind_rad=0, lteconvention = True):
+                        datatype_list, cfg, ind_rad=0):
     """
     merge rad4alp data.
 
@@ -312,8 +313,6 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
         configuration dictionary
     ind_rad : int
         radar index
-    lteconvention : bool
-        set to True to use lte file storage convention
 
     Returns
     -------
@@ -330,7 +329,7 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
     dayinfo = voltime.strftime('%y%j')
     timeinfo = voltime.strftime('%H%M')
     basename = 'P'+radar_res+radar_name+dayinfo
-    if lteconvention is True:
+    if cfg['path_convention'] == 'LTE':
         yy  = dayinfo[0:2]
         dy = dayinfo[2:]
         subf = ('P'+radar_res +
@@ -354,7 +353,7 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
                  scan_list[i])
         else:
             radar_aux = get_data_rad4alp(
-                filename[0], datatype_list, scan_list[i], cfg, ind_rad=ind_rad, lteconvention = lteconvention)
+                filename[0], datatype_list, scan_list[i], cfg, ind_rad=ind_rad)
 
             if radar is None:
                 radar = radar_aux
@@ -364,7 +363,7 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
     return radar
     
 def merge_scans_mxpol(basepath, scan_list, radar_name, radar_res, voltime,
-                        datatype_list, cfg, ind_rad=0, lteconvention = True):
+                        datatype_list, cfg, ind_rad=0):
     """
     merge rad4alp data.
 
@@ -389,8 +388,6 @@ def merge_scans_mxpol(basepath, scan_list, radar_name, radar_res, voltime,
         configuration dictionary
     ind_rad : int
         radar index
-    lteconvention : bool
-        set to True to use lte file storage convention
 
     Returns
     -------
@@ -404,7 +401,7 @@ def merge_scans_mxpol(basepath, scan_list, radar_name, radar_res, voltime,
             ' Unable to load MXPol data')
             
     radar = None
-    if lteconvention is True:
+    if cfg['path_convention'] == 'LTE':
         sub1 = str(voltime.year)
         sub2 = voltime.strftime('%m')
         sub3 = voltime.strftime('%d')
@@ -913,7 +910,7 @@ def get_data_rainbow(filename, datatype):
     return radar
 
 
-def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0, lteconvention = True):
+def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
     """
     gets rad4alp radar data
 
@@ -929,8 +926,6 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0, lteconv
         configuration dictionary
     ind_rad : int
         radar index
-    lteconvention : bool
-        set to True to use lte file storage convention
 
     Returns
     -------
@@ -943,7 +938,7 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0, lteconv
         if (datatype != 'Nh') and (datatype != 'Nv'):
             metranet_field_names.update(get_datatype_metranet(datatype))
     
-    if lteconvention is True:
+    if cfg['path_convention'] == 'LTE':
         radar = pyrad_MCH(filename, field_names=metranet_field_names)
     else:
         radar = pyart.aux_io.read_metranet(

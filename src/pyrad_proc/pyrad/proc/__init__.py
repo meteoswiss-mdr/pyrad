@@ -17,8 +17,6 @@ Auxiliary functions
     process_raw
     process_save_radar
     process_point_measurement
-    process_trajectory
-    process_traj_atplane
 
 Echo classification and filtering
 =================================
@@ -30,6 +28,7 @@ Echo classification and filtering
     process_echo_filter
     process_filter_snr
     process_filter_visibility
+    process_outlier_filter
     process_hydroclass
 
 Phase processing and attenuation correction
@@ -68,6 +67,7 @@ Monitoring, calibration and noise correction
     process_time_avg_flag
     process_colocated_gates
     process_intercomp
+    process_intercomp_time_avg
 
 Retrievals
 ==========
@@ -80,16 +80,29 @@ Retrievals
     process_l
     process_cdr
     process_rainrate
+    process_wind_vel
+    process_windshear
+
+Trajectory functions
+====================
+
+.. autosummary::
+    :toctree: generated/
+
+    process_trajectory
+    process_traj_atplane
+    process_traj_antenna_pattern
 
 """
 
 from .process_aux import get_process_func, process_raw, process_save_radar
 from .process_aux import process_point_measurement
-from .process_aux import process_trajectory, process_traj_atplane
+from .process_traj import process_trajectory, process_traj_atplane, \
+    process_traj_antenna_pattern
 
 from .process_echoclass import process_echo_id, process_echo_filter
 from .process_echoclass import process_filter_snr, process_filter_visibility
-from .process_echoclass import process_hydroclass
+from .process_echoclass import process_outlier_filter, process_hydroclass
 
 from .process_phase import process_correct_phidp0
 from .process_phase import process_smooth_phidp_single_window
@@ -108,10 +121,12 @@ from .process_calib import process_monitoring
 from .process_calib import process_time_avg, process_weighted_time_avg
 from .process_calib import process_time_avg_flag
 from .process_calib import process_colocated_gates, process_intercomp
+from .process_calib import process_intercomp_time_avg
 from .process_calib import process_sun_hits
 
 from .process_retrieve import process_signal_power, process_snr
 from .process_retrieve import process_l, process_cdr
-from .process_retrieve import process_rainrate
+from .process_retrieve import process_rainrate, process_wind_vel
+from .process_retrieve import process_windshear
 
 __all__ = [s for s in dir() if not s.startswith('_')]

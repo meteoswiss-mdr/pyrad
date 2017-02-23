@@ -12,6 +12,9 @@ Functions for retrieving new moments and products
     process_l
     process_cdr
     process_rainrate
+    process_wind_vel
+    process_windshear
+
 
 """
 
@@ -45,12 +48,26 @@ def process_signal_power(procstatus, dscfg, radar_list=None):
         radconstv : float. Global keyword
             The vertical channel radar constant. Used if input is vertical
             reflectivity
+        lrxv : float. Global keyword
+            The receiver losses from the antenna feed to the reference point.
+            [dB] positive value
+            Used if input is vertical reflectivity
+        lradomev : float. Global keyword
+            The 1-way dry radome losses [dB] positive value.
+            Used if input is vertical reflectivity
         mflossh : float. Global keyword
             The matching filter losses of the vertical channel. Used if input
             is horizontal reflectivity
         radconsth : float. Global keyword
             The horizontal channel radar constant. Used if input is horizontal
             reflectivity
+        lrxh : float. Global keyword
+            The receiver losses from the antenna feed to the reference point.
+            [dB] positive value
+            Used if input is horizontal reflectivity
+        lradomeh : float. Global keyword
+            The 1-way dry radome losses [dB] positive value.
+            Used if input is horizontal reflectivity
         attg : float. Dataset keyword
             The gas attenuation
     radar_list : list of Radar objects
@@ -106,6 +123,14 @@ def process_signal_power(procstatus, dscfg, radar_list=None):
         radconst = None
         if 'radconstv' in dscfg:
             radconst = dscfg['radconstv']
+
+        lrx = 0.
+        if 'lrxv' in dscfg:
+            lrx = dscfg['lrxv']
+
+        lradome = 0.
+        if 'lradomev' in dscfg:
+            lradome = dscfg['lradomev']
     else:
         pwr_field = 'signal_power_hh'
 
@@ -117,13 +142,20 @@ def process_signal_power(procstatus, dscfg, radar_list=None):
         if 'radconsth' in dscfg:
             radconst = dscfg['radconsth']
 
+        lrx = 0.
+        if 'lrxh' in dscfg:
+            lrx = dscfg['lrxh']
+
+        if 'lradomeh' in dscfg:
+            lradome = dscfg['lradomeh']
+
     attg = None
     if 'attg' in dscfg:
         attg = dscfg['attg']
 
     s_pwr = pyart.retrieve.compute_signal_power(
-        radar, lmf=lmf, attg=attg, radconst=radconst, refl_field=refl_field,
-        pwr_field=pwr_field)
+        radar, lmf=lmf, attg=attg, radconst=radconst, lrx=lrx,
+        lradome=lradome, refl_field=refl_field, pwr_field=pwr_field)
 
     # prepare for exit
     new_dataset = deepcopy(radar)
@@ -363,9 +395,10 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
-    if (not 'RR_METHOD' in dscfg):
-        raise Exception("ERROR: Undefined parameter 'RR_METHOD' for dataset '%s'"
-                        % dscfg['dsname'])
+    if ('RR_METHOD' not in dscfg):
+        raise Exception(
+            "ERROR: Undefined parameter 'RR_METHOD' for dataset '%s'"
+            % dscfg['dsname'])
 
     if dscfg['RR_METHOD'] == 'Z':
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
@@ -379,7 +412,7 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
         radar = radar_list[ind_rad]
 
         if refl_field not in radar.fields:
-            warn('Unable to compute rainfall rate. Missing data')
+            warn('ERROR: Unable to compute rainfall rate. Missing data')
             return None, None
 
         rain = pyart.retrieve.est_rain_rate_z(
@@ -535,5 +568,135 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
     new_dataset = deepcopy(radar)
     new_dataset.fields = dict()
     new_dataset.add_field('radar_estimated_rain_rate', rain)
+
+    return new_dataset, ind_rad
+
+
+def process_wind_vel(procstatus, dscfg, radar_list=None):
+    """
+    Estimates the horizontal or vertical component of the wind from the
+    radial velocity
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : string. Dataset keyword
+            The input data type
+        vert_proj : Boolean
+            If true the vertical projection is computed. Otherwise the
+            horizontal projection is computed
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+            dscfg['datatype'][0])
+    vel_field = get_fieldname_pyart(datatype)
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if vel_field not in radar.fields:
+        warn('Unable to retrieve wind speed. Missing data')
+        return None, None
+
+    vert_proj = False
+    if 'vert_proj' in dscfg:
+        vert_proj = dscfg['vert_proj']
+
+    wind_field = 'azimuthal_horizontal_wind_component'
+    if vert_proj:
+        wind_field = 'vertical_wind_component'
+
+    wind = pyart.retrieve.est_wind_vel(
+        radar, vert_proj=vert_proj, vel_field=vel_field,
+        wind_field=wind_field)
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.add_field(wind_field, wind)
+
+    return new_dataset, ind_rad
+
+
+def process_windshear(procstatus, dscfg, radar_list=None):
+    """
+    Estimates the wind shear from the wind velocity
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : string. Dataset keyword
+            The input data type
+        az_tol : float
+            The tolerance in azimuth when looking for gates on top
+            of the gate when computation is performed
+
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+            dscfg['datatype'][0])
+    wind_field = get_fieldname_pyart(datatype)
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if wind_field not in radar.fields:
+        warn('Unable to retrieve wind shear. Missing data')
+        return None, None
+
+    az_tol = 0.5
+    if 'az_tol' in dscfg:
+        az_tol = dscfg['az_tol']
+
+    windshear_field = 'vertical_wind_shear'
+
+    windshear = pyart.retrieve.est_vertical_windshear(
+        radar, az_tol=az_tol, wind_field=wind_field,
+        windshear_field=windshear_field)
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.add_field(windshear_field, windshear)
 
     return new_dataset, ind_rad
