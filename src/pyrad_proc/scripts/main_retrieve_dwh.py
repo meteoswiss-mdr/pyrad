@@ -35,14 +35,19 @@ def main():
     avg_time = 3600
     base_time = 0
 
-    smn_station_vec = ['PIL', 'WFJ', 'MTR', 'GUE', 'DIA']
+#    smn_station_vec = ['PIL', 'WFJ', 'MTR', 'GUE', 'DIA']
+    smn_station_vec = ['VSTSN']
     tstart_vec = ['2007', '2008', '2009', '2010', '2011', '2012', '2013',
                   '2014', '2015', '2016']
     tend_vec = ['2008', '2009', '2010', '2011', '2012', '2013', '2014',
                 '2015', '2016', '2017']
-    param_vec = ['tre200s0', 'tde200s0', 'ure200s0', 'gor000z0', 'fkl010z0']
-    ymin_vec = [-40., -40., 0., -40., 0.]
-    ymax_vec = [30., 30., 110., 1500., 20.]
+#    param_vec = ['tre200s0', 'tde200s0', 'ure200s0', 'gor000z0', 'fkl010z0']
+#    ymin_vec = [-40., -40., 0., -40., 0.]
+#    ymax_vec = [30., 30., 110., 1500., 20.]
+
+    param_vec = ['rre150z0']
+    ymin_vec = [0.]
+    ymax_vec = [30.]
 
     print("====== retrieval from DWH started: %s" %
           datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
@@ -87,7 +92,7 @@ def main():
                 date_std, value_std = time_series_statistics(
                     date, value, avg_time=avg_time, base_time=base_time,
                     method='std', dropnan=True)
-                    
+
                 date_series, value_avg, value_std = join_time_series(
                     date_avg, value_avg, date_std, value_std, dropnan=True)
 

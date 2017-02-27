@@ -26,6 +26,7 @@ Auxiliary functions for reading/writing files
 
 import os
 import glob
+import re
 import datetime
 import csv
 import xml.etree.ElementTree as et
@@ -424,7 +425,10 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
         radar object
 
     """
-    ndays = int(np.ceil(((endtime-starttime).total_seconds())/(3600.*24.)))
+    startdate = starttime.replace(hour=0, minute=0, second=0, microsecond=0)
+    enddate = endtime.replace(hour=0, minute=0, second=0, microsecond=0)
+    ndays = int((enddate-startdate).days)+1
+
     radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
         datadescriptor)
     ind_rad = int(radarnr[5:8])-1
@@ -437,7 +441,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
         if datagroup == 'RAINBOW':
             if scan is None:
                 warn('Unknown scan name')
-                return []
+                return None
             daydir = (
                 starttime+datetime.timedelta(days=i)).strftime('%Y-%m-%d')
             dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%Y%m%d')
@@ -451,15 +455,22 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
         elif datagroup == 'RAD4ALP':
             if scan is None:
                 warn('Unknown scan name')
-                return []
+                return None
             dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%y%j')
             basename = ('P'+cfg['RadarRes'][ind_rad] +
                         cfg['RadarName'][ind_rad]+dayinfo)
-            datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
+            if cfg['path_convention'] == 'LTE':
+                yy = dayinfo[0:2]
+                dy = dayinfo[2:]
+                subf = ('P' + cfg['RadarRes'][ind_rad] +
+                        cfg['RadarName'][ind_rad] + yy + 'hdf' + dy)
+                datapath = cfg['datapath'][ind_rad] + subf + '/'
+            else:
+                datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
             if (not os.path.isdir(datapath)):
                 warn("WARNING: Unknown datapath '%s'" % datapath)
                 continue
-            dayfilelist = glob.glob(datapath+basename+'*.'+scan)
+            dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
             for filename in dayfilelist:
                 t_filelist.append(filename)
         elif datagroup == 'CFRADIAL':
@@ -475,7 +486,32 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
             dayfilelist = glob.glob(datapath+dayinfo+'*'+datatype+'.nc')
             for filename in dayfilelist:
                 t_filelist.append(filename)
-
+        elif datagroup == 'MXPOL':
+            if scan is None:
+                warn('Unknown scan name')
+                return None
+            if cfg['path_convention'] == 'LTE':
+                sub1 = str(starttime.year)
+                sub2 = starttime.strftime('%m')
+                sub3 = starttime.strftime('%d')
+                datapath = (cfg['datapath'][ind_rad]+'/'+sub1+'/'+sub2+'/' +
+                            sub3+'/')
+                basename = ('MXPol-polar-'+starttime.strftime('%Y%m%d')+'-*-' +
+                            scan+'*')
+                dayfilelist = glob.glob(datapath+basename)
+            else:
+                daydir = (
+                    starttime+datetime.timedelta(days=i)).strftime('%Y-%m-%d')
+                dayinfo = (
+                    starttime+datetime.timedelta(days=i)).strftime('%Y%m%d')
+                datapath = cfg['datapath'][ind_rad]+scan+'/'+daydir+'/'
+                if (not os.path.isdir(datapath)):
+                    warn("WARNING: Unknown datapath '%s'" % datapath)
+                    continue
+                dayfilelist = glob.glob(
+                    datapath+'MXPol-polar-'+dayinfo+'-*-'+scan+'.nc')
+            for filename in dayfilelist:
+                t_filelist.append(filename)
     filelist = []
     for filename in t_filelist:
         filenamestr = str(filename)
@@ -537,7 +573,7 @@ def get_datatype_fields(datadescriptor):
     radarnr : str
         radar number, i.e. RADAR1, RADAR2, ...
     datagroup : str
-        data type group, i.e. RAINBOW, RAD4ALP, CFRADIAL, COSMO, ...
+        data type group, i.e. RAINBOW, RAD4ALP, CFRADIAL, COSMO, MXPOL ...
     datatype : str
         data type, i.e. dBZ, ZDR, ISO0, ...
     dataset : str
@@ -568,6 +604,10 @@ def get_datatype_fields(datadescriptor):
                 datatype = descrfields2[0]
                 dataset = descrfields2[1]
                 product = descrfields2[2]
+            elif datagroup == 'MXPOL':
+                datatype = descrfields[2]
+                dataset = None
+                product = None
             else:
                 datatype = descrfields[2]
                 dataset = None
@@ -580,6 +620,10 @@ def get_datatype_fields(datadescriptor):
             datatype = descrfields2[0]
             dataset = descrfields2[1]
             product = descrfields2[2]
+        elif datagroup == 'MXPOL':
+            datatype = descrfields[1]
+            dataset = None
+            product = None
         else:
             datatype = descrfields[1]
             dataset = None
@@ -644,6 +688,9 @@ def get_datetime(fname, datadescriptor):
     elif datagroup == 'RAD4ALP':
         datetimestr = bfile[3:12]
         fdatetime = datetime.datetime.strptime(datetimestr, '%y%j%H%M')
+    elif datagroup == 'MXPOL':
+        datetimestr = re.findall(r"([0-9]{8}-[0-9]{6})", bfile)[0]
+        fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d-%H%M%S')
     else:
         warn('unknown data group')
         return None
