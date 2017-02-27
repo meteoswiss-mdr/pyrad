@@ -4,8 +4,11 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 1
-	Nh
+dataSetList STRARR 4
+	dBZ
+    TEMP
+    VIS
+    Nh
 	
 #	l0:SNRh
 #	l1:RhoHV
@@ -24,39 +27,39 @@ dataSetList STRARR 1
 # ==========================================================================================
 #                 raw data
 # ==========================================================================================
-#dBZ STRUCT 3
-#    type STRING RAW
-#    datatype STRARR 1
-#       CFRADIAL:dBZ,dBZ,SAVEVOL_dBZ
-#    products STRUCT 1 	  
-#      EL001_0 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 2
-#         voltype STRING dBZ
-##      SAVEVOL_dBZ STRUCT 2
-##            type  STRING SAVEVOL
-##            voltype STRING dBZ
-#         
-#TEMP STRUCT 3
-#    type STRING RAW
-#    datatype STRARR 1
-#       RAD4ALPCOSMO:TEMP
-#    products STRUCT 1 	  
-#      EL001_0 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 2
-#         voltype STRING TEMP
-#         
-#VIS STRUCT 3
-#    type STRING RAW
-#    datatype STRARR 1
-#       RAD4ALPDEM:VIS
-#    products STRUCT 1 	  
-#      EL001_0 STRUCT 3
-#         type STRING PPI_IMAGE
-#         anglenr INT 2
-#         voltype STRING VIS
-#         
+dBZ STRUCT 3
+    type STRING RAW
+    datatype STRARR 1
+       CFRADIAL:dBZ,dBZ,SAVEVOL_dBZ
+    products STRUCT 1 	  
+      EL001_0 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING dBZ
+#      SAVEVOL_dBZ STRUCT 2
+#            type  STRING SAVEVOL
+#            voltype STRING dBZ
+         
+TEMP STRUCT 3
+    type STRING RAW
+    datatype STRARR 1
+       RAD4ALPCOSMO:TEMP
+    products STRUCT 1 	  
+      EL001_0 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING TEMP
+         
+VIS STRUCT 3
+    type STRING RAW
+    datatype STRARR 1
+       RAD4ALPDEM:VIS
+    products STRUCT 1 	  
+      EL001_0 STRUCT 3
+         type STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING VIS
+         
 Nh STRUCT 3
     type STRING RAW
     datatype STRARR 1

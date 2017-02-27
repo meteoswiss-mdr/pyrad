@@ -436,6 +436,8 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
 
             patternfile = dscfg['configpath'] + 'antenna/' \
                 + dscfg['asr_highbeam_antenna']['elPatternFile']
+            patternfile_low = dscfg['configpath'] + 'antenna/' \
+                + dscfg['asr_lowbeam_antenna']['elPatternFile']
             fixed_angle = dscfg['asr_highbeam_antenna']['fixed_angle']
         else:
             raise Exception("ERROR: Unexpected antenna type '%s' for dataset"
@@ -484,8 +486,15 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
 
         # Get antenna pattern and make weight vector
         try:
-            antpattern = read_antenna_pattern(patternfile, linear=True,
-                                              twoway=True)
+            if info == 'asrHighBeamAnt':
+                antpattern = read_antenna_pattern(
+                    patternfile, linear=True, twoway=False)
+                antpattern_low = read_antenna_pattern(
+                    patternfile_low, linear=True, twoway=False)
+                antpattern['attenuation'] *= antpattern_low['attenuation']
+            else:
+                antpattern = read_antenna_pattern(patternfile, linear=True,
+                                                  twoway=True)
         except:
             raise
         pattern_angles = antpattern['angle'] + fixed_angle
@@ -681,7 +690,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             # flag regions with colocated usable data in r_radar
             r_ind_invalid = r_radar.gate_altitude['data'] > max_altitude
             r_radar.fields['colocated_gates']['data'][r_ind_invalid] = 0
-            
+
             # flag regions with colocated usable data in radar_sel
             gate_coloc_radar_sel = intersection(
                 radar_sel, r_radar, h_tol=alt_tol, latlon_tol=latlon_tol,
