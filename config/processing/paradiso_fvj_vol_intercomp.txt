@@ -1,6 +1,6 @@
 # Name of this configuration:
 # Will be used in product generation save path
-name STRING paradiso_vol_fvj
+name STRING paradiso_vol_intercomp
 
 # ---------------------------------------------------------
 #  Raw data pathes

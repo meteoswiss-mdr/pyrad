@@ -48,7 +48,6 @@ from .io_aux import get_datatype_fields, get_datetime
 from .io_aux import find_cosmo_file, find_rad4alpcosmo_file
 
 
-
 def get_data(voltime, datatypesdescr, cfg):
     """
     Reads pyrad input data.
@@ -100,7 +99,7 @@ def get_data(voltime, datatypesdescr, cfg):
             datatype_rad4alpdem.append(datatype)
         elif datagroup == 'MXPOL':
             datatype_mxpol.append(datatype)
-            
+
     ind_rad = int(radarnr[5:8])-1
 
     ndatatypes_rainbow = len(datatype_rainbow)
@@ -129,10 +128,10 @@ def get_data(voltime, datatypesdescr, cfg):
             cfg['loadbasepath'][ind_rad], cfg['loadname'][ind_rad], voltime,
             datatype_cfradial, dataset_cfradial, product_cfradial)
         radar = add_field(radar, radar_aux)
-        
+
     if ndatatypes_mxpol > 0:
-        radar = merge_scans_mxpol(cfg['datapath'][ind_rad], cfg['ScanList'][ind_rad],
-            cfg['RadarName'][ind_rad], cfg['RadarRes'][ind_rad], voltime,
+        radar = merge_scans_mxpol(
+            cfg['datapath'][ind_rad], cfg['ScanList'][ind_rad], voltime,
             datatype_mxpol, cfg, ind_rad=ind_rad)
 
     # add COSMO files to the radar field
@@ -330,10 +329,9 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
     timeinfo = voltime.strftime('%H%M')
     basename = 'P'+radar_res+radar_name+dayinfo
     if cfg['path_convention'] == 'LTE':
-        yy  = dayinfo[0:2]
+        yy = dayinfo[0:2]
         dy = dayinfo[2:]
-        subf = ('P'+radar_res +
-            radar_name+ yy + 'hdf'+dy)
+        subf = 'P'+radar_res+radar_name+yy+'hdf'+dy
         datapath = basepath+subf+'/'
     else:
         datapath = basepath+dayinfo+'/'+basename+'/'
@@ -347,7 +345,8 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
     nelevs = len(scan_list)
     # merge the elevations into a single radar instance
     for i in range(1, nelevs):
-        filename = glob.glob(datapath+basename+timeinfo+'*.'+scan_list[i] + '*')
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*.'+scan_list[i]+'*')
         if not filename:
             warn('No file found in '+datapath+basename+timeinfo+'*.' +
                  scan_list[i])
@@ -361,9 +360,10 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
                 radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
 
     return radar
-    
-def merge_scans_mxpol(basepath, scan_list, radar_name, radar_res, voltime,
-                        datatype_list, cfg, ind_rad=0):
+
+
+def merge_scans_mxpol(basepath, scan_list, voltime, datatype_list, cfg,
+                      ind_rad=0):
     """
     merge rad4alp data.
 
@@ -372,14 +372,9 @@ def merge_scans_mxpol(basepath, scan_list, radar_name, radar_res, voltime,
     basepath : str
         base path of mxpol radar data
     scan_list : list
-        list of scans, in the case of mxpol, the elevation or azimuth denoted 
+        list of scans, in the case of mxpol, the elevation or azimuth denoted
         as 005 or 090 (for 5 or 90 degrees elevation) or 330 (for 330 degrees
         azimuth respectively)
-    radar_name : str
-        radar_name (MXPol)
-    radar_res : str
-        not applicable, in this case, set to 'polar' 
-        (could we use RHI/PPI here?)
     voltime: datetime object
         reference time of the scan
     datatype_list : list
@@ -395,11 +390,6 @@ def merge_scans_mxpol(basepath, scan_list, radar_name, radar_res, voltime,
         radar object
 
     """
-    if (radar_name is None) or (radar_res is None):
-        raise ValueError(
-            'ERROR: Radar Name and Resolution not specified in config file.' +
-            ' Unable to load MXPol data')
-            
     radar = None
     if cfg['path_convention'] == 'LTE':
         sub1 = str(voltime.year)
@@ -407,15 +397,22 @@ def merge_scans_mxpol(basepath, scan_list, radar_name, radar_res, voltime,
         sub3 = voltime.strftime('%d')
         dayinfo = voltime.strftime('%Y%m%d')
         timeinfo = voltime.strftime('%H%M')
-        datapath = cfg['datapath'][ind_rad] + '/' + sub1 + '/' + sub2 + '/' + sub3 + '/'
-        scanname = 'MXPol-polar-' + dayinfo + '-' + timeinfo + '*-'
-        filename = glob.glob(datapath + scanname  + scan_list[0] + '*')    
+        datapath = cfg['datapath'][ind_rad]+'/'+sub1+'/'+sub2+'/'+sub3+'/'
+        scanname = 'MXPol-polar-'+dayinfo+'-'+timeinfo+'*-'
+        filename = glob.glob(datapath+scanname+scan_list[0]+'*')
     else:
-        warn("insert MCH convention here")
-        filename = []
-        return filename
+        daydir = voltime.strftime('%Y-%m-%d')
+        dayinfo = voltime.strftime('%Y%m%d')
+        timeinfo = voltime.strftime('%H%M')
+        datapath = cfg['datapath'][ind_rad]+scan_list[0]+'/'+daydir+'/'
+        if (not os.path.isdir(datapath)):
+            warn("WARNING: Unknown datapath '%s'" % datapath)
+            return None
+        filename = glob.glob(
+            datapath+'MXPol-polar-'+dayinfo+'-'+timeinfo+'*-' +
+            scan_list[0]+'.nc')
     if not filename:
-        warn('No file found matching '+ datapath + scanname + scan_list[0] + '*')
+        warn('No file found matching '+datapath+scanname+scan_list[0]+'*')
     else:
         radar = get_data_mxpol(
             filename[0], datatype_list, scan_list[0], cfg, ind_rad=ind_rad)
@@ -423,7 +420,26 @@ def merge_scans_mxpol(basepath, scan_list, radar_name, radar_res, voltime,
     nelevs = len(scan_list)
     # merge the elevations into a single radar instance
     for i in range(1, nelevs):
-        filename = glob.glob(datapath+scanname+scan_list[i])
+        if cfg['path_convention'] == 'LTE':
+            sub1 = str(voltime.year)
+            sub2 = voltime.strftime('%m')
+            sub3 = voltime.strftime('%d')
+            dayinfo = voltime.strftime('%Y%m%d')
+            timeinfo = voltime.strftime('%H%M')
+            datapath = cfg['datapath'][ind_rad]+'/'+sub1+'/'+sub2+'/'+sub3+'/'
+            scanname = 'MXPol-polar-'+dayinfo+'-'+timeinfo+'*-'
+            filename = glob.glob(datapath+scanname+scan_list[i]+'*')
+        else:
+            daydir = voltime.strftime('%Y-%m-%d')
+            dayinfo = voltime.strftime('%Y%m%d')
+            timeinfo = voltime.strftime('%H%M')
+            datapath = cfg['datapath'][ind_rad]+scan_list[i]+'/'+daydir+'/'
+            if (not os.path.isdir(datapath)):
+                warn("WARNING: Unknown datapath '%s'" % datapath)
+                return None
+            filename = glob.glob(
+                datapath+'MXPol-polar-'+dayinfo+'-'+timeinfo+'*-' +
+                scan_list[i]+'.nc')
         if not filename:
             warn('No file found in '+datapath+scanname+scan_list[i])
         else:
@@ -436,7 +452,6 @@ def merge_scans_mxpol(basepath, scan_list, radar_name, radar_res, voltime,
                 radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
 
     return radar
-    
 
 
 def merge_scans_cosmo(voltime, datatype_list, cfg, ind_rad=0):
@@ -892,7 +907,7 @@ def get_data_rainbow(filename, datatype):
             single_slice = True
             common_slice_info = rbf['volume']['scan']['slice']
 
-        if datatype[0] == 'Nh':
+        if datatype == 'Nh':
             noisedBZ1km_h = float(common_slice_info['noise_power_dbz'])
             noisedBZ_h = pyart.retrieve.compute_noisedBZ(
                 radar.nrays, noisedBZ1km_h, radar.range['data'], 1.,
@@ -937,7 +952,7 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
     for datatype in datatype_list:
         if (datatype != 'Nh') and (datatype != 'Nv'):
             metranet_field_names.update(get_datatype_metranet(datatype))
-    
+
     if cfg['path_convention'] == 'LTE':
         radar = pyrad_MCH(filename, field_names=metranet_field_names)
     else:
@@ -986,7 +1001,8 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
                 radar.add_field('noisedBZ_vv', noisedBZ_v)
 
     return radar
-    
+
+
 def get_data_mxpol(filename, datatype_list, scan_name, cfg, ind_rad=0):
     """
     gets MXPol radar data
@@ -998,7 +1014,7 @@ def get_data_mxpol(filename, datatype_list, scan_name, cfg, ind_rad=0):
     datatype_list : list of strings
         list of data fields to get
     scan_name : list
-        list of scans, in the case of mxpol, the elevation or azimuth denoted 
+        list of scans, in the case of mxpol, the elevation or azimuth denoted
         as 005 or 090 (for 5 or 90 degrees elevation) or 330 (for 330 degrees
         azimuth respectively)
     cfg : dict
@@ -1016,13 +1032,12 @@ def get_data_mxpol(filename, datatype_list, scan_name, cfg, ind_rad=0):
     for datatype in datatype_list:
         if (datatype != 'Nh') and (datatype != 'Nv'):
             field_names.update(get_datatype_metranet(datatype))
-
     radar = pyrad_MXPOL(filename, field_names=field_names)
-        
+
     # create secondary moments (TODO)
     if ('Nh' in datatype_list) or ('Nv' in datatype_list):
         pass
-    
+
     return radar
 
 

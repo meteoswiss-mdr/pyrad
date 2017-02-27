@@ -425,7 +425,10 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
         radar object
 
     """
-    ndays = int(np.ceil(((endtime-starttime).total_seconds())/(3600.*24.)))
+    startdate = starttime.replace(hour=0, minute=0, second=0, microsecond=0)
+    enddate = endtime.replace(hour=0, minute=0, second=0, microsecond=0)
+    ndays = int((enddate-startdate).days)+1
+
     radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
         datadescriptor)
     ind_rad = int(radarnr[5:8])-1
@@ -457,13 +460,13 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
             basename = ('P'+cfg['RadarRes'][ind_rad] +
                         cfg['RadarName'][ind_rad]+dayinfo)
             if cfg['path_convention'] == 'LTE':
-                yy  = dayinfo[0:2]
+                yy = dayinfo[0:2]
                 dy = dayinfo[2:]
                 subf = ('P' + cfg['RadarRes'][ind_rad] +
                         cfg['RadarName'][ind_rad] + yy + 'hdf' + dy)
                 datapath = cfg['datapath'][ind_rad] + subf + '/'
             else:
-                datapath = cfg['datapath'][ind_rad] + dayinfo + '/' + basename + '/'
+                datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
             if (not os.path.isdir(datapath)):
                 warn("WARNING: Unknown datapath '%s'" % datapath)
                 continue
@@ -491,12 +494,22 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
                 sub1 = str(starttime.year)
                 sub2 = starttime.strftime('%m')
                 sub3 = starttime.strftime('%d')
-                datapath = cfg['datapath'][ind_rad] + '/' + sub1 + '/' + sub2 + '/' + sub3 + '/'
-                basename = 'MXPol-polar-' + starttime.strftime('%Y%m%d') + '-*-' + scan + '*'
+                datapath = (cfg['datapath'][ind_rad]+'/'+sub1+'/'+sub2+'/' +
+                            sub3+'/')
+                basename = ('MXPol-polar-'+starttime.strftime('%Y%m%d')+'-*-' +
+                            scan+'*')
                 dayfilelist = glob.glob(datapath+basename)
             else:
-                warn("insert MCH convention here")
-                return None
+                daydir = (
+                    starttime+datetime.timedelta(days=i)).strftime('%Y-%m-%d')
+                dayinfo = (
+                    starttime+datetime.timedelta(days=i)).strftime('%Y%m%d')
+                datapath = cfg['datapath'][ind_rad]+scan+'/'+daydir+'/'
+                if (not os.path.isdir(datapath)):
+                    warn("WARNING: Unknown datapath '%s'" % datapath)
+                    continue
+                dayfilelist = glob.glob(
+                    datapath+'MXPol-polar-'+dayinfo+'-*-'+scan+'.nc')
             for filename in dayfilelist:
                 t_filelist.append(filename)
     filelist = []
@@ -594,7 +607,7 @@ def get_datatype_fields(datadescriptor):
             elif datagroup == 'MXPOL':
                 datatype = descrfields[2]
                 dataset = None
-                product = None         
+                product = None
             else:
                 datatype = descrfields[2]
                 dataset = None
@@ -676,7 +689,7 @@ def get_datetime(fname, datadescriptor):
         datetimestr = bfile[3:12]
         fdatetime = datetime.datetime.strptime(datetimestr, '%y%j%H%M')
     elif datagroup == 'MXPOL':
-        datetimestr = re.findall(r"([0-9]{8}-[0-9]{6})",bfile)[0]
+        datetimestr = re.findall(r"([0-9]{8}-[0-9]{6})", bfile)[0]
         fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d-%H%M%S')
     else:
         warn('unknown data group')
