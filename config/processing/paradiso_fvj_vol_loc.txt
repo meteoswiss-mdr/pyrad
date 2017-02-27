@@ -8,8 +8,7 @@ NumRadars INT 1
 TimeTol FLOAT 3600.
 
 # Radar Name
-RadarName STRARR 1
-    DX50
+RadarName STRING DX50
 
 # Names of the radar scans in the specified sector
 # NOTE: Must have a trailing '/'

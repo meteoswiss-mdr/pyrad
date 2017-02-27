@@ -1,0 +1,51 @@
+#
+# Configuration for MXPOL data in the Valais (Martigny)
+
+# Number of radars to process
+NumRadars INT 1
+
+# Time tolerance when processing multiple radars [s]
+TimeTol FLOAT 3600.
+
+# rad4alp radar name
+RadarName STRARR 1
+	MXPol
+
+# rad4alp radar range resolution L:Low H:High
+RadarRes STRARR 1
+	polar
+
+# Names of the radar scans in the specified sector
+ScanList STRARR 1
+	  054  # masterscan: first scan of a volume
+	
+
+# angles from 001 to 020
+# ['-0.2', '0.4',  '1.0',  '1.6',  '2.5',  '3.5',  '4.5',  '5.5',  '6.5',  '7.5',
+#   '8.5', '9.5', '11.0', '13.0', '16.0', '20.0', '25.0', '30.0', '35.0', '40.0']
+
+# Repetition time of the scans [min]
+ScanPeriod INT 5
+
+# Frequency of cosmo run [h]
+CosmoRunFreq INT 1
+
+# hours forecasted in cosmo run [h]
+CosmoForecasted INT 7
+
+## Image config
+ppiImageConfig STRUCT 6
+   xsize      FLOAT    7.   # image size [inches] (default dots per inch (dpi):72)
+   ysize      FLOAT    7.   # image size [inches] (default dots per inch (dpi):72)
+   xmin       FLOAT -100.0  # Min distance on horizontal axis [km]
+   xmax       FLOAT  100.0  # Max distance on horizontal axis [km]
+   ymin       FLOAT -100.0  # Min distance on vertical axis [km]
+   ymax       FLOAT  100.0  # Max distance on vertical axis [km]
+
+rhiImageConfig STRUCT 6
+   xsize      FLOAT   10.   # image size [inches]
+   ysize      FLOAT    5.   # image size [inches]
+   xmin       FLOAT  -30.0  # Min distance on horizontal axis [km]
+   xmax       FLOAT   30.0  # Max distance on horizontal axis [km]
+   ymin       FLOAT    0.0  # Min distance on vertical axis [km]
+   ymax       FLOAT   10.0  # Max distance on vertical axis [km]

@@ -34,7 +34,7 @@ import argparse
 import atexit
 import os
 
-from pyrad.flow import main as pyrad_main
+from pyrad.flow.flow_control import main as pyrad_main
 
 print(__doc__)
 

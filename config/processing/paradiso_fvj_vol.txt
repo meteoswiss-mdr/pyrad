@@ -9,23 +9,17 @@ name STRING paradiso_vol_fvj
 # Base path of the raw data.
 # Note: Must have a trailing '/'
 # ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
-datapath STRARR 1
-    /data/DX50/rawdata/
+datapath STRING /data/DX50/rawdata/
 
 # Base path for cosmo data
-cosmopath STRARR 1
-    /data/cosmo/
+cosmopath STRING /data/cosmo/
 
 # Base path for dem data
-dempath STRARR 1
-    /data/DEM/DX50_PAY/
+dempath STRING /data/DEM/DX50_PARADISO/
 
 # Loading of saved datasets
-loadbasepath STRARR 1
-    /data/pyrad_examples/
-
-loadname STRARR 1
-    paradiso_vol_fvj
+loadbasepath STRING /data/pyrad_examples/
+loadname STRING paradiso_vol_fvj
 
 # ------------------------------------------------------------
 # Auxiliary data pathes
@@ -42,8 +36,7 @@ disdropath STRING /data/scattering/dsd_ts/
 saveimgbasepath STRING /data/pyrad_examples/
 saveimg         INT 1
 # Supported formats: eps, jpeg, jpg, pdf, pgf, png, ps, raw, rgba, svg, svgz, tif, tiff
-imgformat STRARR 1
-    png	
+imgformat STRING png	
 
 # --------------------------------------------------------
 # configuration files pathes

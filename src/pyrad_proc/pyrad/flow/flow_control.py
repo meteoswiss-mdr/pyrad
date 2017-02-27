@@ -31,6 +31,7 @@ from datetime import timedelta
 import atexit
 import inspect
 import gc
+import numpy as np
 
 from ..io.config import read_config
 from ..io.read_data_radar import get_data
@@ -160,13 +161,24 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
                 master_voltime+timedelta(seconds=cfg['TimeTol']),
                 datacfg, scan_list=cfg['ScanList'])
 
-            if len(filelist_ref) == 0:
+            nfiles_ref = len(filelist_ref)
+            if nfiles_ref == 0:
                 warn("ERROR: Could not find any valid volume for reference " +
                      "time " + master_voltime.strftime('%Y-%m-%d %H:%M:%S') +
                      ' and radar RADAR'+'{:03d}'.format(i+1))
                 radar_list.append(None)
+            elif nfiles_ref == 1:
+                voltime_ref = get_datetime(
+                    filelist_ref[ind], datatypedescr_ref)
+                radar_list.append(
+                    get_data(voltime_ref, datatypesdescr_list[i], datacfg))
             else:
-                voltime_ref = get_datetime(filelist_ref[0], datatypedescr_ref)
+                voltime_ref_list = []
+                for j in range(nfiles_ref):
+                    voltime_ref_list.append(get_datetime(
+                        filelist_ref[j], datatypedescr_ref))
+                voltime_ref = min(
+                    voltime_ref_list, key=lambda x: abs(x-master_voltime))
                 radar_list.append(
                     get_data(voltime_ref, datatypesdescr_list[i], datacfg))
 
@@ -325,6 +337,8 @@ def _create_cfg_dict(cfgfile):
         cfg.update({'ScanList': get_scan_list(cfg['ScanList'])})
     if 'datapath' not in cfg:
         cfg.update({'datapath': None})
+    if 'path_convention' not in cfg:
+        cfg.update({'path_convention': 'MCH'})
     if 'cosmopath' not in cfg:
         cfg.update({'cosmopath': None})
     if 'psrpath' not in cfg:
@@ -418,6 +432,7 @@ def _create_datacfg_dict(cfg):
     datacfg.update({'ScanPeriod': cfg['ScanPeriod']})
     datacfg.update({'CosmoRunFreq': int(cfg['CosmoRunFreq'])})
     datacfg.update({'CosmoForecasted': int(cfg['CosmoForecasted'])})
+    datacfg.update({'path_convention': cfg['path_convention']})
 
     return datacfg
 

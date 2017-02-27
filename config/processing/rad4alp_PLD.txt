@@ -10,12 +10,17 @@ name STRING rad4alp_PLD
 # Note: Must have a trailing '/'
 # ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
 datapath STRING /data/rad4alp/rawdata/
+path_convention STRING MCH
 
 # Base path for cosmo data
 cosmopath STRING /data/cosmo/
 
 # Base path for dem data
 dempath STRING /data/rad4alp/visibRad4Alp/
+
+# Loading of saved datasets
+loadbasepath STRING /data/pyrad_examples/
+loadname STRING  rad4alp_PLD
 
 
 # ------------------------------------------------------------
