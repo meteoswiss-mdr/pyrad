@@ -103,14 +103,20 @@ def generate_traj_product(traj, prdcfg):
 
         ts = TimeSeries(description, traj.time_vector,
                         timeformat="%Y-%m-%d %H:%M:%S.%f")
-        ts.add_dataseries("Elevation", "deg", traj.radar_list[0].elevation_vec)
-        ts.add_dataseries("Azimuth", "deg", traj.radar_list[0].azimuth_vec)
-        ts.add_dataseries("Range", "m", traj.radar_list[0].range_vec)
+        ts.add_dataseries("Elevation", "Elevation", "deg",
+                          traj.radar_list[0].elevation_vec)
+        ts.add_dataseries("Azimuth", "Azimuth", "deg",
+                          traj.radar_list[0].azimuth_vec)
+        ts.add_dataseries("Range", "Range", "m", traj.radar_list[0].range_vec)
 
-        ts.add_dataseries("Absolute Speed", "m/s", traj.radar_list[0].v_abs)
-        ts.add_dataseries("Radial Speed", "m/s", traj.radar_list[0].v_r)
-        ts.add_dataseries("Elevation Speed", "deg/s", traj.radar_list[0].v_el)
-        ts.add_dataseries("Azimuth Speed", "deg/s", traj.radar_list[0].v_az)
+        ts.add_dataseries("Absolute Speed", "Absolute Speed", "m/s",
+                          traj.radar_list[0].v_abs)
+        ts.add_dataseries("Radial Speed", "Radial Speed", "m/s",
+                          traj.radar_list[0].v_r)
+        ts.add_dataseries("Elevation Speed", "Elevation Speed", "deg/s",
+                          traj.radar_list[0].v_el)
+        ts.add_dataseries("Azimuth Speed", "Azimuth Speed", "deg/s",
+                          traj.radar_list[0].v_az)
 
         ts.write(savedir + fname[0])
 

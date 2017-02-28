@@ -149,7 +149,7 @@ class TimeSeries(object):
                       file=tsfile)
 
             for ds in self.dataseries:
-                print(", %14.4f" % (ds.data.filled(fill_value=np.nan)[kk]),
+                print(", %14.4f" % (np.ma.filled(ds.data, fill_value=np.nan)[kk]),
                       end="", file=tsfile)
 
             print("", file=tsfile)
