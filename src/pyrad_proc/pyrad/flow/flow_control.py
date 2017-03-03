@@ -169,7 +169,7 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
                 radar_list.append(None)
             elif nfiles_ref == 1:
                 voltime_ref = get_datetime(
-                    filelist_ref[ind], datatypedescr_ref)
+                    filelist_ref[0], datatypedescr_ref)
                 radar_list.append(
                     get_data(voltime_ref, datatypesdescr_list[i], datacfg))
             else:

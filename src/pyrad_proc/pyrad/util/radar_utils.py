@@ -185,11 +185,11 @@ def find_ray_index(ele_vec, azi_vec, ele, azi, ele_tol=0., azi_tol=0.,
     """
     ind_ray = np.where(np.logical_and(
         np.logical_and(ele_vec <= ele+ele_tol, ele_vec >= ele-ele_tol),
-        np.logical_and(azi_vec <= azi+azi_tol, azi_vec >= azi-azi_tol)))
+        np.logical_and(azi_vec <= azi+azi_tol, azi_vec >= azi-azi_tol)))[0]
 
-    if len(ind_ray[0]) == 0:
+    if len(ind_ray) == 0:
         return None
-    if len(ind_ray[0]) == 1:
+    if len(ind_ray) == 1:
         return ind_ray[0]
 
     if nearest == 'azi':
