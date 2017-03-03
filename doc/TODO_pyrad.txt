@@ -1,12 +1,9 @@
 Pending modifications for current code in Pyrad
 -----------------------------------------------
 - In function process_echo_id: Add condition on differential reflectivity at low reflectivity values. Allow user to select the various thresholds. Add a speckle filter
-- Functions for PhiDP and KDP processing consume too much memory up to the point that they cannot handle rad4alp PH data. It is probably due to the rolling window creating a monstrous matrix.
-We should try to reduce the memory consumption.
 
 Documentation
 -------------
-- Change documentation to reflect that pull requests have to be done in specifically named branches. (You do not modify master)
 - Complete docstrings in Pyrad to specify the user defined keywords each function accepts. Make sure default values and the input data types are specified in the documentation
 
 Processing functions to be implemented with highest priority:
@@ -15,16 +12,10 @@ Processing functions to be implemented with highest priority:
 
 Product functions to be implemented with highest priority:
 ----------------------------------------------------------
-- time series of intercomparison
 - scatter plots of sensor-radar comparisons
 
 
 Things to check before making it operational:
 ---------------------------------------------
-- Sun monitoring:
-    - Check if transmission losses have to be subtracted from received power
-    - Check if conversion from solar flux to received power is done properly
-- Polarimetric data monitoring:
-    - Add metadata in the density and histogram plot    
 - Rainfall rate estimation:
     - Distinguish between the various rainfall rate estimators (no single datatype RR)

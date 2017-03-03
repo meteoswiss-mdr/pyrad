@@ -5,13 +5,14 @@
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
 dataSetList STRARR 1
-   TEMP
+   TEMP_RAW
 
 
-TEMP STRUCT 3
-    type STRING RAW
+TEMP_RAW STRUCT 4
+    type STRING COSMO_TEMP
     datatype STRARR 1
-        COSMO:TEMP
+        dBZ
+    keep_in_memory INT 1
     products STRUCT 3        
         EL003_0 STRUCT 3
             type  STRING PPI_IMAGE
@@ -25,7 +26,55 @@ TEMP STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 3
             voltype STRING TEMP
-
+            
+#TEMP_RAW2 STRUCT 5
+#    type STRING COSMO_TEMP_LOOKUP
+#    datatype STRARR 1
+#        dBZ    
+#    regular_grid INT 0
+#    lookup_table INT 1
+#    products STRUCT 3        
+#        EL003_0 STRUCT 3
+#            type  STRING PPI_IMAGE
+#            anglenr INT 1
+#            voltype STRING TEMP  
+#        EL005_7 STRUCT 3
+#            type  STRING PPI_IMAGE
+#            anglenr INT 2
+#            voltype STRING TEMP
+#        EL008_2 STRUCT 3
+#            type  STRING PPI_IMAGE
+#            anglenr INT 3
+#            voltype STRING TEMP
+#            
+#RAD2COSMO STRUCT 3
+#    type STRING COSMO_COORD
+#    datatype STRARR 1
+#        dBZ        
+#    products STRUCT 1        
+#        rad2cosmo STRUCT 2
+#            type  STRING SAVEVOL            
+#            voltype STRING cosmo_index
+#            
+#            
+#TEMP STRUCT 3
+#    type STRING RAW
+#    datatype STRARR 1
+#        COSMO:TEMP
+#    products STRUCT 3        
+#        EL003_0 STRUCT 3
+#            type  STRING PPI_IMAGE
+#            anglenr INT 1
+#            voltype STRING TEMP  
+#        EL005_7 STRUCT 3
+#            type  STRING PPI_IMAGE
+#            anglenr INT 2
+#            voltype STRING TEMP
+#        EL008_2 STRUCT 3
+#            type  STRING PPI_IMAGE
+#            anglenr INT 3
+#            voltype STRING TEMP
+#
 #ZDR STRUCT 3
 #   type     STRING RAW
 #   datatype STRING ZDR

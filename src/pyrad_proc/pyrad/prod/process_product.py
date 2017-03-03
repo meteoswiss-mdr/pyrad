@@ -7,6 +7,7 @@ Functions for obtaining Pyrad products from the datasets
 .. autosummary::
     :toctree: generated/
 
+    generate_cosmo_coord_products
     generate_sun_hits_products
     generate_intercomp_products
     generate_colocated_gates_products
@@ -50,6 +51,53 @@ from ..util.radar_utils import create_sun_hits_field
 from ..util.radar_utils import create_sun_retrieval_field
 from ..util.radar_utils import compute_histogram, compute_quantiles
 from ..util.radar_utils import compute_quantiles_from_hist, compute_2d_stats
+
+
+def generate_cosmo_coord_products(dataset, prdcfg):
+    """
+    generates COSMO coordinates products
+
+    Parameters
+    ----------
+    dataset : tuple
+        radar object and sun hits dictionary
+
+    prdcfg : dictionary of dictionaries
+        product configuration dictionary of dictionaries
+
+    Returns
+    -------
+    filename : str
+        the name of the file created. None otherwise
+
+    """
+    if prdcfg['type'] == 'SAVEVOL':
+        radar_obj = dataset['radar_obj']
+        ind_rad = dataset['ind_rad']
+
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in radar_obj.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        new_dataset = deepcopy(radar_obj)
+        new_dataset.fields = dict()
+        new_dataset.add_field(field_name, radar_obj.fields[field_name])
+
+        savedir = prdcfg['cosmopath'][ind_rad]+'rad2cosmo1/'
+        fname = 'rad2cosmo_'+prdcfg['voltype']+'_'+prdcfg['procname']+'.nc'
+
+        pyart.io.cfradial.write_cfradial(savedir+fname, new_dataset)
+        print('saved file: '+fname)
+
+        return fname
+
+    else:
+        warn(' Unsupported product type: ' + prdcfg['type'])
+        return None
 
 
 def generate_sun_hits_products(dataset, prdcfg):

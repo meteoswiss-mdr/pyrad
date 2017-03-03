@@ -23,6 +23,18 @@ Reading radar data
 
     get_data
 
+Reading cosmo data
+==================
+
+.. autosummary::
+    :toctree: generated/
+
+    cosmo2radar_data
+    cosmo2radar_coord
+    get_cosmo_field
+    read_cosmo_temp
+    read_cosmo_coord
+
 Reading other data
 ==================
 
@@ -82,6 +94,9 @@ Auxiliary functions
     get_field_name
     get_fieldname_rainbow
     generate_field_name_str
+    find_raw_cosmo_file
+    add_field
+    interpol_field
 
 Trajectory
 ==========
@@ -103,7 +118,11 @@ TimeSeries
 
 from .config import read_config
 
-from .read_data_radar import get_data
+from .read_data_radar import get_data, add_field, interpol_field
+
+from .read_data_cosmo import read_cosmo_temp, read_cosmo_coord
+from .read_data_cosmo import cosmo2radar_data, cosmo2radar_coord
+from .read_data_cosmo import get_cosmo_field
 
 from .read_data_other import read_status, read_rad4alp_cosmo, read_rad4alp_vis
 from .read_data_other import read_timeseries, read_monitoring_ts
@@ -124,7 +143,7 @@ from .io_aux import get_save_dir, make_filename
 from .io_aux import get_datetime, get_dataset_fields
 from .io_aux import get_file_list, get_datatype_fields
 from .io_aux import get_fieldname_pyart, get_field_unit
-from .io_aux import generate_field_name_str
+from .io_aux import generate_field_name_str, find_raw_cosmo_file
 
 from .trajectory import Trajectory
 

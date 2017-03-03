@@ -20,6 +20,7 @@ from .process_product import generate_monitoring_products
 from .process_product import generate_colocated_gates_products
 from .process_product import generate_intercomp_products
 from .process_product import generate_time_avg_products
+from .process_product import generate_cosmo_coord_products
 
 from .process_traj_products import generate_traj_product
 
@@ -56,6 +57,8 @@ def get_prodgen_func(dsformat, dsname, dstype):
         func = generate_traj_product
     elif dsformat == 'COLOCATED_GATES':
         func = generate_colocated_gates_products
+    elif dsformat == 'COSMO_COORD':
+        func = generate_cosmo_coord_products
     else:
         raise ValueError("ERROR: Unknown dataset format '%s' of dataset '%s'"
                          "(dataset type '%s')" % (dsformat, dsname, dstype))
