@@ -19,6 +19,7 @@ Auxiliary functions for reading/writing files
     get_datatype_fields
     get_dataset_fields
     get_datetime
+    find_raw_cosmo_file
     find_cosmo_file
     find_rad4alpcosmo_file
 
@@ -382,6 +383,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'temperature'
     elif datatype == 'ISO0':
         field_name = 'iso0'
+    elif datatype == 'cosmo_index':
+        field_name = 'cosmo_index'
 
     elif datatype == 'VIS':
         field_name = 'visibility'
@@ -700,7 +703,7 @@ def get_datetime(fname, datadescriptor):
 
 def find_cosmo_file(voltime, datatype, cfg, scanid, ind_rad=0):
     """
-    Search a COSMO file
+    Search a COSMO file in Rainbow format
 
     Parameters
     ----------
@@ -741,6 +744,55 @@ def find_cosmo_file(voltime, datatype, cfg, scanid, ind_rad=0):
 
         search_name = (
             datapath+datatype+'_RUN'+runtimestr+'_DX50'+fdatetime+'.*')
+        print('Looking for file: '+search_name)
+        fname = glob.glob(search_name)
+        if len(fname) > 0:
+            found = True
+            break
+
+    if not found:
+        warn('WARNING: Unable to get COSMO '+datatype+' information')
+        return None
+    else:
+        return fname[0]
+
+
+def find_raw_cosmo_file(voltime, datatype, cfg, ind_rad=0):
+    """
+    Search a COSMO file in netcdf format
+
+    Parameters
+    ----------
+    voltime : datetime object
+        volume scan time
+    datatype : str
+        type of COSMO data to look for
+    cfg : dictionary of dictionaries
+        configuration info to figure out where the data is
+    ind_rad : int
+        radar index
+
+    Returns
+    -------
+    fname : str
+        Name of COSMO file if it exists. None otherwise
+
+    """
+    # initial run time to look for
+    hvol = int(voltime.strftime('%H'))
+    runhour0 = int(hvol/cfg['CosmoRunFreq'])*cfg['CosmoRunFreq']
+    runtime0 = voltime.replace(hour=runhour0, minute=0, second=0)
+
+    # look for cosmo file
+    found = False
+    nruns_to_check = int((cfg['CosmoForecasted']-1)/cfg['CosmoRunFreq'])
+    for i in range(nruns_to_check):
+        runtime = runtime0-datetime.timedelta(hours=i * cfg['CosmoRunFreq'])
+        runtimestr = runtime.strftime('%Y%m%d%H')
+
+        daydir = runtime.strftime('%Y-%m-%d')
+        datapath = cfg['cosmopath'][ind_rad]+datatype+'/raw1/'+daydir+'/'
+        search_name = (datapath+'cosmo-1_MDR_3D_'+runtimestr+'.nc')
         print('Looking for file: '+search_name)
         fname = glob.glob(search_name)
         if len(fname) > 0:

@@ -93,6 +93,17 @@ Trajectory functions
     process_traj_atplane
     process_traj_antenna_pattern
 
+COSMO data
+==========
+
+.. autosummary::
+    :toctree: generated/
+
+    process_cosmo_temp
+    process_cosmo_temp_lookup_table
+    process_cosmo_coord
+
+
 """
 
 from .process_aux import get_process_func, process_raw, process_save_radar
@@ -128,5 +139,8 @@ from .process_retrieve import process_signal_power, process_snr
 from .process_retrieve import process_l, process_cdr
 from .process_retrieve import process_rainrate, process_wind_vel
 from .process_retrieve import process_windshear
+
+from .process_cosmo import process_cosmo_temp, process_cosmo_temp_lookup_table
+from .process_cosmo import process_cosmo_coord
 
 __all__ = [s for s in dir() if not s.startswith('_')]

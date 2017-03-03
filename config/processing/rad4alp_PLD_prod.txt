@@ -4,11 +4,8 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 4
-	dBZ
-    TEMP
-    VIS
-    Nh
+dataSetList STRARR 1	
+    TEMP_RAW
 	
 #	l0:SNRh
 #	l1:RhoHV
@@ -27,48 +24,60 @@ dataSetList STRARR 4
 # ==========================================================================================
 #                 raw data
 # ==========================================================================================
-dBZ STRUCT 3
-    type STRING RAW
-    datatype STRARR 1
-       CFRADIAL:dBZ,dBZ,SAVEVOL_dBZ
-    products STRUCT 1 	  
-      EL001_0 STRUCT 3
-         type STRING PPI_IMAGE
-         anglenr INT 2
-         voltype STRING dBZ
-#      SAVEVOL_dBZ STRUCT 2
-#            type  STRING SAVEVOL
-#            voltype STRING dBZ
+#dBZ STRUCT 3
+#    type STRING RAW
+#    datatype STRARR 1
+#       CFRADIAL:dBZ,dBZ,SAVEVOL_dBZ
+#    products STRUCT 1 	  
+#      EL001_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 2
+#         voltype STRING dBZ
+##      SAVEVOL_dBZ STRUCT 2
+##            type  STRING SAVEVOL
+##            voltype STRING dBZ
+#         
+#TEMP STRUCT 3
+#    type STRING RAW
+#    datatype STRARR 1
+#       RAD4ALPCOSMO:TEMP
+#    products STRUCT 1 	  
+#      EL001_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 2
+#         voltype STRING TEMP
+#         
+#VIS STRUCT 3
+#    type STRING RAW
+#    datatype STRARR 1
+#       RAD4ALPDEM:VIS
+#    products STRUCT 1 	  
+#      EL001_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 2
+#         voltype STRING VIS
+#         
+#Nh STRUCT 3
+#    type STRING RAW
+#    datatype STRARR 1
+#       RAD4ALP:Nh
+#    products STRUCT 1 	  
+#      EL001_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 2
+#         voltype STRING Nh
          
-TEMP STRUCT 3
-    type STRING RAW
+TEMP_RAW STRUCT 5
+    type STRING COSMO_TEMP
     datatype STRARR 1
-       RAD4ALPCOSMO:TEMP
+        RAD4ALP:dBZ
+    keep_in_memory INT 1
+    regular_grid INT 1
     products STRUCT 1 	  
       EL001_0 STRUCT 3
          type STRING PPI_IMAGE
          anglenr INT 2
          voltype STRING TEMP
-         
-VIS STRUCT 3
-    type STRING RAW
-    datatype STRARR 1
-       RAD4ALPDEM:VIS
-    products STRUCT 1 	  
-      EL001_0 STRUCT 3
-         type STRING PPI_IMAGE
-         anglenr INT 2
-         voltype STRING VIS
-         
-Nh STRUCT 3
-    type STRING RAW
-    datatype STRARR 1
-       RAD4ALP:Nh
-    products STRUCT 1 	  
-      EL001_0 STRUCT 3
-         type STRING PPI_IMAGE
-         anglenr INT 2
-         voltype STRING Nh
 
 ## ==========================================================================================
 ##                 secondary moments products

@@ -19,9 +19,7 @@ dempath STRING /data/DEM/DX50_EMM/
 
 # Loading of saved datasets
 loadbasepath STRING /data/pyrad_examples/
-
-loadname STRARR 1
-    mals_emm_vol_fvj
+loadname STRING mals_emm_vol_fvj
 
 # --------------------------------------------
 # Output data

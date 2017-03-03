@@ -169,7 +169,7 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
                 radar_list.append(None)
             elif nfiles_ref == 1:
                 voltime_ref = get_datetime(
-                    filelist_ref[ind], datatypedescr_ref)
+                    filelist_ref[0], datatypedescr_ref)
                 radar_list.append(
                     get_data(voltime_ref, datatypesdescr_list[i], datacfg))
             else:
@@ -460,6 +460,9 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
     dscfg.update({'configpath': cfg['configpath']})
     dscfg.update({'solarfluxpath': cfg['solarfluxpath']})
     dscfg.update({'colocgatespath': cfg['colocgatespath']})
+    dscfg.update({'cosmopath': cfg['cosmopath']})
+    dscfg.update({'CosmoRunFreq': cfg['CosmoRunFreq']})
+    dscfg.update({'CosmoForecasted': cfg['CosmoForecasted']})
     dscfg.update({'RadarName': cfg['RadarName']})
     dscfg.update({'mflossh': cfg['mflossh']})
     dscfg.update({'mflossv': cfg['mflossv']})
@@ -533,6 +536,7 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
     prdcfg.update({'basepath': cfg['saveimgbasepath']})
     prdcfg.update({'smnpath': cfg['smnpath']})
     prdcfg.update({'disdropath': cfg['disdropath']})
+    prdcfg.update({'cosmopath': cfg['cosmopath']})
     prdcfg.update({'ScanPeriod': cfg['ScanPeriod']})
     prdcfg.update({'imgformat': cfg['imgformat']})
     if 'ppiImageConfig' in cfg:

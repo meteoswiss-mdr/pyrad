@@ -15,8 +15,9 @@ Functions for reading radar data files
     merge_scans_cosmo_rad4alp
     merge_scans_dem_rad4alp
     merge_fields_rainbow
-    merge_fields_cosmo
+    merge_fields_cfradial
     merge_fields_dem
+    merge_fields_cosmo
     get_data_rainbow
     get_data_rad4alp
     add_field
