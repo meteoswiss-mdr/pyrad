@@ -9,6 +9,7 @@ Functions for writing pyrad output data
 
     write_smn
     write_ts_polar_data
+    write_ts_cum
     write_monitoring_ts
     write_intercomp_scores_ts
     write_colocated_gates
@@ -126,6 +127,69 @@ def write_ts_polar_data(dataset, fname):
                  'r': dataset['used_antenna_coordinates_az_el_r'][2],
                  'value': dataset['value']})
             csvfile.close()
+
+    return fname
+
+
+def write_ts_cum(dataset, fname):
+    """
+    writes time series accumulation of data
+
+    Parameters
+    ----------
+    dataset : dict
+        dictionary containing the time series parameters
+
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    nvalues = len(dataset['time'])
+    radar_value = dataset['radar_value']
+    sensor_value = dataset['sensor_value']
+    np_radar = dataset['np_radar']
+    np_sensor = dataset['np_radar']
+
+    with open(fname, 'w', newline='') as csvfile:
+        csvfile.write('# Precipitation accumulation data file\n')
+        csvfile.write('# Comment lines are preceded by "#"\n')
+        csvfile.write('# Description: \n')
+        csvfile.write('# Time series of a precipitation accumulation of ' +
+                      'weather radar data and another sensor over a ' +
+                      'fixed location.\n')
+        csvfile.write(
+            '# Location [lon, lat, alt]: ' +
+            str(dataset['point_coordinates_WGS84_lon_lat_alt']) + '\n')
+        csvfile.write(
+            '# Nominal antenna coordinates used [az, el, r]: ' +
+            str(dataset['antenna_coordinates_az_el_r'])+'\n')
+        csvfile.write('# sensor type: ' + dataset['sensor']+'\n')
+        csvfile.write('# sensor ID: ' + dataset['sensorid']+'\n')
+        csvfile.write('# Data: Precipitation accumulation over ' +
+                      str(dataset['cum_time'])+' s\n')
+        csvfile.write('# Fill Value: '+str(get_fillvalue())+'\n')
+        csvfile.write(
+            '# Start: ' +
+            dataset['time'][0].strftime('%Y-%m-%d %H:%M:%S UTC')+'\n')
+        csvfile.write('#\n')
+
+        fieldnames = ['date', 'np_radar', 'radar_value', 'np_sensor',
+                      'sensor_value']
+        writer = csv.DictWriter(csvfile, fieldnames)
+        writer.writeheader()
+        for i in range(nvalues):
+            writer.writerow(
+                {'date': dataset['time'][i],
+                 'np_radar': np_radar[i],
+                 'radar_value': radar_value[i],
+                 'np_sensor': np_sensor[i],
+                 'sensor_value': sensor_value[i]})
+        csvfile.close()
 
     return fname
 

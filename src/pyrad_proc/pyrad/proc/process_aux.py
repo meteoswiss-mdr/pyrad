@@ -291,7 +291,7 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
         radar index
 
     """
-    if procstatus != 1:
+    if procstatus == 0:
         return None, None
 
     for datatypedescr in dscfg['datatype']:
@@ -300,6 +300,23 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
         break
     field_name = get_fieldname_pyart(datatype)
     ind_rad = int(radarnr[5:8])-1
+
+    if procstatus == 2:
+        if dscfg['initialized'] == 0:
+            return None, None
+
+        # prepare for exit
+        new_dataset = {
+            'time': dscfg['global_data']['time'],
+            'datatype': 'RR',
+            'point_coordinates_WGS84_lon_lat_alt': (
+                dscfg['global_data']['point_coordinates_WGS84_lon_lat_alt']),
+            'antenna_coordinates_az_el_r': (
+                dscfg['global_data']['antenna_coordinates_az_el_r']),
+            'final': True}
+
+        return new_dataset, ind_rad
+
     if ((radar_list is None) or (radar_list[ind_rad] is None)):
         warn('ERROR: No valid radar')
         return None, None
@@ -380,6 +397,15 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
     time = num2date(radar.time['data'][ind_ray], radar.time['units'],
                     radar.time['calendar'])
 
+    # initialize dataset
+    if dscfg['initialized'] == 0:
+        poi = {
+            'point_coordinates_WGS84_lon_lat_alt': [lon, lat, alt],
+            'antenna_coordinates_az_el_r': [az, el, r],
+            'time': time}
+        dscfg['global_data'] = poi
+        dscfg['initialized'] = 1
+
     # prepare for exit
     new_dataset = dict()
     new_dataset.update({'value': val})
@@ -392,5 +418,6 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
         {'used_antenna_coordinates_az_el_r': [radar.azimuth['data'][ind_ray],
          radar.elevation['data'][ind_ray],
          radar.range['data'][ind_r]]})
+    new_dataset.update({'final': False})
 
     return new_dataset, ind_rad

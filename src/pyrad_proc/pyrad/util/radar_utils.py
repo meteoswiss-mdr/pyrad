@@ -7,6 +7,7 @@ Miscellaneous functions dealing with radar data
 .. autosummary::
     :toctree: generated/
 
+    rainfall_accumulation
     time_series_statistics
     join_time_series
     get_range_bins_to_avg
@@ -35,6 +36,49 @@ import pandas as pd
 import scipy
 
 import pyart
+
+
+def rainfall_accumulation(t_in_vec, val_in_vec, cum_time=3600.,
+                          base_time=0., dropnan=False):
+    """
+    Computes the rainfall accumulation of a time series over a given period
+
+    Parameters
+    ----------
+    t_in_vec : datetime array
+        the input date and time array
+    val_in_vec : float array
+        the input values array [mm/h]
+    cum_time : int
+        accumulation time [s]
+    base_time : int
+        base time [s]
+    dropnan : boolean
+        if True remove NaN from the time series
+
+    Returns
+    -------
+    t_out_vec : datetime array
+        the output date and time array
+    val_out_vec : float array
+        the output values array
+    np_vec : int array
+        the number of samples at each period
+
+    """
+    # get the number of samples per interval
+    t_out_vec, np_vec = time_series_statistics(
+        t_in_vec, np.ones(len(val_in_vec), dtype=float), avg_time=cum_time,
+        base_time=base_time, method='sum', dropnan=dropnan)
+
+    t_out_vec, val_out_vec = time_series_statistics(
+        t_in_vec, val_in_vec, avg_time=cum_time, base_time=base_time,
+        method='sum', dropnan=dropnan)
+
+    t_sample = cum_time/np_vec  # find accumulation time of each sample
+    val_out_vec *= (t_sample/3600.)  # conversion to mm in cum_time period
+
+    return t_out_vec, val_out_vec, np_vec
 
 
 def time_series_statistics(t_in_vec, val_in_vec, avg_time=3600,
@@ -66,8 +110,9 @@ def time_series_statistics(t_in_vec, val_in_vec, avg_time=3600,
 
     """
     df_in = pd.DataFrame(data=val_in_vec, index=pd.DatetimeIndex(t_in_vec))
-    df_out = getattr(df_in.resample(str(avg_time)+'S', closed='right',
-                     label='right', base=base_time), method)()
+    df_out = getattr(df_in.resample(
+        str(avg_time)+'S', closed='right', label='right', base=base_time),
+        method)()
     if dropnan is True:
         df_out = df_out.dropna(how='any')
     t_out_vec = df_out.index.to_pydatetime()

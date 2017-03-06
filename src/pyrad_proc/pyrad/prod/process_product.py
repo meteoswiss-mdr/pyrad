@@ -37,7 +37,7 @@ from ..io.write_data import write_ts_polar_data, write_monitoring_ts
 from ..io.write_data import write_sun_hits, write_sun_retrieval
 from ..io.write_data import write_colocated_gates, write_colocated_data
 from ..io.write_data import write_colocated_data_time_avg
-from ..io.write_data import write_intercomp_scores_ts
+from ..io.write_data import write_intercomp_scores_ts, write_ts_cum
 
 from ..graph.plots import plot_ppi, plot_rhi, plot_cappi, plot_bscope
 from ..graph.plots import plot_timeseries, plot_timeseries_comp
@@ -45,9 +45,9 @@ from ..graph.plots import plot_quantiles, get_colobar_label, plot_sun_hits
 from ..graph.plots import plot_sun_retrieval_ts, plot_histogram
 from ..graph.plots import plot_histogram2, plot_density, plot_monitoring_ts
 from ..graph.plots import get_field_name, get_colobar_label, plot_scatter
-from ..graph.plots import plot_intercomp_scores_ts
+from ..graph.plots import plot_intercomp_scores_ts, plot_scatter_comp
 
-from ..util.radar_utils import create_sun_hits_field
+from ..util.radar_utils import create_sun_hits_field, rainfall_accumulation
 from ..util.radar_utils import create_sun_retrieval_field
 from ..util.radar_utils import compute_histogram, compute_quantiles
 from ..util.radar_utils import compute_quantiles_from_hist, compute_2d_stats
@@ -980,6 +980,9 @@ def generate_timeseries_products(dataset, prdcfg):
         dssavedir = prdcfg['dssavename']
 
     if prdcfg['type'] == 'PLOT_AND_WRITE_POINT':
+        if dataset['final']:
+            return None
+
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
         r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
@@ -1028,6 +1031,9 @@ def generate_timeseries_products(dataset, prdcfg):
         return figfname
 
     elif prdcfg['type'] == 'PLOT_CUMULATIVE_POINT':
+        if dataset['final']:
+            return None
+
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
         r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
@@ -1049,7 +1055,7 @@ def generate_timeseries_products(dataset, prdcfg):
 
         if date is None:
             warn(
-                'Unable to plot accumulationtime series. No valid data')
+                'Unable to plot accumulation time series. No valid data')
             return None
 
         figfname = make_filename(
@@ -1074,6 +1080,9 @@ def generate_timeseries_products(dataset, prdcfg):
         return figfname
 
     elif prdcfg['type'] == 'COMPARE_POINT':
+        if dataset['final']:
+            return None
+
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
         r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
@@ -1132,6 +1141,9 @@ def generate_timeseries_products(dataset, prdcfg):
         return figfname
 
     elif prdcfg['type'] == 'COMPARE_CUMULATIVE_POINT':
+        if dataset['final']:
+            return None
+
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
         r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
@@ -1187,6 +1199,124 @@ def generate_timeseries_products(dataset, prdcfg):
             figfname, labelx='Time UTC', labely=labely,
             label1=label1, label2=label2, titl=titl,
             period1=prdcfg['ScanPeriod']*60., period2=period2)
+        print('----- save to '+' '.join(figfname))
+
+        return figfname
+
+    elif prdcfg['type'] == 'COMPARE_TIME_AVG':
+        if not dataset['final']:
+            return None
+
+        az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
+        el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
+        r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
+        gateinfo = ('az'+az+'r'+r+'el'+el)
+
+        savedir_ts = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdid'], timeinfo=dataset['time'])
+
+        csvfname = make_filename(
+            'ts', prdcfg['dstype'], dataset['datatype'], ['csv'],
+            prdcfginfo=gateinfo, timeinfo=dataset['time'],
+            timeformat='%Y%m%d')[0]
+
+        radardate, radarvalue = read_timeseries(savedir_ts+csvfname)
+        if radardate is None:
+            warn(
+                'Unable to compared time averaged data at POI. ' +
+                'No valid radar data')
+            return None
+
+        sensordate, sensorvalue, sensortype, period2 = get_sensor_data(
+            radardate[0], dataset['datatype'], prdcfg)
+        if sensordate is None:
+            warn(
+                'Unable to compared time averaged data at POI. ' +
+                'No valid sensor data')
+            return None
+
+        cum_time = 3600
+        if 'cum_time' in prdcfg:
+            cum_time = prdcfg['cum_time']
+
+        base_time = 0
+        if 'base_time' in prdcfg:
+            base_time = prdcfg['base_time']
+
+        sensordate_cum, sensorvalue_cum, np_sensor_cum = rainfall_accumulation(
+            sensordate, sensorvalue, cum_time=cum_time, base_time=base_time,
+            dropnan=False)
+
+        radardate_cum, radarvalue_cum, np_radar_cum = rainfall_accumulation(
+            radardate, radarvalue, cum_time=cum_time, base_time=base_time,
+            dropnan=False)
+
+        radardate_cum2 = []
+        radarvalue_cum2 = []
+        np_radar_cum2 = []
+        sensorvalue_cum2 = []
+        np_sensor_cum2 = []
+
+        for i in range(len(radardate_cum)):
+            ind = np.where(sensordate_cum == radardate_cum[i])[0]
+            if len(ind) == 0:
+                continue
+            radardate_cum2.append(radardate_cum[i])
+            radarvalue_cum2.append(radarvalue_cum[i])
+            np_radar_cum2.append(np_radar_cum[i])
+
+            sensorvalue_cum2.append(sensorvalue_cum[ind])
+            np_sensor_cum2.append(np_sensor_cum[ind])
+
+        radardate_cum2 = np.asarray(radardate_cum2)
+        radarvalue_cum2 = np.asarray(radarvalue_cum2)
+        np_radar_cum2 = np.asarray(np_radar_cum2)
+        sensorvalue_cum2 = np.asarray(sensorvalue_cum2)
+        np_sensor_cum2 = np.asarray(np_sensor_cum2)
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=radardate[0])
+
+        fname = make_filename(
+            str(cum_time)+'s_acc_ts_comp', prdcfg['dstype'],
+            dataset['datatype'], ['csv'], prdcfginfo=gateinfo,
+            timeinfo=radardate[0], timeformat='%Y%m%d')[0]
+
+        fname = savedir+fname
+
+        new_dataset = deepcopy(dataset)
+        new_dataset.update({
+            'time': radardate_cum2,
+            'sensor_value': sensorvalue_cum2,
+            'np_sensor': np_sensor_cum2,
+            'radar_value': radarvalue_cum2,
+            'np_radar': np_radar_cum2,
+            'cum_time': cum_time})
+        new_dataset.update(prdcfg)
+
+        write_ts_cum(new_dataset, fname)
+
+        print('saved CSV file: '+fname)
+
+        figfname = make_filename(
+            str(cum_time)+'s_acc_ts_comp', prdcfg['dstype'],
+            dataset['datatype'], prdcfg['imgformat'], prdcfginfo=gateinfo,
+            timeinfo=radardate[0], timeformat='%Y%m%d')
+
+        for i in range(len(figfname)):
+            figfname[i] = savedir+figfname[i]
+
+        labelx = sensortype+' '+prdcfg['sensorid']+' (mm)'
+        labely = 'Radar (az, el, r): ('+az+', '+el+', '+r+') (mm)'
+        titl = (str(cum_time)+'s Acc. Comp. ' +
+                radardate_cum[0].strftime('%Y-%m-%d'))
+
+        plot_scatter_comp(
+            sensorvalue_cum2, radarvalue_cum2, figfname, labelx=labelx,
+            labely=labely, titl=titl, axis='equal')
+
         print('----- save to '+' '.join(figfname))
 
         return figfname

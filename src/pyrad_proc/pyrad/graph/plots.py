@@ -20,6 +20,7 @@ Functions to plot Pyrad datasets
     plot_timeseries
     plot_timeseries_comp
     plot_monitoring_ts
+    plot_scatter_comp
     plot_intercomp_scores_ts
     plot_sun_hits
     plot_sun_retrieval_ts
@@ -875,6 +876,55 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname_list,
     # rotates and right aligns the x labels, and moves the bottom of the
     # axes up to make room for them
     fig.autofmt_xdate()
+
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
+    plt.close()
+
+    return fname_list
+
+
+def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
+                      labely='Sensor 2', titl='Scatter', axis=None):
+    """
+    plots the scatter between two time series
+
+    Parameters
+    ----------
+    value1 : float array
+        values of the first time series
+    value2 : float array
+        values of the second time series
+    fname_list : list of str
+        list of names of the files where to store the plot
+    labelx : str
+        The label of the X axis
+    labely : str
+        The label of the Y axis
+    titl : str
+        The figure title
+    axis : str
+        type of axis
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    """
+    max_value = np.max([np.max(value1), np.max(value2)])
+
+    fig, ax = plt.subplots(figsize=[10, 6])
+
+    ax.plot(value1, value2, 'bx')
+    ax.set_xlabel(labelx)
+    ax.set_ylabel(labely)
+    ax.set_title(titl)
+
+    if axis == 'equal':
+        ax.axis([0, max_value, 0, max_value])
+        ax.plot([0, max_value], [0, max_value], 'k--')
+        ax.set(adjustable='box-forced', aspect='equal')
 
     for i in range(len(fname_list)):
         fig.savefig(fname_list[i])
