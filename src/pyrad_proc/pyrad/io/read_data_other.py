@@ -14,6 +14,7 @@ Functions for reading auxiliary data
     read_colocated_data
     read_colocated_data_time_avg
     read_timeseries
+    read_ts_cum
     read_monitoring_ts
     read_intercomp_scores_ts
     read_sun_hits_multiple_days
@@ -397,6 +398,56 @@ def read_timeseries(fname):
     except EnvironmentError:
         warn('Unable to read file '+fname)
         return None, None
+
+
+def read_ts_cum(fname):
+    """
+    Reads a time series of precipitation accumulation contained in a csv file
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    date, np_radar, radar_value, np_sensor, sensor_value : tupple
+        The data read
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            nrows = sum(1 for row in reader)
+            np_radar = np.zeros(nrows, dtype=int)
+            radar_value = np.ma.empty(nrows, dtype=float)
+            np_sensor = np.zeros(nrows, dtype=int)
+            sensor_value = np.ma.empty(nrows, dtype=float)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            i = 0
+            date = list()
+            for row in reader:
+                date.append(datetime.datetime.strptime(
+                    row['date'], '%Y-%m-%d %H:%M:%S'))
+                np_radar[i] = int(row['np_radar'])
+                radar_value[i] = float(row['radar_value'])
+                np_sensor[i] = int(row['np_sensor'])
+                sensor_value[i] = float(row['sensor_value'])
+                i += 1
+
+            radar_value = np.ma.masked_values(radar_value, get_fillvalue())
+            sensor_value = np.ma.masked_values(sensor_value, get_fillvalue())
+
+            return date, np_radar, radar_value, np_sensor, sensor_value
+    except EnvironmentError:
+        warn('Unable to read file '+fname)
+        return None, None, None, None, None
 
 
 def read_monitoring_ts(fname):

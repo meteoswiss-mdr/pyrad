@@ -885,7 +885,8 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname_list,
 
 
 def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
-                      labely='Sensor 2', titl='Scatter', axis=None):
+                      labely='Sensor 2', titl='Scatter', axis=None,
+                      metadata=None):
     """
     plots the scatter between two time series
 
@@ -905,6 +906,8 @@ def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
         The figure title
     axis : str
         type of axis
+    metadata : string
+        a string containing metadata
 
     Returns
     -------
@@ -912,7 +915,7 @@ def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
         list of names of the created plots
 
     """
-    max_value = np.max([np.max(value1), np.max(value2)])
+    max_value = np.ma.max([np.max(value1), np.max(value2)])
 
     fig, ax = plt.subplots(figsize=[10, 6])
 
@@ -925,6 +928,10 @@ def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
         ax.axis([0, max_value, 0, max_value])
         ax.plot([0, max_value], [0, max_value], 'k--')
         ax.set(adjustable='box-forced', aspect='equal')
+
+    if metadata is not None:
+        plt.text(0.05, 0.95, metadata, horizontalalignment='left',
+                 verticalalignment='top', transform=ax.transAxes)
 
     for i in range(len(fname_list)):
         fig.savefig(fname_list[i])

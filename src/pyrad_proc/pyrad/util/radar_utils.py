@@ -23,6 +23,7 @@ Miscellaneous functions dealing with radar data
     compute_histogram
     compute_histogram_sweep
     compute_2d_stats
+    compute_1d_stats
     compute_2d_hist
     quantize_field
 
@@ -71,12 +72,18 @@ def rainfall_accumulation(t_in_vec, val_in_vec, cum_time=3600.,
         t_in_vec, np.ones(len(val_in_vec), dtype=float), avg_time=cum_time,
         base_time=base_time, method='sum', dropnan=dropnan)
 
+    np_vec[np.isnan(np_vec)] = 0
+    np_vec = np_vec.astype(int)
+
     t_out_vec, val_out_vec = time_series_statistics(
         t_in_vec, val_in_vec, avg_time=cum_time, base_time=base_time,
         method='sum', dropnan=dropnan)
 
     t_sample = cum_time/np_vec  # find accumulation time of each sample
     val_out_vec *= (t_sample/3600.)  # conversion to mm in cum_time period
+
+    val_out_vec = np.ma.asarray(val_out_vec)
+    val_out_vec[np.isnan(val_out_vec)] = np.ma.masked
 
     return t_out_vec, val_out_vec, np_vec
 
@@ -611,23 +618,25 @@ def compute_histogram(field, field_name, step=None):
 def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
                      step2=None):
     """
-    computes histogram of the data
+    computes a 2D histogram and statistics of the data
 
     Parameters
     ----------
-    field : ndarray 2D
-        the radar field
-    field_name: str
-        name of the field
-    step : float
+    field1, field2 : ndarray 2D
+        the two fields
+    field_name1, field_nam2: str
+        the name of the fields
+    step1, step2 : float
         size of bin
 
     Returns
     -------
-    bins : float array
+    hist_2d : array
+        the histogram
+    bins1, bins2 : float array
         interval of each bin
-    values : float array
-        values at each bin
+    stats : dict
+        a dictionary with statistics
 
     """
     if len(field1) == 0 or len(field2) == 0:
@@ -669,6 +678,53 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
     }
 
     return hist_2d, bins1, bins2, stats
+
+
+def compute_1d_stats(field1, field2):
+    """
+    returns statistics of data
+
+    Parameters
+    ----------
+    field1, field2 : ndarray 1D
+        the two fields to compare
+
+    Returns
+    -------
+    stats : dict
+        a dictionary with statistics
+
+    """
+    if len(field1) == 0 or len(field2) == 0:
+        warn('Unable to compute statistics. Empty fields')
+        stats = {
+            'npoints': 0,
+            'NB': np.ma.asarray(np.ma.masked),
+            'corr': np.ma.asarray(np.ma.masked),
+            'RMS': np.ma.asarray(np.ma.masked),
+            'Nash': np.ma.asarray(np.ma.masked)
+        }
+        return stats
+
+    npoints = len(field1)
+    mean1 = np.ma.mean(field1)
+    mean2 = np.ma.mean(field2)
+    nb = mean2/mean1-1
+    slope, intercep, corr, pval, stderr = scipy.stats.linregress(
+        field1, y=field2)
+    rms = np.ma.sqrt(np.ma.sum(np.ma.power(field2-field1, 2.))/npoints)
+    nash = (1-np.ma.sum(np.ma.power(field2-field1, 2.)) /
+            np.ma.sum(np.ma.power(field1-mean1, 2.)))
+
+    stats = {
+        'npoints': npoints,
+        'NB': nb,
+        'corr': corr,
+        'RMS': rms,
+        'Nash': nash
+    }
+
+    return stats
 
 
 def compute_2d_hist(field1, field2, field_name1, field_name2, step1=None,

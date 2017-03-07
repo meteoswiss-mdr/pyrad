@@ -150,10 +150,10 @@ def write_ts_cum(dataset, fname):
 
     """
     nvalues = len(dataset['time'])
-    radar_value = dataset['radar_value']
-    sensor_value = dataset['sensor_value']
+    radar_value = dataset['radar_value'].filled(fill_value=get_fillvalue())
+    sensor_value = dataset['sensor_value'].filled(fill_value=get_fillvalue())
     np_radar = dataset['np_radar']
-    np_sensor = dataset['np_radar']
+    np_sensor = dataset['np_sensor']
 
     with open(fname, 'w', newline='') as csvfile:
         csvfile.write('# Precipitation accumulation data file\n')

@@ -1252,28 +1252,17 @@ def generate_timeseries_products(dataset, prdcfg):
             radardate, radarvalue, cum_time=cum_time, base_time=base_time,
             dropnan=False)
 
-        radardate_cum2 = []
-        radarvalue_cum2 = []
-        np_radar_cum2 = []
-        sensorvalue_cum2 = []
-        np_sensor_cum2 = []
+        # find common time stamps
+        ind = np.where(np.in1d(radardate_cum, sensordate_cum))[0]
+        if len(ind) == 0:
+            warn('No sensor data for radar data time stamps')
+        radardate_cum2 = radardate_cum[ind]
+        radarvalue_cum2 = radarvalue_cum[ind]
+        np_radar_cum2 = np_radar_cum[ind]
 
-        for i in range(len(radardate_cum)):
-            ind = np.where(sensordate_cum == radardate_cum[i])[0]
-            if len(ind) == 0:
-                continue
-            radardate_cum2.append(radardate_cum[i])
-            radarvalue_cum2.append(radarvalue_cum[i])
-            np_radar_cum2.append(np_radar_cum[i])
-
-            sensorvalue_cum2.append(sensorvalue_cum[ind])
-            np_sensor_cum2.append(np_sensor_cum[ind])
-
-        radardate_cum2 = np.asarray(radardate_cum2)
-        radarvalue_cum2 = np.asarray(radarvalue_cum2)
-        np_radar_cum2 = np.asarray(np_radar_cum2)
-        sensorvalue_cum2 = np.asarray(sensorvalue_cum2)
-        np_sensor_cum2 = np.asarray(np_sensor_cum2)
+        ind = np.where(np.in1d(sensordate_cum, radardate_cum2))[0]
+        sensorvalue_cum2 = sensorvalue_cum[ind]
+        np_sensor_cum2 = np_sensor_cum[ind]
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,

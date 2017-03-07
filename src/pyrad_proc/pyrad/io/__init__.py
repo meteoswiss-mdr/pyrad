@@ -47,6 +47,7 @@ Reading other data
     read_colocated_gates
     read_colocated_data
     read_timeseries
+    read_ts_cum
     read_monitoring_ts
     read_intercomp_scores_ts
     get_sensor_data
@@ -126,7 +127,7 @@ from .read_data_cosmo import cosmo2radar_data, cosmo2radar_coord
 from .read_data_cosmo import get_cosmo_field
 
 from .read_data_other import read_status, read_rad4alp_cosmo, read_rad4alp_vis
-from .read_data_other import read_timeseries, read_monitoring_ts
+from .read_data_other import read_timeseries, read_monitoring_ts, read_ts_cum
 from .read_data_other import get_sensor_data, read_smn, read_disdro_scattering
 from .read_data_other import read_smn2, read_intercomp_scores_ts
 from .read_data_other import read_sun_hits, read_sun_hits_multiple_days
