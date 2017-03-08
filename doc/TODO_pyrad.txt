@@ -12,10 +12,7 @@ Processing functions to be implemented with highest priority:
 
 Product functions to be implemented with highest priority:
 ----------------------------------------------------------
-- scatter plots of sensor-radar comparisons
 
 
 Things to check before making it operational:
 ---------------------------------------------
-- Rainfall rate estimation:
-    - Distinguish between the various rainfall rate estimators (no single datatype RR)

@@ -1,0 +1,47 @@
+#
+# Configuration for PARADISO tests at the airport Payerne
+
+# Number of radars to process
+NumRadars INT 1
+
+# Time tolerance when processing multiple radars [s]
+TimeTol FLOAT 3600.
+
+# Radar Name
+RadarName STRING MXPOL
+
+## Coordinates of the radar
+#RadarPosition STRUCT 3
+#              latitude  FLOAT 46.81348   # WGS84 latitude [deg]
+#              longitude FLOAT  6.94305   # WGS84 longitude [deg]
+#              altitude  FLOAT 500.0      # altitude [m] (NOT WGS84!!)
+
+# Names of the radar scans in the specified sector
+# NOTE: Must have a trailing '/'
+ScanList STRARR 1
+      PPI-005_0  # masterscan: first scan of a volume
+
+# Repetition time of the scans [min]
+ScanPeriod INT 5
+
+# Frequency of cosmo run [h]
+CosmoRunFreq INT 1
+
+# hours forecasted in cosmo run [h]
+CosmoForecasted INT 7
+
+# radar beamwidth
+RadarBeamwidth FLOAT 1.45
+
+# azimuth tolerance when azimuth may be variable
+AzimTol FLOAT 0.4
+
+# Image config
+ppiImageConfig STRUCT 6
+   xsize      FLOAT   8.      # image size [inches] (default dots per inch (dpi):72)
+   ysize      FLOAT   7.      # image size [inches] (default dots per inch (dpi):72)
+   xmin       FLOAT -50.0   # Min distance on horizontal axis [km]
+   xmax       FLOAT  50.0   # Max distance on horizontal axis [km]
+   ymin       FLOAT -50.0   # Min distance on vertical axis [km]
+   ymax       FLOAT  50.0   # Max distance on vertical axis [km]
+   

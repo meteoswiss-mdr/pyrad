@@ -32,9 +32,9 @@ def main():
     """
     """
     param_vec = ['RR_Z', 'RR_hydro']
-    smn_station_vec = ['PIL', 'CHZ']
-    tstart = '20170101'
-    tend = '20170131'
+    smn_station_vec = ['LUZ', 'CHZ']
+    tstart = '20170201'
+    tend = '20170228'
 
     np_radar_min = 6
     np_sensor_min = 6

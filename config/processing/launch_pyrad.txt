@@ -1,7 +1,0 @@
-# launch pyrad processing framework
-
-python3 main_process_data.py 'valais_fvanden.txt' '20161111024200' '20161111025600' --cfgpath '/home/fvanden/Documents/Python/pyrad/config/processing/'
-
-# convert images
-
-convert -density 300 20161111024212_rhi_RAINRATE_RR_az44.0.eps -resize 1024x1024 20161111024212_rhi_RAINRATE_RR_az44.jpg

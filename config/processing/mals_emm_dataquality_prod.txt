@@ -326,7 +326,7 @@ rgLUZ_RR_Z STRUCT 12
     AziTol FLOAT 1.
     EleTol FLOAT 1.
     RngTol FLOAT 30.
-    products STRUCT 3
+    products STRUCT 4
         RR STRUCT 1
             type STRING PLOT_AND_WRITE_POINT
         RRcomp STRUCT 4
@@ -339,6 +339,13 @@ rgLUZ_RR_Z STRUCT 12
             prdid STRING RR
             sensor STRING rgage
             sensorid STRING LUZ
+        RRcum3600s STRUCT 6
+            type STRING COMPARE_TIME_AVG
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING LUZ
+            cum_time INT 3600
+            base_time INT 0
 
 # ---------------------- rain gauge PIL -------------------------------------------
 # 2106.0, 46.979, 8.252 (Pilatus)
@@ -355,7 +362,7 @@ rgPIL_RR_Z STRUCT 12
     AziTol FLOAT 1.
     EleTol FLOAT 1.
     RngTol FLOAT 30.
-    products STRUCT 3
+    products STRUCT 4
         RR STRUCT 1
             type STRING PLOT_AND_WRITE_POINT
         RRcomp STRUCT 4
@@ -368,6 +375,13 @@ rgPIL_RR_Z STRUCT 12
             prdid STRING RR
             sensor STRING rgage
             sensorid STRING PIL
+        RRcum3600s STRUCT 6
+            type STRING COMPARE_TIME_AVG
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING PIL
+            cum_time INT 3600
+            base_time INT 0
 
 # ---------------------- rain gauge CHZ -------------------------------------------
 # 444.0, 47.188, 8.465 (CHZ)
@@ -384,7 +398,7 @@ rgCHZ_RR_Z STRUCT 12
     AziTol FLOAT 1.
     EleTol FLOAT 1.
     RngTol FLOAT 30.
-    products STRUCT 3
+    products STRUCT 4
         RR STRUCT 1
             type STRING PLOT_AND_WRITE_POINT
         RRcomp STRUCT 4
@@ -397,6 +411,13 @@ rgCHZ_RR_Z STRUCT 12
             prdid STRING RR
             sensor STRING rgage
             sensorid STRING CHZ
+        RRcum3600s STRUCT 6
+            type STRING COMPARE_TIME_AVG
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING CHZ
+            cum_time INT 3600
+            base_time INT 0
 
             
 # ---------------------- rain gauge LUZ -------------------------------------------
@@ -414,7 +435,7 @@ rgLUZ_RR_hydro STRUCT 12
     AziTol FLOAT 1.
     EleTol FLOAT 1.
     RngTol FLOAT 30.
-    products STRUCT 3
+    products STRUCT 4
         RR STRUCT 1
             type STRING PLOT_AND_WRITE_POINT
         RRcomp STRUCT 4
@@ -427,6 +448,13 @@ rgLUZ_RR_hydro STRUCT 12
             prdid STRING RR
             sensor STRING rgage
             sensorid STRING LUZ
+        RRcum3600s STRUCT 6
+            type STRING COMPARE_TIME_AVG
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING LUZ
+            cum_time INT 3600
+            base_time INT 0
 
 # ---------------------- rain gauge PIL -------------------------------------------
 # 2106.0, 46.979, 8.252 (Pilatus)
@@ -443,7 +471,7 @@ rgPIL_RR_hydro STRUCT 12
     AziTol FLOAT 1.
     EleTol FLOAT 1.
     RngTol FLOAT 30.
-    products STRUCT 3
+    products STRUCT 4
         RR STRUCT 1
             type STRING PLOT_AND_WRITE_POINT
         RRcomp STRUCT 4
@@ -456,6 +484,20 @@ rgPIL_RR_hydro STRUCT 12
             prdid STRING RR
             sensor STRING rgage
             sensorid STRING PIL
+        RRcum3600s STRUCT 6
+            type STRING COMPARE_TIME_AVG
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING PIL
+            cum_time INT 3600
+            base_time INT 0
+        RRcum3600s STRUCT 6
+            type STRING COMPARE_TIME_AVG
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING CHZ
+            cum_time INT 3600
+            base_time INT 0
 
 # ---------------------- rain gauge CHZ -------------------------------------------
 # 444.0, 47.188, 8.465 (CHZ)

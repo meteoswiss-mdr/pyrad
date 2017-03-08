@@ -1,0 +1,58 @@
+# Name of this configuration:
+# Will be used in product generation save path
+name STRING paradiso_MXPol_PPI-005_0
+
+# ---------------------------------------------------------
+#  Raw data pathes
+# ---------------------------------------------------------
+
+# Base path of the raw data.
+# Note: Must have a trailing '/'
+# ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
+datapath STRING /data/MXPol/rawdata/paradiso/                             # zueub222
+
+# Base path for cosmo data
+cosmopath STRING /data/cosmo/
+
+# Base path for dem data
+dempath STRING /data/DEM/DX50_PARADISO/
+
+# Loading of saved datasets
+loadbasepath STRING /data/paradiso/
+loadname     STRING paradiso_MXPol_PPI-005_0
+
+# ------------------------------------------------------------
+# Auxiliary data pathes
+# ------------------------------------------------------------
+# Base path for swissmetnet data
+smnpath STRING /data/meteo_products/SMNRetrieve/
+
+# Base path for disdrometer data
+disdropath STRING /data/scattering/dsd_ts/
+
+# name of directory for MXPOL data in zueub222
+mxpolname STRING paradiso_MXPol_PPI-005_0
+
+# name of directory for MXPOL raw data in zueub222
+mxpolrawname STRING paradiso_MXPol_raw
+
+# --------------------------------------------
+# Output data
+# --------------------------------------------
+saveimgbasepath STRING /data/pyrad_examples/
+saveimg         INT 1
+# Supported formats: eps, jpeg, jpg, pdf, pgf, png, ps, raw, rgba, svg, svgz, tif, tiff
+imgformat STRING png
+
+# --------------------------------------------------------
+# configuration files pathes
+# --------------------------------------------------------
+
+# Base path of configuration files
+configpath STRING $HOME/pyrad/config/
+
+# Configuration of the radar location and approach direction
+locationConfigFile STRING $HOME/pyrad/config/processing/paradiso_MXPol_PPI-005_0_loc.txt
+
+# Configuration of the product generation
+productConfigFile STRING $HOME/pyrad/config/processing/paradiso_MXPol_PPI-005_0_prod.txt

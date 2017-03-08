@@ -713,7 +713,7 @@ def compute_1d_stats(field1, field2):
     slope, intercep, corr, pval, stderr = scipy.stats.linregress(
         field1, y=field2)
     rms = np.ma.sqrt(np.ma.sum(np.ma.power(field2-field1, 2.))/npoints)
-    nash = (1-np.ma.sum(np.ma.power(field2-field1, 2.)) /
+    nash = (1.-np.ma.sum(np.ma.power(field2-field1, 2.)) /
             np.ma.sum(np.ma.power(field1-mean1, 2.)))
 
     stats = {

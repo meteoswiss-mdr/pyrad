@@ -1,5 +1,5 @@
 #
-# Configuration for MXPOL data in the Valais (Martigny)
+# Configuration for PARADISO tests at the airport Payerne
 
 # Number of radars to process
 NumRadars INT 1
@@ -8,17 +8,33 @@ NumRadars INT 1
 TimeTol FLOAT 3600.
 
 # rad4alp radar name
-RadarName STRARR 1
-	MXPol
+RadarName STRING A
 
 # rad4alp radar range resolution L:Low H:High
-RadarRes STRARR 1
-	polar
+RadarRes STRING	L
 
 # Names of the radar scans in the specified sector
-ScanList STRARR 1
-	  054  # masterscan: first scan of a volume
-	
+ScanList STRARR 20
+	  001  # masterscan: first scan of a volume
+	  002
+	  003
+	  004
+	  005
+	  006
+	  007
+	  008
+	  009
+	  010
+	  011
+	  012
+	  013
+	  014
+	  015
+	  016
+	  017
+	  018
+	  019
+	  020
 
 # angles from 001 to 020
 # ['-0.2', '0.4',  '1.0',  '1.6',  '2.5',  '3.5',  '4.5',  '5.5',  '6.5',  '7.5',
@@ -45,7 +61,7 @@ ppiImageConfig STRUCT 6
 rhiImageConfig STRUCT 6
    xsize      FLOAT   10.   # image size [inches]
    ysize      FLOAT    5.   # image size [inches]
-   xmin       FLOAT  -30.0  # Min distance on horizontal axis [km]
-   xmax       FLOAT   30.0  # Max distance on horizontal axis [km]
+   xmin       FLOAT -100.0  # Min distance on horizontal axis [km]
+   xmax       FLOAT    0.0  # Max distance on horizontal axis [km]
    ymin       FLOAT    0.0  # Min distance on vertical axis [km]
    ymax       FLOAT   10.0  # Max distance on vertical axis [km]
