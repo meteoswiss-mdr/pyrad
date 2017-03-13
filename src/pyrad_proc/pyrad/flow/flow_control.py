@@ -8,9 +8,9 @@ functions to control the Pyrad data processing flow
     :toctree: generated/
 
     main
+    _user_input_listener
     _generate_dataset
     _generate_dataset_mp
-    _user_input_listener
     _process_dataset
     _generate_prod
     _create_cfg_dict
@@ -40,6 +40,7 @@ import numpy as np
 import multiprocessing as mp
 import queue
 import time
+import threading
 
 from ..io.config import read_config
 from ..io.read_data_radar import get_data
@@ -54,11 +55,11 @@ from pyrad import proc, prod
 from pyrad import version as pyrad_version
 from pyart import version as pyart_version
 
-MULTIPROCESSING_PROD = True
+MULTIPROCESSING_PROD = False
 MULTIPROCESSING_DSET = False
 
 
-def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
+def main(cfgfile, starttime, endtime, infostr="", trajfile="", rt=False):
     """
     main flow control. Processes data in real time or over a given
     period of time given either by the user or by the trajectory
@@ -86,6 +87,13 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
     warnings.simplefilter('always')  # always print matching warnings
     # warnings.simplefilter('error')  # turn matching warnings into exceptions
     warnings.formatwarning = _warning_format  # define format
+
+    # initialize listener for user input
+    input_queue = queue.Queue()
+    pinput = threading.Thread(
+        name='user_input_listener', target=_user_input_listener,
+        args=(input_queue, ))
+    pinput.start()
 
     cfg = _create_cfg_dict(cfgfile)
     datacfg = _create_datacfg_dict(cfg)
@@ -119,14 +127,6 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
             _get_datatype_list(cfg, radarnr='RADAR'+'{:03d}'.format(i)))
 
     dataset_levels = _get_datasets_list(cfg)
-
-    # decide whether the processing is real time or off-line
-    if starttime is None and endtime is None and traj is None:
-        rt = True
-        print('- Real Time processing')
-    else:
-        rt = False
-        print('- Offline processing')
 
     # if it is not real time and there are no volumes to process stop here
     if not rt:
@@ -184,36 +184,45 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
     end_proc = False
     last_processed = None
 
-    # check if user sent termination signal
-    # exit_queue = mp.Queue()
-    # pexit = mp.Process(
-    #    name='user_input_listener', target=_user_input_listener,
-    #    args=(exit_queue, ))
-    # pexit.start()
-
     while not end_proc:
-        # try:
-        #    end_proc = exit_queue.get(False)
-        #    if end_proc:
-        #        warn('Processing interrupted by user')
-        #        break
-        # except queue.Empty:
-        #    pass
+        # check if user has requested exit
+        try:
+            user_input = input_queue.get_nowait()
+            end_proc = user_input
+            warn('Program terminated by user')
+            break
+        except queue.Empty:
+            pass
 
         # if real time update start and stop processing time and get list of
         # files to process
         if rt:
-            endtime = datetime.utcnow()
+            nowtime = datetime.utcnow()
+
+            # end time has been set and current time older than end time
+            # quit processing
+            if endtime is not None:
+                if nowtime > endtime:
+                    end_proc = True
+                    break
+
+            # start time has been set. Check if current time has to be
+            # processed
+            if starttime is not None:
+                if nowtime < starttime:
+                    continue
+
+            endtime_loop = nowtime
             if last_processed is None:
                 scan_min = cfg['ScanPeriod'] * 1.1  # [min]
-                starttime = endtime - timedelta(minutes=scan_min)
+                starttime_loop = endtime_loop - timedelta(minutes=scan_min)
             else:
-                starttime = last_processed + timedelta(seconds=10)
+                starttime_loop = last_processed + timedelta(seconds=10)
 
             masterfilelist, masterdatatypedescr, masterscan = (
                 _get_masterfile_list(
-                    datatypesdescr_list[0], starttime, endtime, datacfg,
-                    scan_list=cfg['ScanList']))
+                    datatypesdescr_list[0], starttime_loop, endtime_loop,
+                    datacfg, scan_list=cfg['ScanList']))
 
         # check if there are no new files
         nvolumes = len(masterfilelist)
@@ -222,6 +231,15 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
 
         # process all data files in file list
         for masterfile in masterfilelist:
+            # check if user has requested exit
+            try:
+                user_input = input_queue.get_nowait()
+                end_proc = user_input
+                warn('Program terminated by user')
+                break
+            except queue.Empty:
+                pass
+
             print('- master file: ' + os.path.basename(masterfile))
             master_voltime = get_datetime(masterfile, masterdatatypedescr)
 
@@ -326,7 +344,7 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
         else:
             end_proc = True
 
-    # only do post processing if program properly terminated by use
+    # only do post processing if program properly terminated by user
     if end_proc:
         # post-processing of the datasets
         print('- Post-processing datasets:')
@@ -361,6 +379,26 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile=""):
         gc.collect()
 
     print('- This is the end my friend! See you soon!')
+
+
+def _user_input_listener(input_queue):
+    """
+    Permanently listens to the keyword input until the user types "Return"
+
+    Parameters
+    ----------
+    input_queue : queue object
+        the queue object where to put the quit signal
+
+    """
+    print("Press Enter to quit: ")
+    while True:
+        user_input = sys.stdin.read(1)
+        if '\n' in user_input or '\r' in user_input:
+            warn('Exit requested by user')
+            input_queue.put(True)
+            break
+        time.sleep(1)
 
 
 def _generate_dataset(dsname, cfg, dscfg, proc_status=0, radar_list=None,
@@ -457,37 +495,6 @@ def _generate_dataset_mp(dsname, cfg, dscfg, out_queue, proc_status=0,
         traceback.print_exc()
         out_queue.put((None, None, 0, []))
         out_queue.close()
-
-
-def _user_input_listener(exit_queue):
-    """
-    Permanently listens to the keyword input until the user types "q" for quit
-
-    Parameters
-    ----------
-    exit_queue : queue object
-        the queue object where to put the quit signal
-
-    """
-    exit_signal = False
-    fl = fcntl.fcntl(sys.stdin.fileno(), fcntl.F_GETFL)
-    fcntl.fcntl(sys.stdin.fileno(), fcntl.F_SETFL, fl | os.O_NONBLOCK)
-
-    print("Press Enter to quit: ")
-    while not exit_signal:
-        try:
-            user_input = sys.stdin.read()
-            print('user input:', user_input)
-            if '\n' in user_input or '\r' in user_input:
-                warn('Exit requested by user')
-                exit_signal = True
-                break
-        except IOError:
-            pass
-        time.sleep(1)
-
-    exit_queue.put(True)
-    exit_queue.close()
 
 
 def _process_dataset(cfg, dscfg, proc_status=0, radar_list=None, voltime=None,

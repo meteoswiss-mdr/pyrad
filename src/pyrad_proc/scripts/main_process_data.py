@@ -67,6 +67,9 @@ def main():
         '--cfgpath', type=str,
         default=os.path.expanduser('~')+'/pyrad/config/processing/',
         help='configuration file path')
+    parser.add_argument(
+        '--rt', type=int, default=0,
+        help='if 1 the processing is real time.')
 
     args = parser.parse_args()
 
@@ -90,11 +93,12 @@ def main():
         proc_endtime = datetime.datetime.strptime(args.endtime, '%Y%m%d%H%M%S')
     cfgfile_proc = args.cfgpath+args.proc_cfgfile
 
-    pyrad_main(cfgfile_proc, proc_starttime, proc_endtime)
+    pyrad_main(cfgfile_proc, proc_starttime, proc_endtime, rt=args.rt)
 
-    if args.postproc_cfgfile is not None:
+    # if not real time allow post-processing
+    if args.postproc_cfgfile is not None and args.rt == 0:
         cfgfile_postproc = args.cfgpath+args.postproc_cfgfile
-        pyrad_main(cfgfile_postproc, proc_starttime, proc_endtime)
+        pyrad_main(cfgfile_postproc, proc_starttime, proc_endtime, rt=args.rt)
 
 
 def _print_end_msg(text):
