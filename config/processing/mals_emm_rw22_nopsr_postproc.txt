@@ -1,0 +1,45 @@
+# ---------------------------------
+# This is the config file for the processing of the Emmen RW22 data acquired
+# during the WEATHER scan performed off-line (the day after the acquisition)
+# in zueub222
+# ---------------------------------
+
+# Name of this configuration:
+# Will be used in product generation save path
+name STRING mals_emm_rw22
+
+# ---------------------------------------------------------
+#  Raw data pathes
+# ---------------------------------------------------------
+
+# Base path of the raw data.
+# Note: Must have a trailing '/'
+# ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
+datapath STRING /data/DX50/rawdata/
+
+# Base path for cosmo data
+cosmopath STRING /data/cosmo/
+
+# Loading of saved datasets
+loadbasepath STRING /data/pyrad_products/
+loadname STRING mals_emm_rw22
+
+
+# --------------------------------------------
+# Output data
+# --------------------------------------------
+saveimgbasepath STRING /data/pyrad_products/
+saveimg         INT 1
+imgformat       STRING png
+
+# --------------------------------------------------------
+# configuration files pathes
+# --------------------------------------------------------
+# Base path of configuration files
+configpath STRING $HOME/pyrad/config/
+
+# Configuration of the radar location and approach direction
+locationConfigFile STRING $HOME/pyrad/config/processing/mals_emm_rw22_nopsr_loc.txt
+
+# Configuration of the product generation
+productConfigFile STRING $HOME/pyrad/config/processing/mals_emm_rw22_prod.txt

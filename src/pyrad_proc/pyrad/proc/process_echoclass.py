@@ -9,6 +9,7 @@ Functions for echo classification and filtering
 
     process_echo_id
     process_echo_filter
+    process_cdf
     process_filter_snr
     process_filter_visibility
     process_outlier_filter
@@ -197,6 +198,85 @@ def process_echo_filter(procstatus, dscfg, radar_list=None):
 
     if not new_dataset.fields:
         return None, None
+
+    return new_dataset, ind_rad
+
+
+def process_cdf(procstatus, dscfg, radar_list=None):
+    """
+    Collects the fields necessary to compute the Cumulative Distribution
+    Function
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+    ind_rad : int
+        radar index
+
+    """
+
+    if procstatus != 1:
+        return None, None
+
+    echoid_field = None
+    hydro_field = None
+    vis_field = None
+    for datatypedescr in dscfg['datatype']:
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        if (datatype == 'echoID'):
+            echoid_field = get_fieldname_pyart(datatype)
+        elif (datatype == 'hydro'):
+            hydro_field = get_fieldname_pyart(datatype)
+        elif (datatype == 'VIS'):
+            vis_field = get_fieldname_pyart(datatype)
+        else:
+            field_name = get_fieldname_pyart(datatype)
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if field_name not in radar.fields:
+        warn('Unable to compute CDF. Missing field')
+        return None, None
+
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+
+    new_dataset.add_field(field_name, radar.fields[field_name])
+    if echoid_field is not None:
+        if echoid_field not in radar.fields:
+            warn('Missing echo ID field. Clutter can not be filtered')
+        else:
+            new_dataset.add_field(echoid_field, radar.fields[echoid_field])
+    if hydro_field is not None:
+        if hydro_field not in radar.fields:
+            warn('Missing hydrometeor type field. ' +
+                 'Filtration according to hydrometeor type not possible')
+        else:
+            new_dataset.add_field(hydro_field, radar.fields[hydro_field])
+    if vis_field is not None:
+        if vis_field not in radar.fields:
+            warn('Missing visibility field. Blocked gates can not be filtered')
+        else:
+            new_dataset.add_field(vis_field, radar.fields[vis_field])
 
     return new_dataset, ind_rad
 

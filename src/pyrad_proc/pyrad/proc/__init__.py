@@ -26,6 +26,7 @@ Echo classification and filtering
 
     process_echo_id
     process_echo_filter
+    process_cdf
     process_filter_snr
     process_filter_visibility
     process_outlier_filter
@@ -114,6 +115,7 @@ from .process_traj import process_trajectory, process_traj_atplane, \
 from .process_echoclass import process_echo_id, process_echo_filter
 from .process_echoclass import process_filter_snr, process_filter_visibility
 from .process_echoclass import process_outlier_filter, process_hydroclass
+from .process_echoclass import process_cdf
 
 from .process_phase import process_correct_phidp0
 from .process_phase import process_smooth_phidp_single_window

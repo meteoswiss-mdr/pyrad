@@ -91,7 +91,7 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile="", rt=False):
     # initialize listener for user input
     input_queue = queue.Queue()
     pinput = threading.Thread(
-        name='user_input_listener', target=_user_input_listener,
+        name='user_input_listener', target=_user_input_listener, daemon=True,
         args=(input_queue, ))
     pinput.start()
 

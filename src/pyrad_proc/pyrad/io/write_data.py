@@ -8,6 +8,7 @@ Functions for writing pyrad output data
     :toctree: generated/
 
     write_smn
+    write_cdf
     write_ts_polar_data
     write_ts_cum
     write_monitoring_ts
@@ -62,6 +63,141 @@ def write_smn(datetime_vec, value_avg_vec, value_std_vec, fname):
                  'avg': value_avg_vec[i],
                  'std': value_std_vec[i]})
         csvfile.close()
+
+    return fname
+
+
+def write_cdf(quantiles, values, ntot, nnan, nclut, nblocked, nprec_filter,
+              noutliers, ncdf, fname, use_nans=False, nan_value=0.,
+              filterprec=[], vismin=None, sector=None, datatype=None,
+              timeinfo=None):
+    """
+    writes a cumulative distribution function
+
+    Parameters
+    ----------
+    quantiles : datetime array
+        array containing the measurement time
+    values : float array
+        array containing the average value
+    fname : float array
+        array containing the standard deviation
+    sector : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    hydrotype_list = ['NC', 'DS', 'CR', 'LR', 'GR', 'RN', 'VI', 'WS', 'MH',
+                      'IH/HDG']
+    nvalues = len(values)
+    with open(fname, 'w', newline='') as txtfile:
+        txtfile.write('Statistical analysis\n')
+        txtfile.write('====================\n\n')
+        if datatype is None:
+            txtfile.write('Datatype (Unit) : Not specified\n')
+        else:
+            txtfile.write('Datatype (Unit) : '+datatype+'\n')
+        if timeinfo is None:
+            txtfile.write('Time     : Not specified\n')
+        else:
+            txtfile.write('Time     : ' +
+                          timeinfo.strftime('%Y-%m-%d %H:%M:%S')+'\n')
+        if sector is None:
+            txtfile.write('Sector specification: None\n')
+        else:
+            txtfile.write('Sector specification:\n')
+            if sector['rmin'] is None:
+                txtfile.write('  Range start     : Not specified\n')
+            else:
+                txtfile.write('  Range start     : ' +
+                              str(sector['rmin'])+' m\n')
+
+            if sector['rmax'] is None:
+                txtfile.write('  Range stop      : Not specified\n')
+            else:
+                txtfile.write('  Range stop      : ' +
+                              str(sector['rmax'])+' m\n')
+
+            if sector['azmin'] is None:
+                txtfile.write('  Azimuth start   : Not specified\n')
+            else:
+                txtfile.write('  Azimuth start   : ' +
+                              str(sector['azmin'])+' deg\n')
+
+            if sector['azmax'] is None:
+                txtfile.write('  Azimuth stop    : Not specified\n')
+            else:
+                txtfile.write('  Azimuth stop    : ' +
+                              str(sector['azmax'])+' deg\n')
+
+            if sector['elmin'] is None:
+                txtfile.write('  Elevation start : Not specified\n')
+            else:
+                txtfile.write('  Elevation start : ' +
+                              str(sector['elmin'])+' deg\n')
+
+            if sector['elmax'] is None:
+                txtfile.write('  Elevation stop  : Not specified\n')
+            else:
+                txtfile.write('  Elevation stop  : ' +
+                              str(sector['elmax'])+' deg\n')
+
+            if sector['hmin'] is None:
+                txtfile.write('  Height start    : Not specified\n')
+            else:
+                txtfile.write('  Height start    : ' +
+                              str(sector['hmin'])+' m\n')
+
+            if sector['hmax'] is None:
+                txtfile.write('  Height stop     : Not specified\n')
+            else:
+                txtfile.write('  Height stop     : ' +
+                              str(sector['hmax'])+' m\n')
+            txtfile.write('')
+        txtfile.write('Total number of gates in sector      : ' +
+                      str(ntot)+'\n')
+        txtfile.write('Number of gates with no value (NaNs) : ' +
+                      str(nnan)+'\n')
+        if use_nans:
+            txtfile.write('  NaNs are set to          : '+str(nan_value)+'\n')
+        else:
+            txtfile.write('  NaNs are ignored!\n')
+        if nclut == -1:
+            txtfile.write('Clutter contaminated gates           : ' +
+                          'Not checked\n')
+        else:
+            txtfile.write('Clutter contaminated gates           : ' +
+                          str(nclut)+'\n')
+        if nblocked == -1:
+            txtfile.write('Blocked gates                        : ' +
+                          'Not checked\n')
+        else:
+            txtfile.write('Blocked gates (vismin = '+str(int(vismin)) +
+                          ') : '+str(nblocked)+'\n')
+        if nprec_filter == -1:
+            txtfile.write('Filtered precipitation gates         : None\n')
+        else:
+            txtfile.write('Filtered precipitation gates         : ' +
+                          str(nprec_filter)+'\n')
+            txtfile.write('  precipitation types filtered: ')
+            for i in range(len(filterprec)):
+                txtfile.write(hydrotype_list[filterprec[i]]+' ')
+            txtfile.write('\n')
+        txtfile.write('Number of outliers                   : ' +
+                      str(noutliers)+'\n')
+        txtfile.write('Number of gates used for histogram   : '+str(ncdf) +
+                      ' ('+str(int(ncdf*100./ntot))+'%)\n\n')
+        txtfile.write('Quantiles\n')
+        txtfile.write('=========\n')
+        for i in range(nvalues):
+            txtfile.write('  Quantile_'+str(int(quantiles[i]))+' = ' +
+                          '{:5.1f}'.format(values[i])+'\n')
+
+        txtfile.close()
 
     return fname
 

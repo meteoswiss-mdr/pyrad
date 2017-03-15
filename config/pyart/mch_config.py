@@ -73,6 +73,7 @@ unfiltered_velocity_vv = 'unfiltered_velocity_vv'
 
 # Spectral width fields, SW
 spectrum_width = 'spectrum_width'
+corrected_spectrum_width = 'corrected_spectrum_width'
 
 unfiltered_spectrum_width = 'unfiltered_spectrum_width'
 spectrum_width_vv = 'spectrum_width_vv'
@@ -250,6 +251,7 @@ DEFAULT_FIELD_NAMES = {
     'velocity_vv': velocity_vv,
     'unfiltered_velocity_vv': unfiltered_velocity_vv,
     'spectrum_width': spectrum_width,
+    'corrected_spectrum_width': corrected_spectrum_width,
     'unfiltered_spectrum_width': unfiltered_spectrum_width,
     'spectrum_width_vv': spectrum_width_vv,
     'unfiltered_spectrum_width_vv': unfiltered_spectrum_width_vv,
@@ -698,14 +700,14 @@ DEFAULT_METADATA = {
     velocity: {
         'units': 'meters_per_second',
         'standard_name': 'radial_velocity_of_scatterers_away_from_instrument',
-        'long_name': 'Mean dopper velocity',
+        'long_name': 'Mean Doppler velocity',
         'coordinates': 'elevation azimuth range'},
 
     corrected_velocity: {
         'units': 'meters_per_second',
         'standard_name': (
             'corrected_radial_velocity_of_scatterers_away_from_instrument'),
-        'long_name': 'Corrected mean doppler velocity',
+        'long_name': 'Corrected mean Doppler velocity',
         'coordinates': 'elevation azimuth range'},
 
     # Spectrum width fields
@@ -713,6 +715,12 @@ DEFAULT_METADATA = {
         'units': 'meters_per_second',
         'standard_name': 'doppler_spectrum_width',
         'long_name': 'Doppler spectrum width',
+        'coordinates': 'elevation azimuth range'},
+
+    corrected_spectrum_width: {
+        'units': 'meters_per_second',
+        'standard_name': 'corrected_doppler_spectrum_width',
+        'long_name': 'Corrected Doppler spectrum width',
         'coordinates': 'elevation azimuth range'},
 
     # Dual-polarization fields
@@ -988,11 +996,12 @@ DEFAULT_METADATA = {
         'standard_name': 'iso0',
         'long_name': 'Position of the range bin respect to the iso0 level',
         'coordinates': 'elevation azimuth range'},
-    
+
     cosmo_index: {
         'units': 'dimensionless',
         'standard_name': 'cosmo_index',
-        'long_name': 'indices of the COSMO model corresponding to each radar gate',
+        'long_name': (
+            'indices of the COSMO model corresponding to each radar gate'),
         'coordinates': 'elevation azimuth range'},
 
     visibility: {
@@ -1786,6 +1795,7 @@ DEFAULT_FIELD_COLORMAP = {
     vertical_wind_shear: 'pyart_BuDRd18',
 
     spectrum_width: 'pyart_NWS_SPW',
+    corrected_spectrum_width: 'pyart_NWS_SPW',
     unfiltered_spectrum_width: 'pyart_NWS_SPW',
     spectrum_width_vv: 'pyart_NWS_SPW',
     unfiltered_spectrum_width_vv: 'pyart_NWS_SPW',
@@ -1901,6 +1911,7 @@ DEFAULT_FIELD_LIMITS = {
     vertical_wind_shear: velocity_limit,
 
     spectrum_width: spectrum_width_limit,
+    corrected_spectrum_width: spectrum_width_limit,
     unfiltered_spectrum_width: spectrum_width_limit,
     spectrum_width_vv: spectrum_width_limit,
     unfiltered_spectrum_width_vv: spectrum_width_limit,
@@ -1959,7 +1970,7 @@ DEFAULT_FIELD_LIMITS = {
     interpolated_profile: (0, 10000),
 
     visibility: (0, 100),
-    
+
     temperature: (-60, 30),
 
     # Additional reflectivity like fields

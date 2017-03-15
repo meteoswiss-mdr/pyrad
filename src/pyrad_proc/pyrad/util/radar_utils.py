@@ -7,6 +7,7 @@ Miscellaneous functions dealing with radar data
 .. autosummary::
     :toctree: generated/
 
+    get_ROI
     rainfall_accumulation
     time_series_statistics
     join_time_series
@@ -37,6 +38,62 @@ import pandas as pd
 import scipy
 
 import pyart
+
+
+def get_ROI(radar, fieldname, sector):
+    """
+    filter out any data outside the region of interest defined by sector
+
+    Parameters
+    ----------
+    radar : radar object
+        the radar object where the data is
+    fieldname : str
+        name of the field to filter
+    sector : dict
+        a dictionary defining the region of interest
+
+    Returns
+    -------
+    roi_flag : ndarray
+        a field array with ones in gates that are in the Region of Interest
+
+    """
+    roi_flag = np.ma.ones((radar.nrays, radar.ngates), dtype=int)
+
+    # check for altitude limits
+    if sector['hmin'] is not None:
+        roi_flag[radar.gate_altitude['data'] < sector['hmin']] = 0
+    if sector['hmax'] is not None:
+        roi_flag[radar.gate_altitude['data'] > sector['hmax']] = 0
+
+    # check for range limits
+    if sector['rmin'] is not None:
+        roi_flag[:, radar.range['data'] < sector['rmin']] = 0
+    if sector['rmax'] is not None:
+        roi_flag[:, radar.range['data'] > sector['rmax']] = 0
+
+    # check elevation angle limits
+    if sector['elmin'] is not None:
+        roi_flag[radar.elevation['data'] < sector['elmin'], :] = 0
+    if sector['elmax'] is not None:
+        roi_flag[radar.elevation['data'] > sector['elmax'], :] = 0
+
+    # check min and max azimuth angle
+    if sector['azmin'] is not None and sector['azmax'] is not None:
+        if sector['azmin'] <= sector['azmax']:
+            roi_flag[radar.azimuth['data'] < sector['azmin'], :] = 0
+            roi_flag[radar.azimuth['data'] > sector['azmax'], :] = 0
+        if sector['azmin'] > sector['azmax']:
+            roi_flag[np.logical_and(
+                radar.azimuth['data'] < sector['azmin'],
+                radar.azimuth['data'] > sector['azmax']), :] = 0
+    elif sector['azmin'] is not None:
+        roi_flag[radar.azimuth['data'] < sector['azmin'], :] = 0
+    elif sector['azmax'] is not None:
+        roi_flag[radar.azimuth['data'] > sector['azmax'], :] = 0
+
+    return roi_flag
 
 
 def rainfall_accumulation(t_in_vec, val_in_vec, cum_time=3600.,
@@ -480,7 +537,7 @@ def compute_quantiles(field, quantiles=None):
 
     """
     if quantiles is None:
-        quantiles = [10., 20., 30., 40., 50., 60., 70., 80., 90.]
+        quantiles = [10., 20., 30., 40., 50., 60., 70., 80., 90., 95.]
         warn('No quantiles have been defined. Default ' + str(quantiles) +
              ' will be used')
     nquantiles = len(quantiles)

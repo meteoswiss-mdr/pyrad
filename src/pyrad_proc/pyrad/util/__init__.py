@@ -13,6 +13,7 @@ Radar Utilities
 .. autosummary::
     :toctree: generated/
 
+    get_ROI
     rainfall_accumulation
     time_series_statistics
     join_time_series
@@ -43,7 +44,7 @@ from .radar_utils import compute_quantiles_from_hist, get_range_bins_to_avg
 from .radar_utils import find_ray_index, find_rng_index, compute_2d_hist
 from .radar_utils import compute_1d_stats, compute_2d_stats
 from .radar_utils import time_series_statistics, join_time_series
-from .radar_utils import rainfall_accumulation
+from .radar_utils import rainfall_accumulation, get_ROI
 
 from .stat_utils import quantiles_weighted
 

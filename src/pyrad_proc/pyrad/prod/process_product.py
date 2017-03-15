@@ -36,7 +36,7 @@ from ..io.read_data_other import read_intercomp_scores_ts
 from ..io.write_data import write_ts_polar_data, write_monitoring_ts
 from ..io.write_data import write_sun_hits, write_sun_retrieval
 from ..io.write_data import write_colocated_gates, write_colocated_data
-from ..io.write_data import write_colocated_data_time_avg
+from ..io.write_data import write_colocated_data_time_avg, write_cdf
 from ..io.write_data import write_intercomp_scores_ts, write_ts_cum
 
 from ..graph.plots import plot_ppi, plot_rhi, plot_cappi, plot_bscope
@@ -48,7 +48,7 @@ from ..graph.plots import get_field_name, get_colobar_label, plot_scatter
 from ..graph.plots import plot_intercomp_scores_ts, plot_scatter_comp
 
 from ..util.radar_utils import create_sun_hits_field, rainfall_accumulation
-from ..util.radar_utils import create_sun_retrieval_field
+from ..util.radar_utils import create_sun_retrieval_field, get_ROI
 from ..util.radar_utils import compute_histogram, compute_quantiles
 from ..util.radar_utils import compute_quantiles_from_hist, compute_2d_stats
 
@@ -791,7 +791,7 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname
 
-    if prdcfg['type'] == 'BSCOPE_IMAGE':
+    elif prdcfg['type'] == 'BSCOPE_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset.fields:
             warn(
@@ -822,7 +822,7 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname
 
-    if prdcfg['type'] == 'HISTOGRAM':
+    elif prdcfg['type'] == 'HISTOGRAM':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset.fields:
             warn(
@@ -864,7 +864,7 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname
 
-    if prdcfg['type'] == 'QUANTILES':
+    elif prdcfg['type'] == 'QUANTILES':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset.fields:
             warn(
@@ -903,6 +903,181 @@ def generate_vol_products(dataset, prdcfg):
                        labely=labely, titl=titl)
 
         print('----- save to '+' '.join(fname))
+
+        return fname
+
+    elif prdcfg['type'] == 'CDF':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        quantiles = None
+        if 'quantiles' in prdcfg:
+            quantiles = prdcfg['quantiles']
+
+        sector = {
+            'rmin': None,
+            'rmax': None,
+            'azmin': None,
+            'azmax': None,
+            'elmin': None,
+            'elmax': None,
+            'hmin': None,
+            'hmax': None}
+
+        if 'sector' in prdcfg:
+            if 'rmin' in prdcfg['sector']:
+                sector['rmin'] = prdcfg['sector']['rmin']
+            if 'rmax' in prdcfg['sector']:
+                sector['rmax'] = prdcfg['sector']['rmax']
+            if 'azmin' in prdcfg['sector']:
+                sector['azmin'] = prdcfg['sector']['azmin']
+            if 'azmax' in prdcfg['sector']:
+                sector['azmax'] = prdcfg['sector']['azmax']
+            if 'elmin' in prdcfg['sector']:
+                sector['elmin'] = prdcfg['sector']['elmin']
+            if 'elmax' in prdcfg['sector']:
+                sector['elmax'] = prdcfg['sector']['elmax']
+            if 'hmin' in prdcfg['sector']:
+                sector['hmin'] = prdcfg['sector']['hmin']
+            if 'hmax' in prdcfg['sector']:
+                sector['hmax'] = prdcfg['sector']['hmax']
+
+        vismin = None
+        if 'vismin' in prdcfg:
+            vismin = prdcfg['vismin']
+
+        absolute = False
+        if 'absolute' in prdcfg:
+            absolute = prdcfg['absolute']
+
+        use_nans = False
+        nan_value = 0.
+        if 'use_nans' in prdcfg:
+            use_nans = prdcfg['use_nans']
+            if 'nan_value' in prdcfg:
+                nan_value = prdcfg['nan_value']
+
+        filterclt = False
+        if 'filterclt' in prdcfg:
+            filterclt = prdcfg['filterclt']
+
+        filterprec = []
+        if 'filterprec' in prdcfg:
+            filterprec = prdcfg['filterprec']
+
+        data = deepcopy(dataset.fields[field_name]['data'])
+
+        # define region of interest
+        roi_flag = get_ROI(dataset, field_name, sector)
+        data = data[roi_flag == 1]
+
+        ntot = np.size(roi_flag[roi_flag == 1])
+
+        if ntot == 0:
+            warn('No radar gates found in sector')
+            return None
+
+        # get number of gates with clutter and mask them
+        nclut = -1
+        if filterclt:
+            echoID_field = get_fieldname_pyart('echoID')
+            if echoID_field in dataset.fields:
+                echoID_ROI = dataset.fields[echoID_field]['data'][
+                    roi_flag == 1]
+                nclut = len(echoID_ROI[echoID_ROI == 2])
+                data[echoID_ROI == 2] = np.ma.masked
+
+        # get number of blocked gates and filter according to visibility
+        nblocked = -1
+        if vismin is not None:
+            vis_field = get_fieldname_pyart('VIS')
+            if vis_field in dataset.fields:
+                vis_ROI = dataset.fields[vis_field]['data'][roi_flag == 1]
+                nblocked = len(vis_ROI[vis_ROI < vismin])
+                data[vis_ROI < vismin] = np.ma.masked
+
+        # filter according to precip type
+        nprec_filter = -1
+        if len(filterprec) > 0:
+            hydro_field = get_fieldname_pyart('hydro')
+            if hydro_field in dataset.fields:
+                hydro_ROI = dataset.fields[hydro_field]['data'][roi_flag == 1]
+                nprec_filter = 0
+                for i in range(len(filterprec)):
+                    nprec_filter += len(hydro_ROI[hydro_ROI == filterprec[i]])
+                    data[hydro_ROI == filterprec[i]] = np.ma.masked
+
+        if absolute:
+            data = np.ma.abs(data)
+
+        mask = np.ma.getmaskarray(data)
+        nnan = np.count_nonzero(mask)
+
+        if nnan == ntot:
+            warn('No valid radar gates found in sector')
+            return None
+
+        if use_nans:
+            data[mask] = nan_value
+
+        # count and filter outliers
+        quantiles_lim, values_lim = compute_quantiles(
+            data, quantiles=[0.2, 99.8])
+        nsmall = np.count_nonzero(data.compressed() < values_lim[0])
+        nlarge = np.count_nonzero(data.compressed() > values_lim[1])
+        noutliers = nlarge+nsmall
+        data = data[np.logical_and(
+            data >= values_lim[0], data <= values_lim[1])]
+
+        # number of values used for cdf computation
+        ncdf = np.size(data.compressed())
+
+        quantiles, values = compute_quantiles(data, quantiles=quantiles)
+
+        # plot CDF
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'cdf', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'],
+            timeinfo=prdcfg['timeinfo'])
+
+        for i in range(len(fname)):
+            fname[i] = savedir+fname[i]
+
+        titl = (
+            pyart.graph.common.generate_radar_time_begin(
+                dataset).isoformat() + 'Z' + '\n' +
+            get_field_name(dataset.fields[field_name], field_name))
+
+        labelx = get_colobar_label(dataset.fields[field_name], field_name)
+
+        plot_quantiles(values, quantiles/100., fname, labelx=labelx,
+                       labely='Cumulative probability', titl=titl)
+
+        print('----- save to '+' '.join(fname))
+
+        # store cdf values
+        fname = make_filename(
+            'cdf', prdcfg['dstype'], prdcfg['voltype'],
+            ['txt'], timeinfo=prdcfg['timeinfo'])[0]
+
+        fname = savedir+fname
+
+        write_cdf(
+            quantiles, values, ntot, nnan, nclut, nblocked, nprec_filter,
+            noutliers, ncdf, fname, use_nans=use_nans, nan_value=nan_value,
+            filterprec=filterprec, vismin=vismin, sector=sector,
+            datatype=labelx, timeinfo=prdcfg['timeinfo'])
+
+        print('----- save to '+fname)
 
         return fname
 

@@ -52,6 +52,8 @@ def get_process_func(dataset_type, dsname):
     dsformat = 'VOL'
     if dataset_type == 'RAW':
         func_name = process_raw
+    elif dataset_type == 'CDF':
+        func_name = 'process_cdf'
     elif dataset_type == 'NCVOL':
         func_name = process_save_radar
     elif dataset_type == 'PWR':

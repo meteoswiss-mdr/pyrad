@@ -78,6 +78,7 @@ Writing data
     write_intercomp_scores_ts
     write_sun_hits
     write_sun_retrieval
+    write_cdf
 
 
 Auxiliary functions
@@ -139,7 +140,7 @@ from .write_data import write_smn, write_ts_polar_data, write_ts_cum
 from .write_data import write_monitoring_ts, write_intercomp_scores_ts
 from .write_data import write_sun_hits, write_sun_retrieval
 from .write_data import write_colocated_gates, write_colocated_data
-from .write_data import write_colocated_data_time_avg
+from .write_data import write_colocated_data_time_avg, write_cdf
 
 from .io_aux import get_save_dir, make_filename
 from .io_aux import get_datetime, get_dataset_fields
