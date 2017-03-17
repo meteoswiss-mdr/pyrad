@@ -180,6 +180,8 @@ northward_wind_component = 'northward_wind_component'
 vertical_wind_component = 'vertical_wind_component'
 azimuthal_horizontal_wind_component = 'azimuthal_horizontal_wind_component'
 vertical_wind_shear = 'vertical_wind_shear'
+wind_speed = 'wind_speed'
+wind_direction = 'wind_direction'
 
 # profile variables
 height = 'height'
@@ -320,6 +322,8 @@ DEFAULT_FIELD_NAMES = {
     'azimuthal_horizontal_wind_component':
         azimuthal_horizontal_wind_component,
     'vertical_wind_shear': vertical_wind_shear,
+    'wind_speed': wind_speed,
+    'wind_direction': wind_direction,
     'height': height,
     'number_of_samples': number_of_samples,
     'colocated_gates': colocated_gates,
@@ -1061,6 +1065,16 @@ DEFAULT_METADATA = {
         'standard_name': 'vertical_wind_shear',
         'long_name': 'Vertical wind shear'},
 
+    wind_speed: {
+        'units': 'meters_per_second',
+        'standard_name': 'horizontal_wind_speed',
+        'long_name': 'Horizontal wind speed'},
+
+    wind_direction: {
+        'units': 'degrees_from_north',
+        'standard_name': 'horizontal_wind_direction',
+        'long_name': 'Horizontal wind direction'},
+
     # profile variables
     height: {
         'long_name': 'Height of radar beam',
@@ -1793,6 +1807,8 @@ DEFAULT_FIELD_COLORMAP = {
     vertical_wind_component: 'pyart_BuDRd18',
     azimuthal_horizontal_wind_component: 'pyart_BuDRd18',
     vertical_wind_shear: 'pyart_BuDRd18',
+    wind_speed: 'pyart_NWSRef',
+    wind_direction: 'pyart_Wild25',
 
     spectrum_width: 'pyart_NWS_SPW',
     corrected_spectrum_width: 'pyart_NWS_SPW',
@@ -1909,6 +1925,8 @@ DEFAULT_FIELD_LIMITS = {
     vertical_wind_component: velocity_limit,
     azimuthal_horizontal_wind_component: velocity_limit,
     vertical_wind_shear: velocity_limit,
+    wind_speed: (0., 50.),
+    wind_direction: (0., 360.),
 
     spectrum_width: spectrum_width_limit,
     corrected_spectrum_width: spectrum_width_limit,

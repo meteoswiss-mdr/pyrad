@@ -666,6 +666,82 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname
 
+#    elif prdcfg['type'] == 'RHI_PROFILE':
+#        field_name = get_fieldname_pyart(prdcfg['voltype'])
+#        if field_name not in dataset.fields:
+#            warn(
+#                ' Field type ' + field_name +
+#                ' not available in data set. Skipping product ' +
+#                prdcfg['type'])
+#            return None
+#
+#        az_vec = np.sort(dataset.fixed_angle['data'])
+#        az = az_vec[prdcfg['anglenr']]
+#        ind_az = np.where(dataset.fixed_angle['data'] == az)[0][0]
+#
+#        savedir = get_save_dir(
+#            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+#            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+#
+#        fname = make_filename(
+#            'rhi', prdcfg['dstype'], prdcfg['voltype'],
+#            prdcfg['imgformat'], prdcfginfo='az'+'{:.1f}'.format(az),
+#            timeinfo=prdcfg['timeinfo'])
+#
+#        for i in range(len(fname)):
+#            fname[i] = savedir+fname[i]
+#
+#        rmin = 0.
+#        rmax = 50000.
+#        deltah = 100.
+#        hmax_user = 8000.
+#
+#        # create new radar object with only data for the given rhi and range
+#        new_dataset = dataset.extract_sweeps(ind_az)
+#        field = new_dataset.fields[field_name]
+#        rng_mask = np.logical_and(radar.range >= rmin, radar.range <= rmax)
+#        field['data'] = field['data'][:, rng_mask]
+#        new_dataset.fields = dict()
+#        new_dataset.add_field(field_name, field)
+#        new_dataset.range['data'] = new_dataset.range['data'][rng_mask]
+#        new_dataset.ngates = len(new_dataset.range['data'])
+#        new_dataset.init_gate_x_y_z()
+#        new_dataset.init_gate_longitude_latitude()
+#        new_dataset.init_gate_altitude()
+#
+#        minheight = round(np.min(new_dataset.gate_altitude['data'])-deltah/2.)
+#        maxheight = round(hmax_user/deltah)*deltah
+#
+#        nlevels = int((maxheight-minheight)/deltah)
+#
+#        hmin_vec = minheight+i*deltah
+#        hmax_vec = hmin+deltah
+#        h_vec =
+#        val_median = np.ma.empty(nlevels)
+#        val_median[:] = np.ma.masked
+#        val_min = np.ma.empty(nlevels)
+#        val_min[:] = np.ma.masked
+#        val_max = np.ma.empty(nlevels)
+#        val_max[:] = np.ma.masked
+#        val_valid = np.zeros(nlevels)
+#
+#
+#        gate_altitude = new_dataset.gate_altitude['data']
+#        for i in range(nlevels):
+#            data = field['data'][np.logical_and(
+#                gate_altitude >= hmin_vec[i], gate_altitude <= hmax_vec[i])]
+#
+#
+#
+#
+#
+#
+#        plot_rhi_profile(dataset, field_name, ind_az, prdcfg, fname)
+#
+#        print('----- save to '+' '.join(fname))
+#
+#        return fname
+
     elif prdcfg['type'] == 'PSEUDOPPI_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset.fields:

@@ -31,8 +31,8 @@ Reading cosmo data
 
     cosmo2radar_data
     cosmo2radar_coord
-    get_cosmo_field
-    read_cosmo_temp
+    get_cosmo_fields
+    read_cosmo_data
     read_cosmo_coord
 
 Reading other data
@@ -123,9 +123,9 @@ from .config import read_config
 
 from .read_data_radar import get_data, add_field, interpol_field
 
-from .read_data_cosmo import read_cosmo_temp, read_cosmo_coord
+from .read_data_cosmo import read_cosmo_data, read_cosmo_coord
 from .read_data_cosmo import cosmo2radar_data, cosmo2radar_coord
-from .read_data_cosmo import get_cosmo_field
+from .read_data_cosmo import get_cosmo_fields
 
 from .read_data_other import read_status, read_rad4alp_cosmo, read_rad4alp_vis
 from .read_data_other import read_timeseries, read_monitoring_ts, read_ts_cum

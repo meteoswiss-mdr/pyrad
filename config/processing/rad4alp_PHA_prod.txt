@@ -4,9 +4,8 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 2
-    dBZ
-    ZDR
+dataSetList STRARR 1
+    RAD2COSMO
     
 #	l0:SNRh
 #    l1:RhoHV    
@@ -23,48 +22,48 @@ dataSetList STRARR 2
 # ==========================================================================================
 #                 raw data products
 # ==========================================================================================
-dBZ STRUCT 4
-    type STRING RAW
-    datatype STRARR 1
-       RAD4ALP:dBZ
-    MAKE_GLOBAL INT 0
-    products STRUCT 3 	  
-      EL001_0 STRUCT 3
-         type STRING PPI_IMAGE
-         anglenr INT 2
-         voltype STRING dBZ
-      RHI_040_0 STRUCT 4
-         type STRING PSEUDORHI_IMAGE
-         voltype STRING dBZ
-         angle FLOAT 40.
-         AziTol FLOAT 0.5
-      RHI_220_0 STRUCT 4
-         type STRING PSEUDORHI_IMAGE
-         voltype STRING dBZ
-         angle FLOAT 220.
-         AziTol FLOAT 0.5
-         
-ZDR STRUCT 4
-    type STRING RAW
-    datatype STRARR 1
-       RAD4ALP:ZDR
-    MAKE_GLOBAL INT 0
-    products STRUCT 3 	  
-      EL001_0 STRUCT 3
-         type STRING PPI_IMAGE
-         anglenr INT 2
-         voltype STRING ZDR
-      RHI_040_0 STRUCT 4
-         type STRING PSEUDORHI_IMAGE
-         voltype STRING ZDR
-         angle FLOAT 40.
-         AziTol FLOAT 0.5
-      RHI_220_0 STRUCT 4
-         type STRING PSEUDORHI_IMAGE
-         voltype STRING ZDR
-         angle FLOAT 220.
-         AziTol FLOAT 0.5
-
+#dBZ STRUCT 4
+#    type STRING RAW
+#    datatype STRARR 1
+#       RAD4ALP:dBZ
+#    MAKE_GLOBAL INT 0
+#    products STRUCT 3 	  
+#      EL001_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 2
+#         voltype STRING dBZ
+#      RHI_040_0 STRUCT 4
+#         type STRING PSEUDORHI_IMAGE
+#         voltype STRING dBZ
+#         angle FLOAT 40.
+#         AziTol FLOAT 0.5
+#      RHI_220_0 STRUCT 4
+#         type STRING PSEUDORHI_IMAGE
+#         voltype STRING dBZ
+#         angle FLOAT 220.
+#         AziTol FLOAT 0.5
+#         
+#ZDR STRUCT 4
+#    type STRING RAW
+#    datatype STRARR 1
+#       RAD4ALP:ZDR
+#    MAKE_GLOBAL INT 0
+#    products STRUCT 3 	  
+#      EL001_0 STRUCT 3
+#         type STRING PPI_IMAGE
+#         anglenr INT 2
+#         voltype STRING ZDR
+#      RHI_040_0 STRUCT 4
+#         type STRING PSEUDORHI_IMAGE
+#         voltype STRING ZDR
+#         angle FLOAT 40.
+#         AziTol FLOAT 0.5
+#      RHI_220_0 STRUCT 4
+#         type STRING PSEUDORHI_IMAGE
+#         voltype STRING ZDR
+#         angle FLOAT 220.
+#         AziTol FLOAT 0.5
+#
 #uPhiDP STRUCT 3
 #    type STRING RAW
 #    datatype STRARR 1
@@ -106,41 +105,94 @@ ZDR STRUCT 4
 # ==========================================================================================
 #                 secondary moments products
 # ==========================================================================================
-SNRh STRUCT 4
-    type STRING SNR
-    datatype STRARR 2
-        RAD4ALP:dBZ
-        RAD4ALP:Nh
-    output_type STRING SNRh
-    MAKE_GLOBAL INT 1
-	
-RhoHV STRUCT 3
-    type STRING RHOHV_CORRECTION
-    datatype STRARR 5
-        RAD4ALP:uRhoHV
-        RAD4ALP:ZDR
-        RAD4ALP:Nh
-        RAD4ALP:Nv
-        PROC:SNRh
-    MAKE_GLOBAL INT 1
-    
-    
+#SNRh STRUCT 4
+#    type STRING SNR
+#    datatype STRARR 2
+#        RAD4ALP:dBZ
+#        RAD4ALP:Nh
+#    output_type STRING SNRh
+#    MAKE_GLOBAL INT 1
+#	
+#RhoHV STRUCT 3
+#    type STRING RHOHV_CORRECTION
+#    datatype STRARR 5
+#        RAD4ALP:uRhoHV
+#        RAD4ALP:ZDR
+#        RAD4ALP:Nh
+#        RAD4ALP:Nv
+#        PROC:SNRh
+#    MAKE_GLOBAL INT 1
+#    
+#    
 # ==========================================================================================
 #                 COSMO products
 # ==========================================================================================
-#TEMP STRUCT 6
-#    type STRING COSMO_TEMP_LOOKUP
+#TEMP_RAW STRUCT 5
+#    type STRING COSMO
 #    datatype STRARR 1
-#        RAD4ALP:dBZ    
+#        RAD4ALP:dBZ
+#    cosmo_type STRING TEMP
+#    keep_in_memory INT 1
+#    products STRUCT 1        
+#        EL001_0 STRUCT 3
+#            type  STRING PPI_IMAGE
+#            anglenr INT 2
+#            voltype STRING TEMP
+#            
+#TEMP_RAW2 STRUCT 6
+#    type STRING COSMO_LOOKUP
+#    datatype STRARR 1
+#        RAD4ALP:dBZ        
+#    cosmo_type STRING TEMP
 #    regular_grid INT 1
-#    lookup_table INT 0
-#    MAKE_GLOBAL INT 1
-#    products STRUCT 1 	  
-#      SAVEVOL_TEMP STRUCT 2
-#         type  STRING SAVEVOL
-#         voltype STRING TEMP
-#
-#
+#    lookup_table INT 1
+#    products STRUCT 1        
+#        EL001_0 STRUCT 3
+#            type  STRING PPI_IMAGE
+#            anglenr INT 2
+#            voltype STRING TEMP
+#            
+#WIND_RAW STRUCT 5
+#    type STRING COSMO
+#    datatype STRARR 1
+#        RAD4ALP:dBZ
+#    cosmo_type STRING WIND
+#    keep_in_memory INT 1
+#    products STRUCT 2
+#        EL001_0_SPEED STRUCT 3
+#            type  STRING PPI_IMAGE
+#            anglenr INT 2
+#            voltype STRING WIND_SPEED
+#        EL001_0_DIR STRUCT 3
+#            type  STRING PPI_IMAGE
+#            anglenr INT 2
+#            voltype STRING WIND_DIRECTION
+#            
+#WIND_RAW2 STRUCT 6
+#    type STRING COSMO_LOOKUP
+#    datatype STRARR 1
+#        RAD4ALP:dBZ
+#    cosmo_type STRING WIND
+#    regular_grid INT 1
+#    lookup_table INT 1    
+#    products STRUCT 2
+#        EL001_0_SPEED STRUCT 3
+#            type  STRING PPI_IMAGE
+#            anglenr INT 2
+#            voltype STRING WIND_SPEED
+#        EL001_0_DIR STRUCT 3
+#            type  STRING PPI_IMAGE
+#            anglenr INT 2
+#            voltype STRING WIND_DIRECTION
+            
+RAD2COSMO STRUCT 3
+    type STRING COSMO_COORD
+    datatype STRARR 1
+        dBZ        
+    products STRUCT 1        
+        rad2cosmo STRUCT 2
+            type  STRING SAVEVOL            
+            voltype STRING cosmo_index
 # ==========================================================================================
 #                 echo identification
 # ==========================================================================================

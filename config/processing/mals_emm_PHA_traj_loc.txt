@@ -48,10 +48,10 @@ ScanList STRARR 20
 ScanPeriod INT 5
 
 # Frequency of cosmo run [h]
-CosmoRunFreq INT 3
+CosmoRunFreq INT 1
 
 # hours forecasted in cosmo run [h]
-CosmoForecasted INT 7
+CosmoForecasted INT 9
 
 # radar constant
 radconsth FLOAT 71.67

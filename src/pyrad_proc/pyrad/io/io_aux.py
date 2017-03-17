@@ -371,6 +371,10 @@ def get_fieldname_pyart(datatype):
         field_name = 'vertical_wind_component'
     elif datatype == 'windshear_v':
         field_name = 'vertical_wind_shear'
+    elif datatype == 'WIND_SPEED':
+        field_name = 'wind_speed'
+    elif datatype == 'WIND_DIRECTION':
+        field_name = 'wind_direction'
 
     elif datatype == 'Ah':
         field_name = 'specific_attenuation'
@@ -794,7 +798,12 @@ def find_raw_cosmo_file(voltime, datatype, cfg, ind_rad=0):
 
         daydir = runtime.strftime('%Y-%m-%d')
         datapath = cfg['cosmopath'][ind_rad]+datatype+'/raw1/'+daydir+'/'
-        search_name = (datapath+'cosmo-1_MDR_3D_'+runtimestr+'.nc')
+        if datatype == 'TEMP':
+            search_name = (datapath+'cosmo-1_MDR_3D_'+runtimestr+'.nc')
+        elif datatype == 'WIND':
+            search_name = (datapath+'cosmo-1_MDR_3DWIND_'+runtimestr+'.nc')
+        else:
+            warn('Unable to get COSMO '+datatype+'. Unknown variable')
         print('Looking for file: '+search_name)
         fname = glob.glob(search_name)
         if len(fname) > 0:

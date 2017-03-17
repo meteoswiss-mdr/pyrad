@@ -100,8 +100,8 @@ COSMO data
 .. autosummary::
     :toctree: generated/
 
-    process_cosmo_temp
-    process_cosmo_temp_lookup_table
+    process_cosmo
+    process_cosmo_lookup_table
     process_cosmo_coord
 
 
@@ -142,7 +142,7 @@ from .process_retrieve import process_l, process_cdr
 from .process_retrieve import process_rainrate, process_wind_vel
 from .process_retrieve import process_windshear
 
-from .process_cosmo import process_cosmo_temp, process_cosmo_temp_lookup_table
+from .process_cosmo import process_cosmo, process_cosmo_lookup_table
 from .process_cosmo import process_cosmo_coord
 
 __all__ = [s for s in dir() if not s.startswith('_')]

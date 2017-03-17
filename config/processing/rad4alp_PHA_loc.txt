@@ -9,7 +9,7 @@ TimeTol FLOAT 3600.
 
 # rad4alp radar name
 RadarName STRARR 1
-	A
+	D
 
 # rad4alp radar range resolution L:Low H:High
 RadarRes STRARR 1
@@ -48,7 +48,7 @@ ScanList STRARR 20
 ScanPeriod INT 5
 
 # Frequency of cosmo run [h]
-CosmoRunFreq INT 3
+CosmoRunFreq INT 1
 
 # hours forecasted in cosmo run [h]
 CosmoForecasted INT 7

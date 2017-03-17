@@ -9,8 +9,8 @@ Functions for reading COSMO data
 
     cosmo2radar_data
     cosmo2radar_coord
-    get_cosmo_field
-    read_cosmo_temp
+    get_cosmo_fields
+    read_cosmo_data
     read_cosmo_coord
     _ncvar_to_dict
     _prepare_for_interpolation
@@ -30,8 +30,8 @@ from pyart.config import get_metadata, get_field_name
 import time
 
 
-def cosmo2radar_data(radar, cosmo_coord, cosmo_data, time_index=0,
-                     slice_xy=True, slice_z=False, field_name=None):
+def cosmo2radar_data(radar, cosmo_coord, cosmo_data, cosmo_type, time_index=0,
+                     slice_xy=True, slice_z=False, field_names=None):
     """
     get the COSMO value corresponding to each radar gate using nearest
     neighbour interpolation
@@ -45,6 +45,8 @@ def cosmo2radar_data(radar, cosmo_coord, cosmo_data, time_index=0,
         dictionary containing the COSMO coordinates
     cosmo_data : dict
         dictionary containing the COSMO data
+    cosmo_type : str
+        name of the COSMO variable
     time_index : int
         index of the forecasted data
     slice_xy : boolean
@@ -53,48 +55,94 @@ def cosmo2radar_data(radar, cosmo_coord, cosmo_data, time_index=0,
     slice_z : boolean
         if true the vertical plane of the COSMO field is cut to the dimensions
         of the radar field
-    field_name : str
-        name of COSMO parameter (default temperature)
+    field_names : str
+        names of COSMO parameters (default temperature)
 
     Returns
     -------
-    cosmo_field : dict
-        dictionary with the COSMO field and metadata
+    cosmo_fields : list of dict
+        list of dictionary with the COSMO fields and metadata
 
     """
     # debugging
     # start_time = time.time()
 
     # parse the field parameters
-    if field_name is None:
-        field_name = get_field_name('temperature')
+    if field_names is None:
+        if cosmo_type == 'TEMP':
+            field_names = [get_field_name('temperature')]
+        elif cosmo_type == 'WIND':
+            field_names = [get_field_name('wind_speed'),
+                           get_field_name('wind_direction')]
+        else:
+            warn('unknown data type '+cosmo_type)
+            return None
 
     x_radar, y_radar, z_radar = _put_radar_in_swiss_coord(radar)
 
-    (x_cosmo, y_cosmo, z_cosmo, nx, ny, nz, ind_xmin, ind_ymin, ind_zmin,
-     values) = _prepare_for_interpolation(
+    (x_cosmo, y_cosmo, z_cosmo, ind_xmin, ind_ymin, ind_zmin, ind_xmax,
+     ind_ymax, ind_zmax) = _prepare_for_interpolation(
         x_radar, y_radar, z_radar, cosmo_coord, slice_xy=slice_xy,
-        slice_z=slice_z,
-        cosmo_data=cosmo_data['variable']['data'][time_index, :, :, :])
+        slice_z=slice_z)
 
-    # find interpolation function
-    interp_func = NearestNDInterpolator((z_cosmo, y_cosmo, x_cosmo), values)
+    if cosmo_type == 'TEMP':
+        values = cosmo_data['TEMP']['data'][
+            time_index, ind_zmin:ind_zmax+1, ind_ymin:ind_ymax+1,
+            ind_xmin:ind_xmax+1].flatten()
 
-    # debugging
-    # print(" generating interpolation function takes %s seconds " %
-    #      (time.time() - start_time))
+        # find interpolation function
+        interp_func = NearestNDInterpolator(
+            (z_cosmo, y_cosmo, x_cosmo), values)
 
-    # interpolate
-    # debugging
-    # start_time = time.time()
-    data_interp = interp_func((z_radar, y_radar, x_radar))
-    # print(" interpolating takes %s seconds " % (time.time() - start_time))
+        # debugging
+        # print(" generating interpolation function takes %s seconds " %
+        #      (time.time() - start_time))
 
-    # put field
-    cosmo_field = get_metadata(field_name)
-    cosmo_field['data'] = data_interp
+        # interpolate
+        # debugging
+        # start_time = time.time()
+        data_interp = interp_func((z_radar, y_radar, x_radar))
+        # print(" interpolating takes %s seconds " % (time.time() -
+        # start_time))
 
-    return cosmo_field
+        # put field
+        temp_field = get_metadata(field_names[0])
+        temp_field['data'] = data_interp
+        cosmo_fields = [temp_field]
+    else:
+        values_speed = cosmo_data['WIND_SPEED']['data'][
+            time_index, ind_zmin:ind_zmax+1, ind_ymin:ind_ymax+1,
+            ind_xmin:ind_xmax+1].flatten()
+        values_dir = cosmo_data['WIND_DIRECTION']['data'][
+            time_index, ind_zmin:ind_zmax+1, ind_ymin:ind_ymax+1,
+            ind_xmin:ind_xmax+1].flatten()
+
+        # find interpolation function
+        interp_func_speed = NearestNDInterpolator(
+            (z_cosmo, y_cosmo, x_cosmo), values_speed)
+        interp_func_dir = NearestNDInterpolator(
+            (z_cosmo, y_cosmo, x_cosmo), values_dir)
+
+        # debugging
+        # print(" generating interpolation function takes %s seconds " %
+        #      (time.time() - start_time))
+
+        # interpolate
+        # debugging
+        # start_time = time.time()
+        speed_data_interp = interp_func_speed((z_radar, y_radar, x_radar))
+        dir_data_interp = interp_func_dir((z_radar, y_radar, x_radar))
+        # print(" interpolating takes %s seconds " % (time.time() -
+        #        start_time))
+
+        # put fields
+        speed_field = get_metadata(field_names[0])
+        speed_field['data'] = speed_data_interp
+        dir_field = get_metadata(field_names[1])
+        dir_field['data'] = dir_data_interp
+        cosmo_fields = [speed_field, dir_field]
+
+    return cosmo_fields
 
 
 def cosmo2radar_coord(radar, cosmo_coord, slice_xy=True, slice_z=False,
@@ -115,6 +163,8 @@ def cosmo2radar_coord(radar, cosmo_coord, slice_xy=True, slice_z=False,
     slice_z : boolean
         if true the vertical plane of the COSMO field is cut to the dimensions
         of the radar field
+    field_name : str
+        name of the field
 
     Returns
     -------
@@ -131,10 +181,10 @@ def cosmo2radar_coord(radar, cosmo_coord, slice_xy=True, slice_z=False,
 
     x_radar, y_radar, z_radar = _put_radar_in_swiss_coord(radar)
 
-    (x_cosmo, y_cosmo, z_cosmo, nx, ny, nz, ind_xmin, ind_ymin, ind_zmin,
-     values) = _prepare_for_interpolation(
+    (x_cosmo, y_cosmo, z_cosmo, ind_xmin, ind_ymin, ind_zmin, ind_xmax,
+     ind_ymax, ind_zmax) = _prepare_for_interpolation(
         x_radar, y_radar, z_radar, cosmo_coord, slice_xy=slice_xy,
-        slice_z=slice_z, cosmo_data=None)
+        slice_z=slice_z)
 
     tree = cKDTree(np.transpose((z_cosmo, y_cosmo, x_cosmo)))
     dd_vec, ind_vec = tree.query(np.transpose(
@@ -144,6 +194,10 @@ def cosmo2radar_coord(radar, cosmo_coord, slice_xy=True, slice_z=False,
     nx_cosmo = len(cosmo_coord['x']['data'])
     ny_cosmo = len(cosmo_coord['y']['data'])
     nz_cosmo = len(cosmo_coord['z']['data'])
+
+    nx = ind_xmax-ind_xmin+1
+    ny = ind_ymax-ind_ymin+1
+    nz = ind_zmax-ind_zmin+1
 
     ind_z = (ind_vec/(nx*ny)).astype(int)+ind_zmin
     ind_y = ((ind_vec-nx*ny*ind_z)/nx).astype(int)+ind_ymin
@@ -160,7 +214,8 @@ def cosmo2radar_coord(radar, cosmo_coord, slice_xy=True, slice_z=False,
     return cosmo_ind_field
 
 
-def get_cosmo_field(cosmo_data, cosmo_ind, time_index=0, field_name=None):
+def get_cosmo_fields(cosmo_data, cosmo_type, cosmo_ind, time_index=0,
+                     field_names=None):
     """
     Get the COSMO data corresponding to each radar gate
     using a precomputed look up table of the nearest neighbour
@@ -169,47 +224,78 @@ def get_cosmo_field(cosmo_data, cosmo_ind, time_index=0, field_name=None):
     ----------
     cosmo_data : dict
         dictionary containing the COSMO data and metadata
+    cosmo_type : str
+        name of the COSMO variable
     cosmo_limits : dict
         dictionary containing the x, y, z indices limiting the COSMO field
     cosmo_ind : dict
         dictionary containing a field of COSMO indices and metadata
     time_index : int
         index of the forecasted data
-    field_name : str
-        name of COSMO parameter (default temperature)
+    field_names : str
+        names of COSMO parameters (default temperature)
 
     Returns
     -------
-    cosmo_field : dict
+    cosmo_fields : list of dict
         dictionary with the COSMO field and metadata
 
     """
     # parse the field parameters
-    if field_name is None:
-        field_name = get_field_name('temperature')
+    if field_names is None:
+        if cosmo_type == 'TEMP':
+            field_names = [get_field_name('temperature')]
+        elif cosmo_type == 'WIND':
+            field_names = [get_field_name('wind_speed'),
+                           get_field_name('wind_direction')]
+        else:
+            warn('unknown data type '+cosmo_type)
+            return None
 
     nrays, ngates = np.shape(cosmo_ind['data'])
-    values = cosmo_data['variable']['data'][time_index, :, :, :].flatten()
 
-    cosmo_field = get_metadata(field_name)
-    cosmo_field['data'] = (
-        values[cosmo_ind['data'].flatten()].reshape(nrays, ngates))
+    if cosmo_type == 'TEMP':
+        values = cosmo_data['TEMP']['data'][time_index, :, :, :].flatten()
 
-    return cosmo_field
+        temp_field = get_metadata(field_names[0])
+        temp_field['data'] = (
+            values[cosmo_ind['data'].flatten()].reshape(nrays, ngates))
+        cosmo_fields = [temp_field]
+    else:
+        values_speed = cosmo_data['WIND_SPEED']['data'][
+            time_index, :, :, :].flatten()
+        values_dir = cosmo_data['WIND_DIRECTION']['data'][
+            time_index, :, :, :].flatten()
+
+        speed_field = get_metadata(field_names[0])
+        speed_field['data'] = (
+            values_speed[cosmo_ind['data'].flatten()].reshape(nrays, ngates))
+
+        dir_field = get_metadata(field_names[1])
+        dir_field['data'] = (
+            values_dir[cosmo_ind['data'].flatten()].reshape(nrays, ngates))
+        cosmo_fields = [speed_field, dir_field]
+
+    return cosmo_fields
 
 
-def read_cosmo_temp(fname, celsius=False):
+def read_cosmo_data(fname, cosmo_type='TEMP', celsius=False):
     """
-    Reads COSMO temperature from a netcdf file
+    Reads COSMO data from a netcdf file
 
     Parameters
     ----------
     fname : str
         name of the file to read
+    cosmo_type : str
+        name of the variable to read
+    celsius : Boolean
+        if True and variable TEMP converts data from Kelvin
+        to Centigrade
 
     Returns
     -------
-    cosmo_temp : dictionary
+    cosmo_data : dictionary
         dictionary with the data and metadata
 
     """
@@ -220,6 +306,20 @@ def read_cosmo_temp(fname, celsius=False):
     # 4.1 Global attribute -> move to metadata dictionary
     metadata = dict([(k, getattr(ncobj, k)) for k in ncobj.ncattrs()])
 
+    cosmo_data = dict()
+    if cosmo_type == 'TEMP':
+        temp = _ncvar_to_dict(ncvars['T'])
+        if celsius:
+            temp['data'] -= 273.15
+            temp['units'] = 'C'
+        cosmo_data.update({cosmo_type: temp})
+    elif cosmo_type == 'WIND':
+        wind_speed = _ncvar_to_dict(ncvars['FF'])
+        wind_direction = _ncvar_to_dict(ncvars['DD'])
+        cosmo_data.update({
+            cosmo_type+'_SPEED': wind_speed,
+            cosmo_type+'_DIRECTION': wind_direction})
+
     # 4.2 put variables in dictionary
     x_1 = _ncvar_to_dict(ncvars['x_1'])
     y_1 = _ncvar_to_dict(ncvars['y_1'])
@@ -227,18 +327,12 @@ def read_cosmo_temp(fname, celsius=False):
     lat_1 = _ncvar_to_dict(ncvars['lat_1'])
     z_1 = _ncvar_to_dict(ncvars['z_1'])
     z_bnds_1 = _ncvar_to_dict(ncvars['z_bnds_1'])
-    temp = _ncvar_to_dict(ncvars['T'])
-
-    if celsius:
-        temp['data'] -= 273.15
-        temp['units'] = 'C'
-
     time = _ncvar_to_dict(ncvars['time'])
 
     # close object
     ncobj.close()
 
-    cosmo_temp = {
+    cosmo_data.update({
         'metadata': metadata,
         'time': time,
         'x': x_1,
@@ -246,14 +340,13 @@ def read_cosmo_temp(fname, celsius=False):
         'z': z_1,
         'z_bnds': z_bnds_1,
         'lon': lon_1,
-        'lat': lat_1,
-        'variable': temp
-    }
+        'lat': lat_1
+    })
 
-    return cosmo_temp
+    return cosmo_data
 
 
-def read_cosmo_coord(fname):
+def read_cosmo_coord(fname, zmin=None):
     """
     Reads COSMO coordinates from a netcdf file
 
@@ -289,6 +382,10 @@ def read_cosmo_coord(fname):
     # close object
     ncobj.close()
 
+    if zmin is not None:
+        z_1['data'] = z_1['data'][z_1['data'] >= zmin]
+        z_bnds_1['data'] = z_bnds_1['data'][z_bnds_1['data'] >= zmin]
+
     cosmo_coord = {
         'metadata': metadata,
         'x': x_1,
@@ -320,7 +417,7 @@ def _ncvar_to_dict(ncvar):
 
 
 def _prepare_for_interpolation(x_radar, y_radar, z_radar, cosmo_coord,
-                               slice_xy=True, slice_z=False, cosmo_data=None):
+                               slice_xy=True, slice_z=False):
     """
     prepares the COSMO 3D volume for interpolation:
         1. if set slices the cosmo data to the area (or volume)
@@ -339,18 +436,14 @@ def _prepare_for_interpolation(x_radar, y_radar, z_radar, cosmo_coord,
     slice_z : boolean
         if true the vertical plane of the COSMO field is cut to the dimensions
         of the radar field
-    cosmo_data : array
-        array containing the COSMO data for a particular time step
 
     Returns
     -------
     x_cosmo, y_cosmo, z_cosmo : 1D arrays
         arrays containing the flatten swiss coordinates of the COSMO data in
         the area of interest
-    nx, ny, nz : ints
-        the dimensions of the cut COSMO 3D volume
-    values : 1D array
-        array containing the flatten COSMO data in the area of interest
+    ind_xmin, ind_ymin, ind_zmin, ind_xmax, ind_ymax, ind_zmax : ints
+        the minimum and maximum indices of each dimension
 
     """
     nx_cosmo = len(cosmo_coord['x']['data'])
@@ -426,14 +519,8 @@ def _prepare_for_interpolation(x_radar, y_radar, z_radar, cosmo_coord,
         np.broadcast_to(y_cosmo.reshape(1, ny, 1), (nz, ny, nx))).flatten()
     z_cosmo = z_cosmo.flatten()
 
-    values = None
-    if cosmo_data is not None:
-        values = cosmo_data[
-            ind_zmin:ind_zmax+1, ind_ymin:ind_ymax+1, ind_xmin:ind_xmax+1]
-        values = values.flatten()
-
-    return (x_cosmo, y_cosmo, z_cosmo, nx, ny, nz, ind_xmin, ind_ymin,
-            ind_zmin, values)
+    return (x_cosmo, y_cosmo, z_cosmo, ind_xmin, ind_ymin,
+            ind_zmin, ind_xmax, ind_ymax, ind_zmax)
 
 
 def _put_radar_in_swiss_coord(radar):

@@ -252,8 +252,7 @@ rainrate_CDF STRUCT 3
             6
             7
             8
-            9
-            
+            9            
 
 #rainextension STRUCT 5
 #         type STRING RAINEXTENSION
@@ -337,7 +336,7 @@ windshear_CDF STRUCT 3
        CDF_PRECIP STRUCT 6
           type STRING CDF
 		  voltype STRING windshear_v
-          absolute INT 0
+          absolute INT 1
 		  quantiles FLTARR 10
 		     10.
 		 	 20.

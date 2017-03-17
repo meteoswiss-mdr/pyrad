@@ -112,10 +112,10 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_selfconsistency_kdp_phidp'
     elif dataset_type == 'SELFCONSISTENCY_BIAS':
         func_name = 'process_selfconsistency_bias'
-    elif dataset_type == 'COSMO_TEMP':
-        func_name = 'process_cosmo_temp'
-    elif dataset_type == 'COSMO_TEMP_LOOKUP':
-        func_name = 'process_cosmo_temp_lookup_table'
+    elif dataset_type == 'COSMO':
+        func_name = 'process_cosmo'
+    elif dataset_type == 'COSMO_LOOKUP':
+        func_name = 'process_cosmo_lookup_table'
     elif dataset_type == 'COSMO_COORD':
         func_name = 'process_cosmo_coord'
         dsformat = 'COSMO_COORD'

@@ -4,19 +4,55 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 10
-   l0:SNRh
-   l0:RhoHV
-   l1:echoID
-   l2:echoFilter
-   l6:echoFilter_Ah
-   l3:SNRFilter
-   l4:PhiDPc_smooth2w
-   l5:KDPc
-   l5:Att_ZPhi
-   l3:wind_vel_h_az
+dataSetList STRARR 1
+    l0:WIND
+   
+#   l0:TEMP
+#   l0:WIND
+#   l0:SNRh
+#   l0:RhoHV
+#   l1:echoID
+#   l2:echoFilter
+#   l6:echoFilter_Ah
+#   l3:SNRFilter
+#   l4:PhiDPc_smooth2w
+#   l5:KDPc
+#   l5:Att_ZPhi
+#   l3:wind_vel_h_az
    
 
+# ==========================================================================================
+#               COSMO data
+# ==========================================================================================
+#TEMP STRUCT 7
+#    type STRING COSMO_LOOKUP
+#    datatype STRARR 1
+#        RAD4ALP:dBZ        
+#    cosmo_type STRING TEMP
+#    regular_grid INT 1
+#    lookup_table INT 1
+#    MAKE_GLOBAL INT 1
+#    products STRUCT 1        
+#        SAVEVOL_TEMP STRUCT 2
+#            type  STRING SAVEVOL
+#            voltype STRING TEMP
+#            
+WIND STRUCT 7
+    type STRING COSMO_LOOKUP
+    datatype STRARR 1
+        RAD4ALP:dBZ
+    cosmo_type STRING WIND
+    regular_grid INT 1
+    lookup_table INT 1    
+    MAKE_GLOBAL INT 0
+    products STRUCT 2
+        SAVEVOL_SPEED STRUCT 2
+            type  STRING SAVEVOL
+            voltype STRING WIND_SPEED
+        SAVEVOL_DIR STRUCT 2
+            type  STRING SAVEVOL
+            voltype STRING WIND_DIRECTION
+            
 # ==========================================================================================
 #                 secondary moments products
 # ==========================================================================================
@@ -163,7 +199,7 @@ Att_ZPhi STRUCT 6
         PROC:dBZc
         PROC:ZDRc
         PROC:PhiDPc
-        RAD4ALPCOSMO:TEMP
+        PROC:TEMP
     ATT_METHOD STRING ZPhi
     fzl FLOAT 2000.
     MAKE_GLOBAL INT 1

@@ -66,18 +66,6 @@ dataSetList STRARR 1
 #         type STRING PPI_IMAGE
 #         anglenr INT 2
 #         voltype STRING Nh
-         
-TEMP_RAW STRUCT 5
-    type STRING COSMO_TEMP
-    datatype STRARR 1
-        RAD4ALP:dBZ
-    keep_in_memory INT 1
-    regular_grid INT 1
-    products STRUCT 1 	  
-      EL001_0 STRUCT 3
-         type STRING PPI_IMAGE
-         anglenr INT 2
-         voltype STRING TEMP
 
 ## ==========================================================================================
 ##                 secondary moments products
@@ -101,7 +89,69 @@ TEMP_RAW STRUCT 5
 #        PROC:SNRh
 #    MAKE_GLOBAL INT 1
 #
-#
+
+# ==========================================================================================
+#                 COSMO products
+# ==========================================================================================
+TEMP_RAW STRUCT 5
+    type STRING COSMO
+    datatype STRARR 1
+        RAD4ALP:dBZ
+    cosmo_type STRING TEMP
+    keep_in_memory INT 1
+    products STRUCT 1        
+        EL001_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING TEMP
+            
+TEMP_RAW2 STRUCT 6
+    type STRING COSMO_LOOKUP
+    datatype STRARR 1
+        RAD4ALP:dBZ        
+    cosmo_type STRING TEMP
+    regular_grid INT 1
+    lookup_table INT 1
+    products STRUCT 1        
+        EL001_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING TEMP
+            
+WIND_RAW STRUCT 5
+    type STRING COSMO
+    datatype STRARR 1
+        RAD4ALP:dBZ
+    cosmo_type STRING WIND
+    keep_in_memory INT 1
+    products STRUCT 2
+        EL001_0_SPEED STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING WIND_SPEED
+        EL001_0_DIR STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING WIND_DIRECTION
+            
+WIND_RAW2 STRUCT 6
+    type STRING COSMO_LOOKUP
+    datatype STRARR 1
+        RAD4ALP:dBZ
+    cosmo_type STRING WIND
+    regular_grid INT 1
+    lookup_table INT 1    
+    products STRUCT 2
+        EL001_0_SPEED STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING WIND_SPEED
+        EL001_0_DIR STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING WIND_DIRECTION
+            
+            
 ## ==========================================================================================
 ##                 echo identification
 ## ==========================================================================================
