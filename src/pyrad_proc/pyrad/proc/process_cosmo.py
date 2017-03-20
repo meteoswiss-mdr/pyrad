@@ -328,13 +328,15 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
     dscfg['global_data']['cosmo_fname'] = fname
 
     # prepare for exit
-    new_dataset = deepcopy(dscfg['global_data']['cosmo_radar'])
-
+    if regular_grid:
+        new_dataset = deepcopy(radar)
+    else:
+        new_dataset = deepcopy(dscfg['global_data']['cosmo_radar'])
+    new_dataset.fields = dict()
     if cosmo_type == 'TEMP':
         new_dataset.add_field(field_names[0], cosmo_fields[0])
-
-        # interpolate to current radar grid
         if not regular_grid:
+            # interpolate to current radar grid
             cosmo_field_interp = interpol_field(
                 radar, new_dataset, field_names[0])
             new_dataset = deepcopy(radar)
@@ -343,14 +345,12 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
     else:
         new_dataset.add_field(field_names[0], cosmo_fields[0])
         new_dataset.add_field(field_names[1], cosmo_fields[1])
-
-        # interpolate to current radar grid
         if not regular_grid:
+            # interpolate to current radar grid
             speed_field_interp = interpol_field(
                 radar, new_dataset, field_names[0])
             dir_field_interp = interpol_field(
                 radar, new_dataset, field_names[1])
-
             new_dataset = deepcopy(radar)
             new_dataset.fields = dict()
             new_dataset.add_field(field_names[0], speed_field_interp)

@@ -16,6 +16,7 @@ Plots
     plot_ppi
     plot_rhi
     plot_bscope
+    plot_rhi_profile
     plot_density
     plot_cappi
     plot_quantiles

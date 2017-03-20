@@ -11,6 +11,7 @@ Functions to plot Pyrad datasets
     plot_rhi
     plot_bscope
     plot_cappi
+    plot_rhi_profile
     plot_density
     plot_scatter
     plot_quantiles
@@ -331,6 +332,69 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname_list):
     label = get_colobar_label(grid.fields[field_name], field_name)
     cb = fig.colorbar(cax)
     cb.set_label(label)
+
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
+    plt.close()
+
+    return fname_list
+
+
+def plot_rhi_profile(data, hvec, fname_list, labelx='Value',
+                     labely='Height (m MSL)', labels=['Mean'],
+                     title='RHI profile', colors=None, linestyles=None,
+                     xmin=None, xmax=None):
+    """
+    plots an RHI profile
+
+    Parameters
+    ----------
+    data : list of float array
+        values of the profile
+    hvec : float array
+        height points of the profile
+    fname_list : list of str
+        list of names of the files where to store the plot
+    labelx : str
+        The label of the X axis
+    labely : str
+        The label of the Y axis
+    labels : array of str
+        The label of the legend
+    title : str
+        The figure title
+    colors : array of str
+        Specifies the colors of each line
+    linestyles : array of str
+        Specifies the line style of each line
+    xmin, xmax: float
+        Lower/Upper limit of y axis
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    """
+    fig, ax = plt.subplots(figsize=[10, 6])
+
+    lab = None
+    col = None
+    lstyle = None
+    for kk in range(len(data)):
+        if (labels is not None):
+            lab = labels[kk]
+        if (colors is not None):
+            col = colors[kk]
+        if (linestyles is not None):
+            lstyle = linestyles[kk]
+        ax.plot(data[kk], hvec, label=lab, color=col, linestyle=lstyle)
+
+    ax.set_title(title)
+    ax.set_xlabel(labelx)
+    ax.set_ylabel(labely)
+    ax.set_xlim(left=xmin, right=xmax)
+    ax.legend(loc='best')
 
     for i in range(len(fname_list)):
         fig.savefig(fname_list[i])
@@ -763,7 +827,7 @@ def plot_timeseries(tvec, data, fname_list, labelx='Time [UTC]',
         The label of the Y axis
     labels : array of str
         The label of the legend
-    titl : str
+    title : str
         The figure title
     period : float
         measurement period in seconds used to compute accumulation. If 0 no

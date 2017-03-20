@@ -277,7 +277,7 @@ wind STRUCT 5
         PROC:Vc
     vert_proj INT 0
     MAKE_GLOBAL INT 1
-    products STRUCT 4
+    products STRUCT 5
       AZ033 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 4
@@ -295,12 +295,14 @@ wind STRUCT 5
          angle FLOAT 6.
          EleTol FLOAT 1.
          voltype STRING wind_vel_h_az
-#	  PROFILE STRUCT 5
-#         type  STRING RHI_PROFILE
-#         anglenr INT 6
-#         rangeStart FLOAT        0
-#         rangeStop  FLOAT    25000
-#         heightResolution FLOAT 500.0
+	  PROFILE STRUCT 7
+         type  STRING RHI_PROFILE
+         voltype STRING wind_vel_h_az
+         anglenr INT 6
+         rangeStart FLOAT        0
+         rangeStop  FLOAT    25000
+         heightResolution FLOAT 500.0
+         heightMax FLOAT 8000.
 			
 			
 # ==========================================================================================
@@ -361,7 +363,7 @@ turbulence STRUCT 4
     datatype STRARR 1
         PROC:Wc
     MAKE_GLOBAL INT 0
-    products STRUCT 2
+    products STRUCT 3
        AZ037 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 6
@@ -371,9 +373,11 @@ turbulence STRUCT 4
          angle FLOAT 6.
          EleTol FLOAT 1.
          voltype STRING Wc
-#	  PROFILE STRUCT 5
-#         type  STRING RHI_PROFILE
-#         anglenr INT 6
-#         rangeStart FLOAT        0
-#         rangeStop  FLOAT    25000
-#         heightResolution FLOAT 500.0
+       PROFILE STRUCT 7
+         type  STRING RHI_PROFILE
+         voltype STRING Wc
+         anglenr INT 6
+         rangeStart FLOAT        0
+         rangeStop  FLOAT    25000
+         heightResolution FLOAT 500.0
+         heightMax FLOAT 8000.
