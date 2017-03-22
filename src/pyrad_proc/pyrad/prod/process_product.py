@@ -38,6 +38,7 @@ from ..io.write_data import write_sun_hits, write_sun_retrieval
 from ..io.write_data import write_colocated_gates, write_colocated_data
 from ..io.write_data import write_colocated_data_time_avg, write_cdf
 from ..io.write_data import write_intercomp_scores_ts, write_ts_cum
+from ..io.write_data import write_rhi_profile
 
 from ..graph.plots import plot_ppi, plot_rhi, plot_cappi, plot_bscope
 from ..graph.plots import plot_timeseries, plot_timeseries_comp
@@ -731,7 +732,7 @@ def generate_vol_products(dataset, prdcfg):
         val_quant25[:] = np.ma.masked
         val_quant75 = np.ma.empty(nlevels)
         val_quant75[:] = np.ma.masked
-        val_valid = np.zeros(nlevels)
+        val_valid = np.zeros(nlevels, dtype=int)
 
         gate_altitude = new_dataset.gate_altitude['data']
         for i in range(nlevels):
@@ -745,7 +746,7 @@ def generate_vol_products(dataset, prdcfg):
                     val_quant25[i] = quants[0]
                     val_quant75[i] = quants[2]
                     val_mean[i] = avg
-                    val_valid = nvalid
+                    val_valid[i] = nvalid
 
         # plot data
         if quantity == 'mean':
@@ -769,9 +770,10 @@ def generate_vol_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
+        prdcfginfo = 'az'+'{:.1f}'.format(az)+'hres'+str(int(heightResolution))
         fname = make_filename(
             'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'], prdcfginfo='az'+'{:.1f}'.format(az),
+            prdcfg['imgformat'], prdcfginfo=prdcfginfo,
             timeinfo=prdcfg['timeinfo'])
 
         for i in range(len(fname)):
@@ -784,7 +786,25 @@ def generate_vol_products(dataset, prdcfg):
 
         print('----- save to '+' '.join(fname))
 
-        # TODO: add Cartesian interpolation option. Save data in a text file
+        fname = make_filename(
+            'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
+            ['csv'], prdcfginfo=prdcfginfo,
+            timeinfo=prdcfg['timeinfo'])[0]
+
+        fname = savedir+fname
+
+        sector = {
+            'rmin': rangeStart,
+            'rmax': rangeStop,
+            'az': az
+        }
+        write_rhi_profile(
+            hvec, data, val_valid, labels, fname, datatype=labelx,
+            timeinfo=prdcfg['timeinfo'], sector=sector)
+
+        print('----- save to '+fname)
+
+        # TODO: add Cartesian interpolation option
 
         return fname
 

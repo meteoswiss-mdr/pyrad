@@ -8,6 +8,7 @@ Functions for writing pyrad output data
     :toctree: generated/
 
     write_smn
+    write_rhi_profile
     write_cdf
     write_ts_polar_data
     write_ts_cum
@@ -58,10 +59,87 @@ def write_smn(datetime_vec, value_avg_vec, value_std_vec, fname):
         writer = csv.DictWriter(csvfile, fieldnames)
         writer.writeheader()
         for i in range(nvalues):
-            writer.writerow(
-                {'datetime': datetime_vec[i].strftime('%Y%m%d%H%M%S'),
-                 'avg': value_avg_vec[i],
-                 'std': value_std_vec[i]})
+            writer.writerow({
+                'datetime': datetime_vec[i].strftime('%Y%m%d%H%M%S'),
+                'avg': value_avg_vec[i],
+                'std': value_std_vec[i]})
+
+        csvfile.close()
+
+    return fname
+
+
+def write_rhi_profile(hvec, data, nvalid_vec, labels, fname, datatype=None,
+                      timeinfo=None, sector=None):
+    """
+    writes the values of an RHI profile in a text file
+
+    Parameters
+    ----------
+    hvec : float array
+        array containing the alitude in m MSL
+    data : list of float array
+        the quantities at each altitude
+    nvalid_vec : int array
+        number of valid data points used to compute the quantiles
+    labels : list of strings
+        label specifying the quantitites in data
+    fname : str
+        file name where to store the data
+    datatype : str
+        the data type
+    timeinfo : datetime object
+        time of the rhi profile
+    sector : dict
+        dictionary specying the sector limits
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has been written
+
+    """
+    nvalues = len(hvec)
+    data_aux = list()
+    for i in range(len(labels)):
+        data_aux.append(data[i].filled(fill_value=get_fillvalue()))
+    with open(fname, 'w', newline='') as csvfile:
+        csvfile.write('# Height Profile\n')
+        csvfile.write('# ==============\n')
+        csvfile.write('#\n')
+        if datatype is None:
+            csvfile.write('# Datatype (Unit) : Not specified\n')
+        else:
+            csvfile.write('# Datatype (Unit) : '+datatype+'\n')
+        csvfile.write('# Fill value : '+str(get_fillvalue())+'\n')
+        if timeinfo is None:
+            csvfile.write('# Time     : Not specified\n')
+        else:
+            csvfile.write('# Time     : ' +
+                          timeinfo.strftime('%Y-%m-%d %H:%M:%S')+'\n')
+        if sector is None:
+            csvfile.write('# Sector specification: None\n')
+        else:
+            csvfile.write('# Sector specification:\n')
+            csvfile.write('#   Azimuth         : ' + str(sector['az']) +
+                          ' deg\n')
+            csvfile.write('#   Range start     : ' +
+                          str(sector['rmin'])+' m\n')
+            csvfile.write('#   Range stop      : ' +
+                          str(sector['rmax'])+' m\n')
+
+        fieldnames = ['Altitude [m MSL]']
+        fieldnames.extend(labels)
+        fieldnames.append('N valid')
+        writer = csv.DictWriter(csvfile, fieldnames)
+        writer.writeheader()
+        for j in range(nvalues):
+            data_dict = {fieldnames[0]: hvec[j]}
+            for i in range(len(labels)):
+                data_dict.update({fieldnames[i+1]: data_aux[i][j]})
+            data_dict.update({fieldnames[-1]: nvalid_vec[j]})
+            writer.writerow(data_dict)
+
         csvfile.close()
 
     return fname
@@ -319,12 +397,13 @@ def write_ts_cum(dataset, fname):
         writer = csv.DictWriter(csvfile, fieldnames)
         writer.writeheader()
         for i in range(nvalues):
-            writer.writerow(
-                {'date': dataset['time'][i],
-                 'np_radar': np_radar[i],
-                 'radar_value': radar_value[i],
-                 'np_sensor': np_sensor[i],
-                 'sensor_value': sensor_value[i]})
+            writer.writerow({
+                'date': dataset['time'][i],
+                'np_radar': np_radar[i],
+                'radar_value': radar_value[i],
+                'np_sensor': np_sensor[i],
+                'sensor_value': sensor_value[i]})
+
         csvfile.close()
 
     return fname
@@ -521,13 +600,14 @@ def write_colocated_gates(coloc_gates, fname):
         writer = csv.DictWriter(csvfile, fieldnames)
         writer.writeheader()
         for i in range(ngates):
-            writer.writerow(
-                {'rad1_ele': coloc_gates['rad1_ele'][i],
-                 'rad1_azi': coloc_gates['rad1_azi'][i],
-                 'rad1_rng': coloc_gates['rad1_rng'][i],
-                 'rad2_ele': coloc_gates['rad2_ele'][i],
-                 'rad2_azi': coloc_gates['rad2_azi'][i],
-                 'rad2_rng': coloc_gates['rad2_rng'][i]})
+            writer.writerow({
+                'rad1_ele': coloc_gates['rad1_ele'][i],
+                'rad1_azi': coloc_gates['rad1_azi'][i],
+                'rad1_rng': coloc_gates['rad1_rng'][i],
+                'rad2_ele': coloc_gates['rad2_ele'][i],
+                'rad2_azi': coloc_gates['rad2_azi'][i],
+                'rad2_rng': coloc_gates['rad2_rng'][i]})
+
         csvfile.close()
 
     return fname
@@ -564,15 +644,16 @@ def write_colocated_data(coloc_data, fname):
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
             for i in range(ngates):
-                writer.writerow(
-                    {'rad1_ele': coloc_data['rad1_ele'][i],
-                     'rad1_azi': coloc_data['rad1_azi'][i],
-                     'rad1_rng': coloc_data['rad1_rng'][i],
-                     'rad1_val': coloc_data['rad1_val'][i],
-                     'rad2_ele': coloc_data['rad2_ele'][i],
-                     'rad2_azi': coloc_data['rad2_azi'][i],
-                     'rad2_rng': coloc_data['rad2_rng'][i],
-                     'rad2_val': coloc_data['rad2_val'][i]})
+                writer.writerow({
+                    'rad1_ele': coloc_data['rad1_ele'][i],
+                    'rad1_azi': coloc_data['rad1_azi'][i],
+                    'rad1_rng': coloc_data['rad1_rng'][i],
+                    'rad1_val': coloc_data['rad1_val'][i],
+                    'rad2_ele': coloc_data['rad2_ele'][i],
+                    'rad2_azi': coloc_data['rad2_azi'][i],
+                    'rad2_rng': coloc_data['rad2_rng'][i],
+                    'rad2_val': coloc_data['rad2_val'][i]})
+
             csvfile.close()
     else:
         with open(fname, 'a', newline='') as csvfile:
@@ -581,15 +662,15 @@ def write_colocated_data(coloc_data, fname):
                 'rad2_ele', 'rad2_azi', 'rad2_rng', 'rad2_val']
             writer = csv.DictWriter(csvfile, fieldnames)
             for i in range(ngates):
-                writer.writerow(
-                    {'rad1_ele': coloc_data['rad1_ele'][i],
-                     'rad1_azi': coloc_data['rad1_azi'][i],
-                     'rad1_rng': coloc_data['rad1_rng'][i],
-                     'rad1_val': coloc_data['rad1_val'][i],
-                     'rad2_ele': coloc_data['rad2_ele'][i],
-                     'rad2_azi': coloc_data['rad2_azi'][i],
-                     'rad2_rng': coloc_data['rad2_rng'][i],
-                     'rad2_val': coloc_data['rad2_val'][i]})
+                writer.writerow({
+                    'rad1_ele': coloc_data['rad1_ele'][i],
+                    'rad1_azi': coloc_data['rad1_azi'][i],
+                    'rad1_rng': coloc_data['rad1_rng'][i],
+                    'rad1_val': coloc_data['rad1_val'][i],
+                    'rad2_ele': coloc_data['rad2_ele'][i],
+                    'rad2_azi': coloc_data['rad2_azi'][i],
+                    'rad2_rng': coloc_data['rad2_rng'][i],
+                    'rad2_val': coloc_data['rad2_val'][i]})
             csvfile.close()
 
     return fname
@@ -628,20 +709,21 @@ def write_colocated_data_time_avg(coloc_data, fname):
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
             for i in range(ngates):
-                writer.writerow(
-                    {'rad1_ele': coloc_data['rad1_ele'][i],
-                     'rad1_azi': coloc_data['rad1_azi'][i],
-                     'rad1_rng': coloc_data['rad1_rng'][i],
-                     'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
-                     'rad1_PhiDPavg': coloc_data['rad1_PhiDPavg'][i],
-                     'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
-                     'rad1_Flagavg': coloc_data['rad1_Flagavg'][i],
-                     'rad2_ele': coloc_data['rad2_ele'][i],
-                     'rad2_azi': coloc_data['rad2_azi'][i],
-                     'rad2_rng': coloc_data['rad2_rng'][i],
-                     'rad2_dBZavg': coloc_data['rad2_dBZavg'][i],
-                     'rad2_PhiDPavg': coloc_data['rad2_PhiDPavg'][i],
-                     'rad2_Flagavg': coloc_data['rad2_Flagavg'][i]})
+                writer.writerow({
+                    'rad1_ele': coloc_data['rad1_ele'][i],
+                    'rad1_azi': coloc_data['rad1_azi'][i],
+                    'rad1_rng': coloc_data['rad1_rng'][i],
+                    'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
+                    'rad1_PhiDPavg': coloc_data['rad1_PhiDPavg'][i],
+                    'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
+                    'rad1_Flagavg': coloc_data['rad1_Flagavg'][i],
+                    'rad2_ele': coloc_data['rad2_ele'][i],
+                    'rad2_azi': coloc_data['rad2_azi'][i],
+                    'rad2_rng': coloc_data['rad2_rng'][i],
+                    'rad2_dBZavg': coloc_data['rad2_dBZavg'][i],
+                    'rad2_PhiDPavg': coloc_data['rad2_PhiDPavg'][i],
+                    'rad2_Flagavg': coloc_data['rad2_Flagavg'][i]})
+
             csvfile.close()
     else:
         with open(fname, 'a', newline='') as csvfile:
@@ -652,20 +734,20 @@ def write_colocated_data_time_avg(coloc_data, fname):
                 'rad2_dBZavg', 'rad2_PhiDPavg', 'rad2_Flagavg']
             writer = csv.DictWriter(csvfile, fieldnames)
             for i in range(ngates):
-                writer.writerow(
-                    {'rad1_ele': coloc_data['rad1_ele'][i],
-                     'rad1_azi': coloc_data['rad1_azi'][i],
-                     'rad1_rng': coloc_data['rad1_rng'][i],
-                     'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
-                     'rad1_PhiDPavg': coloc_data['rad1_PhiDPavg'][i],
-                     'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
-                     'rad1_Flagavg': coloc_data['rad1_Flagavg'][i],
-                     'rad2_ele': coloc_data['rad2_ele'][i],
-                     'rad2_azi': coloc_data['rad2_azi'][i],
-                     'rad2_rng': coloc_data['rad2_rng'][i],
-                     'rad2_dBZavg': coloc_data['rad2_dBZavg'][i],
-                     'rad2_PhiDPavg': coloc_data['rad2_PhiDPavg'][i],
-                     'rad2_Flagavg': coloc_data['rad2_Flagavg'][i]})
+                writer.writerow({
+                    'rad1_ele': coloc_data['rad1_ele'][i],
+                    'rad1_azi': coloc_data['rad1_azi'][i],
+                    'rad1_rng': coloc_data['rad1_rng'][i],
+                    'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
+                    'rad1_PhiDPavg': coloc_data['rad1_PhiDPavg'][i],
+                    'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
+                    'rad1_Flagavg': coloc_data['rad1_Flagavg'][i],
+                    'rad2_ele': coloc_data['rad2_ele'][i],
+                    'rad2_azi': coloc_data['rad2_azi'][i],
+                    'rad2_rng': coloc_data['rad2_rng'][i],
+                    'rad2_dBZavg': coloc_data['rad2_dBZavg'][i],
+                    'rad2_PhiDPavg': coloc_data['rad2_PhiDPavg'][i],
+                    'rad2_Flagavg': coloc_data['rad2_Flagavg'][i]})
             csvfile.close()
 
     return fname
@@ -717,26 +799,26 @@ def write_sun_hits(sun_hits, fname):
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
             for i in range(nhits):
-                writer.writerow(
-                    {'time': sun_hits['time'][i],
-                     'ray': sun_hits['ray'][i],
-                     'NPrng': sun_hits['NPrng'][i],
-                     'rad_el': sun_hits['rad_el'][i],
-                     'rad_az': sun_hits['rad_az'][i],
-                     'sun_el': sun_hits['sun_el'][i],
-                     'sun_az': sun_hits['sun_az'][i],
-                     'dBm_sun_hit': dBm_sun_hit[i],
-                     'std(dBm_sun_hit)': std_dBm_sun_hit[i],
-                     'NPh': sun_hits['NPh'][i],
-                     'NPhval': sun_hits['NPhval'][i],
-                     'dBmv_sun_hit': dBmv_sun_hit[i],
-                     'std(dBmv_sun_hit)': std_dBmv_sun_hit[i],
-                     'NPv': sun_hits['NPv'][i],
-                     'NPvval': sun_hits['NPvval'][i],
-                     'ZDR_sun_hit': zdr_sun_hit[i],
-                     'std(ZDR_sun_hit)': std_zdr_sun_hit[i],
-                     'NPzdr': sun_hits['NPzdr'][i],
-                     'NPzdrval': sun_hits['NPzdrval'][i]})
+                writer.writerow({
+                    'time': sun_hits['time'][i],
+                    'ray': sun_hits['ray'][i],
+                    'NPrng': sun_hits['NPrng'][i],
+                    'rad_el': sun_hits['rad_el'][i],
+                    'rad_az': sun_hits['rad_az'][i],
+                    'sun_el': sun_hits['sun_el'][i],
+                    'sun_az': sun_hits['sun_az'][i],
+                    'dBm_sun_hit': dBm_sun_hit[i],
+                    'std(dBm_sun_hit)': std_dBm_sun_hit[i],
+                    'NPh': sun_hits['NPh'][i],
+                    'NPhval': sun_hits['NPhval'][i],
+                    'dBmv_sun_hit': dBmv_sun_hit[i],
+                    'std(dBmv_sun_hit)': std_dBmv_sun_hit[i],
+                    'NPv': sun_hits['NPv'][i],
+                    'NPvval': sun_hits['NPvval'][i],
+                    'ZDR_sun_hit': zdr_sun_hit[i],
+                    'std(ZDR_sun_hit)': std_zdr_sun_hit[i],
+                    'NPzdr': sun_hits['NPzdr'][i],
+                    'NPzdrval': sun_hits['NPzdrval'][i]})
             csvfile.close()
     else:
         with open(fname, 'a', newline='') as csvfile:
@@ -748,26 +830,26 @@ def write_sun_hits(sun_hits, fname):
                 'ZDR_sun_hit', 'std(ZDR_sun_hit)', 'NPzdr', 'NPzdrval']
             writer = csv.DictWriter(csvfile, fieldnames)
             for i in range(nhits):
-                writer.writerow(
-                    {'time': sun_hits['time'][i],
-                     'ray': sun_hits['ray'][i],
-                     'NPrng': sun_hits['NPrng'][i],
-                     'rad_el': sun_hits['rad_el'][i],
-                     'rad_az': sun_hits['rad_az'][i],
-                     'sun_el': sun_hits['sun_el'][i],
-                     'sun_az': sun_hits['sun_az'][i],
-                     'dBm_sun_hit': dBm_sun_hit[i],
-                     'std(dBm_sun_hit)': std_dBm_sun_hit[i],
-                     'NPh': sun_hits['NPh'][i],
-                     'NPhval': sun_hits['NPhval'][i],
-                     'dBmv_sun_hit': dBmv_sun_hit[i],
-                     'std(dBmv_sun_hit)': std_dBmv_sun_hit[i],
-                     'NPv': sun_hits['NPv'][i],
-                     'NPvval': sun_hits['NPvval'][i],
-                     'ZDR_sun_hit': zdr_sun_hit[i],
-                     'std(ZDR_sun_hit)': std_zdr_sun_hit[i],
-                     'NPzdr': sun_hits['NPzdr'][i],
-                     'NPzdrval': sun_hits['NPzdrval'][i]})
+                writer.writerow({
+                    'time': sun_hits['time'][i],
+                    'ray': sun_hits['ray'][i],
+                    'NPrng': sun_hits['NPrng'][i],
+                    'rad_el': sun_hits['rad_el'][i],
+                    'rad_az': sun_hits['rad_az'][i],
+                    'sun_el': sun_hits['sun_el'][i],
+                    'sun_az': sun_hits['sun_az'][i],
+                    'dBm_sun_hit': dBm_sun_hit[i],
+                    'std(dBm_sun_hit)': std_dBm_sun_hit[i],
+                    'NPh': sun_hits['NPh'][i],
+                    'NPhval': sun_hits['NPhval'][i],
+                    'dBmv_sun_hit': dBmv_sun_hit[i],
+                    'std(dBmv_sun_hit)': std_dBmv_sun_hit[i],
+                    'NPv': sun_hits['NPv'][i],
+                    'NPvval': sun_hits['NPvval'][i],
+                    'ZDR_sun_hit': zdr_sun_hit[i],
+                    'std(ZDR_sun_hit)': std_zdr_sun_hit[i],
+                    'NPzdr': sun_hits['NPzdr'][i],
+                    'NPzdrval': sun_hits['NPzdrval'][i]})
             csvfile.close()
 
     return fname
