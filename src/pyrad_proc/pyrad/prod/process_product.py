@@ -48,6 +48,7 @@ from ..graph.plots import plot_histogram2, plot_density, plot_monitoring_ts
 from ..graph.plots import get_field_name, get_colobar_label, plot_scatter
 from ..graph.plots import plot_intercomp_scores_ts, plot_scatter_comp
 from ..graph.plots import plot_rhi_profile, plot_along_coord
+from ..graph.plots import plot_field_coverage
 
 from ..util.radar_utils import create_sun_hits_field, rainfall_accumulation
 from ..util.radar_utils import create_sun_retrieval_field, get_ROI
@@ -1301,6 +1302,139 @@ def generate_vol_products(dataset, prdcfg):
 
         plot_quantiles(quantiles, values, fname, labelx='quantile',
                        labely=labely, titl=titl)
+
+        print('----- save to '+' '.join(fname))
+
+        return fname
+
+    elif prdcfg['type'] == 'FIELD_COVERAGE':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        threshold = None
+        if 'threshold' in prdcfg:
+            threshold = prdcfg['threshold']
+        nvalid_min = 5.
+        if 'nvalid_min' in prdcfg:
+            nvalid_min = prdcfg['nvalid_min']
+
+        ele_res = 1.
+        if 'ele_res' in prdcfg:
+            ele_res = prdcfg['ele_res']
+        azi_res = 2.
+        if 'azi_res' in prdcfg:
+            azi_res = prdcfg['azi_res']
+
+        ele_min = 0.
+        if 'ele_min' in prdcfg:
+            ele_min = prdcfg['ele_min']
+        ele_max = 30.
+        if 'ele_max' in prdcfg:
+            ele_max = prdcfg['ele_max']
+        ele_step = 5.
+        if 'ele_step' in prdcfg:
+            ele_step = prdcfg['ele_step']
+
+        ele_sect_start = None
+        if 'ele_sect_start' in prdcfg:
+            ele_sect_start = prdcfg['ele_sect_start']
+        ele_sect_stop = None
+        if 'ele_sect_stop' in prdcfg:
+            ele_sect_stop = prdcfg['ele_sect_stop']
+
+        # get coverage per ray
+        field_coverage = np.ma.empty(dataset.nrays)
+        field_coverage[:] = np.ma.masked
+
+        for i in range(dataset.nrays):
+            mask = np.ma.getmaskarray(
+                dataset.fields[field_name]['data'][i, :])
+            if threshold is not None:
+                ind = np.where(np.logical_and(
+                    ~mask,
+                    dataset.fields[field_name]['data'][i, :] >= threshold))[0]
+            else:
+                ind = np.where(~mask)[0]
+            if len(ind) > nvalid_min:
+                field_coverage[i] = (dataset.range['data'][ind[-1]] -
+                                     dataset.range['data'][ind[0]])
+
+        # group coverage per elevation sectors
+        nsteps = int((ele_max-ele_min)/ele_step)  # number of steps
+        nele = int(ele_step/ele_res)  # number of elev per step
+        ele_steps_vec = np.arange(nsteps)*ele_step+ele_min
+
+        yval = []
+        xval = []
+        labels = []
+        for i in range(nsteps-1):
+            yval_aux = []
+            xval_aux = []
+            for j in range(nele):
+                ele_target = ele_steps_vec[i]+j*ele_res
+                d_ele = np.abs(dataset.elevation['data']-ele_target)
+                ind_ele = np.where(d_ele < prdcfg['AngTol'])[0]
+                if len(ind_ele) == 0:
+                    continue
+                yval_aux.extend(field_coverage[ind_ele])
+                xval_aux.extend(dataset.azimuth['data'][ind_ele])
+            yval.append(yval_aux)
+            xval.append(xval_aux)
+            labels.append('ele '+'{:.1f}'.format(ele_steps_vec[i])+'-' +
+                          '{:.1f}'.format(ele_steps_vec[i+1])+' deg')
+
+        # get mean value per azimuth for a specified elevation sector
+        xmeanval = None
+        ymeanval = None
+        labelmeanval = None
+        if ele_sect_start is not None and ele_sect_stop is not None:
+            ind_ele = np.where(np.logical_and(
+                dataset.elevation['data'] >= ele_sect_start,
+                dataset.elevation['data'] <= ele_sect_stop))
+            field_coverage_sector = field_coverage[ind_ele]
+            azi_sector = dataset.azimuth['data'][ind_ele]
+            nazi = int((np.max(dataset.azimuth['data']) -
+                       np.min(dataset.azimuth['data']))/azi_res+1)
+
+            xmeanval = np.arange(nazi)*azi_res+np.min(dataset.azimuth['data'])
+            ymeanval = np.ma.empty(nazi)
+            ymeanval[:] = np.ma.masked
+            for i in range(nazi):
+                d_azi = np.abs(azi_sector-xmeanval[i])
+                ind_azi = np.where(d_azi < prdcfg['AngTol'])[0]
+                if len(ind_azi) == 0:
+                    continue
+                ymeanval[i] = np.ma.mean(field_coverage_sector[ind_azi])
+            labelmeanval = ('ele '+'{:.1f}'.format(ele_sect_start)+'-' +
+                            '{:.1f}'.format(ele_sect_stop)+' deg mean val')
+
+        # plot field coverage
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'coverage', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'],
+            timeinfo=prdcfg['timeinfo'])
+
+        for i in range(len(fname)):
+            fname[i] = savedir+fname[i]
+
+        titl = (
+            pyart.graph.common.generate_radar_time_begin(
+                dataset).isoformat() + 'Z' + '\n' +
+            get_field_name(dataset.fields[field_name], field_name))
+
+        plot_field_coverage(
+            xval, yval, fname, labels=labels, title=titl, ymin=0.,
+            ymax=np.max(dataset.range['data'])+60000., xmeanval=xmeanval,
+            ymeanval=ymeanval, labelmeanval=labelmeanval)
 
         print('----- save to '+' '.join(fname))
 

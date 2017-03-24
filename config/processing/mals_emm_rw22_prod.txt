@@ -161,7 +161,7 @@ rainrate STRUCT 5
         PROC:hydro
     RR_METHOD STRING hydro
     MAKE_GLOBAL INT 1
-    products STRUCT 8
+    products STRUCT 9
       AZ033 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 4
@@ -201,7 +201,35 @@ rainrate STRUCT 5
               4.           
            AngTol FLOAT 1.
            value_start    FLOAT 500.
-           value_stop     FLOAT 50000.      
+           value_stop     FLOAT 50000.
+      RAINEXTENSION STRUCT 12
+            type STRING FIELD_COVERAGE
+            voltype STRING RR
+            AngTol FLOAT 1.
+            threshold FLOAT 0.2
+            nvalid_min INT 5
+            ele_res FLOAT 1.
+            azi_res FLOAT 2.
+            ele_min FLOAT 0.
+            ele_max FLOAT 30.
+            ele_step FLOAT 5.
+            ele_sect_start FLOAT 5.
+            ele_sect_stop FLOAT 10.
+            
+            
+#rainextension STRUCT 5
+#         type STRING RAINEXTENSION
+#         datatype STRING dBZ
+#         dbzthres FLOAT 5
+#         minnrelements  INT 5
+#         products STRUCT 1
+#            AZPLOT STRUCT 2
+#               type STRING DISTANCE_VS_AZIMUTH_IMAGE
+#               savestat INT 1
+#               #min_el FLOAT 5
+#               #max_el FLOAT 10
+#               #min_az FLOAT 130
+#               #max_az FLOAT 150			
 
 # precip type 1: DS, 2: CR, 3: LR, 4: GR, 5: RN, 6: VI, 7: WS, 8: MH, 9: IH/HDG
 rainrate_CDF STRUCT 3
@@ -256,21 +284,8 @@ rainrate_CDF STRUCT 3
             6
             7
             8
-            9            
+            9
 
-#rainextension STRUCT 5
-#         type STRING RAINEXTENSION
-#         datatype STRING dBZ
-#         dbzthres FLOAT 5
-#         minnrelements  INT 5
-#         products STRUCT 1
-#            AZPLOT STRUCT 2
-#               type STRING DISTANCE_VS_AZIMUTH_IMAGE
-#               savestat INT 1
-#               #min_el FLOAT 5
-#               #max_el FLOAT 10
-#               #min_az FLOAT 130
-#               #max_az FLOAT 150			
 			
 # ==========================================================================================
 #               wind velocity

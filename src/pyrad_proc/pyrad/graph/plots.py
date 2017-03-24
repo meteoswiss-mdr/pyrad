@@ -13,6 +13,7 @@ Functions to plot Pyrad datasets
     plot_cappi
     plot_rhi_profile
     plot_along_coord
+    plot_field_coverage
     plot_density
     plot_scatter
     plot_quantiles
@@ -459,6 +460,70 @@ def plot_along_coord(xval, yval, fname_list, labelx='coord', labely='Value',
     ax.set_ylabel(labely)
     ax.set_ylim(bottom=ymin, top=ymax)
     ax.legend(loc='best')
+
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
+    plt.close()
+
+    return fname_list
+
+
+def plot_field_coverage(xval, yval, fname_list, labelx='Azimuth (deg)',
+                        labely='Range extension [m]', labels=None,
+                        title='Field coverage', ymin=None, ymax=None,
+                        xmeanval=None, ymeanval=None, labelmeanval=None):
+    """
+    plots a time series
+
+    Parameters
+    ----------
+    xval : list of float arrays
+        the x values, azimuth
+    yval : list of float arrays
+        the y values. Range extension
+    fname_list : list of str
+        list of names of the files where to store the plot
+    labelx : str
+        The label of the X axis
+    labely : str
+        The label of the Y axis
+    labels : array of str
+        The label of the legend
+    title : str
+        The figure title
+    ymin, ymax : float
+        Lower/Upper limit of y axis
+    xmeanval, ymeanval : float array
+        the x and y values of a mean along elevation
+    labelmeanval : str
+        the label of the mean
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    """
+    fig, ax = plt.subplots(figsize=[10, 6])
+
+    lab = None
+
+    for kk in range(len(yval)):
+        if (labels is not None):
+            lab = labels[kk]
+        ax.plot(xval[kk], yval[kk], label=lab, linestyle='None', marker='o',
+                fillstyle='full')
+
+    if xmeanval is not None and ymeanval is not None:
+        ax.plot(xmeanval, ymeanval, label=labelmeanval, linestyle='-',
+                color='r', marker='x')
+
+    ax.set_title(title)
+    ax.set_xlabel(labelx)
+    ax.set_ylabel(labely)
+    ax.set_ylim(bottom=ymin, top=ymax)
+    if labels is not None:
+        ax.legend(loc='best')
 
     for i in range(len(fname_list)):
         fig.savefig(fname_list[i])
