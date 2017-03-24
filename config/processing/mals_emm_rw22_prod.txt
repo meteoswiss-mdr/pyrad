@@ -161,7 +161,7 @@ rainrate STRUCT 5
         PROC:hydro
     RR_METHOD STRING hydro
     MAKE_GLOBAL INT 1
-    products STRUCT 7
+    products STRUCT 8
       AZ033 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 4
@@ -191,13 +191,17 @@ rainrate STRUCT 5
          type   STRING CAPPI_IMAGE
          voltype STRING RR
  		 altitude FLOAT 5000
-#      RTS_TRAJ STRUCT 6
-#           type           STRING PLOT_LINES
-#           MODE           STRING ALONG_R
-#           FIX_AZ_ANGLES  FLOAT 41 # to be checked!
-#           FIX_EL_ANGLES  FLOAT 4
-#           START_VALUE    FLOAT 0.5
-#           STOP_VALUE     FLOAT 50
+      RTS_TRAJ STRUCT 8
+           type           STRING PLOT_ALONG_COORD
+           voltype STRING RR
+           mode           STRING ALONG_RNG
+           fix_azimuths  FLTARR 1
+              41. # to be checked!
+           fix_elevations  FLTARR 1
+              4.           
+           AngTol FLOAT 1.
+           value_start    FLOAT 500.
+           value_stop     FLOAT 50000.      
 
 # precip type 1: DS, 2: CR, 3: LR, 4: GR, 5: RN, 6: VI, 7: WS, 8: MH, 9: IH/HDG
 rainrate_CDF STRUCT 3
@@ -277,7 +281,7 @@ wind STRUCT 5
         PROC:Vc
     vert_proj INT 0
     MAKE_GLOBAL INT 1
-    products STRUCT 5
+    products STRUCT 6
       AZ033 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 4
@@ -295,7 +299,15 @@ wind STRUCT 5
          angle FLOAT 6.
          EleTol FLOAT 1.
          voltype STRING wind_vel_h_az
-	  PROFILE STRUCT 7
+	  PROFILE_hres100 STRUCT 7
+         type  STRING RHI_PROFILE
+         voltype STRING wind_vel_h_az
+         anglenr INT 6
+         rangeStart FLOAT        0
+         rangeStop  FLOAT    25000
+         heightResolution FLOAT 100.0
+         heightMax FLOAT 8000.
+      PROFILE_hres500 STRUCT 7
          type  STRING RHI_PROFILE
          voltype STRING wind_vel_h_az
          anglenr INT 6
@@ -363,7 +375,7 @@ turbulence STRUCT 4
     datatype STRARR 1
         PROC:Wc
     MAKE_GLOBAL INT 0
-    products STRUCT 3
+    products STRUCT 4
        AZ037 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 6
@@ -373,7 +385,15 @@ turbulence STRUCT 4
          angle FLOAT 6.
          EleTol FLOAT 1.
          voltype STRING Wc
-       PROFILE STRUCT 7
+       PROFILE_hres100 STRUCT 7
+         type  STRING RHI_PROFILE
+         voltype STRING Wc
+         anglenr INT 6
+         rangeStart FLOAT        0
+         rangeStop  FLOAT    25000
+         heightResolution FLOAT 100.0
+         heightMax FLOAT 8000.
+       PROFILE_hres500 STRUCT 7
          type  STRING RHI_PROFILE
          voltype STRING Wc
          anglenr INT 6

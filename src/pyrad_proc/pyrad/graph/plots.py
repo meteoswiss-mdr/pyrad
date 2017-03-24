@@ -12,6 +12,7 @@ Functions to plot Pyrad datasets
     plot_bscope
     plot_cappi
     plot_rhi_profile
+    plot_along_coord
     plot_density
     plot_scatter
     plot_quantiles
@@ -394,6 +395,69 @@ def plot_rhi_profile(data, hvec, fname_list, labelx='Value',
     ax.set_xlabel(labelx)
     ax.set_ylabel(labely)
     ax.set_xlim(left=xmin, right=xmax)
+    ax.legend(loc='best')
+
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
+    plt.close()
+
+    return fname_list
+
+
+def plot_along_coord(xval, yval, fname_list, labelx='coord', labely='Value',
+                     labels=None, title='Plot along coordinate',
+                     colors=None, linestyles=None, ymin=None, ymax=None):
+    """
+    plots a time series
+
+    Parameters
+    ----------
+    xval : list of float arrays
+        the x values, range, azimuth or elevation
+    yval : list of float arrays
+        the y values. Parameter to plot
+    fname_list : list of str
+        list of names of the files where to store the plot
+    labelx : str
+        The label of the X axis
+    labely : str
+        The label of the Y axis
+    labels : array of str
+        The label of the legend
+    title : str
+        The figure title
+    colors : array of str
+        Specifies the colors of each line
+    linestyles : array of str
+        Specifies the line style of each line
+    ymin, ymax: float
+        Lower/Upper limit of y axis
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    """
+    fig, ax = plt.subplots(figsize=[10, 6])
+
+    lab = None
+    col = None
+    lstyle = None
+
+    for kk in range(len(yval)):
+        if (labels is not None):
+            lab = labels[kk]
+        if (colors is not None):
+            col = colors[kk]
+        if (linestyles is not None):
+            lstyle = linestyles[kk]
+        ax.plot(xval[kk], yval[kk], label=lab, color=col, linestyle=lstyle)
+
+    ax.set_title(title)
+    ax.set_xlabel(labelx)
+    ax.set_ylabel(labely)
+    ax.set_ylim(bottom=ymin, top=ymax)
     ax.legend(loc='best')
 
     for i in range(len(fname_list)):

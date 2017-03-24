@@ -17,6 +17,7 @@ Plots
     plot_rhi
     plot_bscope
     plot_rhi_profile
+    plot_along_coord
     plot_density
     plot_cappi
     plot_quantiles
@@ -39,6 +40,7 @@ from .plots import plot_histogram, plot_histogram2, plot_density, plot_scatter
 from .plots import plot_timeseries, plot_timeseries_comp, plot_monitoring_ts
 from .plots import plot_sun_hits, plot_sun_retrieval_ts, plot_antenna_pattern
 from .plots import plot_intercomp_scores_ts, plot_scatter_comp
+from .plots import plot_along_coord
 
 from .plots import get_colobar_label
 
