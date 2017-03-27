@@ -511,8 +511,8 @@ def plot_field_coverage(xval, yval, fname_list, labelx='Azimuth (deg)',
     for kk in range(len(yval)):
         if (labels is not None):
             lab = labels[kk]
-        ax.plot(xval[kk], yval[kk], label=lab, linestyle='None', marker='o',
-                fillstyle='full')
+        ax.plot(xval[kk], yval[kk], label=lab,
+                linestyle='None', marker='o', fillstyle='full')
 
     if xmeanval is not None and ymeanval is not None:
         ax.plot(xmeanval, ymeanval, label=labelmeanval, linestyle='-',

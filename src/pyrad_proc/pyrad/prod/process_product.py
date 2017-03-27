@@ -95,7 +95,7 @@ def generate_cosmo_coord_products(dataset, prdcfg):
         fname = 'rad2cosmo_'+prdcfg['voltype']+'_'+prdcfg['procname']+'.nc'
 
         pyart.io.cfradial.write_cfradial(savedir+fname, new_dataset)
-        print('saved file: '+fname)
+        print('saved file: '+savedir+fname)
 
         return fname
 
