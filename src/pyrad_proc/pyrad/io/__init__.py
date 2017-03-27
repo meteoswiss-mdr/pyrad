@@ -80,6 +80,7 @@ Writing data
     write_sun_retrieval
     write_cdf
     write_rhi_profile
+    write_field_coverage
 
 
 Auxiliary functions
@@ -142,7 +143,7 @@ from .write_data import write_monitoring_ts, write_intercomp_scores_ts
 from .write_data import write_sun_hits, write_sun_retrieval
 from .write_data import write_colocated_gates, write_colocated_data
 from .write_data import write_colocated_data_time_avg, write_cdf
-from .write_data import write_rhi_profile
+from .write_data import write_rhi_profile, write_field_coverage
 
 from .io_aux import get_save_dir, make_filename
 from .io_aux import get_datetime, get_dataset_fields

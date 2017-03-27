@@ -38,7 +38,7 @@ from ..io.write_data import write_sun_hits, write_sun_retrieval
 from ..io.write_data import write_colocated_gates, write_colocated_data
 from ..io.write_data import write_colocated_data_time_avg, write_cdf
 from ..io.write_data import write_intercomp_scores_ts, write_ts_cum
-from ..io.write_data import write_rhi_profile
+from ..io.write_data import write_rhi_profile, write_field_coverage
 
 from ..graph.plots import plot_ppi, plot_rhi, plot_cappi, plot_bscope
 from ..graph.plots import plot_timeseries, plot_timeseries_comp
@@ -1346,6 +1346,9 @@ def generate_vol_products(dataset, prdcfg):
         ele_sect_stop = None
         if 'ele_sect_stop' in prdcfg:
             ele_sect_stop = prdcfg['ele_sect_stop']
+        quantiles = np.array([10., 20., 30., 40., 50., 60., 70., 80., 90.])
+        if 'quantiles' in prdcfg:
+            quantiles = np.array(prdcfg['quantiles'])
 
         # get coverage per ray
         field_coverage = np.ma.empty(dataset.nrays)
@@ -1391,6 +1394,7 @@ def generate_vol_products(dataset, prdcfg):
         # get mean value per azimuth for a specified elevation sector
         xmeanval = None
         ymeanval = None
+        quantval = None
         labelmeanval = None
         if ele_sect_start is not None and ele_sect_stop is not None:
             ind_ele = np.where(np.logical_and(
@@ -1412,6 +1416,9 @@ def generate_vol_products(dataset, prdcfg):
                 ymeanval[i] = np.ma.mean(field_coverage_sector[ind_azi])
             labelmeanval = ('ele '+'{:.1f}'.format(ele_sect_start)+'-' +
                             '{:.1f}'.format(ele_sect_stop)+' deg mean val')
+
+            meanval, quantval, nvalid = quantiles_weighted(
+                field_coverage_sector, quantiles=quantiles/100.)
 
         # plot field coverage
         savedir = get_save_dir(
@@ -1437,6 +1444,22 @@ def generate_vol_products(dataset, prdcfg):
             ymeanval=ymeanval, labelmeanval=labelmeanval)
 
         print('----- save to '+' '.join(fname))
+
+        fname = make_filename(
+            'coverage', prdcfg['dstype'], prdcfg['voltype'],
+            ['csv'], timeinfo=prdcfg['timeinfo'])[0]
+
+        fname = savedir+fname
+
+        if quantval is not None:
+            data_type = get_colobar_label(
+                dataset.fields[field_name], field_name)
+            write_field_coverage(
+                quantiles, quantval, ele_sect_start, ele_sect_stop,
+                np.min(xmeanval), np.max(xmeanval), threshold, nvalid_min,
+                data_type, prdcfg['timeinfo'], fname)
+
+            print('----- save to '+fname)
 
         return fname
 
