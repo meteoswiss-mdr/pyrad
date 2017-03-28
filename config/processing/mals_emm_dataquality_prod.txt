@@ -4,7 +4,8 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 30
+dataSetList STRARR 31
+    l0:TEMP
     l0:dBmu
     l0:dBmvu
     l1:sun_hits
@@ -37,6 +38,27 @@ dataSetList STRARR 30
     l5:monitoring_PhiDP0
 
 
+# ==========================================================================================
+#               COSMO data
+# ==========================================================================================
+#RAD2COSMO STRUCT 3
+#    type STRING COSMO_COORD
+#    datatype STRARR 1
+#        dBZ        
+#    products STRUCT 1        
+#        rad2cosmo STRUCT 2
+#            type  STRING SAVEVOL            
+#            voltype STRING cosmo_index
+
+TEMP STRUCT 6
+    type STRING COSMO_LOOKUP
+    datatype STRARR 1
+        dBZ        
+    cosmo_type STRING TEMP
+    regular_grid INT 0
+    lookup_table INT 1
+    MAKE_GLOBAL INT 1
+    
 # ==========================================================================================
 #                 secondary moments products
 # ==========================================================================================
@@ -250,7 +272,7 @@ Att_ZPhi STRUCT 5
         PROC:dBZc
         PROC:ZDRc
         PROC:PhiDPc
-        COSMO:TEMP
+        PROC:TEMP
     ATT_METHOD STRING ZPhi
     fzl FLOAT 2000.
     MAKE_GLOBAL INT 1
@@ -265,7 +287,7 @@ hydroclass STRUCT 5
         PROC:ZDRc
         PROC:RhoHVc
         PROC:KDPc
-        COSMO:TEMP
+        PROC:TEMP
     HYDRO_METHOD STRING SEMISUPERVISED
     RADARCENTROIDS STRING DX50
     MAKE_GLOBAL INT 1
@@ -609,7 +631,7 @@ reflectivity_bias STRUCT 5
         PROC:ZDRc
         PROC:PhiDPc
         PROC:RhoHVc
-        COSMO:TEMP
+        PROC:TEMP
     fzl FLOAT 2000.
     rsmooth FLOAT 1000.
     MAKE_GLOBAL INT 1
@@ -623,7 +645,7 @@ RhoHV_rain STRUCT 9
     datatype STRARR 3
         PROC:RhoHVc
         PROC:dBZc
-        COSMO:TEMP
+        PROC:TEMP
     fzl FLOAT 2000.
     rmin FLOAT 1000.
     rmax FLOAT 50000.
@@ -643,7 +665,7 @@ ZDR_rain STRUCT 12
         PROC:PhiDPc
         PROC:RhoHVc
         PROC:dBZc
-        COSMO:TEMP
+        PROC:TEMP
     fzl FLOAT 2000.
     rmin FLOAT 1000.
     rmax FLOAT 50000.
