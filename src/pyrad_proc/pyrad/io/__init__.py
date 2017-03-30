@@ -41,6 +41,7 @@ Reading other data
 .. autosummary::
     :toctree: generated/
 
+    read_last_state
     read_status
     read_rad4alp_cosmo
     read_rad4alp_vis
@@ -67,6 +68,7 @@ Writing data
 .. autosummary::
     :toctree: generated/
 
+    write_last_state
     write_smn
     write_colocated_gates
     write_colocated_data
@@ -137,6 +139,7 @@ from .read_data_other import read_sun_hits, read_sun_hits_multiple_days
 from .read_data_other import read_sun_retrieval, read_solar_flux
 from .read_data_other import read_selfconsistency, read_colocated_gates
 from .read_data_other import read_colocated_data, read_antenna_pattern
+from .read_data_other import read_last_state
 
 from .write_data import write_smn, write_ts_polar_data, write_ts_cum
 from .write_data import write_monitoring_ts, write_intercomp_scores_ts
@@ -144,6 +147,7 @@ from .write_data import write_sun_hits, write_sun_retrieval
 from .write_data import write_colocated_gates, write_colocated_data
 from .write_data import write_colocated_data_time_avg, write_cdf
 from .write_data import write_rhi_profile, write_field_coverage
+from .write_data import write_last_state
 
 from .io_aux import get_save_dir, make_filename
 from .io_aux import get_datetime, get_dataset_fields

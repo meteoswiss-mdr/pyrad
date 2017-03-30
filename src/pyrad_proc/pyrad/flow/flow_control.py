@@ -41,12 +41,14 @@ import multiprocessing as mp
 import queue
 import time
 import threading
+import glob
 
 from ..io.config import read_config
 from ..io.read_data_radar import get_data
 from ..io.io_aux import get_datetime, get_file_list, get_scan_list
 from ..io.io_aux import get_dataset_fields, get_datatype_fields
 from ..io.trajectory import Trajectory
+from ..io.read_data_other import read_last_state
 
 from ..proc.process_aux import get_process_func
 from ..prod.product_aux import get_prodgen_func
@@ -130,6 +132,39 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile="", rt=False):
 
     # if it is not real time and there are no volumes to process stop here
     if not rt:
+        # if start time is not defined and the file lastState exists and
+        # contains a valid date start processing from the last valid date.
+        # Otherwise start processing from yesterday at 00:00:00 UTC
+        if starttime is None and cfg['lastStateFile'] is not None:
+            filename = glob.glob(cfg['lastStateFile'])
+            if not filename:
+                nowtime = datetime.utcnow()
+                starttime = (nowtime - timedelta(days=1)).replace(
+                    hour=0, minute=0, second=0, microsecond=0)
+                warn('File '+cfg['lastStateFile']+' not found. ' +
+                     'Start time set at ' +
+                     starttime.strftime('%Y-%m-%d %H:%M:%S'))
+            else:
+                starttime = read_last_state(cfg['lastStateFile'])
+                if starttime is None:
+                    nowtime = datetime.utcnow()
+                    starttime = (nowtime - timedelta(days=1)).replace(
+                        hour=0, minute=0, second=0, microsecond=0)
+                    warn('File '+cfg['lastStateFile']+' not valid. ' +
+                         'Start time set at ' +
+                         starttime.strftime('%Y-%m-%d %H:%M:%S'))
+
+        if endtime is None:
+            endtime = datetime.utcnow()
+            warn('End Time not defined. Set as ' +
+                 endtime.strftime('%Y-%m-%d %H:%M:%S'))
+
+        if endtime < starttime:
+            raise ValueError(
+                'Start time '+starttime.strftime('%Y-%m-%d %H:%M:%S') +
+                'older than end time ' +
+                endtime.strftime('%Y-%m-%d %H:%M:%S'))
+
         masterfilelist, masterdatatypedescr, masterscan = _get_masterfile_list(
             datatypesdescr_list[0], starttime, endtime, datacfg,
             scan_list=cfg['ScanList'])
@@ -663,6 +698,8 @@ def _create_cfg_dict(cfgfile):
         cfg.update({'ScanList': None})
     else:
         cfg.update({'ScanList': get_scan_list(cfg['ScanList'])})
+    if 'lastStateFile' not in cfg:
+        cfg.update({'lastStateFile': None})
     if 'datapath' not in cfg:
         cfg.update({'datapath': None})
     if 'path_convention' not in cfg:
@@ -786,6 +823,7 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
     """
     dscfg = cfg[dataset]
     dscfg.update({'configpath': cfg['configpath']})
+    dscfg.update({'lastStateFile': cfg['lastStateFile']})
     dscfg.update({'solarfluxpath': cfg['solarfluxpath']})
     dscfg.update({'colocgatespath': cfg['colocgatespath']})
     dscfg.update({'cosmopath': cfg['cosmopath']})
@@ -861,6 +899,7 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
     # the product generation.
     prdcfg = cfg[dataset]['products'][product]
     prdcfg.update({'procname': cfg['name']})
+    prdcfg.update({'lastStateFile': cfg['lastStateFile']})
     prdcfg.update({'basepath': cfg['saveimgbasepath']})
     prdcfg.update({'smnpath': cfg['smnpath']})
     prdcfg.update({'disdropath': cfg['disdropath']})

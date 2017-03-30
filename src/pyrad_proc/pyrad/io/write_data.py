@@ -7,6 +7,7 @@ Functions for writing pyrad output data
 .. autosummary::
     :toctree: generated/
 
+    write_last_state
     write_smn
     write_rhi_profile
     write_field_coverage
@@ -31,6 +32,34 @@ import csv
 from pyart.config import get_fillvalue, get_metadata
 
 from .io_aux import generate_field_name_str
+
+
+def write_last_state(datetime_last, fname):
+    """
+    writes SwissMetNet data in format datetime,avg_value, std_value
+
+    Parameters
+    ----------
+    datetime_last : datetime object
+        date and time of the last state
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    try:
+        with open(fname, 'w', newline='') as txtfile:
+            txtfile.write(datetime_last.strftime('%Y%m%d%H%M%S'))
+            txtfile.close()
+
+            return fname
+    except EnvironmentError:
+        warn('Unable to write on file '+fname)
+        return None
 
 
 def write_smn(datetime_vec, value_avg_vec, value_std_vec, fname):

@@ -81,8 +81,14 @@ def main():
     print('config path: '+args.cfgpath)
     print('config file: '+args.proc_cfgfile)
     print('postproc config file: '+str(args.postproc_cfgfile))
-    print('start time: '+args.starttime)
-    print('end time: '+args.endtime)
+    if args.starttime is not None:
+        print('start time: '+args.starttime)
+    else:
+        print('start time not defined by user')
+    if args.endtime is not None:
+        print('end time: '+args.endtime)
+    else:
+        print('end time not defined by user')
 
     proc_starttime = None
     if args.starttime is not None:

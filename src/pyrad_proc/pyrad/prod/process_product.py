@@ -22,6 +22,7 @@ from copy import deepcopy
 from warnings import warn
 
 import numpy as np
+from netCDF4 import num2date
 
 import pyart
 
@@ -39,6 +40,7 @@ from ..io.write_data import write_colocated_gates, write_colocated_data
 from ..io.write_data import write_colocated_data_time_avg, write_cdf
 from ..io.write_data import write_intercomp_scores_ts, write_ts_cum
 from ..io.write_data import write_rhi_profile, write_field_coverage
+from ..io.write_data import write_last_state
 
 from ..graph.plots import plot_ppi, plot_rhi, plot_cappi, plot_bscope
 from ..graph.plots import plot_timeseries, plot_timeseries_comp
@@ -1683,6 +1685,29 @@ def generate_vol_products(dataset, prdcfg):
         print('saved file: '+fname[0])
 
         return fname[0]
+
+    elif prdcfg['type'] == 'SAVESTATE':
+        if prdcfg['lastStateFile'] is None:
+            warn('Unable to save last state file. File name not specified')
+            return None
+
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        max_time = np.max(dataset.time['data'])
+        units = dataset.time['units']
+        calendar = dataset.time['calendar']
+        last_date = num2date(max_time, units, calendar)
+
+        write_last_state(last_date, prdcfg['lastStateFile'])
+        print('saved file: '+prdcfg['lastStateFile'])
+
+        return prdcfg['lastStateFile']
 
     else:
         warn(' Unsupported product type: ' + prdcfg['type'])

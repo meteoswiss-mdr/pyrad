@@ -43,3 +43,6 @@ locationConfigFile STRING $HOME/pyrad/config/processing/mals_emm_rw04_loc.txt
 
 # Configuration of the product generation
 productConfigFile STRING $HOME/pyrad/config/processing/mals_emm_rw04_prod.txt
+
+# State after last run
+lastStateFile STRING $HOME/postproc_pyrad/mals_emm_rw04_postproc_lastState.txt

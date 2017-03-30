@@ -7,6 +7,7 @@ Functions for reading auxiliary data
 .. autosummary::
     :toctree: generated/
 
+    read_last_state
     read_status
     read_rad4alp_cosmo
     read_rad4alp_vis
@@ -42,6 +43,41 @@ from pyart.config import get_fillvalue, get_metadata
 
 from .io_aux import get_save_dir, make_filename
 from .io_aux import get_fieldname_pyart
+
+
+def read_last_state(fname):
+    """
+    Reads a file containing the date of acquisition of the last volume
+    processed
+
+    Parameters
+    ----------
+    fname : str
+        name of the file to read
+
+    Returns
+    -------
+    last_state : datetime object
+        the date
+
+    """
+    try:
+        with open(fname, 'r', newline='') as txtfile:
+            line = txtfile.readline()
+            txtfile.close()
+            if len(line) == 0:
+                warn('File '+fname+' is empty.')
+                return None
+            try:
+                last_state = datetime.datetime.strptime(
+                    line, '%Y%m%d%H%M%S')
+                return last_state
+            except ValueError:
+                warn('File '+fname+' does not contain a valid date.')
+                return None
+    except EnvironmentError:
+        warn('Unable to read file '+fname)
+        return None
 
 
 def read_status(voltime, cfg, ind_rad=0):
@@ -182,6 +218,8 @@ def read_rad4alp_vis(fname, datatype):
                 field['data'] = field_data
                 field_list.append(field)
 
+            visfile.close()
+
             return field_list
 
     except EnvironmentError:
@@ -230,6 +268,8 @@ def read_colocated_gates(fname):
                 rad2_azi[i] = float(row['rad2_azi'])
                 rad2_rng[i] = float(row['rad2_rng'])
                 i += 1
+
+            csvfile.close()
 
             return rad1_ele, rad1_azi, rad1_rng, rad2_ele, rad2_azi, rad2_rng
     except EnvironmentError:
@@ -283,6 +323,8 @@ def read_colocated_data(fname):
                 rad2_rng[i] = float(row['rad2_rng'])
                 rad2_val[i] = float(row['rad2_val'])
                 i += 1
+
+            csvfile.close()
 
             return (rad1_ele, rad1_azi, rad1_rng, rad1_val,
                     rad2_ele, rad2_azi, rad2_rng, rad2_val)
@@ -346,6 +388,8 @@ def read_colocated_data_time_avg(fname):
                 rad2_Flagavg[i] = float(row['rad2_Flagavg'])
                 i += 1
 
+            csvfile.close()
+
             return (rad1_ele, rad1_azi, rad1_rng,
                     rad1_dBZavg, rad1_PhiDPavg, rad1_Flagavg,
                     rad2_ele, rad2_azi, rad2_rng,
@@ -393,6 +437,8 @@ def read_timeseries(fname):
                 i += 1
 
             value = np.ma.masked_values(value, get_fillvalue())
+
+            csvfile.close()
 
             return date, value
     except EnvironmentError:
@@ -443,6 +489,8 @@ def read_ts_cum(fname):
 
             radar_value = np.ma.masked_values(radar_value, get_fillvalue())
             sensor_value = np.ma.masked_values(sensor_value, get_fillvalue())
+
+            csvfile.close()
 
             return date, np_radar, radar_value, np_sensor, sensor_value
     except EnvironmentError:
@@ -498,6 +546,8 @@ def read_monitoring_ts(fname):
                 low_quantile, get_fillvalue())
             high_quantile = np.ma.masked_values(
                 high_quantile, get_fillvalue())
+
+            csvfile.close()
 
             return date, np_t, central_quantile, low_quantile, high_quantile
     except EnvironmentError:
@@ -572,6 +622,8 @@ def read_intercomp_scores_ts(fname):
                 intercep_vec, get_fillvalue())
             intercep_slope1_vec = np.ma.masked_values(
                 intercep_slope1_vec, get_fillvalue())
+
+            csvfile.close()
 
             return (date_vec, np_vec, meanbias_vec, medianbias_vec,
                     modebias_vec, corr_vec, slope_vec, intercep_vec,
@@ -762,6 +814,8 @@ def read_sun_hits(fname):
             zdr = np.ma.masked_values(zdr, get_fillvalue())
             zdr_std = np.ma.masked_values(zdr_std, get_fillvalue())
 
+            csvfile.close()
+
             return (date, ray, nrng, rad_el, rad_az, sun_el, sun_az,
                     ph, ph_std, nph, nvalh, pv, pv_std, npv, nvalv,
                     zdr, zdr_std, nzdr, nvalzdr)
@@ -886,6 +940,8 @@ def read_sun_retrieval(fname):
 
             dBm_sun_ref = np.ma.masked_values(dBm_sun_ref, get_fillvalue())
 
+            csvfile.close()
+
             return (first_hit_time, last_hit_time, nhits_h,
                     el_width_h, az_width_h, el_bias_h, az_bias_h,
                     dBm_sun_est, std_dBm_sun_est,
@@ -953,6 +1009,8 @@ def read_solar_flux(fname):
                 flux_value[i] = float(row['fluxobsflux'])
 
                 i += 1
+
+            txtfile.close()
 
             return flux_datetime, flux_value
 
@@ -1062,6 +1120,8 @@ def read_smn(fname):
             # convert precip from mm/10min to mm/h
             precip *= 6.
 
+            csvfile.close()
+
             return id, date, pressure, temp, rh, precip, wspeed, wdir
     except EnvironmentError:
         warn('Unable to read file '+fname)
@@ -1118,6 +1178,8 @@ def read_smn2(fname):
                     row['DateTime'], '%Y%m%d%H%M%S'))
                 value[i] = float(row['Value'])
                 i += 1
+
+            csvfile.close()
 
             return id, date, value
     except EnvironmentError:
@@ -1199,6 +1261,8 @@ def read_disdro_scattering(fname):
                 rhohv[i] = float(row['rhohv'])
                 i += 1
 
+            csvfile.close()
+
             return (date, preciptype, lwc, rr, zh, zv, zdr, ldr, ah, av,
                     adiff, kdp, deltaco, rhohv)
     except EnvironmentError:
@@ -1242,6 +1306,8 @@ def read_selfconsistency(fname):
                 zdr_kdpzh_table[0, i] = float(row['zdr'])
                 zdr_kdpzh_table[1, i] = float(row['kdpzh'])
                 i += 1
+
+            csvfile.close()
 
             return zdr_kdpzh_table
     except EnvironmentError:
