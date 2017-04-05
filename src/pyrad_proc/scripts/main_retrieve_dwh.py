@@ -35,8 +35,8 @@ def main():
     avg_time = 3600
     base_time = 0
 
-#    smn_station_vec = ['PIL', 'WFJ', 'MTR', 'GUE', 'DIA']
-    smn_station_vec = ['VSTSN']
+    smn_station_vec = ['PIL', 'WFJ', 'MTR', 'GUE', 'DIA']
+#    smn_station_vec = ['VSTSN']
     tstart_vec = ['2007', '2008', '2009', '2010', '2011', '2012', '2013',
                   '2014', '2015', '2016']
     tend_vec = ['2008', '2009', '2010', '2011', '2012', '2013', '2014',
@@ -45,9 +45,9 @@ def main():
 #    ymin_vec = [-40., -40., 0., -40., 0.]
 #    ymax_vec = [30., 30., 110., 1500., 20.]
 
-    param_vec = ['rre150z0']
-    ymin_vec = [0.]
-    ymax_vec = [30.]
+    param_vec = ['prestas0']
+    ymin_vec = [600.]
+    ymax_vec = [900.]
 
     print("====== retrieval from DWH started: %s" %
           datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))

@@ -1087,6 +1087,7 @@ def read_smn(fname):
         The read values
 
     """
+    fill_value = 10000000.0
     try:
         with open(fname, 'r', newline='') as csvfile:
             # first count the lines
@@ -1116,6 +1117,13 @@ def read_smn(fname):
                 wspeed[i] = float(row['Windspeed'])
                 wdir[i] = float(row['Winddirection'])
                 i += 1
+                
+            pressure = np.ma.masked_values(pressure, fill_value)
+            temp = np.ma.masked_values(temp, fill_value)
+            rh = np.ma.masked_values(rh, fill_value)
+            precip = np.ma.masked_values(precip, fill_value)
+            wspeed = np.ma.masked_values(wspeed, fill_value)
+            wdir = np.ma.masked_values(wdir, fill_value)
 
             # convert precip from mm/10min to mm/h
             precip *= 6.
