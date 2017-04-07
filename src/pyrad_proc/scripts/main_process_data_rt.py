@@ -8,23 +8,26 @@ Pyrad: The MeteoSwiss Radar Processing framework
 
 Welcome to Pyrad!
 
-This program processes and post-processes data over a time span
+This program performs real time processing of the data
 
 To run the processing framework type:
     python main_process_data.py \
-[config_file] --starttime [process_start_time] --endtime [process_end_time] \
---postproc_cfgfile [postproc_config_file] --cfgpath [cfgpath]
+[config_files] --starttime [process_start_time] --endtime [process_end_time] \
+--cfgpath [cfgpath] --proc_period [proc_period]
 
-If startime and endtime are not specified the program determines them from
-the trajectory file or the last processed volume.
-postproc_cfgfile is an optional argument with default: None
+If startime or endtime are specified the program will start processing at the
+specified time and end at the specified time. Otherwise the program ends when
+the user interrupts it.
 cfgpath is an optional argument with default: \
 '$HOME/pyrad/config/processing/'
+proc_period is the time that has to pass before attempting to restart the
+processing in s
 
 Example:
-    python main_process_data.py 'paradiso_fvj_vol.txt' --starttime \
-'20140523000000' --endtime '20140523001000' --postproc_cfgfile \
-'paradiso_fvj_vol_postproc.txt' --cfgpath '$HOME/pyrad/config/processing/'
+    python main_process_data.py 'paradiso_fvj_vol.txt' \
+'paradiso_fvj_rhi.txt' --starttime '20140523000000' \
+--endtime '20140523001000' --cfgpath '$HOME/pyrad/config/processing/' \
+--proc_period 60
 
 """
 
@@ -36,7 +39,7 @@ import argparse
 import atexit
 import os
 
-from pyrad.flow.flow_control import main as pyrad_main
+from pyrad.flow.flow_control import main_rt as pyrad_main
 
 print(__doc__)
 
@@ -51,7 +54,8 @@ def main():
 
     # positional arguments
     parser.add_argument(
-        'proc_cfgfile', type=str, help='name of main configuration file')
+        'cfgfiles', nargs='+', type=str,
+        help='name of main configuration file')
 
     # keyword arguments
     parser.add_argument(
@@ -62,12 +66,13 @@ def main():
         '--endtime', type=str, default=None,
         help='end time of the data to be processed. Format ''YYYYMMDDhhmmss''')
     parser.add_argument(
-        '--postproc_cfgfile', type=str, default=None,
-        help='name of main post-processing configuration file')
-    parser.add_argument(
         '--cfgpath', type=str,
         default=os.path.expanduser('~')+'/pyrad/config/processing/',
         help='configuration file path')
+
+    parser.add_argument(
+        '--proc_period', type=str, default=60,
+        help='Period between processing rounds (s)')
 
     args = parser.parse_args()
 
@@ -77,8 +82,10 @@ def main():
                     "====== PYRAD data processing finished: ")
 
     print('config path: '+args.cfgpath)
-    print('config file: '+args.proc_cfgfile)
-    print('postproc config file: '+str(args.postproc_cfgfile))
+    cfgfile_list = []
+    for ind, cfgfile in enumerate(args.cfgfiles):
+        print('config file '+str(ind)+': '+cfgfile)
+        cfgfile_list.append(args.cfgpath+cfgfile)
     if args.starttime is not None:
         print('start time: '+args.starttime)
     else:
@@ -95,14 +102,9 @@ def main():
     proc_endtime = None
     if args.endtime is not None:
         proc_endtime = datetime.datetime.strptime(args.endtime, '%Y%m%d%H%M%S')
-    cfgfile_proc = args.cfgpath+args.proc_cfgfile
 
-    pyrad_main(cfgfile_proc, starttime=proc_starttime, endtime=proc_endtime)
-
-    if args.postproc_cfgfile is not None:
-        cfgfile_postproc = args.cfgpath+args.postproc_cfgfile
-        pyrad_main(cfgfile_postproc, starttime=proc_starttime,
-                   endtime=proc_endtime)
+    pyrad_main(cfgfile_list, starttime=proc_starttime, endtime=proc_endtime,
+               proc_period=args.proc_period)
 
 
 def _print_end_msg(text):

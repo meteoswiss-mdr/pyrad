@@ -1,11 +1,11 @@
 # ---------------------------------
-# This is the config file for the processing of the Emmen vol data acquired
-# during the MALS_EMM_WEATHER scan performed off-line the next day in zueub222
+# This is the config file for the processing of the Emmen RW04 data acquired
+# during the MALS_EMM_RW04 scan performed real time in cirrus
 # ---------------------------------
 
 # Name of this configuration:
 # Will be used in product generation save path
-name STRING mals_emm_vol
+name STRING mals_emm_rw04
 
 # ---------------------------------------------------------
 #  Raw data pathes
@@ -14,38 +14,34 @@ name STRING mals_emm_vol
 # Base path of the raw data.
 # Note: Must have a trailing '/'
 # ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
-datapath STRING /data/DX50/rawdata/
+datapath STRING /usr/local/Rainbow5/rainbow/rawdata/144CHX_R/
 
 # Base path for cosmo data
-cosmopath STRING /data/cosmo/
-
-# Base path for dem data
-dempath STRING /data/DEM/DX50_EMM/
+cosmopath STRING /usr/data/cosmo/
 
 # Loading of saved datasets
-loadbasepath STRING /data/pyrad_products/
-loadname STRING mals_emm_vol
-    
+loadbasepath STRING /usr/data/pyrad_products/
+loadname STRING mals_emm_rw04
+
+
 # --------------------------------------------
 # Output data
 # --------------------------------------------
-saveimgbasepath STRING /data/pyrad_products/
+saveimgbasepath STRING /usr/data/pyrad_products/
 saveimg         INT 1
 imgformat       STRING png
 
 # --------------------------------------------------------
 # configuration files pathes
 # --------------------------------------------------------
-
 # Base path of configuration files
 configpath STRING $HOME/pyrad/config/
 
 # Configuration of the radar location and approach direction
-locationConfigFile STRING $HOME/pyrad/config/processing/mals_emm_vol_loc.txt
+locationConfigFile STRING $HOME/pyrad/config/processing/mals_emm_rw04_loc.txt
 
 # Configuration of the product generation
-productConfigFile STRING $HOME/pyrad/config/processing/mals_emm_vol_prod.txt
+productConfigFile STRING $HOME/pyrad/config/processing/mals_emm_rw04_prod.txt
 
 # State after last run
-lastStateFile STRING $HOME/postproc_pyrad/mals_emm_vol_postproc_lastState.txt
-
+lastStateFile STRING $HOME/postproc_pyrad/mals_emm_rw04_postproc_lastState.txt
