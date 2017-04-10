@@ -47,5 +47,5 @@ locationConfigFile STRING $HOME/pyrad/config/processing/mals_emm_vol_loc.txt
 productConfigFile STRING $HOME/pyrad/config/processing/mals_emm_vol_prod.txt
 
 # State after last run
-lastStateFile STRING $HOME/postproc_pyrad/mals_emm_vol_postproc_lastState.txt
+lastStateFile STRING $HOME/realtime_pyrad/mals_emm_vol_rt_lastState.txt
 

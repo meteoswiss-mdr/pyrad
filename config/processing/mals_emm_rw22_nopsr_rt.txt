@@ -44,4 +44,4 @@ locationConfigFile STRING $HOME/pyrad/config/processing/mals_emm_rw22_nopsr_loc.
 productConfigFile STRING $HOME/pyrad/config/processing/mals_emm_rw22_prod.txt
 
 # State after last run
-lastStateFile STRING $HOME/postproc_pyrad/mals_emm_rw22_nopsr_postproc_lastState.txt
+lastStateFile STRING $HOME/realtime_pyrad/mals_emm_rw22_nopsr_rt_lastState.txt
