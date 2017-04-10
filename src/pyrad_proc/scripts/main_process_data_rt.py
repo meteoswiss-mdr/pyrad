@@ -38,6 +38,7 @@ import datetime
 import argparse
 import atexit
 import os
+import traceback
 from warnings import warn
 
 from pyrad.flow.flow_control import main_rt as pyrad_main
@@ -111,6 +112,7 @@ def main():
                 cfgfile_list, starttime=proc_starttime, endtime=proc_endtime,
                 proc_period=args.proc_period)
         except:
+            traceback.print_exc()
             warn("An exception occurred. Restarting the real time processing")            
 
 
