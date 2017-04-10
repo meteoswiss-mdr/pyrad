@@ -38,6 +38,7 @@ import datetime
 import argparse
 import atexit
 import os
+from warnings import warn
 
 from pyrad.flow.flow_control import main_rt as pyrad_main
 
@@ -103,8 +104,14 @@ def main():
     if args.endtime is not None:
         proc_endtime = datetime.datetime.strptime(args.endtime, '%Y%m%d%H%M%S')
 
-    pyrad_main(cfgfile_list, starttime=proc_starttime, endtime=proc_endtime,
-               proc_period=args.proc_period)
+    end_proc = False    
+    while not end_proc:
+        try:
+            end_proc = pyrad_main(
+                cfgfile_list, starttime=proc_starttime, endtime=proc_endtime,
+                proc_period=args.proc_period)
+        except:
+            warn("An exception occurred. Restarting the real time processing")            
 
 
 def _print_end_msg(text):

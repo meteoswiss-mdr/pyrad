@@ -190,6 +190,11 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
         (e.g. 'RUN57'). This string is added to product files.
     proc_period : int
         period of time before starting a new processing round
+        
+    Returns
+    -------
+    end_proc : Boolean
+        If true the program has ended successfully
 
     """
     print("- PYRAD version: %s (compiled %s by %s)" %
@@ -348,6 +353,8 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
                 dataset_levels, cfg, dscfg, infostr=None)
 
     print('- This is the end my friend! See you soon!')
+    
+    return end_proc
 
 
 def _initialize_listener():
