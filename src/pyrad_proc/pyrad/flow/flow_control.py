@@ -55,6 +55,7 @@ from ..io.config import read_config
 from ..io.read_data_radar import get_data
 from ..io.io_aux import get_datetime, get_file_list, get_scan_list
 from ..io.io_aux import get_dataset_fields, get_datatype_fields
+from ..io.io_aux import get_new_rainbow_file_name
 from ..io.trajectory import Trajectory
 from ..io.read_data_other import read_last_state
 
@@ -190,7 +191,7 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
         (e.g. 'RUN57'). This string is added to product files.
     proc_period : int
         period of time before starting a new processing round
-        
+
     Returns
     -------
     end_proc : Boolean
@@ -353,7 +354,7 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
                 dataset_levels, cfg, dscfg, infostr=None)
 
     print('- This is the end my friend! See you soon!')
-    
+
     return end_proc
 
 
@@ -722,8 +723,38 @@ def _wait_for_files(nowtime, datacfg, datatype_list, last_processed=None):
     if nvolumes == 0:
         return None, None, last_processed
 
+    # check if there are rainbow data types and how many
+    nrainbow = 0
+    datatype_rainbow = []
+    for datatype_descr in datatype_list:
+        radarnr, datagroup, datatype, dataset, product = (
+            get_datatype_fields(datatype_descr))
+        if datagroup == 'RAINBOW':
+            datatype_rainbow.append(datatype)
+            nrainbow += 1
+
     if nscans == 1:
-        return masterfilelist[0], masterdatatypedescr, last_processed
+        if nrainbow < 2:
+            return masterfilelist[0], masterdatatypedescr, last_processed
+
+        # If more than one data type is of type rainbow we have to wait for
+        # all data type files to be present
+        masterfile = masterfilelist[0]
+        for datatype in datatype_rainbow:
+            rainbow_file = get_new_rainbow_file_name(
+                masterfile, masterdatatypedescr, datatype)
+            rainbow_files.append(rainbow_file)
+
+        # allow 30 s for the transfer of all datatype files
+        found_all = _wait_for_rainbow_datatypes(rainbow_files, period=30)
+        if found_all:
+            return masterfile, masterdatatypedescr, last_processed
+
+        # if not all data types available skip the volume
+        warn('Not all data types for master file: ' +
+             os.path.basename(masterfile)+' arrived on time. ' +
+             'The volume will be skipped')
+        return None, None, get_datetime(masterfilelist[0], masterdatatypedescr)
 
     # if there is more than one scan in the list wait until all files
     # for the first volume have arrived
@@ -732,27 +763,89 @@ def _wait_for_files(nowtime, datacfg, datatype_list, last_processed=None):
     wait_time = nowtime+timedelta(minutes=scan_min)
     found_all = False
     currenttime = nowtime
-    while currenttime <= wait_time:
+    while currenttime <= wait_time or not found_all:
         currenttime = datetime.utcnow()
         starttime_loop = master_voltime
         endtime_loop = master_voltime+timedelta(minutes=scan_min)
+        filelist_vol = []
         for scan in datacfg['ScanList'][0]:
             filelist = get_file_list(
                 masterdatatypedescr, starttime_loop, endtime_loop, datacfg,
                 scan=scan)
             if len(filelist) == 0:
+                filelist_vol = []
                 found_all = False
                 break
+            else:
+                filelist_vol.append(filelist[0])
             found_all = True
         if found_all:
-            return masterfile, masterdatatypedescr, last_processed
+            if nrainbow < 2:
+                return masterfile, masterdatatypedescr, last_processed
+            else:
+                break
+
+    if not found_all:
+        # if not all scans available skip the volume
+        warn('Not all scans for master file: ' +
+             os.path.basename(masterfile)+' arrived on time. ' +
+             'The volume will be skipped')
+
+        return None, None, get_datetime(masterfile, masterdatatypedescr)
+
+    # If more than one data type is of type rainbow we have to wait
+    # for all data type files for all scans to be present
+    rainbow_files = []
+    for file in filelist_vol:
+        for datatype in datatype_rainbow:
+            rainbow_file = get_new_rainbow_file_name(
+                file, masterdatatypedescr, datatype)
+            rainbow_files.append(rainbow_file)
+
+    # allow 30 s for the transfer of all datatype files
+    found_all = _wait_for_rainbow_datatypes(rainbow_files, period=30)
+    if found_all:
+        return masterfile, masterdatatypedescr, last_processed
 
     # if not all scans available skip the volume
-    warn('Not all scans for master file: ' +
+    warn('Not all data types for all scans of master file: ' +
          os.path.basename(masterfile)+' arrived on time. ' +
          'The volume will be skipped')
 
     return None, None, get_datetime(masterfile, masterdatatypedescr)
+
+
+def _wait_for_rainbow_datatypes(rainbow_files, period=30):
+    """
+    waits until the files for all rainbow data types are present.
+
+    Parameters
+    ----------
+    rainbow_files : list of strings
+        a list containing the names of all the rainbow files to wait for
+    period : int
+        the time it has to wait (s)
+
+    Returns
+    -------
+    found_all : Boolean
+        True if all files were present. False otherwise
+
+    """
+    found_all = False
+    currenttime = datetime.utcnow()
+    wait_time = currenttime+timedelta(seconds=period)
+    while currenttime <= wait_time:
+        currenttime = datetime.utcnow()
+        for rainbow_file in rainbow_files:
+            filename = glob.glob(rainbow_file)
+            if not filename:
+                break
+            found_all = True
+        if found_all:
+            return found_all
+
+    return found_all
 
 
 def _get_radars_data(master_voltime, datatypesdescr_list, datacfg,
