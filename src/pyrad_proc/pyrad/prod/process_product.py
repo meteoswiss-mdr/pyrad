@@ -1587,6 +1587,10 @@ def generate_vol_products(dataset, prdcfg):
         # count and filter outliers
         quantiles_lim, values_lim = compute_quantiles(
             data, quantiles=[0.2, 99.8])
+        if values_lim.mask[0] == True or values_lim.mask[1] == True:
+            warn('No valid radar gates found in sector')
+            return None
+            
         nsmall = np.count_nonzero(data.compressed() < values_lim[0])
         nlarge = np.count_nonzero(data.compressed() > values_lim[1])
         noutliers = nlarge+nsmall
