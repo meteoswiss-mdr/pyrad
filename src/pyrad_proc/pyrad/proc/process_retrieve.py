@@ -552,17 +552,25 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
             return None, None
         radar = radar_list[ind_rad]
 
-        if ((refl_field not in radar.fields) or
-                (a_field not in radar.fields) or
-                (hydro_field not in radar.fields)):
-            warn('Unable to compute rainfall rate. Missing data')
+        if ((refl_field in radar.fields) and
+                (a_field in radar.fields) and
+                (hydro_field in radar.fields)):
+            rain = pyart.retrieve.est_rain_rate_hydro(
+                radar, alphazr=0.0376, betazr=0.6112, alphazs=0.1, betazs=0.5,
+                alphaa=None, betaa=None, mp_factor=0.6, refl_field=refl_field,
+                a_field=a_field, hydro_field=hydro_field, rr_field=None,
+                master_field=refl_field, thresh=0.04, thresh_max=False)
+        elif refl_field in radar.fields:
+            warn('Unable to compute rainfall rate using hydrometeor ' +
+                 'classification. Missing data. ' +
+                 'A simple Z-R relation will be used instead')
+            rain = pyart.retrieve.est_rain_rate_z(
+                radar, alpha=0.0376, beta=0.6112, refl_field=refl_field,
+                rr_field=None)
+        else:
+            warn('Unable to compute rainfall rate using hydrometeor ' +
+                 'classification. Missing data.')
             return None, None
-
-        rain = pyart.retrieve.est_rain_rate_hydro(
-            radar, alphazr=0.0376, betazr=0.6112, alphazs=0.1, betazs=0.5,
-            alphaa=None, betaa=None, mp_factor=0.6, refl_field=refl_field,
-            a_field=a_field, hydro_field=hydro_field, rr_field=None,
-            master_field=refl_field, thresh=0.04, thresh_max=False)
 
     # prepare for exit
     new_dataset = deepcopy(radar)

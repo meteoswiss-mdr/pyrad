@@ -595,7 +595,7 @@ def get_new_rainbow_file_name(master_fname, master_datadescriptor, datatype):
     voltime = get_datetime(master_fname, master_datatype)
     voltype = os.path.basename(master_fname).split('.')[1]
 
-    return datapath+voltime.strftime('%Y%m%d%H%M%S')+'00'+datatype+'.'+voltype
+    return datapath+'/'+voltime.strftime('%Y%m%d%H%M%S')+'00'+datatype+'.'+voltype
 
 
 def get_datatype_fields(datadescriptor):

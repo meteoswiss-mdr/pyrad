@@ -740,6 +740,7 @@ def _wait_for_files(nowtime, datacfg, datatype_list, last_processed=None):
         # If more than one data type is of type rainbow we have to wait for
         # all data type files to be present
         masterfile = masterfilelist[0]
+        rainbow_files = []
         for datatype in datatype_rainbow:
             rainbow_file = get_new_rainbow_file_name(
                 masterfile, masterdatatypedescr, datatype)
