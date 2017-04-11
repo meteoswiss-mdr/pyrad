@@ -1378,16 +1378,20 @@ def generate_vol_products(dataset, prdcfg):
         xval = []
         labels = []
         for i in range(nsteps-1):
-            yval_aux = []
-            xval_aux = []
+            yval_aux = np.ma.empty(nele)
+            xval_aux = np.empty(nele)
+            ind_list = []
             for j in range(nele):
                 ele_target = ele_steps_vec[i]+j*ele_res
                 d_ele = np.abs(dataset.elevation['data']-ele_target)
                 ind_ele = np.where(d_ele < prdcfg['AngTol'])[0]
                 if len(ind_ele) == 0:
                     continue
-                yval_aux.extend(field_coverage[ind_ele])
-                xval_aux.extend(dataset.azimuth['data'][ind_ele])
+                yval_aux[j] = field_coverage[ind_ele]
+                xval_aux[j] = dataset.azimuth['data'][ind_ele]
+                ind_list.append(j)
+            yval_aux = yval_aux[ind_list]
+            xval_aux = xval_aux[ind_list]
             yval.append(yval_aux)
             xval.append(xval_aux)
             labels.append('ele '+'{:.1f}'.format(ele_steps_vec[i])+'-' +

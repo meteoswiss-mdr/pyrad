@@ -457,7 +457,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
             dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%Y%m%d')
             datapath = cfg['datapath'][ind_rad] + scan + daydir + '/'
             if (not os.path.isdir(datapath)):
-                warn("WARNING: Unknown datapath '%s'" % datapath)
+                # warn("WARNING: Unknown datapath '%s'" % datapath)
                 continue
             dayfilelist = glob.glob(datapath+dayinfo+'*'+datatype+'.*')
             for filename in dayfilelist:
