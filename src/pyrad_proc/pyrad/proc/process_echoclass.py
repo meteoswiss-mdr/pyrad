@@ -536,6 +536,11 @@ def process_outlier_filter(procstatus, dscfg, radar_list=None):
         sweep_end = radar.sweep_end_ray_index['data'][sweep]
         nrays_sweep = radar.rays_per_sweep['data'][sweep]
         data_sweep = field['data'][sweep_start:sweep_end+1, :]
+
+        # check if all elements in array are masked
+        if np.all(np.ma.getmaskarray(data_sweep)):
+            continue
+
         percent_vals = np.nanpercentile(
             data_sweep.filled(fill_value=np.nan),
             (percentile_min, percentile_max))

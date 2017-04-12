@@ -833,14 +833,15 @@ def _wait_for_rainbow_datatypes(rainbow_files, period=30):
         True if all files were present. False otherwise
 
     """
-    found_all = False
     currenttime = datetime.utcnow()
     wait_time = currenttime+timedelta(seconds=period)
     while currenttime <= wait_time:
         currenttime = datetime.utcnow()
+        found_all = False
         for rainbow_file in rainbow_files:
             filename = glob.glob(rainbow_file)
             if not filename:
+                found_all = False
                 break
             found_all = True
         if found_all:
