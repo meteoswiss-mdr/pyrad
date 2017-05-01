@@ -582,10 +582,6 @@ def process_estimate_phidp0(procstatus, dscfg, radar_list=None):
     r_res = radar.range['data'][1]-radar.range['data'][0]
     min_rcons = int(dscfg['rcell']/r_res)
 
-    step = None
-    if 'step' in dscfg:
-        step = dscfg['step']
-
     phidp0, first_gates = pyart.correct.det_sys_phase_ray(
         radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, min_rcons=min_rcons,
         zmin=dscfg['Zmin'], zmax=dscfg['Zmax'], phidp_field=psidp_field,
@@ -745,7 +741,7 @@ def process_zdr_rain(procstatus, dscfg, radar_list=None):
             Default 20.
         Zmax : float. Dataset keyword
             maximum reflectivity to consider the bin as precipitation [dBZ]
-            Default 40.
+            Default 22.
         rhohvmin : float. Dataset keyword
             minimum RhoHV to consider the bin as precipitation
             Default 0.97
@@ -827,7 +823,7 @@ def process_zdr_rain(procstatus, dscfg, radar_list=None):
     rmin = 1000.
     rmax = 50000.
     zmin = 20.
-    zmax = 40.
+    zmax = 22.
     rhohvmin = 0.97
     phidpmax = 10.
     elmax = 20.
@@ -939,8 +935,7 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
 
         for ray in range(radar.nrays):
             field_dict['data'][ray, :], bin_edges = np.histogram(
-                radar.fields[field_name]['data'][ray, :].compressed(),
-                bins=bins)
+                field[ray, :].compressed(), bins=bins)
 
         radar_aux.add_field(field_name, field_dict)
 

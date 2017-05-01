@@ -244,13 +244,14 @@ echoFilter2 STRUCT 4
 # ==========================================================================================
 visibilityFilter STRUCT 4
     type STRING VIS_FILTER
-    datatype STRARR 6
+    datatype STRARR 7
         DEM:VIS
         PROC:dBZc
         PROC:dBZvc
         PROC:ZDRc
         PROC:PhiDPc
         PROC:RhoHVc
+        PROC:KDPc
     VISmin FLOAT 90.
     MAKE_GLOBAL INT 1
     
