@@ -37,8 +37,7 @@ Phase processing and attenuation correction
 
 .. autosummary::
     :toctree: generated/
-
-    process_estimate_phidp0
+    
     process_correct_phidp0
     process_smooth_phidp_single_window
     process_smooth_phidp_double_window
@@ -58,11 +57,11 @@ Monitoring, calibration and noise correction
     process_correct_noise_rhohv
     process_rhohv_rain
     process_zdr_rain
+    process_estimate_phidp0
     process_sun_hits
     process_selfconsistency_kdp_phidp
     process_selfconsistency_bias
-    process_monitoring
-    process_estimate_phidp0
+    process_monitoring    
     process_time_avg
     process_weighted_time_avg
     process_time_avg_flag

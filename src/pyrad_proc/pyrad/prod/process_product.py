@@ -1378,16 +1378,16 @@ def generate_vol_products(dataset, prdcfg):
         xval = []
         labels = []
         for i in range(nsteps-1):
-            yval_aux = []
-            xval_aux = []
+            yval_aux = np.ma.array([])
+            xval_aux = np.array([])
             for j in range(nele):
                 ele_target = ele_steps_vec[i]+j*ele_res
                 d_ele = np.abs(dataset.elevation['data']-ele_target)
                 ind_ele = np.where(d_ele < prdcfg['AngTol'])[0]
                 if len(ind_ele) == 0:
                     continue
-                yval_aux.extend(field_coverage[ind_ele])
-                xval_aux.extend(dataset.azimuth['data'][ind_ele])
+                yval_aux = np.ma.concatenate([yval_aux, field_coverage[ind_ele]])
+                xval_aux = np.concatenate([xval_aux, dataset.azimuth['data'][ind_ele]])
             yval.append(yval_aux)
             xval.append(xval_aux)
             labels.append('ele '+'{:.1f}'.format(ele_steps_vec[i])+'-' +
@@ -1587,6 +1587,10 @@ def generate_vol_products(dataset, prdcfg):
         # count and filter outliers
         quantiles_lim, values_lim = compute_quantiles(
             data, quantiles=[0.2, 99.8])
+        if values_lim.mask[0] == True or values_lim.mask[1] == True:
+            warn('No valid radar gates found in sector')
+            return None
+
         nsmall = np.count_nonzero(data.compressed() < values_lim[0])
         nlarge = np.count_nonzero(data.compressed() > values_lim[1])
         noutliers = nlarge+nsmall

@@ -359,12 +359,16 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
 
         datatype : list of string. Dataset keyword
             The input data types
+        fzl : float. Dataset keyword
+            Default freezing level height. Default 2000.
         rsmooth : float. Dataset keyword
             length of the smoothing window [m]. Default 1000.
         min_rhohv : float. Dataset keyword
             minimum valid RhoHV. Default 0.92
         max_phidp : float. Dataset keyword
             maximum valid PhiDP [deg]. Default 20.
+        ml_thickness : float. Dataset keyword
+            Melting layer thickness [m]. Default 700.
         rcell : float. Dataset keyword
             length of continuous precipitation to consider the precipitation
             cell a valid phidp segment [m]. Default 1000.
@@ -493,10 +497,6 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
         smooth_wind_len = int(rsmooth/r_res)
         min_rcons = int(rcell/r_res)
 
-        step = None
-        if 'step' in dscfg:
-            step = dscfg['step']
-
         refl_bias = pyart.correct.selfconsistency_bias(
             radar, dscfg['global_data'], min_rhohv=min_rhohv,
             max_phidp=max_phidp, smooth_wind_len=smooth_wind_len, doc=15,
@@ -581,10 +581,6 @@ def process_estimate_phidp0(procstatus, dscfg, radar_list=None):
     ind_rmax = np.where(radar.range['data'] < dscfg['rmax'])[0][-1]
     r_res = radar.range['data'][1]-radar.range['data'][0]
     min_rcons = int(dscfg['rcell']/r_res)
-
-    step = None
-    if 'step' in dscfg:
-        step = dscfg['step']
 
     phidp0, first_gates = pyart.correct.det_sys_phase_ray(
         radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, min_rcons=min_rcons,
@@ -745,7 +741,7 @@ def process_zdr_rain(procstatus, dscfg, radar_list=None):
             Default 20.
         Zmax : float. Dataset keyword
             maximum reflectivity to consider the bin as precipitation [dBZ]
-            Default 40.
+            Default 22.
         rhohvmin : float. Dataset keyword
             minimum RhoHV to consider the bin as precipitation
             Default 0.97
@@ -827,7 +823,7 @@ def process_zdr_rain(procstatus, dscfg, radar_list=None):
     rmin = 1000.
     rmax = 50000.
     zmin = 20.
-    zmax = 40.
+    zmax = 22.
     rhohvmin = 0.97
     phidpmax = 10.
     elmax = 20.
@@ -939,8 +935,7 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
 
         for ray in range(radar.nrays):
             field_dict['data'][ray, :], bin_edges = np.histogram(
-                radar.fields[field_name]['data'][ray, :].compressed(),
-                bins=bins)
+                field[ray, :].compressed(), bins=bins)
 
         radar_aux.add_field(field_name, field_dict)
 
