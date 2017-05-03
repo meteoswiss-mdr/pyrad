@@ -1743,9 +1743,9 @@ def velocity_limit(container=None, selection=0):
                 vel = container.get_nyquist_vel(0, check_uniform=False)
             return (-vel, vel)
         except LookupError:
-            return (-30., 30.)
+            return (-42., 42.)
     else:
-        return (-30., 30.)
+        return (-42., 42.)
 
 
 def spectrum_width_limit(container=None, selection=0):
@@ -1759,9 +1759,9 @@ def spectrum_width_limit(container=None, selection=0):
                 vel = container.get_nyquist_vel(0, check_uniform=False)
             return (0, vel)
         except LookupError:
-            return (0, 30.)
+            return (0., 4.)
     else:
-        return (0, 30.)
+        return (0., 4.)
 
 # map each field to a colormap
 
@@ -1902,7 +1902,7 @@ DEFAULT_FIELD_LIMITS = {
     signal_to_noise_ratio_vv: (-5., 30.),
     noisedBZ_hh: (-40., 10.),
     noisedBZ_vv: (-40., 10.),
-    reflectivity_bias: (-10., 10.),
+    reflectivity_bias: (-30., 30.),
 
     signal_power_hh: (-130., 0.),
     signal_power_vv: (-130., 0.),
@@ -1939,7 +1939,7 @@ DEFAULT_FIELD_LIMITS = {
     differential_reflectivity: (-1., 8.),
     corrected_differential_reflectivity: (-1., 8.),
     unfiltered_differential_reflectivity: (-1., 8.),
-    differential_reflectivity_in_rain: (-2., 2.),
+    differential_reflectivity_in_rain: (-10., 10.),
 
     cross_correlation_ratio: (0.7, 1.),
     corrected_cross_correlation_ratio: (0.7, 1.),
