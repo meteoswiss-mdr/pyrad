@@ -49,9 +49,9 @@ reflectivity_vv = 'reflectivity_vv'
 corrected_reflectivity_vv = 'corrected_reflectivity_vv'
 unfiltered_reflectivity_vv = 'unfiltered_reflectivity_vv'
 
-reflectivity_bias = signal_power_hh
+reflectivity_bias = 'reflectivity_bias'
 
-'reflectivity_bias' = 'signal_power_hh'
+signal_power_hh = 'signal_power_hh'
 signal_power_vv = 'signal_power_vv'
 
 sun_hit_power_h = 'sun_hit_power_h'
