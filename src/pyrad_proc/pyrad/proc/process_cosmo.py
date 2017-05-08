@@ -334,27 +334,35 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
         new_dataset = deepcopy(dscfg['global_data']['cosmo_radar'])
     new_dataset.fields = dict()
     if cosmo_type == 'TEMP':
-        new_dataset.add_field(field_names[0], cosmo_fields[0])
-        if not regular_grid:
-            # interpolate to current radar grid
-            cosmo_field_interp = interpol_field(
-                radar, new_dataset, field_names[0])
-            new_dataset = deepcopy(radar)
-            new_dataset.fields = dict()
-            new_dataset.add_field(field_names[0], cosmo_field_interp)
+        try:
+            new_dataset.add_field(field_names[0], cosmo_fields[0])
+            if not regular_grid:
+                # interpolate to current radar grid
+                cosmo_field_interp = interpol_field(
+                    radar, new_dataset, field_names[0])
+                new_dataset = deepcopy(radar)
+                new_dataset.fields = dict()
+                new_dataset.add_field(field_names[0], cosmo_field_interp)
+        except:
+            warn('Unable to add COSMO TEMP field to radar object')
+            return None, None
     else:
-        new_dataset.add_field(field_names[0], cosmo_fields[0])
-        new_dataset.add_field(field_names[1], cosmo_fields[1])
-        if not regular_grid:
-            # interpolate to current radar grid
-            speed_field_interp = interpol_field(
-                radar, new_dataset, field_names[0])
-            dir_field_interp = interpol_field(
-                radar, new_dataset, field_names[1])
-            new_dataset = deepcopy(radar)
-            new_dataset.fields = dict()
-            new_dataset.add_field(field_names[0], speed_field_interp)
-            new_dataset.add_field(field_names[0], dir_field_interp)
+        try:
+            new_dataset.add_field(field_names[0], cosmo_fields[0])
+            new_dataset.add_field(field_names[1], cosmo_fields[1])
+            if not regular_grid:
+                # interpolate to current radar grid
+                speed_field_interp = interpol_field(
+                    radar, new_dataset, field_names[0])
+                dir_field_interp = interpol_field(
+                    radar, new_dataset, field_names[1])
+                new_dataset = deepcopy(radar)
+                new_dataset.fields = dict()
+                new_dataset.add_field(field_names[0], speed_field_interp)
+                new_dataset.add_field(field_names[0], dir_field_interp)
+        except:
+            warn('Unable to add COSMO fields to radar object')
+            return None, None
 
     # debugging
     # print(" putting COSMO data in radar coordinates takes %s seconds "
