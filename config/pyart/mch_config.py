@@ -49,9 +49,9 @@ reflectivity_vv = 'reflectivity_vv'
 corrected_reflectivity_vv = 'corrected_reflectivity_vv'
 unfiltered_reflectivity_vv = 'unfiltered_reflectivity_vv'
 
-reflectivity_bias = 'reflectivity_bias'
+reflectivity_bias = signal_power_hh
 
-signal_power_hh = 'signal_power_hh'
+'reflectivity_bias' = 'signal_power_hh'
 signal_power_vv = 'signal_power_vv'
 
 sun_hit_power_h = 'sun_hit_power_h'
@@ -506,7 +506,7 @@ DEFAULT_METADATA = {
         'units': 'unitless'},
 
     'nyquist_velocity': {
-        'units': 'meters_per_second',
+        'units': 'm/s',
         'comments': "Unambiguous velocity",
         'meta_group': 'instrument_parameters',
         'long_name': 'Nyquist velocity'},
@@ -702,13 +702,13 @@ DEFAULT_METADATA = {
 
     # Velocity fields
     velocity: {
-        'units': 'meters_per_second',
+        'units': 'm/s',
         'standard_name': 'radial_velocity_of_scatterers_away_from_instrument',
         'long_name': 'Mean Doppler velocity',
         'coordinates': 'elevation azimuth range'},
 
     corrected_velocity: {
-        'units': 'meters_per_second',
+        'units': 'm/s',
         'standard_name': (
             'corrected_radial_velocity_of_scatterers_away_from_instrument'),
         'long_name': 'Corrected mean Doppler velocity',
@@ -716,13 +716,13 @@ DEFAULT_METADATA = {
 
     # Spectrum width fields
     spectrum_width: {
-        'units': 'meters_per_second',
+        'units': 'm/s',
         'standard_name': 'doppler_spectrum_width',
         'long_name': 'Doppler spectrum width',
         'coordinates': 'elevation azimuth range'},
 
     corrected_spectrum_width: {
-        'units': 'meters_per_second',
+        'units': 'm/s',
         'standard_name': 'corrected_doppler_spectrum_width',
         'long_name': 'Corrected Doppler spectrum width',
         'coordinates': 'elevation azimuth range'},
