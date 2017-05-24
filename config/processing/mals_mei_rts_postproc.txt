@@ -1,0 +1,47 @@
+# ---------------------------------
+# This is the config file for the processing of the Meiringen RW28 RTS data acquired
+# during the MALS_MEI_RTS scan performed offline in zueub222
+# ---------------------------------
+
+# Name of this configuration:
+# Will be used in product generation save path
+name STRING mals_mei_rts
+
+# ---------------------------------------------------------
+#  Raw data pathes
+# ---------------------------------------------------------
+
+# Base path of the raw data.
+# Note: Must have a trailing '/'
+# ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
+datapath STRING /data/DX50/rawdata/
+
+# Base path for cosmo data
+cosmopath STRING /data/cosmo/
+
+# Loading of saved datasets
+loadbasepath STRING /usr/data/pyrad_products/
+loadname STRING mals_mei_rts
+
+
+# --------------------------------------------
+# Output data
+# --------------------------------------------
+saveimgbasepath STRING /usr/data/pyrad_products/
+saveimg         INT 1
+imgformat       STRING png
+
+# --------------------------------------------------------
+# configuration files pathes
+# --------------------------------------------------------
+# Base path of configuration files
+configpath STRING $HOME/pyrad/config/
+
+# Configuration of the radar location and approach direction
+locationConfigFile STRING $HOME/pyrad/config/processing/mals_mei_rts_loc.txt
+
+# Configuration of the product generation
+productConfigFile STRING $HOME/pyrad/config/processing/mals_mei_rts_prod.txt
+
+# State after last run
+lastStateFile STRING $HOME/realtime_pyrad/mals_mei_rts_postproc_lastState.txt
