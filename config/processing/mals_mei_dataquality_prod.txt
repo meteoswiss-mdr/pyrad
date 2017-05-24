@@ -1,0 +1,835 @@
+#
+# Product generation configuration
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 31
+    l0:TEMP
+    l0:dBmu
+    l0:dBmvu
+    l1:sun_hits
+    l0:echoID
+    l1:echoFilter
+    l4:echoFilter2
+    l2:visibilityFilter
+    l5:visibilityFilter2
+    l3:Att_ZPhi 
+    l6:hydroclass
+    l4:RR_Z
+    l7:RR_hydro
+    l5:rgBRZ_RR_Z
+    l5:rgINT_RR_Z
+    l5:rgMER_RR_Z
+    l8:rgBRZ_RR_hydro
+    l8:rgINT_RR_hydro
+    l8:rgMER_RR_hydro
+    l7:dBZ_avg
+    l7:dBZv_avg
+    l7:PhiDP_avg
+    l7:flag_avg
+    l4:PhiDP0_estimation
+    l4:reflectivity_bias
+    l4:RhoHV_rain
+    l4:ZDR_rain
+    l5:monitoring_RhoHV
+    l5:monitoring_ZDR
+    l5:monitoring_Zh_bias
+    l5:monitoring_PhiDP0
+
+
+# ==========================================================================================
+#               COSMO data
+# ==========================================================================================
+#RAD2COSMO STRUCT 3
+#    type STRING COSMO_COORD
+#    datatype STRARR 1
+#        dBZ        
+#    products STRUCT 1        
+#        rad2cosmo STRUCT 2
+#            type  STRING SAVEVOL            
+#            voltype STRING cosmo_index
+
+TEMP STRUCT 6
+    type STRING COSMO_LOOKUP
+    datatype STRARR 1
+        dBZ        
+    cosmo_type STRING TEMP
+    regular_grid INT 0
+    lookup_table INT 1
+    MAKE_GLOBAL INT 1
+    
+# ==========================================================================================
+#                 secondary moments products
+# ==========================================================================================
+dBmu STRUCT 3
+    type STRING PWR
+    datatype STRARR 1
+        dBuZ
+    MAKE_GLOBAL INT 1
+
+dBmvu STRUCT 3
+    type STRING PWR
+    datatype STRARR 1
+        dBuZv
+    MAKE_GLOBAL INT 1
+
+
+# ==========================================================================================
+#                 sun hits
+# ==========================================================================================
+sun_hits STRUCT 6
+    type STRING SUN_HITS
+    datatype STRARR 3
+        PROC:dBm
+        PROC:dBmv
+        ZDRu
+    rmin FLOAT 20000.
+    sun_hits_dir STRING SUN_HITS  # must be the same as product WRITE_SUN_HITS
+    ndays INT 3
+    products STRUCT 30
+        PWRH STRUCT 3
+            type STRING BSCOPE_IMAGE
+            anglenr INT 0
+            voltype STRING dBm
+        PWRV STRUCT 3
+            type STRING BSCOPE_IMAGE
+            anglenr INT 0
+            voltype STRING dBmv
+        ZDR STRUCT 3
+            type STRING BSCOPE_IMAGE
+            anglenr INT 0
+            voltype STRING ZDRu
+        PWRH_POS STRUCT 3
+            type STRING BSCOPE_IMAGE
+            anglenr INT 0
+            voltype STRING sun_pos_h
+        PWRV_POS STRUCT 3
+            type STRING BSCOPE_IMAGE
+            anglenr INT 0
+            voltype STRING sun_pos_v
+        ZDR_POS STRUCT 3
+            type STRING BSCOPE_IMAGE
+            anglenr INT 0
+            voltype STRING sun_pos_zdr
+        SUN_HITS_PH STRUCT 2
+            type STRING PLOT_SUN_HITS
+            voltype STRING dBm_sun_hit
+        SUN_HITS_PV STRUCT 2
+            type STRING PLOT_SUN_HITS
+            voltype STRING dBmv_sun_hit
+        SUN_HITS_ZDR STRUCT 2
+            type STRING PLOT_SUN_HITS
+            voltype STRING ZDR_sun_hit
+        SUN_HITS STRUCT 1
+            type STRING WRITE_SUN_HITS
+        SUN_RETRIEVAL STRUCT 1
+            type STRING WRITE_SUN_RETRIEVAL
+        SUN_RETRIEVAL_PH STRUCT 2
+            type STRING PLOT_SUN_RETRIEVAL
+            voltype STRING dBm_sun_est
+        SUN_RETRIEVAL_PV STRUCT 2
+            type STRING PLOT_SUN_RETRIEVAL
+            voltype STRING dBmv_sun_est
+        SUN_RETRIEVAL_ZDR STRUCT 2
+            type STRING PLOT_SUN_RETRIEVAL
+            voltype STRING ZDR_sun_est
+        SUN_RETRIEVAL_PH_TS STRUCT 3
+            type STRING PLOT_SUN_RETRIEVAL_TS
+            voltype STRING dBm_sun_est
+            prdid STRING SUN_RETRIEVAL
+        SUN_RETRIEVAL_RX_BIAS_H_TS STRUCT 3
+            type STRING PLOT_SUN_RETRIEVAL_TS
+            voltype STRING rx_bias_h
+            prdid STRING SUN_RETRIEVAL
+        SUN_RETRIEVAL_AZ_BIAS_H_TS STRUCT 3
+            type STRING PLOT_SUN_RETRIEVAL_TS
+            voltype STRING az_bias_h
+            prdid STRING SUN_RETRIEVAL
+        SUN_RETRIEVAL_EL_BIAS_H_TS STRUCT 3
+            type STRING PLOT_SUN_RETRIEVAL_TS
+            voltype STRING el_bias_h
+            prdid STRING SUN_RETRIEVAL
+        SUN_RETRIEVAL_AZ_WIDTH_H_TS STRUCT 3
+            type STRING PLOT_SUN_RETRIEVAL_TS
+            voltype STRING az_width_h
+            prdid STRING SUN_RETRIEVAL
+        SUN_RETRIEVAL_EL_WIDTH_H_TS STRUCT 3
+            type STRING PLOT_SUN_RETRIEVAL_TS
+            voltype STRING el_width_h
+            prdid STRING SUN_RETRIEVAL
+        SUN_RETRIEVAL_NHITS_H_TS STRUCT 3
+            type STRING PLOT_SUN_RETRIEVAL_TS
+            voltype STRING nhits_h
+            prdid STRING SUN_RETRIEVAL
+        SUN_RETRIEVAL_PV_TS STRUCT 3
+            type STRING PLOT_SUN_RETRIEVAL_TS
+            voltype STRING dBmv_sun_est
+            prdid STRING SUN_RETRIEVAL
+        SUN_RETRIEVAL_RX_BIAS_V_TS STRUCT 3
+            type STRING PLOT_SUN_RETRIEVAL_TS
+            voltype STRING rx_bias_v
+            prdid STRING SUN_RETRIEVAL
+        SUN_RETRIEVAL_AZ_BIAS_V_TS STRUCT 3
+            type STRING PLOT_SUN_RETRIEVAL_TS
+            voltype STRING az_bias_v
+            prdid STRING SUN_RETRIEVAL
+        SUN_RETRIEVAL_EL_BIAS_V_TS STRUCT 3
+            type STRING PLOT_SUN_RETRIEVAL_TS
+            voltype STRING el_bias_v
+            prdid STRING SUN_RETRIEVAL
+        SUN_RETRIEVAL_AZ_WIDTH_V_TS STRUCT 3
+            type STRING PLOT_SUN_RETRIEVAL_TS
+            voltype STRING az_width_v
+            prdid STRING SUN_RETRIEVAL
+        SUN_RETRIEVAL_EL_WIDTH_V_TS STRUCT 3
+            type STRING PLOT_SUN_RETRIEVAL_TS
+            voltype STRING el_width_v
+            prdid STRING SUN_RETRIEVAL
+        SUN_RETRIEVAL_NHITS_V_TS STRUCT 3
+            type STRING PLOT_SUN_RETRIEVAL_TS
+            voltype STRING nhits_v
+            prdid STRING SUN_RETRIEVAL
+        SUN_RETRIEVAL_ZDR_TS STRUCT 3
+            type STRING PLOT_SUN_RETRIEVAL_TS
+            voltype STRING ZDR_sun_est
+            prdid STRING SUN_RETRIEVAL
+        SUN_RETRIEVAL_NHITS_ZDR_TS STRUCT 3
+            type STRING PLOT_SUN_RETRIEVAL_TS
+            voltype STRING nhits_zdr
+            prdid STRING SUN_RETRIEVAL
+
+
+# ==========================================================================================
+#                 echo identification
+# ==========================================================================================
+echoID STRUCT 3
+    type STRING SAN
+    datatype STRARR 4
+        dBZ
+        ZDR
+        uPhiDP
+        RhoHV
+    MAKE_GLOBAL INT 1
+
+
+# ==========================================================================================
+#                 clutter and noise suppression
+# ==========================================================================================
+# echo type 3 : precip, 2 : clutter, 1 : noise
+echoFilter STRUCT 4
+    type STRING ECHO_FILTER
+    datatype STRARR 7
+        PROC:echoID
+        dBZ
+        dBZv
+        ZDR
+        RhoHV
+        PhiDP
+        KDP
+    echo_type INT 3
+    MAKE_GLOBAL INT 1
+
+echoFilter2 STRUCT 4
+    type STRING ECHO_FILTER
+    datatype STRARR 2
+        PROC:echoID
+        PROC:Ah
+    echo_type INT 3
+    MAKE_GLOBAL INT 1
+
+
+# ==========================================================================================
+#                 visibility filter
+# ==========================================================================================
+visibilityFilter STRUCT 4
+    type STRING VIS_FILTER
+    datatype STRARR 7
+        DEM:VIS
+        PROC:dBZc
+        PROC:dBZvc
+        PROC:ZDRc
+        PROC:PhiDPc
+        PROC:RhoHVc
+        PROC:KDPc
+    VISmin FLOAT 90.
+    MAKE_GLOBAL INT 1
+    
+visibilityFilter2 STRUCT 4
+    type STRING VIS_FILTER
+    datatype STRARR 2
+        DEM:VIS
+        PROC:Ahc
+    VISmin FLOAT 90.
+    MAKE_GLOBAL INT 1
+
+
+# ==========================================================================================
+#                 Attenuation
+# ==========================================================================================
+Att_ZPhi STRUCT 5
+    type STRING ATTENUATION
+    datatype STRARR 4
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:PhiDPc
+        PROC:TEMP
+    ATT_METHOD STRING ZPhi
+    fzl FLOAT 2000.
+    MAKE_GLOBAL INT 1
+
+# ==========================================================================================
+#                 hydrometeor classification products
+# ==========================================================================================
+hydroclass STRUCT 5
+    type STRING HYDROCLASS
+    datatype STRARR 5
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:RhoHVc
+        PROC:KDPc
+        PROC:TEMP
+    HYDRO_METHOD STRING SEMISUPERVISED
+    RADARCENTROIDS STRING DX50
+    MAKE_GLOBAL INT 1
+
+
+# ==========================================================================================
+#               rainfall rate
+# ==========================================================================================
+RR_Z STRUCT 5
+    type STRING RAINRATE
+    datatype STRARR 1
+        PROC:dBZc
+    RR_METHOD STRING Z
+    MAKE_GLOBAL INT 1
+    products STRUCT 2
+        SAVEVOL STRUCT 2
+            type  STRING SAVEVOL
+            voltype STRING RR
+        EL003_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 1
+            voltype STRING RR
+            
+RR_hydro STRUCT 5
+    type STRING RAINRATE
+    datatype STRARR 3
+        PROC:dBZc
+        PROC:Ahc
+        PROC:hydro
+    RR_METHOD STRING hydro
+    MAKE_GLOBAL INT 1
+    products STRUCT 2
+        SAVEVOL STRUCT 2
+            type  STRING SAVEVOL
+            voltype STRING RR
+        EL003_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 1
+            voltype STRING RR
+
+
+# ==========================================================================================
+#               sensor comparison
+# ==========================================================================================
+
+# ---------------------- rain gauge BRZ -------------------------------------------
+# 567.0, 46.741, 8.061 BRZ (Brienz)
+rgBRZ_RR_Z STRUCT 12
+    type STRING POINT_MEASUREMENT
+    datatype STRARR 1
+        PROC:RR
+    latlon INT 1
+    truealt INT 0
+    lat FLOAT 46.741
+    lon FLOAT 8.061
+    alt FLOAT 567.0
+    ele FLOAT 3.
+    AziTol FLOAT 1.
+    EleTol FLOAT 1.
+    RngTol FLOAT 30.
+    products STRUCT 4
+        RR STRUCT 1
+            type STRING PLOT_AND_WRITE_POINT
+        RRcomp STRUCT 4
+            type STRING COMPARE_POINT
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING BRZ
+        RRcumcomp STRUCT 4
+            type STRING COMPARE_CUMULATIVE_POINT
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING BRZ
+        RRcum3600s STRUCT 6
+            type STRING COMPARE_TIME_AVG
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING BRZ
+            cum_time INT 3600
+            base_time INT 0
+
+# ---------------------- rain gauge INT -------------------------------------------
+# 577.0, 46.672, 7.870 (Interlaken)
+rgINT_RR_Z STRUCT 12
+    type STRING POINT_MEASUREMENT
+    datatype STRARR 1
+        PROC:RR
+    latlon INT 1
+    truealt INT 0
+    lat FLOAT 46.672
+    lon FLOAT 7.870
+    alt FLOAT 577.0
+    ele FLOAT 3.
+    AziTol FLOAT 1.
+    EleTol FLOAT 1.
+    RngTol FLOAT 30.
+    products STRUCT 4
+        RR STRUCT 1
+            type STRING PLOT_AND_WRITE_POINT
+        RRcomp STRUCT 4
+            type STRING COMPARE_POINT
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING INT
+        RRcumcomp STRUCT 4
+            type STRING COMPARE_CUMULATIVE_POINT
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING INT
+        RRcum3600s STRUCT 6
+            type STRING COMPARE_TIME_AVG
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING INT
+            cum_time INT 3600
+            base_time INT 0
+
+# ---------------------- rain gauge MER -------------------------------------------
+# 589.0, 46.732, 8.169 (Meiringen)
+rgMER_RR_Z STRUCT 12
+    type STRING POINT_MEASUREMENT
+    datatype STRARR 1
+        PROC:RR
+    latlon INT 1
+    truealt INT 0
+    lat FLOAT 46.732
+    lon FLOAT 8.169
+    alt FLOAT 4589.0
+    ele FLOAT 3.
+    AziTol FLOAT 1.
+    EleTol FLOAT 1.
+    RngTol FLOAT 30.
+    products STRUCT 4
+        RR STRUCT 1
+            type STRING PLOT_AND_WRITE_POINT
+        RRcomp STRUCT 4
+            type STRING COMPARE_POINT
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING MER
+        RRcumcomp STRUCT 4
+            type STRING COMPARE_CUMULATIVE_POINT
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING MER
+        RRcum3600s STRUCT 6
+            type STRING COMPARE_TIME_AVG
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING MER
+            cum_time INT 3600
+            base_time INT 0
+
+            
+# ---------------------- rain gauge BRZ -------------------------------------------
+# 567.0, 46.741, 8.061 BRZ (Brienz)
+rgBRZ_RR_hydro STRUCT 12
+    type STRING POINT_MEASUREMENT
+    datatype STRARR 1
+        PROC:RR
+    latlon INT 1
+    truealt INT 0
+    lat FLOAT 46.741
+    lon FLOAT 8.061
+    alt FLOAT 567.0
+    ele FLOAT 3.
+    AziTol FLOAT 1.
+    EleTol FLOAT 1.
+    RngTol FLOAT 30.
+    products STRUCT 4
+        RR STRUCT 1
+            type STRING PLOT_AND_WRITE_POINT
+        RRcomp STRUCT 4
+            type STRING COMPARE_POINT
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING BRZ
+        RRcumcomp STRUCT 4
+            type STRING COMPARE_CUMULATIVE_POINT
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING BRZ
+        RRcum3600s STRUCT 6
+            type STRING COMPARE_TIME_AVG
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING BRZ
+            cum_time INT 3600
+            base_time INT 0
+
+# ---------------------- rain gauge INT -------------------------------------------
+# 577.0, 46.672, 7.870 (Interlaken)
+rgINT_RR_hydro STRUCT 12
+    type STRING POINT_MEASUREMENT
+    datatype STRARR 1
+        PROC:RR
+    latlon INT 1
+    truealt INT 0
+    lat FLOAT 46.672
+    lon FLOAT 7.870
+    alt FLOAT 577.0
+    ele FLOAT 3.
+    AziTol FLOAT 1.
+    EleTol FLOAT 1.
+    RngTol FLOAT 30.
+    products STRUCT 4
+        RR STRUCT 1
+            type STRING PLOT_AND_WRITE_POINT
+        RRcomp STRUCT 4
+            type STRING COMPARE_POINT
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING INT
+        RRcumcomp STRUCT 4
+            type STRING COMPARE_CUMULATIVE_POINT
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING INT
+        RRcum3600s STRUCT 6
+            type STRING COMPARE_TIME_AVG
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING INT
+            cum_time INT 3600
+            base_time INT 0
+
+# ---------------------- rain gauge MER -------------------------------------------
+# 589.0, 46.732, 8.169 (Meiringen)
+rgMER_RR_hydro STRUCT 12
+    type STRING POINT_MEASUREMENT
+    datatype STRARR 1
+        PROC:RR
+    latlon INT 1
+    truealt INT 0
+    lat FLOAT 46.732
+    lon FLOAT 8.169
+    alt FLOAT 4589.0
+    ele FLOAT 3.
+    AziTol FLOAT 1.
+    EleTol FLOAT 1.
+    RngTol FLOAT 30.
+    products STRUCT 4
+        RR STRUCT 1
+            type STRING PLOT_AND_WRITE_POINT
+        RRcomp STRUCT 4
+            type STRING COMPARE_POINT
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING MER
+        RRcumcomp STRUCT 4
+            type STRING COMPARE_CUMULATIVE_POINT
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING MER
+        RRcum3600s STRUCT 6
+            type STRING COMPARE_TIME_AVG
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING MER
+            cum_time INT 3600
+            base_time INT 0
+
+
+# ==========================================================================================
+#                 temporal average
+# ==========================================================================================
+dBZ_avg STRUCT 6
+    type STRING TIME_AVG
+    datatype STRARR 1
+        PROC:dBZc
+    start_average FLOAT 0.
+    period FLOAT 3600.
+    lin_trans INT 1
+    products STRUCT 1
+        SAVEVOL STRUCT 2
+            type  STRING SAVEVOL
+            voltype STRING dBZc
+            
+dBZv_avg STRUCT 6
+    type STRING TIME_AVG
+    datatype STRARR 1
+        PROC:dBZvc
+    start_average FLOAT 0.
+    period FLOAT 3600.
+    lin_trans INT 1
+    products STRUCT 1
+        SAVEVOL STRUCT 2
+            type  STRING SAVEVOL
+            voltype STRING dBZvc
+
+PhiDP_avg STRUCT 5
+    type STRING WEIGHTED_TIME_AVG
+    datatype STRARR 2
+        PROC:dBZc
+        PROC:PhiDPc
+    start_average FLOAT 0.
+    period FLOAT 3600.
+    products STRUCT 1
+        SAVEVOL STRUCT 2
+            type  STRING SAVEVOL
+            voltype STRING PhiDPc
+
+flag_avg STRUCT 6
+    type STRING FLAG_TIME_AVG
+    datatype STRARR 3
+        PROC:PhiDPc
+        PROC:echoID
+        PROC:hydro
+    start_average FLOAT 0.
+    period FLOAT 3600.
+    phidpmax FLOAT 60.
+    products STRUCT 1
+        SAVEVOL STRUCT 2
+            type  STRING SAVEVOL
+            voltype STRING time_avg_flag
+
+
+# ==========================================================================================
+#                 PhiDP0
+# ==========================================================================================
+PhiDP0_estimation STRUCT 8
+    type STRING PHIDP0_ESTIMATE
+    datatype STRARR 2
+        uPhiDP
+        PROC:dBZc
+    rmin FLOAT 1000.
+    rmax FLOAT 50000.
+    rcell FLOAT 1000.
+    Zmin FLOAT 20.
+    Zmax FLOAT 40.
+    MAKE_GLOBAL INT 1
+
+
+# ==========================================================================================
+#                 selfconsistency products
+# ==========================================================================================
+reflectivity_bias STRUCT 5
+    type STRING SELFCONSISTENCY_BIAS
+    datatype STRARR 5
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:PhiDPc
+        PROC:RhoHVc
+        PROC:TEMP
+    fzl FLOAT 2000.
+    rsmooth FLOAT 1000.
+    MAKE_GLOBAL INT 1
+
+
+# ==========================================================================================
+#                 RhoHV in rain
+# ==========================================================================================
+RhoHV_rain STRUCT 9
+    type STRING RHOHV_RAIN
+    datatype STRARR 3
+        PROC:RhoHVc
+        PROC:dBZc
+        PROC:TEMP
+    fzl FLOAT 2000.
+    rmin FLOAT 1000.
+    rmax FLOAT 50000.
+    Zmin FLOAT 20.
+    Zmax FLOAT 40.
+    ml_thickness FLOAT 700.
+    MAKE_GLOBAL INT 1
+
+
+# ==========================================================================================
+#                 ZDR in rain
+# ==========================================================================================
+ZDR_rain STRUCT 12
+    type STRING ZDR_RAIN
+    datatype STRARR 5
+        PROC:ZDRc
+        PROC:PhiDPc
+        PROC:RhoHVc
+        PROC:dBZc
+        PROC:TEMP
+    fzl FLOAT 2000.
+    rmin FLOAT 1000.
+    rmax FLOAT 50000.
+    Zmin FLOAT 20.
+    Zmax FLOAT 22.
+    RhoHVmin FLOAT 0.97
+    PhiDPmax FLOAT 10.
+    elmax FLOAT 20.
+    ml_thickness FLOAT 700.
+    MAKE_GLOBAL INT 1
+
+
+# ==========================================================================================
+#                 monitoring
+# ==========================================================================================
+monitoring_RhoHV STRUCT 4
+    type STRING MONITORING
+    datatype STRARR 1
+        PROC:RhoHV_rain
+    step FLOAT 0.001
+    products STRUCT 5        
+        VOL_TS STRUCT 5
+            type STRING VOL_TS
+            hist_type STRING cumulative
+            voltype STRING RhoHV_rain
+            quantiles FLTARR 3
+                65.
+                80.
+                95.
+            ref_value FLOAT 0.99
+        VOL_HISTOGRAM STRUCT 3
+            type STRING VOL_HISTOGRAM
+            hist_type STRING cumulative
+            voltype STRING RhoHV_rain        
+        EL003_0_DENSITY STRUCT 6
+            type STRING ANGULAR_DENSITY
+            hist_type STRING cumulative
+            voltype STRING RhoHV_rain
+            anglenr INT 1
+            quantiles FLTARR 3
+                65.
+                80.
+                95.
+            ref_value FLOAT 0.99
+        EL005_7_DENSITY STRUCT 6
+            type STRING ANGULAR_DENSITY
+            hist_type STRING cumulative
+            voltype STRING RhoHV_rain
+            anglenr INT 2
+            quantiles FLTARR 3
+                65.
+                80.
+                95.
+            ref_value FLOAT 0.99
+        EL008_2_DENSITY STRUCT 6
+            type STRING ANGULAR_DENSITY
+            hist_type STRING cumulative
+            voltype STRING RhoHV_rain
+            anglenr INT 3
+            quantiles FLTARR 3
+                65.
+                80.
+                95.
+            ref_value FLOAT 0.99
+
+monitoring_ZDR STRUCT 4
+    type STRING MONITORING
+    datatype STRARR 1
+        PROC:ZDR_rain
+    step FLOAT 0.05
+    products STRUCT 5        
+        VOL_TS STRUCT 4
+            type STRING VOL_TS
+            hist_type STRING cumulative
+            voltype STRING ZDR_rain         .
+            ref_value FLOAT 0.2
+        VOL_HISTOGRAM STRUCT 3
+            type STRING VOL_HISTOGRAM
+            hist_type STRING cumulative
+            voltype STRING ZDR_rain        
+        EL003_0_DENSITY STRUCT 5
+            type STRING ANGULAR_DENSITY
+            hist_type STRING cumulative
+            voltype STRING ZDR_rain
+            anglenr INT 1
+            ref_value FLOAT 0.2
+        EL005_7_DENSITY STRUCT 5
+            type STRING ANGULAR_DENSITY
+            hist_type STRING cumulative
+            voltype STRING ZDR_rain
+            anglenr INT 2
+            ref_value FLOAT 0.2
+        EL008_2_DENSITY STRUCT 5
+            type STRING ANGULAR_DENSITY
+            hist_type STRING cumulative
+            voltype STRING ZDR_rain
+            anglenr INT 3
+            ref_value FLOAT 0.2
+
+monitoring_Zh_bias STRUCT 4
+    type STRING MONITORING
+    datatype STRARR 1
+        PROC:dBZ_bias
+    step FLOAT 0.5
+    products STRUCT 5        
+        VOL_TS STRUCT 4
+            type STRING VOL_TS
+            hist_type STRING cumulative
+            voltype STRING dBZ_bias         .
+            ref_value FLOAT 0.
+        VOL_HISTOGRAM STRUCT 3
+            type STRING VOL_HISTOGRAM
+            hist_type STRING cumulative
+            voltype STRING dBZ_bias        
+        EL003_0_DENSITY STRUCT 5
+            type STRING ANGULAR_DENSITY
+            hist_type STRING cumulative
+            voltype STRING dBZ_bias
+            anglenr INT 1
+            ref_value FLOAT 0.
+        EL005_7_DENSITY STRUCT 5
+            type STRING ANGULAR_DENSITY
+            hist_type STRING cumulative
+            voltype STRING dBZ_bias
+            anglenr INT 2
+            ref_value FLOAT 0.
+        EL008_2_DENSITY STRUCT 5
+            type STRING ANGULAR_DENSITY
+            hist_type STRING cumulative
+            voltype STRING dBZ_bias
+            anglenr INT 3
+            ref_value FLOAT 0.
+
+monitoring_PhiDP0 STRUCT 4
+    type STRING MONITORING
+    datatype STRARR 1
+        PROC:PhiDP0
+    step FLOAT 1.
+    products STRUCT 5        
+        VOL_TS STRUCT 4
+            type STRING VOL_TS
+            hist_type STRING cumulative
+            voltype STRING PhiDP0         .
+            ref_value FLOAT 0.
+        VOL_HISTOGRAM STRUCT 3
+            type STRING VOL_HISTOGRAM
+            hist_type STRING cumulative
+            voltype STRING PhiDP0        
+        EL003_0_DENSITY STRUCT 5
+            type STRING ANGULAR_DENSITY
+            hist_type STRING cumulative
+            voltype STRING PhiDP0
+            anglenr INT 1
+            ref_value FLOAT 0.
+        EL005_7_DENSITY STRUCT 5
+            type STRING ANGULAR_DENSITY
+            hist_type STRING cumulative
+            voltype STRING PhiDP0
+            anglenr INT 2
+            ref_value FLOAT 0.
+        EL008_2_DENSITY STRUCT 5
+            type STRING ANGULAR_DENSITY
+            hist_type STRING cumulative
+            voltype STRING PhiDP0
+            anglenr INT 3
+            ref_value FLOAT 0.
