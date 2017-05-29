@@ -145,11 +145,20 @@ rain_rate = 'rain_rate'
 radar_estimated_rain_rate = 'radar_estimated_rain_rate'
 radar_echo_classification = 'radar_echo_classification'
 radar_echo_id = 'radar_echo_id'
+
+# attenuation
 specific_attenuation = 'specific_attenuation'
 corrected_specific_attenuation = 'corrected_specific_attenuation'
+path_integrated_attenuation = 'path_integrated_attenuation'
+corrected_path_integrated_attenuation = (
+    'corrected_path_integrated_attenuation')
 specific_differential_attenuation = 'specific_differential_attenuation'
 corrected_specific_differential_attenuation = (
     'corrected_specific_differential_attenuation')
+path_integrated_differential_attenuation = (
+    'path_integrated_differential_attenuation')
+corrected_path_integrated_differential_attenuation = (
+    'corrected_path_integrated_differential_attenuation')
 
 sun_hit_h = 'sun_hit_h'
 sun_hit_v = 'sun_hit_v'
@@ -304,10 +313,17 @@ DEFAULT_FIELD_NAMES = {
     'radar_echo_classification': radar_echo_classification,
     'radar_echo_id': radar_echo_id,
     'specific_attenuation': specific_attenuation,
+    'path_integrated_attenuation': path_integrated_attenuation,
     'specific_differential_attenuation': specific_differential_attenuation,
+    'path_integrated_differential_attenuation': (
+        path_integrated_differential_attenuation),
     'corrected_specific_attenuation': corrected_specific_attenuation,
+    'corrected_path_integrated_attenuation': (
+        corrected_path_integrated_attenuation),
     'corrected_specific_differential_attenuation': (
         corrected_specific_differential_attenuation),
+    'corrected_path_integrated_differential_attenuation': (
+        corrected_path_integrated_differential_attenuation),
     'temperature': temperature,
     'iso0': iso0,
     'cosmo_index': cosmo_index,
@@ -951,11 +967,23 @@ DEFAULT_METADATA = {
         'standard_name': 'specific_attenuation',
         'long_name': 'Specific attenuation',
         'coordinates': 'elevation azimuth range'},
+        
+    path_integrated_attenuation: {
+        'units': 'dB',
+        'standard_name': 'path_integrated_attenuation',
+        'long_name': 'Path integrated attenuation',
+        'coordinates': 'elevation azimuth range'},
 
     specific_differential_attenuation: {
         'units': 'dB/km',
         'standard_name': 'specific_differential_attenuation',
         'long_name': 'Specific differential attenuation',
+        'coordinates': 'elevation azimuth range'},
+        
+    path_integrated_differential_attenuation: {
+        'units': 'dB',
+        'standard_name': 'path_integrated_differential_attenuation',
+        'long_name': 'Path integrated differential attenuation',
         'coordinates': 'elevation azimuth range'},
 
     corrected_specific_attenuation: {
@@ -963,11 +991,23 @@ DEFAULT_METADATA = {
         'standard_name': 'corrected_specific_attenuation',
         'long_name': 'Corrected specific attenuation',
         'coordinates': 'elevation azimuth range'},
+        
+    corrected_path_integrated_attenuation: {
+        'units': 'dB',
+        'standard_name': 'corrected_path_integrated_attenuation',
+        'long_name': 'Corrected path integrated attenuation',
+        'coordinates': 'elevation azimuth range'},
 
     corrected_specific_differential_attenuation: {
         'units': 'dB/km',
         'standard_name': 'corrected_specific_differential_attenuation',
         'long_name': 'Corrected specific differential attenuation',
+        'coordinates': 'elevation azimuth range'},
+        
+    corrected_path_integrated_differential_attenuation: {
+        'units': 'dB',
+        'standard_name': 'corrected_path_integrated_differential_attenuation',
+        'long_name': 'Corrected path integrated differential attenuation',
         'coordinates': 'elevation azimuth range'},
 
     number_of_samples: {
@@ -1859,9 +1899,13 @@ DEFAULT_FIELD_COLORMAP = {
     radar_echo_id: 'pyart_LangRainbow12',
 
     specific_attenuation: 'pyart_Carbone17',
+    path_integrated_attenuation: 'pyart_Carbone17',
     specific_differential_attenuation: 'pyart_Carbone17',
+    path_integrated_differential_attenuation: 'pyart_Carbone17',
     corrected_specific_attenuation: 'pyart_Carbone17',
+    corrected_path_integrated_attenuation: 'pyart_Carbone17',
     corrected_specific_differential_attenuation: 'pyart_Carbone17',
+    corrected_path_integrated_differential_attenuation: 'pyart_Carbone17',
 
     differential_phase_texture: 'pyart_BlueBrown11',
     differential_reflectivity_texture: 'pyart_BlueBrown11',
@@ -1978,9 +2022,13 @@ DEFAULT_FIELD_LIMITS = {
 
 
     specific_attenuation: (0., 1.),
+    path_integrated_attenuation: (0., 20.),
     specific_differential_attenuation: (0., 0.3),
+    path_integrated_differential_attenuation: (0., 3.),
     corrected_specific_attenuation: (0., 1.),
+    corrected_path_integrated_attenuation: (0., 20.),
     corrected_specific_differential_attenuation: (0., 0.3),
+    corrected_path_integrated_differential_attenuation: (0., 3.),
 
     differential_phase_texture: (0, 180.),
 

@@ -761,31 +761,34 @@ def process_attenuation(procstatus, dscfg, radar_list=None):
             'Must be one of the following: [ZPhi, Philin]')
 
     if att_method == 'ZPhi':
-        spec_at, cor_z, spec_diff_at, cor_zdr = (
+        spec_at, pia, cor_z, spec_diff_at, pida, cor_zdr = (
             pyart.correct.calculate_attenuation_zphi(
                 radar, doc=15, fzl=fzl, smooth_window_len=0, a_coef=None,
                 beta=None, c=None, d=None, refl_field=refl, phidp_field=phidp,
                 zdr_field=zdr, temp_field=temp, spec_at_field=None,
-                corr_refl_field=None, spec_diff_at_field=None,
-                corr_zdr_field=None))
+                pia_field=None, corr_refl_field=None, spec_diff_at_field=None,
+                pida_field=None, corr_zdr_field=None))
     elif att_method == 'Philin':
-        spec_at, cor_z, spec_diff_at, cor_zdr = (
+        spec_at, pia, cor_z, spec_diff_at, pida, cor_zdr = (
             pyart.correct.calculate_attenuation_philinear(
                 radar, doc=15, fzl=fzl, pia_coef=None, pida_coef=None,
                 refl_field=refl, phidp_field=phidp, zdr_field=zdr,
-                temp_field=temp, spec_at_field=None, corr_refl_field=None,
-                spec_diff_at_field=None, corr_zdr_field=None))
+                temp_field=temp, spec_at_field=None, pia_field=None,
+                corr_refl_field=None, spec_diff_at_field=None,
+                pida_field=None, corr_zdr_field=None))
 
     # prepare for exit
     new_dataset = deepcopy(radar)
     new_dataset.fields = dict()
 
     new_dataset.add_field('specific_attenuation', spec_at)
+    new_dataset.add_field('path_integrated_attenuation', pia)
     new_dataset.add_field('corrected_reflectivity', cor_z)
 
     if (spec_diff_at is not None) and (cor_zdr is not None):
         new_dataset.add_field(
             'specific_differential_attenuation', spec_diff_at)
+        new_dataset.add_field('path_integrated_differential_attenuation', pia)    
         new_dataset.add_field('corrected_differential_reflectivity', cor_zdr)
     else:
         warn(

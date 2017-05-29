@@ -381,10 +381,18 @@ def get_fieldname_pyart(datatype):
         field_name = 'specific_attenuation'
     elif datatype == 'Ahc':
         field_name = 'corrected_specific_attenuation'
+    elif datatype == 'PIA':
+        field_name = 'path_integrated_attenuation'
+    elif datatype == 'PIAc':
+        field_name = 'corrected_path_integrated_attenuation'
     elif datatype == 'Adp':
         field_name = 'specific_differential_attenuation'
     elif datatype == 'Adpc':
         field_name = 'corrected_specific_differential_attenuation'
+    elif datatype == 'PIDA':
+        field_name = 'path_integrated_differential_attenuation'
+    elif datatype == 'PIDAc':
+        field_name = 'corrected_path_integrated_differential_attenuation'
 
     elif datatype == 'TEMP':
         field_name = 'temperature'
