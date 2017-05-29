@@ -233,9 +233,9 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
         # =====================================================================
         # Compute statistics and get number of valid data
         if data_is_log:
-            vals_lin = 10.**(cell_vals/10.)
+            vals_lin = np.ma.power(10., cell_vals/10.)
             val_mean = np.ma.mean(vals_lin)
-            val_mean = 10. * np.log10(val_mean)
+            val_mean = 10. * np.ma.log10(val_mean)
         else:
             val_mean = np.ma.mean(cell_vals)
         val_min = np.ma.min(cell_vals)
