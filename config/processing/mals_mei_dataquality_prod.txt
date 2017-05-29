@@ -4,7 +4,8 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 30
+dataSetList STRARR 31
+    l0:TEMP
     l0:dBmu
     l0:dBmvu
     l1:sun_hits
@@ -17,12 +18,12 @@ dataSetList STRARR 30
     l6:hydroclass
     l4:RR_Z
     l7:RR_hydro
-    l5:rgLUZ_RR_Z
-    l5:rgPIL_RR_Z
-    l5:rgCHZ_RR_Z
-    l8:rgLUZ_RR_hydro
-    l8:rgPIL_RR_hydro
-    l8:rgCHZ_RR_hydro
+    l5:rgBRZ_RR_Z
+    l5:rgINT_RR_Z
+    l5:rgMER_RR_Z
+    l8:rgBRZ_RR_hydro
+    l8:rgINT_RR_hydro
+    l8:rgMER_RR_hydro
     l7:dBZ_avg
     l7:dBZv_avg
     l7:PhiDP_avg
@@ -37,6 +38,27 @@ dataSetList STRARR 30
     l5:monitoring_PhiDP0
 
 
+# ==========================================================================================
+#               COSMO data
+# ==========================================================================================
+#RAD2COSMO STRUCT 3
+#    type STRING COSMO_COORD
+#    datatype STRARR 1
+#        dBZ        
+#    products STRUCT 1        
+#        rad2cosmo STRUCT 2
+#            type  STRING SAVEVOL            
+#            voltype STRING cosmo_index
+
+TEMP STRUCT 6
+    type STRING COSMO_LOOKUP
+    datatype STRARR 1
+        dBZ        
+    cosmo_type STRING TEMP
+    regular_grid INT 0
+    lookup_table INT 1
+    MAKE_GLOBAL INT 1
+    
 # ==========================================================================================
 #                 secondary moments products
 # ==========================================================================================
@@ -222,13 +244,14 @@ echoFilter2 STRUCT 4
 # ==========================================================================================
 visibilityFilter STRUCT 4
     type STRING VIS_FILTER
-    datatype STRARR 6
+    datatype STRARR 7
         DEM:VIS
         PROC:dBZc
         PROC:dBZvc
         PROC:ZDRc
         PROC:PhiDPc
         PROC:RhoHVc
+        PROC:KDPc
     VISmin FLOAT 90.
     MAKE_GLOBAL INT 1
     
@@ -250,7 +273,7 @@ Att_ZPhi STRUCT 5
         PROC:dBZc
         PROC:ZDRc
         PROC:PhiDPc
-        COSMO:TEMP
+        PROC:TEMP
     ATT_METHOD STRING ZPhi
     fzl FLOAT 2000.
     MAKE_GLOBAL INT 1
@@ -265,7 +288,7 @@ hydroclass STRUCT 5
         PROC:ZDRc
         PROC:RhoHVc
         PROC:KDPc
-        COSMO:TEMP
+        PROC:TEMP
     HYDRO_METHOD STRING SEMISUPERVISED
     RADARCENTROIDS STRING DX50
     MAKE_GLOBAL INT 1
@@ -286,7 +309,7 @@ RR_Z STRUCT 5
             voltype STRING RR
         EL003_0 STRUCT 3
             type  STRING PPI_IMAGE
-            anglenr INT 1
+            anglenr INT 0
             voltype STRING RR
             
 RR_hydro STRUCT 5
@@ -303,7 +326,7 @@ RR_hydro STRUCT 5
             voltype STRING RR
         EL003_0 STRUCT 3
             type  STRING PPI_IMAGE
-            anglenr INT 1
+            anglenr INT 0
             voltype STRING RR
 
 
@@ -311,17 +334,17 @@ RR_hydro STRUCT 5
 #               sensor comparison
 # ==========================================================================================
 
-# ---------------------- rain gauge LUZ -------------------------------------------
-# 454.0, 47.036, 8.301 LUZ (Luzern)
-rgLUZ_RR_Z STRUCT 12
+# ---------------------- rain gauge BRZ -------------------------------------------
+# 567.0, 46.741, 8.061 BRZ (Brienz)
+rgBRZ_RR_Z STRUCT 12
     type STRING POINT_MEASUREMENT
     datatype STRARR 1
         PROC:RR
     latlon INT 1
     truealt INT 0
-    lat FLOAT 47.036
-    lon FLOAT 8.301
-    alt FLOAT 454.0
+    lat FLOAT 46.741
+    lon FLOAT 8.061
+    alt FLOAT 567.0
     ele FLOAT 3.
     AziTol FLOAT 1.
     EleTol FLOAT 1.
@@ -333,67 +356,31 @@ rgLUZ_RR_Z STRUCT 12
             type STRING COMPARE_POINT
             prdid STRING RR
             sensor STRING rgage
-            sensorid STRING LUZ
+            sensorid STRING BRZ
         RRcumcomp STRUCT 4
             type STRING COMPARE_CUMULATIVE_POINT
             prdid STRING RR
             sensor STRING rgage
-            sensorid STRING LUZ
+            sensorid STRING BRZ
         RRcum3600s STRUCT 6
             type STRING COMPARE_TIME_AVG
             prdid STRING RR
             sensor STRING rgage
-            sensorid STRING LUZ
+            sensorid STRING BRZ
             cum_time INT 3600
             base_time INT 0
 
-# ---------------------- rain gauge PIL -------------------------------------------
-# 2106.0, 46.979, 8.252 (Pilatus)
-rgPIL_RR_Z STRUCT 12
+# ---------------------- rain gauge INT -------------------------------------------
+# 577.0, 46.672, 7.870 (Interlaken)
+rgINT_RR_Z STRUCT 12
     type STRING POINT_MEASUREMENT
     datatype STRARR 1
         PROC:RR
     latlon INT 1
     truealt INT 0
-    lat FLOAT 46.979
-    lon FLOAT 8.252
-    alt FLOAT 2106.0
-    ele FLOAT 8.2
-    AziTol FLOAT 1.
-    EleTol FLOAT 1.
-    RngTol FLOAT 30.
-    products STRUCT 4
-        RR STRUCT 1
-            type STRING PLOT_AND_WRITE_POINT
-        RRcomp STRUCT 4
-            type STRING COMPARE_POINT
-            prdid STRING RR
-            sensor STRING rgage
-            sensorid STRING PIL
-        RRcumcomp STRUCT 4
-            type STRING COMPARE_CUMULATIVE_POINT
-            prdid STRING RR
-            sensor STRING rgage
-            sensorid STRING PIL
-        RRcum3600s STRUCT 6
-            type STRING COMPARE_TIME_AVG
-            prdid STRING RR
-            sensor STRING rgage
-            sensorid STRING PIL
-            cum_time INT 3600
-            base_time INT 0
-
-# ---------------------- rain gauge CHZ -------------------------------------------
-# 444.0, 47.188, 8.465 (CHZ)
-rgCHZ_RR_Z STRUCT 12
-    type STRING POINT_MEASUREMENT
-    datatype STRARR 1
-        PROC:RR
-    latlon INT 1
-    truealt INT 0
-    lat FLOAT 47.188
-    lon FLOAT 8.465
-    alt FLOAT 444.0
+    lat FLOAT 46.672
+    lon FLOAT 7.870
+    alt FLOAT 577.0
     ele FLOAT 3.
     AziTol FLOAT 1.
     EleTol FLOAT 1.
@@ -405,32 +392,68 @@ rgCHZ_RR_Z STRUCT 12
             type STRING COMPARE_POINT
             prdid STRING RR
             sensor STRING rgage
-            sensorid STRING CHZ
+            sensorid STRING INT
         RRcumcomp STRUCT 4
             type STRING COMPARE_CUMULATIVE_POINT
             prdid STRING RR
             sensor STRING rgage
-            sensorid STRING CHZ
+            sensorid STRING INT
         RRcum3600s STRUCT 6
             type STRING COMPARE_TIME_AVG
             prdid STRING RR
             sensor STRING rgage
-            sensorid STRING CHZ
+            sensorid STRING INT
+            cum_time INT 3600
+            base_time INT 0
+
+# ---------------------- rain gauge MER -------------------------------------------
+# 589.0, 46.732, 8.169 (Meiringen)
+rgMER_RR_Z STRUCT 12
+    type STRING POINT_MEASUREMENT
+    datatype STRARR 1
+        PROC:RR
+    latlon INT 1
+    truealt INT 0
+    lat FLOAT 46.732
+    lon FLOAT 8.169
+    alt FLOAT 4589.0
+    ele FLOAT 3.
+    AziTol FLOAT 1.
+    EleTol FLOAT 1.
+    RngTol FLOAT 30.
+    products STRUCT 4
+        RR STRUCT 1
+            type STRING PLOT_AND_WRITE_POINT
+        RRcomp STRUCT 4
+            type STRING COMPARE_POINT
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING MER
+        RRcumcomp STRUCT 4
+            type STRING COMPARE_CUMULATIVE_POINT
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING MER
+        RRcum3600s STRUCT 6
+            type STRING COMPARE_TIME_AVG
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING MER
             cum_time INT 3600
             base_time INT 0
 
             
-# ---------------------- rain gauge LUZ -------------------------------------------
-# 454.0, 47.036, 8.301 LUZ (Luzern)
-rgLUZ_RR_hydro STRUCT 12
+# ---------------------- rain gauge BRZ -------------------------------------------
+# 567.0, 46.741, 8.061 BRZ (Brienz)
+rgBRZ_RR_hydro STRUCT 12
     type STRING POINT_MEASUREMENT
     datatype STRARR 1
         PROC:RR
     latlon INT 1
     truealt INT 0
-    lat FLOAT 47.036
-    lon FLOAT 8.301
-    alt FLOAT 454.0
+    lat FLOAT 46.741
+    lon FLOAT 8.061
+    alt FLOAT 567.0
     ele FLOAT 3.
     AziTol FLOAT 1.
     EleTol FLOAT 1.
@@ -442,32 +465,32 @@ rgLUZ_RR_hydro STRUCT 12
             type STRING COMPARE_POINT
             prdid STRING RR
             sensor STRING rgage
-            sensorid STRING LUZ
+            sensorid STRING BRZ
         RRcumcomp STRUCT 4
             type STRING COMPARE_CUMULATIVE_POINT
             prdid STRING RR
             sensor STRING rgage
-            sensorid STRING LUZ
+            sensorid STRING BRZ
         RRcum3600s STRUCT 6
             type STRING COMPARE_TIME_AVG
             prdid STRING RR
             sensor STRING rgage
-            sensorid STRING LUZ
+            sensorid STRING BRZ
             cum_time INT 3600
             base_time INT 0
 
-# ---------------------- rain gauge PIL -------------------------------------------
-# 2106.0, 46.979, 8.252 (Pilatus)
-rgPIL_RR_hydro STRUCT 12
+# ---------------------- rain gauge INT -------------------------------------------
+# 577.0, 46.672, 7.870 (Interlaken)
+rgINT_RR_hydro STRUCT 12
     type STRING POINT_MEASUREMENT
     datatype STRARR 1
         PROC:RR
     latlon INT 1
     truealt INT 0
-    lat FLOAT 46.979
-    lon FLOAT 8.252
-    alt FLOAT 2106.0
-    ele FLOAT 8.2
+    lat FLOAT 46.672
+    lon FLOAT 7.870
+    alt FLOAT 577.0
+    ele FLOAT 3.
     AziTol FLOAT 1.
     EleTol FLOAT 1.
     RngTol FLOAT 30.
@@ -478,55 +501,55 @@ rgPIL_RR_hydro STRUCT 12
             type STRING COMPARE_POINT
             prdid STRING RR
             sensor STRING rgage
-            sensorid STRING PIL
+            sensorid STRING INT
         RRcumcomp STRUCT 4
             type STRING COMPARE_CUMULATIVE_POINT
             prdid STRING RR
             sensor STRING rgage
-            sensorid STRING PIL
+            sensorid STRING INT
         RRcum3600s STRUCT 6
             type STRING COMPARE_TIME_AVG
             prdid STRING RR
             sensor STRING rgage
-            sensorid STRING PIL
-            cum_time INT 3600
-            base_time INT 0
-        RRcum3600s STRUCT 6
-            type STRING COMPARE_TIME_AVG
-            prdid STRING RR
-            sensor STRING rgage
-            sensorid STRING CHZ
+            sensorid STRING INT
             cum_time INT 3600
             base_time INT 0
 
-# ---------------------- rain gauge CHZ -------------------------------------------
-# 444.0, 47.188, 8.465 (CHZ)
-rgCHZ_RR_hydro STRUCT 12
+# ---------------------- rain gauge MER -------------------------------------------
+# 589.0, 46.732, 8.169 (Meiringen)
+rgMER_RR_hydro STRUCT 12
     type STRING POINT_MEASUREMENT
     datatype STRARR 1
         PROC:RR
     latlon INT 1
     truealt INT 0
-    lat FLOAT 47.188
-    lon FLOAT 8.465
-    alt FLOAT 444.0
+    lat FLOAT 46.732
+    lon FLOAT 8.169
+    alt FLOAT 4589.0
     ele FLOAT 3.
     AziTol FLOAT 1.
     EleTol FLOAT 1.
     RngTol FLOAT 30.
-    products STRUCT 3
+    products STRUCT 4
         RR STRUCT 1
             type STRING PLOT_AND_WRITE_POINT
         RRcomp STRUCT 4
             type STRING COMPARE_POINT
             prdid STRING RR
             sensor STRING rgage
-            sensorid STRING CHZ
+            sensorid STRING MER
         RRcumcomp STRUCT 4
             type STRING COMPARE_CUMULATIVE_POINT
             prdid STRING RR
             sensor STRING rgage
-            sensorid STRING CHZ
+            sensorid STRING MER
+        RRcum3600s STRUCT 6
+            type STRING COMPARE_TIME_AVG
+            prdid STRING RR
+            sensor STRING rgage
+            sensorid STRING MER
+            cum_time INT 3600
+            base_time INT 0
 
 
 # ==========================================================================================
@@ -609,7 +632,7 @@ reflectivity_bias STRUCT 5
         PROC:ZDRc
         PROC:PhiDPc
         PROC:RhoHVc
-        COSMO:TEMP
+        PROC:TEMP
     fzl FLOAT 2000.
     rsmooth FLOAT 1000.
     MAKE_GLOBAL INT 1
@@ -623,7 +646,7 @@ RhoHV_rain STRUCT 9
     datatype STRARR 3
         PROC:RhoHVc
         PROC:dBZc
-        COSMO:TEMP
+        PROC:TEMP
     fzl FLOAT 2000.
     rmin FLOAT 1000.
     rmax FLOAT 50000.
@@ -643,7 +666,7 @@ ZDR_rain STRUCT 12
         PROC:PhiDPc
         PROC:RhoHVc
         PROC:dBZc
-        COSMO:TEMP
+        PROC:TEMP
     fzl FLOAT 2000.
     rmin FLOAT 1000.
     rmax FLOAT 50000.
@@ -682,7 +705,7 @@ monitoring_RhoHV STRUCT 4
             type STRING ANGULAR_DENSITY
             hist_type STRING cumulative
             voltype STRING RhoHV_rain
-            anglenr INT 1
+            anglenr INT 0
             quantiles FLTARR 3
                 65.
                 80.
@@ -728,7 +751,7 @@ monitoring_ZDR STRUCT 4
             type STRING ANGULAR_DENSITY
             hist_type STRING cumulative
             voltype STRING ZDR_rain
-            anglenr INT 1
+            anglenr INT 0
             ref_value FLOAT 0.2
         EL005_7_DENSITY STRUCT 5
             type STRING ANGULAR_DENSITY
@@ -762,7 +785,7 @@ monitoring_Zh_bias STRUCT 4
             type STRING ANGULAR_DENSITY
             hist_type STRING cumulative
             voltype STRING dBZ_bias
-            anglenr INT 1
+            anglenr INT 0
             ref_value FLOAT 0.
         EL005_7_DENSITY STRUCT 5
             type STRING ANGULAR_DENSITY
@@ -796,7 +819,7 @@ monitoring_PhiDP0 STRUCT 4
             type STRING ANGULAR_DENSITY
             hist_type STRING cumulative
             voltype STRING PhiDP0
-            anglenr INT 1
+            anglenr INT 0
             ref_value FLOAT 0.
         EL005_7_DENSITY STRUCT 5
             type STRING ANGULAR_DENSITY

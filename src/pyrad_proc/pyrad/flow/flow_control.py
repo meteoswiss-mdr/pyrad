@@ -8,7 +8,15 @@ functions to control the Pyrad data processing flow
     :toctree: generated/
 
     main
+    main_rt
+    _initialize_listener
     _user_input_listener
+    _get_times_and_traj
+    _initialize_datasets
+    _process_datasets
+    _postprocess_datasets
+    _wait_for_files
+    _get_radars_data
     _generate_dataset
     _generate_dataset_mp
     _process_dataset
@@ -41,12 +49,15 @@ import multiprocessing as mp
 import queue
 import time
 import threading
+import glob
 
 from ..io.config import read_config
 from ..io.read_data_radar import get_data
 from ..io.io_aux import get_datetime, get_file_list, get_scan_list
 from ..io.io_aux import get_dataset_fields, get_datatype_fields
+from ..io.io_aux import get_new_rainbow_file_name
 from ..io.trajectory import Trajectory
+from ..io.read_data_other import read_last_state
 
 from ..proc.process_aux import get_process_func
 from ..prod.product_aux import get_prodgen_func
@@ -57,13 +68,15 @@ from pyart import version as pyart_version
 
 MULTIPROCESSING_PROD = False
 MULTIPROCESSING_DSET = False
+ALLOW_USER_BREAK = True
 
 
-def main(cfgfile, starttime, endtime, infostr="", trajfile="", rt=False):
+def main(cfgfile, starttime=None, endtime=None, trajfile="", infostr=""):
     """
-    main flow control. Processes data in real time or over a given
-    period of time given either by the user or by the trajectory
-    file.
+    main flow control. Processes radar data off-line over a period of time
+    given either by the user, a trajectory file, or determined by the last
+    volume processed and the current time. Multiple radars can be processed
+    simultaneously
 
     Parameters
     ----------
@@ -88,34 +101,15 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile="", rt=False):
     # warnings.simplefilter('error')  # turn matching warnings into exceptions
     warnings.formatwarning = _warning_format  # define format
 
-    # initialize listener for user input
-    input_queue = queue.Queue()
-    pinput = threading.Thread(
-        name='user_input_listener', target=_user_input_listener, daemon=True,
-        args=(input_queue, ))
-    pinput.start()
+    if ALLOW_USER_BREAK:
+        input_queue = _initialize_listener()
 
     cfg = _create_cfg_dict(cfgfile)
     datacfg = _create_datacfg_dict(cfg)
 
-    # Get the plane trajectory
-    if (len(trajfile) > 0):
-        print("- Trajectory file: " + trajfile)
-        try:
-            traj = Trajectory(trajfile, starttime=starttime, endtime=endtime)
-        except Exception as ee:
-            warn(str(ee))
-            sys.exit(1)
-
-        # Derive start and end time (if not specified by arguments)
-        if (starttime is None):
-            scan_min = cfg['ScanPeriod'] * 1.1  # [min]
-            starttime = traj.get_start_time() - timedelta(minutes=scan_min)
-        if (endtime is None):
-            scan_min = cfg['ScanPeriod'] * 1.1  # [min]
-            endtime = traj.get_end_time() + timedelta(minutes=scan_min)
-    else:
-        traj = None
+    starttime, endtime, traj = _get_times_and_traj(
+        trajfile, starttime, endtime, cfg['ScanPeriod'],
+        last_state_file=cfg['lastStateFile'])
 
     if (len(infostr) > 0):
         print('- Info string : ' + infostr)
@@ -128,26 +122,382 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile="", rt=False):
 
     dataset_levels = _get_datasets_list(cfg)
 
-    # if it is not real time and there are no volumes to process stop here
-    if not rt:
-        masterfilelist, masterdatatypedescr, masterscan = _get_masterfile_list(
-            datatypesdescr_list[0], starttime, endtime, datacfg,
-            scan_list=cfg['ScanList'])
+    masterfilelist, masterdatatypedescr, masterscan = _get_masterfile_list(
+        datatypesdescr_list[0], starttime, endtime, datacfg,
+        scan_list=datacfg['ScanList'])
 
-        nvolumes = len(masterfilelist)
-        if nvolumes == 0:
-            raise ValueError(
-                "ERROR: Could not find any valid volumes between " +
-                starttime.strftime('%Y-%m-%d %H:%M:%S') + " and " +
-                endtime.strftime('%Y-%m-%d %H:%M:%S') + " for " +
-                "master scan '" + str(masterscan) +
-                "' and master data type '" + masterdatatypedescr +
-                "'")
-        print('- Number of volumes to process: ' + str(nvolumes))
+    nvolumes = len(masterfilelist)
+    if nvolumes == 0:
+        raise ValueError(
+            "ERROR: Could not find any valid volumes between " +
+            starttime.strftime('%Y-%m-%d %H:%M:%S') + " and " +
+            endtime.strftime('%Y-%m-%d %H:%M:%S') + " for " +
+            "master scan '" + str(masterscan) +
+            "' and master data type '" + masterdatatypedescr +
+            "'")
+    print('- Number of volumes to process: ' + str(nvolumes))
 
     # initial processing of the datasets
-    print('- Initializing datasets:')
+    print('\n\n- Initializing datasets:')
+    dscfg, traj = _initialize_datasets(
+        dataset_levels, cfg, traj=traj, infostr=infostr)
 
+    # process all data files in file list or until user interrupts processing
+    for masterfile in masterfilelist:
+        if ALLOW_USER_BREAK:
+            # check if user has requested exit
+            try:
+                user_input = input_queue.get_nowait()
+                warn('Program terminated by user')
+                break
+            except queue.Empty:
+                pass
+
+        print('\n- master file: ' + os.path.basename(masterfile))
+        master_voltime = get_datetime(masterfile, masterdatatypedescr)
+
+        radar_list = _get_radars_data(
+            master_voltime, datatypesdescr_list, datacfg,
+            num_radars=datacfg['NumRadars'])
+
+        # process all data sets
+        dscfg, traj = _process_datasets(
+            dataset_levels, cfg, dscfg, radar_list, master_voltime, traj=traj,
+            infostr=infostr)
+
+    # post-processing of the datasets
+    print('\n\n- Post-processing datasets:')
+    dscfg, traj = _postprocess_datasets(
+        dataset_levels, cfg, dscfg, traj=traj, infostr=infostr)
+
+    print('- This is the end my friend! See you soon!')
+
+
+def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
+            proc_period=60):
+    """
+    main flow control. Processes radar data in real time. The start and end
+    processing times can be determined by the user. This function is inteded
+    for a single radar
+
+    Parameters
+    ----------
+    cfgfile_list : list of str
+        path of the main config files
+    starttime, endtime : datetime object
+        start and end time of the data to be processed
+    infostr_list : list of str
+        Information string about the actual data processing
+        (e.g. 'RUN57'). This string is added to product files.
+    proc_period : int
+        period of time before starting a new processing round
+
+    Returns
+    -------
+    end_proc : Boolean
+        If true the program has ended successfully
+
+    """
+    print("- PYRAD version: %s (compiled %s by %s)" %
+          (pyrad_version.version, pyrad_version.compile_date_time,
+           pyrad_version.username))
+    print("- PYART version: " + pyart_version.version)
+
+    # Define behaviour of warnings
+    warnings.simplefilter('always')  # always print matching warnings
+    # warnings.simplefilter('error')  # turn matching warnings into exceptions
+    warnings.formatwarning = _warning_format  # define format
+
+    if ALLOW_USER_BREAK:
+        input_queue = _initialize_listener()
+
+    cfg_list = []
+    datacfg_list = []
+    dscfg_list = []
+    datatypesdescr_list_list = []
+    dataset_levels_list = []
+    last_processed_list = []
+
+    for icfg in range(len(cfgfile_list)):
+        cfg = _create_cfg_dict(cfgfile_list[icfg])
+        if infostr_list is not None:
+            infostr = infostr_list[icfg]
+        else:
+            infostr = ""
+        datacfg = _create_datacfg_dict(cfg)
+
+        if (len(infostr) > 0):
+            print('- Info string : ' + infostr)
+
+        # get data types and levels
+        datatypesdescr_list = list()
+        for i in range(1, cfg['NumRadars']+1):
+            datatypesdescr_list.append(
+                _get_datatype_list(cfg, radarnr='RADAR'+'{:03d}'.format(i)))
+
+        dataset_levels = _get_datasets_list(cfg)
+
+        # initial processing of the datasets
+        print('\n\n- Initializing datasets:')
+        dscfg, traj = _initialize_datasets(
+            dataset_levels, cfg, infostr=infostr)
+
+        cfg_list.append(cfg)
+        datacfg_list.append(datacfg)
+        dscfg_list.append(dscfg)
+        datatypesdescr_list_list.append(datatypesdescr_list)
+        dataset_levels_list.append(dataset_levels)
+        last_processed_list.append(None)
+
+    end_proc = False
+    while not end_proc:
+        if ALLOW_USER_BREAK:
+            # check if user has requested exit
+            try:
+                user_input = input_queue.get_nowait()
+                end_proc = user_input
+                warn('Program terminated by user')
+                break
+            except queue.Empty:
+                pass
+
+        nowtime = datetime.utcnow()
+        # for offline testing
+        nowtime = nowtime.replace(
+            year=endtime.year, month=endtime.month, day=endtime.day)
+
+        # end time has been set and current time older than end time
+        # quit processing
+        if endtime is not None:
+            if nowtime > endtime:
+                end_proc = True
+                break
+
+        # start time has been set. Check if current time has to be
+        # processed. If not sleep until next proc_period
+        if starttime is not None:
+            if nowtime < starttime:
+                time.sleep(proc_period)
+                continue
+
+        vol_processed = False
+        for icfg in range(len(cfg_list)):
+            if ALLOW_USER_BREAK:
+                # check if user has requested exit
+                try:
+                    user_input = input_queue.get_nowait()
+                    end_proc = user_input
+                    warn('Program terminated by user')
+                    break
+                except queue.Empty:
+                    pass
+
+            cfg = cfg_list[icfg]
+            datacfg = datacfg_list[icfg]
+            dscfg = dscfg_list[icfg]
+            datatypesdescr_list = datatypesdescr_list_list[icfg]
+            dataset_levels = dataset_levels_list[icfg]
+            last_processed = last_processed_list[icfg]
+            if infostr_list is not None:
+                infostr = infostr_list[icfg]
+            else:
+                infostr = ""
+
+            # wait until new files are available
+            masterfile, masterdatatypedescr, last_processed = _wait_for_files(
+                nowtime, datacfg, datatypesdescr_list[0],
+                last_processed=last_processed)
+            if masterfile is None:
+                last_processed_list[icfg] = last_processed
+                continue
+
+            print('\n- master file: ' + os.path.basename(masterfile))
+            master_voltime = get_datetime(masterfile, masterdatatypedescr)
+
+            # get data of master radar
+            radar_list = _get_radars_data(
+                master_voltime, datatypesdescr_list, datacfg)
+
+            # process all data sets
+            dscfg, traj = _process_datasets(
+                dataset_levels, cfg, dscfg, radar_list, master_voltime,
+                infostr=infostr)
+
+            last_processed_list[icfg] = master_voltime
+            dscfg_list[icfg] = dscfg
+
+            vol_processed = True
+
+        nowtime_new = datetime.utcnow()
+        # for offline testing
+        nowtime_new = nowtime_new.replace(
+            year=endtime.year, month=endtime.month, day=endtime.day)
+        proc_time = (nowtime_new-nowtime).total_seconds()
+        if vol_processed:
+            print('Processing time %s s\n' % proc_time)
+        if proc_time < proc_period:
+            time.sleep(proc_period-proc_time)
+
+    # only do post processing if program properly terminated by user
+    if end_proc:
+        # post-processing of the datasets
+        print('\n\n- Post-processing datasets:')
+        for icfg in range(len(cfg_list)):
+            cfg = cfg_list[icfg]
+            dscfg = dscfg_list[icfg]
+            dataset_levels = dataset_levels_list[icfg]
+            if infostr_list is not None:
+                infostr = infostr_list[icfg]
+            else:
+                infostr = ""
+            dscfg, traj = _postprocess_datasets(
+                dataset_levels, cfg, dscfg, infostr=None)
+
+    print('- This is the end my friend! See you soon!')
+
+    return end_proc
+
+
+def _initialize_listener():
+    """
+    initialize the input listener
+
+    Returns
+    -------
+    input_queue : queue object
+        the queue object where to put the quit signal
+
+    """
+    input_queue = queue.Queue()
+    pinput = threading.Thread(
+        name='user_input_listener', target=_user_input_listener,
+        daemon=True, args=(input_queue, ))
+    # input_queue = mp.Queue()
+    # pinput = mp.Process(
+    #     name='user_input_listener', target=_user_input_listener,
+    #      daemon=True, args=(input_queue, ))
+    pinput.start()
+
+    return input_queue
+
+
+def _user_input_listener(input_queue):
+    """
+    Permanently listens to the keyword input until the user types "Return"
+
+    Parameters
+    ----------
+    input_queue : queue object
+        the queue object where to put the quit signal
+
+    """
+    print("Press Enter to quit: ")
+    while True:
+        user_input = sys.stdin.read(1)
+        if '\n' in user_input or '\r' in user_input:
+            warn('Exit requested by user')
+            input_queue.put(True)
+            break
+        time.sleep(1)
+
+
+def _get_times_and_traj(trajfile, starttime, endtime, scan_period,
+                        last_state_file=None):
+    """
+    Gets the trajectory and the start time and end time if they have
+    not been set
+
+    Parameters
+    ----------
+    trajfile : str
+        trajectory file
+    starttime, endtime : datetime object or None
+        the start and stop times of the processing
+    scan_period : float
+        the scan period in minutes
+    last_state_file : str
+        name of the file that stores the time of the last processed volume
+
+    """
+    if (len(trajfile) > 0):
+        print("- Trajectory file: " + trajfile)
+        try:
+            traj = Trajectory(trajfile, starttime=starttime, endtime=endtime)
+        except Exception as ee:
+            warn(str(ee))
+            sys.exit(1)
+
+        # Derive start and end time (if not specified by arguments)
+        if (starttime is None):
+            scan_min = scan_period * 1.1  # [min]
+            starttime = traj.get_start_time() - timedelta(minutes=scan_min)
+        if (endtime is None):
+            scan_min = scan_period * 1.1  # [min]
+            endtime = traj.get_end_time() + timedelta(minutes=scan_min)
+    else:
+        traj = None
+
+    # if start time is not defined and the file lastState exists and
+    # contains a valid date start processing from the last valid date.
+    # Otherwise start processing from yesterday at 00:00:00 UTC
+    if starttime is None and last_state_file is not None:
+        filename = glob.glob(last_state_file)
+        if not filename:
+            nowtime = datetime.utcnow()
+            starttime = (nowtime - timedelta(days=1)).replace(
+                hour=0, minute=0, second=0, microsecond=0)
+            warn('File '+last_state_file+' not found. ' +
+                 'Start time set at ' +
+                 starttime.strftime('%Y-%m-%d %H:%M:%S'))
+        else:
+            starttime = read_last_state(last_state_file)
+            if starttime is None:
+                nowtime = datetime.utcnow()
+                starttime = (nowtime - timedelta(days=1)).replace(
+                    hour=0, minute=0, second=0, microsecond=0)
+                warn('File '+last_state_file+' not valid. ' +
+                     'Start time set at ' +
+                     starttime.strftime('%Y-%m-%d %H:%M:%S'))
+
+    if endtime is None:
+        endtime = datetime.utcnow()
+        warn('End Time not defined. Set as ' +
+             endtime.strftime('%Y-%m-%d %H:%M:%S'))
+
+    if endtime < starttime:
+        raise ValueError(
+            'Start time '+starttime.strftime('%Y-%m-%d %H:%M:%S') +
+            'older than end time ' +
+            endtime.strftime('%Y-%m-%d %H:%M:%S'))
+
+    return starttime, endtime, traj
+
+
+def _initialize_datasets(dataset_levels, cfg, traj=None, infostr=None):
+    """
+    Initializes datasets. Creates the data set configuration dictionary
+
+    Parameters
+    ----------
+    dataset_levels : dict
+        dictionary containing the list of data sets to be generated at each
+        processing level
+    cfg : dict
+        processing configuration dictionary
+    traj : trajectory object
+        object containing the trajectory
+    infostr : str
+        Information string about the actual data processing
+        (e.g. 'RUN57'). This string is added to product files.
+
+    Returns
+    -------
+    dscfg : dict
+        dictionary containing the configuration data for each dataset
+    traj : trajectory object
+        the modified trajectory object
+
+    """
     dscfg = dict()
     for level in sorted(dataset_levels):
         print('-- Process level: '+level)
@@ -181,224 +531,385 @@ def main(cfgfile, starttime, endtime, infostr="", trajfile="", rt=False):
     # manual garbage collection after initial processing
     gc.collect()
 
-    end_proc = False
-    last_processed = None
-
-    while not end_proc:
-        # check if user has requested exit
-        try:
-            user_input = input_queue.get_nowait()
-            end_proc = user_input
-            warn('Program terminated by user')
-            break
-        except queue.Empty:
-            pass
-
-        # if real time update start and stop processing time and get list of
-        # files to process
-        if rt:
-            nowtime = datetime.utcnow()
-
-            # end time has been set and current time older than end time
-            # quit processing
-            if endtime is not None:
-                if nowtime > endtime:
-                    end_proc = True
-                    break
-
-            # start time has been set. Check if current time has to be
-            # processed
-            if starttime is not None:
-                if nowtime < starttime:
-                    continue
-
-            endtime_loop = nowtime
-            if last_processed is None:
-                scan_min = cfg['ScanPeriod'] * 1.1  # [min]
-                starttime_loop = endtime_loop - timedelta(minutes=scan_min)
-            else:
-                starttime_loop = last_processed + timedelta(seconds=10)
-
-            masterfilelist, masterdatatypedescr, masterscan = (
-                _get_masterfile_list(
-                    datatypesdescr_list[0], starttime_loop, endtime_loop,
-                    datacfg, scan_list=cfg['ScanList']))
-
-        # check if there are no new files
-        nvolumes = len(masterfilelist)
-        if nvolumes == 0:
-            continue
-
-        # process all data files in file list
-        for masterfile in masterfilelist:
-            # check if user has requested exit
-            try:
-                user_input = input_queue.get_nowait()
-                end_proc = user_input
-                warn('Program terminated by user')
-                break
-            except queue.Empty:
-                pass
-
-            print('- master file: ' + os.path.basename(masterfile))
-            master_voltime = get_datetime(masterfile, masterdatatypedescr)
-
-            # check if it was already processed
-            if last_processed is not None:
-                if master_voltime < last_processed:
-                    continue
-
-            # get data of master radar
-            radar_list = list()
-            radar_list.append(
-                get_data(master_voltime, datatypesdescr_list[0], datacfg))
-
-            # get data of rest of radars
-            for i in range(1, cfg['NumRadars']):
-                filelist_ref, datatypedescr_ref, scan_ref = (
-                    _get_masterfile_list(
-                        datatypesdescr_list[i],
-                        master_voltime-timedelta(seconds=cfg['TimeTol']),
-                        master_voltime+timedelta(seconds=cfg['TimeTol']),
-                        datacfg, scan_list=cfg['ScanList']))
-
-                nfiles_ref = len(filelist_ref)
-                if nfiles_ref == 0:
-                    warn("ERROR: Could not find any valid volume for " +
-                         " reference time " +
-                         master_voltime.strftime('%Y-%m-%d %H:%M:%S') +
-                         ' and radar RADAR'+'{:03d}'.format(i+1))
-                    radar_list.append(None)
-                elif nfiles_ref == 1:
-                    voltime_ref = get_datetime(
-                        filelist_ref[0], datatypedescr_ref)
-                    radar_list.append(
-                        get_data(voltime_ref, datatypesdescr_list[i], datacfg))
-                else:
-                    voltime_ref_list = []
-                    for j in range(nfiles_ref):
-                        voltime_ref_list.append(get_datetime(
-                            filelist_ref[j], datatypedescr_ref))
-                    voltime_ref = min(
-                        voltime_ref_list, key=lambda x: abs(x-master_voltime))
-                    radar_list.append(
-                        get_data(voltime_ref, datatypesdescr_list[i], datacfg))
-
-            # process all data sets
-            jobs_prod = []
-            for level in sorted(dataset_levels):
-                print('-- Process level: '+level)
-                if MULTIPROCESSING_DSET:
-                    jobs = []
-                    out_queue = mp.Queue()
-                    for dataset in dataset_levels[level]:
-                        p = mp.Process(
-                            name=dataset, target=_generate_dataset_mp,
-                            args=(dataset, cfg, dscfg[dataset], out_queue),
-                            kwargs={'proc_status': 1,
-                                    'radar_list': radar_list,
-                                    'voltime': master_voltime,
-                                    'trajectory': traj,
-                                    'runinfo': infostr})
-                        jobs.append(p)
-                        p.start()
-
-                    # wait for completion of the jobs
-                    for job in jobs:
-                        job.join()
-
-                    # add new dataset to radar object if necessary
-                    for job in jobs:
-                        new_dataset, ind_rad, make_global, jobs_ds = (
-                            out_queue.get())
-                        result = _add_dataset(
-                            new_dataset, radar_list, ind_rad,
-                            make_global=make_global)
-                        if len(jobs_ds) > 0:
-                            jobs_prod.extend(jobs_ds)
-                else:
-                    for dataset in dataset_levels[level]:
-                        new_dataset, ind_rad, jobs_ds = _generate_dataset(
-                            dataset, cfg, dscfg[dataset], proc_status=1,
-                            radar_list=radar_list, voltime=master_voltime,
-                            trajectory=traj, runinfo=infostr)
-
-                        result = _add_dataset(
-                            new_dataset, radar_list, ind_rad,
-                            make_global=dscfg[dataset]['MAKE_GLOBAL'])
-                        if len(jobs_ds) > 0:
-                            jobs_prod.extend(jobs_ds)
-
-            # wait until all the products on this time stamp are generated
-            for job in jobs_prod:
-                job.join()
-
-            # manual garbage collection after processing each radar volume
-            gc.collect()
-
-        # if real time processing go on top of the loop and wait for new data
-        # if off-line go to post-processing
-        if rt:
-            last_processed = get_datetime(
-                masterfilelist[-1], masterdatatypedescr)
-        else:
-            end_proc = True
-
-    # only do post processing if program properly terminated by user
-    if end_proc:
-        # post-processing of the datasets
-        print('- Post-processing datasets:')
-        for level in sorted(dataset_levels):
-            print('-- Process level: '+level)
-            if MULTIPROCESSING_DSET:
-                jobs = []
-                out_queue = mp.Queue()
-                for dataset in dataset_levels[level]:
-                    p = mp.Process(
-                        name=dataset, target=_generate_dataset_mp,
-                        args=(dataset, cfg, dscfg[dataset], out_queue),
-                        kwargs={'proc_status': 2,
-                                'radar_list': None,
-                                'voltime': None,
-                                'trajectory': traj,
-                                'runinfo': infostr})
-                    jobs.append(p)
-                    p.start()
-
-                # wait for completion of the jobs
-                for job in jobs:
-                    job.join()
-            else:
-                for dataset in dataset_levels[level]:
-                    new_dataset, ind_rad, jobs_ds = _generate_dataset(
-                        dataset, cfg, dscfg[dataset], proc_status=2,
-                        radar_list=None, voltime=None, trajectory=traj,
-                        runinfo=infostr)
-
-        # manual garbage collection after post-processing
-        gc.collect()
-
-    print('- This is the end my friend! See you soon!')
+    return dscfg, traj
 
 
-def _user_input_listener(input_queue):
+def _process_datasets(dataset_levels, cfg, dscfg, radar_list, master_voltime,
+                      traj=None, infostr=None):
     """
-    Permanently listens to the keyword input until the user types "Return"
+    Processes the radar volumes for a particular time stamp.
 
     Parameters
     ----------
-    input_queue : queue object
-        the queue object where to put the quit signal
+    dataset_levels : dict
+        dictionary containing the list of data sets to be generated at each
+        processing level
+    cfg : dict
+        processing configuration dictionary
+    dscfg : dict
+        dictionary containing the configuration data for each dataset
+    radar_list : list of radar objects
+        The radar objects to be processed
+    master_voltime : datetime object
+        the reference radar volume time
+    traj : trajectory object
+        and object containing the trajectory
+    infostr : str
+        Information string about the actual data processing
+        (e.g. 'RUN57'). This string is added to product files.
+
+    Returns
+    -------
+    dscfg : dict
+        the modified configuration dictionary
+    traj : trajectory object
+        the modified trajectory object
 
     """
-    print("Press Enter to quit: ")
-    while True:
-        user_input = sys.stdin.read(1)
-        if '\n' in user_input or '\r' in user_input:
-            warn('Exit requested by user')
-            input_queue.put(True)
-            break
-        time.sleep(1)
+    jobs_prod = []
+    for level in sorted(dataset_levels):
+        print('-- Process level: '+level)
+        if MULTIPROCESSING_DSET:
+            jobs = []
+            out_queue = mp.Queue()
+            for dataset in dataset_levels[level]:
+                p = mp.Process(
+                    name=dataset, target=_generate_dataset_mp,
+                    args=(dataset, cfg, dscfg[dataset], out_queue),
+                    kwargs={'proc_status': 1,
+                            'radar_list': radar_list,
+                            'voltime': master_voltime,
+                            'trajectory': traj,
+                            'runinfo': infostr})
+                jobs.append(p)
+                p.start()
+
+            # wait for completion of the jobs
+            for job in jobs:
+                job.join()
+
+            # add new dataset to radar object if necessary
+            for job in jobs:
+                new_dataset, ind_rad, make_global, jobs_ds = (
+                    out_queue.get())
+                result = _add_dataset(
+                    new_dataset, radar_list, ind_rad,
+                    make_global=make_global)
+                if len(jobs_ds) > 0:
+                    jobs_prod.extend(jobs_ds)
+        else:
+            for dataset in dataset_levels[level]:
+                new_dataset, ind_rad, jobs_ds = _generate_dataset(
+                    dataset, cfg, dscfg[dataset], proc_status=1,
+                    radar_list=radar_list, voltime=master_voltime,
+                    trajectory=traj, runinfo=infostr)
+
+                result = _add_dataset(
+                    new_dataset, radar_list, ind_rad,
+                    make_global=dscfg[dataset]['MAKE_GLOBAL'])
+                if len(jobs_ds) > 0:
+                    jobs_prod.extend(jobs_ds)
+
+    # wait until all the products on this time stamp are generated
+    for job in jobs_prod:
+        job.join()
+
+    # manual garbage collection after processing each radar volume
+    gc.collect()
+
+    return dscfg, traj
+
+
+def _postprocess_datasets(dataset_levels, cfg, dscfg, traj=None, infostr=None):
+    """
+    Processes the radar volumes for a particular time stamp.
+
+    Parameters
+    ----------
+    dataset_levels : dict
+        dictionary containing the list of data sets to be generated at each
+        processing level
+    cfg : dict
+        processing configuration dictionary
+    dscfg : dict
+        dictionary containing the configuration data for each dataset
+    traj : trajectory object
+        and object containing the trajectory
+    infostr : str
+        Information string about the actual data processing
+        (e.g. 'RUN57'). This string is added to product files.
+
+    Returns
+    -------
+    dscfg : dict
+        the modified configuration dictionary
+    traj : trajectory object
+        the modified trajectory object
+
+    """
+    for level in sorted(dataset_levels):
+        print('-- Process level: '+level)
+        if MULTIPROCESSING_DSET:
+            jobs = []
+            out_queue = mp.Queue()
+            for dataset in dataset_levels[level]:
+                p = mp.Process(
+                    name=dataset, target=_generate_dataset_mp,
+                    args=(dataset, cfg, dscfg[dataset], out_queue),
+                    kwargs={'proc_status': 2,
+                            'radar_list': None,
+                            'voltime': None,
+                            'trajectory': traj,
+                            'runinfo': infostr})
+                jobs.append(p)
+                p.start()
+
+            # wait for completion of the jobs
+            for job in jobs:
+                job.join()
+        else:
+            for dataset in dataset_levels[level]:
+                new_dataset, ind_rad, jobs_ds = _generate_dataset(
+                    dataset, cfg, dscfg[dataset], proc_status=2,
+                    radar_list=None, voltime=None, trajectory=traj,
+                    runinfo=infostr)
+
+    # manual garbage collection after post-processing
+    gc.collect()
+
+    return dscfg, traj
+
+
+def _wait_for_files(nowtime, datacfg, datatype_list, last_processed=None):
+    """
+    Waits for the master file and all files in a volume scan to be present
+    returns the masterfile if the volume scan can be processed.
+
+    Parameters
+    ----------
+    nowtime : datetime object
+        the current time
+    datacfg : dict
+        dictionary containing the parameters to get the radar data
+    last_processed : datetime or None
+        The end time of the previously processed radar volume
+
+    Returns
+    -------
+    masterfile : str or None
+        name of the master file. None if the volume was not complete
+    masterdatatypedescr : str
+        the description of the master data type
+    last_processed : datetime
+        True of all scans found
+
+    """
+    endtime_loop = nowtime
+
+    nscans = len(datacfg['ScanList'][0])
+
+    scan_min = datacfg['ScanPeriod'] * 1.1  # [min]
+    if last_processed is None:
+        starttime_loop = endtime_loop - timedelta(minutes=scan_min)
+    else:
+        starttime_loop = last_processed + timedelta(seconds=10)
+
+    masterfilelist, masterdatatypedescr, masterscan = (
+        _get_masterfile_list(
+            datatype_list, starttime_loop, endtime_loop,
+            datacfg, scan_list=datacfg['ScanList']))
+
+    nvolumes = len(masterfilelist)
+    if nvolumes == 0:
+        return None, None, last_processed
+
+    # check if there are rainbow data types and how many
+    nrainbow = 0
+    datatype_rainbow = []
+    for datatype_descr in datatype_list:
+        radarnr, datagroup, datatype, dataset, product = (
+            get_datatype_fields(datatype_descr))
+        if datagroup == 'RAINBOW':
+            datatype_rainbow.append(datatype)
+            nrainbow += 1
+
+    if nscans == 1:
+        if nrainbow < 2:
+            return masterfilelist[0], masterdatatypedescr, last_processed
+
+        # If more than one data type is of type rainbow we have to wait for
+        # all data type files to be present
+        masterfile = masterfilelist[0]
+        rainbow_files = []
+        for datatype in datatype_rainbow:
+            rainbow_file = get_new_rainbow_file_name(
+                masterfile, masterdatatypedescr, datatype)
+            rainbow_files.append(rainbow_file)
+
+        # allow 30 s for the transfer of all datatype files
+        found_all = _wait_for_rainbow_datatypes(rainbow_files, period=30)
+        if found_all:
+            return masterfile, masterdatatypedescr, last_processed
+
+        # if not all data types available skip the volume
+        warn('Not all data types for master file: ' +
+             os.path.basename(masterfile)+' arrived on time. ' +
+             'The volume will be skipped')
+        return None, None, get_datetime(masterfilelist[0], masterdatatypedescr)
+
+    # if there is more than one scan in the list wait until all files
+    # for the first volume have arrived
+    masterfile = masterfilelist[0]
+    master_voltime = get_datetime(masterfile, masterdatatypedescr)
+    wait_time = nowtime+timedelta(minutes=scan_min)
+    found_all = False
+    currenttime = nowtime
+    while currenttime <= wait_time or not found_all:
+        currenttime = datetime.utcnow()
+        starttime_loop = master_voltime
+        endtime_loop = master_voltime+timedelta(minutes=scan_min)
+        filelist_vol = []
+        for scan in datacfg['ScanList'][0]:
+            filelist = get_file_list(
+                masterdatatypedescr, starttime_loop, endtime_loop, datacfg,
+                scan=scan)
+            if len(filelist) == 0:
+                filelist_vol = []
+                found_all = False
+                break
+            else:
+                filelist_vol.append(filelist[0])
+            found_all = True
+        if found_all:
+            if nrainbow < 2:
+                return masterfile, masterdatatypedescr, last_processed
+            else:
+                break
+
+    if not found_all:
+        # if not all scans available skip the volume
+        warn('Not all scans for master file: ' +
+             os.path.basename(masterfile)+' arrived on time. ' +
+             'The volume will be skipped')
+
+        return None, None, get_datetime(masterfile, masterdatatypedescr)
+
+    # If more than one data type is of type rainbow we have to wait
+    # for all data type files for all scans to be present
+    rainbow_files = []
+    for file in filelist_vol:
+        for datatype in datatype_rainbow:
+            rainbow_file = get_new_rainbow_file_name(
+                file, masterdatatypedescr, datatype)
+            rainbow_files.append(rainbow_file)
+
+    # allow 30 s for the transfer of all datatype files
+    found_all = _wait_for_rainbow_datatypes(rainbow_files, period=30)
+    if found_all:
+        return masterfile, masterdatatypedescr, last_processed
+
+    # if not all scans available skip the volume
+    warn('Not all data types for all scans of master file: ' +
+         os.path.basename(masterfile)+' arrived on time. ' +
+         'The volume will be skipped')
+
+    return None, None, get_datetime(masterfile, masterdatatypedescr)
+
+
+def _wait_for_rainbow_datatypes(rainbow_files, period=30):
+    """
+    waits until the files for all rainbow data types are present.
+
+    Parameters
+    ----------
+    rainbow_files : list of strings
+        a list containing the names of all the rainbow files to wait for
+    period : int
+        the time it has to wait (s)
+
+    Returns
+    -------
+    found_all : Boolean
+        True if all files were present. False otherwise
+
+    """
+    currenttime = datetime.utcnow()
+    wait_time = currenttime+timedelta(seconds=period)
+    while currenttime <= wait_time:
+        currenttime = datetime.utcnow()
+        found_all = False
+        for rainbow_file in rainbow_files:
+            filename = glob.glob(rainbow_file)
+            if not filename:
+                found_all = False
+                break
+            found_all = True
+        if found_all:
+            return found_all
+
+    return found_all
+
+
+def _get_radars_data(master_voltime, datatypesdescr_list, datacfg,
+                     num_radars=1):
+    """
+    Get the radars data.
+
+    Parameters
+    ----------
+    master_voltime : datetime object
+        reference time
+    datatypesdescr_list : list of lists
+        List of the raw data types to get from each radar
+    datacfg : dict
+        dictionary containing the parameters to get the radar data
+
+    Returns
+    -------
+    radar_list : list
+        a list containing the radar objects
+
+    """
+    # get data of master radar
+    radar_list = list()
+    radar_list.append(
+        get_data(master_voltime, datatypesdescr_list[0], datacfg))
+
+    if num_radars == 1:
+        return radar_list
+
+    # get data of rest of radars
+    for i in range(1, num_radars):
+        filelist_ref, datatypedescr_ref, scan_ref = (
+            _get_masterfile_list(
+                datatypesdescr_list[i],
+                master_voltime-timedelta(seconds=datacfg['TimeTol']),
+                master_voltime+timedelta(seconds=datacfg['TimeTol']),
+                datacfg, scan_list=datacfg['ScanList']))
+
+        nfiles_ref = len(filelist_ref)
+        if nfiles_ref == 0:
+            warn("ERROR: Could not find any valid volume for " +
+                 " reference time " +
+                 master_voltime.strftime('%Y-%m-%d %H:%M:%S') +
+                 ' and radar RADAR'+'{:03d}'.format(i+1))
+            radar_list.append(None)
+        elif nfiles_ref == 1:
+            voltime_ref = get_datetime(
+                filelist_ref[0], datatypedescr_ref)
+            radar_list.append(
+                get_data(voltime_ref, datatypesdescr_list[i], datacfg))
+        else:
+            voltime_ref_list = []
+            for j in range(nfiles_ref):
+                voltime_ref_list.append(get_datetime(
+                    filelist_ref[j], datatypedescr_ref))
+            voltime_ref = min(
+                voltime_ref_list, key=lambda x: abs(x-master_voltime))
+            radar_list.append(
+                get_data(voltime_ref, datatypesdescr_list[i], datacfg))
+
+    return radar_list
 
 
 def _generate_dataset(dsname, cfg, dscfg, proc_status=0, radar_list=None,
@@ -427,12 +938,12 @@ def _generate_dataset(dsname, cfg, dscfg, proc_status=0, radar_list=None,
 
     Returns
     -------
-    Returns
-    -------
     new_dataset : dataset object
         The new dataset generated. None otherwise
     ind_rad : int
         the index to the reference radar object
+    jobs : list
+        list of processes used to generate products. (Empty)
 
     """
     print('--- Processing dataset: '+dsname)
@@ -663,6 +1174,8 @@ def _create_cfg_dict(cfgfile):
         cfg.update({'ScanList': None})
     else:
         cfg.update({'ScanList': get_scan_list(cfg['ScanList'])})
+    if 'lastStateFile' not in cfg:
+        cfg.update({'lastStateFile': None})
     if 'datapath' not in cfg:
         cfg.update({'datapath': None})
     if 'path_convention' not in cfg:
@@ -751,6 +1264,8 @@ def _create_datacfg_dict(cfg):
 
     datacfg = dict({'datapath': cfg['datapath']})
     datacfg.update({'ScanList': cfg['ScanList']})
+    datacfg.update({'TimeTol': cfg['TimeTol']})
+    datacfg.update({'NumRadars': cfg['NumRadars']})
     datacfg.update({'cosmopath': cfg['cosmopath']})
     datacfg.update({'dempath': cfg['dempath']})
     datacfg.update({'loadbasepath': cfg['loadbasepath']})
@@ -786,6 +1301,7 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
     """
     dscfg = cfg[dataset]
     dscfg.update({'configpath': cfg['configpath']})
+    dscfg.update({'lastStateFile': cfg['lastStateFile']})
     dscfg.update({'solarfluxpath': cfg['solarfluxpath']})
     dscfg.update({'colocgatespath': cfg['colocgatespath']})
     dscfg.update({'cosmopath': cfg['cosmopath']})
@@ -861,6 +1377,7 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
     # the product generation.
     prdcfg = cfg[dataset]['products'][product]
     prdcfg.update({'procname': cfg['name']})
+    prdcfg.update({'lastStateFile': cfg['lastStateFile']})
     prdcfg.update({'basepath': cfg['saveimgbasepath']})
     prdcfg.update({'smnpath': cfg['smnpath']})
     prdcfg.update({'disdropath': cfg['disdropath']})

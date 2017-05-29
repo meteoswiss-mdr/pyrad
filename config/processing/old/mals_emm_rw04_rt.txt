@@ -1,12 +1,11 @@
 # ---------------------------------
-# This is the config file for the processing of the Emmen RW22 data acquired
-# during the WEATHER scan performed off-line (the day after the acquisition)
-# in zueub222
+# This is the config file for the processing of the Emmen RW04 data acquired
+# during the MALS_EMM_RW04 scan performed real time in cirrus
 # ---------------------------------
 
 # Name of this configuration:
 # Will be used in product generation save path
-name STRING mals_emm_rw22
+name STRING mals_emm_rw04
 
 # ---------------------------------------------------------
 #  Raw data pathes
@@ -15,20 +14,20 @@ name STRING mals_emm_rw22
 # Base path of the raw data.
 # Note: Must have a trailing '/'
 # ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
-datapath STRING /data/DX50/rawdata/
+datapath STRING /usr/local/Rainbow5/rainbow/rawdata/144CHX_R/
 
 # Base path for cosmo data
-cosmopath STRING /data/cosmo/
+cosmopath STRING /usr/data/cosmo/
 
 # Loading of saved datasets
-loadbasepath STRING /data/pyrad_products/
-loadname STRING mals_emm_rw22
+loadbasepath STRING /usr/data/pyrad_products/
+loadname STRING mals_emm_rw04
 
 
 # --------------------------------------------
 # Output data
 # --------------------------------------------
-saveimgbasepath STRING /data/pyrad_products/
+saveimgbasepath STRING /usr/data/pyrad_products/
 saveimg         INT 1
 imgformat       STRING png
 
@@ -39,7 +38,10 @@ imgformat       STRING png
 configpath STRING $HOME/pyrad/config/
 
 # Configuration of the radar location and approach direction
-locationConfigFile STRING $HOME/pyrad/config/processing/mals_emm_rw22_nopsr_loc.txt
+locationConfigFile STRING $HOME/pyrad/config/processing/mals_emm_rw04_loc.txt
 
 # Configuration of the product generation
-productConfigFile STRING $HOME/pyrad/config/processing/mals_emm_rw22_prod.txt
+productConfigFile STRING $HOME/pyrad/config/processing/mals_emm_rw04_prod.txt
+
+# State after last run
+lastStateFile STRING $HOME/realtime_pyrad/mals_emm_rw04_rt_lastState.txt

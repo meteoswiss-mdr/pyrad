@@ -1,6 +1,12 @@
+# ---------------------------------
+# This is the config file for the processing of the Emmen RW22 data acquired
+# during the MALS_EMM_RW22 scan performed off-line (the day after the acquisition)
+# in zueub222
+# ---------------------------------
+
 # Name of this configuration:
 # Will be used in product generation save path
-name STRING mals_emm_vol_fvj
+name STRING mals_emm_rw22
 
 # ---------------------------------------------------------
 #  Raw data pathes
@@ -14,20 +20,17 @@ datapath STRING /data/DX50/rawdata/
 # Base path for cosmo data
 cosmopath STRING /data/cosmo/
 
-# Base path for dem data
-dempath STRING /data/DEM/DX50_EMM/
-
 # Loading of saved datasets
-loadbasepath STRING /data/pyrad_examples/
-loadname STRING mals_emm_vol_fvj
+loadbasepath STRING /data/pyrad_products/
+loadname STRING mals_emm_rw22
+
 
 # --------------------------------------------
 # Output data
 # --------------------------------------------
-saveimgbasepath STRING /data/pyrad_examples/
+saveimgbasepath STRING /data/pyrad_products/
 saveimg         INT 1
-# Supported formats: eps, jpeg, jpg, pdf, pgf, png, ps, raw, rgba, svg, svgz, tif, tiff
-imgformat STRING png
+imgformat       STRING png
 
 # --------------------------------------------------------
 # configuration files pathes
@@ -36,7 +39,10 @@ imgformat STRING png
 configpath STRING $HOME/pyrad/config/
 
 # Configuration of the radar location and approach direction
-locationConfigFile STRING $HOME/pyrad/config/processing/mals_emm_vol_loc.txt
+locationConfigFile STRING $HOME/pyrad/config/processing/mals_emm_rw22_loc.txt
 
 # Configuration of the product generation
-productConfigFile STRING $HOME/pyrad/config/processing/mals_emm_vol_prod.txt
+productConfigFile STRING $HOME/pyrad/config/processing/mals_emm_rw22_prod.txt
+
+# State after last run
+lastStateFile STRING $HOME/postproc_pyrad/mals_emm_rw22_postproc_lastState.txt

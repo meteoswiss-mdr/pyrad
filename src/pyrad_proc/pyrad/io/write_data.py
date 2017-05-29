@@ -7,8 +7,10 @@ Functions for writing pyrad output data
 .. autosummary::
     :toctree: generated/
 
+    write_last_state
     write_smn
     write_rhi_profile
+    write_field_coverage
     write_cdf
     write_ts_polar_data
     write_ts_cum
@@ -26,10 +28,39 @@ Functions for writing pyrad output data
 from __future__ import print_function
 import glob
 import csv
+from warnings import warn
 
 from pyart.config import get_fillvalue, get_metadata
 
 from .io_aux import generate_field_name_str
+
+
+def write_last_state(datetime_last, fname):
+    """
+    writes SwissMetNet data in format datetime,avg_value, std_value
+
+    Parameters
+    ----------
+    datetime_last : datetime object
+        date and time of the last state
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    try:
+        with open(fname, 'w', newline='') as txtfile:
+            txtfile.write(datetime_last.strftime('%Y%m%d%H%M%S'))
+            txtfile.close()
+
+            return fname
+    except EnvironmentError:
+        warn('Unable to write on file '+fname)
+        return None
 
 
 def write_smn(datetime_vec, value_avg_vec, value_std_vec, fname):
@@ -139,6 +170,63 @@ def write_rhi_profile(hvec, data, nvalid_vec, labels, fname, datatype=None,
                 data_dict.update({fieldnames[i+1]: data_aux[i][j]})
             data_dict.update({fieldnames[-1]: nvalid_vec[j]})
             writer.writerow(data_dict)
+
+        csvfile.close()
+
+    return fname
+
+
+def write_field_coverage(quantiles, values, ele_start, ele_stop, azi_start,
+                         azi_stop, threshold, nvalid_min, datatype, timeinfo,
+                         fname):
+    """
+    writes the quantiles of the coverage on a particular sector
+
+    Parameters
+    ----------
+    quantiles : datetime array
+        array containing the quantiles computed
+    values : float array
+        quantile value
+    ele_start, ele_stop, azi_start, azi_stop : float
+        The limits of the sector
+    threshold : float
+        The minimum value to consider the data valid
+    nvalid_min : int
+        the minimum number of points to consider that there are values in a
+        ray
+    datatype : str
+        data type and units
+    timeinfo : datetime object
+        the time stamp of the data
+    fname : str
+        name of the file where to write the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    with open(fname, 'w', newline='') as csvfile:
+        csvfile.write('# Quantiles of the field coverage\n')
+        csvfile.write('# Datatype (Unit) : '+datatype+'\n')
+        csvfile.write('# Time : '+timeinfo.strftime('%Y-%m-%d %H:%M:%S')+'\n')
+        csvfile.write('# Sector specification:\n')
+        csvfile.write('#   Azimuth start   : '+str(azi_start)+' deg\n')
+        csvfile.write('#   Azimuth stop    : '+str(azi_stop)+' deg\n')
+        csvfile.write('#   Elevation start : '+str(ele_start)+' deg\n')
+        csvfile.write('#   Elevation stop  : '+str(ele_stop)+' deg\n')
+        csvfile.write('# Threshold : '+str(threshold)+'\n')
+        csvfile.write('# Minimum number of valid gates per ray : ' +
+                      str(nvalid_min)+'\n')
+        fieldnames = ['Quantile [%]', 'Rain extension [m]']
+        writer = csv.DictWriter(csvfile, fieldnames)
+        writer.writeheader()
+        for i in range(len(quantiles)):
+            writer.writerow({
+                'Quantile [%]': quantiles[i],
+                'Rain extension [m]': values[i]})
 
         csvfile.close()
 

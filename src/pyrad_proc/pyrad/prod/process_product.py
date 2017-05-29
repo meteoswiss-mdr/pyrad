@@ -22,6 +22,7 @@ from copy import deepcopy
 from warnings import warn
 
 import numpy as np
+from netCDF4 import num2date
 
 import pyart
 
@@ -38,7 +39,8 @@ from ..io.write_data import write_sun_hits, write_sun_retrieval
 from ..io.write_data import write_colocated_gates, write_colocated_data
 from ..io.write_data import write_colocated_data_time_avg, write_cdf
 from ..io.write_data import write_intercomp_scores_ts, write_ts_cum
-from ..io.write_data import write_rhi_profile
+from ..io.write_data import write_rhi_profile, write_field_coverage
+from ..io.write_data import write_last_state
 
 from ..graph.plots import plot_ppi, plot_rhi, plot_cappi, plot_bscope
 from ..graph.plots import plot_timeseries, plot_timeseries_comp
@@ -47,7 +49,8 @@ from ..graph.plots import plot_sun_retrieval_ts, plot_histogram
 from ..graph.plots import plot_histogram2, plot_density, plot_monitoring_ts
 from ..graph.plots import get_field_name, get_colobar_label, plot_scatter
 from ..graph.plots import plot_intercomp_scores_ts, plot_scatter_comp
-from ..graph.plots import plot_rhi_profile
+from ..graph.plots import plot_rhi_profile, plot_along_coord
+from ..graph.plots import plot_field_coverage
 
 from ..util.radar_utils import create_sun_hits_field, rainfall_accumulation
 from ..util.radar_utils import create_sun_retrieval_field, get_ROI
@@ -94,7 +97,7 @@ def generate_cosmo_coord_products(dataset, prdcfg):
         fname = 'rad2cosmo_'+prdcfg['voltype']+'_'+prdcfg['procname']+'.nc'
 
         pyart.io.cfradial.write_cfradial(savedir+fname, new_dataset)
-        print('saved file: '+fname)
+        print('saved file: '+savedir+fname)
 
         return fname
 
@@ -933,6 +936,264 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname
 
+    elif prdcfg['type'] == 'PLOT_ALONG_COORD':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        if dataset.scan_type != 'ppi' and dataset.scan_type != 'rhi':
+            warn('This product is only available for PPI or RHI volumes')
+            return None
+
+        colors = None
+        if 'colors' in prdcfg:
+            colors = prdcfg['colors']
+
+        if prdcfg['mode'] == 'ALONG_RNG':
+            value_start = 0.
+            if 'value_start' in prdcfg:
+                value_start = prdcfg['value_start']
+            value_stop = np.max(dataset.range['data'])
+            if 'value_stop' in prdcfg:
+                value_stop = prdcfg['value_stop']
+
+            rng_mask = np.logical_and(dataset.range['data'] >= value_start,
+                                      dataset.range['data'] <= value_stop)
+
+            x = dataset.range['data'][rng_mask]
+
+            xvals = []
+            yvals = []
+            valid_azi = []
+            valid_ele = []
+            if dataset.scan_type == 'ppi':
+                for i in range(len(prdcfg['fix_elevations'])):
+                    d_el = np.abs(dataset.fixed_angle['data'] -
+                                  prdcfg['fix_elevations'][i])
+                    min_d_el = np.min(d_el)
+                    if min_d_el > prdcfg['AngTol']:
+                        warn('No elevation angle found for fix_elevation ' +
+                             str(prdcfg['fix_elevations'][i]))
+                        continue
+                    ind_sweep = np.argmin(d_el)
+                    new_dataset = dataset.extract_sweeps([ind_sweep])
+
+                    try:
+                        dataset_lines = pyart.util.cross_section_ppi(
+                            new_dataset, [prdcfg['fix_azimuths'][i]],
+                            az_tol=prdcfg['AngTol'])
+                    except EnvironmentError:
+                        warn(' No data found at azimuth ' +
+                             prdcfg['fix_azimuths'][i]+' and elevation ' +
+                             prdcfg['fix_elevations'][i])
+                        continue
+                    yvals.append(
+                        dataset_line.fields[field_name]['data'][0, rng_mask])
+                    xvals.append(x)
+                    valid_azi.append(dataset_line.azimuth['data'][0])
+                    valid_ele.append(dataset_line.elevation['data'][0])
+            else:
+                for i in range(len(prdcfg['fix_azimuths'])):
+                    d_az = np.abs(dataset.fixed_angle['data'] -
+                                  prdcfg['fix_azimuths'][i])
+                    min_d_az = np.min(d_az)
+                    if min_d_az > prdcfg['AngTol']:
+                        warn('No azimuth angle found for fix_azimuth ' +
+                             str(prdcfg['fix_azimuths'][i]))
+                        continue
+                    ind_sweep = np.argmin(d_az)
+                    new_dataset = dataset.extract_sweeps([ind_sweep])
+
+                    try:
+                        dataset_line = pyart.util.cross_section_rhi(
+                            new_dataset, [prdcfg['fix_elevations'][i]],
+                            el_tol=prdcfg['AngTol'])
+                    except EnvironmentError:
+                        warn(
+                            ' No data found at azimuth ' +
+                            prdcfg['fix_azimuths'][i]+' and elevation ' +
+                            prdcfg['fix_elevations'][i])
+                        continue
+                    yvals.append(
+                        dataset_line.fields[field_name]['data'][0, rng_mask])
+                    xvals.append(x)
+                    valid_azi.append(dataset_line.azimuth['data'][0])
+                    valid_ele.append(dataset_line.elevation['data'][0])
+
+            if len(yvals) == 0:
+                warn('No data found')
+                return None
+
+            labelx = 'Range (m)'
+
+            labels = list()
+            for i in range(len(valid_azi)):
+                labels.append(
+                    'azi '+'{:.1f}'.format(valid_azi[i]) +
+                    ' ele '+'{:.1f}'.format(valid_ele[i]))
+
+        elif prdcfg['mode'] == 'ALONG_AZI':
+            value_start = np.min(dataset.azimuth['data'])
+            if 'value_start' in prdcfg:
+                value_start = prdcfg['value_start']
+            value_stop = np.max(dataset.azimuth['data'])
+            if 'value_stop' in prdcfg:
+                value_stop = prdcfg['value_stop']
+
+            yvals = []
+            xvals = []
+            valid_rng = []
+            valid_ele = []
+            for i in range(len(prdcfg['fix_ranges'])):
+                d_rng = np.abs(dataset.range['data'] -
+                               prdcfg['fix_ranges'][i])
+                min_d_rng = np.min(d_rng)
+                if min_d_rng > prdcfg['RngTol']:
+                    warn('No range gate found for fix_range ' +
+                         str(prdcfg['fix_ranges'][i]))
+                    continue
+                ind_rng = np.argmin(d_rng)
+
+                if dataset.scan_type == 'ppi':
+                    d_el = np.abs(dataset.fixed_angle['data'] -
+                                  prdcfg['fix_elevations'][i])
+                    min_d_el = np.min(d_el)
+                    if min_d_el > prdcfg['AngTol']:
+                        warn('No elevation angle found for fix_elevation ' +
+                             str(prdcfg['fix_elevations'][i]))
+                        continue
+                    ind_sweep = np.argmin(d_el)
+                    new_dataset = dataset.extract_sweeps([ind_sweep])
+                else:
+                    try:
+                        new_dataset = pyart.util.cross_section_rhi(
+                            dataset, [prdcfg['fix_elevations'][i]],
+                            el_tol=prdcfg['AngTol'])
+                    except EnvironmentError:
+                        warn(
+                            ' No data found at range ' +
+                            prdcfg['fix_ranges'][i]+' and elevation ' +
+                            prdcfg['fix_elevations'][i])
+                        continue
+                if value_start < value_stop:
+                    azi_mask = np.logical_and(
+                        new_dataset.azimuth['data'] >= value_start,
+                        new_dataset.azimuth['data'] <= value_stop)
+                else:
+                    azi_mask = np.logical_or(
+                        new_dataset.azimuth['data'] >= value_start,
+                        new_dataset.azimuth['data'] <= value_stop)
+                yvals.append(
+                    new_dataset.fields[field_name]['data'][azi_mask, ind_rng])
+                xvals.append(new_dataset.azimuth['data'][azi_mask])
+                valid_rng.append(new_dataset.range['data'][ind_rng])
+                valid_ele.append(new_dataset.elevation['data'][0])
+
+            if len(yvals) == 0:
+                warn('No data found')
+                return None
+
+            labelx = 'Azimuth Angle (deg)'
+
+            labels = list()
+            for i in range(len(valid_rng)):
+                labels.append(
+                    'rng '+'{:.1f}'.format(valid_rng[i]) +
+                    ' ele '+'{:.1f}'.format(valid_ele[i]))
+
+        elif prdcfg['mode'] == 'ALONG_ELE':
+            value_start = np.min(dataset.elevation['data'])
+            if 'value_start' in prdcfg:
+                value_start = prdcfg['value_start']
+            value_stop = np.max(dataset.elevation['data'])
+            if 'value_stop' in prdcfg:
+                value_stop = prdcfg['value_stop']
+
+            yvals = []
+            xvals = []
+            valid_rng = []
+            valid_azi = []
+            for i in range(len(prdcfg['fix_ranges'])):
+                d_rng = np.abs(dataset.range['data'] -
+                               prdcfg['fix_ranges'][i])
+                min_d_rng = np.min(d_rng)
+                if min_d_rng > prdcfg['RngTol']:
+                    warn('No range gate found for fix_range ' +
+                         str(prdcfg['fix_ranges'][i]))
+                    continue
+                ind_rng = np.argmin(d_rng)
+
+                if dataset.scan_type == 'ppi':
+                    try:
+                        new_dataset = pyart.util.cross_section_ppi(
+                            dataset, [prdcfg['fix_azimuths'][i]],
+                            az_tol=prdcfg['AngTol'])
+                    except EnvironmentError:
+                        warn(
+                            ' No data found at range ' +
+                            prdcfg['fix_ranges'][i]+' and elevation ' +
+                            prdcfg['fix_azimuths'][i])
+                        continue
+                else:
+                    d_az = np.abs(dataset.fixed_angle['data'] -
+                                  prdcfg['fix_azimuths'][i])
+                    min_d_az = np.min(d_az)
+                    if min_d_az > prdcfg['AngTol']:
+                        warn('No azimuth angle found for fix_azimuth ' +
+                             str(prdcfg['fix_azimuths'][i]))
+                        continue
+                    ind_sweep = np.argmin(d_az)
+                    new_dataset = dataset.extract_sweeps([ind_sweep])
+                ele_mask = np.logical_and(
+                    new_dataset.elevation['data'] >= value_start,
+                    new_dataset.elevation['data'] <= value_stop)
+                yvals.append(
+                    new_dataset.fields[field_name]['data'][ele_mask, ind_rng])
+                xvals.append(new_dataset.elevation['data'][ele_mask])
+                valid_rng.append(new_dataset.range['data'][ind_rng])
+                valid_azi.append(new_dataset.elevation['data'][0])
+            if len(yvals) == 0:
+                warn('No data found')
+                return None
+            labelx = 'Elevation Angle (deg)'
+
+            labels = list()
+            for i in range(len(valid_rng)):
+                labels.append(
+                    'rng '+'{:.1f}'.format(valid_rng[i]) +
+                    ' azi '+'{:.1f}'.format(valid_azi[i]))
+        else:
+            warn('Unknown plotting mode '+prdcfg['mode'])
+            return None
+
+        labely = get_colobar_label(dataset.fields[field_name], field_name)
+        titl = (
+            pyart.graph.common.generate_radar_time_begin(
+                dataset).isoformat() + 'Z' + '\n' +
+            get_field_name(dataset.fields[field_name], field_name))
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            prdcfg['mode'], prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], timeinfo=prdcfg['timeinfo'])
+
+        for i in range(len(fname)):
+            fname[i] = savedir+fname[i]
+
+        plot_along_coord(xvals, yvals, fname, labelx=labelx, labely=labely,
+                         labels=labels, title=titl, colors=colors)
+
+        print('----- save to '+' '.join(fname))
+
+        return fname
+
     elif prdcfg['type'] == 'BSCOPE_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset.fields:
@@ -1045,6 +1306,162 @@ def generate_vol_products(dataset, prdcfg):
                        labely=labely, titl=titl)
 
         print('----- save to '+' '.join(fname))
+
+        return fname
+
+    elif prdcfg['type'] == 'FIELD_COVERAGE':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        threshold = None
+        if 'threshold' in prdcfg:
+            threshold = prdcfg['threshold']
+        nvalid_min = 5.
+        if 'nvalid_min' in prdcfg:
+            nvalid_min = prdcfg['nvalid_min']
+
+        ele_res = 1.
+        if 'ele_res' in prdcfg:
+            ele_res = prdcfg['ele_res']
+        azi_res = 2.
+        if 'azi_res' in prdcfg:
+            azi_res = prdcfg['azi_res']
+
+        ele_min = 0.
+        if 'ele_min' in prdcfg:
+            ele_min = prdcfg['ele_min']
+        ele_max = 30.
+        if 'ele_max' in prdcfg:
+            ele_max = prdcfg['ele_max']
+        ele_step = 5.
+        if 'ele_step' in prdcfg:
+            ele_step = prdcfg['ele_step']
+
+        ele_sect_start = None
+        if 'ele_sect_start' in prdcfg:
+            ele_sect_start = prdcfg['ele_sect_start']
+        ele_sect_stop = None
+        if 'ele_sect_stop' in prdcfg:
+            ele_sect_stop = prdcfg['ele_sect_stop']
+        quantiles = np.array([10., 20., 30., 40., 50., 60., 70., 80., 90.])
+        if 'quantiles' in prdcfg:
+            quantiles = np.array(prdcfg['quantiles'])
+
+        # get coverage per ray
+        field_coverage = np.ma.empty(dataset.nrays)
+        field_coverage[:] = np.ma.masked
+
+        for i in range(dataset.nrays):
+            mask = np.ma.getmaskarray(
+                dataset.fields[field_name]['data'][i, :])
+            if threshold is not None:
+                ind = np.where(np.logical_and(
+                    ~mask,
+                    dataset.fields[field_name]['data'][i, :] >= threshold))[0]
+            else:
+                ind = np.where(~mask)[0]
+            if len(ind) > nvalid_min:
+                field_coverage[i] = (dataset.range['data'][ind[-1]] -
+                                     dataset.range['data'][ind[0]])
+
+        # group coverage per elevation sectors
+        nsteps = int((ele_max-ele_min)/ele_step)  # number of steps
+        nele = int(ele_step/ele_res)  # number of elev per step
+        ele_steps_vec = np.arange(nsteps)*ele_step+ele_min
+
+        yval = []
+        xval = []
+        labels = []
+        for i in range(nsteps-1):
+            yval_aux = np.ma.array([])
+            xval_aux = np.array([])
+            for j in range(nele):
+                ele_target = ele_steps_vec[i]+j*ele_res
+                d_ele = np.abs(dataset.elevation['data']-ele_target)
+                ind_ele = np.where(d_ele < prdcfg['AngTol'])[0]
+                if len(ind_ele) == 0:
+                    continue
+                yval_aux = np.ma.concatenate([yval_aux, field_coverage[ind_ele]])
+                xval_aux = np.concatenate([xval_aux, dataset.azimuth['data'][ind_ele]])
+            yval.append(yval_aux)
+            xval.append(xval_aux)
+            labels.append('ele '+'{:.1f}'.format(ele_steps_vec[i])+'-' +
+                          '{:.1f}'.format(ele_steps_vec[i+1])+' deg')
+
+        # get mean value per azimuth for a specified elevation sector
+        xmeanval = None
+        ymeanval = None
+        quantval = None
+        labelmeanval = None
+        if ele_sect_start is not None and ele_sect_stop is not None:
+            ind_ele = np.where(np.logical_and(
+                dataset.elevation['data'] >= ele_sect_start,
+                dataset.elevation['data'] <= ele_sect_stop))
+            field_coverage_sector = field_coverage[ind_ele]
+            azi_sector = dataset.azimuth['data'][ind_ele]
+            nazi = int((np.max(dataset.azimuth['data']) -
+                       np.min(dataset.azimuth['data']))/azi_res+1)
+
+            xmeanval = np.arange(nazi)*azi_res+np.min(dataset.azimuth['data'])
+            ymeanval = np.ma.empty(nazi)
+            ymeanval[:] = np.ma.masked
+            for i in range(nazi):
+                d_azi = np.abs(azi_sector-xmeanval[i])
+                ind_azi = np.where(d_azi < prdcfg['AngTol'])[0]
+                if len(ind_azi) == 0:
+                    continue
+                ymeanval[i] = np.ma.mean(field_coverage_sector[ind_azi])
+            labelmeanval = ('ele '+'{:.1f}'.format(ele_sect_start)+'-' +
+                            '{:.1f}'.format(ele_sect_stop)+' deg mean val')
+
+            meanval, quantval, nvalid = quantiles_weighted(
+                field_coverage_sector, quantiles=quantiles/100.)
+
+        # plot field coverage
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'coverage', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'],
+            timeinfo=prdcfg['timeinfo'])
+
+        for i in range(len(fname)):
+            fname[i] = savedir+fname[i]
+
+        titl = (
+            pyart.graph.common.generate_radar_time_begin(
+                dataset).isoformat() + 'Z' + '\n' +
+            get_field_name(dataset.fields[field_name], field_name))
+
+        plot_field_coverage(
+            xval, yval, fname, labels=labels, title=titl, ymin=0.,
+            ymax=np.max(dataset.range['data'])+60000., xmeanval=xmeanval,
+            ymeanval=ymeanval, labelmeanval=labelmeanval)
+
+        print('----- save to '+' '.join(fname))
+
+        fname = make_filename(
+            'coverage', prdcfg['dstype'], prdcfg['voltype'],
+            ['csv'], timeinfo=prdcfg['timeinfo'])[0]
+
+        fname = savedir+fname
+
+        if quantval is not None:
+            data_type = get_colobar_label(
+                dataset.fields[field_name], field_name)
+            write_field_coverage(
+                quantiles, quantval, ele_sect_start, ele_sect_stop,
+                np.min(xmeanval), np.max(xmeanval), threshold, nvalid_min,
+                data_type, prdcfg['timeinfo'], fname)
+
+            print('----- save to '+fname)
 
         return fname
 
@@ -1170,6 +1587,10 @@ def generate_vol_products(dataset, prdcfg):
         # count and filter outliers
         quantiles_lim, values_lim = compute_quantiles(
             data, quantiles=[0.2, 99.8])
+        if values_lim.mask[0] == True or values_lim.mask[1] == True:
+            warn('No valid radar gates found in sector')
+            return None
+
         nsmall = np.count_nonzero(data.compressed() < values_lim[0])
         nlarge = np.count_nonzero(data.compressed() > values_lim[1])
         noutliers = nlarge+nsmall
@@ -1268,6 +1689,29 @@ def generate_vol_products(dataset, prdcfg):
         print('saved file: '+fname[0])
 
         return fname[0]
+
+    elif prdcfg['type'] == 'SAVESTATE':
+        if prdcfg['lastStateFile'] is None:
+            warn('Unable to save last state file. File name not specified')
+            return None
+
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        max_time = np.max(dataset.time['data'])
+        units = dataset.time['units']
+        calendar = dataset.time['calendar']
+        last_date = num2date(max_time, units, calendar)
+
+        write_last_state(last_date, prdcfg['lastStateFile'])
+        print('saved file: '+prdcfg['lastStateFile'])
+
+        return prdcfg['lastStateFile']
 
     else:
         warn(' Unsupported product type: ' + prdcfg['type'])

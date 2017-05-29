@@ -145,11 +145,20 @@ rain_rate = 'rain_rate'
 radar_estimated_rain_rate = 'radar_estimated_rain_rate'
 radar_echo_classification = 'radar_echo_classification'
 radar_echo_id = 'radar_echo_id'
+
+# attenuation
 specific_attenuation = 'specific_attenuation'
 corrected_specific_attenuation = 'corrected_specific_attenuation'
+path_integrated_attenuation = 'path_integrated_attenuation'
+corrected_path_integrated_attenuation = (
+    'corrected_path_integrated_attenuation')
 specific_differential_attenuation = 'specific_differential_attenuation'
 corrected_specific_differential_attenuation = (
     'corrected_specific_differential_attenuation')
+path_integrated_differential_attenuation = (
+    'path_integrated_differential_attenuation')
+corrected_path_integrated_differential_attenuation = (
+    'corrected_path_integrated_differential_attenuation')
 
 sun_hit_h = 'sun_hit_h'
 sun_hit_v = 'sun_hit_v'
@@ -304,10 +313,17 @@ DEFAULT_FIELD_NAMES = {
     'radar_echo_classification': radar_echo_classification,
     'radar_echo_id': radar_echo_id,
     'specific_attenuation': specific_attenuation,
+    'path_integrated_attenuation': path_integrated_attenuation,
     'specific_differential_attenuation': specific_differential_attenuation,
+    'path_integrated_differential_attenuation': (
+        path_integrated_differential_attenuation),
     'corrected_specific_attenuation': corrected_specific_attenuation,
+    'corrected_path_integrated_attenuation': (
+        corrected_path_integrated_attenuation),
     'corrected_specific_differential_attenuation': (
         corrected_specific_differential_attenuation),
+    'corrected_path_integrated_differential_attenuation': (
+        corrected_path_integrated_differential_attenuation),
     'temperature': temperature,
     'iso0': iso0,
     'cosmo_index': cosmo_index,
@@ -506,7 +522,7 @@ DEFAULT_METADATA = {
         'units': 'unitless'},
 
     'nyquist_velocity': {
-        'units': 'meters_per_second',
+        'units': 'm/s',
         'comments': "Unambiguous velocity",
         'meta_group': 'instrument_parameters',
         'long_name': 'Nyquist velocity'},
@@ -702,13 +718,13 @@ DEFAULT_METADATA = {
 
     # Velocity fields
     velocity: {
-        'units': 'meters_per_second',
+        'units': 'm/s',
         'standard_name': 'radial_velocity_of_scatterers_away_from_instrument',
         'long_name': 'Mean Doppler velocity',
         'coordinates': 'elevation azimuth range'},
 
     corrected_velocity: {
-        'units': 'meters_per_second',
+        'units': 'm/s',
         'standard_name': (
             'corrected_radial_velocity_of_scatterers_away_from_instrument'),
         'long_name': 'Corrected mean Doppler velocity',
@@ -716,13 +732,13 @@ DEFAULT_METADATA = {
 
     # Spectrum width fields
     spectrum_width: {
-        'units': 'meters_per_second',
+        'units': 'm/s',
         'standard_name': 'doppler_spectrum_width',
         'long_name': 'Doppler spectrum width',
         'coordinates': 'elevation azimuth range'},
 
     corrected_spectrum_width: {
-        'units': 'meters_per_second',
+        'units': 'm/s',
         'standard_name': 'corrected_doppler_spectrum_width',
         'long_name': 'Corrected Doppler spectrum width',
         'coordinates': 'elevation azimuth range'},
@@ -951,11 +967,23 @@ DEFAULT_METADATA = {
         'standard_name': 'specific_attenuation',
         'long_name': 'Specific attenuation',
         'coordinates': 'elevation azimuth range'},
+        
+    path_integrated_attenuation: {
+        'units': 'dB',
+        'standard_name': 'path_integrated_attenuation',
+        'long_name': 'Path integrated attenuation',
+        'coordinates': 'elevation azimuth range'},
 
     specific_differential_attenuation: {
         'units': 'dB/km',
         'standard_name': 'specific_differential_attenuation',
         'long_name': 'Specific differential attenuation',
+        'coordinates': 'elevation azimuth range'},
+        
+    path_integrated_differential_attenuation: {
+        'units': 'dB',
+        'standard_name': 'path_integrated_differential_attenuation',
+        'long_name': 'Path integrated differential attenuation',
         'coordinates': 'elevation azimuth range'},
 
     corrected_specific_attenuation: {
@@ -963,11 +991,23 @@ DEFAULT_METADATA = {
         'standard_name': 'corrected_specific_attenuation',
         'long_name': 'Corrected specific attenuation',
         'coordinates': 'elevation azimuth range'},
+        
+    corrected_path_integrated_attenuation: {
+        'units': 'dB',
+        'standard_name': 'corrected_path_integrated_attenuation',
+        'long_name': 'Corrected path integrated attenuation',
+        'coordinates': 'elevation azimuth range'},
 
     corrected_specific_differential_attenuation: {
         'units': 'dB/km',
         'standard_name': 'corrected_specific_differential_attenuation',
         'long_name': 'Corrected specific differential attenuation',
+        'coordinates': 'elevation azimuth range'},
+        
+    corrected_path_integrated_differential_attenuation: {
+        'units': 'dB',
+        'standard_name': 'corrected_path_integrated_differential_attenuation',
+        'long_name': 'Corrected path integrated differential attenuation',
         'coordinates': 'elevation azimuth range'},
 
     number_of_samples: {
@@ -1743,9 +1783,9 @@ def velocity_limit(container=None, selection=0):
                 vel = container.get_nyquist_vel(0, check_uniform=False)
             return (-vel, vel)
         except LookupError:
-            return (-30., 30.)
+            return (-42., 42.)
     else:
-        return (-30., 30.)
+        return (-42., 42.)
 
 
 def spectrum_width_limit(container=None, selection=0):
@@ -1759,9 +1799,9 @@ def spectrum_width_limit(container=None, selection=0):
                 vel = container.get_nyquist_vel(0, check_uniform=False)
             return (0, vel)
         except LookupError:
-            return (0, 30.)
+            return (0., 4.)
     else:
-        return (0, 30.)
+        return (0., 4.)
 
 # map each field to a colormap
 
@@ -1859,9 +1899,13 @@ DEFAULT_FIELD_COLORMAP = {
     radar_echo_id: 'pyart_LangRainbow12',
 
     specific_attenuation: 'pyart_Carbone17',
+    path_integrated_attenuation: 'pyart_Carbone17',
     specific_differential_attenuation: 'pyart_Carbone17',
+    path_integrated_differential_attenuation: 'pyart_Carbone17',
     corrected_specific_attenuation: 'pyart_Carbone17',
+    corrected_path_integrated_attenuation: 'pyart_Carbone17',
     corrected_specific_differential_attenuation: 'pyart_Carbone17',
+    corrected_path_integrated_differential_attenuation: 'pyart_Carbone17',
 
     differential_phase_texture: 'pyart_BlueBrown11',
     differential_reflectivity_texture: 'pyart_BlueBrown11',
@@ -1902,7 +1946,7 @@ DEFAULT_FIELD_LIMITS = {
     signal_to_noise_ratio_vv: (-5., 30.),
     noisedBZ_hh: (-40., 10.),
     noisedBZ_vv: (-40., 10.),
-    reflectivity_bias: (-10., 10.),
+    reflectivity_bias: (-30., 30.),
 
     signal_power_hh: (-130., 0.),
     signal_power_vv: (-130., 0.),
@@ -1939,7 +1983,7 @@ DEFAULT_FIELD_LIMITS = {
     differential_reflectivity: (-1., 8.),
     corrected_differential_reflectivity: (-1., 8.),
     unfiltered_differential_reflectivity: (-1., 8.),
-    differential_reflectivity_in_rain: (-2., 2.),
+    differential_reflectivity_in_rain: (-10., 10.),
 
     cross_correlation_ratio: (0.7, 1.),
     corrected_cross_correlation_ratio: (0.7, 1.),
@@ -1978,9 +2022,13 @@ DEFAULT_FIELD_LIMITS = {
 
 
     specific_attenuation: (0., 1.),
+    path_integrated_attenuation: (0., 20.),
     specific_differential_attenuation: (0., 0.3),
+    path_integrated_differential_attenuation: (0., 3.),
     corrected_specific_attenuation: (0., 1.),
+    corrected_path_integrated_attenuation: (0., 20.),
     corrected_specific_differential_attenuation: (0., 0.3),
+    corrected_path_integrated_differential_attenuation: (0., 3.),
 
     differential_phase_texture: (0, 180.),
 

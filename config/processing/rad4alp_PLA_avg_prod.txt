@@ -4,8 +4,9 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 13
-	l0:SNRh
+dataSetList STRARR 14    
+	l0:TEMP
+    l0:SNRh
 	l1:RhoHV
     l2:echoID
     l3:echoFilter
@@ -20,6 +21,28 @@ dataSetList STRARR 13
 	l9:flag_avg
 
 
+# ==========================================================================================
+#               COSMO data
+# ==========================================================================================
+#RAD2COSMO STRUCT 3
+#    type STRING COSMO_COORD
+#    datatype STRARR 1
+#        RAD4ALP:dBZ        
+#    products STRUCT 1        
+#        rad2cosmo STRUCT 2
+#            type  STRING SAVEVOL            
+#            voltype STRING cosmo_index
+#
+TEMP STRUCT 6
+    type STRING COSMO_LOOKUP
+    datatype STRARR 1
+        RAD4ALP:dBZ        
+    cosmo_type STRING TEMP
+    regular_grid INT 1
+    lookup_table INT 1
+    MAKE_GLOBAL INT 1
+    
+    
 # ==========================================================================================
 #                 secondary moments products
 # ==========================================================================================
@@ -127,7 +150,7 @@ Att_ZPhi STRUCT 4
         PROC:dBZc
         PROC:ZDRc
         PROC:PhiDPc
-        RAD4ALPCOSMO:TEMP    
+        PROC:TEMP    
     MAKE_GLOBAL INT 1
     ATT_METHOD STRING ZPhi
 	
@@ -142,7 +165,7 @@ hydroclass STRUCT 5
 	  PROC:ZDRc
 	  PROC:RhoHVc
 	  PROC:KDPc
-	  RAD4ALPCOSMO:TEMP
+	  PROC:TEMP
    HYDRO_METHOD STRING SEMISUPERVISED
    RADARCENTROIDS STRING A
    MAKE_GLOBAL INT 1

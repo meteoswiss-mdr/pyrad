@@ -16,6 +16,7 @@ Auxiliary functions for reading/writing files
     get_field_name
     get_file_list
     get_scan_list
+    get_new_rainbow_file_name
     get_datatype_fields
     get_dataset_fields
     get_datetime
@@ -380,10 +381,18 @@ def get_fieldname_pyart(datatype):
         field_name = 'specific_attenuation'
     elif datatype == 'Ahc':
         field_name = 'corrected_specific_attenuation'
+    elif datatype == 'PIA':
+        field_name = 'path_integrated_attenuation'
+    elif datatype == 'PIAc':
+        field_name = 'corrected_path_integrated_attenuation'
     elif datatype == 'Adp':
         field_name = 'specific_differential_attenuation'
     elif datatype == 'Adpc':
         field_name = 'corrected_specific_differential_attenuation'
+    elif datatype == 'PIDA':
+        field_name = 'path_integrated_differential_attenuation'
+    elif datatype == 'PIDAc':
+        field_name = 'corrected_path_integrated_differential_attenuation'
 
     elif datatype == 'TEMP':
         field_name = 'temperature'
@@ -456,7 +465,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
             dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%Y%m%d')
             datapath = cfg['datapath'][ind_rad] + scan + daydir + '/'
             if (not os.path.isdir(datapath)):
-                warn("WARNING: Unknown datapath '%s'" % datapath)
+                # warn("WARNING: Unknown datapath '%s'" % datapath)
                 continue
             dayfilelist = glob.glob(datapath+dayinfo+'*'+datatype+'.*')
             for filename in dayfilelist:
@@ -566,6 +575,35 @@ def get_scan_list(scandescriptor_list):
         scan_list[ind_rad].append(descrfields[1])
 
     return scan_list
+
+
+def get_new_rainbow_file_name(master_fname, master_datadescriptor, datatype):
+    """
+    get the rainbow file name containing datatype from a master file name
+    and data type
+
+    Parameters
+    ----------
+    master_fname : str
+        the master file name
+    master_datadescriptor : str
+        the master data type descriptor
+    datatype : str
+        the data type of the new file name to be created
+
+    Returns
+    -------
+    new_fname : str
+        the new file name
+
+    """
+    radarnr, datagroup, master_datatype, dataset, product = (
+            get_datatype_fields(master_datadescriptor))
+    datapath = os.path.dirname(master_fname)
+    voltime = get_datetime(master_fname, master_datatype)
+    voltype = os.path.basename(master_fname).split('.')[1]
+
+    return datapath+'/'+voltime.strftime('%Y%m%d%H%M%S')+'00'+datatype+'.'+voltype
 
 
 def get_datatype_fields(datadescriptor):
