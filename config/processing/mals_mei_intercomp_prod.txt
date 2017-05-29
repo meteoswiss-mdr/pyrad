@@ -37,7 +37,7 @@ dataSetList STRARR 2
 #            radar STRING RADAR001
 #            plot_type STRING PPI
 #            voltype STRING colocated_gates
-#            anglenr INT 1
+#            anglenr INT 0
 #        DX50_EL005_7 STRUCT 5         
 #            type STRING PPI_IMAGE
 #            radar STRING RADAR001

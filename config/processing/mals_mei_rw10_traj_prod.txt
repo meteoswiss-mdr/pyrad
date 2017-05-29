@@ -145,7 +145,7 @@ wind_vel_h_az STRUCT 5
         SAVEVOL STRUCT 2
             type  STRING SAVEVOL
             voltype STRING wind_vel_h_az
-        AZ037_0 STRUCT 3
+        AZ260_0 STRUCT 3
             type  STRING RHI_IMAGE
             anglenr INT 6
             voltype STRING wind_vel_h_az
@@ -163,7 +163,7 @@ windshear_v STRUCT 4
         SAVEVOL STRUCT 2
             type  STRING SAVEVOL
             voltype STRING windshear_v
-        AZ037_0 STRUCT 3
+        AZ260_0 STRUCT 3
             type  STRING RHI_IMAGE
             anglenr INT 6
             voltype STRING windshear_v

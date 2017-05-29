@@ -50,15 +50,15 @@ reflectivity STRUCT 3
    type     STRING RAW
    datatype STRING dBZ
    products STRUCT 5
-      AZ213 STRUCT 3
+      AZ256 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 4
          voltype STRING dBZ
-      AZ217 STRUCT 3
+      AZ260 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 6
          voltype STRING dBZ
-      AZ221 STRUCT 3
+      AZ264 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 8
          voltype STRING dBZ
@@ -157,15 +157,15 @@ hydroclass STRUCT 6
     RADARCENTROIDS STRING DX50
     MAKE_GLOBAL INT 1
 	products STRUCT 4
-      AZ213 STRUCT 3
+      AZ256 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 4
          voltype STRING hydro
-      AZ217 STRUCT 3
+      AZ260 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 6
          voltype STRING hydro
-      AZ221 STRUCT 3
+      AZ264 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 8
          voltype STRING hydro
@@ -188,15 +188,15 @@ rainrate STRUCT 5
     RR_METHOD STRING hydro
     MAKE_GLOBAL INT 1
     products STRUCT 8
-      AZ213 STRUCT 3
+      AZ256 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 4
          voltype STRING RR
-      AZ217 STRUCT 3
+      AZ260 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 6
          voltype STRING RR
-      AZ221 STRUCT 3
+      AZ264 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 8
          voltype STRING RR
@@ -297,15 +297,15 @@ wind STRUCT 5
     vert_proj INT 0
     MAKE_GLOBAL INT 1
     products STRUCT 6
-      AZ213 STRUCT 3
+      AZ256 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 4
          voltype STRING wind_vel_h_az
-      AZ217 STRUCT 3
+      AZ260 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 6
          voltype STRING wind_vel_h_az
-      AZ221 STRUCT 3
+      AZ264 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 8
          voltype STRING wind_vel_h_az
@@ -341,15 +341,15 @@ windshear STRUCT 4
         PROC:wind_vel_h_az
     MAKE_GLOBAL INT 1
     products STRUCT 3
-      AZ213 STRUCT 3
+      AZ256 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 4
          voltype STRING windshear_v
-      AZ217 STRUCT 3
+      AZ260 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 6
          voltype STRING windshear_v
-      AZ221 STRUCT 3
+      AZ264 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 8
          voltype STRING windshear_v
@@ -391,7 +391,7 @@ turbulence STRUCT 4
         PROC:Wc
     MAKE_GLOBAL INT 0
     products STRUCT 4
-       AZ217 STRUCT 3
+       AZ260 STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 6
          voltype STRING Wc

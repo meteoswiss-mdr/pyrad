@@ -53,7 +53,7 @@ echoFilter STRUCT 5
     echo_type INT 3
     MAKE_GLOBAL INT 1
     products STRUCT 1        
-        AZ037_0_V STRUCT 3
+        AZ107_0_V STRUCT 3
             type  STRING RHI_IMAGE
             anglenr INT 6
             voltype STRING Vc
@@ -82,7 +82,7 @@ outlierFilter STRUCT 9
     percentile_max float 95.
     MAKE_GLOBAL INT 1
     products STRUCT 1        
-        AZ037_0_V STRUCT 3
+        AZ107_0_V STRUCT 3
             type  STRING RHI_IMAGE
             anglenr INT 6
             voltype STRING Vc
@@ -145,7 +145,7 @@ wind_vel_h_az STRUCT 5
         SAVEVOL STRUCT 2
             type  STRING SAVEVOL
             voltype STRING wind_vel_h_az
-        AZ037_0 STRUCT 3
+        AZ107_0 STRUCT 3
             type  STRING RHI_IMAGE
             anglenr INT 6
             voltype STRING wind_vel_h_az
@@ -163,7 +163,7 @@ windshear_v STRUCT 4
         SAVEVOL STRUCT 2
             type  STRING SAVEVOL
             voltype STRING windshear_v
-        AZ037_0 STRUCT 3
+        AZ107_0 STRUCT 3
             type  STRING RHI_IMAGE
             anglenr INT 6
             voltype STRING windshear_v

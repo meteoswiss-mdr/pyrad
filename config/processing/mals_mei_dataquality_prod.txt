@@ -309,7 +309,7 @@ RR_Z STRUCT 5
             voltype STRING RR
         EL003_0 STRUCT 3
             type  STRING PPI_IMAGE
-            anglenr INT 1
+            anglenr INT 0
             voltype STRING RR
             
 RR_hydro STRUCT 5
@@ -326,7 +326,7 @@ RR_hydro STRUCT 5
             voltype STRING RR
         EL003_0 STRUCT 3
             type  STRING PPI_IMAGE
-            anglenr INT 1
+            anglenr INT 0
             voltype STRING RR
 
 
@@ -705,7 +705,7 @@ monitoring_RhoHV STRUCT 4
             type STRING ANGULAR_DENSITY
             hist_type STRING cumulative
             voltype STRING RhoHV_rain
-            anglenr INT 1
+            anglenr INT 0
             quantiles FLTARR 3
                 65.
                 80.
@@ -751,7 +751,7 @@ monitoring_ZDR STRUCT 4
             type STRING ANGULAR_DENSITY
             hist_type STRING cumulative
             voltype STRING ZDR_rain
-            anglenr INT 1
+            anglenr INT 0
             ref_value FLOAT 0.2
         EL005_7_DENSITY STRUCT 5
             type STRING ANGULAR_DENSITY
@@ -785,7 +785,7 @@ monitoring_Zh_bias STRUCT 4
             type STRING ANGULAR_DENSITY
             hist_type STRING cumulative
             voltype STRING dBZ_bias
-            anglenr INT 1
+            anglenr INT 0
             ref_value FLOAT 0.
         EL005_7_DENSITY STRUCT 5
             type STRING ANGULAR_DENSITY
@@ -819,7 +819,7 @@ monitoring_PhiDP0 STRUCT 4
             type STRING ANGULAR_DENSITY
             hist_type STRING cumulative
             voltype STRING PhiDP0
-            anglenr INT 1
+            anglenr INT 0
             ref_value FLOAT 0.
         EL005_7_DENSITY STRUCT 5
             type STRING ANGULAR_DENSITY

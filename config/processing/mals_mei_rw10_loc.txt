@@ -8,19 +8,19 @@ RadarName STRING DX50
 # Names of the radar scans in the specified sector
 # NOTE: Must have a trailing '/'
 ScanList STRARR 13
-    MALS_MEI_217_up.ele/  # masterscan: first scan of a volume
-    MALS_MEI_205_up.ele/
-    MALS_MEI_207_dw.ele/
-    MALS_MEI_209_dw.ele/
-    MALS_MEI_211_up.ele/
-    MALS_MEI_213_up.ele/
-    MALS_MEI_215_dw.ele/
-    MALS_MEI_219_up.ele/
-    MALS_MEI_221_dw.ele/
-    MALS_MEI_223_dw.ele/
-    MALS_MEI_225_up.ele/
-    MALS_MEI_227_up.ele/
-    MALS_MEI_229_dw.ele/
+    MALS_MEI_260_up.ele/  # masterscan: first scan of a volume
+    MALS_MEI_264_dw.ele/
+    MALS_MEI_268_up.ele/
+    MALS_MEI_272_dw.ele/
+    MALS_MEI_270_up.ele/
+    MALS_MEI_266_dw.ele/
+    MALS_MEI_262_up.ele/
+    MALS_MEI_258_dw.ele/
+    MALS_MEI_254_up.ele/
+    MALS_MEI_250_dw.ele/
+    MALS_MEI_248_up.ele/
+    MALS_MEI_252_dw.ele/
+    MALS_MEI_256_up.ele/
 
 # Repetition time of the scans [min]
 ScanPeriod INT 2
