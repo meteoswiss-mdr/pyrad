@@ -77,9 +77,7 @@ def get_save_dir(basepath, procname, dsname, prdname, timeinfo=None,
     if create_dir is False:
         return savedir
 
-    if os.path.isdir(savedir):
-        pass
-    else:
+    if not os.path.isdir(savedir):
         os.makedirs(savedir)
 
     return savedir
@@ -381,10 +379,18 @@ def get_fieldname_pyart(datatype):
         field_name = 'specific_attenuation'
     elif datatype == 'Ahc':
         field_name = 'corrected_specific_attenuation'
+    elif datatype == 'PIA':
+        field_name = 'path_integrated_attenuation'
+    elif datatype == 'PIAc':
+        field_name = 'corrected_path_integrated_attenuation'
     elif datatype == 'Adp':
         field_name = 'specific_differential_attenuation'
     elif datatype == 'Adpc':
         field_name = 'corrected_specific_differential_attenuation'
+    elif datatype == 'PIDA':
+        field_name = 'path_integrated_differential_attenuation'
+    elif datatype == 'PIDAc':
+        field_name = 'corrected_path_integrated_differential_attenuation'
 
     elif datatype == 'TEMP':
         field_name = 'temperature'
@@ -595,7 +601,8 @@ def get_new_rainbow_file_name(master_fname, master_datadescriptor, datatype):
     voltime = get_datetime(master_fname, master_datatype)
     voltype = os.path.basename(master_fname).split('.')[1]
 
-    return datapath+'/'+voltime.strftime('%Y%m%d%H%M%S')+'00'+datatype+'.'+voltype
+    return (datapath+'/'+voltime.strftime('%Y%m%d%H%M%S')+'00'+datatype+'.' +
+            voltype)
 
 
 def get_datatype_fields(datadescriptor):
@@ -815,8 +822,7 @@ def find_raw_cosmo_file(voltime, datatype, cfg, ind_rad=0):
 
     """
     # initial run time to look for
-    hvol = int(voltime.strftime('%H'))
-    runhour0 = int(hvol/cfg['CosmoRunFreq'])*cfg['CosmoRunFreq']
+    runhour0 = int(voltime.hour/cfg['CosmoRunFreq'])*cfg['CosmoRunFreq']
     runtime0 = voltime.replace(hour=runhour0, minute=0, second=0)
 
     # look for cosmo file
