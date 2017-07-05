@@ -329,32 +329,30 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             raise Exception("ERROR: Undefined 'configpath' for dataset '%s'"
                             % dscfg['dsname'])
 
-        if dscfg['antennaType'] == 'AZIMUTH' \
-                or dscfg['antennaType'] == 'ELEVATION':
-            rad_traj = trajectory.add_radar(radar)
-            radar_asr = None
+        if 'target_radar_pos' not in dscfg:
             radar_antenna_atsameplace = True
+            target_radar = None
+            
+            warn('No target radar position specified. ' +
+                 'The radars are assumed colocated')            
+            rad_traj = trajectory.add_radar(radar)
         else:
-            if 'asr_position' not in dscfg:
-                raise Exception("ERROR: Undefined ASR position for dataset "
-                                "'%s'" % dscfg['dsname'])
-
             radar_antenna_atsameplace = False
-
-            # create dummy radar object with ASR specs
+            
+            # create dummy radar object with target radar specs
             latitude = get_metadata('latitude')
             longitude = get_metadata('longitude')
             altitude = get_metadata('altitude')
 
-            latitude['data'] = np.array([dscfg['asr_position']['latitude']],
+            latitude['data'] = np.array([dscfg['target_radar_pos']['latitude']],
                                         dtype='float64')
-            longitude['data'] = np.array([dscfg['asr_position']['longitude']],
+            longitude['data'] = np.array([dscfg['target_radar_pos']['longitude']],
                                          dtype='float64')
-            altitude['data'] = np.array([dscfg['asr_position']['altitude']],
+            altitude['data'] = np.array([dscfg['target_radar_pos']['altitude']],
                                         dtype='float64')
 
-            radar_asr = Radar_ASR(latitude, longitude, altitude)
-            rad_traj = trajectory.add_radar(radar_asr)
+            target_radar = Target_Radar(latitude, longitude, altitude)
+            rad_traj = trajectory.add_radar(target_radar)
 
         if (dscfg['antennaType'] == 'AZIMUTH'):
             is_azimuth_antenna = True
@@ -376,6 +374,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             patternfile = dscfg['configpath'] + 'antenna/' \
                 + dscfg['par_azimuth_antenna']['elPatternFile']
             fixed_angle = dscfg['par_azimuth_antenna']['fixed_angle']
+            
         elif (dscfg['antennaType'] == 'ELEVATION'):
             is_azimuth_antenna = False
             info = 'parElAnt'
@@ -397,6 +396,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             patternfile = dscfg['configpath'] + 'antenna/' \
                 + dscfg['par_elevation_antenna']['azPatternFile']
             fixed_angle = dscfg['par_elevation_antenna']['fixed_angle']
+            
         elif (dscfg['antennaType'] == 'LOWBEAM'):
             is_azimuth_antenna = True
             info = 'asrLowBeamAnt'
@@ -417,6 +417,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             patternfile = dscfg['configpath'] + 'antenna/' \
                 + dscfg['asr_lowbeam_antenna']['elPatternFile']
             fixed_angle = dscfg['asr_lowbeam_antenna']['fixed_angle']
+            
         elif (dscfg['antennaType'] == 'HIGHBEAM'):
             is_azimuth_antenna = True
             info = 'asrHighBeamAnt'
@@ -461,7 +462,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             if (dscfg['range_all'] != 0):
                 do_all_ranges = True
 
-        # Config parameters for processing where the weather radar and the
+        # Config parameters for processing when the weather radar and the
         # antenna are not at the same place:
 
         max_altitude = 12000.0  # [m]
@@ -497,6 +498,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
                                                   twoway=True)
         except:
             raise
+            
         pattern_angles = antpattern['angle'] + fixed_angle
         if (not is_azimuth_antenna):
             pattern_angles[pattern_angles < 0] += 360.
@@ -549,7 +551,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
                 'radar_traj': rad_traj,
                 'radar_old': None,
                 'radar_old2': None,
-                'radar_asr': radar_asr,
+                'target_radar': target_radar,
                 'last_task_start_dt': None,
                 'ind_rad': ind_rad,
                 'is_azimuth_antenna': is_azimuth_antenna,
@@ -585,7 +587,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
         weight_threshold = tadict['weight_threshold']
         do_all_ranges = tadict['do_all_ranges']
         ts = tadict['ts']
-        radar_asr = tadict['radar_asr']
+        target_radar = tadict['target_radar']
         max_altitude = tadict['max_altitude']
         latlon_tol = tadict['latlon_tol']
         alt_tol = tadict['alt_tol']
@@ -682,8 +684,8 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
                                                              dtype=int)
 
             r_radar = Radar(r_time, r_range, r_fields, None, 'rhi',
-                            radar_asr.latitude, radar_asr.longitude,
-                            radar_asr.altitude,
+                            target_radar.latitude, target_radar.longitude,
+                            target_radar.altitude,
                             r_sweep_number, None, None, None, None,
                             r_azimuth, r_elevation)
 
@@ -817,7 +819,7 @@ def _sample_out_of_sector(az, el, rr, radar_sel, ray_sel, rr_ind,
     return False
 
 
-class Radar_ASR:
+class Target_Radar:
     """
 
     """
