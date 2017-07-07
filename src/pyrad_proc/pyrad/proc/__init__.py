@@ -56,7 +56,7 @@ Monitoring, calibration and noise correction
     process_correct_bias
     process_correct_noise_rhohv
     process_rhohv_rain
-    process_zdr_rain
+    process_zdr_precip
     process_estimate_phidp0
     process_sun_hits
     process_selfconsistency_kdp_phidp
@@ -125,7 +125,7 @@ from .process_phase import process_phidp_kdp_lp, process_phidp_kdp_Maesaka
 from .process_phase import process_attenuation
 
 from .process_calib import process_correct_bias, process_correct_noise_rhohv
-from .process_calib import process_rhohv_rain, process_zdr_rain
+from .process_calib import process_rhohv_rain, process_zdr_precip
 from .process_calib import process_estimate_phidp0
 from .process_calib import process_selfconsistency_kdp_phidp
 from .process_calib import process_selfconsistency_bias
