@@ -293,8 +293,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'corrected_differential_reflectivity'
     elif datatype == 'ZDRuc':
         field_name = 'corrected_unfiltered_differential_reflectivity'
-    elif datatype == 'ZDR_rain':
-        field_name = 'differential_reflectivity_in_rain'
+    elif datatype == 'ZDR_prec':
+        field_name = 'differential_reflectivity_in_precipitation'
 
     elif datatype == 'dBm':
         field_name = 'signal_power_hh'
