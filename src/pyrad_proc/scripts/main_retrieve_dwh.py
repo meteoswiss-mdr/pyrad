@@ -56,8 +56,8 @@ def main():
     #    smn_station_vec = ['PIL', 'WFJ', 'MTR', 'GUE', 'DIA', 'VSTSN']
     
     # meteorological parameters
-    # tre200s0: air temperature °C at 2 m [10 min resolution]
-    # tde200s0: dew point temperature °C at 2 m [10 min resolution]
+    # tre200s0: air temperature  deg C at 2 m [10 min resolution]
+    # tde200s0: dew point temperature deg C at 2 m [10 min resolution]
     # ure200s0: relative humidity % at 2 m [10 min resolution]
     # gor000z0: global radiation W/m2[10 min average]
     # fkl010z0: mean wind speed in 10 min m/s

@@ -124,7 +124,7 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
     return fname_list
 
 
-def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='PPI',
+def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
              step=None, quantiles=None):
     """
     plots an RHI
