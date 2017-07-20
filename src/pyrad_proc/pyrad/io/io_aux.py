@@ -465,7 +465,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
             if (not os.path.isdir(datapath)):
                 # warn("WARNING: Unknown datapath '%s'" % datapath)
                 continue
-            dayfilelist = glob.glob(datapath+dayinfo+'*'+datatype+'.*')
+            dayfilelist = glob.glob(datapath+dayinfo+'*00'+datatype+'.*')
             for filename in dayfilelist:
                 t_filelist.append(filename)
         elif datagroup == 'RAD4ALP':
