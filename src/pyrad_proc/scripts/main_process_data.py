@@ -68,6 +68,14 @@ def main():
         '--cfgpath', type=str,
         default=os.path.expanduser('~')+'/pyrad/config/processing/',
         help='configuration file path')
+    parser.add_argument("-i", "--infostr", type=str,
+                        help="Information string about the actual data "
+                        "processing (e.g. 'RUN57'). This string is added "
+                        "to the filenames of the product files.",
+                        default="")
+    parser.add_argument("-t", "--trajfile", type=str, default='',
+                        help="Definition file of plane trajectory. "
+                        "Configuration of scan sector, products, ...")
 
     args = parser.parse_args()
 
@@ -97,12 +105,14 @@ def main():
         proc_endtime = datetime.datetime.strptime(args.endtime, '%Y%m%d%H%M%S')
     cfgfile_proc = args.cfgpath+args.proc_cfgfile
 
-    pyrad_main(cfgfile_proc, starttime=proc_starttime, endtime=proc_endtime)
+    pyrad_main(cfgfile_proc, starttime=proc_starttime, endtime=proc_endtime,
+               trajfile=args.trajfile, infostr=args.infostr)
 
     if args.postproc_cfgfile is not None:
         cfgfile_postproc = args.cfgpath+args.postproc_cfgfile
         pyrad_main(cfgfile_postproc, starttime=proc_starttime,
-                   endtime=proc_endtime)
+                   endtime=proc_endtime, trajfile=args.trajfile,
+                   infostr=args.infostr)
 
 
 def _print_end_msg(text):

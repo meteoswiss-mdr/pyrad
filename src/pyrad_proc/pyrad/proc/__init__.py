@@ -37,12 +37,14 @@ Phase processing and attenuation correction
 
 .. autosummary::
     :toctree: generated/
-    
+
     process_correct_phidp0
     process_smooth_phidp_single_window
     process_smooth_phidp_double_window
     process_kdp_leastsquare_single_window
     process_kdp_leastsquare_double_window
+    process_phidp_kdp_Vulpiani
+    process_phidp_kdp_Kalman
     process_phidp_kdp_Maesaka
     process_phidp_kdp_lp
     process_attenuation
@@ -56,12 +58,12 @@ Monitoring, calibration and noise correction
     process_correct_bias
     process_correct_noise_rhohv
     process_rhohv_rain
-    process_zdr_rain
+    process_zdr_precip
     process_estimate_phidp0
     process_sun_hits
     process_selfconsistency_kdp_phidp
     process_selfconsistency_bias
-    process_monitoring    
+    process_monitoring
     process_time_avg
     process_weighted_time_avg
     process_time_avg_flag
@@ -122,10 +124,12 @@ from .process_phase import process_smooth_phidp_double_window
 from .process_phase import process_kdp_leastsquare_single_window
 from .process_phase import process_kdp_leastsquare_double_window
 from .process_phase import process_phidp_kdp_lp, process_phidp_kdp_Maesaka
+from .process_phase import process_phidp_kdp_Vulpiani
+from .process_phase import process_phidp_kdp_Kalman
 from .process_phase import process_attenuation
 
 from .process_calib import process_correct_bias, process_correct_noise_rhohv
-from .process_calib import process_rhohv_rain, process_zdr_rain
+from .process_calib import process_rhohv_rain, process_zdr_precip
 from .process_calib import process_estimate_phidp0
 from .process_calib import process_selfconsistency_kdp_phidp
 from .process_calib import process_selfconsistency_bias

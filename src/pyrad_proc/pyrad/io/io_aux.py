@@ -293,8 +293,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'corrected_differential_reflectivity'
     elif datatype == 'ZDRuc':
         field_name = 'corrected_unfiltered_differential_reflectivity'
-    elif datatype == 'ZDR_rain':
-        field_name = 'differential_reflectivity_in_rain'
+    elif datatype == 'ZDR_prec':
+        field_name = 'differential_reflectivity_in_precipitation'
 
     elif datatype == 'dBm':
         field_name = 'signal_power_hh'
@@ -465,7 +465,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
             if (not os.path.isdir(datapath)):
                 # warn("WARNING: Unknown datapath '%s'" % datapath)
                 continue
-            dayfilelist = glob.glob(datapath+dayinfo+'*'+datatype+'.*')
+            dayfilelist = glob.glob(datapath+dayinfo+'*00'+datatype+'.*')
             for filename in dayfilelist:
                 t_filelist.append(filename)
         elif datagroup == 'RAD4ALP':

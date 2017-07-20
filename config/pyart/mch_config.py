@@ -85,7 +85,8 @@ corrected_differential_reflectivity = 'corrected_differential_reflectivity'
 
 unfiltered_differential_reflectivity = 'unfiltered_differential_reflectivity'
 
-differential_reflectivity_in_rain = 'differential_reflectivity_in_rain'
+differential_reflectivity_in_precipitation = (
+    'differential_reflectivity_in_precipitation')
 
 # Cross correlation ratio, correlation coefficient, RhoHV
 cross_correlation_ratio = 'cross_correlation_ratio'
@@ -270,7 +271,8 @@ DEFAULT_FIELD_NAMES = {
     'corrected_differential_reflectivity': corrected_differential_reflectivity,
     'unfiltered_differential_reflectivity': (
         unfiltered_differential_reflectivity),
-    'differential_reflectivity_in_rain': differential_reflectivity_in_rain,
+    'differential_reflectivity_in_precipitation': (
+        differential_reflectivity_in_precipitation),
     'cross_correlation_ratio': cross_correlation_ratio,
     'corrected_cross_correlation_ratio': corrected_cross_correlation_ratio,
     'unfiltered_cross_correlation_ratio': unfiltered_cross_correlation_ratio,
@@ -756,10 +758,10 @@ DEFAULT_METADATA = {
         'long_name': 'Corrected differential reflectivity',
         'coordinates': 'elevation azimuth range'},
 
-    differential_reflectivity_in_rain: {
+    differential_reflectivity_in_precipitation: {
         'units': 'dB',
-        'standard_name': 'log_differential_reflectivity_hv_in_rain',
-        'long_name': 'Differential reflectivity in rain',
+        'standard_name': 'log_differential_reflectivity_hv_in_precipitation',
+        'long_name': 'Differential reflectivity in precipitation',
         'coordinates': 'elevation azimuth range'},
 
     cross_correlation_ratio: {
@@ -936,30 +938,46 @@ DEFAULT_METADATA = {
         'units': 'dimensionless',
         'standard_name': 'sun_hit_h',
         'long_name': 'sun hit radar bins horizontal polarization',
+        'labels': ['OTHER', 'SUN'],
+        'ticks': [0, 1],
+        'boundaries': [-0.5, 0.5, 1.5],
         'coordinates': 'elevation azimuth range'},
 
     sun_hit_v: {
         'units': 'dimensionless',
         'standard_name': 'sun_hit_v',
         'long_name': 'sun hit radar bins vertical polarization',
+        'labels': ['OTHER', 'SUN'],
+        'ticks': [0, 1],
+        'boundaries': [-0.5, 0.5, 1.5],
         'coordinates': 'elevation azimuth range'},
 
     sun_hit_zdr: {
         'units': 'dimensionless',
         'standard_name': 'sun_hit_zdr',
         'long_name': 'sun hit radar bins differential reflectivity',
+        'labels': ['OTHER', 'SUN'],
+        'ticks': [0, 1],
+        'boundaries': [-0.5, 0.5, 1.5],
         'coordinates': 'elevation azimuth range'},
 
     radar_echo_classification: {
         'units': 'legend',
         'standard_name': 'radar_echo_classification',
         'long_name': 'Radar Echo classification',
+        'labels': ['NC', 'DS', 'CR', 'LR', 'GR', 'RN', 'VI', 'WS', 'MH',
+                   'IH/HDG'],
+        'ticks': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+        'boundaries': [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5],
         'coordinates': 'elevation azimuth range'},
 
     radar_echo_id: {
         'units': 'legend',
         'standard_name': 'radar_echo_id',
         'long_name': 'Radar Echo Identification',
+        'labels': ['NOISE', 'CLT', 'PREC'],
+        'ticks': [1, 2, 3],
+        'boundaries': [0.5, 1.5, 2.5, 3.5],
         'coordinates': 'elevation azimuth range'},
 
     specific_attenuation: {
@@ -967,7 +985,7 @@ DEFAULT_METADATA = {
         'standard_name': 'specific_attenuation',
         'long_name': 'Specific attenuation',
         'coordinates': 'elevation azimuth range'},
-        
+
     path_integrated_attenuation: {
         'units': 'dB',
         'standard_name': 'path_integrated_attenuation',
@@ -979,7 +997,7 @@ DEFAULT_METADATA = {
         'standard_name': 'specific_differential_attenuation',
         'long_name': 'Specific differential attenuation',
         'coordinates': 'elevation azimuth range'},
-        
+
     path_integrated_differential_attenuation: {
         'units': 'dB',
         'standard_name': 'path_integrated_differential_attenuation',
@@ -991,7 +1009,7 @@ DEFAULT_METADATA = {
         'standard_name': 'corrected_specific_attenuation',
         'long_name': 'Corrected specific attenuation',
         'coordinates': 'elevation azimuth range'},
-        
+
     corrected_path_integrated_attenuation: {
         'units': 'dB',
         'standard_name': 'corrected_path_integrated_attenuation',
@@ -1003,7 +1021,7 @@ DEFAULT_METADATA = {
         'standard_name': 'corrected_specific_differential_attenuation',
         'long_name': 'Corrected specific differential attenuation',
         'coordinates': 'elevation azimuth range'},
-        
+
     corrected_path_integrated_differential_attenuation: {
         'units': 'dB',
         'standard_name': 'corrected_path_integrated_differential_attenuation',
@@ -1026,6 +1044,9 @@ DEFAULT_METADATA = {
         'units': 'flag',
         'standard_name': 'colocated_gates',
         'long_name': 'Colocated gates',
+        'labels': ['FALSE', 'TRUE'],
+        'ticks': [0, 1],
+        'boundaries': [-0.5, 0.5, 1.5],
         'coordinates': 'elevation azimuth range'},
 
     # COSMO model data
@@ -1039,6 +1060,9 @@ DEFAULT_METADATA = {
         'units': 'dimensionless',
         'standard_name': 'iso0',
         'long_name': 'Position of the range bin respect to the iso0 level',
+        'labels': ['BELOW', 'INSIDE', 'ABOVE'],
+        'ticks': [1, 2, 3],
+        'boundaries': [0.5, 1.5, 2.5, 3.5],
         'coordinates': 'elevation azimuth range'},
 
     cosmo_index: {
@@ -1861,7 +1885,7 @@ DEFAULT_FIELD_COLORMAP = {
     differential_reflectivity: 'pyart_RefDiff',
     corrected_differential_reflectivity: 'pyart_RefDiff',
     unfiltered_differential_reflectivity: 'pyart_RefDiff',
-    differential_reflectivity_in_rain: 'pyart_RefDiff',
+    differential_reflectivity_in_precipitation: 'pyart_RefDiff',
 
     cross_correlation_ratio: 'pyart_RefDiff',
     corrected_cross_correlation_ratio:  'pyart_RefDiff',
@@ -1983,7 +2007,7 @@ DEFAULT_FIELD_LIMITS = {
     differential_reflectivity: (-1., 8.),
     corrected_differential_reflectivity: (-1., 8.),
     unfiltered_differential_reflectivity: (-1., 8.),
-    differential_reflectivity_in_rain: (-10., 10.),
+    differential_reflectivity_in_precipitation: (-10., 10.),
 
     cross_correlation_ratio: (0.7, 1.),
     corrected_cross_correlation_ratio: (0.7, 1.),

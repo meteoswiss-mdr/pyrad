@@ -84,6 +84,10 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_smooth_phidp_single_window'
     elif dataset_type == 'PHIDP_SMOOTH_2W':
         func_name = 'process_smooth_phidp_double_window'
+    elif dataset_type == 'PHIDP_KDP_VULPIANI':
+        func_name = 'process_phidp_kdp_Vulpiani'
+    elif dataset_type == 'PHIDP_KDP_KALMAN':
+        func_name = 'process_phidp_kdp_Kalman'
     elif dataset_type == 'PHIDP_KDP_MAESAKA':
         func_name = 'process_phidp_kdp_Maesaka'
     elif dataset_type == 'PHIDP_KDP_LP':
@@ -106,8 +110,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_estimate_phidp0'
     elif dataset_type == 'RHOHV_RAIN':
         func_name = 'process_rhohv_rain'
-    elif dataset_type == 'ZDR_RAIN':
-        func_name = 'process_zdr_rain'
+    elif dataset_type == 'ZDR_PREC':
+        func_name = 'process_zdr_precip'
     elif dataset_type == 'SELFCONSISTENCY_KDP_PHIDP':
         func_name = 'process_selfconsistency_kdp_phidp'
     elif dataset_type == 'SELFCONSISTENCY_BIAS':
