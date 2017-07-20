@@ -965,7 +965,8 @@ DEFAULT_METADATA = {
         'units': 'legend',
         'standard_name': 'radar_echo_classification',
         'long_name': 'Radar Echo classification',
-        'labels': ['NC', 'DS', 'CR', 'LR', 'GR', 'RN', 'VI', 'WS', 'MH', 'IH/HDG'],
+        'labels': ['NC', 'DS', 'CR', 'LR', 'GR', 'RN', 'VI', 'WS', 'MH',
+                   'IH/HDG'],
         'ticks': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
         'boundaries': [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5],
         'coordinates': 'elevation azimuth range'},
@@ -984,7 +985,7 @@ DEFAULT_METADATA = {
         'standard_name': 'specific_attenuation',
         'long_name': 'Specific attenuation',
         'coordinates': 'elevation azimuth range'},
-        
+
     path_integrated_attenuation: {
         'units': 'dB',
         'standard_name': 'path_integrated_attenuation',
@@ -996,7 +997,7 @@ DEFAULT_METADATA = {
         'standard_name': 'specific_differential_attenuation',
         'long_name': 'Specific differential attenuation',
         'coordinates': 'elevation azimuth range'},
-        
+
     path_integrated_differential_attenuation: {
         'units': 'dB',
         'standard_name': 'path_integrated_differential_attenuation',
@@ -1008,7 +1009,7 @@ DEFAULT_METADATA = {
         'standard_name': 'corrected_specific_attenuation',
         'long_name': 'Corrected specific attenuation',
         'coordinates': 'elevation azimuth range'},
-        
+
     corrected_path_integrated_attenuation: {
         'units': 'dB',
         'standard_name': 'corrected_path_integrated_attenuation',
@@ -1020,7 +1021,7 @@ DEFAULT_METADATA = {
         'standard_name': 'corrected_specific_differential_attenuation',
         'long_name': 'Corrected specific differential attenuation',
         'coordinates': 'elevation azimuth range'},
-        
+
     corrected_path_integrated_differential_attenuation: {
         'units': 'dB',
         'standard_name': 'corrected_path_integrated_differential_attenuation',
@@ -1042,7 +1043,7 @@ DEFAULT_METADATA = {
     colocated_gates: {
         'units': 'flag',
         'standard_name': 'colocated_gates',
-        'long_name': 'Colocated gates',        
+        'long_name': 'Colocated gates',
         'labels': ['FALSE', 'TRUE'],
         'ticks': [0, 1],
         'boundaries': [-0.5, 0.5, 1.5],
