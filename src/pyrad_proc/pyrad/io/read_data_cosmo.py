@@ -19,6 +19,7 @@ Functions for reading COSMO data
 
 """
 
+from warnings import warn
 import netCDF4
 import numpy as np
 from scipy.interpolate import NearestNDInterpolator
@@ -362,44 +363,48 @@ def read_cosmo_coord(fname, zmin=None):
 
     """
     # read the data
-    ncobj = netCDF4.Dataset(fname)
-    ncvars = ncobj.variables
-
-    # 4.1 Global attribute -> move to metadata dictionary
-    metadata = dict([(k, getattr(ncobj, k)) for k in ncobj.ncattrs()])
-
-    # 4.2 put variables in dictionary
-    x_1 = _ncvar_to_dict(ncvars['x_1'])
-    y_1 = _ncvar_to_dict(ncvars['y_1'])
-    lon_1 = _ncvar_to_dict(ncvars['lon_1'])
-    lat_1 = _ncvar_to_dict(ncvars['lat_1'])
-    z_1 = _ncvar_to_dict(ncvars['z_1'])
-    z_bnds_1 = _ncvar_to_dict(ncvars['z_bnds_1'])
-    hfl = _ncvar_to_dict(ncvars['HFL'])
-    hsurf = _ncvar_to_dict(ncvars['HSURF'])
-    fr_land = _ncvar_to_dict(ncvars['FR_LAND'])
-
-    # close object
-    ncobj.close()
-
-    if zmin is not None:
-        z_1['data'] = z_1['data'][z_1['data'] >= zmin]
-        z_bnds_1['data'] = z_bnds_1['data'][z_bnds_1['data'] >= zmin]
-
-    cosmo_coord = {
-        'metadata': metadata,
-        'x': x_1,
-        'y': y_1,
-        'z': z_1,
-        'z_bnds': z_bnds_1,
-        'lon': lon_1,
-        'lat': lat_1,
-        'hfl': hfl,
-        'hsurf': hsurf,
-        'fr_land': fr_land,
-    }
-
-    return cosmo_coord
+    try:
+        ncobj = netCDF4.Dataset(fname)
+        ncvars = ncobj.variables
+    
+        # 4.1 Global attribute -> move to metadata dictionary
+        metadata = dict([(k, getattr(ncobj, k)) for k in ncobj.ncattrs()])
+    
+        # 4.2 put variables in dictionary
+        x_1 = _ncvar_to_dict(ncvars['x_1'])
+        y_1 = _ncvar_to_dict(ncvars['y_1'])
+        lon_1 = _ncvar_to_dict(ncvars['lon_1'])
+        lat_1 = _ncvar_to_dict(ncvars['lat_1'])
+        z_1 = _ncvar_to_dict(ncvars['z_1'])
+        z_bnds_1 = _ncvar_to_dict(ncvars['z_bnds_1'])
+        hfl = _ncvar_to_dict(ncvars['HFL'])
+        hsurf = _ncvar_to_dict(ncvars['HSURF'])
+        fr_land = _ncvar_to_dict(ncvars['FR_LAND'])
+    
+        # close object
+        ncobj.close()
+    
+        if zmin is not None:
+            z_1['data'] = z_1['data'][z_1['data'] >= zmin]
+            z_bnds_1['data'] = z_bnds_1['data'][z_bnds_1['data'] >= zmin]
+    
+        cosmo_coord = {
+            'metadata': metadata,
+            'x': x_1,
+            'y': y_1,
+            'z': z_1,
+            'z_bnds': z_bnds_1,
+            'lon': lon_1,
+            'lat': lat_1,
+            'hfl': hfl,
+            'hsurf': hsurf,
+            'fr_land': fr_land,
+        }
+    
+        return cosmo_coord
+    except EnvironmentError:
+        warn('Unable to read file '+fname)
+        return None
 
 
 def _ncvar_to_dict(ncvar):

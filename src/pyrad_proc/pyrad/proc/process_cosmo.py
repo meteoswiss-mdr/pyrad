@@ -420,6 +420,10 @@ def process_cosmo_coord(procstatus, dscfg, radar_list=None):
     cosmo_coord = read_cosmo_coord(
         dscfg['cosmopath'][ind_rad]+'rad2cosmo1/cosmo-1_MDR_3D_const.nc',
         zmin=None)
+        
+    if cosmo_coord is None:
+        return None, None
+        
     cosmo_ind_field = cosmo2radar_coord(
         radar, cosmo_coord, slice_xy=True, slice_z=False)
 
