@@ -84,6 +84,10 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_smooth_phidp_single_window'
     elif dataset_type == 'PHIDP_SMOOTH_2W':
         func_name = 'process_smooth_phidp_double_window'
+    elif dataset_type == 'PHIDP_KDP_VULPIANI':
+        func_name = 'process_phidp_kdp_Vulpiani'
+    elif dataset_type == 'PHIDP_KDP_KALMAN':
+        func_name = 'process_phidp_kdp_Kalman'
     elif dataset_type == 'PHIDP_KDP_MAESAKA':
         func_name = 'process_phidp_kdp_Maesaka'
     elif dataset_type == 'PHIDP_KDP_LP':

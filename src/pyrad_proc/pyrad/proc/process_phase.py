@@ -12,6 +12,8 @@ Functions for PhiDP and KDP processing and attenuation correction
     process_smooth_phidp_double_window
     process_kdp_leastsquare_single_window
     process_kdp_leastsquare_double_window
+    process_phidp_kdp_Vulpiani
+    process_phidp_kdp_Kalman
     process_phidp_kdp_Maesaka
     process_phidp_kdp_lp
     process_selfconsistency_kdp_phidp
@@ -313,7 +315,8 @@ def process_smooth_phidp_double_window(procstatus, dscfg, radar_list=None):
 
 def process_phidp_kdp_Maesaka(procstatus, dscfg, radar_list=None):
     """
-    Estimates PhiDP and KDP using the method by Maesaka
+    Estimates PhiDP and KDP using the method by Maesaka. This method only
+    retrieves data in rain (i.e. below the melting layer)
 
     Parameters
     ----------
@@ -385,9 +388,9 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar_list=None):
     radar_aux = deepcopy(radar)
 
     # correct PhiDP0
-    ind_rmin = np.where(radar.range['data'] > dscfg['rmin'])[0][0]
-    ind_rmax = np.where(radar.range['data'] < dscfg['rmax'])[0][-1]
-    r_res = radar.range['data'][1]-radar.range['data'][0]
+    ind_rmin = np.where(radar_aux.range['data'] > dscfg['rmin'])[0][0]
+    ind_rmax = np.where(radar_aux.range['data'] < dscfg['rmax'])[0][-1]
+    r_res = radar_aux.range['data'][1]-radar_aux.range['data'][0]
     min_rcons = int(dscfg['rcell']/r_res)
 
     phidp = pyart.correct.correct_sys_phase(
@@ -395,18 +398,22 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar_list=None):
         zmin=dscfg['Zmin'], zmax=dscfg['Zmax'], psidp_field=psidp_field,
         refl_field=refl_field, phidp_field=phidp_field)
 
-    mask = np.ma.getmaskarray(phidp['data'])
     # filter out data in an above the melting layer
-    if 'radar_beam_width_h' in radar.instrument_parameters:
+    mask = np.ma.getmaskarray(phidp['data'])
+    if 'radar_beam_width_h' in radar_aux.instrument_parameters:
         beamwidth = (
-            radar.instrument_parameters['radar_beam_width_h']['data'][0])
+            radar_aux.instrument_parameters['radar_beam_width_h']['data'][0])
     else:
         warn('Unknown radar antenna beamwidth.')
         beamwidth = None
 
-    mask_fzl, end_gate_arr = get_mask_fzl(
+    mask_fzl, end_gate_arr = pyart.correct.get_mask_fzl(
         radar_aux, fzl=None, doc=None, min_temp=0., thickness=400.,
         beamwidth=beamwidth, temp_field=temp_field)
+    mask = np.logical_or(mask, mask_fzl)
+
+    # filter out data with invalid reflectivity
+    mask_refl = np.ma.getmaskarray(radar_aux.fields[refl_field]['data'])
     mask = np.logical_or(mask, mask_refl)
 
     phidp['data'] = np.ma.masked_where(mask, phidp['data'])
@@ -434,7 +441,8 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar_list=None):
 
 def process_phidp_kdp_lp(procstatus, dscfg, radar_list=None):
     """
-    Estimates PhiDP and KDP using a linear programming algorithm
+    Estimates PhiDP and KDP using a linear programming algorithm.
+    This method only retrieves data in rain (i.e. below the melting layer)
 
     Parameters
     ----------
@@ -480,6 +488,8 @@ def process_phidp_kdp_lp(procstatus, dscfg, radar_list=None):
             rhv_field = 'cross_correlation_ratio'
         if datatype == 'SNRh':
             snr_field = 'signal_to_noise_ratio_hh'
+        if datatype == 'TEMP':
+            temp_field = 'temperature'
 
     ind_rad = int(radarnr[5:8])-1
     if radar_list[ind_rad] is None:
@@ -490,21 +500,43 @@ def process_phidp_kdp_lp(procstatus, dscfg, radar_list=None):
     if ((refl_field not in radar.fields) or
             (psidp_field not in radar.fields) or
             (rhv_field not in radar.fields) or
-            (snr_field not in radar.fields)):
+            (snr_field not in radar.fields) or
+            (temp_field not in radar.fields)):
         warn('Unable to retrieve PhiDP and KDP using the LP approach. ' +
              'Missing data')
         return None, None
 
-    mask = np.ma.getmaskarray(radar.fields[psidp_field]['data'])
+    radar_aux = deepcopy(radar)
+
+    # filter out data in an above the melting layer
+    mask = np.ma.getmaskarray(radar_aux.fields[psidp_field]['data'])
+    if 'radar_beam_width_h' in radar_aux.instrument_parameters:
+        beamwidth = (
+            radar_aux.instrument_parameters['radar_beam_width_h']['data'][0])
+    else:
+        warn('Unknown radar antenna beamwidth.')
+        beamwidth = None
+
+    mask_fzl, end_gate_arr = pyart.correct.get_mask_fzl(
+        radar_aux, fzl=None, doc=None, min_temp=0., thickness=400.,
+        beamwidth=beamwidth, temp_field=temp_field)
+    mask = np.logical_or(mask, mask_fzl)
+
+    # filter out data with invalid reflectivity
+    mask_refl = np.ma.getmaskarray(radar_aux.fields[refl_field]['data'])
+    mask = np.logical_or(mask, mask_refl)
+
+    radar_aux.fields[psidp_field]['data'] = np.ma.masked_where(
+        mask, radar_aux.fields[psidp_field]['data'])
 
     phidp_field = 'corrected_differential_phase'
     kdp_field = 'corrected_specific_differential_phase'
 
     phidp, kdp = pyart.correct.phase_proc_lp(
-        radar, 0, debug=False, self_const=60000.0,
+        radar_aux, 0, debug=False, self_const=60000.0,
         low_z=10.0, high_z=53.0, min_phidp=0.01, min_ncp=10.,
         min_rhv=0.6, fzl=4000.0, sys_phase=0.0,
-        overide_sys_phase=False, nowrap=None, really_verbose=False,
+        overide_sys_phase=True, nowrap=None, really_verbose=False,
         LP_solver='cvxopt', refl_field=refl_field, ncp_field=snr_field,
         rhv_field=rhv_field, phidp_field=psidp_field, kdp_field=kdp_field,
         unf_field=phidp_field, window_len=35, proc=1)
@@ -669,6 +701,230 @@ def process_kdp_leastsquare_double_window(procstatus, dscfg, radar_list=None):
     return new_dataset, ind_rad
 
 
+def process_phidp_kdp_Vulpiani(procstatus, dscfg, radar_list=None):
+    """
+    Computes specific differential phase and differential phase using the
+    method developed by Vulpiani et al.
+    The data is assumed to be clutter free and monotonous
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        rwind : float. Dataset keyword
+            The length of the segment [m]
+        n_iter : int. Dataset keyword
+            number of iterations
+        interp : boolean. Dataset keyword
+            if set non valid values are interpolated using neighbouring valid
+            values
+        parallel : boolean. Dataset keyword
+            if set use parallel computing
+        get_phidp : boolean. Datset keyword
+            if set the PhiDP computed by integrating the resultant KDP is
+            added to the radar field
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    for datatypedescr in dscfg['datatype']:
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        if datatype == 'PhiDP':
+            phidp_field = 'differential_phase'
+        if datatype == 'PhiDPc':
+            phidp_field = 'corrected_differential_phase'
+        if datatype == 'uPhiDP':
+            phidp_field = 'uncorrected_differential_phase'
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if phidp_field not in radar.fields:
+        warn('Unable to retrieve KDP from PhiDP using least square. ' +
+             'Missing data')
+        return None, None
+
+    # number of iterations
+    n_iter = 3
+    if 'n_iter' in dscfg:
+        n_iter = dscfg['n_iter']
+
+    # window length (must be even)
+    r_res = radar.range['data'][1]-radar.range['data'][0]
+    wind_len = int(dscfg['rwind']/r_res)
+    if wind_len % 2 == 1:
+        wind_len += 1
+
+    # interpolate invalid values?
+    interp = 0
+    if 'interp' in dscfg:
+        interp = dscfg['interp']
+
+    # parallel computing?
+    parallel = 1
+    if 'parallel' in dscfg:
+        parallel = dscfg['parallel']
+
+    # get PhiDP computed from KDP?
+    get_phidp = 0
+    if 'get_phidp' in dscfg:
+        get_phidp = dscfg['get_phidp']
+
+    # get band from radar object metadata
+    band = 'C'
+    if 'frequency' in radar.instrument_parameters:
+        band = pyart.retrieve.get_freq_band(
+            radar.instrument_parameters['frequency']['data'][0])
+        if band is None:
+            if radar.instrument_parameters['frequency']['data'][0] < 2e9:
+                band = 'S'
+            elif radar.instrument_parameters['frequency']['data'][0] > 12e9:
+                band = 'X'
+
+            warn('Radar frequency out of range. Valid bands are S, C or X. ' +
+                 band + ' band will be applied')
+    else:
+        warn('Radar frequency unknown. Default '+band+' band will be applied')
+
+    kdp_field = 'corrected_specific_differential_phase'
+    phidpr_field = 'corrected_differential_phase'
+
+    kdp_dict, phidpr_dict = pyart.retrieve.kdp_vulpiani(
+        radar, gatefilter=None, fill_value=None, psidp_field=phidp_field,
+        kdp_field=kdp_field, phidp_field=phidpr_field, band=band,
+        windsize=wind_len, n_iter=n_iter, interp=interp,
+        prefilter_psidp=False, filter_opt=None, parallel=parallel)
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.add_field(kdp_field, kdp_dict)
+    if get_phidp:
+        new_dataset.add_field(phidpr_field, phidpr_dict)
+
+    return new_dataset, ind_rad
+
+
+def process_phidp_kdp_Kalman(procstatus, dscfg, radar_list=None):
+    """
+    Computes specific differential phase and differential phase using the
+    Kalman filter as proposed by Schneebeli et al.
+    The data is assumed to be clutter free and continous
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        parallel : boolean. Dataset keyword
+            if set use parallel computing
+        get_phidp : boolean. Datset keyword
+            if set the PhiDP computed by integrating the resultant KDP is
+            added to the radar field
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    for datatypedescr in dscfg['datatype']:
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        if datatype == 'PhiDP':
+            phidp_field = 'differential_phase'
+        if datatype == 'PhiDPc':
+            phidp_field = 'corrected_differential_phase'
+        if datatype == 'uPhiDP':
+            phidp_field = 'uncorrected_differential_phase'
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if phidp_field not in radar.fields:
+        warn('Unable to retrieve KDP from PhiDP using least square. ' +
+             'Missing data')
+        return None, None
+
+    # parallel computing?
+    parallel = 1
+    if 'parallel' in dscfg:
+        parallel = dscfg['parallel']
+
+    # get PhiDP computed from KDP?
+    get_phidp = 0
+    if 'get_phidp' in dscfg:
+        get_phidp = dscfg['get_phidp']
+
+    # get band from radar object metadata
+    band = 'C'
+    if 'frequency' in radar.instrument_parameters:
+        band = pyart.retrieve.get_freq_band(
+            radar.instrument_parameters['frequency']['data'][0])
+        if band is None:
+            if radar.instrument_parameters['frequency']['data'][0] < 2e9:
+                band = 'S'
+            elif radar.instrument_parameters['frequency']['data'][0] > 12e9:
+                band = 'X'
+
+            warn('Radar frequency out of range. Valid bands are S, C or X. ' +
+                 band + ' band will be applied')
+    else:
+        warn('Radar frequency unknown. Default '+band+' band will be applied')
+
+    kdp_field = 'corrected_specific_differential_phase'
+    phidpr_field = 'corrected_differential_phase'
+
+    kdp_dict, kdp_stdev_dict, phidpr_dict = pyart.retrieve.kdp_schneebeli(
+        radar, gatefilter=None, fill_value=None, psidp_field=phidp_field,
+        kdp_field=kdp_field, phidp_field=phidpr_field, band=band, rcov=0,
+        pcov=0, prefilter_psidp=False, filter_opt=None, parallel=parallel)
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.add_field(kdp_field, kdp_dict)
+    if get_phidp:
+        new_dataset.add_field(phidpr_field, phidpr_dict)
+
+    return new_dataset, ind_rad
+
+
 def process_attenuation(procstatus, dscfg, radar_list=None):
     """
     Computes specific attenuation and specific differential attenuation using
@@ -788,7 +1044,7 @@ def process_attenuation(procstatus, dscfg, radar_list=None):
     if (spec_diff_at is not None) and (cor_zdr is not None):
         new_dataset.add_field(
             'specific_differential_attenuation', spec_diff_at)
-        new_dataset.add_field('path_integrated_differential_attenuation', pia)    
+        new_dataset.add_field('path_integrated_differential_attenuation', pia)
         new_dataset.add_field('corrected_differential_reflectivity', cor_zdr)
     else:
         warn(
