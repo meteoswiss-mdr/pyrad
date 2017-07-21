@@ -96,10 +96,10 @@ Auxiliary functions
     get_datetime
     get_datasetfields
     get_file_list
-    get_datatypefields
-    get_field_unit
-    get_field_name
-    get_fieldname_rainbow
+    get_datatype_fields
+    get_field_unit    
+    get_fieldname_pyart
+    get_fieldname_cosmo
     generate_field_name_str
     find_raw_cosmo_file
     add_field
@@ -153,7 +153,7 @@ from .write_data import write_last_state
 from .io_aux import get_save_dir, make_filename, get_new_rainbow_file_name
 from .io_aux import get_datetime, get_dataset_fields
 from .io_aux import get_file_list, get_datatype_fields
-from .io_aux import get_fieldname_pyart, get_field_unit
+from .io_aux import get_fieldname_pyart, get_field_unit, get_fieldname_cosmo
 from .io_aux import generate_field_name_str, find_raw_cosmo_file
 
 from .trajectory import Trajectory
