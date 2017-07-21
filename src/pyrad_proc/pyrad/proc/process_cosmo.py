@@ -102,7 +102,7 @@ def process_cosmo(procstatus, dscfg, radar_list=None):
                 field_names.append(get_fieldname_pyart(var))        
         zmin = None
     elif cosmo_type == 'WIND':
-        field_names = ['wind_speed', 'wind_direction', 'wind_shear']
+        field_names = ['wind_speed', 'wind_direction', 'vertical_wind_shear']
         if 'cosmo_variables' in dscfg:
             field_names = []
             for var in dscfg['cosmo_variables']:
@@ -174,7 +174,7 @@ def process_cosmo(procstatus, dscfg, radar_list=None):
                 field_names=field_names)
             if cosmo_fields is None:
                 warn('Unable to obtain COSMO fields')
-                return None None
+                return None, None
                 
             dscfg['global_data']['time_index'] = time_index
             dscfg['global_data']['cosmo_fields'] = cosmo_fields
@@ -187,7 +187,7 @@ def process_cosmo(procstatus, dscfg, radar_list=None):
             field_names=field_names)
         if cosmo_fields is None:
             warn('Unable to obtain COSMO fields')
-            return None None
+            return None, None
 
     # prepare for exit
     new_dataset = deepcopy(radar)
@@ -271,7 +271,7 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
                 field_names.append(get_fieldname_pyart(var))        
         zmin = None
     elif cosmo_type == 'WIND':
-        field_names = ['wind_speed', 'wind_direction', 'wind_shear']
+        field_names = ['wind_speed', 'wind_direction', 'vertical_wind_shear']
         if 'cosmo_variables' in dscfg:
             field_names = []
             for var in dscfg['cosmo_variables']:
@@ -345,7 +345,7 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
             field_names=field_names)
         if cosmo_fields is None:
             warn('Unable to obtain COSMO fields')
-            return None None
+            return None, None
         # print(" getting COSMO data takes %s seconds "
         #      % (time.time() - start_time3))
 

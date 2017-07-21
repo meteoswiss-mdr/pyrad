@@ -245,14 +245,17 @@ def read_cosmo_data(fname, field_names=['TEMP'], celsius=False):
     cosmo_data = dict()
     found = False
     for field in field_names:
-        cosmo_name = get_fieldname_cosmo(field_name)
+        cosmo_name = get_fieldname_cosmo(field)
         if cosmo_name not in ncvars:
             warn(field+' data not present in COSMO file '+fname)
         else:
             var_data = _ncvar_to_dict(ncvars[cosmo_name])
             if field == 'TEMP' and celsius:
                 var_data['data'] -= 273.15
-                var_data['units'] = 'C'
+                var_data['units'] = 'degrees Celsius'
+            if field == 'windshear_v':
+                var_data['data'] *= 1000.
+                var_data['units'] = 'meters_per_second_per_km'
             cosmo_data.update({field: var_data})
             found = True
     if not found:
