@@ -51,7 +51,7 @@ class TimeSeries(object):
         timevec : array of datetime
         timeformat : specifies time format
         maxlength : Maximal length of the time series
-        num_el : Number of values in the timer series
+        num_el : Number of values in the time series
         """
 
         self.description = desc
@@ -94,8 +94,9 @@ class TimeSeries(object):
         Add a new sample to the time series.
         """
         if (self.num_el + 1 >= self.maxlength):
-            raise Exception("ERROR: Cannot add time series sample. Max"
-                            " length reached.")
+            raise Exception(
+                "ERROR: Cannot add time series sample. Max length of " +
+                str(self.maxlength)+" samples reached.")
 
         self.time_vector[self.num_el] = dt
         for val, ds in zip(values, self.dataseries):
