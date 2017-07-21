@@ -253,7 +253,7 @@ def read_cosmo_data(fname, field_names=['TEMP'], celsius=False):
             if field == 'TEMP' and celsius:
                 var_data['data'] -= 273.15
                 var_data['units'] = 'degrees Celsius'
-            if field == 'windshear_v':
+            if field == 'vertical_wind_shear':
                 var_data['data'] *= 1000.
                 var_data['units'] = 'meters_per_second_per_km'
             cosmo_data.update({field: var_data})
