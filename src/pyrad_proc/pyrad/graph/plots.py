@@ -29,6 +29,7 @@ Functions to plot Pyrad datasets
     plot_sun_retrieval_ts
     get_colobar_label
     get_field_name
+    get_norm
 
 """
 
@@ -79,12 +80,16 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
 
     """
     if plot_type == 'PPI':
+        norm, ticks, ticklabs = get_norm(field_name)
+
         fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                          prdcfg['ppiImageConfig']['ysize']],
                          dpi=72)
-
+        ax = fig.add_subplot(111, aspect='equal')
         display = pyart.graph.RadarDisplay(radar)
-        display.plot_ppi(field_name, sweep=ind_el)
+        display.plot_ppi(
+            field_name, sweep=ind_el, norm=norm, ticks=ticks,
+            ticklabs=ticklabs)
         display.set_limits(
             ylim=[prdcfg['ppiImageConfig']['ymin'],
                   prdcfg['ppiImageConfig']['ymax']],
@@ -155,11 +160,17 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
 
     """
     if plot_type == 'RHI':
+        norm, ticks, ticklabs = get_norm(field_name)
+
         fig = plt.figure(figsize=[prdcfg['rhiImageConfig']['xsize'],
                          prdcfg['rhiImageConfig']['ysize']],
                          dpi=72)
+        ax = fig.add_subplot(111, aspect='equal')
         display = pyart.graph.RadarDisplay(radar)
-        display.plot_rhi(field_name, sweep=ind_az, reverse_xaxis=False)
+        display.plot_rhi(
+            field_name, sweep=ind_az, norm=norm, ticks=ticks,
+            ticklabs=ticklabs, colorbar_orient='horizontal',
+            reverse_xaxis=False)
         display.set_limits(
             ylim=[prdcfg['rhiImageConfig']['ymin'],
                   prdcfg['rhiImageConfig']['ymax']],
@@ -318,7 +329,7 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname_list):
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                               prdcfg['ppiImageConfig']['ysize']],
                      dpi=72)
-    ax = fig.add_subplot(111)
+    ax = fig.add_subplot(111, aspect='equal')
     cmap = pyart.config.get_field_colormap(field_name)
     vmin, vmax = pyart.config.get_field_limits(field_name)
     titl = pyart.graph.common.generate_grid_title(grid, field_name, 0)
@@ -1543,3 +1554,44 @@ def get_field_name(field_dict, field):
     field_name = field_name[0].upper() + field_name[1:]
 
     return field_name
+
+
+def get_norm(field_name):
+    """
+    Computes the normalization of the colormap, and gets the ticks and labels
+    of the colorbar from the metadata of the field. Returns None if the
+    required parameters are not present in the metadata
+
+    Parameters
+    ----------
+    field_name : str
+        name of the field
+
+    Returns
+    -------
+    norm : list
+        the colormap index
+    ticks : list
+        the list of ticks in the colorbar
+    labels : list
+        the list of labels corresponding to each tick
+
+    """
+    norm = None
+    ticks = None
+    ticklabs = None
+
+    field_dict = pyart.config.get_metadata(field_name)
+    cmap = mpl.cm.get_cmap(pyart.config.get_field_colormap(field_name))
+
+    if 'boundaries' in field_dict:
+        ncolors = len(field_dict['boundaries'])-1
+        norm = mpl.colors.BoundaryNorm(
+            boundaries=field_dict['boundaries'], ncolors=cmap.N)
+
+    if 'ticks' in field_dict:
+        ticks = field_dict['ticks']
+        if 'labels' in field_dict:
+            ticklabs = field_dict['labels']
+
+    return norm, ticks, ticklabs

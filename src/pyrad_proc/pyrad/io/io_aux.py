@@ -12,6 +12,7 @@ Auxiliary functions for reading/writing files
     generate_field_name_str
     get_datatype_metranet
     get_fieldname_pyart
+    get_fieldname_cosmo
     get_field_unit
     get_field_name
     get_file_list
@@ -252,7 +253,7 @@ def get_datatype_metranet(datatype):
 
 def get_fieldname_pyart(datatype):
     """
-    maps de config file radar data type name into the corresponding rainbow
+    maps the config file radar data type name into the corresponding rainbow
     Py-ART field name
 
     Parameters
@@ -416,6 +417,35 @@ def get_fieldname_pyart(datatype):
         raise ValueError('ERROR: Unknown data type '+datatype)
 
     return field_name
+    
+    
+def get_fieldname_cosmo(field_name):
+    """
+    maps the Py-ART field name into the corresponding COSMO variable name
+
+    Parameters
+    ----------
+    field_name : str
+        Py-ART field name
+
+    Returns
+    -------
+    cosmo_name : str
+        Py-ART variable name
+
+    """
+    if field_name == 'TEMP':
+        cosmo_name = 'T'
+    elif field_name == 'wind_speed':
+        cosmo_name = 'FF'
+    elif field_name == 'wind_direction':
+        cosmo_name = 'DD'
+    elif field_name == 'vertical_wind_shear':
+        cosmo_name = 'WSHEAR'
+    else:
+        raise ValueError('ERROR: Unknown field name '+field_name)
+
+    return cosmo_name
 
 
 def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
@@ -465,7 +495,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
             if (not os.path.isdir(datapath)):
                 # warn("WARNING: Unknown datapath '%s'" % datapath)
                 continue
-            dayfilelist = glob.glob(datapath+dayinfo+'*'+datatype+'.*')
+            dayfilelist = glob.glob(datapath+dayinfo+'*00'+datatype+'.*')
             for filename in dayfilelist:
                 t_filelist.append(filename)
         elif datagroup == 'RAD4ALP':
