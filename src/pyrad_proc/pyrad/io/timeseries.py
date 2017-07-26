@@ -93,7 +93,7 @@ class TimeSeries(object):
         """
         Add a new sample to the time series.
         """
-        if (self.num_el + 1 >= self.maxlength):
+        if (self.num_el + 1 > self.maxlength): # jgr changed from >= 
             raise Exception("ERROR: Cannot add time series sample. Max"
                             " length reached.")
 
