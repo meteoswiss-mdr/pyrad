@@ -42,8 +42,8 @@ from ..io.write_data import write_intercomp_scores_ts, write_ts_cum
 from ..io.write_data import write_rhi_profile, write_field_coverage
 from ..io.write_data import write_last_state
 
-from ..graph.plots import plot_ppi, plot_rhi, plot_cappi, plot_bscope
-from ..graph.plots import plot_timeseries, plot_timeseries_comp
+from ..graph.plots import plot_ppi, plot_ppi_map, plot_rhi, plot_cappi
+from ..graph.plots import plot_bscope, plot_timeseries, plot_timeseries_comp
 from ..graph.plots import plot_quantiles, get_colobar_label, plot_sun_hits
 from ..graph.plots import plot_sun_retrieval_ts, plot_histogram
 from ..graph.plots import plot_histogram2, plot_density, plot_monitoring_ts
@@ -630,6 +630,37 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname
 
+    if prdcfg['type'] == 'PPI_MAP':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        el_vec = np.sort(dataset.fixed_angle['data'])
+        el = el_vec[prdcfg['anglenr']]
+        ind_el = np.where(dataset.fixed_angle['data'] == el)[0][0]
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'ppi', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i in range(len(fname)):
+            fname[i] = savedir+fname[i]
+
+        plot_ppi_map(dataset, field_name, ind_el, prdcfg, fname)
+
+        print('----- save to '+' '.join(fname))
+
+        return fname
+
     elif prdcfg['type'] == 'RHI_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset.fields:
@@ -849,6 +880,44 @@ def generate_vol_products(dataset, prdcfg):
 
             plot_ppi(xsect, field_name, 0, prdcfg, fname,
                      plot_type=plot_type, step=step, quantiles=quantiles)
+
+            print('----- save to '+' '.join(fname))
+
+            return fname
+        except EnvironmentError:
+            warn(
+                'No data found at elevation ' + str(prdcfg['angle']) +
+                '. Skipping product ' + prdcfg['type'])
+
+            return None
+
+    elif prdcfg['type'] == 'PSEUDOPPI_MAP':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        try:
+            xsect = pyart.util.cross_section_rhi(
+                dataset, [prdcfg['angle']], el_tol=prdcfg['EleTol'])
+
+            savedir = get_save_dir(
+                prdcfg['basepath'], prdcfg['procname'], dssavedir,
+                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+            fname = make_filename(
+                'ppi', prdcfg['dstype'], prdcfg['voltype'],
+                prdcfg['imgformat'],
+                prdcfginfo='el'+'{:.1f}'.format(prdcfg['angle']),
+                timeinfo=prdcfg['timeinfo'])
+
+            for i in range(len(fname)):
+                fname[i] = savedir+fname[i]
+
+            plot_ppi_map(xsect, field_name, 0, prdcfg, fname)
 
             print('----- save to '+' '.join(fname))
 
@@ -1386,8 +1455,10 @@ def generate_vol_products(dataset, prdcfg):
                 ind_ele = np.where(d_ele < prdcfg['AngTol'])[0]
                 if len(ind_ele) == 0:
                     continue
-                yval_aux = np.ma.concatenate([yval_aux, field_coverage[ind_ele]])
-                xval_aux = np.concatenate([xval_aux, dataset.azimuth['data'][ind_ele]])
+                yval_aux = np.ma.concatenate(
+                    [yval_aux, field_coverage[ind_ele]])
+                xval_aux = np.concatenate(
+                    [xval_aux, dataset.azimuth['data'][ind_ele]])
             yval.append(yval_aux)
             xval.append(xval_aux)
             labels.append('ele '+'{:.1f}'.format(ele_steps_vec[i])+'-' +
@@ -1587,7 +1658,7 @@ def generate_vol_products(dataset, prdcfg):
         # count and filter outliers
         quantiles_lim, values_lim = compute_quantiles(
             data, quantiles=[0.2, 99.8])
-        if values_lim.mask[0] == True or values_lim.mask[1] == True:
+        if values_lim.mask[0] or values_lim.mask[1]:
             warn('No valid radar gates found in sector')
             return None
 

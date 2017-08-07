@@ -5,7 +5,7 @@
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
 dataSetList STRARR 1
-   l0:ISO0
+   l0:reflectivity
       
 
 # ==========================================================================================
@@ -28,56 +28,61 @@ dataSetList STRARR 1
 #    regular_grid INT 0
 #    lookup_table INT 1
 #    MAKE_GLOBAL INT 1
-    
-ISO0 STRUCT 3
-    type STRING RAW
-    datatype STRARR 1
-        COSMO:ISO0
-    products STRUCT 4
-      AZ103 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 4
-         voltype STRING ISO0
-      AZ107 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 6
-         voltype STRING ISO0
-      AZ111 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 8
-         voltype STRING ISO0
-      EL06 STRUCT 4
-         type  STRING PSEUDOPPI_IMAGE
-         angle FLOAT 6.
-         EleTol FLOAT 1.
-         voltype STRING ISO0
+#    
+#ISO0 STRUCT 3
+#    type STRING RAW
+#    datatype STRARR 1
+#        COSMO:ISO0
+#    products STRUCT 4
+#      AZ103 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 4
+#         voltype STRING ISO0
+#      AZ107 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 6
+#         voltype STRING ISO0
+#      AZ111 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 8
+#         voltype STRING ISO0
+#      EL06 STRUCT 4
+#         type  STRING PSEUDOPPI_IMAGE
+#         angle FLOAT 6.
+#         EleTol FLOAT 1.
+#         voltype STRING ISO0
 
     
 # ==========================================================================================
 #                 raw data processing
 # ==========================================================================================
-#reflectivity STRUCT 3
-#   type     STRING RAW
-#   datatype STRING dBZ
-#   products STRUCT 4
-#      AZ103 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 4
-#         voltype STRING dBZ
-#      AZ107 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 6
-#         voltype STRING dBZ
-#      AZ111 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 8
-#         voltype STRING dBZ
-#      EL06 STRUCT 4
-#         type  STRING PSEUDOPPI_IMAGE
-#         angle FLOAT 6.
-#         EleTol FLOAT 1.
-#         voltype STRING dBZ
-#         
+reflectivity STRUCT 3
+   type     STRING RAW
+   datatype STRING dBZ
+   products STRUCT 5
+      AZ103 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING dBZ
+      AZ107 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING dBZ
+      AZ111 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING dBZ
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING dBZ         
+     EL06_MAP STRUCT 4
+         type  STRING PSEUDOPPI_MAP
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING dBZ
+         
 #uPhiDP_rainbow STRUCT 3
 #   type     STRING RAW
 #   datatype STRING uPhiDP

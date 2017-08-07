@@ -8,6 +8,7 @@ Functions to plot Pyrad datasets
     :toctree: generated/
 
     plot_ppi
+    plot_ppi_map
     plot_rhi
     plot_bscope
     plot_cappi
@@ -95,7 +96,11 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
                   prdcfg['ppiImageConfig']['ymax']],
             xlim=[prdcfg['ppiImageConfig']['xmin'],
                   prdcfg['ppiImageConfig']['xmax']])
-        display.plot_range_rings([10, 20, 30, 40])
+        if 'rngRing' in prdcfg['ppiImageConfig']:
+            if prdcfg['ppiImageConfig']['rngRing'] > 0:
+                display.plot_range_rings(np.arange(
+                    0., radar.range['data'][-1]/1000.,
+                    prdcfg['ppiImageConfig']['rngRing']))
         display.plot_cross_hair(5.)
 
         for i in range(len(fname_list)):
@@ -125,6 +130,68 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
 
         plot_histogram(bins, values, fname_list, labelx=labelx,
                        labely='Number of Samples', titl=titl)
+
+    return fname_list
+
+
+def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
+    """
+    plots a PPI on a geographic map
+
+    Parameters
+    ----------
+    radar : Radar object
+        object containing the radar data to plot
+    field_name : str
+        name of the radar field to plot
+    ind_el : int
+        sweep index to plot
+    prdcfg : dict
+        dictionary containing the product configuration
+    fname_list : list of str
+        list of names of the files where to store the plot
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    """
+    norm, ticks, ticklabs = get_norm(field_name)
+
+    fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
+                     prdcfg['ppiImageConfig']['ysize']],
+                     dpi=72)
+    ax = fig.add_subplot(111, aspect='equal')
+    lon_lines = np.arange(np.floor(prdcfg['ppiMapImageConfig']['lonmin']),
+                          np.ceil(prdcfg['ppiMapImageConfig']['lonmax'])+1,
+                          0.5)
+    lat_lines = np.arange(np.floor(prdcfg['ppiMapImageConfig']['latmin']),
+                          np.ceil(prdcfg['ppiMapImageConfig']['latmax'])+1,
+                          0.5)
+
+    display_map = pyart.graph.RadarMapDisplayCartopy(radar)
+    display_map.plot_ppi_map(
+        field_name, sweep=ind_el, norm=norm, ticks=ticks,
+        ticklabs=ticklabs, min_lon=prdcfg['ppiMapImageConfig']['lonmin'],
+        max_lon=prdcfg['ppiMapImageConfig']['lonmax'],
+        min_lat=prdcfg['ppiMapImageConfig']['latmin'],
+        max_lat=prdcfg['ppiMapImageConfig']['latmax'],
+        resolution=prdcfg['ppiMapImageConfig']['mapres'],
+        lat_lines=lat_lines, lon_lines=lon_lines,
+        maps_list=prdcfg['ppiMapImageConfig']['maps'])
+
+    if 'rngRing' in prdcfg['ppiMapImageConfig']:
+            if prdcfg['ppiMapImageConfig']['rngRing'] > 0:
+                rng_rings = np.arange(
+                    0., radar.range['data'][-1]/1000.,
+                    prdcfg['ppiMapImageConfig']['rngRing'])
+                for rng_ring in rng_rings:
+                    display_map.plot_range_ring(rng_ring)
+
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
+    plt.close()
 
     return fname_list
 
