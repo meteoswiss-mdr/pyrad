@@ -298,6 +298,8 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
         list of names of the created plots
 
     """
+    norm, ticks, ticklabs = get_norm(field_name)
+
     radar_aux = radar.extract_sweeps([ind_sweep])
     if radar_aux.scan_type == 'ppi':
         ang = np.sort(radar_aux.azimuth['data'])
@@ -335,12 +337,15 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
         plt.title(titl)
     else:
         cmap = pyart.config.get_field_colormap(field_name)
-        vmin, vmax = pyart.config.get_field_limits(field_name)
+
+        vmin = vmax = None
+        if norm is None:  # if norm is set do not override with vmin/vmax
+            vmin, vmax = pyart.config.get_field_limits(field_name)
 
         rmin = radar_aux.range['data'][0]/1000.
         rmax = radar_aux.range['data'][-1]/1000.
         cax = ax.imshow(
-            field, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax,
+            field, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax, norm=norm,
             extent=(rmin, rmax, ang_min, ang_max), aspect='auto',
             interpolation='none')
         plt.xlabel('Range (km)')
@@ -348,6 +353,10 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
         plt.title(titl)
 
         cb = fig.colorbar(cax)
+        if ticks is not None:
+            cb.set_ticks(ticks)
+        if ticklabs:
+            cb.set_ticklabels(ticklabs)
         cb.set_label(label)
 
     for i in range(len(fname_list)):
@@ -380,14 +389,41 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname_list):
         list of names of the created plots
 
     """
+    norm, ticks, ticklabs = get_norm(field_name)
+
     xmin = prdcfg['ppiImageConfig']['xmin']
     xmax = prdcfg['ppiImageConfig']['xmax']
     ymin = prdcfg['ppiImageConfig']['ymin']
     ymax = prdcfg['ppiImageConfig']['ymax']
 
+    wfunc = 'NEAREST_NEIGHBOUR'
+    if 'wfunc' in prdcfg:
+        wfunc = prdcfg['wfunc']
+
+    cappi_res = 500.
+    if 'res' in prdcfg:
+        cappi_res = prdcfg['res']
+
+    # number of grid points in cappi
+    ny = int((ymax-ymin)*1000./cappi_res)
+    nx = int((xmax-xmin)*1000./cappi_res)
+
+    # parameters to determine the gates to use for each grid point
+    beamwidth = 1.
+    beam_spacing = 1.
+    if 'radar_beam_width_h' in radar.instrument_parameters:
+        beamwidth = radar.instrument_parameters[
+            'radar_beam_width_h']['data'][0]
+
+    if radar.ray_angle_res is not None:
+        beam_spacing = radar.ray_angle_res['data'][0]
+
     # cartesian mapping
     grid = pyart.map.grid_from_radars(
-        (radar,), grid_shape=(1, 241, 241),
+        (radar,), gridding_algo='map_to_grid', weighting_function=wfunc,
+        roi_func='dist_beam', h_factor=1.0, nb=beamwidth, bsp=beam_spacing,
+        min_radius=cappi_res/2.,
+        grid_shape=(1, ny, nx),
         grid_limits=((altitude, altitude), (ymin*1000., ymax*1000.),
                      (xmin*1000., xmax*1000.)),
         fields=[field_name])
@@ -398,19 +434,28 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname_list):
                      dpi=72)
     ax = fig.add_subplot(111, aspect='equal')
     cmap = pyart.config.get_field_colormap(field_name)
-    vmin, vmax = pyart.config.get_field_limits(field_name)
+
+    vmin = vmax = None
+    if norm is None:  # if norm is set do not override with vmin/vmax
+        vmin, vmax = pyart.config.get_field_limits(field_name)
+
     titl = pyart.graph.common.generate_grid_title(grid, field_name, 0)
 
     cax = ax.imshow(
         grid.fields[field_name]['data'][0], extent=(xmin, xmax, ymin, ymax),
-        origin='lower', cmap=cmap, vmin=vmin, vmax=vmax, interpolation='none')
+        origin='lower', cmap=cmap, vmin=vmin, vmax=vmax, norm=norm,
+        interpolation='none')
     plt.xlabel('East West distance from radar(km)')
     plt.ylabel('North South distance from radar(km)')
     plt.title(titl)
 
     # plot the colorbar and set the label.
-    label = get_colobar_label(grid.fields[field_name], field_name)
     cb = fig.colorbar(cax)
+    if ticks is not None:
+        cb.set_ticks(ticks)
+    if ticklabs:
+        cb.set_ticklabels(ticklabs)
+    label = get_colobar_label(grid.fields[field_name], field_name)
     cb.set_label(label)
 
     for i in range(len(fname_list)):

@@ -417,8 +417,8 @@ def get_fieldname_pyart(datatype):
         raise ValueError('ERROR: Unknown data type '+datatype)
 
     return field_name
-    
-    
+
+
 def get_fieldname_cosmo(field_name):
     """
     maps the Py-ART field name into the corresponding COSMO variable name
@@ -434,7 +434,7 @@ def get_fieldname_cosmo(field_name):
         Py-ART variable name
 
     """
-    if field_name == 'TEMP':
+    if field_name == 'temperature':
         cosmo_name = 'T'
     elif field_name == 'wind_speed':
         cosmo_name = 'FF'

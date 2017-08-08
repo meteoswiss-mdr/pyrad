@@ -4,8 +4,13 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 1   
+dataSetList STRARR 6   
+   l0:TEMP
    l0:reflectivity
+   l0:echoID
+   l1:echoFilter
+   l2:Att_ZPhi
+   l3:hydroclass
 
 
 # ==========================================================================================
@@ -20,14 +25,33 @@ dataSetList STRARR 1
 #            type  STRING SAVEVOL            
 #            voltype STRING cosmo_index
 #
-#TEMP STRUCT 6
-#    type STRING COSMO_LOOKUP
-#    datatype STRARR 1
-#        dBZ        
-#    cosmo_type STRING TEMP
-#    regular_grid INT 0
-#    lookup_table INT 1
-#    MAKE_GLOBAL INT 1
+TEMP STRUCT 7
+    type STRING COSMO_LOOKUP
+    datatype STRARR 1
+        dBZ        
+    cosmo_type STRING TEMP
+    regular_grid INT 0
+    lookup_table INT 1
+    MAKE_GLOBAL INT 1
+    products STRUCT 4
+      CAPPI_2000 STRUCT 4
+         type  STRING CAPPI_IMAGE
+         voltype STRING TEMP
+         altitude FLOAT 2000.
+         wfunc STRING NEAREST_NEIGHBOUR
+      EL05_7 STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING TEMP
+      AZ090 STRUCT 4
+         type  STRING PSEUDORHI_IMAGE
+         angle FLOAT 90.
+         AziTol FLOAT 1.
+         voltype STRING TEMP
+      EL05_7_BSCOPE STRUCT 3
+         type  STRING BSCOPE_IMAGE
+         anglenr INT 2
+         voltype STRING TEMP
 	
 	
 # ==========================================================================================
@@ -36,57 +60,60 @@ dataSetList STRARR 1
 reflectivity STRUCT 3
    type     STRING RAW
    datatype STRING dBZ
-   products STRUCT 4     
-      EL03_0 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 0
+   products STRUCT 4
+      CAPPI_2000 STRUCT 4
+         type  STRING CAPPI_IMAGE
          voltype STRING dBZ
-      EL04_0 STRUCT 3
+         altitude FLOAT 2000.
+         wfunc STRING NEAREST_NEIGHBOUR
+      EL05_7 STRUCT 3
          type  STRING PPI_IMAGE
-         anglenr INT 1
+         anglenr INT 2
          voltype STRING dBZ
-      EL05_7 STRUCT 3
-         type  STRING PPI_IMAGE
+      AZ090 STRUCT 4
+         type  STRING PSEUDORHI_IMAGE
+         angle FLOAT 90.
+         AziTol FLOAT 1.
+         voltype STRING dBZ
+      EL05_7_BSCOPE STRUCT 3
+         type  STRING BSCOPE_IMAGE
          anglenr INT 2
-         voltype STRING dBZ 
-      EL05_7_MAP STRUCT 3
-            type  STRING PPI_MAP
-            anglenr INT 2
-            voltype STRING dBZ
+         voltype STRING dBZ
+        
          
-ZDR STRUCT 3
-   type     STRING RAW
-   datatype STRING ZDR
-   products STRUCT 3      
-      EL03_0 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 0
-         voltype STRING ZDR
-      EL04_0 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 1
-         voltype STRING ZDR
-      EL05_7 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 2
-         voltype STRING ZDR
-         
-RhoHV STRUCT 3
-   type     STRING RAW
-   datatype STRING RhoHV
-   products STRUCT 3      
-      EL03_0 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 0
-         voltype STRING RhoHV
-      EL04_0 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 1
-         voltype STRING RhoHV
-      EL05_7 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 2
-         voltype STRING RhoHV
+#ZDR STRUCT 3
+#   type     STRING RAW
+#   datatype STRING ZDR
+#   products STRUCT 3      
+#      EL03_0 STRUCT 3
+#         type  STRING PPI_IMAGE
+#         anglenr INT 0
+#         voltype STRING ZDR
+#      EL04_0 STRUCT 3
+#         type  STRING PPI_IMAGE
+#         anglenr INT 1
+#         voltype STRING ZDR
+#      EL05_7 STRUCT 3
+#         type  STRING PPI_IMAGE
+#         anglenr INT 2
+#         voltype STRING ZDR
+#         
+#RhoHV STRUCT 3
+#   type     STRING RAW
+#   datatype STRING RhoHV
+#   products STRUCT 3      
+#      EL03_0 STRUCT 3
+#         type  STRING PPI_IMAGE
+#         anglenr INT 0
+#         voltype STRING RhoHV
+#      EL04_0 STRUCT 3
+#         type  STRING PPI_IMAGE
+#         anglenr INT 1
+#         voltype STRING RhoHV
+#      EL05_7 STRUCT 3
+#         type  STRING PPI_IMAGE
+#         anglenr INT 2
+#         voltype STRING RhoHV
 		 
 		 
 # ==========================================================================================
@@ -132,18 +159,18 @@ echoFilter_Ah STRUCT 4
 # ==========================================================================================
 #                 outlier filter
 # ==========================================================================================    
-outlierFilter STRUCT 8
-    type STRING OUTLIER_FILTER
-    datatype STRARR 1
-        PROC:Vc
-    threshold FLOAT 10.
-    nb INT 2
-    nb_min INT 3
-    percentile_min FLOAT 5.
-    percentile_max float 95.
-    MAKE_GLOBAL INT 1
-
-
+#outlierFilter STRUCT 8
+#    type STRING OUTLIER_FILTER
+#    datatype STRARR 1
+#        PROC:Vc
+#    threshold FLOAT 10.
+#    nb INT 2
+#    nb_min INT 3
+#    percentile_min FLOAT 5.
+#    percentile_max float 95.
+#    MAKE_GLOBAL INT 1
+#
+#
 # ==========================================================================================
 #                 Attenuation
 # ==========================================================================================
@@ -162,7 +189,7 @@ Att_ZPhi STRUCT 5
 # ==========================================================================================
 #                 hydrometeor classification products
 # ==========================================================================================
-hydroclass STRUCT 5
+hydroclass STRUCT 6
     type STRING HYDROCLASS
     datatype STRARR 5
         PROC:dBZc
@@ -173,6 +200,26 @@ hydroclass STRUCT 5
     HYDRO_METHOD STRING SEMISUPERVISED
     RADARCENTROIDS STRING DX50
     MAKE_GLOBAL INT 1
+    products STRUCT 4     
+      CAPPI_2000 STRUCT 4
+         type  STRING CAPPI_IMAGE
+         voltype STRING hydro
+         altitude FLOAT 2000.
+         wfunc STRING NEAREST_NEIGHBOUR
+      EL05_7 STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING hydro
+      AZ090 STRUCT 4
+         type  STRING PSEUDORHI_IMAGE
+         angle FLOAT 90.
+         AziTol FLOAT 1.
+         voltype STRING hydro
+      EL05_7_BSCOPE STRUCT 3
+         type  STRING BSCOPE_IMAGE
+         anglenr INT 2
+         voltype STRING hydro
+      
 
 
 # ==========================================================================================

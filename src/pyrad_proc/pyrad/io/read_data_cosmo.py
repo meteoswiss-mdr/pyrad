@@ -33,7 +33,8 @@ import time
 
 
 def cosmo2radar_data(radar, cosmo_coord, cosmo_data, time_index=0,
-                     slice_xy=True, slice_z=False, field_names=['TEMP']):
+                     slice_xy=True, slice_z=False,
+                     field_names=['temperature']):
     """
     get the COSMO value corresponding to each radar gate using nearest
     neighbour interpolation
@@ -46,7 +47,7 @@ def cosmo2radar_data(radar, cosmo_coord, cosmo_data, time_index=0,
     cosmo_coord : dict
         dictionary containing the COSMO coordinates
     cosmo_data : dict
-        dictionary containing the COSMO data    
+        dictionary containing the COSMO data
     time_index : int
         index of the forecasted data
     slice_xy : boolean
@@ -73,7 +74,7 @@ def cosmo2radar_data(radar, cosmo_coord, cosmo_data, time_index=0,
      ind_ymax, ind_zmax) = _prepare_for_interpolation(
         x_radar, y_radar, z_radar, cosmo_coord, slice_xy=slice_xy,
         slice_z=slice_z)
-    
+
     cosmo_fields = []
     for field in field_names:
         if field not in cosmo_data:
@@ -85,19 +86,19 @@ def cosmo2radar_data(radar, cosmo_coord, cosmo_data, time_index=0,
             # find interpolation function
             interp_func = NearestNDInterpolator(
                 (z_cosmo, y_cosmo, x_cosmo), values)
-                
+
             # interpolate
             data_interp = interp_func((z_radar, y_radar, x_radar))
-            
+
             # put field
             field_dict = get_metadata(field)
             field_dict['data'] = data_interp
             cosmo_fields.append({field: field_dict})
-            
+
     if not cosmo_fields:
         warn('COSMO data not available')
         return None
-        
+
     return cosmo_fields
 
 
@@ -171,7 +172,7 @@ def cosmo2radar_coord(radar, cosmo_coord, slice_xy=True, slice_z=False,
 
 
 def get_cosmo_fields(cosmo_data, cosmo_ind, time_index=0,
-                     field_names=['TEMP']):
+                     field_names=['temperature']):
     """
     Get the COSMO data corresponding to each radar gate
     using a precomputed look up table of the nearest neighbour
@@ -179,7 +180,7 @@ def get_cosmo_fields(cosmo_data, cosmo_ind, time_index=0,
     Parameters
     ----------
     cosmo_data : dict
-        dictionary containing the COSMO data and metadata        
+        dictionary containing the COSMO data and metadata
     cosmo_ind : dict
         dictionary containing a field of COSMO indices and metadata
     time_index : int
@@ -200,21 +201,21 @@ def get_cosmo_fields(cosmo_data, cosmo_ind, time_index=0,
             warn('COSMO field '+field+' data not available')
         else:
             values = cosmo_data[field]['data'][time_index, :, :, :].flatten()
-            
+
             # put field
             field_dict = get_metadata(field)
             field_dict['data'] = values[cosmo_ind['data'].flatten()].reshape(
                 nrays, ngates)
             cosmo_fields.append({field: field_dict})
-    
+
     if not cosmo_fields:
         warn('COSMO data not available')
         return None
-        
+
     return cosmo_fields
 
 
-def read_cosmo_data(fname, field_names=['TEMP'], celsius=False):
+def read_cosmo_data(fname, field_names=['temperature'], celsius=True):
     """
     Reads COSMO data from a netcdf file
 
@@ -225,7 +226,7 @@ def read_cosmo_data(fname, field_names=['TEMP'], celsius=False):
     field_names : str
         name of the variable to read
     celsius : Boolean
-        if True and variable TEMP converts data from Kelvin
+        if True and variable temperature converts data from Kelvin
         to Centigrade
 
     Returns
@@ -250,7 +251,7 @@ def read_cosmo_data(fname, field_names=['TEMP'], celsius=False):
             warn(field+' data not present in COSMO file '+fname)
         else:
             var_data = _ncvar_to_dict(ncvars[cosmo_name])
-            if field == 'TEMP' and celsius:
+            if field == 'temperature' and celsius:
                 var_data['data'] -= 273.15
                 var_data['units'] = 'degrees Celsius'
             if field == 'vertical_wind_shear':
@@ -308,10 +309,10 @@ def read_cosmo_coord(fname, zmin=None):
     try:
         ncobj = netCDF4.Dataset(fname)
         ncvars = ncobj.variables
-    
+
         # 4.1 Global attribute -> move to metadata dictionary
         metadata = dict([(k, getattr(ncobj, k)) for k in ncobj.ncattrs()])
-    
+
         # 4.2 put variables in dictionary
         x_1 = _ncvar_to_dict(ncvars['x_1'])
         y_1 = _ncvar_to_dict(ncvars['y_1'])
@@ -322,14 +323,14 @@ def read_cosmo_coord(fname, zmin=None):
         hfl = _ncvar_to_dict(ncvars['HFL'])
         hsurf = _ncvar_to_dict(ncvars['HSURF'])
         fr_land = _ncvar_to_dict(ncvars['FR_LAND'])
-    
+
         # close object
         ncobj.close()
-    
+
         if zmin is not None:
             z_1['data'] = z_1['data'][z_1['data'] >= zmin]
             z_bnds_1['data'] = z_bnds_1['data'][z_bnds_1['data'] >= zmin]
-    
+
         cosmo_coord = {
             'metadata': metadata,
             'x': x_1,
@@ -342,7 +343,7 @@ def read_cosmo_coord(fname, zmin=None):
             'hsurf': hsurf,
             'fr_land': fr_land,
         }
-    
+
         return cosmo_coord
     except EnvironmentError:
         warn('Unable to read file '+fname)
