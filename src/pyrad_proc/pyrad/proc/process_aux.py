@@ -13,6 +13,7 @@ determined points or regions of interest.
     process_raw
     process_save_radar
     process_point_measurement
+    process_grid
 """
 
 from copy import deepcopy
@@ -52,6 +53,9 @@ def get_process_func(dataset_type, dsname):
     dsformat = 'VOL'
     if dataset_type == 'RAW':
         func_name = process_raw
+    elif dataset_type == 'GRID':
+        func_name = process_grid
+        dsformat = 'GRID'
     elif dataset_type == 'CDF':
         func_name = 'process_cdf'
     elif dataset_type == 'NCVOL':
@@ -427,3 +431,135 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
     new_dataset.update({'final': False})
 
     return new_dataset, ind_rad
+
+
+def process_grid(procstatus, dscfg, radar_list=None):
+    """
+    Puts the radar data in a regular grid
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : string. Dataset keyword
+            The data type where we want to extract the point measurement
+        gridconfig : dictionary. Dataset keyword
+            Dictionary containing some or all of this keywords:
+            xmin, xmax, ymin, ymax, zmin, zmax : floats
+                minimum and maximum horizontal distance from grid origin [km]
+                and minimum and maximum vertical distance from grid origin [m]
+                Defaults -40, 40, -40, 40, 0., 10000.
+            hres, vres : floats
+                horizontal and vertical grid resolution [m]
+                Defaults 1000., 500.
+            latorig, lonorig, altorig : floats
+                latitude and longitude of grid origin [deg] and altitude of
+                grid origin [m MSL]
+                Defaults the latitude, longitude and altitude of the radar
+        wfunc : str
+            the weighting function used to combine the radar gates close to a
+            grid point. Possible values BARNES, CRESSMAN, NEAREST_NEIGHBOUR
+            Default NEAREST_NEIGHBOUR
+
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the gridded data
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    for datatypedescr in dscfg['datatype']:
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        break
+    field_name = get_fieldname_pyart(datatype)
+    ind_rad = int(radarnr[5:8])-1
+
+    if ((radar_list is None) or (radar_list[ind_rad] is None)):
+        warn('ERROR: No valid radar')
+        return None, None
+
+    radar = radar_list[ind_rad]
+
+    # default parameters
+    xmin = -40.
+    xmax = 40.
+    ymin = -40.
+    ymax = 40.
+    zmin = 0.
+    zmax = 10000.
+    hres = 1000.
+    vres = 500.
+    lat = float(radar.latitude['data'])
+    lon = float(radar.longitude['data'])
+    alt = float(radar.altitude['data'])
+
+    if 'gridConfig' in dscfg:
+        if 'xmin' in dscfg['gridConfig']:
+            xmin = dscfg['gridConfig']['xmin']
+        if 'xmax' in dscfg['gridConfig']:
+            xmax = dscfg['gridConfig']['xmax']
+        if 'ymin' in dscfg['gridConfig']:
+            ymin = dscfg['gridConfig']['ymin']
+        if 'ymax' in dscfg['gridConfig']:
+            ymax = dscfg['gridConfig']['ymax']
+        if 'zmin' in dscfg['gridConfig']:
+            zmin = dscfg['gridConfig']['zmin']
+        if 'zmax' in dscfg['gridConfig']:
+            zmax = dscfg['gridConfig']['zmax']
+        if 'hres' in dscfg['gridConfig']:
+            hres = dscfg['gridConfig']['hres']
+        if 'vres' in dscfg['gridConfig']:
+            vres = dscfg['gridConfig']['vres']
+        if 'latorig' in dscfg['gridConfig']:
+            lat = dscfg['gridConfig']['latorig']
+        if 'lonorig' in dscfg['gridConfig']:
+            lon = dscfg['gridConfig']['lonorig']
+        if 'altorig' in dscfg['gridConfig']:
+            alt = dscfg['gridConfig']['altorig']
+
+    wfunc = 'NEAREST_NEIGHBOUR'
+    if 'wfunc' in dscfg:
+        wfunc = dscfg['wfunc']
+
+    # number of grid points in cappi
+    nz = int((zmax-zmin)/vres)+1
+    ny = int((ymax-ymin)*1000./hres)+1
+    nx = int((xmax-xmin)*1000./hres)+1
+
+    min_radius = np.max([vres, hres])/2.
+
+    # parameters to determine the gates to use for each grid point
+    beamwidth = 1.
+    beam_spacing = 1.
+    if 'radar_beam_width_h' in radar.instrument_parameters:
+        beamwidth = radar.instrument_parameters[
+            'radar_beam_width_h']['data'][0]
+
+    if radar.ray_angle_res is not None:
+        beam_spacing = radar.ray_angle_res['data'][0]
+
+    # cartesian mapping
+    grid = pyart.map.grid_from_radars(
+        (radar,), gridding_algo='map_to_grid',
+        weighting_function=wfunc,
+        roi_func='dist_beam', h_factor=1.0, nb=beamwidth, bsp=beam_spacing,
+        min_radius=min_radius,
+        grid_shape=(nz, ny, nx),
+        grid_limits=((zmin, zmax), (ymin*1000., ymax*1000.),
+                     (xmin*1000., xmax*1000.)),
+        grid_origin=(lat, lon), grid_origin_alt=alt,
+        fields=[field_name])
+
+    return grid, ind_rad

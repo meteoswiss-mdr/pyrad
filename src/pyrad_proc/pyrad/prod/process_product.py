@@ -15,6 +15,7 @@ Functions for obtaining Pyrad products from the datasets
     generate_vol_products
     generate_timeseries_products
     generate_monitoring_products
+    generate_grid_products
 
 """
 
@@ -50,7 +51,9 @@ from ..graph.plots import plot_histogram2, plot_density, plot_monitoring_ts
 from ..graph.plots import get_field_name, get_colobar_label, plot_scatter
 from ..graph.plots import plot_intercomp_scores_ts, plot_scatter_comp
 from ..graph.plots import plot_rhi_profile, plot_along_coord
-from ..graph.plots import plot_field_coverage
+from ..graph.plots import plot_field_coverage, plot_surface
+from ..graph.plots import plot_longitude_slice, plot_latitude_slice
+from ..graph.plots import plot_latlon_slice
 
 from ..util.radar_utils import create_sun_hits_field, rainfall_accumulation
 from ..util.radar_utils import create_sun_retrieval_field, get_ROI
@@ -2244,7 +2247,7 @@ def generate_monitoring_products(dataset, prdcfg):
 
         return fname
 
-    if prdcfg['type'] == 'PPI_HISTOGRAM':
+    elif prdcfg['type'] == 'PPI_HISTOGRAM':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in hist_obj.fields:
             warn(
@@ -2297,7 +2300,7 @@ def generate_monitoring_products(dataset, prdcfg):
 
         return fname
 
-    if prdcfg['type'] == 'ANGULAR_DENSITY':
+    elif prdcfg['type'] == 'ANGULAR_DENSITY':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in hist_obj.fields:
             warn(
@@ -2445,6 +2448,210 @@ def generate_monitoring_products(dataset, prdcfg):
             fname[i] = savedir+fname[i]
 
         pyart.io.cfradial.write_cfradial(fname[0], new_dataset)
+        print('saved file: '+fname[0])
+
+        return fname[0]
+
+    else:
+        warn(' Unsupported product type: ' + prdcfg['type'])
+        return None
+
+
+def generate_grid_products(dataset, prdcfg):
+    """
+    generates grid products
+
+    Parameters
+    ----------
+    dataset : grid
+        grid object
+
+    prdcfg : dictionary of dictionaries
+        product configuration dictionary of dictionaries
+
+    Returns
+    -------
+    no return
+
+    """
+
+    dssavedir = prdcfg['dsname']
+    if ('dssavename' in prdcfg):
+        dssavedir = prdcfg['dssavename']
+
+    if prdcfg['type'] == 'SURFACE_IMAGE':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # user defined values
+        level = 0
+        if 'level' in prdcfg:
+            level = prdcfg['level']
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'surface', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo='l'+str(level),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i in range(len(fname)):
+            fname[i] = savedir+fname[i]
+
+        plot_surface(dataset, field_name, level, prdcfg, fname)
+
+        print('----- save to '+' '.join(fname))
+
+        return fname
+
+    elif prdcfg['type'] == 'LATITUDE_SLICE':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # user defined values
+        lon = dataset.origin_longitude['data'][0]
+        lat = dataset.origin_latitude['data'][0]
+        if 'lon' in prdcfg:
+            lon = prdcfg['lon']
+        if 'lat' in prdcfg:
+            lat = prdcfg['lat']
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'lat_slice', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo='lat'+'{:.2f}'.format(lat),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i in range(len(fname)):
+            fname[i] = savedir+fname[i]
+
+        plot_latitude_slice(dataset, field_name, lon, lat, prdcfg, fname)
+
+        print('----- save to '+' '.join(fname))
+
+        return fname
+
+    elif prdcfg['type'] == 'LONGITUDE_SLICE':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # user defined values
+        lon = dataset.origin_longitude['data'][0]
+        lat = dataset.origin_latitude['data'][0]
+        if 'lon' in prdcfg:
+            lon = prdcfg['lon']
+        if 'lat' in prdcfg:
+            lat = prdcfg['lat']
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'lon_slice', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo='lon'+'{:.2f}'.format(lon),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i in range(len(fname)):
+            fname[i] = savedir+fname[i]
+
+        plot_longitude_slice(dataset, field_name, lon, lat, prdcfg, fname)
+
+        print('----- save to '+' '.join(fname))
+
+        return fname
+
+    elif prdcfg['type'] == 'CROSS_SECTION':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # user defined values
+        lon1 = dataset.point_longitude['data'][0, 0, 0]
+        lat1 = dataset.point_latitude['data'][0, 0, 0]
+
+        lon2 = dataset.point_longitude['data'][0, -1, -1]
+        lat2 = dataset.point_latitude['data'][0, -1, -1]
+        if 'coord1' in prdcfg:
+            if 'lon' in prdcfg['coord1']:
+                lon1 = prdcfg['coord1']['lon']
+            if 'lat' in prdcfg['coord1']:
+                lat1 = prdcfg['coord1']['lat']
+        if 'coord2' in prdcfg:
+            if 'lon' in prdcfg['coord2']:
+                lon2 = prdcfg['coord2']['lon']
+            if 'lat' in prdcfg['coord2']:
+                lat2 = prdcfg['coord2']['lat']
+
+        coord1 = (lon1, lat1)
+        coord2 = (lon2, lat2)
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'lonlat', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'],
+            prdcfginfo='lon1'+'{:.2f}'.format(lon1)+'lat1' +
+                       '{:.2f}'.format(lat1)+'lon2'+'{:.2f}'.format(lon2) +
+                       'lat2'+'{:.2f}'.format(lat2),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i in range(len(fname)):
+            fname[i] = savedir+fname[i]
+
+        plot_latlon_slice(dataset, field_name, coord1, coord2, prdcfg, fname)
+
+        print('----- save to '+' '.join(fname))
+
+        return fname
+
+    elif prdcfg['type'] == 'SAVEVOL':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=dataset['timeinfo'])
+
+        fname = make_filename(
+            'savevol', prdcfg['dstype'], prdcfg['voltype'], ['nc'],
+            timeinfo=dataset['timeinfo'])
+
+        for i in range(len(fname)):
+            fname[i] = savedir+fname[i]
+
+        pyart.io.write_grid(fname[0], dataset)
         print('saved file: '+fname[0])
 
         return fname[0]

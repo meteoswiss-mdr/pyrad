@@ -4,13 +4,8 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 6   
-   l0:TEMP
-   l0:reflectivity
-   l0:echoID
-   l1:echoFilter
-   l2:Att_ZPhi
-   l3:hydroclass
+dataSetList STRARR 1   
+   l0:reflectivity_grid
 
 
 # ==========================================================================================
@@ -25,59 +20,94 @@ dataSetList STRARR 6
 #            type  STRING SAVEVOL            
 #            voltype STRING cosmo_index
 #
-TEMP STRUCT 7
-    type STRING COSMO_LOOKUP
-    datatype STRARR 1
-        dBZ        
-    cosmo_type STRING TEMP
-    regular_grid INT 0
-    lookup_table INT 1
-    MAKE_GLOBAL INT 1
-    products STRUCT 4
-      CAPPI_2000 STRUCT 4
-         type  STRING CAPPI_IMAGE
-         voltype STRING TEMP
-         altitude FLOAT 2000.
-         wfunc STRING NEAREST_NEIGHBOUR
-      EL05_7 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 2
-         voltype STRING TEMP
-      AZ090 STRUCT 4
-         type  STRING PSEUDORHI_IMAGE
-         angle FLOAT 90.
-         AziTol FLOAT 1.
-         voltype STRING TEMP
-      EL05_7_BSCOPE STRUCT 3
-         type  STRING BSCOPE_IMAGE
-         anglenr INT 2
-         voltype STRING TEMP
-	
-	
+#TEMP STRUCT 6
+#    type STRING COSMO_LOOKUP
+#    datatype STRARR 1
+#        dBZ        
+#    cosmo_type STRING TEMP
+#    regular_grid INT 0
+#    lookup_table INT 1
+#    MAKE_GLOBAL INT 1
+#    products STRUCT 4
+#      CAPPI_2000 STRUCT 4
+#         type  STRING CAPPI_IMAGE
+#         voltype STRING TEMP
+#         altitude FLOAT 2000.
+#         wfunc STRING NEAREST_NEIGHBOUR
+#      EL05_7 STRUCT 3
+#         type  STRING PPI_IMAGE
+#         anglenr INT 2
+#         voltype STRING TEMP
+#      AZ090 STRUCT 4
+#         type  STRING PSEUDORHI_IMAGE
+#         angle FLOAT 90.
+#         AziTol FLOAT 1.
+#         voltype STRING TEMP
+#      EL05_7_BSCOPE STRUCT 3
+#         type  STRING BSCOPE_IMAGE
+#         anglenr INT 2
+#         voltype STRING TEMP
+#	
+#	
 # ==========================================================================================
 #                 raw data processing
 # ==========================================================================================
-reflectivity STRUCT 3
-   type     STRING RAW
+#reflectivity STRUCT 3
+#   type     STRING RAW
+#   datatype STRING dBZ
+#   products STRUCT 4
+#      CAPPI_2000 STRUCT 4
+#         type  STRING CAPPI_IMAGE
+#         voltype STRING dBZ
+#         altitude FLOAT 2000.
+#         wfunc STRING NEAREST_NEIGHBOUR
+#      EL05_7 STRUCT 3
+#         type  STRING PPI_IMAGE
+#         anglenr INT 2
+#         voltype STRING dBZ
+#      AZ090 STRUCT 4
+#         type  STRING PSEUDORHI_IMAGE
+#         angle FLOAT 90.
+#         AziTol FLOAT 1.
+#         voltype STRING dBZ
+#      EL05_7_BSCOPE STRUCT 3
+#         type  STRING BSCOPE_IMAGE
+#         anglenr INT 2
+#         voltype STRING dBZ
+#         
+reflectivity_grid STRUCT 5
+   type     STRING GRID
    datatype STRING dBZ
+   wfunc STRING NEAREST_NEIGHBOUR
+   gridConfig STRUCT 9
+      xmin FLOAT -40.
+      xmax FLOAT 40.
+      ymin FLOAT -40.
+      ymax FLOAT 40.
+      zmin FLOAT 0.
+      zmax FLOAT 10000.
+      hres FLOAT 1000.
+      vres FLOAT 500.
+      altorig FLOAT 0.
    products STRUCT 4
-      CAPPI_2000 STRUCT 4
-         type  STRING CAPPI_IMAGE
+      LATLON STRUCT 4
+         type STRING CROSS_SECTION
          voltype STRING dBZ
-         altitude FLOAT 2000.
-         wfunc STRING NEAREST_NEIGHBOUR
-      EL05_7 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 2
+         coord1 STRUCT 2
+            lat FLOAT 46.5
+            lon FLOAT 8.
+         coord2 STRUCT 2
+            lat FLOAT 47.
+            lon FLOAT 8.            
+      SURFACE STRUCT 3
+         type  STRING SURFACE_IMAGE
          voltype STRING dBZ
-      AZ090 STRUCT 4
-         type  STRING PSEUDORHI_IMAGE
-         angle FLOAT 90.
-         AziTol FLOAT 1.
+         level INT 4
+      LATITUDE STRUCT 2
+         type  STRING LATITUDE_SLICE
          voltype STRING dBZ
-      EL05_7_BSCOPE STRUCT 3
-         type  STRING BSCOPE_IMAGE
-         anglenr INT 2
+      LONGITUDE STRUCT 2
+         type  STRING LONGITUDE_SLICE
          voltype STRING dBZ
         
          
@@ -147,15 +177,15 @@ echoFilter STRUCT 4
     echo_type INT 3
     MAKE_GLOBAL INT 1
 
-echoFilter_Ah STRUCT 4
-    type STRING ECHO_FILTER
-    datatype STRARR 2
-        PROC:echoID
-        PROC:Ah
-    echo_type INT 3
-    MAKE_GLOBAL INT 1
-	
-	
+#echoFilter_Ah STRUCT 4
+#    type STRING ECHO_FILTER
+#    datatype STRARR 2
+#        PROC:echoID
+#        PROC:Ah
+#    echo_type INT 3
+#    MAKE_GLOBAL INT 1
+#	
+#	
 # ==========================================================================================
 #                 outlier filter
 # ==========================================================================================    
@@ -219,7 +249,32 @@ hydroclass STRUCT 6
          type  STRING BSCOPE_IMAGE
          anglenr INT 2
          voltype STRING hydro
-      
+         
+hydroclass_grid STRUCT 5
+   type     STRING GRID
+   datatype STRING PROC:hydro
+   wfunc STRING NEAREST_NEIGHBOUR
+   gridConfig STRUCT 9
+      xmin FLOAT -40.
+      xmax FLOAT 40.
+      ymin FLOAT -40.
+      ymax FLOAT 40.
+      zmin FLOAT 0.
+      zmax FLOAT 10000.
+      hres FLOAT 1000.
+      vres FLOAT 500.
+      altorig FLOAT 0.
+   products STRUCT 3
+      SURFACE STRUCT 3
+         type  STRING SURFACE_IMAGE
+         voltype STRING hydro
+         level INT 4
+      LATITUDE STRUCT 2
+         type  STRING LATITUDE_SLICE
+         voltype STRING hydro
+      LONGITUDE STRUCT 2
+         type  STRING LONGITUDE_SLICE
+         voltype STRING hydro      
 
 
 # ==========================================================================================
