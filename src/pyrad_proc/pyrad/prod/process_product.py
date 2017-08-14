@@ -2617,9 +2617,9 @@ def generate_grid_products(dataset, prdcfg):
         fname = make_filename(
             'lonlat', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
-            prdcfginfo='lon1'+'{:.2f}'.format(lon1)+'lat1' +
-                       '{:.2f}'.format(lat1)+'lon2'+'{:.2f}'.format(lon2) +
-                       'lat2'+'{:.2f}'.format(lat2),
+            prdcfginfo='lon-lat1_'+'{:.2f}'.format(lon1)+'-' +
+                       '{:.2f}'.format(lat1)+'_lon-lat2_' +
+                       '{:.2f}'.format(lon2)+'-'+'{:.2f}'.format(lat2),
             timeinfo=prdcfg['timeinfo'])
 
         for i in range(len(fname)):

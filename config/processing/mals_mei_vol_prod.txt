@@ -98,7 +98,7 @@ reflectivity_grid STRUCT 5
             lon FLOAT 8.
          coord2 STRUCT 2
             lat FLOAT 47.
-            lon FLOAT 8.            
+            lon FLOAT 8.3            
       SURFACE STRUCT 3
          type  STRING SURFACE_IMAGE
          voltype STRING dBZ
