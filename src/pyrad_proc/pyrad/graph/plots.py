@@ -7,7 +7,12 @@ Functions to plot Pyrad datasets
 .. autosummary::
     :toctree: generated/
 
+    plot_surface
+    plot_latitude_slice
+    plot_longitude_slice
+    plot_latlon_slice
     plot_ppi
+    plot_ppi_map
     plot_rhi
     plot_bscope
     plot_cappi
@@ -47,6 +52,180 @@ import pyart
 from ..util.radar_utils import compute_quantiles_sweep
 from ..util.radar_utils import compute_quantiles_from_hist
 from ..util.radar_utils import compute_histogram_sweep
+
+
+def plot_surface(grid, field_name, level, prdcfg, fname_list):
+    """
+    plots a surface from gridded data
+
+    Parameters
+    ----------
+    grid : Grid object
+        object containing the gridded data to plot
+    field_name : str
+        name of the radar field to plot
+    level : int
+        level index
+    prdcfg : dict
+        dictionary containing the product configuration
+    fname_list : list of str
+        list of names of the files where to store the plot
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    """
+    norm, ticks, ticklabs = get_norm(field_name)
+
+    fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
+                     prdcfg['ppiImageConfig']['ysize']],
+                     dpi=72)
+    ax = fig.add_subplot(111, aspect='equal')
+    lon_lines = np.arange(np.floor(prdcfg['ppiMapImageConfig']['lonmin']),
+                          np.ceil(prdcfg['ppiMapImageConfig']['lonmax'])+1,
+                          0.5)
+    lat_lines = np.arange(np.floor(prdcfg['ppiMapImageConfig']['latmin']),
+                          np.ceil(prdcfg['ppiMapImageConfig']['latmax'])+1,
+                          0.5)
+    display = pyart.graph.GridMapDisplay(grid)
+    display.plot_basemap(lat_lines=lat_lines, lon_lines=lon_lines)
+    display.plot_grid(field_name, level=level, norm=norm, ticks=ticks,
+                      ticklabs=ticklabs)
+    # display.plot_crosshairs(lon=lon, lat=lat)
+
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
+    plt.close()
+
+
+def plot_latitude_slice(grid, field_name, lon, lat, prdcfg, fname_list):
+    """
+    plots a latitude slice from gridded data
+
+    Parameters
+    ----------
+    grid : Grid object
+        object containing the gridded data to plot
+    field_name : str
+        name of the radar field to plot
+    lon, lat : float
+        coordinates of the slice to plot
+    prdcfg : dict
+        dictionary containing the product configuration
+    fname_list : list of str
+        list of names of the files where to store the plot
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    """
+    norm, ticks, ticklabs = get_norm(field_name)
+
+    fig = plt.figure(figsize=[prdcfg['rhiImageConfig']['xsize'],
+                     prdcfg['rhiImageConfig']['ysize']],
+                     dpi=72)
+    ax = fig.add_subplot(111, aspect='equal')
+    display = pyart.graph.GridMapDisplay(grid)
+    display.plot_latitude_slice(
+        field_name, lon=lon, lat=lat, norm=norm, colorbar_orient='horizontal',
+        ticks=ticks, ticklabs=ticklabs)
+    ax.set_xlim(
+        [prdcfg['rhiImageConfig']['xmin'], prdcfg['rhiImageConfig']['xmax']])
+    ax.set_ylim(
+        [prdcfg['rhiImageConfig']['ymin'], prdcfg['rhiImageConfig']['ymax']])
+
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
+    plt.close()
+
+
+def plot_longitude_slice(grid, field_name, lon, lat, prdcfg, fname_list):
+    """
+    plots a longitude slice from gridded data
+
+    Parameters
+    ----------
+    grid : Grid object
+        object containing the gridded data to plot
+    field_name : str
+        name of the radar field to plot
+    lon, lat : float
+        coordinates of the slice to plot
+    prdcfg : dict
+        dictionary containing the product configuration
+    fname_list : list of str
+        list of names of the files where to store the plot
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    """
+    norm, ticks, ticklabs = get_norm(field_name)
+
+    fig = plt.figure(figsize=[prdcfg['rhiImageConfig']['xsize'],
+                     prdcfg['rhiImageConfig']['ysize']],
+                     dpi=72)
+    ax = fig.add_subplot(111, aspect='equal')
+    display = pyart.graph.GridMapDisplay(grid)
+    display.plot_longitude_slice(
+        field_name, lon=lon, lat=lat, norm=norm, colorbar_orient='horizontal',
+        ticks=ticks, ticklabs=ticklabs)
+    ax.set_xlim(
+        [prdcfg['rhiImageConfig']['xmin'], prdcfg['rhiImageConfig']['xmax']])
+    ax.set_ylim(
+        [prdcfg['rhiImageConfig']['ymin'], prdcfg['rhiImageConfig']['ymax']])
+
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
+    plt.close()
+
+
+def plot_latlon_slice(grid, field_name, coord1, coord2, prdcfg, fname_list):
+    """
+    plots a croos section crossing two points in the grid
+
+    Parameters
+    ----------
+    grid : Grid object
+        object containing the gridded data to plot
+    field_name : str
+        name of the radar field to plot
+    coord1 : tupple of floats
+        lat, lon of the first point
+    coord2 : tupple of floats
+        lat, lon of the second point
+    fname_list : list of str
+        list of names of the files where to store the plot
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    """
+    norm, ticks, ticklabs = get_norm(field_name)
+
+    fig = plt.figure(figsize=[prdcfg['rhiImageConfig']['xsize'],
+                     prdcfg['rhiImageConfig']['ysize']],
+                     dpi=72)
+    ax = fig.add_subplot(111, aspect='equal')
+    display = pyart.graph.GridMapDisplay(grid)
+    display.plot_latlon_slice(
+        field_name, coord1=coord1, coord2=coord2, norm=norm,
+        colorbar_orient='vertical', ticks=ticks, ticklabs=ticklabs, fig=fig,
+        ax=ax)
+    # ax.set_ylim(
+    #    [prdcfg['rhiImageConfig']['ymin'], prdcfg['rhiImageConfig']['ymax']])
+
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
+    plt.close()
 
 
 def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
@@ -95,7 +274,11 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
                   prdcfg['ppiImageConfig']['ymax']],
             xlim=[prdcfg['ppiImageConfig']['xmin'],
                   prdcfg['ppiImageConfig']['xmax']])
-        display.plot_range_rings([10, 20, 30, 40])
+        if 'rngRing' in prdcfg['ppiImageConfig']:
+            if prdcfg['ppiImageConfig']['rngRing'] > 0:
+                display.plot_range_rings(np.arange(
+                    0., radar.range['data'][-1]/1000.,
+                    prdcfg['ppiImageConfig']['rngRing']))
         display.plot_cross_hair(5.)
 
         for i in range(len(fname_list)):
@@ -125,6 +308,68 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
 
         plot_histogram(bins, values, fname_list, labelx=labelx,
                        labely='Number of Samples', titl=titl)
+
+    return fname_list
+
+
+def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
+    """
+    plots a PPI on a geographic map
+
+    Parameters
+    ----------
+    radar : Radar object
+        object containing the radar data to plot
+    field_name : str
+        name of the radar field to plot
+    ind_el : int
+        sweep index to plot
+    prdcfg : dict
+        dictionary containing the product configuration
+    fname_list : list of str
+        list of names of the files where to store the plot
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    """
+    norm, ticks, ticklabs = get_norm(field_name)
+
+    fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
+                     prdcfg['ppiImageConfig']['ysize']],
+                     dpi=72)
+    ax = fig.add_subplot(111, aspect='equal')
+    lon_lines = np.arange(np.floor(prdcfg['ppiMapImageConfig']['lonmin']),
+                          np.ceil(prdcfg['ppiMapImageConfig']['lonmax'])+1,
+                          0.5)
+    lat_lines = np.arange(np.floor(prdcfg['ppiMapImageConfig']['latmin']),
+                          np.ceil(prdcfg['ppiMapImageConfig']['latmax'])+1,
+                          0.5)
+
+    display_map = pyart.graph.RadarMapDisplayCartopy(radar)
+    display_map.plot_ppi_map(
+        field_name, sweep=ind_el, norm=norm, ticks=ticks,
+        ticklabs=ticklabs, min_lon=prdcfg['ppiMapImageConfig']['lonmin'],
+        max_lon=prdcfg['ppiMapImageConfig']['lonmax'],
+        min_lat=prdcfg['ppiMapImageConfig']['latmin'],
+        max_lat=prdcfg['ppiMapImageConfig']['latmax'],
+        resolution=prdcfg['ppiMapImageConfig']['mapres'],
+        lat_lines=lat_lines, lon_lines=lon_lines,
+        maps_list=prdcfg['ppiMapImageConfig']['maps'])
+
+    if 'rngRing' in prdcfg['ppiMapImageConfig']:
+            if prdcfg['ppiMapImageConfig']['rngRing'] > 0:
+                rng_rings = np.arange(
+                    0., radar.range['data'][-1]/1000.,
+                    prdcfg['ppiMapImageConfig']['rngRing'])
+                for rng_ring in rng_rings:
+                    display_map.plot_range_ring(rng_ring)
+
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i])
+    plt.close()
 
     return fname_list
 
@@ -231,6 +476,8 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
         list of names of the created plots
 
     """
+    norm, ticks, ticklabs = get_norm(field_name)
+
     radar_aux = radar.extract_sweeps([ind_sweep])
     if radar_aux.scan_type == 'ppi':
         ang = np.sort(radar_aux.azimuth['data'])
@@ -268,12 +515,15 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
         plt.title(titl)
     else:
         cmap = pyart.config.get_field_colormap(field_name)
-        vmin, vmax = pyart.config.get_field_limits(field_name)
+
+        vmin = vmax = None
+        if norm is None:  # if norm is set do not override with vmin/vmax
+            vmin, vmax = pyart.config.get_field_limits(field_name)
 
         rmin = radar_aux.range['data'][0]/1000.
         rmax = radar_aux.range['data'][-1]/1000.
         cax = ax.imshow(
-            field, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax,
+            field, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax, norm=norm,
             extent=(rmin, rmax, ang_min, ang_max), aspect='auto',
             interpolation='none')
         plt.xlabel('Range (km)')
@@ -281,6 +531,10 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
         plt.title(titl)
 
         cb = fig.colorbar(cax)
+        if ticks is not None:
+            cb.set_ticks(ticks)
+        if ticklabs:
+            cb.set_ticklabels(ticklabs)
         cb.set_label(label)
 
     for i in range(len(fname_list)):
@@ -313,16 +567,48 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname_list):
         list of names of the created plots
 
     """
+    norm, ticks, ticklabs = get_norm(field_name)
+
     xmin = prdcfg['ppiImageConfig']['xmin']
     xmax = prdcfg['ppiImageConfig']['xmax']
     ymin = prdcfg['ppiImageConfig']['ymin']
     ymax = prdcfg['ppiImageConfig']['ymax']
 
+    wfunc = 'NEAREST_NEIGHBOUR'
+    if 'wfunc' in prdcfg:
+        wfunc = prdcfg['wfunc']
+
+    cappi_res = 500.
+    if 'res' in prdcfg:
+        cappi_res = prdcfg['res']
+
+    # number of grid points in cappi
+    ny = int((ymax-ymin)*1000./cappi_res)+1
+    nx = int((xmax-xmin)*1000./cappi_res)+1
+
+    # parameters to determine the gates to use for each grid point
+    beamwidth = 1.
+    beam_spacing = 1.
+    if 'radar_beam_width_h' in radar.instrument_parameters:
+        beamwidth = radar.instrument_parameters[
+            'radar_beam_width_h']['data'][0]
+
+    if radar.ray_angle_res is not None:
+        beam_spacing = radar.ray_angle_res['data'][0]
+
+    lat = float(radar.latitude['data'])
+    lon = float(radar.longitude['data'])
+    alt = 0.
+
     # cartesian mapping
     grid = pyart.map.grid_from_radars(
-        (radar,), grid_shape=(1, 241, 241),
+        (radar,), gridding_algo='map_to_grid', weighting_function=wfunc,
+        roi_func='dist_beam', h_factor=1.0, nb=beamwidth, bsp=beam_spacing,
+        min_radius=cappi_res/2.,
+        grid_shape=(1, ny, nx),
         grid_limits=((altitude, altitude), (ymin*1000., ymax*1000.),
                      (xmin*1000., xmax*1000.)),
+        grid_origin=(lat, lon), grid_origin_alt=alt,
         fields=[field_name])
 
     # display data
@@ -331,19 +617,28 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname_list):
                      dpi=72)
     ax = fig.add_subplot(111, aspect='equal')
     cmap = pyart.config.get_field_colormap(field_name)
-    vmin, vmax = pyart.config.get_field_limits(field_name)
+
+    vmin = vmax = None
+    if norm is None:  # if norm is set do not override with vmin/vmax
+        vmin, vmax = pyart.config.get_field_limits(field_name)
+
     titl = pyart.graph.common.generate_grid_title(grid, field_name, 0)
 
     cax = ax.imshow(
         grid.fields[field_name]['data'][0], extent=(xmin, xmax, ymin, ymax),
-        origin='lower', cmap=cmap, vmin=vmin, vmax=vmax, interpolation='none')
+        origin='lower', cmap=cmap, vmin=vmin, vmax=vmax, norm=norm,
+        interpolation='none')
     plt.xlabel('East West distance from radar(km)')
     plt.ylabel('North South distance from radar(km)')
     plt.title(titl)
 
     # plot the colorbar and set the label.
-    label = get_colobar_label(grid.fields[field_name], field_name)
     cb = fig.colorbar(cax)
+    if ticks is not None:
+        cb.set_ticks(ticks)
+    if ticklabs:
+        cb.set_ticklabels(ticklabs)
+    label = get_colobar_label(grid.fields[field_name], field_name)
     cb.set_label(label)
 
     for i in range(len(fname_list)):
