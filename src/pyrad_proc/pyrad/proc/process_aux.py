@@ -467,6 +467,9 @@ def process_grid(procstatus, dscfg, radar_list=None):
         roif_func : str
             the function used to compute the region of interest.
             Possible values: dist_beam, constant
+        roi : float
+             the (minimum) radius of the region of interest in m. Default half
+             the largest resolution
 
     radar_list : list of Radar objects
         Optional. list of radar objects
@@ -535,7 +538,7 @@ def process_grid(procstatus, dscfg, radar_list=None):
     wfunc = 'NEAREST_NEIGHBOUR'
     if 'wfunc' in dscfg:
         wfunc = dscfg['wfunc']
-        
+
     roi_func = 'dist_beam'
     if 'roi_func' in dscfg:
         roi_func = dscfg['roi_func']
@@ -546,6 +549,8 @@ def process_grid(procstatus, dscfg, radar_list=None):
     nx = int((xmax-xmin)*1000./hres)+1
 
     min_radius = np.max([vres, hres])/2.
+    if 'roi' in dscfg:
+        min_radius = dscfg['roi']
 
     # parameters to determine the gates to use for each grid point
     beamwidth = 1.
