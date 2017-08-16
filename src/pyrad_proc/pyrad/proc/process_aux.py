@@ -464,6 +464,9 @@ def process_grid(procstatus, dscfg, radar_list=None):
             the weighting function used to combine the radar gates close to a
             grid point. Possible values BARNES, CRESSMAN, NEAREST_NEIGHBOUR
             Default NEAREST_NEIGHBOUR
+        roif_func : str
+            the function used to compute the region of interest.
+            Possible values: dist_beam, constant
 
     radar_list : list of Radar objects
         Optional. list of radar objects
@@ -532,6 +535,10 @@ def process_grid(procstatus, dscfg, radar_list=None):
     wfunc = 'NEAREST_NEIGHBOUR'
     if 'wfunc' in dscfg:
         wfunc = dscfg['wfunc']
+        
+    roi_func = 'dist_beam'
+    if 'roi_func' in dscfg:
+        roi_func = dscfg['roi_func']
 
     # number of grid points in cappi
     nz = int((zmax-zmin)/vres)+1
@@ -554,8 +561,8 @@ def process_grid(procstatus, dscfg, radar_list=None):
     grid = pyart.map.grid_from_radars(
         (radar,), gridding_algo='map_to_grid',
         weighting_function=wfunc,
-        roi_func='dist_beam', h_factor=1.0, nb=beamwidth, bsp=beam_spacing,
-        min_radius=min_radius,
+        roi_func=roi_func, h_factor=1.0, nb=beamwidth, bsp=beam_spacing,
+        min_radius=min_radius, constant_roi=min_radius,
         grid_shape=(nz, ny, nx),
         grid_limits=((zmin, zmax), (ymin*1000., ymax*1000.),
                      (xmin*1000., xmax*1000.)),
