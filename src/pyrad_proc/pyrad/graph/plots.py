@@ -77,11 +77,15 @@ def plot_surface(grid, field_name, level, prdcfg, fname_list):
         list of names of the created plots
 
     """
+    dpi = 72
+    if 'dpi' in prdcfg['ppiImageConfig']:
+        dpi = prdcfg['ppiImageConfig']['dpi']
+
     norm, ticks, ticklabs = get_norm(field_name)
 
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                      prdcfg['ppiImageConfig']['ysize']],
-                     dpi=72)
+                     dpi=dpi)
     ax = fig.add_subplot(111, aspect='equal')
     lon_lines = np.arange(np.floor(prdcfg['ppiMapImageConfig']['lonmin']),
                           np.ceil(prdcfg['ppiMapImageConfig']['lonmax'])+1,
@@ -123,11 +127,15 @@ def plot_latitude_slice(grid, field_name, lon, lat, prdcfg, fname_list):
         list of names of the created plots
 
     """
+    dpi = 72
+    if 'dpi' in prdcfg['rhiImageConfig']:
+        dpi = prdcfg['rhiImageConfig']['dpi']
+
     norm, ticks, ticklabs = get_norm(field_name)
 
     fig = plt.figure(figsize=[prdcfg['rhiImageConfig']['xsize'],
                      prdcfg['rhiImageConfig']['ysize']],
-                     dpi=72)
+                     dpi=dpi)
     ax = fig.add_subplot(111, aspect='equal')
     display = pyart.graph.GridMapDisplay(grid)
     display.plot_latitude_slice(
@@ -166,11 +174,15 @@ def plot_longitude_slice(grid, field_name, lon, lat, prdcfg, fname_list):
         list of names of the created plots
 
     """
+    dpi = 72
+    if 'dpi' in prdcfg['rhiImageConfig']:
+        dpi = prdcfg['rhiImageConfig']['dpi']
+
     norm, ticks, ticklabs = get_norm(field_name)
 
     fig = plt.figure(figsize=[prdcfg['rhiImageConfig']['xsize'],
                      prdcfg['rhiImageConfig']['ysize']],
-                     dpi=72)
+                     dpi=dpi)
     ax = fig.add_subplot(111, aspect='equal')
     display = pyart.graph.GridMapDisplay(grid)
     display.plot_longitude_slice(
@@ -209,11 +221,15 @@ def plot_latlon_slice(grid, field_name, coord1, coord2, prdcfg, fname_list):
         list of names of the created plots
 
     """
+    dpi = 72
+    if 'dpi' in prdcfg['rhiImageConfig']:
+        dpi = prdcfg['rhiImageConfig']['dpi']
+
     norm, ticks, ticklabs = get_norm(field_name)
 
     fig = plt.figure(figsize=[prdcfg['rhiImageConfig']['xsize'],
                      prdcfg['rhiImageConfig']['ysize']],
-                     dpi=72)
+                     dpi=dpi)
     ax = fig.add_subplot(111, aspect='equal')
     display = pyart.graph.GridMapDisplay(grid)
     display.plot_latlon_slice(
@@ -259,11 +275,15 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
 
     """
     if plot_type == 'PPI':
+        dpi = 72
+        if 'dpi' in prdcfg['ppiImageConfig']:
+            dpi = prdcfg['ppiImageConfig']['dpi']
+
         norm, ticks, ticklabs = get_norm(field_name)
 
         fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                          prdcfg['ppiImageConfig']['ysize']],
-                         dpi=72)
+                         dpi=dpi)
         ax = fig.add_subplot(111, aspect='equal')
         display = pyart.graph.RadarDisplay(radar)
         display.plot_ppi(
@@ -335,11 +355,15 @@ def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
         list of names of the created plots
 
     """
+    dpi = 72
+    if 'dpi' in prdcfg['ppiImageConfig']:
+        dpi = prdcfg['ppiImageConfig']['dpi']
+
     norm, ticks, ticklabs = get_norm(field_name)
 
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                      prdcfg['ppiImageConfig']['ysize']],
-                     dpi=72)
+                     dpi=dpi)
     ax = fig.add_subplot(111, aspect='equal')
     lon_lines = np.arange(np.floor(prdcfg['ppiMapImageConfig']['lonmin']),
                           np.ceil(prdcfg['ppiMapImageConfig']['lonmax'])+1,
@@ -405,11 +429,15 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
 
     """
     if plot_type == 'RHI':
+        dpi = 72
+        if 'dpi' in prdcfg['rhiImageConfig']:
+            dpi = prdcfg['rhiImageConfig']['dpi']
+
         norm, ticks, ticklabs = get_norm(field_name)
 
         fig = plt.figure(figsize=[prdcfg['rhiImageConfig']['xsize'],
                          prdcfg['rhiImageConfig']['ysize']],
-                         dpi=72)
+                         dpi=dpi)
         ax = fig.add_subplot(111, aspect='equal')
         display = pyart.graph.RadarDisplay(radar)
         display.plot_rhi(
@@ -504,9 +532,13 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
     titl = pyart.graph.common.generate_title(radar_aux, field_name, ind_sweep)
     label = get_colobar_label(radar_aux.fields[field_name], field_name)
 
+    dpi = 72
+    if 'dpi' in prdcfg['ppiImageConfig']:
+        dpi = prdcfg['ppiImageConfig']['dpi']
+
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                               prdcfg['ppiImageConfig']['ysize']],
-                     dpi=72)
+                     dpi=dpi)
     ax = fig.add_subplot(111)
     if radar_aux.ngates == 1:
         plt.plot(ang, field, 'bx')
@@ -612,9 +644,13 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname_list):
         fields=[field_name])
 
     # display data
+    dpi = 72
+    if 'dpi' in prdcfg['ppiImageConfig']:
+        dpi = prdcfg['ppiImageConfig']['dpi']
+
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                               prdcfg['ppiImageConfig']['ysize']],
-                     dpi=72)
+                     dpi=dpi)
     ax = fig.add_subplot(111, aspect='equal')
     cmap = pyart.config.get_field_colormap(field_name)
 
@@ -923,9 +959,13 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
     label = 'Number of Points'
     labely = get_colobar_label(hist_obj_aux.fields[field_name], field_name)
 
+    dpi = 72
+    if 'dpi' in prdcfg['ppiImageConfig']:
+        dpi = prdcfg['ppiImageConfig']['dpi']
+
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                               prdcfg['ppiImageConfig']['ysize']],
-                     dpi=72)
+                     dpi=dpi)
     ax = fig.add_subplot(111)
 
     cmap = pyart.config.get_field_colormap(field_name)
@@ -1017,9 +1057,13 @@ def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
     labelx = rad1_name+' '+field_name1
     labely = rad2_name+' '+field_name2
 
+    dpi = 72
+    if 'dpi' in prdcfg['ppiImageConfig']:
+        dpi = prdcfg['ppiImageConfig']['dpi']
+
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                               prdcfg['ppiImageConfig']['ysize']],
-                     dpi=72)
+                     dpi=dpi)
     ax = fig.add_subplot(111)
 
     cmap = pyart.config.get_field_colormap(field_name1)
@@ -1612,9 +1656,13 @@ def plot_sun_hits(field, field_name, fname_list, prdcfg):
     field_dict = pyart.config.get_metadata(field_name)
 
     # display data
+    dpi = 72
+    if 'dpi' in prdcfg['sunhitsImageConfig']:
+        dpi = prdcfg['sunhitsImageConfig']['dpi']
+
     fig = plt.figure(figsize=[prdcfg['sunhitsImageConfig']['xsize'],
                               prdcfg['sunhitsImageConfig']['ysize']],
-                     dpi=72)
+                     dpi=dpi)
     ax = fig.add_subplot(111)
     cmap = pyart.config.get_field_colormap(field_name)
     vmin, vmax = pyart.config.get_field_limits(field_name)
