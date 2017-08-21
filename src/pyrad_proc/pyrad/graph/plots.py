@@ -76,6 +76,11 @@ def plot_surface(grid, field_name, level, prdcfg, fname_list):
     fname_list : list of str
         list of names of the created plots
 
+    History
+    --------
+    ????.??.?? created
+    2017.08.?? -fvj- added option controlling dpi
+
     """
     dpi = 72
     if 'dpi' in prdcfg['ppiImageConfig']:
@@ -100,7 +105,7 @@ def plot_surface(grid, field_name, level, prdcfg, fname_list):
     # display.plot_crosshairs(lon=lon, lat=lat)
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
 
@@ -126,6 +131,11 @@ def plot_latitude_slice(grid, field_name, lon, lat, prdcfg, fname_list):
     fname_list : list of str
         list of names of the created plots
 
+    History
+    --------
+    ????.??.?? created
+    2017.08.?? -fvj- added option controlling dpi
+
     """
     dpi = 72
     if 'dpi' in prdcfg['rhiImageConfig']:
@@ -147,7 +157,7 @@ def plot_latitude_slice(grid, field_name, lon, lat, prdcfg, fname_list):
         [prdcfg['rhiImageConfig']['ymin'], prdcfg['rhiImageConfig']['ymax']])
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
 
@@ -173,6 +183,11 @@ def plot_longitude_slice(grid, field_name, lon, lat, prdcfg, fname_list):
     fname_list : list of str
         list of names of the created plots
 
+    History
+    --------
+    ????.??.?? created
+    2017.08.?? -fvj- added option controlling dpi
+
     """
     dpi = 72
     if 'dpi' in prdcfg['rhiImageConfig']:
@@ -194,7 +209,7 @@ def plot_longitude_slice(grid, field_name, lon, lat, prdcfg, fname_list):
         [prdcfg['rhiImageConfig']['ymin'], prdcfg['rhiImageConfig']['ymax']])
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
 
@@ -220,6 +235,11 @@ def plot_latlon_slice(grid, field_name, coord1, coord2, prdcfg, fname_list):
     fname_list : list of str
         list of names of the created plots
 
+    History
+    --------
+    ????.??.?? created
+    2017.08.?? -fvj- added option controlling dpi
+
     """
     dpi = 72
     if 'dpi' in prdcfg['rhiImageConfig']:
@@ -240,7 +260,7 @@ def plot_latlon_slice(grid, field_name, coord1, coord2, prdcfg, fname_list):
     #    [prdcfg['rhiImageConfig']['ymin'], prdcfg['rhiImageConfig']['ymax']])
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
 
@@ -273,6 +293,11 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
     fname_list : list of str
         list of names of the created plots
 
+    History
+    --------
+    ????.??.?? created
+    2017.08.?? -fvj- added option controlling dpi
+
     """
     if plot_type == 'PPI':
         dpi = 72
@@ -302,7 +327,7 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
         display.plot_cross_hair(5.)
 
         for i in range(len(fname_list)):
-            fig.savefig(fname_list[i])
+            fig.savefig(fname_list[i], dpi=dpi)
         plt.close()
 
     elif plot_type == 'QUANTILES':
@@ -354,6 +379,11 @@ def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
     fname_list : list of str
         list of names of the created plots
 
+    History
+    --------
+    ????.??.?? created
+    2017.08.?? -fvj- added option controlling dpi
+
     """
     dpi = 72
     if 'dpi' in prdcfg['ppiImageConfig']:
@@ -392,7 +422,7 @@ def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
                     display_map.plot_range_ring(rng_ring)
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -452,7 +482,7 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
         display.plot_cross_hair(5.)
 
         for i in range(len(fname_list)):
-            fig.savefig(fname_list[i])
+            fig.savefig(fname_list[i], dpi=dpi)
         plt.close()
     elif plot_type == 'QUANTILES':
         quantiles, values = compute_quantiles_sweep(
@@ -570,7 +600,7 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
         cb.set_label(label)
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -678,7 +708,7 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname_list):
     cb.set_label(label)
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -687,7 +717,7 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname_list):
 def plot_rhi_profile(data, hvec, fname_list, labelx='Value',
                      labely='Height (m MSL)', labels=['Mean'],
                      title='RHI profile', colors=None, linestyles=None,
-                     xmin=None, xmax=None):
+                     xmin=None, xmax=None, dpi=72):
     """
     plots an RHI profile
 
@@ -713,6 +743,8 @@ def plot_rhi_profile(data, hvec, fname_list, labelx='Value',
         Specifies the line style of each line
     xmin, xmax: float
         Lower/Upper limit of y axis
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -720,7 +752,7 @@ def plot_rhi_profile(data, hvec, fname_list, labelx='Value',
         list of names of the created plots
 
     """
-    fig, ax = plt.subplots(figsize=[10, 6])
+    fig, ax = plt.subplots(figsize=[10, 6], dpi=dpi)
 
     lab = None
     col = None
@@ -741,7 +773,7 @@ def plot_rhi_profile(data, hvec, fname_list, labelx='Value',
     ax.legend(loc='best')
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -749,7 +781,8 @@ def plot_rhi_profile(data, hvec, fname_list, labelx='Value',
 
 def plot_along_coord(xval, yval, fname_list, labelx='coord', labely='Value',
                      labels=None, title='Plot along coordinate',
-                     colors=None, linestyles=None, ymin=None, ymax=None):
+                     colors=None, linestyles=None, ymin=None, ymax=None,
+                     dpi=72):
     """
     plots a time series
 
@@ -775,6 +808,8 @@ def plot_along_coord(xval, yval, fname_list, labelx='coord', labely='Value',
         Specifies the line style of each line
     ymin, ymax: float
         Lower/Upper limit of y axis
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -782,7 +817,7 @@ def plot_along_coord(xval, yval, fname_list, labelx='coord', labely='Value',
         list of names of the created plots
 
     """
-    fig, ax = plt.subplots(figsize=[10, 6])
+    fig, ax = plt.subplots(figsize=[10, 6], dpi=dpi)
 
     lab = None
     col = None
@@ -804,7 +839,7 @@ def plot_along_coord(xval, yval, fname_list, labelx='coord', labely='Value',
     ax.legend(loc='best')
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -813,7 +848,8 @@ def plot_along_coord(xval, yval, fname_list, labelx='coord', labely='Value',
 def plot_field_coverage(xval, yval, fname_list, labelx='Azimuth (deg)',
                         labely='Range extension [m]', labels=None,
                         title='Field coverage', ymin=None, ymax=None,
-                        xmeanval=None, ymeanval=None, labelmeanval=None):
+                        xmeanval=None, ymeanval=None, labelmeanval=None
+                        dpi=72):
     """
     plots a time series
 
@@ -839,6 +875,8 @@ def plot_field_coverage(xval, yval, fname_list, labelx='Azimuth (deg)',
         the x and y values of a mean along elevation
     labelmeanval : str
         the label of the mean
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -846,7 +884,7 @@ def plot_field_coverage(xval, yval, fname_list, labelx='Azimuth (deg)',
         list of names of the created plots
 
     """
-    fig, ax = plt.subplots(figsize=[10, 6])
+    fig, ax = plt.subplots(figsize=[10, 6], dpi=dpi)
 
     lab = None
 
@@ -868,7 +906,7 @@ def plot_field_coverage(xval, yval, fname_list, labelx='Azimuth (deg)',
         ax.legend(loc='best')
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -1009,7 +1047,7 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
              verticalalignment='top', transform=ax.transAxes)
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -1097,14 +1135,14 @@ def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
                  verticalalignment='top', transform=ax.transAxes)
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
 
 
 def plot_quantiles(quant, value, fname_list, labelx='quantile', labely='value',
-                   titl='quantile'):
+                   titl='quantile', dpi=72):
     """
     plots quantiles
 
@@ -1122,6 +1160,8 @@ def plot_quantiles(quant, value, fname_list, labelx='quantile', labely='value',
         The label of the Y axis
     titl : str
         The figure title
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -1129,14 +1169,14 @@ def plot_quantiles(quant, value, fname_list, labelx='quantile', labely='value',
         list of names of the created plots
 
     """
-    fig = plt.figure(figsize=[10, 6])
+    fig = plt.figure(figsize=[10, 6], dpi=dpi)
     plt.plot(quant, value, 'bx-')
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -1161,6 +1201,8 @@ def plot_histogram(bins, values, fname_list, labelx='bins',
         The label of the Y axis
     titl : str
         The figure title
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -1168,21 +1210,21 @@ def plot_histogram(bins, values, fname_list, labelx='bins',
         list of names of the created plots
 
     """
-    fig = plt.figure(figsize=[10, 6])
+    fig = plt.figure(figsize=[10, 6], dpi=dpi)
     plt.hist(values, bins=bins)
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
 
 
 def plot_histogram2(bins, hist, fname_list, labelx='bins',
-                    labely='Number of Samples', titl='histogram'):
+                    labely='Number of Samples', titl='histogram', dpi=dpi):
     """
     plots histogram
 
@@ -1200,6 +1242,8 @@ def plot_histogram2(bins, hist, fname_list, labelx='bins',
         The label of the Y axis
     titl : str
         The figure title
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -1207,14 +1251,14 @@ def plot_histogram2(bins, hist, fname_list, labelx='bins',
         list of names of the created plots
 
     """
-    fig = plt.figure(figsize=[10, 6])
+    fig = plt.figure(figsize=[10, 6], dpi=dpi)
     plt.bar(bins, hist, width=bins[1]-bins[0])
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -1222,7 +1266,7 @@ def plot_histogram2(bins, hist, fname_list, labelx='bins',
 
 def plot_antenna_pattern(antpattern, fname_list, labelx='Angle [Deg]',
                          linear=False, twoway=False, title='Antenna Pattern',
-                         ymin=None, ymax=None):
+                         ymin=None, ymax=None, dpi=dpi):
     """
     plots an antenna pattern
 
@@ -1244,6 +1288,8 @@ def plot_antenna_pattern(antpattern, fname_list, labelx='Angle [Deg]',
         The figure title
     ymin, ymax: float
         Lower/Upper limit of y axis
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -1266,7 +1312,7 @@ def plot_antenna_pattern(antpattern, fname_list, labelx='Angle [Deg]',
 
     labely = waystr+linstr
 
-    fig, ax = plt.subplots(figsize=[10, 6])
+    fig, ax = plt.subplots(figsize=[10, 6], dpi=dpi)
 
     ax.plot(antpattern['angle'], antpattern['attenuation'])
     ax.set_title(title)
@@ -1279,7 +1325,7 @@ def plot_antenna_pattern(antpattern, fname_list, labelx='Angle [Deg]',
             verticalalignment='top', transform=ax.transAxes)
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -1288,7 +1334,7 @@ def plot_antenna_pattern(antpattern, fname_list, labelx='Angle [Deg]',
 def plot_timeseries(tvec, data, fname_list, labelx='Time [UTC]',
                     labely='Value', labels=['Sensor'], title='Time Series',
                     period=0, timeformat=None, colors=None, linestyles=None,
-                    ymin=None, ymax=None):
+                    ymin=None, ymax=None, dpi=72):
     """
     plots a time series
 
@@ -1319,6 +1365,8 @@ def plot_timeseries(tvec, data, fname_list, labelx='Time [UTC]',
         Specifies the line style of each line
     ymin, ymax: float
         Lower/Upper limit of y axis
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -1331,7 +1379,7 @@ def plot_timeseries(tvec, data, fname_list, labelx='Time [UTC]',
             data[kk] *= (period/3600.)
             data[kk] = np.ma.cumsum(data[kk])
 
-    fig, ax = plt.subplots(figsize=[10, 6])
+    fig, ax = plt.subplots(figsize=[10, 6], dpi=dpi)
 
     lab = None
     col = None
@@ -1358,7 +1406,7 @@ def plot_timeseries(tvec, data, fname_list, labelx='Time [UTC]',
     fig.autofmt_xdate()
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -1367,7 +1415,8 @@ def plot_timeseries(tvec, data, fname_list, labelx='Time [UTC]',
 def plot_timeseries_comp(date1, value1, date2, value2, fname_list,
                          labelx='Time [UTC]', labely='Value',
                          label1='Sensor 1', label2='Sensor 2',
-                         titl='Time Series Comparison', period1=0, period2=0):
+                         titl='Time Series Comparison', period1=0, period2=0,
+                         dpi=72):
     """
     plots 2 time series in the same graph
 
@@ -1394,6 +1443,8 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname_list,
      period1, period2 : float
         measurement period in seconds used to compute accumulation. If 0 no
         accumulation is computed
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -1408,7 +1459,7 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname_list,
         value2 *= (period2/3600.)
         value2 = np.ma.cumsum(value2)
 
-    fig = plt.figure(figsize=[10, 6])
+    fig = plt.figure(figsize=[10, 6], dpi=dpi)
     plt.plot(date1, value1, 'b', label=label1)
     plt.plot(date2, value2, 'r', label=label2)
     plt.legend(loc='best')
@@ -1421,7 +1472,7 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname_list,
     fig.autofmt_xdate()
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -1429,7 +1480,7 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname_list,
 
 def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
                       labely='Sensor 2', titl='Scatter', axis=None,
-                      metadata=None):
+                      metadata=None, dpi=72):
     """
     plots the scatter between two time series
 
@@ -1451,6 +1502,8 @@ def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
         type of axis
     metadata : string
         a string containing metadata
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -1460,7 +1513,7 @@ def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
     """
     max_value = np.ma.max([np.max(value1), np.max(value2)])
 
-    fig, ax = plt.subplots(figsize=[10, 6])
+    fig, ax = plt.subplots(figsize=[7, 7], dpi=dpi)
 
     ax.plot(value1, value2, 'bx')
     ax.set_xlabel(labelx)
@@ -1477,7 +1530,7 @@ def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
                  verticalalignment='top', transform=ax.transAxes)
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -1485,7 +1538,7 @@ def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
 
 def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name,
                        fname_list, ref_value=None, labelx='Time [UTC]',
-                       labely='Value', titl='Time Series'):
+                       labely='Value', titl='Time Series', dpi=dpi):
     """
     plots a time series of monitoring data
 
@@ -1509,6 +1562,8 @@ def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name,
         The label of the Y axis
     titl : str
         The figure title
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -1543,7 +1598,7 @@ def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name,
     fig.autofmt_xdate()
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -1553,7 +1608,8 @@ def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
                              modebias_vec, corr_vec, slope_vec, intercep_vec,
                              intercep_slope1_vec, fname_list, ref_value=0.,
                              labelx='Time UTC',
-                             titl='RADAR001-RADAR002 intercomparison'):
+                             titl='RADAR001-RADAR002 intercomparison',
+                             dpi=dpi):
     """
     plots a time series of radar intercomparison scores
 
@@ -1582,9 +1638,11 @@ def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
     -------
     fname_list : list of str
         list of names of the created plots
+    dpi : int
+        dots per inch
 
     """
-    fig = plt.figure(figsize=[10, 16])
+    fig = plt.figure(figsize=[10, 16], dpi=dpi)
 
     ax = fig.add_subplot(3, 1, 1)
     plt.plot(date_vec, meanbias_vec, 'b', label='mean')
@@ -1619,7 +1677,7 @@ def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
     fig.autofmt_xdate()
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -1682,13 +1740,13 @@ def plot_sun_hits(field, field_name, fname_list, prdcfg):
     cb.set_label(label)
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
 
 
-def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list):
+def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list, dpi=dpi):
     """
     plots sun retrieval time series series
 
@@ -1700,6 +1758,8 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list):
         parameter to be plotted
     fname_list : list of str
         list of names of the files where to store the plot
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -1813,7 +1873,7 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list):
         warn('Unable to create figure '+fname_list+'. No valid data')
         return None
 
-    fig = plt.figure(figsize=[10, 6])
+    fig = plt.figure(figsize=[10, 6], dpi=dpi)
     plt.plot(date, value)
     if value_std is not None:
         plt.plot(date, value+value_std, 'r')
@@ -1832,7 +1892,7 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list):
     fig.autofmt_xdate()
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
