@@ -848,7 +848,7 @@ def plot_along_coord(xval, yval, fname_list, labelx='coord', labely='Value',
 def plot_field_coverage(xval, yval, fname_list, labelx='Azimuth (deg)',
                         labely='Range extension [m]', labels=None,
                         title='Field coverage', ymin=None, ymax=None,
-                        xmeanval=None, ymeanval=None, labelmeanval=None
+                        xmeanval=None, ymeanval=None, labelmeanval=None,
                         dpi=72):
     """
     plots a time series
@@ -1224,7 +1224,7 @@ def plot_histogram(bins, values, fname_list, labelx='bins',
 
 
 def plot_histogram2(bins, hist, fname_list, labelx='bins',
-                    labely='Number of Samples', titl='histogram', dpi=dpi):
+                    labely='Number of Samples', titl='histogram', dpi=72):
     """
     plots histogram
 
@@ -1266,7 +1266,7 @@ def plot_histogram2(bins, hist, fname_list, labelx='bins',
 
 def plot_antenna_pattern(antpattern, fname_list, labelx='Angle [Deg]',
                          linear=False, twoway=False, title='Antenna Pattern',
-                         ymin=None, ymax=None, dpi=dpi):
+                         ymin=None, ymax=None, dpi=72):
     """
     plots an antenna pattern
 
@@ -1538,7 +1538,7 @@ def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
 
 def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name,
                        fname_list, ref_value=None, labelx='Time [UTC]',
-                       labely='Value', titl='Time Series', dpi=dpi):
+                       labely='Value', titl='Time Series', dpi=72):
     """
     plots a time series of monitoring data
 
@@ -1609,7 +1609,7 @@ def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
                              intercep_slope1_vec, fname_list, ref_value=0.,
                              labelx='Time UTC',
                              titl='RADAR001-RADAR002 intercomparison',
-                             dpi=dpi):
+                             dpi=72):
     """
     plots a time series of radar intercomparison scores
 
@@ -1746,7 +1746,7 @@ def plot_sun_hits(field, field_name, fname_list, prdcfg):
     return fname_list
 
 
-def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list, dpi=dpi):
+def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list, dpi=72):
     """
     plots sun retrieval time series series
 
