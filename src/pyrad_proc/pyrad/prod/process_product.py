@@ -651,7 +651,7 @@ def generate_vol_products(dataset, prdcfg):
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname = make_filename(
-            'ppi', prdcfg['dstype'], prdcfg['voltype'],
+            'ppi_map', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
             timeinfo=prdcfg['timeinfo'])
 
@@ -1818,6 +1818,10 @@ def generate_timeseries_products(dataset, prdcfg):
         if dataset['final']:
             return None
 
+        dpi = 72
+        if 'dpi' in prdcfg:
+            dpi = prdcfg['dpi']
+
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
         r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
@@ -1860,7 +1864,7 @@ def generate_timeseries_products(dataset, prdcfg):
 
         plot_timeseries(
             date, [value], figfname, labelx='Time UTC',
-            labely=labely, labels=[label1], title=titl)
+            labely=labely, labels=[label1], title=titl, dpi=dpi)
         print('----- save to '+' '.join(figfname))
 
         return figfname
@@ -1868,6 +1872,10 @@ def generate_timeseries_products(dataset, prdcfg):
     elif prdcfg['type'] == 'PLOT_CUMULATIVE_POINT':
         if dataset['final']:
             return None
+
+        dpi = 72
+        if 'dpi' in prdcfg:
+            dpi = prdcfg['dpi']
 
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
@@ -1909,7 +1917,7 @@ def generate_timeseries_products(dataset, prdcfg):
         plot_timeseries(
             date, [value], figfname, labelx='Time UTC',
             labely=labely, labels=[label1], title=titl,
-            period=prdcfg['ScanPeriod']*60.)
+            period=prdcfg['ScanPeriod']*60., dpi=dpi)
         print('----- save to '+' '.join(figfname))
 
         return figfname
@@ -1917,6 +1925,10 @@ def generate_timeseries_products(dataset, prdcfg):
     elif prdcfg['type'] == 'COMPARE_POINT':
         if dataset['final']:
             return None
+
+        dpi = 72
+        if 'dpi' in prdcfg:
+            dpi = prdcfg['dpi']
 
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
@@ -1970,7 +1982,7 @@ def generate_timeseries_products(dataset, prdcfg):
         plot_timeseries_comp(
             radardate, radarvalue, sensordate, sensorvalue, figfname,
             labelx='Time UTC', labely=labely, label1=label1, label2=label2,
-            titl=titl)
+            titl=titl, dpi=dpi)
         print('----- save to '+' '.join(figfname))
 
         return figfname
@@ -1978,6 +1990,10 @@ def generate_timeseries_products(dataset, prdcfg):
     elif prdcfg['type'] == 'COMPARE_CUMULATIVE_POINT':
         if dataset['final']:
             return None
+
+        dpi = 72
+        if 'dpi' in prdcfg:
+            dpi = prdcfg['dpi']
 
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
@@ -2033,7 +2049,7 @@ def generate_timeseries_products(dataset, prdcfg):
             radardate, radarvalue, sensordate, sensorvalue,
             figfname, labelx='Time UTC', labely=labely,
             label1=label1, label2=label2, titl=titl,
-            period1=prdcfg['ScanPeriod']*60., period2=period2)
+            period1=prdcfg['ScanPeriod']*60., period2=period2, dpi=dpi)
         print('----- save to '+' '.join(figfname))
 
         return figfname
@@ -2041,6 +2057,10 @@ def generate_timeseries_products(dataset, prdcfg):
     elif prdcfg['type'] == 'COMPARE_TIME_AVG':
         if not dataset['final']:
             return None
+
+        dpi = 72
+        if 'dpi' in prdcfg:
+            dpi = prdcfg['dpi']
 
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
@@ -2139,7 +2159,7 @@ def generate_timeseries_products(dataset, prdcfg):
 
         plot_scatter_comp(
             sensorvalue_cum2, radarvalue_cum2, figfname, labelx=labelx,
-            labely=labely, titl=titl, axis='equal')
+            labely=labely, titl=titl, axis='equal', dpi=dpi)
 
         print('----- save to '+' '.join(figfname))
 
