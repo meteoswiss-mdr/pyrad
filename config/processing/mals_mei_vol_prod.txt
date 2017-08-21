@@ -5,7 +5,7 @@
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
 dataSetList STRARR 1   
-   l0:reflectivity_grid
+   l0:reflectivity
 
 
 # ==========================================================================================
@@ -52,29 +52,33 @@ dataSetList STRARR 1
 # ==========================================================================================
 #                 raw data processing
 # ==========================================================================================
-#reflectivity STRUCT 3
-#   type     STRING RAW
-#   datatype STRING dBZ
-#   products STRUCT 4
-#      CAPPI_2000 STRUCT 4
-#         type  STRING CAPPI_IMAGE
-#         voltype STRING dBZ
-#         altitude FLOAT 2000.
-#         wfunc STRING NEAREST_NEIGHBOUR
-#      EL05_7 STRUCT 3
-#         type  STRING PPI_IMAGE
-#         anglenr INT 2
-#         voltype STRING dBZ
-#      AZ090 STRUCT 4
-#         type  STRING PSEUDORHI_IMAGE
-#         angle FLOAT 90.
-#         AziTol FLOAT 1.
-#         voltype STRING dBZ
-#      EL05_7_BSCOPE STRUCT 3
-#         type  STRING BSCOPE_IMAGE
-#         anglenr INT 2
-#         voltype STRING dBZ
-#         
+reflectivity STRUCT 3
+   type     STRING RAW
+   datatype STRING dBZ
+   products STRUCT 5
+      CAPPI_2000 STRUCT 4
+         type  STRING CAPPI_IMAGE
+         voltype STRING dBZ
+         altitude FLOAT 2000.
+         wfunc STRING NEAREST_NEIGHBOUR
+      EL05_7 STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING dBZ
+      AZ090 STRUCT 4
+         type  STRING PSEUDORHI_IMAGE
+         angle FLOAT 90.
+         AziTol FLOAT 1.
+         voltype STRING dBZ
+      EL05_7_BSCOPE STRUCT 3
+         type  STRING BSCOPE_IMAGE
+         anglenr INT 2
+         voltype STRING dBZ
+      EL05_7_MAP STRUCT 3
+         type  STRING PPI_MAP
+         anglenr INT 2
+         voltype STRING dBZ
+         
 reflectivity_grid STRUCT 5
    type     STRING GRID
    datatype STRING dBZ
