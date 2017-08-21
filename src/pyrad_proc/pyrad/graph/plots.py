@@ -76,6 +76,11 @@ def plot_surface(grid, field_name, level, prdcfg, fname_list):
     fname_list : list of str
         list of names of the created plots
 
+    History
+    --------
+    ????.??.?? created
+    2017.08.?? -fvj- added option controlling dpi
+
     """
     dpi = 72
     if 'dpi' in prdcfg['ppiImageConfig']:
@@ -126,6 +131,11 @@ def plot_latitude_slice(grid, field_name, lon, lat, prdcfg, fname_list):
     fname_list : list of str
         list of names of the created plots
 
+    History
+    --------
+    ????.??.?? created
+    2017.08.?? -fvj- added option controlling dpi
+
     """
     dpi = 72
     if 'dpi' in prdcfg['rhiImageConfig']:
@@ -173,6 +183,11 @@ def plot_longitude_slice(grid, field_name, lon, lat, prdcfg, fname_list):
     fname_list : list of str
         list of names of the created plots
 
+    History
+    --------
+    ????.??.?? created
+    2017.08.?? -fvj- added option controlling dpi
+
     """
     dpi = 72
     if 'dpi' in prdcfg['rhiImageConfig']:
@@ -219,6 +234,11 @@ def plot_latlon_slice(grid, field_name, coord1, coord2, prdcfg, fname_list):
     -------
     fname_list : list of str
         list of names of the created plots
+
+    History
+    --------
+    ????.??.?? created
+    2017.08.?? -fvj- added option controlling dpi
 
     """
     dpi = 72
@@ -272,6 +292,11 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
     -------
     fname_list : list of str
         list of names of the created plots
+
+    History
+    --------
+    ????.??.?? created
+    2017.08.?? -fvj- added option controlling dpi
 
     """
     if plot_type == 'PPI':
@@ -353,6 +378,11 @@ def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
     -------
     fname_list : list of str
         list of names of the created plots
+
+    History
+    --------
+    ????.??.?? created
+    2017.08.?? -fvj- added option controlling dpi
 
     """
     dpi = 72
