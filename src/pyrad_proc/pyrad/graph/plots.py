@@ -309,6 +309,7 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
     --------
     ????.??.?? created
     2017.08.?? -fvj- added option controlling dpi
+    2017-08.23 -jgr- minor graphical changes
 
     """
     if plot_type == 'PPI':
@@ -321,11 +322,14 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
         fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                          prdcfg['ppiImageConfig']['ysize']],
                          dpi=dpi)
+
         ax = fig.add_subplot(111, aspect='equal')
+
         display = pyart.graph.RadarDisplay(radar)
         display.plot_ppi(
             field_name, sweep=ind_el, norm=norm, ticks=ticks,
-            ticklabs=ticklabs)
+            ticklabs=ticklabs,fig=fig)
+
         display.set_limits(
             ylim=[prdcfg['ppiImageConfig']['ymin'],
                   prdcfg['ppiImageConfig']['ymax']],
@@ -337,6 +341,9 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
                     0., radar.range['data'][-1]/1000.,
                     prdcfg['ppiImageConfig']['rngRing']))
         display.plot_cross_hair(5.)
+
+        # Turn on the grid
+        ax.grid()
 
         #Make a tight layout 
         fig.tight_layout()
@@ -440,17 +447,11 @@ def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
                     display_map.plot_range_ring(rng_ring)
 
     # Adapt the axes of the colorbar
-    #pdb.set_trace()
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.05)
 
     display_map.plot_colorbar(mappable=display_map.plots[0],
                      cax=cax,field=field_name,ax=ax)
-
-   # pdb.set_trace()
-
-    #Make a tight layout 
-    #fig.tight_layout()
 
     for i in range(len(fname_list)):
         fig.savefig(fname_list[i], dpi=dpi,bbox_inches='tight')
@@ -488,6 +489,12 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
     fname_list : list of str
         list of names of the created plots
 
+     History
+    --------
+    ????.??.?? created
+    2017.08.?? -fvj- added option controlling dpi
+    2017-08.23 -jgr- minor graphical changes
+
     """
     if plot_type == 'RHI':
         dpi = 72
@@ -511,6 +518,9 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
             xlim=[prdcfg['rhiImageConfig']['xmin'],
                   prdcfg['rhiImageConfig']['xmax']])
         display.plot_cross_hair(5.)
+
+        # Turn on the grid
+        ax.grid()
 
         #Make a tight layout 
         fig.tight_layout()
