@@ -271,6 +271,10 @@ def generate_sun_hits_products(dataset, prdcfg):
         if 'sun_retrieval' not in dataset:
             return None
 
+        dpi = 72
+        if 'dpi' in prdcfg:
+            dpi = prdcfg['dpi']
+
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdid'], timeinfo=None)
@@ -305,7 +309,7 @@ def generate_sun_hits_products(dataset, prdcfg):
             fname[i] = savedir+fname[i]
 
         plot_sun_retrieval_ts(
-            sun_retrieval, prdcfg['voltype'], fname)
+            sun_retrieval, prdcfg['voltype'], fname, dpi=dpi)
 
         print('----- save to '+' '.join(fname))
 
