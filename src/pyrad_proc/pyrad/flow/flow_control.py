@@ -757,7 +757,7 @@ def _wait_for_files(nowtime, datacfg, datatype_list, last_processed=None):
 
     nscans = len(datacfg['ScanList'][0])
 
-    scan_min = datacfg['ScanPeriod'] * 1.1  # [min]
+    scan_min = datacfg['ScanPeriod'] * 2.  # [min]
 
     starttime_loop_default = endtime_loop - timedelta(minutes=scan_min)
     if last_processed is None:
