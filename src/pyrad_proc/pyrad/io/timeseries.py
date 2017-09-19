@@ -51,7 +51,7 @@ class TimeSeries(object):
         timevec : array of datetime
         timeformat : specifies time format
         maxlength : Maximal length of the time series
-        num_el : Number of values in the timer series
+        num_el : Number of values in the time series
         """
 
         self.description = desc
@@ -93,7 +93,8 @@ class TimeSeries(object):
         """
         Add a new sample to the time series.
         """
-        if (self.num_el + 1 >= self.maxlength):
+
+        if (self.num_el + 1 > self.maxlength): # jgr changed from >= 
             raise Exception("ERROR: Cannot add time series sample. Max"
                             " length reached.")
 

@@ -33,8 +33,8 @@ def main():
     """
     param_vec = ['RR_Z', 'RR_hydro']
     smn_station_vec = ['LUZ', 'CHZ']
-    tstart = '20170301'
-    tend = '20170331'
+    tstart = '20170401'
+    tend = '20170430'
 
     np_radar_min = 6
     np_sensor_min = 6
@@ -125,7 +125,8 @@ def main():
 
         plot_scatter_comp(
             val_sensor, val_radar, figfname, labelx=labelx,
-            labely=labely, titl=titl, axis='equal', metadata=metadata)
+            labely=labely, titl=titl, axis='equal', metadata=metadata,
+            dpi=300)
 
 
 def _print_end_msg(text):

@@ -12,6 +12,7 @@ Auxiliary functions for reading/writing files
     generate_field_name_str
     get_datatype_metranet
     get_fieldname_pyart
+    get_fieldname_cosmo
     get_field_unit
     get_field_name
     get_file_list
@@ -77,9 +78,7 @@ def get_save_dir(basepath, procname, dsname, prdname, timeinfo=None,
     if create_dir is False:
         return savedir
 
-    if os.path.isdir(savedir):
-        pass
-    else:
+    if not os.path.isdir(savedir):
         os.makedirs(savedir)
 
     return savedir
@@ -254,7 +253,7 @@ def get_datatype_metranet(datatype):
 
 def get_fieldname_pyart(datatype):
     """
-    maps de config file radar data type name into the corresponding rainbow
+    maps the config file radar data type name into the corresponding rainbow
     Py-ART field name
 
     Parameters
@@ -295,8 +294,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'corrected_differential_reflectivity'
     elif datatype == 'ZDRuc':
         field_name = 'corrected_unfiltered_differential_reflectivity'
-    elif datatype == 'ZDR_rain':
-        field_name = 'differential_reflectivity_in_rain'
+    elif datatype == 'ZDR_prec':
+        field_name = 'differential_reflectivity_in_precipitation'
 
     elif datatype == 'dBm':
         field_name = 'signal_power_hh'
@@ -381,10 +380,18 @@ def get_fieldname_pyart(datatype):
         field_name = 'specific_attenuation'
     elif datatype == 'Ahc':
         field_name = 'corrected_specific_attenuation'
+    elif datatype == 'PIA':
+        field_name = 'path_integrated_attenuation'
+    elif datatype == 'PIAc':
+        field_name = 'corrected_path_integrated_attenuation'
     elif datatype == 'Adp':
         field_name = 'specific_differential_attenuation'
     elif datatype == 'Adpc':
         field_name = 'corrected_specific_differential_attenuation'
+    elif datatype == 'PIDA':
+        field_name = 'path_integrated_differential_attenuation'
+    elif datatype == 'PIDAc':
+        field_name = 'corrected_path_integrated_differential_attenuation'
 
     elif datatype == 'TEMP':
         field_name = 'temperature'
@@ -410,6 +417,35 @@ def get_fieldname_pyart(datatype):
         raise ValueError('ERROR: Unknown data type '+datatype)
 
     return field_name
+
+
+def get_fieldname_cosmo(field_name):
+    """
+    maps the Py-ART field name into the corresponding COSMO variable name
+
+    Parameters
+    ----------
+    field_name : str
+        Py-ART field name
+
+    Returns
+    -------
+    cosmo_name : str
+        Py-ART variable name
+
+    """
+    if field_name == 'temperature':
+        cosmo_name = 'T'
+    elif field_name == 'wind_speed':
+        cosmo_name = 'FF'
+    elif field_name == 'wind_direction':
+        cosmo_name = 'DD'
+    elif field_name == 'vertical_wind_shear':
+        cosmo_name = 'WSHEAR'
+    else:
+        raise ValueError('ERROR: Unknown field name '+field_name)
+
+    return cosmo_name
 
 
 def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
@@ -459,7 +495,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
             if (not os.path.isdir(datapath)):
                 # warn("WARNING: Unknown datapath '%s'" % datapath)
                 continue
-            dayfilelist = glob.glob(datapath+dayinfo+'*'+datatype+'.*')
+            dayfilelist = glob.glob(datapath+dayinfo+'*00'+datatype+'.*')
             for filename in dayfilelist:
                 t_filelist.append(filename)
         elif datagroup == 'RAD4ALP':
@@ -595,7 +631,8 @@ def get_new_rainbow_file_name(master_fname, master_datadescriptor, datatype):
     voltime = get_datetime(master_fname, master_datatype)
     voltype = os.path.basename(master_fname).split('.')[1]
 
-    return datapath+'/'+voltime.strftime('%Y%m%d%H%M%S')+'00'+datatype+'.'+voltype
+    return (datapath+'/'+voltime.strftime('%Y%m%d%H%M%S')+'00'+datatype+'.' +
+            voltype)
 
 
 def get_datatype_fields(datadescriptor):
@@ -815,8 +852,7 @@ def find_raw_cosmo_file(voltime, datatype, cfg, ind_rad=0):
 
     """
     # initial run time to look for
-    hvol = int(voltime.strftime('%H'))
-    runhour0 = int(hvol/cfg['CosmoRunFreq'])*cfg['CosmoRunFreq']
+    runhour0 = int(voltime.hour/cfg['CosmoRunFreq'])*cfg['CosmoRunFreq']
     runtime0 = voltime.replace(hour=runhour0, minute=0, second=0)
 
     # look for cosmo file

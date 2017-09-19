@@ -68,6 +68,8 @@ Writing data
 .. autosummary::
     :toctree: generated/
 
+    send_msg
+    write_alarm_msg
     write_last_state
     write_smn
     write_colocated_gates
@@ -96,10 +98,10 @@ Auxiliary functions
     get_datetime
     get_datasetfields
     get_file_list
-    get_datatypefields
+    get_datatype_fields
     get_field_unit
-    get_field_name
-    get_fieldname_rainbow
+    get_fieldname_pyart
+    get_fieldname_cosmo
     generate_field_name_str
     find_raw_cosmo_file
     add_field
@@ -148,12 +150,12 @@ from .write_data import write_sun_hits, write_sun_retrieval
 from .write_data import write_colocated_gates, write_colocated_data
 from .write_data import write_colocated_data_time_avg, write_cdf
 from .write_data import write_rhi_profile, write_field_coverage
-from .write_data import write_last_state
+from .write_data import write_last_state, write_alarm_msg, send_msg
 
 from .io_aux import get_save_dir, make_filename, get_new_rainbow_file_name
 from .io_aux import get_datetime, get_dataset_fields
 from .io_aux import get_file_list, get_datatype_fields
-from .io_aux import get_fieldname_pyart, get_field_unit
+from .io_aux import get_fieldname_pyart, get_field_unit, get_fieldname_cosmo
 from .io_aux import generate_field_name_str, find_raw_cosmo_file
 
 from .trajectory import Trajectory

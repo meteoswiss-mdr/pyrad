@@ -54,6 +54,8 @@ def process_cosmo(procstatus, dscfg, radar_list=None):
             data has not changed
         cosmo_type : str. Dataset keyword
             name of the COSMO field to process. Default TEMP
+        cosmo_variables : list of strings. Dataset keyword
+            Py-art name of the COSMO fields. Default temperature
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -96,9 +98,17 @@ def process_cosmo(procstatus, dscfg, radar_list=None):
 
     if cosmo_type == 'TEMP':
         field_names = ['temperature']
+        if 'cosmo_variables' in dscfg:
+            field_names = []
+            for var in dscfg['cosmo_variables']:
+                field_names.append(get_fieldname_pyart(var))
         zmin = None
     elif cosmo_type == 'WIND':
-        field_names = ['wind_speed', 'wind_direction']
+        field_names = ['wind_speed', 'wind_direction', 'vertical_wind_shear']
+        if 'cosmo_variables' in dscfg:
+            field_names = []
+            for var in dscfg['cosmo_variables']:
+                field_names.append(get_fieldname_pyart(var))
         zmin = None
     else:
         warn('Unknown COSMO data type '+cosmo_type)
@@ -128,9 +138,12 @@ def process_cosmo(procstatus, dscfg, radar_list=None):
             # debugging
             # start_time2 = time.time()
             cosmo_data = read_cosmo_data(
-                fname, cosmo_type=cosmo_type, celsius=True)
+                fname, field_names=field_names, celsius=True)
             # print(" reading COSMO takes %s seconds " %
             #      (time.time() - start_time2))
+            if cosmo_data is None:
+                warn('COSMO data not found')
+                return None, None
 
             dscfg['global_data']['cosmo_data'] = cosmo_data
             dscfg['global_data']['cosmo_fname'] = fname
@@ -145,9 +158,12 @@ def process_cosmo(procstatus, dscfg, radar_list=None):
         # debugging
         # start_time2 = time.time()
         cosmo_data = read_cosmo_data(
-            fname, cosmo_type=cosmo_type, celsius=True)
+            fname, field_names=field_names, celsius=True)
         # print(" reading COSMO takes %s seconds " %
         #      (time.time() - start_time2))
+        if cosmo_data is None:
+            warn('COSMO data not found')
+            return None, None
 
     dtcosmo = num2date(
         cosmo_data['time']['data'][:], cosmo_data['time']['units'])
@@ -156,8 +172,12 @@ def process_cosmo(procstatus, dscfg, radar_list=None):
     if keep_in_memory and regular_grid:
         if time_index != dscfg['global_data']['time_index']:
             cosmo_fields = cosmo2radar_data(
-                radar, cosmo_coord, cosmo_data, cosmo_type,
-                time_index=time_index, field_names=field_names)
+                radar, cosmo_coord, cosmo_data, time_index=time_index,
+                field_names=field_names)
+            if cosmo_fields is None:
+                warn('Unable to obtain COSMO fields')
+                return None, None
+
             dscfg['global_data']['time_index'] = time_index
             dscfg['global_data']['cosmo_fields'] = cosmo_fields
         else:
@@ -165,22 +185,19 @@ def process_cosmo(procstatus, dscfg, radar_list=None):
             cosmo_fields = dscfg['global_data']['cosmo_fields']
     else:
         cosmo_fields = cosmo2radar_data(
-            radar, cosmo_coord, cosmo_data, cosmo_type, time_index=time_index,
+            radar, cosmo_coord, cosmo_data, time_index=time_index,
             field_names=field_names)
+        if cosmo_fields is None:
+            warn('Unable to obtain COSMO fields')
+            return None, None
 
     # prepare for exit
     new_dataset = deepcopy(radar)
     new_dataset.fields = dict()
 
-    if cosmo_type == 'TEMP':
-        new_dataset.add_field(field_names[0], cosmo_fields[0])
-    else:
-        new_dataset.add_field(field_names[0], cosmo_fields[0])
-        new_dataset.add_field(field_names[1], cosmo_fields[1])
-
-    # debugging
-    # print(" putting COSMO data in radar coordinates takes %s seconds " %
-    #      (time.time() - start_time))
+    for field in cosmo_fields:
+        for field_name in field:
+            new_dataset.add_field(field_name, field[field_name])
 
     return new_dataset, ind_rad
 
@@ -208,6 +225,10 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
             if set it is assume that the radar has a grid constant in time and
             therefore there is no need to interpolate the COSMO field in
             memory to the current radar grid
+        cosmo_type : str. Dataset keyword
+            name of the COSMO field to process. Default TEMP
+        cosmo_variables : list of strings. Dataset keyword
+            Py-art name of the COSMO fields. Default temperature
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -250,9 +271,17 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
 
     if cosmo_type == 'TEMP':
         field_names = ['temperature']
+        if 'cosmo_variables' in dscfg:
+            field_names = []
+            for var in dscfg['cosmo_variables']:
+                field_names.append(get_fieldname_pyart(var))
         zmin = None
     elif cosmo_type == 'WIND':
-        field_names = ['wind_speed', 'wind_direction']
+        field_names = ['wind_speed', 'wind_direction', 'vertical_wind_shear']
+        if 'cosmo_variables' in dscfg:
+            field_names = []
+            for var in dscfg['cosmo_variables']:
+                field_names.append(get_fieldname_pyart(var))
         zmin = None
     else:
         warn('Unknown COSMO data type '+cosmo_type)
@@ -295,9 +324,13 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
         # debugging
         # start_time2 = time.time()
         cosmo_data = read_cosmo_data(
-            fname, cosmo_type=cosmo_type, celsius=True)
+            fname, field_names=field_names, celsius=True)
         # print(" reading COSMO takes %s seconds " %
         #      (time.time() - start_time2))
+        if cosmo_data is None:
+            warn('COSMO data not found')
+            return None, None
+
         dscfg['global_data']['cosmo_data'] = cosmo_data
     else:
         print('raw COSMO data already in memory')
@@ -312,10 +345,13 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
         # debugging
         # start_time3 = time.time()
         cosmo_fields = get_cosmo_fields(
-            cosmo_data, cosmo_type,
+            cosmo_data,
             dscfg['global_data']['cosmo_radar'].fields['cosmo_index'],
             time_index=time_index,
             field_names=field_names)
+        if cosmo_fields is None:
+            warn('Unable to obtain COSMO fields')
+            return None, None
         # print(" getting COSMO data takes %s seconds "
         #      % (time.time() - start_time3))
 
@@ -328,37 +364,28 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
     dscfg['global_data']['cosmo_fname'] = fname
 
     # prepare for exit
-    if regular_grid:
-        new_dataset = deepcopy(radar)
-    else:
-        new_dataset = deepcopy(dscfg['global_data']['cosmo_radar'])
+    new_dataset = deepcopy(radar)
     new_dataset.fields = dict()
-    if cosmo_type == 'TEMP':
-        new_dataset.add_field(field_names[0], cosmo_fields[0])
-        if not regular_grid:
-            # interpolate to current radar grid
-            cosmo_field_interp = interpol_field(
-                radar, new_dataset, field_names[0])
-            new_dataset = deepcopy(radar)
-            new_dataset.fields = dict()
-            new_dataset.add_field(field_names[0], cosmo_field_interp)
-    else:
-        new_dataset.add_field(field_names[0], cosmo_fields[0])
-        new_dataset.add_field(field_names[1], cosmo_fields[1])
-        if not regular_grid:
-            # interpolate to current radar grid
-            speed_field_interp = interpol_field(
-                radar, new_dataset, field_names[0])
-            dir_field_interp = interpol_field(
-                radar, new_dataset, field_names[1])
-            new_dataset = deepcopy(radar)
-            new_dataset.fields = dict()
-            new_dataset.add_field(field_names[0], speed_field_interp)
-            new_dataset.add_field(field_names[0], dir_field_interp)
 
-    # debugging
-    # print(" putting COSMO data in radar coordinates takes %s seconds "
-    #      % (time.time() - start_time))
+    if not regular_grid:
+        radar_aux = deepcopy(dscfg['global_data']['cosmo_radar'])
+        radar_aux.fields = dict()
+
+    for field in cosmo_fields:
+        for field_name in field:
+            try:
+                if regular_grid:
+                    new_dataset.add_field(field_name, field[field_name])
+                else:
+                    # interpolate to current radar grid
+                    radar_aux.add_field(field_name, field[field_name])
+                    cosmo_field_interp = interpol_field(
+                        radar, radar_aux, field_name)
+                    new_dataset.add_field(field_name, cosmo_field_interp)
+            except:
+                warn('Unable to add COSMO '+field_name +
+                     ' field to radar object')
+                return None, None
 
     return new_dataset, ind_rad
 
@@ -412,6 +439,10 @@ def process_cosmo_coord(procstatus, dscfg, radar_list=None):
     cosmo_coord = read_cosmo_coord(
         dscfg['cosmopath'][ind_rad]+'rad2cosmo1/cosmo-1_MDR_3D_const.nc',
         zmin=None)
+
+    if cosmo_coord is None:
+        return None, None
+
     cosmo_ind_field = cosmo2radar_coord(
         radar, cosmo_coord, slice_xy=True, slice_z=False)
 

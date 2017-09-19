@@ -50,6 +50,7 @@ import queue
 import time
 import threading
 import glob
+from copy import deepcopy
 
 from ..io.config import read_config
 from ..io.read_data_radar import get_data
@@ -58,6 +59,7 @@ from ..io.io_aux import get_dataset_fields, get_datatype_fields
 from ..io.io_aux import get_new_rainbow_file_name
 from ..io.trajectory import Trajectory
 from ..io.read_data_other import read_last_state
+from ..io.write_data import write_last_state
 
 from ..proc.process_aux import get_process_func
 from ..prod.product_aux import get_prodgen_func
@@ -165,6 +167,11 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", infostr=""):
             dataset_levels, cfg, dscfg, radar_list, master_voltime, traj=traj,
             infostr=infostr)
 
+        # delete variables
+        del radar_list
+
+        gc.collect()
+
     # post-processing of the datasets
     print('\n\n- Post-processing datasets:')
     dscfg, traj = _postprocess_datasets(
@@ -174,7 +181,7 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", infostr=""):
 
 
 def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
-            proc_period=60):
+            proc_period=60, proc_finish=None):
     """
     main flow control. Processes radar data in real time. The start and end
     processing times can be determined by the user. This function is inteded
@@ -190,7 +197,13 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
         Information string about the actual data processing
         (e.g. 'RUN57'). This string is added to product files.
     proc_period : int
-        period of time before starting a new processing round
+        period of time before starting a new processing round (seconds)
+    cronjob_controlled : Boolean
+        If True means that the program is started periodically from a cronjob
+        and therefore finishes execution after processing
+    proc_finish : int or None
+        if set to a value the program will be forced to shut down after the
+        value (in seconds) from start time has been exceeded
 
     Returns
     -------
@@ -207,6 +220,16 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
     warnings.simplefilter('always')  # always print matching warnings
     # warnings.simplefilter('error')  # turn matching warnings into exceptions
     warnings.formatwarning = _warning_format  # define format
+
+    # The processing will be allowed to run for a limited period
+    if proc_finish is not None:
+        startime_proc = datetime.utcnow()
+        # for offline testing
+        # startime_proc = startime_proc.replace(
+        #     year=endtime.year, month=endtime.month, day=endtime.day)
+        # startime_proc = startime_proc.replace(hour=10)
+
+        endtime_proc = startime_proc+timedelta(seconds=proc_finish)
 
     if ALLOW_USER_BREAK:
         input_queue = _initialize_listener()
@@ -229,6 +252,15 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
         if (len(infostr) > 0):
             print('- Info string : ' + infostr)
 
+        # find out last processed volume
+        last_processed = read_last_state(cfg['lastStateFile'])
+        if last_processed is None:
+            print('- last processed volume unknown')
+        else:
+            print('- last processed volume: '+last_processed.strftime(
+                  '%Y%m%d%H%M%S'))
+        last_processed_list.append(last_processed)
+
         # get data types and levels
         datatypesdescr_list = list()
         for i in range(1, cfg['NumRadars']+1):
@@ -247,7 +279,17 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
         dscfg_list.append(dscfg)
         datatypesdescr_list_list.append(datatypesdescr_list)
         dataset_levels_list.append(dataset_levels)
-        last_processed_list.append(None)
+
+        # remove variables from memory
+        del cfg
+        del datacfg
+        del dscfg
+        del datatypesdescr_list
+        del dataset_levels
+        del last_processed
+        del traj
+
+        gc.collect()
 
     end_proc = False
     while not end_proc:
@@ -263,8 +305,16 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
 
         nowtime = datetime.utcnow()
         # for offline testing
-        nowtime = nowtime.replace(
-            year=endtime.year, month=endtime.month, day=endtime.day)
+        # nowtime = nowtime.replace(
+        #     year=endtime.year, month=endtime.month, day=endtime.day)
+        # nowtime = nowtime.replace(hour=10)
+
+        # if processing end time exceeded finalize processing
+        if proc_finish is not None:
+            if nowtime >= endtime_proc:
+                end_proc = True
+                warn('Allowed processing time exceeded')
+                break
 
         # end time has been set and current time older than end time
         # quit processing
@@ -309,6 +359,9 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
                 last_processed=last_processed)
             if masterfile is None:
                 last_processed_list[icfg] = last_processed
+                if last_processed is not None:
+                    fprocessed = write_last_state(
+                        last_processed, cfg['lastStateFile'])
                 continue
 
             print('\n- master file: ' + os.path.basename(masterfile))
@@ -324,17 +377,41 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
                 infostr=infostr)
 
             last_processed_list[icfg] = master_voltime
+            fprocessed = write_last_state(
+                master_voltime, cfg['lastStateFile'])
             dscfg_list[icfg] = dscfg
 
             vol_processed = True
 
+            # remove variables from memory
+            del radar_list
+            del cfg
+            del datacfg
+            del dscfg
+            del datatypesdescr_list
+            del dataset_levels
+            del last_processed
+            del traj
+
+            gc.collect()
+
         nowtime_new = datetime.utcnow()
         # for offline testing
-        nowtime_new = nowtime_new.replace(
-            year=endtime.year, month=endtime.month, day=endtime.day)
+        # nowtime_new = nowtime_new.replace(
+        #     year=endtime.year, month=endtime.month, day=endtime.day)
+        # nowtime_new = nowtime_new.replace(hour=10)
+
         proc_time = (nowtime_new-nowtime).total_seconds()
         if vol_processed:
             print('Processing time %s s\n' % proc_time)
+
+        # if processing end time exceeded finalize processing
+        if proc_finish is not None:
+            if nowtime_new >= endtime_proc:
+                end_proc = True
+                warn('Allowed processing time exceeded')
+                break
+
         if proc_time < proc_period:
             time.sleep(proc_period-proc_time)
 
@@ -352,6 +429,14 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
                 infostr = ""
             dscfg, traj = _postprocess_datasets(
                 dataset_levels, cfg, dscfg, infostr=None)
+
+            # remove variables from memory
+            del cfg
+            del dscfg
+            del dataset_levels
+            del traj
+
+            gc.collect()
 
     print('- This is the end my friend! See you soon!')
 
@@ -704,14 +789,28 @@ def _wait_for_files(nowtime, datacfg, datatype_list, last_processed=None):
         True of all scans found
 
     """
-    endtime_loop = nowtime
+    endtime_loop = deepcopy(nowtime)
 
     nscans = len(datacfg['ScanList'][0])
 
-    scan_min = datacfg['ScanPeriod'] * 1.1  # [min]
+    scan_min = datacfg['ScanPeriod'] * 2.  # [min]
+
+    starttime_loop_default = endtime_loop - timedelta(minutes=scan_min)
     if last_processed is None:
-        starttime_loop = endtime_loop - timedelta(minutes=scan_min)
+        # last processed volume not known. Process last scan
+        starttime_loop = starttime_loop_default
+    elif last_processed > endtime_loop:
+        warn('last processed volume too new. Reprocessing the data')
+        starttime_loop = starttime_loop_default
+        last_processed = starttime_loop_default
+    elif (starttime_loop_default - last_processed
+          > timedelta(minutes=scan_min*3)):
+        warn('last processed volume too old. ' +
+             'There may be missing processed volumes')
+        starttime_loop = starttime_loop_default
+        last_processed = starttime_loop_default
     else:
+        # process from last processed scan
         starttime_loop = last_processed + timedelta(seconds=10)
 
     masterfilelist, masterdatatypedescr, masterscan = (
@@ -763,9 +862,14 @@ def _wait_for_files(nowtime, datacfg, datatype_list, last_processed=None):
     master_voltime = get_datetime(masterfile, masterdatatypedescr)
     wait_time = nowtime+timedelta(minutes=scan_min)
     found_all = False
-    currenttime = nowtime
+    currenttime = deepcopy(nowtime)
     while currenttime <= wait_time or not found_all:
         currenttime = datetime.utcnow()
+        # for offline testing
+        # currenttime = currenttime.replace(
+        #    year=nowtime.year, month=nowtime.month, day=nowtime.day)
+        # currenttime = currenttime.replace(nowtime.hour)
+
         starttime_loop = master_voltime
         endtime_loop = master_voltime+timedelta(minutes=scan_min)
         filelist_vol = []
@@ -834,9 +938,19 @@ def _wait_for_rainbow_datatypes(rainbow_files, period=30):
 
     """
     currenttime = datetime.utcnow()
+    # for offline testing
+    # currenttime = currenttime.replace(
+    #     year=2017, month=6, day=14)
+    # startime_proc = currenttime.replace(10)
+
     wait_time = currenttime+timedelta(seconds=period)
     while currenttime <= wait_time:
         currenttime = datetime.utcnow()
+        # for offline testing
+        # currenttime = currenttime.replace(
+        #    year=2017, month=6, day=14)
+        # startime_proc = currenttime.replace(10)
+
         found_all = False
         for rainbow_file in rainbow_files:
             filename = glob.glob(rainbow_file)
@@ -1384,8 +1498,11 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
     prdcfg.update({'cosmopath': cfg['cosmopath']})
     prdcfg.update({'ScanPeriod': cfg['ScanPeriod']})
     prdcfg.update({'imgformat': cfg['imgformat']})
+    prdcfg.update({'RadarName': cfg['RadarName']})
     if 'ppiImageConfig' in cfg:
         prdcfg.update({'ppiImageConfig': cfg['ppiImageConfig']})
+    if 'ppiMapImageConfig' in cfg:
+        prdcfg.update({'ppiMapImageConfig': cfg['ppiMapImageConfig']})
     if 'rhiImageConfig' in cfg:
         prdcfg.update({'rhiImageConfig': cfg['rhiImageConfig']})
     if 'sunhitsImageConfig' in cfg:

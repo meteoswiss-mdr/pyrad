@@ -15,11 +15,13 @@ Functions for obtaining Pyrad products from the datasets
     generate_vol_products
     generate_timeseries_products
     generate_monitoring_products
+    generate_grid_products
 
 """
 
 from copy import deepcopy
 from warnings import warn
+import os
 
 import numpy as np
 from netCDF4 import num2date
@@ -40,17 +42,19 @@ from ..io.write_data import write_colocated_gates, write_colocated_data
 from ..io.write_data import write_colocated_data_time_avg, write_cdf
 from ..io.write_data import write_intercomp_scores_ts, write_ts_cum
 from ..io.write_data import write_rhi_profile, write_field_coverage
-from ..io.write_data import write_last_state
+from ..io.write_data import write_last_state, write_alarm_msg, send_msg
 
-from ..graph.plots import plot_ppi, plot_rhi, plot_cappi, plot_bscope
-from ..graph.plots import plot_timeseries, plot_timeseries_comp
+from ..graph.plots import plot_ppi, plot_ppi_map, plot_rhi, plot_cappi
+from ..graph.plots import plot_bscope, plot_timeseries, plot_timeseries_comp
 from ..graph.plots import plot_quantiles, get_colobar_label, plot_sun_hits
 from ..graph.plots import plot_sun_retrieval_ts, plot_histogram
 from ..graph.plots import plot_histogram2, plot_density, plot_monitoring_ts
 from ..graph.plots import get_field_name, get_colobar_label, plot_scatter
 from ..graph.plots import plot_intercomp_scores_ts, plot_scatter_comp
 from ..graph.plots import plot_rhi_profile, plot_along_coord
-from ..graph.plots import plot_field_coverage
+from ..graph.plots import plot_field_coverage, plot_surface
+from ..graph.plots import plot_longitude_slice, plot_latitude_slice
+from ..graph.plots import plot_latlon_slice
 
 from ..util.radar_utils import create_sun_hits_field, rainfall_accumulation
 from ..util.radar_utils import create_sun_retrieval_field, get_ROI
@@ -268,6 +272,10 @@ def generate_sun_hits_products(dataset, prdcfg):
         if 'sun_retrieval' not in dataset:
             return None
 
+        dpi = 72
+        if 'dpi' in prdcfg:
+            dpi = prdcfg['dpi']
+
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdid'], timeinfo=None)
@@ -302,7 +310,7 @@ def generate_sun_hits_products(dataset, prdcfg):
             fname[i] = savedir+fname[i]
 
         plot_sun_retrieval_ts(
-            sun_retrieval, prdcfg['voltype'], fname)
+            sun_retrieval, prdcfg['voltype'], fname, dpi=dpi)
 
         print('----- save to '+' '.join(fname))
 
@@ -630,6 +638,37 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname
 
+    if prdcfg['type'] == 'PPI_MAP':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        el_vec = np.sort(dataset.fixed_angle['data'])
+        el = el_vec[prdcfg['anglenr']]
+        ind_el = np.where(dataset.fixed_angle['data'] == el)[0][0]
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'ppi_map', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i in range(len(fname)):
+            fname[i] = savedir+fname[i]
+
+        plot_ppi_map(dataset, field_name, ind_el, prdcfg, fname)
+
+        print('----- save to '+' '.join(fname))
+
+        return fname
+
     elif prdcfg['type'] == 'RHI_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset.fields:
@@ -849,6 +888,44 @@ def generate_vol_products(dataset, prdcfg):
 
             plot_ppi(xsect, field_name, 0, prdcfg, fname,
                      plot_type=plot_type, step=step, quantiles=quantiles)
+
+            print('----- save to '+' '.join(fname))
+
+            return fname
+        except EnvironmentError:
+            warn(
+                'No data found at elevation ' + str(prdcfg['angle']) +
+                '. Skipping product ' + prdcfg['type'])
+
+            return None
+
+    elif prdcfg['type'] == 'PSEUDOPPI_MAP':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        try:
+            xsect = pyart.util.cross_section_rhi(
+                dataset, [prdcfg['angle']], el_tol=prdcfg['EleTol'])
+
+            savedir = get_save_dir(
+                prdcfg['basepath'], prdcfg['procname'], dssavedir,
+                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+            fname = make_filename(
+                'ppi', prdcfg['dstype'], prdcfg['voltype'],
+                prdcfg['imgformat'],
+                prdcfginfo='el'+'{:.1f}'.format(prdcfg['angle']),
+                timeinfo=prdcfg['timeinfo'])
+
+            for i in range(len(fname)):
+                fname[i] = savedir+fname[i]
+
+            plot_ppi_map(xsect, field_name, 0, prdcfg, fname)
 
             print('----- save to '+' '.join(fname))
 
@@ -1386,8 +1463,10 @@ def generate_vol_products(dataset, prdcfg):
                 ind_ele = np.where(d_ele < prdcfg['AngTol'])[0]
                 if len(ind_ele) == 0:
                     continue
-                yval_aux = np.ma.concatenate([yval_aux, field_coverage[ind_ele]])
-                xval_aux = np.concatenate([xval_aux, dataset.azimuth['data'][ind_ele]])
+                yval_aux = np.ma.concatenate(
+                    [yval_aux, field_coverage[ind_ele]])
+                xval_aux = np.concatenate(
+                    [xval_aux, dataset.azimuth['data'][ind_ele]])
             yval.append(yval_aux)
             xval.append(xval_aux)
             labels.append('ele '+'{:.1f}'.format(ele_steps_vec[i])+'-' +
@@ -1587,7 +1666,7 @@ def generate_vol_products(dataset, prdcfg):
         # count and filter outliers
         quantiles_lim, values_lim = compute_quantiles(
             data, quantiles=[0.2, 99.8])
-        if values_lim.mask[0] == True or values_lim.mask[1] == True:
+        if values_lim.mask[0] or values_lim.mask[1]:
             warn('No valid radar gates found in sector')
             return None
 
@@ -1744,6 +1823,10 @@ def generate_timeseries_products(dataset, prdcfg):
         if dataset['final']:
             return None
 
+        dpi = 72
+        if 'dpi' in prdcfg:
+            dpi = prdcfg['dpi']
+
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
         r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
@@ -1786,7 +1869,7 @@ def generate_timeseries_products(dataset, prdcfg):
 
         plot_timeseries(
             date, [value], figfname, labelx='Time UTC',
-            labely=labely, labels=[label1], title=titl)
+            labely=labely, labels=[label1], title=titl, dpi=dpi)
         print('----- save to '+' '.join(figfname))
 
         return figfname
@@ -1794,6 +1877,10 @@ def generate_timeseries_products(dataset, prdcfg):
     elif prdcfg['type'] == 'PLOT_CUMULATIVE_POINT':
         if dataset['final']:
             return None
+
+        dpi = 72
+        if 'dpi' in prdcfg:
+            dpi = prdcfg['dpi']
 
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
@@ -1835,7 +1922,7 @@ def generate_timeseries_products(dataset, prdcfg):
         plot_timeseries(
             date, [value], figfname, labelx='Time UTC',
             labely=labely, labels=[label1], title=titl,
-            period=prdcfg['ScanPeriod']*60.)
+            period=prdcfg['ScanPeriod']*60., dpi=dpi)
         print('----- save to '+' '.join(figfname))
 
         return figfname
@@ -1843,6 +1930,10 @@ def generate_timeseries_products(dataset, prdcfg):
     elif prdcfg['type'] == 'COMPARE_POINT':
         if dataset['final']:
             return None
+
+        dpi = 72
+        if 'dpi' in prdcfg:
+            dpi = prdcfg['dpi']
 
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
@@ -1896,7 +1987,7 @@ def generate_timeseries_products(dataset, prdcfg):
         plot_timeseries_comp(
             radardate, radarvalue, sensordate, sensorvalue, figfname,
             labelx='Time UTC', labely=labely, label1=label1, label2=label2,
-            titl=titl)
+            titl=titl, dpi=dpi)
         print('----- save to '+' '.join(figfname))
 
         return figfname
@@ -1904,6 +1995,10 @@ def generate_timeseries_products(dataset, prdcfg):
     elif prdcfg['type'] == 'COMPARE_CUMULATIVE_POINT':
         if dataset['final']:
             return None
+
+        dpi = 72
+        if 'dpi' in prdcfg:
+            dpi = prdcfg['dpi']
 
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
@@ -1959,7 +2054,7 @@ def generate_timeseries_products(dataset, prdcfg):
             radardate, radarvalue, sensordate, sensorvalue,
             figfname, labelx='Time UTC', labely=labely,
             label1=label1, label2=label2, titl=titl,
-            period1=prdcfg['ScanPeriod']*60., period2=period2)
+            period1=prdcfg['ScanPeriod']*60., period2=period2, dpi=dpi)
         print('----- save to '+' '.join(figfname))
 
         return figfname
@@ -1967,6 +2062,10 @@ def generate_timeseries_products(dataset, prdcfg):
     elif prdcfg['type'] == 'COMPARE_TIME_AVG':
         if not dataset['final']:
             return None
+
+        dpi = 72
+        if 'dpi' in prdcfg:
+            dpi = prdcfg['dpi']
 
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
@@ -2065,7 +2164,7 @@ def generate_timeseries_products(dataset, prdcfg):
 
         plot_scatter_comp(
             sensorvalue_cum2, radarvalue_cum2, figfname, labelx=labelx,
-            labely=labely, titl=titl, axis='equal')
+            labely=labely, titl=titl, axis='equal', dpi=dpi)
 
         print('----- save to '+' '.join(figfname))
 
@@ -2113,6 +2212,23 @@ def generate_timeseries_products(dataset, prdcfg):
 
 
 def generate_monitoring_products(dataset, prdcfg):
+    """
+    generates a monitoring product
+
+    Parameters
+    ----------
+    dataset : dictionary
+        dictionary containing a histogram object and some metadata
+
+    prdcfg : dictionary of dictionaries
+        product configuration dictionary of dictionaries
+
+    Returns
+    -------
+    filename : str
+        the name of the file created. None otherwise
+
+    """
 
     # check the type of dataset required
     hist_type = 'cumulative'
@@ -2173,7 +2289,7 @@ def generate_monitoring_products(dataset, prdcfg):
 
         return fname
 
-    if prdcfg['type'] == 'PPI_HISTOGRAM':
+    elif prdcfg['type'] == 'PPI_HISTOGRAM':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in hist_obj.fields:
             warn(
@@ -2226,7 +2342,7 @@ def generate_monitoring_products(dataset, prdcfg):
 
         return fname
 
-    if prdcfg['type'] == 'ANGULAR_DENSITY':
+    elif prdcfg['type'] == 'ANGULAR_DENSITY':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in hist_obj.fields:
             warn(
@@ -2347,7 +2463,113 @@ def generate_monitoring_products(dataset, prdcfg):
             labely=labely, titl=titl)
         print('----- save to '+' '.join(figfname))
 
-        return figfname
+        # generate alarms if needed
+        alarm = 0
+        if 'alarm' in prdcfg:
+            alarm = prdcfg['alarm']
+
+        if not alarm:
+            return figfname
+
+        if 'tol_abs' not in prdcfg:
+            warn('unable to send alarm. Missing tolerance on target')
+            return None
+
+        if 'tol_trend' not in prdcfg:
+            warn('unable to send alarm. Missing tolerance in trend')
+            return None
+
+        if 'npoints_min' not in prdcfg:
+            warn('unable to send alarm. ' +
+                 'Missing minimum number of valid points per event')
+            return None
+
+        if 'nevents_min' not in prdcfg:
+            warn('unable to send alarm. ' +
+                 'Missing minimum number of events to compute trend')
+            return None
+
+        if 'sender' not in prdcfg:
+            warn('unable to send alarm. Missing email sender')
+            return None
+        if 'receiver_list' not in prdcfg:
+            warn('unable to send alarm. Missing email receivers')
+            return None
+
+        tol_abs = prdcfg['tol_abs']
+        tol_trend = prdcfg['tol_trend']
+        npoints_min = prdcfg['npoints_min']
+        nevents_min = prdcfg['nevents_min']
+        sender = prdcfg['sender']
+        receiver_list = prdcfg['receiver_list']
+
+        np_last = np_t_vec[-1]
+        value_last = cquant_vec[-1]
+
+        if np_last < npoints_min:
+            warn('No valid data on day '+value_last.strftime('%d-%m-%Y'))
+            return None
+
+        # check if absolute value exceeded
+        abs_exceeded = False
+        if ((value_last > ref_value+tol_abs) or
+                (value_last < ref_value-tol_abs)):
+            warn('Value '+str(value_last)+'exceeds target '+str(ref_value) +
+                 ' +/- '+str(tol_abs))
+            abs_exceeded = True
+
+        # compute trend and check if last value exceeds it
+        mask = np.ma.getmaskarray(cquant_vec)
+        ind = np.where(np.logical_and(
+            np.logical_not(mask), np_t_vec >= npoints_min))[0]
+        nvalid = len(ind)
+        if nvalid <= nevents_min:
+            warn('Not enough points to compute reliable trend')
+            np_trend = 0
+            value_trend = np.ma.masked
+        else:
+            np_trend_vec = np_t_vec[ind][-(nevents_min+1):-1]
+            data_trend_vec = cquant_vec[ind][-(nevents_min+1):-1]
+
+            np_trend = np.sum(np_trend_vec)
+            value_trend = np.sum(data_trend_vec*np_trend_vec)/np_trend
+
+        trend_exceeded = False
+        if np_trend > 0:
+            if ((value_last > value_trend+tol_trend) or
+                    (value_last < value_trend-tol_trend)):
+                warn('Value '+str(value_last)+'exceeds trend ' +
+                     str(value_trend)+' +/- '+str(tol_trend))
+                trend_exceeded = True
+
+        if abs_exceeded is False and trend_exceeded is False:
+            return None
+
+        alarm_dir = savedir+'/alarms/'
+        if not os.path.isdir(alarm_dir):
+            os.makedirs(alarm_dir)
+        alarm_fname = make_filename(
+            'alarm', prdcfg['dstype'], prdcfg['voltype'], ['txt'],
+            timeinfo=start_time, timeformat='%Y%m%d')[0]
+        alarm_fname = alarm_dir+alarm_fname
+
+        field_dict = pyart.config.get_metadata(field_name)
+        param_name = get_field_name(field_dict, field_name)
+        param_name_unit = param_name+' ['+field_dict['units']+']'
+
+        write_alarm_msg(
+            prdcfg['RadarName'][0], param_name_unit, start_time, ref_value,
+            tol_abs, np_trend, value_trend, tol_trend, nevents_min, np_last,
+            value_last, alarm_fname)
+
+        print('----- saved monitoring alarm to '+alarm_fname)
+
+        subject = ('NO REPLY: '+param_name+' monitoring alarm for radar ' +
+                   prdcfg['RadarName'][0]+' on day ' +
+                   start_time.strftime('%d-%m-%Y'))
+        send_msg(sender, receiver_list, subject, alarm_fname)
+
+        return alarm_fname
 
     elif prdcfg['type'] == 'SAVEVOL':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -2374,6 +2596,210 @@ def generate_monitoring_products(dataset, prdcfg):
             fname[i] = savedir+fname[i]
 
         pyart.io.cfradial.write_cfradial(fname[0], new_dataset)
+        print('saved file: '+fname[0])
+
+        return fname[0]
+
+    else:
+        warn(' Unsupported product type: ' + prdcfg['type'])
+        return None
+
+
+def generate_grid_products(dataset, prdcfg):
+    """
+    generates grid products
+
+    Parameters
+    ----------
+    dataset : grid
+        grid object
+
+    prdcfg : dictionary of dictionaries
+        product configuration dictionary of dictionaries
+
+    Returns
+    -------
+    no return
+
+    """
+
+    dssavedir = prdcfg['dsname']
+    if ('dssavename' in prdcfg):
+        dssavedir = prdcfg['dssavename']
+
+    if prdcfg['type'] == 'SURFACE_IMAGE':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # user defined values
+        level = 0
+        if 'level' in prdcfg:
+            level = prdcfg['level']
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'surface', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo='l'+str(level),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i in range(len(fname)):
+            fname[i] = savedir+fname[i]
+
+        plot_surface(dataset, field_name, level, prdcfg, fname)
+
+        print('----- save to '+' '.join(fname))
+
+        return fname
+
+    elif prdcfg['type'] == 'LATITUDE_SLICE':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # user defined values
+        lon = dataset.origin_longitude['data'][0]
+        lat = dataset.origin_latitude['data'][0]
+        if 'lon' in prdcfg:
+            lon = prdcfg['lon']
+        if 'lat' in prdcfg:
+            lat = prdcfg['lat']
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'lat_slice', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo='lat'+'{:.2f}'.format(lat),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i in range(len(fname)):
+            fname[i] = savedir+fname[i]
+
+        plot_latitude_slice(dataset, field_name, lon, lat, prdcfg, fname)
+
+        print('----- save to '+' '.join(fname))
+
+        return fname
+
+    elif prdcfg['type'] == 'LONGITUDE_SLICE':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # user defined values
+        lon = dataset.origin_longitude['data'][0]
+        lat = dataset.origin_latitude['data'][0]
+        if 'lon' in prdcfg:
+            lon = prdcfg['lon']
+        if 'lat' in prdcfg:
+            lat = prdcfg['lat']
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'lon_slice', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo='lon'+'{:.2f}'.format(lon),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i in range(len(fname)):
+            fname[i] = savedir+fname[i]
+
+        plot_longitude_slice(dataset, field_name, lon, lat, prdcfg, fname)
+
+        print('----- save to '+' '.join(fname))
+
+        return fname
+
+    elif prdcfg['type'] == 'CROSS_SECTION':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # user defined values
+        lon1 = dataset.point_longitude['data'][0, 0, 0]
+        lat1 = dataset.point_latitude['data'][0, 0, 0]
+
+        lon2 = dataset.point_longitude['data'][0, -1, -1]
+        lat2 = dataset.point_latitude['data'][0, -1, -1]
+        if 'coord1' in prdcfg:
+            if 'lon' in prdcfg['coord1']:
+                lon1 = prdcfg['coord1']['lon']
+            if 'lat' in prdcfg['coord1']:
+                lat1 = prdcfg['coord1']['lat']
+        if 'coord2' in prdcfg:
+            if 'lon' in prdcfg['coord2']:
+                lon2 = prdcfg['coord2']['lon']
+            if 'lat' in prdcfg['coord2']:
+                lat2 = prdcfg['coord2']['lat']
+
+        coord1 = (lon1, lat1)
+        coord2 = (lon2, lat2)
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'lonlat', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'],
+            prdcfginfo='lon-lat1_'+'{:.2f}'.format(lon1)+'-' +
+                       '{:.2f}'.format(lat1)+'_lon-lat2_' +
+                       '{:.2f}'.format(lon2)+'-'+'{:.2f}'.format(lat2),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i in range(len(fname)):
+            fname[i] = savedir+fname[i]
+
+        plot_latlon_slice(dataset, field_name, coord1, coord2, prdcfg, fname)
+
+        print('----- save to '+' '.join(fname))
+
+        return fname
+
+    elif prdcfg['type'] == 'SAVEVOL':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=dataset['timeinfo'])
+
+        fname = make_filename(
+            'savevol', prdcfg['dstype'], prdcfg['voltype'], ['nc'],
+            timeinfo=dataset['timeinfo'])
+
+        for i in range(len(fname)):
+            fname[i] = savedir+fname[i]
+
+        pyart.io.write_grid(fname[0], dataset)
         print('saved file: '+fname[0])
 
         return fname[0]

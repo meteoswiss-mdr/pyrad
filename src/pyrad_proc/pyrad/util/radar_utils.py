@@ -23,6 +23,7 @@ Miscellaneous functions dealing with radar data
     compute_quantiles_sweep
     compute_histogram
     compute_histogram_sweep
+    get_histogram_bins
     compute_2d_stats
     compute_1d_stats
     compute_2d_hist
@@ -672,6 +673,64 @@ def compute_histogram(field, field_name, step=None):
     return bins, values
 
 
+def compute_histogram_sweep(field, ray_start, ray_end, field_name, step=None):
+    """
+    computes histogram of the data in a particular sweep
+
+    Parameters
+    ----------
+    field : ndarray 2D
+        the radar field
+    ray_start, ray_end : int
+        starting and ending ray indexes
+    field_name: str
+        name of the field
+    step : float
+        size of bin
+
+    Returns
+    -------
+    bins : float array
+        interval of each bin
+    values : float array
+        values at each bin
+
+    """
+    bins = get_histogram_bins(field_name, step=step)
+    field_sweep = field[ray_start:ray_end+1, :]
+    field_sweep[field_sweep < bins[0]] = bins[0]
+    field_sweep[field_sweep > bins[-1]] = bins[-1]
+    values = field_sweep[ray_start:ray_end+1, :].compressed()
+
+    return bins, values
+
+
+def get_histogram_bins(field_name, step=None):
+    """
+    gets the histogram bins using the range limits of the field as defined
+    in the Py-ART config file.
+
+    Parameters
+    ----------
+    field_name: str
+        name of the field
+    step : float
+        size of bin
+
+    Returns
+    -------
+    bins : float array
+        interval of each bin
+
+    """
+    vmin, vmax = pyart.config.get_field_limits(field_name)
+    if step is None:
+        step = (vmax-vmin)/50.
+        warn('No step has been defined. Default '+str(step)+' will be used')
+
+    return np.linspace(vmin, vmax, num=int((vmax-vmin)/step))
+
+
 def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
                      step2=None):
     """
@@ -848,61 +907,3 @@ def quantize_field(field, field_name, step):
     fieldq = ((field+vmin)/step+1).astype(int)
 
     return fieldq.filled(fill_value=0)
-
-
-def compute_histogram_sweep(field, ray_start, ray_end, field_name, step=None):
-    """
-    computes histogram of the data in a particular sweep
-
-    Parameters
-    ----------
-    field : ndarray 2D
-        the radar field
-    ray_start, ray_end : int
-        starting and ending ray indexes
-    field_name: str
-        name of the field
-    step : float
-        size of bin
-
-    Returns
-    -------
-    bins : float array
-        interval of each bin
-    values : float array
-        values at each bin
-
-    """
-    bins = get_histogram_bins(field_name, step=step)
-    field_sweep = field[ray_start:ray_end+1, :]
-    field_sweep[field_sweep < bins[0]] = bins[0]
-    field_sweep[field_sweep > bins[-1]] = bins[-1]
-    values = field_sweep[ray_start:ray_end+1, :].compressed()
-
-    return bins, values
-
-
-def get_histogram_bins(field_name, step=None):
-    """
-    gets the histogram bins using the range limits of the field as defined
-    in the Py-ART config file.
-
-    Parameters
-    ----------
-    field_name: str
-        name of the field
-    step : float
-        size of bin
-
-    Returns
-    -------
-    bins : float array
-        interval of each bin
-
-    """
-    vmin, vmax = pyart.config.get_field_limits(field_name)
-    if step is None:
-        step = (vmax-vmin)/50.
-        warn('No step has been defined. Default '+str(step)+' will be used')
-
-    return np.linspace(vmin, vmax, num=int((vmax-vmin)/step))

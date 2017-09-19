@@ -1,0 +1,69 @@
+#
+# Configuration for MALS tests at the airport Meiringen
+
+# Number of radars to process
+NumRadars INT 1
+
+# Time tolerance when processing multiple radars [s]
+TimeTol FLOAT 3600.
+
+# Radar Name
+RadarName STRING DX50
+
+# Names of the radar scans in the specified sector
+# NOTE: Must have a trailing '/'
+ScanList STRARR 1
+      RADAR001:MALS_MEI_VOL.vol/  # masterscan: first scan of a volume
+
+# Repetition time of the scans [min]
+ScanPeriod INT 10
+
+# Frequency of cosmo run [h]
+CosmoRunFreq INT 3
+
+# hours forecasted in cosmo run [h]
+CosmoForecasted INT 7
+
+# Image config
+ppiImageConfig STRUCT 8
+   xsize      FLOAT   7.      # image size [inches] (default dots per inch (dpi):72)
+   ysize      FLOAT   7.      # image size [inches] (default dots per inch (dpi):72)
+   xmin       FLOAT -40.0   # Min distance on horizontal axis [km]
+   xmax       FLOAT  40.0   # Max distance on horizontal axis [km]
+   ymin       FLOAT -40.0   # Min distance on vertical axis [km]
+   ymax       FLOAT  40.0   # Max distance on vertical axis [km]
+   rngRing    FLOAT  10.0   # distance between range rings (0 no range ring) [km]
+   dpi        INT    300     # dots per inch (72 web quality, 300 print quality)   
+
+rhiImageConfig STRUCT 7
+   xsize      FLOAT   10.    # image size [inches]
+   ysize      FLOAT   4.     # image size [inches]
+   xmin       FLOAT   0.0   # Min distance on horizontal axis [km]
+   xmax       FLOAT  40.0   # Max distance on horizontal axis [km]
+   ymin       FLOAT   0.0   # Min distance on vertical axis [km]
+   ymax       FLOAT   7.5   # Max distance on vertical axis [km]
+   dpi        INT    300     # dots per inch (72 web quality, 300 print quality)   
+   
+ppiMapImageConfig STRUCT 10
+   rngRing    FLOAT  10.0   # distance between range rings (0 no range ring) [km]
+   xsize      FLOAT  7.   # image size [inches] (default dots per inch (dpi):72)
+   ysize      FLOAT  7.   # image size [inches] (default dots per inch (dpi):72)
+   lonmin     FLOAT  7.57 # Min longitude [deg]
+   lonmax     FLOAT  8.63 # Max longitude [deg]
+   latmin     FLOAT 46.38 # Min latitude [deg]
+   latmax     FLOAT 47.11 # Max latitude [deg]
+   mapres     STRING 10m  # map resolution (10m, 50m, 110m)
+   dpi        INT    300     # dots per inch (72 web quality, 300 print quality)   
+   maps STRARR 11         # maps to overplot
+       relief
+       countries
+       provinces
+       urban_areas
+       roads
+       railroads
+       coastlines
+       lakes
+       lakes_europe
+       rivers
+       rivers_europe
+

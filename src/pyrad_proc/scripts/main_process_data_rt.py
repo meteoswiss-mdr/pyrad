@@ -22,12 +22,15 @@ cfgpath is an optional argument with default: \
 '$HOME/pyrad/config/processing/'
 proc_period is the time that has to pass before attempting to restart the
 processing in s
+if proc_finish is not none it indicates the time the program is allowed to ran
+berfore forcing it to end
+
 
 Example:
     python main_process_data.py 'paradiso_fvj_vol.txt' \
 'paradiso_fvj_rhi.txt' --starttime '20140523000000' \
 --endtime '20140523001000' --cfgpath '$HOME/pyrad/config/processing/' \
---proc_period 60
+--proc_period 60 --proc_finish 120
 
 """
 
@@ -73,8 +76,12 @@ def main():
         help='configuration file path')
 
     parser.add_argument(
-        '--proc_period', type=str, default=60,
+        '--proc_period', type=int, default=60,
         help='Period between processing rounds (s)')
+
+    parser.add_argument(
+        '--proc_finish', type=int, default=None,
+        help='Processing time allowed before shutdown (s)')
 
     args = parser.parse_args()
 
@@ -105,15 +112,19 @@ def main():
     if args.endtime is not None:
         proc_endtime = datetime.datetime.strptime(args.endtime, '%Y%m%d%H%M%S')
 
-    end_proc = False    
+    end_proc = False
     while not end_proc:
         try:
             end_proc = pyrad_main(
                 cfgfile_list, starttime=proc_starttime, endtime=proc_endtime,
-                proc_period=args.proc_period)
+                proc_period=args.proc_period, proc_finish=args.proc_finish)
         except:
             traceback.print_exc()
-            warn("An exception occurred. Restarting the real time processing")            
+            if args.proc_finish is None:
+                warn("An exception occurred. " +
+                     "Restarting the real time processing")
+            else:
+                end_proc = True
 
 
 def _print_end_msg(text):

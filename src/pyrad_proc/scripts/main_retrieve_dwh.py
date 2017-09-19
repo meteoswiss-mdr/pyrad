@@ -30,24 +30,53 @@ def main():
     """
     """
 
-    file_path = '/data/FLORAKO/v2/'
+    file_path = '/data/FLORAKO/fm_transmitters_measurements/10min/'
     img_ext = 'png'
     avg_time = 3600
     base_time = 0
+    
+    # tstart+t_init and tend+t_final make the start and stop times for the 
+    # retrieval of the data
+    # t_init = '0101000000'
+    # t_final = '0101000000'
+    # 
+    # tstart_vec = ['2007', '2008', '2009', '2010', '2011', '2012', '2013',
+    #               '2014', '2015', '2016']
+    # tend_vec = ['2008', '2009', '2010', '2011', '2012', '2013', '2014',
+    #             '2015', '2016', '2017']
 
-    smn_station_vec = ['PIL', 'WFJ', 'MTR', 'GUE', 'DIA']
-#    smn_station_vec = ['VSTSN']
-    tstart_vec = ['2007', '2008', '2009', '2010', '2011', '2012', '2013',
-                  '2014', '2015', '2016']
-    tend_vec = ['2008', '2009', '2010', '2011', '2012', '2013', '2014',
-                '2015', '2016', '2017']
-#    param_vec = ['tre200s0', 'tde200s0', 'ure200s0', 'gor000z0', 'fkl010z0']
-#    ymin_vec = [-40., -40., 0., -40., 0.]
-#    ymax_vec = [30., 30., 110., 1500., 20.]
+    t_init = '160000'
+    t_final = '100000'
+    
+    tstart_vec = ['20140421']
+    tend_vec = ['20160425']
 
-    param_vec = ['prestas0']
-    ymin_vec = [600.]
-    ymax_vec = [900.]
+    # SMN stations to retrieve
+    smn_station_vec = ['BER']
+    #    smn_station_vec = ['PIL', 'WFJ', 'MTR', 'GUE', 'DIA', 'VSTSN']
+    
+    # meteorological parameters
+    # tre200s0: air temperature  deg C at 2 m [10 min resolution]
+    # tde200s0: dew point temperature deg C at 2 m [10 min resolution]
+    # ure200s0: relative humidity % at 2 m [10 min resolution]
+    # gor000z0: global radiation W/m2[10 min average]
+    # fkl010z0: mean wind speed in 10 min m/s
+    # fkl010z1: max wind speed in 10 min m/s
+    # prestas0: air pressure at station height [hPa]
+    # rre150z0: precipitation 10 min accumulation
+    param_vec = ['tre200s0', 'gor000z0', 'ure200s0', 'prestas0', 'fkl010z0', 'fkl010z1', 'rre150z0'] 
+    ymin_vec = [-40., -40., 0., 600., 0., 0., 0., 0.]
+    ymax_vec = [30., 1500., 110., 1300., 20., 50., 30.]
+
+    
+ 
+#    param_vec = ['tre200s0', 'tde200s0', 'ure200s0', 'gor000z0', 'fkl010z0', 'prestas0']
+#    ymin_vec = [-40., -40., 0., -40., 0., 600.]
+#    ymax_vec = [30., 30., 110., 1500., 20., 900.]
+
+#    param_vec = ['fkl010z1']
+#    ymin_vec = [0.]
+#    ymax_vec = [50.]
 
     print("====== retrieval from DWH started: %s" %
           datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
@@ -61,8 +90,8 @@ def main():
             ymax = ymax_vec[i]
             i += 1
             for time in range(len(tstart_vec)):
-                tstart = tstart_vec[time]+'0101000000'
-                tend = tend_vec[time]+'0101000000'
+                tstart = tstart_vec[time]+t_init
+                tend = tend_vec[time]+t_final
 
                 print('\n--- Processing station '+station+' parameter ' +
                       param+' between '+tstart+' and '+tend)

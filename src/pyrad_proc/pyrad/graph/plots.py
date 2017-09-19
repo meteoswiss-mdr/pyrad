@@ -7,7 +7,12 @@ Functions to plot Pyrad datasets
 .. autosummary::
     :toctree: generated/
 
+    plot_surface
+    plot_latitude_slice
+    plot_longitude_slice
+    plot_latlon_slice
     plot_ppi
+    plot_ppi_map
     plot_rhi
     plot_bscope
     plot_cappi
@@ -29,16 +34,26 @@ Functions to plot Pyrad datasets
     plot_sun_retrieval_ts
     get_colobar_label
     get_field_name
+    get_norm
 
 """
+
+# TODO: improve legend for maps:
+#       --less verbosity in the colrbar labels
 
 from copy import deepcopy
 from warnings import warn
 
 import matplotlib as mpl
 mpl.use('Agg')
+
+# Increase a bit font size
+mpl.rcParams.update({'font.size': 16})
+mpl.rcParams.update({'font.family':  "sans-serif"})
+
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
+
 import numpy as np
 
 import pyart
@@ -46,6 +61,220 @@ import pyart
 from ..util.radar_utils import compute_quantiles_sweep
 from ..util.radar_utils import compute_quantiles_from_hist
 from ..util.radar_utils import compute_histogram_sweep
+
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+# Debug
+# import pdb
+
+
+def plot_surface(grid, field_name, level, prdcfg, fname_list):
+    """
+    plots a surface from gridded data
+
+    Parameters
+    ----------
+    grid : Grid object
+        object containing the gridded data to plot
+    field_name : str
+        name of the radar field to plot
+    level : int
+        level index
+    prdcfg : dict
+        dictionary containing the product configuration
+    fname_list : list of str
+        list of names of the files where to store the plot
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    History
+    --------
+    ????.??.?? created
+    2017.08.?? -fvj- added option controlling dpi
+
+    """
+    dpi = 72
+    if 'dpi' in prdcfg['ppiImageConfig']:
+        dpi = prdcfg['ppiImageConfig']['dpi']
+
+    norm, ticks, ticklabs = get_norm(field_name)
+
+    fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
+                     prdcfg['ppiImageConfig']['ysize']],
+                     dpi=dpi)
+    ax = fig.add_subplot(111, aspect='equal')
+    lon_lines = np.arange(np.floor(prdcfg['ppiMapImageConfig']['lonmin']),
+                          np.ceil(prdcfg['ppiMapImageConfig']['lonmax'])+1,
+                          0.5)
+    lat_lines = np.arange(np.floor(prdcfg['ppiMapImageConfig']['latmin']),
+                          np.ceil(prdcfg['ppiMapImageConfig']['latmax'])+1,
+                          0.5)
+    display = pyart.graph.GridMapDisplay(grid)
+    display.plot_basemap(lat_lines=lat_lines, lon_lines=lon_lines)
+    display.plot_grid(field_name, level=level, norm=norm, ticks=ticks,
+                      ticklabs=ticklabs)
+    # display.plot_crosshairs(lon=lon, lat=lat)
+
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i], dpi=dpi)
+    plt.close()
+
+
+def plot_latitude_slice(grid, field_name, lon, lat, prdcfg, fname_list):
+    """
+    plots a latitude slice from gridded data
+
+    Parameters
+    ----------
+    grid : Grid object
+        object containing the gridded data to plot
+    field_name : str
+        name of the radar field to plot
+    lon, lat : float
+        coordinates of the slice to plot
+    prdcfg : dict
+        dictionary containing the product configuration
+    fname_list : list of str
+        list of names of the files where to store the plot
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    History
+    --------
+    ????.??.?? created
+    2017.08.?? -fvj- added option controlling dpi
+
+    """
+    dpi = 72
+    if 'dpi' in prdcfg['rhiImageConfig']:
+        dpi = prdcfg['rhiImageConfig']['dpi']
+
+    norm, ticks, ticklabs = get_norm(field_name)
+
+    fig = plt.figure(figsize=[prdcfg['rhiImageConfig']['xsize'],
+                     prdcfg['rhiImageConfig']['ysize']],
+                     dpi=dpi)
+    ax = fig.add_subplot(111, aspect='equal')
+    display = pyart.graph.GridMapDisplay(grid)
+    display.plot_latitude_slice(
+        field_name, lon=lon, lat=lat, norm=norm, colorbar_orient='horizontal',
+        ticks=ticks, ticklabs=ticklabs)
+    ax.set_xlim(
+        [prdcfg['rhiImageConfig']['xmin'], prdcfg['rhiImageConfig']['xmax']])
+    ax.set_ylim(
+        [prdcfg['rhiImageConfig']['ymin'], prdcfg['rhiImageConfig']['ymax']])
+
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i], dpi=dpi)
+    plt.close()
+
+
+def plot_longitude_slice(grid, field_name, lon, lat, prdcfg, fname_list):
+    """
+    plots a longitude slice from gridded data
+
+    Parameters
+    ----------
+    grid : Grid object
+        object containing the gridded data to plot
+    field_name : str
+        name of the radar field to plot
+    lon, lat : float
+        coordinates of the slice to plot
+    prdcfg : dict
+        dictionary containing the product configuration
+    fname_list : list of str
+        list of names of the files where to store the plot
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    History
+    --------
+    ????.??.?? created
+    2017.08.?? -fvj- added option controlling dpi
+
+    """
+    dpi = 72
+    if 'dpi' in prdcfg['rhiImageConfig']:
+        dpi = prdcfg['rhiImageConfig']['dpi']
+
+    norm, ticks, ticklabs = get_norm(field_name)
+
+    fig = plt.figure(figsize=[prdcfg['rhiImageConfig']['xsize'],
+                     prdcfg['rhiImageConfig']['ysize']],
+                     dpi=dpi)
+    ax = fig.add_subplot(111, aspect='equal')
+    display = pyart.graph.GridMapDisplay(grid)
+    display.plot_longitude_slice(
+        field_name, lon=lon, lat=lat, norm=norm, colorbar_orient='horizontal',
+        ticks=ticks, ticklabs=ticklabs)
+    ax.set_xlim(
+        [prdcfg['rhiImageConfig']['xmin'], prdcfg['rhiImageConfig']['xmax']])
+    ax.set_ylim(
+        [prdcfg['rhiImageConfig']['ymin'], prdcfg['rhiImageConfig']['ymax']])
+
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i], dpi=dpi)
+    plt.close()
+
+
+def plot_latlon_slice(grid, field_name, coord1, coord2, prdcfg, fname_list):
+    """
+    plots a croos section crossing two points in the grid
+
+    Parameters
+    ----------
+    grid : Grid object
+        object containing the gridded data to plot
+    field_name : str
+        name of the radar field to plot
+    coord1 : tupple of floats
+        lat, lon of the first point
+    coord2 : tupple of floats
+        lat, lon of the second point
+    fname_list : list of str
+        list of names of the files where to store the plot
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    History
+    --------
+    ????.??.?? created
+    2017.08.?? -fvj- added option controlling dpi
+
+    """
+    dpi = 72
+    if 'dpi' in prdcfg['rhiImageConfig']:
+        dpi = prdcfg['rhiImageConfig']['dpi']
+
+    norm, ticks, ticklabs = get_norm(field_name)
+
+    fig = plt.figure(figsize=[prdcfg['rhiImageConfig']['xsize'],
+                     prdcfg['rhiImageConfig']['ysize']],
+                     dpi=dpi)
+    ax = fig.add_subplot(111, aspect='equal')
+    display = pyart.graph.GridMapDisplay(grid)
+    display.plot_latlon_slice(
+        field_name, coord1=coord1, coord2=coord2, norm=norm,
+        colorbar_orient='vertical', ticks=ticks, ticklabs=ticklabs, fig=fig,
+        ax=ax)
+    # ax.set_ylim(
+    #    [prdcfg['rhiImageConfig']['ymin'], prdcfg['rhiImageConfig']['ymax']])
+
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i], dpi=dpi)
+    plt.close()
 
 
 def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
@@ -77,24 +306,51 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
     fname_list : list of str
         list of names of the created plots
 
+    History
+    --------
+    ????.??.?? created
+    2017.08.?? -fvj- added option controlling dpi
+    2017-08.23 -jgr- minor graphical changes
+
     """
     if plot_type == 'PPI':
+        dpi = 72
+        if 'dpi' in prdcfg['ppiImageConfig']:
+            dpi = prdcfg['ppiImageConfig']['dpi']
+
+        norm, ticks, ticklabs = get_norm(field_name)
+
         fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                          prdcfg['ppiImageConfig']['ysize']],
-                         dpi=72)
+                         dpi=dpi)
+
+        ax = fig.add_subplot(111, aspect='equal')
 
         display = pyart.graph.RadarDisplay(radar)
-        display.plot_ppi(field_name, sweep=ind_el)
+        display.plot_ppi(
+            field_name, sweep=ind_el, norm=norm, ticks=ticks,
+            ticklabs=ticklabs, fig=fig)
+
         display.set_limits(
             ylim=[prdcfg['ppiImageConfig']['ymin'],
                   prdcfg['ppiImageConfig']['ymax']],
             xlim=[prdcfg['ppiImageConfig']['xmin'],
                   prdcfg['ppiImageConfig']['xmax']])
-        display.plot_range_rings([10, 20, 30, 40])
+        if 'rngRing' in prdcfg['ppiImageConfig']:
+            if prdcfg['ppiImageConfig']['rngRing'] > 0:
+                display.plot_range_rings(np.arange(
+                    0., radar.range['data'][-1]/1000.,
+                    prdcfg['ppiImageConfig']['rngRing']))
         display.plot_cross_hair(5.)
 
+        # Turn on the grid
+        ax.grid()
+
+        # Make a tight layout
+        fig.tight_layout()
+
         for i in range(len(fname_list)):
-            fig.savefig(fname_list[i])
+            fig.savefig(fname_list[i], dpi=dpi)
         plt.close()
 
     elif plot_type == 'QUANTILES':
@@ -124,7 +380,88 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
     return fname_list
 
 
-def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='PPI',
+def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
+    """
+    plots a PPI on a geographic map
+
+    Parameters
+    ----------
+    radar : Radar object
+        object containing the radar data to plot
+    field_name : str
+        name of the radar field to plot
+    ind_el : int
+        sweep index to plot
+    prdcfg : dict
+        dictionary containing the product configuration
+    fname_list : list of str
+        list of names of the files where to store the plot
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    History
+    --------
+    ????.??.?? created
+    2017.08.?? -fvj- added option controlling dpi
+    2017-08.22 -jgr- changed colortable behavior: created now here
+                     instead than on pyart
+
+    """
+    dpi = 72
+    if 'dpi' in prdcfg['ppiImageConfig']:
+        dpi = prdcfg['ppiImageConfig']['dpi']
+
+    norm, ticks, ticklabs = get_norm(field_name)
+
+    fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
+                     prdcfg['ppiImageConfig']['ysize']],
+                     dpi=dpi)
+    ax = fig.add_subplot(111, aspect='equal')
+    lon_lines = np.arange(np.floor(prdcfg['ppiMapImageConfig']['lonmin']),
+                          np.ceil(prdcfg['ppiMapImageConfig']['lonmax'])+1,
+                          0.5)
+    lat_lines = np.arange(np.floor(prdcfg['ppiMapImageConfig']['latmin']),
+                          np.ceil(prdcfg['ppiMapImageConfig']['latmax'])+1,
+                          0.5)
+
+    display_map = pyart.graph.RadarMapDisplayCartopy(radar)
+    display_map.plot_ppi_map(
+        field_name, sweep=ind_el, norm=norm, ticks=ticks,
+        ticklabs=ticklabs, min_lon=prdcfg['ppiMapImageConfig']['lonmin'],
+        max_lon=prdcfg['ppiMapImageConfig']['lonmax'],
+        min_lat=prdcfg['ppiMapImageConfig']['latmin'],
+        max_lat=prdcfg['ppiMapImageConfig']['latmax'],
+        resolution=prdcfg['ppiMapImageConfig']['mapres'],
+        lat_lines=lat_lines, lon_lines=lon_lines,
+        maps_list=prdcfg['ppiMapImageConfig']['maps'],
+        colorbar_flag=False)
+
+    if 'rngRing' in prdcfg['ppiMapImageConfig']:
+            if prdcfg['ppiMapImageConfig']['rngRing'] > 0:
+                rng_rings = np.arange(
+                    0., radar.range['data'][-1]/1000.,
+                    prdcfg['ppiMapImageConfig']['rngRing'])
+                for rng_ring in rng_rings:
+                    display_map.plot_range_ring(rng_ring)
+
+    # Adapt the axes of the colorbar
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="5%", pad=0.05)
+
+    display_map.plot_colorbar(mappable=display_map.plots[0],
+                              cax=cax, field=field_name, ax=ax)
+
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i], dpi=dpi, bbox_inches='tight')
+    plt.close()
+
+    return fname_list
+
+
+def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
              step=None, quantiles=None):
     """
     plots an RHI
@@ -153,13 +490,29 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='PPI',
     fname_list : list of str
         list of names of the created plots
 
+     History
+    --------
+    ????.??.?? created
+    2017.08.?? -fvj- added option controlling dpi
+    2017-08.23 -jgr- minor graphical changes
+
     """
     if plot_type == 'RHI':
+        dpi = 72
+        if 'dpi' in prdcfg['rhiImageConfig']:
+            dpi = prdcfg['rhiImageConfig']['dpi']
+
+        norm, ticks, ticklabs = get_norm(field_name)
+
         fig = plt.figure(figsize=[prdcfg['rhiImageConfig']['xsize'],
                          prdcfg['rhiImageConfig']['ysize']],
-                         dpi=72)
+                         dpi=dpi)
+        ax = fig.add_subplot(111, aspect='equal')
         display = pyart.graph.RadarDisplay(radar)
-        display.plot_rhi(field_name, sweep=ind_az, reverse_xaxis=False)
+        display.plot_rhi(
+            field_name, sweep=ind_az, norm=norm, ticks=ticks,
+            ticklabs=ticklabs, colorbar_orient='horizontal',
+            reverse_xaxis=False)
         display.set_limits(
             ylim=[prdcfg['rhiImageConfig']['ymin'],
                   prdcfg['rhiImageConfig']['ymax']],
@@ -167,8 +520,14 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='PPI',
                   prdcfg['rhiImageConfig']['xmax']])
         display.plot_cross_hair(5.)
 
+        # Turn on the grid
+        ax.grid()
+
+        # Make a tight layout
+        fig.tight_layout()
+
         for i in range(len(fname_list)):
-            fig.savefig(fname_list[i])
+            fig.savefig(fname_list[i], dpi=dpi)
         plt.close()
     elif plot_type == 'QUANTILES':
         quantiles, values = compute_quantiles_sweep(
@@ -220,6 +579,8 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
         list of names of the created plots
 
     """
+    norm, ticks, ticklabs = get_norm(field_name)
+
     radar_aux = radar.extract_sweeps([ind_sweep])
     if radar_aux.scan_type == 'ppi':
         ang = np.sort(radar_aux.azimuth['data'])
@@ -246,9 +607,13 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
     titl = pyart.graph.common.generate_title(radar_aux, field_name, ind_sweep)
     label = get_colobar_label(radar_aux.fields[field_name], field_name)
 
+    dpi = 72
+    if 'dpi' in prdcfg['ppiImageConfig']:
+        dpi = prdcfg['ppiImageConfig']['dpi']
+
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                               prdcfg['ppiImageConfig']['ysize']],
-                     dpi=72)
+                     dpi=dpi)
     ax = fig.add_subplot(111)
     if radar_aux.ngates == 1:
         plt.plot(ang, field, 'bx')
@@ -257,12 +622,15 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
         plt.title(titl)
     else:
         cmap = pyart.config.get_field_colormap(field_name)
-        vmin, vmax = pyart.config.get_field_limits(field_name)
+
+        vmin = vmax = None
+        if norm is None:  # if norm is set do not override with vmin/vmax
+            vmin, vmax = pyart.config.get_field_limits(field_name)
 
         rmin = radar_aux.range['data'][0]/1000.
         rmax = radar_aux.range['data'][-1]/1000.
         cax = ax.imshow(
-            field, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax,
+            field, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax, norm=norm,
             extent=(rmin, rmax, ang_min, ang_max), aspect='auto',
             interpolation='none')
         plt.xlabel('Range (km)')
@@ -270,10 +638,17 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
         plt.title(titl)
 
         cb = fig.colorbar(cax)
+        if ticks is not None:
+            cb.set_ticks(ticks)
+        if ticklabs:
+            cb.set_ticklabels(ticklabs)
         cb.set_label(label)
 
+    # Make a tight layout
+    fig.tight_layout()
+
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -302,41 +677,89 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname_list):
         list of names of the created plots
 
     """
+    norm, ticks, ticklabs = get_norm(field_name)
+
     xmin = prdcfg['ppiImageConfig']['xmin']
     xmax = prdcfg['ppiImageConfig']['xmax']
     ymin = prdcfg['ppiImageConfig']['ymin']
     ymax = prdcfg['ppiImageConfig']['ymax']
 
+    wfunc = 'NEAREST_NEIGHBOUR'
+    if 'wfunc' in prdcfg:
+        wfunc = prdcfg['wfunc']
+
+    cappi_res = 500.
+    if 'res' in prdcfg:
+        cappi_res = prdcfg['res']
+
+    # number of grid points in cappi
+    ny = int((ymax-ymin)*1000./cappi_res)+1
+    nx = int((xmax-xmin)*1000./cappi_res)+1
+
+    # parameters to determine the gates to use for each grid point
+    beamwidth = 1.
+    beam_spacing = 1.
+    if 'radar_beam_width_h' in radar.instrument_parameters:
+        beamwidth = radar.instrument_parameters[
+            'radar_beam_width_h']['data'][0]
+
+    if radar.ray_angle_res is not None:
+        beam_spacing = radar.ray_angle_res['data'][0]
+
+    lat = float(radar.latitude['data'])
+    lon = float(radar.longitude['data'])
+    alt = 0.
+
     # cartesian mapping
     grid = pyart.map.grid_from_radars(
-        (radar,), grid_shape=(1, 241, 241),
+        (radar,), gridding_algo='map_to_grid', weighting_function=wfunc,
+        roi_func='dist_beam', h_factor=1.0, nb=beamwidth, bsp=beam_spacing,
+        min_radius=cappi_res/2.,
+        grid_shape=(1, ny, nx),
         grid_limits=((altitude, altitude), (ymin*1000., ymax*1000.),
                      (xmin*1000., xmax*1000.)),
+        grid_origin=(lat, lon), grid_origin_alt=alt,
         fields=[field_name])
 
     # display data
+    dpi = 72
+    if 'dpi' in prdcfg['ppiImageConfig']:
+        dpi = prdcfg['ppiImageConfig']['dpi']
+
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                               prdcfg['ppiImageConfig']['ysize']],
-                     dpi=72)
-    ax = fig.add_subplot(111)
+                     dpi=dpi)
+    ax = fig.add_subplot(111, aspect='equal')
     cmap = pyart.config.get_field_colormap(field_name)
-    vmin, vmax = pyart.config.get_field_limits(field_name)
+
+    vmin = vmax = None
+    if norm is None:  # if norm is set do not override with vmin/vmax
+        vmin, vmax = pyart.config.get_field_limits(field_name)
+
     titl = pyart.graph.common.generate_grid_title(grid, field_name, 0)
 
     cax = ax.imshow(
         grid.fields[field_name]['data'][0], extent=(xmin, xmax, ymin, ymax),
-        origin='lower', cmap=cmap, vmin=vmin, vmax=vmax, interpolation='none')
+        origin='lower', cmap=cmap, vmin=vmin, vmax=vmax, norm=norm,
+        interpolation='none')
     plt.xlabel('East West distance from radar(km)')
     plt.ylabel('North South distance from radar(km)')
     plt.title(titl)
 
     # plot the colorbar and set the label.
-    label = get_colobar_label(grid.fields[field_name], field_name)
     cb = fig.colorbar(cax)
+    if ticks is not None:
+        cb.set_ticks(ticks)
+    if ticklabs:
+        cb.set_ticklabels(ticklabs)
+    label = get_colobar_label(grid.fields[field_name], field_name)
     cb.set_label(label)
 
+    # Make a tight layout
+    fig.tight_layout()
+
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -345,7 +768,7 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname_list):
 def plot_rhi_profile(data, hvec, fname_list, labelx='Value',
                      labely='Height (m MSL)', labels=['Mean'],
                      title='RHI profile', colors=None, linestyles=None,
-                     xmin=None, xmax=None):
+                     xmin=None, xmax=None, dpi=72):
     """
     plots an RHI profile
 
@@ -371,6 +794,8 @@ def plot_rhi_profile(data, hvec, fname_list, labelx='Value',
         Specifies the line style of each line
     xmin, xmax: float
         Lower/Upper limit of y axis
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -378,7 +803,7 @@ def plot_rhi_profile(data, hvec, fname_list, labelx='Value',
         list of names of the created plots
 
     """
-    fig, ax = plt.subplots(figsize=[10, 6])
+    fig, ax = plt.subplots(figsize=[10, 6], dpi=dpi)
 
     lab = None
     col = None
@@ -399,7 +824,7 @@ def plot_rhi_profile(data, hvec, fname_list, labelx='Value',
     ax.legend(loc='best')
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -407,7 +832,8 @@ def plot_rhi_profile(data, hvec, fname_list, labelx='Value',
 
 def plot_along_coord(xval, yval, fname_list, labelx='coord', labely='Value',
                      labels=None, title='Plot along coordinate',
-                     colors=None, linestyles=None, ymin=None, ymax=None):
+                     colors=None, linestyles=None, ymin=None, ymax=None,
+                     dpi=72):
     """
     plots a time series
 
@@ -433,6 +859,8 @@ def plot_along_coord(xval, yval, fname_list, labelx='coord', labely='Value',
         Specifies the line style of each line
     ymin, ymax: float
         Lower/Upper limit of y axis
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -440,7 +868,7 @@ def plot_along_coord(xval, yval, fname_list, labelx='coord', labely='Value',
         list of names of the created plots
 
     """
-    fig, ax = plt.subplots(figsize=[10, 6])
+    fig, ax = plt.subplots(figsize=[10, 6], dpi=dpi)
 
     lab = None
     col = None
@@ -462,7 +890,7 @@ def plot_along_coord(xval, yval, fname_list, labelx='coord', labely='Value',
     ax.legend(loc='best')
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -471,7 +899,8 @@ def plot_along_coord(xval, yval, fname_list, labelx='coord', labely='Value',
 def plot_field_coverage(xval, yval, fname_list, labelx='Azimuth (deg)',
                         labely='Range extension [m]', labels=None,
                         title='Field coverage', ymin=None, ymax=None,
-                        xmeanval=None, ymeanval=None, labelmeanval=None):
+                        xmeanval=None, ymeanval=None, labelmeanval=None,
+                        dpi=72):
     """
     plots a time series
 
@@ -497,6 +926,8 @@ def plot_field_coverage(xval, yval, fname_list, labelx='Azimuth (deg)',
         the x and y values of a mean along elevation
     labelmeanval : str
         the label of the mean
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -504,7 +935,7 @@ def plot_field_coverage(xval, yval, fname_list, labelx='Azimuth (deg)',
         list of names of the created plots
 
     """
-    fig, ax = plt.subplots(figsize=[10, 6])
+    fig, ax = plt.subplots(figsize=[10, 6], dpi=dpi)
 
     lab = None
 
@@ -526,7 +957,7 @@ def plot_field_coverage(xval, yval, fname_list, labelx='Azimuth (deg)',
         ax.legend(loc='best')
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -617,9 +1048,13 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
     label = 'Number of Points'
     labely = get_colobar_label(hist_obj_aux.fields[field_name], field_name)
 
+    dpi = 72
+    if 'dpi' in prdcfg['ppiImageConfig']:
+        dpi = prdcfg['ppiImageConfig']['dpi']
+
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                               prdcfg['ppiImageConfig']['ysize']],
-                     dpi=72)
+                     dpi=dpi)
     ax = fig.add_subplot(111)
 
     cmap = pyart.config.get_field_colormap(field_name)
@@ -663,7 +1098,7 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
              verticalalignment='top', transform=ax.transAxes)
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -711,9 +1146,13 @@ def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
     labelx = rad1_name+' '+field_name1
     labely = rad2_name+' '+field_name2
 
+    dpi = 72
+    if 'dpi' in prdcfg['ppiImageConfig']:
+        dpi = prdcfg['ppiImageConfig']['dpi']
+
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                               prdcfg['ppiImageConfig']['ysize']],
-                     dpi=72)
+                     dpi=dpi)
     ax = fig.add_subplot(111)
 
     cmap = pyart.config.get_field_colormap(field_name1)
@@ -746,15 +1185,18 @@ def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
         plt.text(0.05, 0.95, metadata, horizontalalignment='left',
                  verticalalignment='top', transform=ax.transAxes)
 
+    # Make a tight layout
+    fig.tight_layout()
+
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
 
 
 def plot_quantiles(quant, value, fname_list, labelx='quantile', labely='value',
-                   titl='quantile'):
+                   titl='quantile', dpi=72):
     """
     plots quantiles
 
@@ -772,6 +1214,8 @@ def plot_quantiles(quant, value, fname_list, labelx='quantile', labely='value',
         The label of the Y axis
     titl : str
         The figure title
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -779,14 +1223,14 @@ def plot_quantiles(quant, value, fname_list, labelx='quantile', labely='value',
         list of names of the created plots
 
     """
-    fig = plt.figure(figsize=[10, 6])
+    fig = plt.figure(figsize=[10, 6], dpi=dpi)
     plt.plot(quant, value, 'bx-')
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -811,6 +1255,8 @@ def plot_histogram(bins, values, fname_list, labelx='bins',
         The label of the Y axis
     titl : str
         The figure title
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -818,21 +1264,24 @@ def plot_histogram(bins, values, fname_list, labelx='bins',
         list of names of the created plots
 
     """
-    fig = plt.figure(figsize=[10, 6])
+    fig = plt.figure(figsize=[10, 6], dpi=dpi)
     plt.hist(values, bins=bins)
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)
 
+    # Make a tight layout
+    fig.tight_layout()
+
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
 
 
 def plot_histogram2(bins, hist, fname_list, labelx='bins',
-                    labely='Number of Samples', titl='histogram'):
+                    labely='Number of Samples', titl='histogram', dpi=72):
     """
     plots histogram
 
@@ -850,6 +1299,8 @@ def plot_histogram2(bins, hist, fname_list, labelx='bins',
         The label of the Y axis
     titl : str
         The figure title
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -857,14 +1308,17 @@ def plot_histogram2(bins, hist, fname_list, labelx='bins',
         list of names of the created plots
 
     """
-    fig = plt.figure(figsize=[10, 6])
+    fig = plt.figure(figsize=[10, 6], dpi=dpi)
     plt.bar(bins, hist, width=bins[1]-bins[0])
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)
 
+    # Make a tight layout
+    fig.tight_layout()
+
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -872,7 +1326,7 @@ def plot_histogram2(bins, hist, fname_list, labelx='bins',
 
 def plot_antenna_pattern(antpattern, fname_list, labelx='Angle [Deg]',
                          linear=False, twoway=False, title='Antenna Pattern',
-                         ymin=None, ymax=None):
+                         ymin=None, ymax=None, dpi=72):
     """
     plots an antenna pattern
 
@@ -894,6 +1348,8 @@ def plot_antenna_pattern(antpattern, fname_list, labelx='Angle [Deg]',
         The figure title
     ymin, ymax: float
         Lower/Upper limit of y axis
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -916,7 +1372,7 @@ def plot_antenna_pattern(antpattern, fname_list, labelx='Angle [Deg]',
 
     labely = waystr+linstr
 
-    fig, ax = plt.subplots(figsize=[10, 6])
+    fig, ax = plt.subplots(figsize=[10, 6], dpi=dpi)
 
     ax.plot(antpattern['angle'], antpattern['attenuation'])
     ax.set_title(title)
@@ -928,8 +1384,11 @@ def plot_antenna_pattern(antpattern, fname_list, labelx='Angle [Deg]',
     ax.text(0.05, 0.95, metadata, horizontalalignment='left',
             verticalalignment='top', transform=ax.transAxes)
 
+    # Make a tight layout
+    fig.tight_layout()
+
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -938,7 +1397,7 @@ def plot_antenna_pattern(antpattern, fname_list, labelx='Angle [Deg]',
 def plot_timeseries(tvec, data, fname_list, labelx='Time [UTC]',
                     labely='Value', labels=['Sensor'], title='Time Series',
                     period=0, timeformat=None, colors=None, linestyles=None,
-                    ymin=None, ymax=None):
+                    markers=None, ymin=None, ymax=None, dpi=72):
     """
     plots a time series
 
@@ -967,13 +1426,22 @@ def plot_timeseries(tvec, data, fname_list, labelx='Time [UTC]',
         Specifies the colors of each line
     linestyles : array of str
         Specifies the line style of each line
+    markers: array of str
+        Specify the markers to be used for each line
     ymin, ymax: float
         Lower/Upper limit of y axis
+    dpi : int
+        dots per inch
 
     Returns
     -------
     fname_list : list of str
         list of names of the created plots
+
+    History
+    --------
+    201?.??.?? -fvj- creation
+    2017.08.21 -jgr- modified margins and grid + minor graphical updates
 
     """
     if period > 0:
@@ -981,11 +1449,13 @@ def plot_timeseries(tvec, data, fname_list, labelx='Time [UTC]',
             data[kk] *= (period/3600.)
             data[kk] = np.ma.cumsum(data[kk])
 
-    fig, ax = plt.subplots(figsize=[10, 6])
+    fig, ax = plt.subplots(figsize=[10, 6], dpi=dpi)
 
     lab = None
     col = None
-    lstyle = None
+    lstyle = '--'
+    marker = 'o'
+
     for kk in range(len(data)):
         if (labels is not None):
             lab = labels[kk]
@@ -993,12 +1463,18 @@ def plot_timeseries(tvec, data, fname_list, labelx='Time [UTC]',
             col = colors[kk]
         if (linestyles is not None):
             lstyle = linestyles[kk]
-        ax.plot(tvec, data[kk], label=lab, color=col, linestyle=lstyle)
+        if (markers is not None):
+            marker = markers[kk]
+        ax.plot(tvec, data[kk], label=lab, color=col, linestyle=lstyle,
+                marker=marker)
 
     ax.set_title(title)
     ax.set_xlabel(labelx)
     ax.set_ylabel(labely)
     ax.set_ylim(bottom=ymin, top=ymax)
+
+    # Turn on the grid
+    ax.grid()
 
     if (timeformat is not None):
         ax.xaxis.set_major_formatter(mdates.DateFormatter(timeformat))
@@ -1007,8 +1483,11 @@ def plot_timeseries(tvec, data, fname_list, labelx='Time [UTC]',
     # axes up to make room for them
     fig.autofmt_xdate()
 
+    # Make a tight layout
+    fig.tight_layout()
+
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -1017,7 +1496,8 @@ def plot_timeseries(tvec, data, fname_list, labelx='Time [UTC]',
 def plot_timeseries_comp(date1, value1, date2, value2, fname_list,
                          labelx='Time [UTC]', labely='Value',
                          label1='Sensor 1', label2='Sensor 2',
-                         titl='Time Series Comparison', period1=0, period2=0):
+                         titl='Time Series Comparison', period1=0, period2=0,
+                         dpi=72):
     """
     plots 2 time series in the same graph
 
@@ -1044,34 +1524,49 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname_list,
      period1, period2 : float
         measurement period in seconds used to compute accumulation. If 0 no
         accumulation is computed
+    dpi : int
+        dots per inch
 
     Returns
     -------
     fname_list : list of str
         list of names of the created plots
 
+    History
+    --------
+    201?.??.?? -fvj- created
+    2017.08.21 -jgr- changed some graphical aspects
+
     """
     if (period1 > 0) and (period2 > 0):
+        # TODO: document this and check (sometimes artefacts)
         value1 *= (period1/3600.)
         value1 = np.ma.cumsum(value1)
 
         value2 *= (period2/3600.)
         value2 = np.ma.cumsum(value2)
 
-    fig = plt.figure(figsize=[10, 6])
-    plt.plot(date1, value1, 'b', label=label1)
-    plt.plot(date2, value2, 'r', label=label2)
+    fig = plt.figure(figsize=[10, 6.5], dpi=dpi)
+    plt.plot(date1, value1, 'b', label=label1, linestyle='--', marker='o')
+    plt.plot(date2, value2, 'r', label=label2, linestyle='--', marker='s')
     plt.legend(loc='best')
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)
 
+    # Get the axis and turn on the grid
+    ax = plt.gca()
+    ax.grid()
+
     # rotates and right aligns the x labels, and moves the bottom of the
     # axes up to make room for them
     fig.autofmt_xdate()
 
+    # Make a tight layout
+    fig.tight_layout()
+
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -1079,7 +1574,7 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname_list,
 
 def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
                       labely='Sensor 2', titl='Scatter', axis=None,
-                      metadata=None):
+                      metadata=None, dpi=72):
     """
     plots the scatter between two time series
 
@@ -1101,6 +1596,8 @@ def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
         type of axis
     metadata : string
         a string containing metadata
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -1110,7 +1607,7 @@ def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
     """
     max_value = np.ma.max([np.max(value1), np.max(value2)])
 
-    fig, ax = plt.subplots(figsize=[10, 6])
+    fig, ax = plt.subplots(figsize=[7, 7], dpi=dpi)
 
     ax.plot(value1, value2, 'bx')
     ax.set_xlabel(labelx)
@@ -1126,8 +1623,11 @@ def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
         plt.text(0.05, 0.95, metadata, horizontalalignment='left',
                  verticalalignment='top', transform=ax.transAxes)
 
+    # Make a tight layout
+    fig.tight_layout()
+
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -1135,7 +1635,7 @@ def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
 
 def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name,
                        fname_list, ref_value=None, labelx='Time [UTC]',
-                       labely='Value', titl='Time Series'):
+                       labely='Value', titl='Time Series', dpi=72):
     """
     plots a time series of monitoring data
 
@@ -1159,6 +1659,8 @@ def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name,
         The label of the Y axis
     titl : str
         The figure title
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -1193,7 +1695,7 @@ def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name,
     fig.autofmt_xdate()
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -1203,7 +1705,8 @@ def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
                              modebias_vec, corr_vec, slope_vec, intercep_vec,
                              intercep_slope1_vec, fname_list, ref_value=0.,
                              labelx='Time UTC',
-                             titl='RADAR001-RADAR002 intercomparison'):
+                             titl='RADAR001-RADAR002 intercomparison',
+                             dpi=72):
     """
     plots a time series of radar intercomparison scores
 
@@ -1232,9 +1735,11 @@ def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
     -------
     fname_list : list of str
         list of names of the created plots
+    dpi : int
+        dots per inch
 
     """
-    fig = plt.figure(figsize=[10, 16])
+    fig = plt.figure(figsize=[10, 16], dpi=dpi)
 
     ax = fig.add_subplot(3, 1, 1)
     plt.plot(date_vec, meanbias_vec, 'b', label='mean')
@@ -1269,7 +1774,7 @@ def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
     fig.autofmt_xdate()
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -1306,9 +1811,13 @@ def plot_sun_hits(field, field_name, fname_list, prdcfg):
     field_dict = pyart.config.get_metadata(field_name)
 
     # display data
+    dpi = 72
+    if 'dpi' in prdcfg['sunhitsImageConfig']:
+        dpi = prdcfg['sunhitsImageConfig']['dpi']
+
     fig = plt.figure(figsize=[prdcfg['sunhitsImageConfig']['xsize'],
                               prdcfg['sunhitsImageConfig']['ysize']],
-                     dpi=72)
+                     dpi=dpi)
     ax = fig.add_subplot(111)
     cmap = pyart.config.get_field_colormap(field_name)
     vmin, vmax = pyart.config.get_field_limits(field_name)
@@ -1327,14 +1836,17 @@ def plot_sun_hits(field, field_name, fname_list, prdcfg):
     cb = fig.colorbar(cax)
     cb.set_label(label)
 
+    # Make a tight layout
+    fig.tight_layout()
+
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
 
 
-def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list):
+def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list, dpi=72):
     """
     plots sun retrieval time series series
 
@@ -1346,6 +1858,8 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list):
         parameter to be plotted
     fname_list : list of str
         list of names of the files where to store the plot
+    dpi : int
+        dots per inch
 
     Returns
     -------
@@ -1459,7 +1973,7 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list):
         warn('Unable to create figure '+fname_list+'. No valid data')
         return None
 
-    fig = plt.figure(figsize=[10, 6])
+    fig = plt.figure(figsize=[10, 6], dpi=dpi)
     plt.plot(date, value)
     if value_std is not None:
         plt.plot(date, value+value_std, 'r')
@@ -1478,7 +1992,7 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list):
     fig.autofmt_xdate()
 
     for i in range(len(fname_list)):
-        fig.savefig(fname_list[i])
+        fig.savefig(fname_list[i], dpi=dpi)
     plt.close()
 
     return fname_list
@@ -1543,3 +2057,44 @@ def get_field_name(field_dict, field):
     field_name = field_name[0].upper() + field_name[1:]
 
     return field_name
+
+
+def get_norm(field_name):
+    """
+    Computes the normalization of the colormap, and gets the ticks and labels
+    of the colorbar from the metadata of the field. Returns None if the
+    required parameters are not present in the metadata
+
+    Parameters
+    ----------
+    field_name : str
+        name of the field
+
+    Returns
+    -------
+    norm : list
+        the colormap index
+    ticks : list
+        the list of ticks in the colorbar
+    labels : list
+        the list of labels corresponding to each tick
+
+    """
+    norm = None
+    ticks = None
+    ticklabs = None
+
+    field_dict = pyart.config.get_metadata(field_name)
+    cmap = mpl.cm.get_cmap(pyart.config.get_field_colormap(field_name))
+
+    if 'boundaries' in field_dict:
+        ncolors = len(field_dict['boundaries'])-1
+        norm = mpl.colors.BoundaryNorm(
+            boundaries=field_dict['boundaries'], ncolors=cmap.N)
+
+    if 'ticks' in field_dict:
+        ticks = field_dict['ticks']
+        if 'labels' in field_dict:
+            ticklabs = field_dict['labels']
+
+    return norm, ticks, ticklabs

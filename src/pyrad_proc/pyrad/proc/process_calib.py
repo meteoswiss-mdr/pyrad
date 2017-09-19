@@ -13,7 +13,7 @@ Functions for monitoring data quality and correct bias and noise effects
     process_selfconsistency_bias
     process_estimate_phidp0
     process_rhohv_rain
-    process_zdr_rain
+    process_zdr_precip
     process_monitoring
     process_time_avg
     process_weighted_time_avg
@@ -359,12 +359,16 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
 
         datatype : list of string. Dataset keyword
             The input data types
+        fzl : float. Dataset keyword
+            Default freezing level height. Default 2000.
         rsmooth : float. Dataset keyword
             length of the smoothing window [m]. Default 1000.
         min_rhohv : float. Dataset keyword
             minimum valid RhoHV. Default 0.92
         max_phidp : float. Dataset keyword
             maximum valid PhiDP [deg]. Default 20.
+        ml_thickness : float. Dataset keyword
+            Melting layer thickness [m]. Default 700.
         rcell : float. Dataset keyword
             length of continuous precipitation to consider the precipitation
             cell a valid phidp segment [m]. Default 1000.
@@ -493,10 +497,6 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
         smooth_wind_len = int(rsmooth/r_res)
         min_rcons = int(rcell/r_res)
 
-        step = None
-        if 'step' in dscfg:
-            step = dscfg['step']
-
         refl_bias = pyart.correct.selfconsistency_bias(
             radar, dscfg['global_data'], min_rhohv=min_rhohv,
             max_phidp=max_phidp, smooth_wind_len=smooth_wind_len, doc=15,
@@ -581,10 +581,6 @@ def process_estimate_phidp0(procstatus, dscfg, radar_list=None):
     ind_rmax = np.where(radar.range['data'] < dscfg['rmax'])[0][-1]
     r_res = radar.range['data'][1]-radar.range['data'][0]
     min_rcons = int(dscfg['rcell']/r_res)
-
-    step = None
-    if 'step' in dscfg:
-        step = dscfg['step']
 
     phidp0, first_gates = pyart.correct.det_sys_phase_ray(
         radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, min_rcons=min_rcons,
@@ -721,10 +717,10 @@ def process_rhohv_rain(procstatus, dscfg, radar_list=None):
     return new_dataset, ind_rad
 
 
-def process_zdr_rain(procstatus, dscfg, radar_list=None):
+def process_zdr_precip(procstatus, dscfg, radar_list=None):
     """
     Keeps only suitable data to evaluate the differential reflectivity in
-    moderate rain
+    moderate rain or precipitation (for vertical scans)
 
     Parameters
     ----------
@@ -736,6 +732,9 @@ def process_zdr_rain(procstatus, dscfg, radar_list=None):
 
         datatype : list of string. Dataset keyword
             The input data types
+        ml_filter : boolean. Dataset keyword
+            indicates if a filter on data in and above the melting layer is
+            applied. Default True.
         rmin : float. Dataset keyword
             minimum range where to look for rain [m]. Default 1000.
         rmax : float. Dataset keyword
@@ -745,7 +744,7 @@ def process_zdr_rain(procstatus, dscfg, radar_list=None):
             Default 20.
         Zmax : float. Dataset keyword
             maximum reflectivity to consider the bin as precipitation [dBZ]
-            Default 40.
+            Default 22.
         rhohvmin : float. Dataset keyword
             minimum RhoHV to consider the bin as precipitation
             Default 0.97
@@ -754,7 +753,7 @@ def process_zdr_rain(procstatus, dscfg, radar_list=None):
             Default 10.
         elmax : float. Dataset keyword
             maximum elevation angle where to look for precipitation [deg]
-            Default 20.
+            Default None.
         ml_thickness : float. Dataset keyword
             assumed thickness of the melting layer. Default 700.
         fzl : float. Dataset keyword
@@ -809,28 +808,34 @@ def process_zdr_rain(procstatus, dscfg, radar_list=None):
             (rhohv_field not in radar.fields)):
         warn('Unable to estimate ZDR in rain. Missing data')
         return None, None
-
-    if (temp_field is not None) and (temp_field not in radar.fields):
-        warn('COSMO temperature field not available. ' +
-             'Using fixed freezing level height')
-
+    
     fzl = None
-    if (temp_field is None) or (temp_field not in radar.fields):
-        if 'fzl' in dscfg:
-            fzl = dscfg['fzl']
-        else:
-            fzl = 2000.
-            warn('Freezing level height not defined. Using default ' +
-                 str(fzl)+' m')
+    ml_filter = True
+    if 'ml_filter' in dscfg:
+        ml_filter = dscfg['ml_filter']
+    
+    if ml_filter:
+        if (temp_field is not None) and (temp_field not in radar.fields):
+            warn('COSMO temperature field not available. ' +
+                'Using fixed freezing level height')
+
+        fzl = None
+        if (temp_field is None) or (temp_field not in radar.fields):
+            if 'fzl' in dscfg:
+                fzl = dscfg['fzl']
+            else:
+                fzl = 2000.
+                warn('Freezing level height not defined. Using default ' +
+                    str(fzl)+' m')
 
     # default values
     rmin = 1000.
     rmax = 50000.
     zmin = 20.
-    zmax = 40.
+    zmax = 22.
     rhohvmin = 0.97
     phidpmax = 10.
-    elmax = 20.
+    elmax = None
     thickness = 700.
 
     # user defined values
@@ -854,18 +859,19 @@ def process_zdr_rain(procstatus, dscfg, radar_list=None):
     ind_rmin = np.where(radar.range['data'] > rmin)[0][0]
     ind_rmax = np.where(radar.range['data'] < rmax)[0][-1]
 
-    zdr_rain = pyart.correct.est_zdr_rain(
+    zdr_precip = pyart.correct.est_zdr_precip(
         radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, zmin=zmin,
         zmax=zmax, rhohvmin=rhohvmin, phidpmax=phidpmax, elmax=elmax,
         thickness=thickness, doc=15, fzl=fzl, zdr_field=zdr_field,
         rhohv_field=rhohv_field, phidp_field=phidp_field,
-        temp_field=temp_field, refl_field=refl_field)
+        temp_field=temp_field, refl_field=refl_field, ml_filter=ml_filter)
 
     # prepare for exit
     new_dataset = deepcopy(radar)
     new_dataset.fields = dict()
 
-    new_dataset.add_field('differential_reflectivity_in_rain', zdr_rain)
+    new_dataset.add_field(
+        'differential_reflectivity_in_precipitation', zdr_precip)
 
     return new_dataset, ind_rad
 
@@ -933,14 +939,19 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
         field_dict = pyart.config.get_metadata(field_name)
         field_dict['data'] = np.ma.zeros((radar.nrays, nbins), dtype=int)
 
-        field = deepcopy(radar.fields[field_name]['data'])
-        field[field < bins[0]] = bins[0]
-        field[field > bins[-1]] = bins[-1]
+        field = deepcopy(radar.fields[field_name]['data'])                
+        
+        # put gates with values off limits to limit
+        mask = np.ma.getmaskarray(field)
+        ind = np.where(np.logical_and(mask == False, field < bins[0]))
+        field[ind] = bins[0]
+        
+        ind = np.where(np.logical_and(mask == False, field > bins[-1]))
+        field[ind] = bins[-1]                
 
         for ray in range(radar.nrays):
             field_dict['data'][ray, :], bin_edges = np.histogram(
-                radar.fields[field_name]['data'][ray, :].compressed(),
-                bins=bins)
+                field[ray, :].compressed(), bins=bins)
 
         radar_aux.add_field(field_name, field_dict)
 

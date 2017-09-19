@@ -21,6 +21,7 @@ from .process_product import generate_colocated_gates_products
 from .process_product import generate_intercomp_products
 from .process_product import generate_time_avg_products
 from .process_product import generate_cosmo_coord_products
+from .process_product import generate_grid_products
 
 from .process_traj_products import generate_traj_product
 
@@ -45,6 +46,8 @@ def get_prodgen_func(dsformat, dsname, dstype):
         func = generate_vol_products
     elif dsformat == 'TIMESERIES':
         func = generate_timeseries_products
+    elif dsformat == 'GRID':
+        func = generate_grid_products
     elif dsformat == 'TIMEAVG':
         func = generate_time_avg_products
     elif dsformat == 'SUN_HITS':
