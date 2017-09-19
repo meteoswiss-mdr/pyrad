@@ -1,29 +1,22 @@
 #
 # Configuration for MALS tests at the airport Meiringen
-# Approach direction: from east
+
+# Number of radars to process
+NumRadars INT 1
+
+# Time tolerance when processing multiple radars [s]
+TimeTol FLOAT 3600.
 
 # Radar Name
 RadarName STRING DX50
 
 # Names of the radar scans in the specified sector
 # NOTE: Must have a trailing '/'
-ScanList STRARR 13
-      MALS_MEI_107_up_nopsr.ele/  # masterscan: first scan of a volume
-      MALS_MEI_111_dw_nopsr.ele/
-      MALS_MEI_115_up_nopsr.ele/
-      MALS_MEI_119_dw_nopsr.ele/
-      MALS_MEI_117_up_nopsr.ele/
-      MALS_MEI_113_dw_nopsr.ele/
-      MALS_MEI_109_up_nopsr.ele/
-      MALS_MEI_105_dw_nopsr.ele/
-      MALS_MEI_101_up_nopsr.ele/
-      MALS_MEI_097_dw_nopsr.ele/
-      MALS_MEI_095_up_nopsr.ele/
-      MALS_MEI_099_dw_nopsr.ele/
-      MALS_MEI_103_up_nopsr.ele/
+ScanList STRARR 1
+      RADAR001:MALS_MEI_VOL.vol/  # masterscan: first scan of a volume
 
 # Repetition time of the scans [min]
-ScanPeriod FLOAT 10
+ScanPeriod INT 10
 
 # Frequency of cosmo run [h]
 CosmoRunFreq INT 3
@@ -33,13 +26,13 @@ CosmoForecasted INT 7
 
 # Image config
 ppiImageConfig STRUCT 8
-   rngRing    FLOAT  10.    # distance between range rings (0 no range ring) [km]
-   xsize      FLOAT   7.    # image size [inches] (default dots per inch (dpi):72)
-   ysize      FLOAT   7.    # image size [inches] (default dots per inch (dpi):72)
-   xmin       FLOAT   0.0   # Min distance on horizontal axis [km]
+   xsize      FLOAT   7.      # image size [inches] (default dots per inch (dpi):72)
+   ysize      FLOAT   7.      # image size [inches] (default dots per inch (dpi):72)
+   xmin       FLOAT -40.0   # Min distance on horizontal axis [km]
    xmax       FLOAT  40.0   # Max distance on horizontal axis [km]
-   ymin       FLOAT -30.0   # Min distance on vertical axis [km]
-   ymax       FLOAT  10.0   # Max distance on vertical axis [km]
+   ymin       FLOAT -40.0   # Min distance on vertical axis [km]
+   ymax       FLOAT  40.0   # Max distance on vertical axis [km]
+   rngRing    FLOAT  10.0   # distance between range rings (0 no range ring) [km]
    dpi        INT    300     # dots per inch (72 web quality, 300 print quality)   
 
 rhiImageConfig STRUCT 7
@@ -49,10 +42,10 @@ rhiImageConfig STRUCT 7
    xmax       FLOAT  40.0   # Max distance on horizontal axis [km]
    ymin       FLOAT   0.0   # Min distance on vertical axis [km]
    ymax       FLOAT   7.5   # Max distance on vertical axis [km]
-   dpi        INT    300     # dots per inch (72 web quality, 300 print quality)  
-      
+   dpi        INT    300     # dots per inch (72 web quality, 300 print quality)   
+   
 ppiMapImageConfig STRUCT 10
-   rngRing    FLOAT  10.  # distance between range rings (0 no range ring) [km]
+   rngRing    FLOAT  10.0   # distance between range rings (0 no range ring) [km]
    xsize      FLOAT  7.   # image size [inches] (default dots per inch (dpi):72)
    ysize      FLOAT  7.   # image size [inches] (default dots per inch (dpi):72)
    lonmin     FLOAT  7.57 # Min longitude [deg]
@@ -60,7 +53,7 @@ ppiMapImageConfig STRUCT 10
    latmin     FLOAT 46.38 # Min latitude [deg]
    latmax     FLOAT 47.11 # Max latitude [deg]
    mapres     STRING 10m  # map resolution (10m, 50m, 110m)
-   dpi        INT    300     # dots per inch (72 web quality, 300 print quality)  
+   dpi        INT    300     # dots per inch (72 web quality, 300 print quality)   
    maps STRARR 11         # maps to overplot
        relief
        countries
@@ -73,3 +66,4 @@ ppiMapImageConfig STRUCT 10
        lakes_europe
        rivers
        rivers_europe
+

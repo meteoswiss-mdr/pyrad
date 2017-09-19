@@ -5,7 +5,7 @@
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
 dataSetList STRARR 1    
-    WIND_RAW
+    Zh
     
 #	l0:SNRh
 #	l1:RhoHV
@@ -20,6 +20,25 @@ dataSetList STRARR 1
 #	l9:dBZv_avg
 #	l9:PhiDP_avg
 #	l9:flag_avg
+
+
+# ==========================================================================================
+#                 raw data products
+# ==========================================================================================
+Zh STRUCT 3
+    type STRING RAW
+    datatype STRARR 1
+        RAD4ALP:dBZ
+    products STRUCT 2
+        EL001_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING dBZ
+        EL001_0_MAP STRUCT 3
+            type  STRING PPI_MAP
+            anglenr INT 2
+            voltype STRING dBZ
+    
 
 ## ==========================================================================================
 ##                 secondary moments products

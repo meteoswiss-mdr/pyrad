@@ -167,6 +167,11 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", infostr=""):
             dataset_levels, cfg, dscfg, radar_list, master_voltime, traj=traj,
             infostr=infostr)
 
+        # delete variables
+        del radar_list
+
+        gc.collect()
+
     # post-processing of the datasets
     print('\n\n- Post-processing datasets:')
     dscfg, traj = _postprocess_datasets(
@@ -275,6 +280,17 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
         datatypesdescr_list_list.append(datatypesdescr_list)
         dataset_levels_list.append(dataset_levels)
 
+        # remove variables from memory
+        del cfg
+        del datacfg
+        del dscfg
+        del datatypesdescr_list
+        del dataset_levels
+        del last_processed
+        del traj
+
+        gc.collect()
+
     end_proc = False
     while not end_proc:
         if ALLOW_USER_BREAK:
@@ -367,6 +383,18 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
 
             vol_processed = True
 
+            # remove variables from memory
+            del radar_list
+            del cfg
+            del datacfg
+            del dscfg
+            del datatypesdescr_list
+            del dataset_levels
+            del last_processed
+            del traj
+
+            gc.collect()
+
         nowtime_new = datetime.utcnow()
         # for offline testing
         # nowtime_new = nowtime_new.replace(
@@ -401,6 +429,14 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
                 infostr = ""
             dscfg, traj = _postprocess_datasets(
                 dataset_levels, cfg, dscfg, infostr=None)
+
+            # remove variables from memory
+            del cfg
+            del dscfg
+            del dataset_levels
+            del traj
+
+            gc.collect()
 
     print('- This is the end my friend! See you soon!')
 
@@ -757,7 +793,7 @@ def _wait_for_files(nowtime, datacfg, datatype_list, last_processed=None):
 
     nscans = len(datacfg['ScanList'][0])
 
-    scan_min = datacfg['ScanPeriod'] * 1.1  # [min]
+    scan_min = datacfg['ScanPeriod'] * 2.  # [min]
 
     starttime_loop_default = endtime_loop - timedelta(minutes=scan_min)
     if last_processed is None:
@@ -911,9 +947,9 @@ def _wait_for_rainbow_datatypes(rainbow_files, period=30):
     while currenttime <= wait_time:
         currenttime = datetime.utcnow()
         # for offline testing
-        currenttime = currenttime.replace(
-            year=2017, month=6, day=14)
-        startime_proc = currenttime.replace(10)
+        # currenttime = currenttime.replace(
+        #    year=2017, month=6, day=14)
+        # startime_proc = currenttime.replace(10)
 
         found_all = False
         for rainbow_file in rainbow_files:
@@ -1462,8 +1498,11 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
     prdcfg.update({'cosmopath': cfg['cosmopath']})
     prdcfg.update({'ScanPeriod': cfg['ScanPeriod']})
     prdcfg.update({'imgformat': cfg['imgformat']})
+    prdcfg.update({'RadarName': cfg['RadarName']})
     if 'ppiImageConfig' in cfg:
         prdcfg.update({'ppiImageConfig': cfg['ppiImageConfig']})
+    if 'ppiMapImageConfig' in cfg:
+        prdcfg.update({'ppiMapImageConfig': cfg['ppiMapImageConfig']})
     if 'rhiImageConfig' in cfg:
         prdcfg.update({'rhiImageConfig': cfg['rhiImageConfig']})
     if 'sunhitsImageConfig' in cfg:

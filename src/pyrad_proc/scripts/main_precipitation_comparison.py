@@ -125,7 +125,8 @@ def main():
 
         plot_scatter_comp(
             val_sensor, val_radar, figfname, labelx=labelx,
-            labely=labely, titl=titl, axis='equal', metadata=metadata)
+            labely=labely, titl=titl, axis='equal', metadata=metadata,
+            dpi=300)
 
 
 def _print_end_msg(text):
