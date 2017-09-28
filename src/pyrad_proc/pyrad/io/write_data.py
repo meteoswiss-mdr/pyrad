@@ -7,6 +7,8 @@ Functions for writing pyrad output data
 .. autosummary::
     :toctree: generated/
 
+    send_msg
+    write_alarm_msg
     write_last_state
     write_smn
     write_rhi_profile
@@ -29,10 +31,112 @@ from __future__ import print_function
 import glob
 import csv
 from warnings import warn
+import smtplib
+from email.message import EmailMessage
 
 from pyart.config import get_fillvalue, get_metadata
 
 from .io_aux import generate_field_name_str
+
+
+def send_msg(sender, receiver_list, subject, fname):
+    """
+    sends the content of a text file by email
+
+    Parameters
+    ----------
+    sender : str
+        the email address of the sender
+    receiver_list : list of string
+        list with the email addresses of the receiver
+    subject : str
+        the subject of the email
+    fname : str
+        name of the file containing the content of the email message
+
+    Returns
+    -------
+    fname : str
+        the name of the file containing the content
+
+    """
+    # Create the container email message.
+    msg = EmailMessage()
+    msg['Subject'] = subject
+    msg['From'] = sender
+    msg['To'] = ', '.join(receiver_list)
+
+    # Open the plain text file whose name is in fname for reading.
+    with open(fname) as fp:
+        # Create a text/plain message
+        msg.set_content(fp.read())
+
+    # Send the message via our own SMTP server.
+    with smtplib.SMTP('localhost') as s:
+        s.send_message(msg)
+
+    return fname
+
+
+def write_alarm_msg(radar_name, param_name_unit, date_last, target, tol_abs,
+                    np_trend, value_trend, tol_trend, nevents, np_last,
+                    value_last, fname):
+    """
+    writes an alarm file
+
+    Parameters
+    ----------
+    radar_name : str
+        Name of the radar being controlled
+    param_name_unit : str
+        Parameter and units
+    date_last : datetime object
+        date of the current event
+    target, tol_abs : float
+        Target value and tolerance
+    np_trend : int
+        Total number of points in trend
+    value_trend, tol_trend : float
+        Trend value and tolerance
+    nevents: int
+        Number of events in trend
+    np_last : int
+        Number of points in the current event
+    value_last : float
+        Value of the current event
+    fname : str
+        Name of file where to store the alarm information
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    with open(fname, 'w', newline='') as txtfile:
+        txtfile.write(
+            'Weather radar polarimetric parameters monitoring alarm\n')
+        if radar_name is not None:
+            txtfile.write('Radar name: '+radar_name+'\n')
+        txtfile.write('Parameter [Unit]: '+param_name_unit+'\n')
+        txtfile.write('Date : '+date_last.strftime('%Y%m%d')+'\n')
+        txtfile.write('Target value: '+str(target)+' +/- '+str(tol_abs)+'\n')
+        if np_trend > 0:
+            txtfile.write(
+                'Number of points in trend: '+str(np_trend)+' in ' +
+                str(nevents)+' events\n')
+            txtfile.write(
+                'Trend value: '+str(value_trend)+' (tolerance: +/- ' +
+                str(tol_trend)+')\n')
+        else:
+            txtfile.write('Number of points in trend: NA\n')
+            txtfile.write('Trend value: NA\n')
+        txtfile.write('Number of points: '+str(np_last)+'\n')
+        txtfile.write('Value: '+str(value_last)+'\n')
+
+        txtfile.close()
+
+    return fname
 
 
 def write_last_state(datetime_last, fname):

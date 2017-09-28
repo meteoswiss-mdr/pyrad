@@ -21,6 +21,7 @@ Functions for obtaining Pyrad products from the datasets
 
 from copy import deepcopy
 from warnings import warn
+import os
 
 import numpy as np
 from netCDF4 import num2date
@@ -41,7 +42,7 @@ from ..io.write_data import write_colocated_gates, write_colocated_data
 from ..io.write_data import write_colocated_data_time_avg, write_cdf
 from ..io.write_data import write_intercomp_scores_ts, write_ts_cum
 from ..io.write_data import write_rhi_profile, write_field_coverage
-from ..io.write_data import write_last_state
+from ..io.write_data import write_last_state, write_alarm_msg, send_msg
 
 from ..graph.plots import plot_ppi, plot_ppi_map, plot_rhi, plot_cappi
 from ..graph.plots import plot_bscope, plot_timeseries, plot_timeseries_comp
@@ -271,6 +272,10 @@ def generate_sun_hits_products(dataset, prdcfg):
         if 'sun_retrieval' not in dataset:
             return None
 
+        dpi = 72
+        if 'dpi' in prdcfg:
+            dpi = prdcfg['dpi']
+
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdid'], timeinfo=None)
@@ -305,7 +310,7 @@ def generate_sun_hits_products(dataset, prdcfg):
             fname[i] = savedir+fname[i]
 
         plot_sun_retrieval_ts(
-            sun_retrieval, prdcfg['voltype'], fname)
+            sun_retrieval, prdcfg['voltype'], fname, dpi=dpi)
 
         print('----- save to '+' '.join(fname))
 
@@ -2207,6 +2212,23 @@ def generate_timeseries_products(dataset, prdcfg):
 
 
 def generate_monitoring_products(dataset, prdcfg):
+    """
+    generates a monitoring product
+
+    Parameters
+    ----------
+    dataset : dictionary
+        dictionary containing a histogram object and some metadata
+
+    prdcfg : dictionary of dictionaries
+        product configuration dictionary of dictionaries
+
+    Returns
+    -------
+    filename : str
+        the name of the file created. None otherwise
+
+    """
 
     # check the type of dataset required
     hist_type = 'cumulative'
@@ -2441,7 +2463,113 @@ def generate_monitoring_products(dataset, prdcfg):
             labely=labely, titl=titl)
         print('----- save to '+' '.join(figfname))
 
-        return figfname
+        # generate alarms if needed
+        alarm = 0
+        if 'alarm' in prdcfg:
+            alarm = prdcfg['alarm']
+
+        if not alarm:
+            return figfname
+
+        if 'tol_abs' not in prdcfg:
+            warn('unable to send alarm. Missing tolerance on target')
+            return None
+
+        if 'tol_trend' not in prdcfg:
+            warn('unable to send alarm. Missing tolerance in trend')
+            return None
+
+        if 'npoints_min' not in prdcfg:
+            warn('unable to send alarm. ' +
+                 'Missing minimum number of valid points per event')
+            return None
+
+        if 'nevents_min' not in prdcfg:
+            warn('unable to send alarm. ' +
+                 'Missing minimum number of events to compute trend')
+            return None
+
+        if 'sender' not in prdcfg:
+            warn('unable to send alarm. Missing email sender')
+            return None
+        if 'receiver_list' not in prdcfg:
+            warn('unable to send alarm. Missing email receivers')
+            return None
+
+        tol_abs = prdcfg['tol_abs']
+        tol_trend = prdcfg['tol_trend']
+        npoints_min = prdcfg['npoints_min']
+        nevents_min = prdcfg['nevents_min']
+        sender = prdcfg['sender']
+        receiver_list = prdcfg['receiver_list']
+
+        np_last = np_t_vec[-1]
+        value_last = cquant_vec[-1]
+
+        if np_last < npoints_min:
+            warn('No valid data on day '+value_last.strftime('%d-%m-%Y'))
+            return None
+
+        # check if absolute value exceeded
+        abs_exceeded = False
+        if ((value_last > ref_value+tol_abs) or
+                (value_last < ref_value-tol_abs)):
+            warn('Value '+str(value_last)+'exceeds target '+str(ref_value) +
+                 ' +/- '+str(tol_abs))
+            abs_exceeded = True
+
+        # compute trend and check if last value exceeds it
+        mask = np.ma.getmaskarray(cquant_vec)
+        ind = np.where(np.logical_and(
+            np.logical_not(mask), np_t_vec >= npoints_min))[0]
+        nvalid = len(ind)
+        if nvalid <= nevents_min:
+            warn('Not enough points to compute reliable trend')
+            np_trend = 0
+            value_trend = np.ma.masked
+        else:
+            np_trend_vec = np_t_vec[ind][-(nevents_min+1):-1]
+            data_trend_vec = cquant_vec[ind][-(nevents_min+1):-1]
+
+            np_trend = np.sum(np_trend_vec)
+            value_trend = np.sum(data_trend_vec*np_trend_vec)/np_trend
+
+        trend_exceeded = False
+        if np_trend > 0:
+            if ((value_last > value_trend+tol_trend) or
+                    (value_last < value_trend-tol_trend)):
+                warn('Value '+str(value_last)+'exceeds trend ' +
+                     str(value_trend)+' +/- '+str(tol_trend))
+                trend_exceeded = True
+
+        if abs_exceeded is False and trend_exceeded is False:
+            return None
+
+        alarm_dir = savedir+'/alarms/'
+        if not os.path.isdir(alarm_dir):
+            os.makedirs(alarm_dir)
+        alarm_fname = make_filename(
+            'alarm', prdcfg['dstype'], prdcfg['voltype'], ['txt'],
+            timeinfo=start_time, timeformat='%Y%m%d')[0]
+        alarm_fname = alarm_dir+alarm_fname
+
+        field_dict = pyart.config.get_metadata(field_name)
+        param_name = get_field_name(field_dict, field_name)
+        param_name_unit = param_name+' ['+field_dict['units']+']'
+
+        write_alarm_msg(
+            prdcfg['RadarName'][0], param_name_unit, start_time, ref_value,
+            tol_abs, np_trend, value_trend, tol_trend, nevents_min, np_last,
+            value_last, alarm_fname)
+
+        print('----- saved monitoring alarm to '+alarm_fname)
+
+        subject = ('NO REPLY: '+param_name+' monitoring alarm for radar ' +
+                   prdcfg['RadarName'][0]+' on day ' +
+                   start_time.strftime('%d-%m-%Y'))
+        send_msg(sender, receiver_list, subject, alarm_fname)
+
+        return alarm_fname
 
     elif prdcfg['type'] == 'SAVEVOL':
         field_name = get_fieldname_pyart(prdcfg['voltype'])

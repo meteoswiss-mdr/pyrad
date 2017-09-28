@@ -116,6 +116,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_rhohv_rain'
     elif dataset_type == 'ZDR_PREC':
         func_name = 'process_zdr_precip'
+    elif dataset_type == 'ZDR_SNOW':
+        func_name = 'process_zdr_snow'
     elif dataset_type == 'SELFCONSISTENCY_KDP_PHIDP':
         func_name = 'process_selfconsistency_kdp_phidp'
     elif dataset_type == 'SELFCONSISTENCY_BIAS':
