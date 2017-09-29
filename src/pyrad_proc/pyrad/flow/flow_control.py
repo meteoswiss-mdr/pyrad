@@ -1444,8 +1444,8 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
         dscfg.update({'asr_highbeam_antenna': cfg['asr_highbeam_antenna']})
     if ('asr_lowbeam_antenna' in cfg):
         dscfg.update({'asr_lowbeam_antenna': cfg['asr_lowbeam_antenna']})
-    if ('asr_position' in cfg):
-        dscfg.update({'asr_position': cfg['asr_position']})
+    if ('target_radar_pos' in cfg):
+        dscfg.update({'target_radar_pos': cfg['target_radar_pos']})
 
     # indicates the dataset has been initialized and aux data is available
     dscfg.update({'initialized': False})

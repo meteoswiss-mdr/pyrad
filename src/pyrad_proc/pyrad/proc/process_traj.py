@@ -16,6 +16,7 @@ the product generation functions.
 from warnings import warn
 import numpy as np
 from netCDF4 import num2date, date2num
+import sys
 
 from pyart.config import get_metadata
 from pyart.core import Radar
@@ -332,13 +333,13 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
         if 'target_radar_pos' not in dscfg:
             radar_antenna_atsameplace = True
             target_radar = None
-            
+
             warn('No target radar position specified. ' +
-                 'The radars are assumed colocated')            
+                 'The radars are assumed colocated')
             rad_traj = trajectory.add_radar(radar)
         else:
             radar_antenna_atsameplace = False
-            
+
             # create dummy radar object with target radar specs
             latitude = get_metadata('latitude')
             longitude = get_metadata('longitude')
@@ -374,7 +375,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             patternfile = dscfg['configpath'] + 'antenna/' \
                 + dscfg['par_azimuth_antenna']['elPatternFile']
             fixed_angle = dscfg['par_azimuth_antenna']['fixed_angle']
-            
+
         elif (dscfg['antennaType'] == 'ELEVATION'):
             is_azimuth_antenna = False
             info = 'parElAnt'
@@ -396,7 +397,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             patternfile = dscfg['configpath'] + 'antenna/' \
                 + dscfg['par_elevation_antenna']['azPatternFile']
             fixed_angle = dscfg['par_elevation_antenna']['fixed_angle']
-            
+
         elif (dscfg['antennaType'] == 'LOWBEAM'):
             is_azimuth_antenna = True
             info = 'asrLowBeamAnt'
@@ -417,7 +418,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             patternfile = dscfg['configpath'] + 'antenna/' \
                 + dscfg['asr_lowbeam_antenna']['elPatternFile']
             fixed_angle = dscfg['asr_lowbeam_antenna']['fixed_angle']
-            
+
         elif (dscfg['antennaType'] == 'HIGHBEAM'):
             is_azimuth_antenna = True
             info = 'asrHighBeamAnt'
@@ -498,7 +499,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
                                                   twoway=True)
         except:
             raise
-            
+
         pattern_angles = antpattern['angle'] + fixed_angle
         if (not is_azimuth_antenna):
             pattern_angles[pattern_angles < 0] += 360.
@@ -602,7 +603,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
     if np.size(traj_ind) == 0:
         warn('No trajectory samples within current period')
         return None, None
-
+    
     for tind in np.nditer(traj_ind):
         az = rad_traj.azimuth_vec[tind]
         el = rad_traj.elevation_vec[tind]
