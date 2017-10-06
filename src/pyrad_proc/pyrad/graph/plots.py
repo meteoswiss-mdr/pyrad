@@ -15,6 +15,7 @@ Functions to plot Pyrad datasets
     plot_ppi_map
     plot_rhi
     plot_bscope
+    plot_time_range
     plot_cappi
     plot_rhi_profile
     plot_along_coord
@@ -643,6 +644,81 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
         if ticklabs:
             cb.set_ticklabels(ticklabs)
         cb.set_label(label)
+
+    # Make a tight layout
+    fig.tight_layout()
+
+    for i in range(len(fname_list)):
+        fig.savefig(fname_list[i], dpi=dpi)
+    plt.close()
+
+    return fname_list
+
+
+def plot_time_range(radar, field_name, ind_sweep, prdcfg, fname_list):
+    """
+    plots a time-range plot
+
+    Parameters
+    ----------
+    radar : Radar object
+        object containing the radar data to plot
+    field_name : str
+        name of the radar field to plot
+    ind_sweep : int
+        sweep index to plot
+    prdcfg : dict
+        dictionary containing the product configuration
+    fname_list : list of str
+        list of names of the files where to store the plot
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    """
+    norm, ticks, ticklabs = get_norm(field_name)
+
+    radar_aux = radar.extract_sweeps([ind_sweep])
+    field = radar_aux.fields[field_name]['data']
+    time_min = radar_aux.time['data'][0]
+    time_max = radar_aux.time['data'][-1]
+
+    # display data
+    titl = pyart.graph.common.generate_title(radar_aux, field_name, ind_sweep)
+    label = get_colobar_label(radar_aux.fields[field_name], field_name)
+
+    dpi = 72
+    if 'dpi' in prdcfg['ppiImageConfig']:
+        dpi = prdcfg['ppiImageConfig']['dpi']
+
+    fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
+                              prdcfg['ppiImageConfig']['ysize']],
+                     dpi=dpi)
+    ax = fig.add_subplot(111)
+    cmap = pyart.config.get_field_colormap(field_name)
+
+    vmin = vmax = None
+    if norm is None:  # if norm is set do not override with vmin/vmax
+        vmin, vmax = pyart.config.get_field_limits(field_name)
+
+    rmin = radar_aux.range['data'][0]/1000.
+    rmax = radar_aux.range['data'][-1]/1000.
+    cax = ax.imshow(
+        np.ma.transpose(field), origin='lower', cmap=cmap, vmin=vmin,
+        vmax=vmax, norm=norm, extent=(time_min, time_max, rmin, rmax),
+        aspect='auto', interpolation='none')
+    plt.xlabel('time (s from start time)')
+    plt.ylabel('range (Km)')
+    plt.title(titl)
+
+    cb = fig.colorbar(cax)
+    if ticks is not None:
+        cb.set_ticks(ticks)
+    if ticklabs:
+        cb.set_ticklabels(ticklabs)
+    cb.set_label(label)
 
     # Make a tight layout
     fig.tight_layout()

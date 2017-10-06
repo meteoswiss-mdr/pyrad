@@ -12,6 +12,7 @@ Functions for obtaining Pyrad products from the datasets
     generate_intercomp_products
     generate_colocated_gates_products
     generate_time_avg_products
+    generate_qvp_products
     generate_vol_products
     generate_timeseries_products
     generate_monitoring_products
@@ -54,7 +55,7 @@ from ..graph.plots import plot_intercomp_scores_ts, plot_scatter_comp
 from ..graph.plots import plot_rhi_profile, plot_along_coord
 from ..graph.plots import plot_field_coverage, plot_surface
 from ..graph.plots import plot_longitude_slice, plot_latitude_slice
-from ..graph.plots import plot_latlon_slice
+from ..graph.plots import plot_latlon_slice, plot_time_range
 
 from ..util.radar_utils import create_sun_hits_field, rainfall_accumulation
 from ..util.radar_utils import create_sun_retrieval_field, get_ROI
@@ -571,6 +572,36 @@ def generate_time_avg_products(dataset, prdcfg):
     """
     prdcfg['timeinfo'] = dataset['timeinfo']
 
+    return generate_vol_products(dataset['radar_obj'], prdcfg)
+
+
+def generate_qvp_products(dataset, prdcfg):
+    """
+    generates QVP products
+
+    Parameters
+    ----------
+    dataset : dict
+        dictionary containing the radar object and a keyword stating the
+        status of the processing
+
+    prdcfg : dictionary of dictionaries
+        product configuration dictionary of dictionaries
+
+    Returns
+    -------
+    filename : str
+        the name of the file created. None otherwise
+
+    """
+    qvp_type = 'final'
+    if 'qvp_type' in prdcfg:
+        qvp_type = prdcfg['qvp_type']
+
+    if qvp_type == 'final' and dataset['radar_type'] != 'final':
+        return None
+
+    prdcfg['timeinfo'] = dataset['start_time']
     return generate_vol_products(dataset['radar_obj'], prdcfg)
 
 
@@ -1298,6 +1329,37 @@ def generate_vol_products(dataset, prdcfg):
             fname[i] = savedir+fname[i]
 
         plot_bscope(dataset, field_name, ind_ang, prdcfg, fname)
+        print('----- save to '+' '.join(fname))
+
+        return fname
+
+    elif prdcfg['type'] == 'TIME_RANGE':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        ang_vec = np.sort(dataset.fixed_angle['data'])
+        ang = ang_vec[prdcfg['anglenr']]
+        ind_ang = np.where(dataset.fixed_angle['data'] == ang)[0][0]
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'time-range', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'],
+            prdcfginfo='ang'+'{:.1f}'.format(ang),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i in range(len(fname)):
+            fname[i] = savedir+fname[i]
+
+        plot_time_range(dataset, field_name, ind_ang, prdcfg, fname)
         print('----- save to '+' '.join(fname))
 
         return fname

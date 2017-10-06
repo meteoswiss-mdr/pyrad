@@ -18,6 +18,7 @@ Auxiliary functions
     process_save_radar
     process_point_measurement
     process_grid
+    process_qvp
 
 Echo classification and filtering
 =================================
@@ -111,7 +112,7 @@ COSMO data
 """
 
 from .process_aux import get_process_func, process_raw, process_save_radar
-from .process_aux import process_point_measurement, process_grid
+from .process_aux import process_point_measurement, process_grid, process_qvp
 from .process_traj import process_trajectory, process_traj_atplane, \
     process_traj_antenna_pattern
 
