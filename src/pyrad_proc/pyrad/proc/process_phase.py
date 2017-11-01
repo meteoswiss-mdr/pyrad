@@ -963,6 +963,7 @@ def process_attenuation(procstatus, dscfg, radar_list=None):
         return None, None
 
     temp = None
+    iso0 = None
     for datatypedescr in dscfg['datatype']:
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
@@ -980,6 +981,8 @@ def process_attenuation(procstatus, dscfg, radar_list=None):
             zdr = 'differential_reflectivity'
         if datatype == 'TEMP':
             temp = 'temperature'
+        if datatype == 'H_ISO0':
+            iso0 = 'height_over_iso0'
 
     ind_rad = int(radarnr[5:8])-1
     if radar_list[ind_rad] is None:
@@ -990,16 +993,31 @@ def process_attenuation(procstatus, dscfg, radar_list=None):
     if ((phidp not in radar.fields) or
             (refl not in radar.fields) or
             (zdr not in radar.fields)):
-        warn('Unable to retrieve KDP from PhiDP using least square. ' +
-             'Missing data')
+        warn('Unable to compute attenuation. Missing data')
         return None, None
 
-    if (temp is not None) and (temp not in radar.fields):
-        warn('COSMO temperature field not available. ' +
+    # determine which freezing level reference
+    temp_ref = 'temperature'
+    if temp is None and iso0 is None:
+        warn('Field to obtain the freezing level was not specified. ' +
              'Using fixed freezing level height')
+        temp_ref = 'fixed_fzl'
+    elif temp is not None:
+        if temp not in radar.fields:
+            warn('COSMO temperature field not available. ' +
+                 'Using fixed freezing level height')
+            temp_ref = 'fixed_fzl'
+    elif iso0 is not None:
+        if iso0 not in radar.fields:
+            warn('Height over iso0 field not available. ' +
+                 'Using fixed freezing level height')
+            temp_ref = 'fixed_fzl'
+        else:
+            temp_ref = 'height_over_iso0'
 
+    # determine freezing level height if necessary
     fzl = None
-    if (temp is None) or (temp not in radar.fields):
+    if temp_ref == 'fixed_fzl':
         if 'fzl' in dscfg:
             fzl = dscfg['fzl']
         else:
@@ -1021,17 +1039,18 @@ def process_attenuation(procstatus, dscfg, radar_list=None):
             pyart.correct.calculate_attenuation_zphi(
                 radar, doc=15, fzl=fzl, smooth_window_len=0, a_coef=None,
                 beta=None, c=None, d=None, refl_field=refl, phidp_field=phidp,
-                zdr_field=zdr, temp_field=temp, spec_at_field=None,
-                pia_field=None, corr_refl_field=None, spec_diff_at_field=None,
-                pida_field=None, corr_zdr_field=None))
+                zdr_field=zdr, temp_field=temp, iso0_field=iso0,
+                spec_at_field=None, pia_field=None, corr_refl_field=None,
+                spec_diff_at_field=None, pida_field=None, corr_zdr_field=None,
+                temp_ref=temp_ref))
     elif att_method == 'Philin':
         spec_at, pia, cor_z, spec_diff_at, pida, cor_zdr = (
             pyart.correct.calculate_attenuation_philinear(
                 radar, doc=15, fzl=fzl, pia_coef=None, pida_coef=None,
                 refl_field=refl, phidp_field=phidp, zdr_field=zdr,
-                temp_field=temp, spec_at_field=None, pia_field=None,
-                corr_refl_field=None, spec_diff_at_field=None,
-                pida_field=None, corr_zdr_field=None))
+                temp_field=temp, iso0_field=iso0, spec_at_field=None,
+                pia_field=None, corr_refl_field=None, spec_diff_at_field=None,
+                pida_field=None, corr_zdr_field=None, temp_ref=temp_ref))
 
     # prepare for exit
     new_dataset = deepcopy(radar)

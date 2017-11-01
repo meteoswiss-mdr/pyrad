@@ -107,6 +107,9 @@ COSMO data
     process_cosmo
     process_cosmo_lookup_table
     process_cosmo_coord
+    process_hzt
+    process_hzt_lookup_table
+    process_hzt_coord
 
 
 """
@@ -149,6 +152,7 @@ from .process_retrieve import process_rainrate, process_wind_vel
 from .process_retrieve import process_windshear
 
 from .process_cosmo import process_cosmo, process_cosmo_lookup_table
-from .process_cosmo import process_cosmo_coord
+from .process_cosmo import process_cosmo_coord, process_hzt
+from .process_cosmo import process_hzt_lookup_table, process_hzt_coord
 
 __all__ = [s for s in dir() if not s.startswith('_')]
