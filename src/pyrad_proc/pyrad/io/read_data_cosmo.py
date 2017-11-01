@@ -9,6 +9,7 @@ Functions for reading COSMO data
 
     cosmo2radar_data
     cosmo2radar_coord
+    hzt2radar_data
     get_cosmo_fields
     read_cosmo_data
     read_cosmo_coord

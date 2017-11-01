@@ -133,6 +133,13 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'COSMO_COORD':
         func_name = 'process_cosmo_coord'
         dsformat = 'COSMO_COORD'
+    elif dataset_type == 'HZT_COORD':
+        func_name = 'process_hzt_coord'
+        dsformat = 'COSMO_COORD'
+    elif dataset_type == 'HZT':
+        func_name = 'process_hzt'
+    elif dataset_type == 'HZT_LOOKUP':
+        func_name = 'process_hzt_lookup_table'
     elif dataset_type == 'TIME_AVG':
         func_name = 'process_time_avg'
         dsformat = 'TIMEAVG'

@@ -29,9 +29,8 @@ loadname STRING mals_mei_rw28
 # Output data
 # --------------------------------------------
 saveimgbasepath STRING /data/pyrad_examples/
-imgformat STRARR 2
+imgformat STRARR 1
     png
-    eps
 
 # --------------------------------------------------------
 # configuration files pathes
