@@ -21,6 +21,7 @@ Plots
     plot_ppi_map
     plot_rhi
     plot_bscope
+    plot_time_range
     plot_rhi_profile
     plot_along_coord
     plot_field_coverage
@@ -48,7 +49,7 @@ from .plots import plot_sun_hits, plot_sun_retrieval_ts, plot_antenna_pattern
 from .plots import plot_intercomp_scores_ts, plot_scatter_comp, plot_quantiles
 from .plots import plot_along_coord, plot_field_coverage
 from .plots import plot_surface, plot_latitude_slice, plot_longitude_slice
-from .plots import plot_latlon_slice
+from .plots import plot_latlon_slice, plot_time_range
 
 from .plots import get_colobar_label
 

@@ -14,6 +14,7 @@ Functions for monitoring data quality and correct bias and noise effects
     process_estimate_phidp0
     process_rhohv_rain
     process_zdr_precip
+    process_zdr_snow
     process_monitoring
     process_time_avg
     process_weighted_time_avg
@@ -745,10 +746,10 @@ def process_zdr_precip(procstatus, dscfg, radar_list=None):
         Zmax : float. Dataset keyword
             maximum reflectivity to consider the bin as precipitation [dBZ]
             Default 22.
-        rhohvmin : float. Dataset keyword
+        RhoHVmin : float. Dataset keyword
             minimum RhoHV to consider the bin as precipitation
             Default 0.97
-        phidpmax : float. Dataset keyword
+        PhiDPmax : float. Dataset keyword
             maximum PhiDP to consider the bin as precipitation [deg]
             Default 10.
         elmax : float. Dataset keyword
@@ -805,19 +806,21 @@ def process_zdr_precip(procstatus, dscfg, radar_list=None):
     radar = radar_list[ind_rad]
 
     if ((refl_field not in radar.fields) or
-            (rhohv_field not in radar.fields)):
+            (rhohv_field not in radar.fields) or
+            (zdr_field not in radar.fields) or
+            (phidp_field not in radar.fields)):
         warn('Unable to estimate ZDR in rain. Missing data')
         return None, None
-    
+
     fzl = None
     ml_filter = True
     if 'ml_filter' in dscfg:
         ml_filter = dscfg['ml_filter']
-    
+
     if ml_filter:
         if (temp_field is not None) and (temp_field not in radar.fields):
             warn('COSMO temperature field not available. ' +
-                'Using fixed freezing level height')
+                 'Using fixed freezing level height')
 
         fzl = None
         if (temp_field is None) or (temp_field not in radar.fields):
@@ -826,7 +829,7 @@ def process_zdr_precip(procstatus, dscfg, radar_list=None):
             else:
                 fzl = 2000.
                 warn('Freezing level height not defined. Using default ' +
-                    str(fzl)+' m')
+                     str(fzl)+' m')
 
     # default values
     rmin = 1000.
@@ -872,6 +875,185 @@ def process_zdr_precip(procstatus, dscfg, radar_list=None):
 
     new_dataset.add_field(
         'differential_reflectivity_in_precipitation', zdr_precip)
+
+    return new_dataset, ind_rad
+
+
+def process_zdr_snow(procstatus, dscfg, radar_list=None):
+    """
+    Keeps only suitable data to evaluate the differential reflectivity in
+    snow
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        rmin : float. Dataset keyword
+            minimum range where to look for rain [m]. Default 1000.
+        rmax : float. Dataset keyword
+            maximum range where to look for rain [m]. Default 50000.
+        Zmin : float. Dataset keyword
+            minimum reflectivity to consider the bin as snow [dBZ].
+            Default 0.
+        Zmax : float. Dataset keyword
+            maximum reflectivity to consider the bin as snow [dBZ]
+            Default 30.
+        SNRmin : float. Dataset keyword
+            minimum SNR to consider the bin as snow [dB].
+            Default 10.
+        SNRmax : float. Dataset keyword
+            maximum SNR to consider the bin as snow [dB]
+            Default 50.
+        RhoHVmin : float. Dataset keyword
+            minimum RhoHV to consider the bin as snow
+            Default 0.97
+        PhiDPmax : float. Dataset keyword
+            maximum PhiDP to consider the bin as snow [deg]
+            Default 10.
+        elmax : float. Dataset keyword
+            maximum elevation angle where to look for snow [deg]
+            Default None.
+        KDPmax : float. Dataset keyword
+            maximum KDP to consider the bin as snow [deg]
+            Default None
+        TEMPmin : float. Dataset keyword
+            minimum temperature to consider the bin as snow [deg C].
+            Default None
+        TEMPmax : float. Dataset keyword
+            maximum temperature to consider the bin as snow [deg C]
+            Default None
+        hydroclass : list of ints. Dataset keyword
+            list of hydrometeor classes to keep for the analysis
+            Default [1] (dry snow)
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+    ind_rad : int
+        radar index
+    """
+
+    if procstatus != 1:
+        return None, None
+
+    temp_field = None
+    kdp_field = None
+    for datatypedescr in dscfg['datatype']:
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        if datatype == 'ZDR':
+            zdr_field = 'differential_reflectivity'
+        if datatype == 'ZDRc':
+            zdr_field = 'corrected_differential_reflectivity'
+        if datatype == 'PhiDP':
+            phidp_field = 'differential_phase'
+        if datatype == 'PhiDPc':
+            phidp_field = 'corrected_differential_phase'
+        if datatype == 'RhoHV':
+            rhohv_field = 'cross_correlation_ratio'
+        if datatype == 'RhoHVc':
+            rhohv_field = 'corrected_cross_correlation_ratio'
+        if datatype == 'dBZc':
+            refl_field = 'corrected_reflectivity'
+        if datatype == 'dBZ':
+            refl_field = 'reflectivity'
+        if datatype == 'TEMP':
+            temp_field = 'temperature'
+        if datatype == 'PhiDP':
+            kdp_field = 'specific_differential_phase'
+        if datatype == 'PhiDPc':
+            kdp_field = 'corrected_specific_differential_phase'
+        if datatype == 'SNRh':
+            snr_field = 'signal_to_noise_ratio_hh'
+        if datatype == 'SNRv':
+            snr_field = 'signal_to_noise_ratio_vv'
+        if datatype == 'hydro':
+            hydro_field = 'radar_echo_classification'
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if ((refl_field not in radar.fields) or
+            (rhohv_field not in radar.fields) or
+            (zdr_field not in radar.fields) or
+            (phidp_field not in radar.fields) or
+            (snr_field not in radar.fields)):
+        warn('Unable to estimate ZDR in snow. Missing data')
+        return None, None
+
+    # default values
+    rmin = 1000.
+    rmax = 50000.
+    zmin = 0.
+    zmax = 30.
+    snrmin = 10.
+    snrmax = 50.
+    rhohvmin = 0.97
+    phidpmax = 10.
+    elmax = None
+    kdpmax = None
+    tempmin = None
+    tempmax = None
+    hydroclass = [1]
+
+    # user defined values
+    if 'rmin' in dscfg:
+        rmin = dscfg['rmin']
+    if 'rmax' in dscfg:
+        rmax = dscfg['rmax']
+    if 'Zmin' in dscfg:
+        zmin = dscfg['Zmin']
+    if 'Zmax' in dscfg:
+        zmax = dscfg['Zmax']
+    if 'SNRmin' in dscfg:
+        snrmin = dscfg['SNRmin']
+    if 'SNRmax' in dscfg:
+        snrmax = dscfg['SNRmax']
+    if 'RhoHVmin' in dscfg:
+        rhohvmin = dscfg['RhoHVmin']
+    if 'PhiDPmax' in dscfg:
+        phidpmax = dscfg['PhiDPmax']
+    if 'KDPmax' in dscfg:
+        kdpmax = dscfg['KDPmax']
+    if 'TEMPmin' in dscfg:
+        tempmin = dscfg['TEMPmin']
+    if 'TEMPmax' in dscfg:
+        tempmax = dscfg['TEMPmax']
+    if 'elmax' in dscfg:
+        elmax = dscfg['elmax']
+    if 'hydroclass' in dscfg:
+        hydroclass = dscfg['hydroclass']
+
+    ind_rmin = np.where(radar.range['data'] > rmin)[0][0]
+    ind_rmax = np.where(radar.range['data'] < rmax)[0][-1]
+
+    zdr_snow = pyart.correct.est_zdr_snow(
+        radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, zmin=zmin, zmax=zmax,
+        snrmin=snrmin, snrmax=snrmax, rhohvmin=rhohvmin,
+        kept_values=hydroclass, phidpmax=phidpmax, kdpmax=kdpmax,
+        tempmin=tempmin, tempmax=tempmax, elmax=elmax, zdr_field=zdr_field,
+        rhohv_field=rhohv_field, phidp_field=phidp_field,
+        temp_field=temp_field, snr_field=snr_field, hydro_field=hydro_field,
+        kdp_field=kdp_field, refl_field=refl_field)
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+
+    new_dataset.add_field(
+        'differential_reflectivity_in_snow', zdr_snow)
 
     return new_dataset, ind_rad
 
@@ -939,15 +1121,15 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
         field_dict = pyart.config.get_metadata(field_name)
         field_dict['data'] = np.ma.zeros((radar.nrays, nbins), dtype=int)
 
-        field = deepcopy(radar.fields[field_name]['data'])                
-        
+        field = deepcopy(radar.fields[field_name]['data'])
+
         # put gates with values off limits to limit
         mask = np.ma.getmaskarray(field)
         ind = np.where(np.logical_and(mask == False, field < bins[0]))
         field[ind] = bins[0]
-        
+
         ind = np.where(np.logical_and(mask == False, field > bins[-1]))
-        field[ind] = bins[-1]                
+        field[ind] = bins[-1]
 
         for ray in range(radar.nrays):
             field_dict['data'][ray, :], bin_edges = np.histogram(
