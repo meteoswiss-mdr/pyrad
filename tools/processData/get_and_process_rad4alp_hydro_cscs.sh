@@ -24,6 +24,10 @@ bash $HOME/pyrad/tools/copyData/get_rad4alp_data_CSCS_2.sh -r $RADAR -e $RES -d 
 LOGFILE=$HOME/log/${DAY}_${RADAR}${RES}_temp_cosmo1_rad4alp.log
 bash $HOME/pyrad/tools/copyData/get_temp_cosmo1_cscs.sh -d $DAY -t ${RUN_TIME} >$LOGFILE 2>$LOGFILE
 
+# copy HZT files to right folder
+LOGFILE=$HOME/log/${DAY}_${RADAR}${RES}_hzt_rad4alp.log
+bash $HOME/pyrad/tools/copyData/get_hzt_cscs.sh -d $DAY >$LOGFILE 2>$LOGFILE
+
 # process trajectory
 source activate pyrad
 
