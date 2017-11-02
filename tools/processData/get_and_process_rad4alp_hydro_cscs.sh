@@ -7,13 +7,13 @@ pyradpath="$HOME/pyrad/src/pyrad_proc/scripts/"
 
 cfgfile=cscs_rad4alp_hydro_PLA.txt
 
-DAY=20170629
-START_TIME=160000
-END_TIME=160400
+DAY=20170818
+START_TIME=180000
+END_TIME=190000
 
 RADAR=A
 RES=L
-RUN_TIME=15
+RUN_TIME=18
 
 
 # Copy data from CSCS repository into the folder structure to process it
