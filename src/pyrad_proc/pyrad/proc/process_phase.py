@@ -338,6 +338,10 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar_list=None):
             The minimum reflectivity [dBZ]
         Zmax : float. Dataset keyword
             The maximum reflectivity [dBZ]
+        fzl : float. Dataset keyword
+            The freezing level height [m]. Default 2000.
+        ml_thickness : float. Dataset keyword
+            The melting layer thickness in meters. Default 700.
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -353,6 +357,8 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
+    temp_field = None
+    iso0_field = None
     for datatypedescr in dscfg['datatype']:
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
@@ -368,6 +374,8 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar_list=None):
             refl_field = 'corrected_reflectivity'
         if datatype == 'TEMP':
             temp_field = 'temperature'
+        if datatype == 'H_ISO0':
+                iso0_field = 'height_over_iso0'
 
     ind_rad = int(radarnr[5:8])-1
     if radar_list[ind_rad] is None:
@@ -376,11 +384,43 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar_list=None):
     radar = radar_list[ind_rad]
 
     if ((refl_field not in radar.fields) or
-            (psidp_field not in radar.fields) or
-            (temp_field not in radar.fields)):
+            (psidp_field not in radar.fields)):
         warn('Unable to retrieve PhiDP KDP using the Maesaka approach. ' +
              'Missing data')
         return None, None
+
+    # determine which freezing level reference
+    temp_ref = 'temperature'
+    if temp_field is None and iso0_field is None:
+        warn('Field to obtain the freezing level was not specified. ' +
+             'Using fixed freezing level height')
+        temp_ref = 'fixed_fzl'
+    elif temp_field is not None:
+        if temp_field not in radar.fields:
+            warn('COSMO temperature field not available. ' +
+                 'Using fixed freezing level height')
+            temp_ref = 'fixed_fzl'
+    elif iso0_field is not None:
+        if iso0_field not in radar.fields:
+            warn('Height over iso0 field not available. ' +
+                 'Using fixed freezing level height')
+            temp_ref = 'fixed_fzl'
+        else:
+            temp_ref = 'height_over_iso0'
+
+    # determine freezing level height if necessary
+    fzl = None
+    if temp_ref == 'fixed_fzl':
+        if 'fzl' in dscfg:
+            fzl = dscfg['fzl']
+        else:
+            fzl = 2000.
+            warn('Freezing level height not defined. Using default ' +
+                 str(fzl)+' m')
+
+    thickness = 700.
+    if 'ml_thickness' in dscfg:
+        thickness = dscfg['ml_thickness']
 
     phidp_field = 'corrected_differential_phase'
     kdp_field = 'corrected_specific_differential_phase'
@@ -408,8 +448,9 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar_list=None):
         beamwidth = None
 
     mask_fzl, end_gate_arr = pyart.correct.get_mask_fzl(
-        radar_aux, fzl=None, doc=None, min_temp=0., thickness=400.,
-        beamwidth=beamwidth, temp_field=temp_field)
+        radar_aux, fzl=fzl, doc=15, min_temp=0., max_h_iso0=0.,
+        thickness=thickness, beamwidth=beamwidth, temp_field=temp_field,
+        iso0_field=iso0_field, temp_ref=temp_ref)
     mask = np.logical_or(mask, mask_fzl)
 
     # filter out data with invalid reflectivity
@@ -454,6 +495,10 @@ def process_phidp_kdp_lp(procstatus, dscfg, radar_list=None):
 
         datatype : list of string. Dataset keyword
             The input data types
+        fzl : float. Dataset keyword
+            The freezing level height [m]. Default 2000.
+        ml_thickness : float. Dataset keyword
+            The melting layer thickness in meters. Default 700.
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -490,6 +535,8 @@ def process_phidp_kdp_lp(procstatus, dscfg, radar_list=None):
             snr_field = 'signal_to_noise_ratio_hh'
         if datatype == 'TEMP':
             temp_field = 'temperature'
+        if datatype == 'H_ISO0':
+                iso0_field = 'height_over_iso0'
 
     ind_rad = int(radarnr[5:8])-1
     if radar_list[ind_rad] is None:
@@ -500,11 +547,43 @@ def process_phidp_kdp_lp(procstatus, dscfg, radar_list=None):
     if ((refl_field not in radar.fields) or
             (psidp_field not in radar.fields) or
             (rhv_field not in radar.fields) or
-            (snr_field not in radar.fields) or
-            (temp_field not in radar.fields)):
+            (snr_field not in radar.fields)):
         warn('Unable to retrieve PhiDP and KDP using the LP approach. ' +
              'Missing data')
         return None, None
+
+    # determine which freezing level reference
+    temp_ref = 'temperature'
+    if temp_field is None and iso0_field is None:
+        warn('Field to obtain the freezing level was not specified. ' +
+             'Using fixed freezing level height')
+        temp_ref = 'fixed_fzl'
+    elif temp_field is not None:
+        if temp_field not in radar.fields:
+            warn('COSMO temperature field not available. ' +
+                 'Using fixed freezing level height')
+            temp_ref = 'fixed_fzl'
+    elif iso0_field is not None:
+        if iso0_field not in radar.fields:
+            warn('Height over iso0 field not available. ' +
+                 'Using fixed freezing level height')
+            temp_ref = 'fixed_fzl'
+        else:
+            temp_ref = 'height_over_iso0'
+
+    # determine freezing level height if necessary
+    fzl = None
+    if temp_ref == 'fixed_fzl':
+        if 'fzl' in dscfg:
+            fzl = dscfg['fzl']
+        else:
+            fzl = 2000.
+            warn('Freezing level height not defined. Using default ' +
+                 str(fzl)+' m')
+
+    thickness = 700.
+    if 'ml_thickness' in dscfg:
+        thickness = dscfg['ml_thickness']
 
     radar_aux = deepcopy(radar)
 
@@ -518,8 +597,9 @@ def process_phidp_kdp_lp(procstatus, dscfg, radar_list=None):
         beamwidth = None
 
     mask_fzl, end_gate_arr = pyart.correct.get_mask_fzl(
-        radar_aux, fzl=None, doc=None, min_temp=0., thickness=400.,
-        beamwidth=beamwidth, temp_field=temp_field)
+        radar_aux, fzl=fzl, doc=15, min_temp=0., max_h_iso0=0.,
+        thickness=thickness, beamwidth=beamwidth, temp_field=temp_field,
+        iso0_field=iso0_field, temp_ref=temp_ref)
     mask = np.logical_or(mask, mask_fzl)
 
     # filter out data with invalid reflectivity
