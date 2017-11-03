@@ -4,12 +4,8 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 5
-   l0:TEMP
-   l0:echoID
-   l1:echoFilter
-   l2:Att_ZPhi_TEMP
-   l3:hydroclass_TEMP
+dataSetList STRARR 1
+   reflectivity
       
 
 # ==========================================================================================
@@ -73,61 +69,36 @@ dataSetList STRARR 5
 #         angle FLOAT 6.
 #         EleTol FLOAT 1.
 #         voltype STRING ISO0
-
-
-H_ISO0 STRUCT 6
-    type STRING HZT
-    datatype STRARR 1
-        dBZ
-    regular_grid INT 0
-    keep_in_memory INT 1
-    MAKE_GLOBAL INT 1
-    products STRUCT 4
-      AZ103 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 4
-         voltype STRING H_ISO0
-      AZ107 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 6
-         voltype STRING H_ISO0
-      AZ111 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 8
-         voltype STRING H_ISO0
-      EL06 STRUCT 4
-         type  STRING PSEUDOPPI_IMAGE
-         angle FLOAT 6.
-         EleTol FLOAT 1.
-         voltype STRING H_ISO0
-
-# Something is wrong with this one!         
+#
+#
+#RAD2HZT STRUCT 3
+#    type STRING HZT_COORD
+#    datatype STRARR 1
+#        dBZ        
+#    products STRUCT 1        
+#        rad2cosmo STRUCT 2
+#            type  STRING SAVEVOL            
+#            voltype STRING hzt_index
+#            
 #H_ISO0_LOOKUP STRUCT 5
 #    type STRING HZT_LOOKUP
 #    datatype STRARR 1
 #        dBZ
 #    regular_grid INT 0
 #    lookup_table INT 0
-#    products STRUCT 4
-#      AZ103 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 4
-#         voltype STRING H_ISO0
-#      AZ107 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 6
-#         voltype STRING H_ISO0
-#      AZ111 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 8
-#         voltype STRING H_ISO0
-#      EL06 STRUCT 4
-#         type  STRING PSEUDOPPI_IMAGE
-#         angle FLOAT 6.
-#         EleTol FLOAT 1.
-#         voltype STRING H_ISO0
-        
-    
+#    MAKE_GLOBAL INT 1    
+#
+#H_ISO0 STRUCT 5
+#    type STRING HZT
+#    datatype STRARR 1
+#        dBZ
+#    regular_grid INT 0
+#    keep_in_memory INT 1
+#    MAKE_GLOBAL INT 1    
+#
+#
+#        
+#    
 # ==========================================================================================
 #                 raw data processing
 # ==========================================================================================
@@ -250,8 +221,20 @@ H_ISO0 STRUCT 6
 #         angle FLOAT 6.
 #         EleTol FLOAT 1.
 #         voltype STRING KDP
-#         
-#         
+         
+reflectivity STRUCT 6
+   type     STRING TIME_HEIGHT
+   datatype STRING dBZ
+   lon FLOAT 8.21
+   lat FLOAT 46.72
+   hres FLOAT 500.
+   products STRUCT 1        
+      TIME_HEIGHT STRUCT 4
+         qvp_type STRING final
+         type STRING TIME_RANGE
+         anglenr INT 0
+         voltype STRING dBZ
+         
 ## ==========================================================================================
 ##                 secondary moments products
 ## ==========================================================================================
