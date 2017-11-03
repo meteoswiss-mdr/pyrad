@@ -66,10 +66,12 @@ for ((irad=0; irad<${nrad}; irad++)); do
 	  then
          cp ${phdata_origbase}${yearl}/${years}${julday}/P${res}${radar}${years}${julday}.zip .
          unzip -o P${res}${radar}${years}${julday}.zip
+         chmod -R gu+rw ${data_destbase}${years}${julday}/P${res}${radar}${years}${julday}/
          rm P${res}${radar}${years}${julday}.zip
       else
 	     cp ${rawdata_origbase}${yearl}/${years}${julday}/P${res}${radar}${years}${julday}.zip .
          unzip -o P${res}${radar}${years}${julday}.zip
+         chmod -R gu+rw ${data_destbase}${years}${julday}/P${res}${radar}${years}${julday}/
          rm P${res}${radar}${years}${julday}.zip
 	  fi
 
@@ -80,6 +82,7 @@ for ((irad=0; irad<${nrad}; irad++)); do
       # transfer status data from CSCS to destination folder, unzip it and remove zip file
       cp ${rawdata_origbase}${yearl}/${years}${julday}/ST${radar}${years}${julday}.zip .
       unzip -o ST${radar}${years}${julday}.zip
+      chmod -R gu+rw ${data_destbase}${years}${julday}/ST${radar}${years}${julday}/
       rm ST${radar}${years}${julday}.zip
    done
 done

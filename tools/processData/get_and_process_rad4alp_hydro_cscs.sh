@@ -7,13 +7,13 @@ pyradpath="$HOME/pyrad/src/pyrad_proc/scripts/"
 
 cfgfile=cscs_rad4alp_hydro_PLA.txt
 
-DAY=20170629
-START_TIME=160000
-END_TIME=160400
+DAY=20170818
+START_TIME=180000
+END_TIME=190000
 
 RADAR=A
 RES=L
-RUN_TIME=15
+RUN_TIME=18
 
 
 # Copy data from CSCS repository into the folder structure to process it
@@ -23,6 +23,10 @@ bash $HOME/pyrad/tools/copyData/get_rad4alp_data_CSCS_2.sh -r $RADAR -e $RES -d 
 # Get COSMO temperature information files
 LOGFILE=$HOME/log/${DAY}_${RADAR}${RES}_temp_cosmo1_rad4alp.log
 bash $HOME/pyrad/tools/copyData/get_temp_cosmo1_cscs.sh -d $DAY -t ${RUN_TIME} >$LOGFILE 2>$LOGFILE
+
+# copy HZT files to right folder
+LOGFILE=$HOME/log/${DAY}_${RADAR}${RES}_hzt_rad4alp.log
+bash $HOME/pyrad/tools/copyData/get_hzt_cscs.sh -d $DAY >$LOGFILE 2>$LOGFILE
 
 # process trajectory
 source activate pyrad
