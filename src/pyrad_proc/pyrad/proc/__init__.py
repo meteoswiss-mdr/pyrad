@@ -19,6 +19,7 @@ Auxiliary functions
     process_point_measurement
     process_grid
     process_qvp
+    process_time_height
 
 Echo classification and filtering
 =================================
@@ -116,8 +117,9 @@ COSMO data
 
 from .process_aux import get_process_func, process_raw, process_save_radar
 from .process_aux import process_point_measurement, process_grid, process_qvp
-from .process_traj import process_trajectory, process_traj_atplane, \
-    process_traj_antenna_pattern
+from .process_aux import process_time_height
+from .process_traj import process_trajectory, process_traj_atplane
+from .process_traj import process_traj_antenna_pattern
 
 from .process_echoclass import process_echo_id, process_echo_filter
 from .process_echoclass import process_filter_snr, process_filter_visibility
