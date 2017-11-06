@@ -924,6 +924,10 @@ def process_time_height(procstatus, dscfg, radar_list=None):
                 if ind_h is None:
                     continue
                 th_data[ind_r] = values[ind_h]
+        else:
+            warn('No data found at point lat '+str(lat)+' +- ' +
+                 str(latlon_tol)+' lon '+str(lon)+' +- '+
+                 str(latlon_tol)+' deg')
 
         if np.size(th.fields[field_name]['data']) == 0:
             th.fields[field_name]['data'] = th_data.reshape(1, th.ngates)
