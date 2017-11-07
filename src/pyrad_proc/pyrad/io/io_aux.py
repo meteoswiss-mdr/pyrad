@@ -510,16 +510,33 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
                 warn('Unknown scan name')
                 return None
             dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%y%j')
-            basename = ('P'+cfg['RadarRes'][ind_rad] +
+            basename = ('M'+cfg['RadarRes'][ind_rad] +
                         cfg['RadarName'][ind_rad]+dayinfo)
             if cfg['path_convention'] == 'LTE':
                 yy = dayinfo[0:2]
                 dy = dayinfo[2:]
-                subf = ('P' + cfg['RadarRes'][ind_rad] +
+                subf = ('M' + cfg['RadarRes'][ind_rad] +
                         cfg['RadarName'][ind_rad] + yy + 'hdf' + dy)
                 datapath = cfg['datapath'][ind_rad] + subf + '/'
-            else:
+                
+                # check that M files exist. if not search P files
+                dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
+                if len(dayfilelist) == 0:
+                    subf = ('P' + cfg['RadarRes'][ind_rad] +
+                        cfg['RadarName'][ind_rad] + yy + 'hdf' + dy)
+                    datapath = cfg['datapath'][ind_rad] + subf + '/'
+                    basename = ('P'+cfg['RadarRes'][ind_rad] +
+                        cfg['RadarName'][ind_rad]+dayinfo)                    
+            else:                
                 datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
+                
+                # check that M files exist. if not search P files
+                dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
+                if len(dayfilelist) == 0:
+                    basename = ('P'+cfg['RadarRes'][ind_rad] +
+                        cfg['RadarName'][ind_rad]+dayinfo)
+                    datapath = (cfg['datapath'][ind_rad]+dayinfo+'/' +
+                                basename+'/')
             if (not os.path.isdir(datapath)):
                 warn("WARNING: Unknown datapath '%s'" % datapath)
                 continue
