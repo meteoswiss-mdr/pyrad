@@ -4,23 +4,25 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 16    
-    l0:TEMP
-    l0:ZH 
-    l0:ZH_TIME_HEIGHT
-    l0:SNRh
-    l0:RhoHV
-    l1:echoID
-    l2:echoFilter   
-    l3:SNRFilter
-    l4:PhiDPc_smooth2w
-    l5:KDPc_Vulpiani
-    l5:Att_ZPhi   
-    l6:ZH_grid   
-    l6:ZHc_TIME_HEIGHT
-    l6:hydroclass
-    l7:hydroclass_grid
-    l7:hydroclass_TIME_HEIGHT
+dataSetList STRARR 1 
+    l0:uPhiDP
+    
+#    l0:TEMP
+#    l0:ZH 
+#    l0:ZH_TIME_HEIGHT
+#    l0:SNRh
+#    l0:RhoHV
+#    l1:echoID
+#    l2:echoFilter   
+#    l3:SNRFilter
+#    l4:PhiDPc_smooth2w
+#    l5:KDPc_Vulpiani
+#    l5:Att_ZPhi   
+#    l6:ZH_grid   
+#    l6:ZHc_TIME_HEIGHT
+#    l6:hydroclass
+#    l7:hydroclass_grid
+#    l7:hydroclass_TIME_HEIGHT
    
    
 # ==========================================================================================
@@ -34,32 +36,46 @@ dataSetList STRARR 16
 #        rad2cosmo STRUCT 2
 #            type  STRING SAVEVOL
 #            voltype STRING cosmo_index
-
-TEMP STRUCT 7
-    type STRING COSMO_LOOKUP
-    datatype STRARR 1
-        RAD4ALP:dBZ        
-    cosmo_type STRING TEMP
-    regular_grid INT 1
-    lookup_table INT 1
-    MAKE_GLOBAL INT 1
-    products STRUCT 3                
-        EL001 STRUCT 3
-            type  STRING PPI_IMAGE
-            anglenr INT 2
-            voltype STRING TEMP
-        AZ093 STRUCT 4
-            type  STRING PSEUDORHI_IMAGE
-            angle FLOAT 93.
-            AziTol FLOAT 1.
-            voltype STRING TEMP
-        SAVEVOL_TEMP STRUCT 2
-            type   STRING SAVEVOL
-            voltype STRING TEMP
-            
+#
+#TEMP STRUCT 7
+#    type STRING COSMO_LOOKUP
+#    datatype STRARR 1
+#        RAD4ALP:dBZ        
+#    cosmo_type STRING TEMP
+#    regular_grid INT 1
+#    lookup_table INT 1
+#    MAKE_GLOBAL INT 1
+#    products STRUCT 3                
+#        EL001 STRUCT 3
+#            type  STRING PPI_IMAGE
+#            anglenr INT 2
+#            voltype STRING TEMP
+#        AZ093 STRUCT 4
+#            type  STRING PSEUDORHI_IMAGE
+#            angle FLOAT 93.
+#            AziTol FLOAT 1.
+#            voltype STRING TEMP
+#        SAVEVOL_TEMP STRUCT 2
+#            type   STRING SAVEVOL
+#            voltype STRING TEMP
+#            
 # ==========================================================================================
 #                 raw data processing
 # ==========================================================================================
+uPhiDP STRUCT 3
+   type     STRING RAW
+   datatype STRING RAD4ALP:uPhiDP
+   products STRUCT 2
+      EL001 STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING uPhiDP
+      AZ093 STRUCT 4
+         type  STRING PSEUDORHI_IMAGE
+         angle FLOAT 93.
+         AziTol FLOAT 1.
+         voltype STRING uPhiDP
+         
 ZH STRUCT 3
    type     STRING RAW
    datatype STRING RAD4ALP:dBZ

@@ -328,14 +328,22 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
     radar = None
     dayinfo = voltime.strftime('%y%j')
     timeinfo = voltime.strftime('%H%M')
-    basename = 'P'+radar_res+radar_name+dayinfo
+    basename = 'M'+radar_res+radar_name+dayinfo
     if cfg['path_convention'] == 'LTE':
         yy = dayinfo[0:2]
         dy = dayinfo[2:]
-        subf = 'P'+radar_res+radar_name+yy+'hdf'+dy
+        subf = 'M'+radar_res+radar_name+yy+'hdf'+dy
         datapath = basepath+subf+'/'
+        filename = glob.glob(datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
+        if not filename:
+            basename = 'P'+radar_res+radar_name+dayinfo
+            subf = 'P'+radar_res+radar_name+yy+'hdf'+dy
+            datapath = basepath+subf+'/'
     else:
         datapath = basepath+dayinfo+'/'+basename+'/'
+        filename = glob.glob(datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
+        if not filename:
+            basename = 'P'+radar_res+radar_name+dayinfo            
     filename = glob.glob(datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
     if not filename:
         warn('No file found in '+datapath+basename+timeinfo+'*.'+scan_list[0])
