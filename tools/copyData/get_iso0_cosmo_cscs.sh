@@ -8,19 +8,19 @@
 umask 0002
 
 #module load idl
-. /apps/albis/itt/idl/idl84/inst/idl84/bin/idl_setup.bash
+. /apps/escha/itt/idl/idl85/inst/idl85/bin/idl_setup.bash
 
 export IDL_OTLDIR=/store/msrad/idl
 export IDL_STARTUP=$IDL_OTLDIR/im_setup.idl;export IDL_STARTUP
 
-export IDL_DIR=/apps/albis/itt/idl/idl84/inst/idl84/
+export IDL_DIR=/apps/escha/itt/idl/idl85/inst/idl85/
 export LD_LIBRARY_PATH=$HOME/malsgit/src/libDX50/lib:$LD_LIBRARY_PATH
 
 export IDL_NO_XWINDOWS=1
 export DISPLAY=
 
 execpath=$HOME/malsgit/src/idl/cosmo
-idlpath=/apps/albis/itt/idl/idl84/inst/idl84/bin/idl
+idlpath=/apps/escha/itt/idl/idl85/inst/idl85/bin/idl
 
 # defaults
 nhour_fcst=7
