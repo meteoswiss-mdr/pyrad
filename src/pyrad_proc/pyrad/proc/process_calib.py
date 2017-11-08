@@ -230,6 +230,7 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
         return None, None
 
     temp = None
+    iso0 = None
     for datatypedescr in dscfg['datatype']:
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
@@ -247,6 +248,8 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
             phidp = 'differential_phase'
         if datatype == 'TEMP':
             temp = 'temperature'
+        if datatype == 'H_ISO0':
+            iso0 = 'height_over_iso0'
         if datatype == 'RhoHV':
             rhohv = 'cross_correlation_ratio'
         if datatype == 'RhoHVc':
@@ -266,12 +269,28 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
              'Missing data')
         return None, None
 
-    if (temp is not None) and (temp not in radar.fields):
-        warn('COSMO temperature field not available. ' +
+    # determine which freezing level reference
+    temp_ref = 'temperature'
+    if temp is None and iso0 is None:
+        warn('Field to obtain the freezing level was not specified. ' +
              'Using fixed freezing level height')
+        temp_ref = 'fixed_fzl'
+    elif temp is not None:
+        if temp not in radar.fields:
+            warn('COSMO temperature field not available. ' +
+                 'Using fixed freezing level height')
+            temp_ref = 'fixed_fzl'
+    elif iso0 is not None:
+        if iso0 not in radar.fields:
+            warn('Height over iso0 field not available. ' +
+                 'Using fixed freezing level height')
+            temp_ref = 'fixed_fzl'
+        else:
+            temp_ref = 'height_over_iso0'
 
+    # determine freezing level height if necessary
     fzl = None
-    if (temp is None) or (temp not in radar.fields):
+    if temp_ref == 'fixed_fzl':
         if 'fzl' in dscfg:
             fzl = dscfg['fzl']
         else:
@@ -332,8 +351,8 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
             max_phidp=max_phidp, smooth_wind_len=smooth_wind_len, doc=15,
             fzl=fzl, thickness=ml_thickness, refl_field=refl,
             phidp_field=phidp, zdr_field=zdr, temp_field=temp,
-            rhohv_field=rhohv, kdpsim_field=kdpsim_field,
-            phidpsim_field=phidpsim_field)
+            iso0_field=iso0, rhohv_field=rhohv, kdpsim_field=kdpsim_field,
+            phidpsim_field=phidpsim_field, temp_ref=temp_ref)
 
         # prepare for exit
         new_dataset = deepcopy(radar)
@@ -393,6 +412,7 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
         return None, None
 
     temp = None
+    iso0 = None
     for datatypedescr in dscfg['datatype']:
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
@@ -410,6 +430,8 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
             phidp = 'differential_phase'
         if datatype == 'TEMP':
             temp = 'temperature'
+        if datatype == 'H_ISO0':
+            iso0 = 'height_over_iso0'
         if datatype == 'RhoHV':
             rhohv = 'cross_correlation_ratio'
         if datatype == 'RhoHVc':
@@ -429,12 +451,28 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
              'Missing data')
         return None, None
 
-    if (temp is not None) and (temp not in radar.fields):
-        warn('COSMO temperature field not available. ' +
+    # determine which freezing level reference
+    temp_ref = 'temperature'
+    if temp is None and iso0 is None:
+        warn('Field to obtain the freezing level was not specified. ' +
              'Using fixed freezing level height')
+        temp_ref = 'fixed_fzl'
+    elif temp is not None:
+        if temp not in radar.fields:
+            warn('COSMO temperature field not available. ' +
+                 'Using fixed freezing level height')
+            temp_ref = 'fixed_fzl'
+    elif iso0 is not None:
+        if iso0 not in radar.fields:
+            warn('Height over iso0 field not available. ' +
+                 'Using fixed freezing level height')
+            temp_ref = 'fixed_fzl'
+        else:
+            temp_ref = 'height_over_iso0'
 
+    # determine freezing level height if necessary
     fzl = None
-    if (temp is None) or (temp not in radar.fields):
+    if temp_ref == 'fixed_fzl':
         if 'fzl' in dscfg:
             fzl = dscfg['fzl']
         else:
@@ -504,7 +542,7 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
             fzl=fzl, thickness=ml_thickness, min_rcons=min_rcons,
             dphidp_min=dphidp_min, dphidp_max=dphidp_max, refl_field=refl,
             phidp_field=phidp, zdr_field=zdr, temp_field=temp,
-            rhohv_field=rhohv)
+            iso0_field=iso0, rhohv_field=rhohv, temp_ref=temp_ref)
 
         # prepare for exit
         new_dataset = deepcopy(radar)
@@ -644,6 +682,7 @@ def process_rhohv_rain(procstatus, dscfg, radar_list=None):
         return None, None
 
     temp_field = None
+    iso0_field = None
     for datatypedescr in dscfg['datatype']:
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
@@ -657,6 +696,8 @@ def process_rhohv_rain(procstatus, dscfg, radar_list=None):
             refl_field = 'reflectivity'
         if datatype == 'TEMP':
             temp_field = 'temperature'
+        if datatype == 'H_ISO0':
+                iso0_field = 'height_over_iso0'
 
     ind_rad = int(radarnr[5:8])-1
     if radar_list[ind_rad] is None:
@@ -669,12 +710,28 @@ def process_rhohv_rain(procstatus, dscfg, radar_list=None):
         warn('Unable to estimate RhoHV in rain. Missing data')
         return None, None
 
-    if (temp_field is not None) and (temp_field not in radar.fields):
-        warn('COSMO temperature field not available. ' +
+    # determine which freezing level reference
+    temp_ref = 'temperature'
+    if temp_field is None and iso0_field is None:
+        warn('Field to obtain the freezing level was not specified. ' +
              'Using fixed freezing level height')
+        temp_ref = 'fixed_fzl'
+    elif temp_field is not None:
+        if temp_field not in radar.fields:
+            warn('COSMO temperature field not available. ' +
+                 'Using fixed freezing level height')
+            temp_ref = 'fixed_fzl'
+    elif iso0_field is not None:
+        if iso0_field not in radar.fields:
+            warn('Height over iso0 field not available. ' +
+                 'Using fixed freezing level height')
+            temp_ref = 'fixed_fzl'
+        else:
+            temp_ref = 'height_over_iso0'
 
+    # determine freezing level height if necessary
     fzl = None
-    if (temp_field is None) or (temp_field not in radar.fields):
+    if temp_ref == 'fixed_fzl':
         if 'fzl' in dscfg:
             fzl = dscfg['fzl']
         else:
@@ -707,7 +764,8 @@ def process_rhohv_rain(procstatus, dscfg, radar_list=None):
     rhohv_rain = pyart.correct.est_rhohv_rain(
         radar, ind_rmin=ind_rmin, ind_rmax=ind_rmax, zmin=zmin,
         zmax=zmax, thickness=thickness, doc=15, fzl=fzl,
-        rhohv_field=rhohv_field, temp_field=temp_field, refl_field=refl_field)
+        rhohv_field=rhohv_field, temp_field=temp_field, iso0_field=iso0_field,
+        refl_field=refl_field, temp_ref=temp_ref)
 
     # prepare for exit
     new_dataset = deepcopy(radar)
@@ -777,6 +835,7 @@ def process_zdr_precip(procstatus, dscfg, radar_list=None):
         return None, None
 
     temp_field = None
+    iso0_field = None
     for datatypedescr in dscfg['datatype']:
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
@@ -798,6 +857,8 @@ def process_zdr_precip(procstatus, dscfg, radar_list=None):
             refl_field = 'reflectivity'
         if datatype == 'TEMP':
             temp_field = 'temperature'
+        if datatype == 'H_ISO0':
+            iso0_field = 'height_over_iso0'
 
     ind_rad = int(radarnr[5:8])-1
     if radar_list[ind_rad] is None:
@@ -812,24 +873,43 @@ def process_zdr_precip(procstatus, dscfg, radar_list=None):
         warn('Unable to estimate ZDR in rain. Missing data')
         return None, None
 
+    # if data in and above the melting layer has to be filtered determine the
+    # field to use
     fzl = None
     ml_filter = True
     if 'ml_filter' in dscfg:
         ml_filter = dscfg['ml_filter']
 
     if ml_filter:
-        if (temp_field is not None) and (temp_field not in radar.fields):
-            warn('COSMO temperature field not available. ' +
+        # determine which freezing level reference
+        temp_ref = 'temperature'
+        if temp_field is None and iso0_field is None:
+            warn('Field to obtain the freezing level was not specified. ' +
                  'Using fixed freezing level height')
+            temp_ref = 'fixed_fzl'
+        elif temp_field is not None:
+            if temp_field not in radar.fields:
+                warn('COSMO temperature field not available. ' +
+                     'Using fixed freezing level height')
+                temp_ref = 'fixed_fzl'
+        elif iso0_field is not None:
+            if iso0_field not in radar.fields:
+                warn('Height over iso0 field not available. ' +
+                     'Using fixed freezing level height')
+                temp_ref = 'fixed_fzl'
+            else:
+                temp_ref = 'height_over_iso0'
 
-        fzl = None
-        if (temp_field is None) or (temp_field not in radar.fields):
+        # determine freezing level height if necessary
+        if temp_ref == 'fixed_fzl':
             if 'fzl' in dscfg:
                 fzl = dscfg['fzl']
             else:
                 fzl = 2000.
                 warn('Freezing level height not defined. Using default ' +
                      str(fzl)+' m')
+    else:
+        temp_ref = None
 
     # default values
     rmin = 1000.
@@ -867,7 +947,8 @@ def process_zdr_precip(procstatus, dscfg, radar_list=None):
         zmax=zmax, rhohvmin=rhohvmin, phidpmax=phidpmax, elmax=elmax,
         thickness=thickness, doc=15, fzl=fzl, zdr_field=zdr_field,
         rhohv_field=rhohv_field, phidp_field=phidp_field,
-        temp_field=temp_field, refl_field=refl_field, ml_filter=ml_filter)
+        temp_field=temp_field, iso0_field=iso0_field, refl_field=refl_field,
+        temp_ref=temp_ref)
 
     # prepare for exit
     new_dataset = deepcopy(radar)
@@ -1568,6 +1649,7 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
     """
     temp_name = None
     hydro_name = None
+    iso0_name = None
     for datatypedescr in dscfg['datatype']:
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
@@ -1579,6 +1661,8 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
             hydro_name = get_fieldname_pyart(datatype)
         elif datatype == 'TEMP':
             temp_name = get_fieldname_pyart(datatype)
+        elif datatype == 'H_ISO0':
+            iso0_name = 'height_over_iso0'
 
     ind_rad = int(radarnr[5:8])-1
 
@@ -1645,8 +1729,29 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
                     beamwidth = None
 
                 mask_fzl, end_gate_arr = get_mask_fzl(
-                    radar, fzl=None, doc=None, min_temp=0., thickness=700.,
-                    beamwidth=beamwidth, temp_field=temp_name)
+                    radar, fzl=None, doc=None, min_temp=0., max_h_iso0=0.,
+                    thickness=700., beamwidth=beamwidth,
+                    temp_field=temp_name, iso0_field=iso0_name,
+                    temp_ref='temperature')
+                time_avg_flag['data'][mask] += 10000
+        elif iso0_name is not None:
+            if iso0_name not in radar.fields:
+                warn('Missing height relative to iso0 data')
+                time_avg_flag['data'] += 10000
+            else:
+                if 'radar_beam_width_h' in radar.instrument_parameters:
+                    beamwidth = (
+                        radar.instrument_parameters[
+                            'radar_beam_width_h']['data'][0])
+                else:
+                    warn('Unknown radar antenna beamwidth.')
+                    beamwidth = None
+
+                mask_fzl, end_gate_arr = get_mask_fzl(
+                    radar, fzl=None, doc=None, min_temp=0., max_h_iso0=0.,
+                    thickness=700., beamwidth=beamwidth,
+                    temp_field=temp_name, iso0_field=iso0_name,
+                    temp_ref='height_over_iso0')
                 time_avg_flag['data'][mask] += 10000
 
         radar_aux = deepcopy(radar)

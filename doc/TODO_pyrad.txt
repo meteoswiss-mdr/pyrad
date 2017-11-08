@@ -2,8 +2,6 @@ Pending modifications for current code in Pyrad
 -----------------------------------------------
 - In function process_echo_id: Add condition on differential reflectivity at low reflectivity values. Allow user to select the various thresholds. Add a speckle filter
 
-- Print greek letters nicely in plots
-
 Documentation
 -------------
 - Complete docstrings in Pyrad to specify the user defined keywords each function accepts. Make sure default values and the input data types are specified in the documentation

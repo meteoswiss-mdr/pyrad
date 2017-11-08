@@ -174,7 +174,9 @@ colocated_gates = 'colocated_gates'
 # COSMO data fields
 temperature = 'temperature'
 iso0 = 'iso0'
+height_over_iso0 = 'height_over_iso0'
 cosmo_index = 'cosmo_index'
+hzt_index = 'hzt_index'
 
 # DEM fields
 visibility = 'visibility'
@@ -331,7 +333,9 @@ DEFAULT_FIELD_NAMES = {
         corrected_path_integrated_differential_attenuation),
     'temperature': temperature,
     'iso0': iso0,
+    'height_over_iso0': height_over_iso0,
     'cosmo_index': cosmo_index,
+    'hzt_index': hzt_index,
     'visibility': visibility,
     'differential_phase_texture': differential_phase_texture,
     'cross_correlation_ratio_texture': cross_correlation_ratio_texture,
@@ -1074,11 +1078,24 @@ DEFAULT_METADATA = {
         'boundaries': [0.5, 1.5, 2.5, 3.5],
         'coordinates': 'elevation azimuth range'},
 
+    height_over_iso0: {
+        'units': 'm',
+        'standard_name': 'height_over_iso0',
+        'long_name': 'Height of the range bin respect to the iso0 level',
+        'coordinates': 'elevation azimuth range'},
+
     cosmo_index: {
         'units': 'dimensionless',
         'standard_name': 'cosmo_index',
         'long_name': (
             'indices of the COSMO model corresponding to each radar gate'),
+        'coordinates': 'elevation azimuth range'},
+
+    hzt_index: {
+        'units': 'dimensionless',
+        'standard_name': 'hzt_index',
+        'long_name': (
+            'indices of the HZT corresponding to each radar gate'),
         'coordinates': 'elevation azimuth range'},
 
     visibility: {
@@ -2073,6 +2090,7 @@ DEFAULT_FIELD_LIMITS = {
     visibility: (0, 100),
 
     temperature: (-60, 30),
+    height_over_iso0: (-6000., 10000.),
 
     # Additional reflectivity like fields
     'CZ': (-10., 65.),

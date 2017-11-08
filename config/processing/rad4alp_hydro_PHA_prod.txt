@@ -4,20 +4,25 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 13
-   l0:TEMP
-   l0:ZH   
-   l0:SNRh
-   l0:RhoHV
-   l1:echoID
-   l2:echoFilter   
-   l3:SNRFilter
-   l4:PhiDPc_smooth2w
-   l5:KDPc_Vulpiani
-   l5:Att_ZPhi   
-   l6:ZH_grid   
-   l6:hydroclass
-   l7:hydroclass_grid
+dataSetList STRARR 1 
+    l0:uPhiDP
+    
+#    l0:TEMP
+#    l0:ZH 
+#    l0:ZH_TIME_HEIGHT
+#    l0:SNRh
+#    l0:RhoHV
+#    l1:echoID
+#    l2:echoFilter   
+#    l3:SNRFilter
+#    l4:PhiDPc_smooth2w
+#    l5:KDPc_Vulpiani
+#    l5:Att_ZPhi   
+#    l6:ZH_grid   
+#    l6:ZHc_TIME_HEIGHT
+#    l6:hydroclass
+#    l7:hydroclass_grid
+#    l7:hydroclass_TIME_HEIGHT
    
    
 # ==========================================================================================
@@ -32,28 +37,45 @@ dataSetList STRARR 13
 #            type  STRING SAVEVOL
 #            voltype STRING cosmo_index
 #
-TEMP STRUCT 7
-    type STRING COSMO_LOOKUP
-    datatype STRARR 1
-        RAD4ALP:dBZ        
-    cosmo_type STRING TEMP
-    regular_grid INT 1
-    lookup_table INT 1
-    MAKE_GLOBAL INT 1
-    products STRUCT 2                
-        EL001 STRUCT 3
-            type  STRING PPI_IMAGE
-            anglenr INT 2
-            voltype STRING TEMP
-        AZ093 STRUCT 4
-            type  STRING PSEUDORHI_IMAGE
-            angle FLOAT 93.
-            AziTol FLOAT 1.
-            voltype STRING TEMP
-            
+#TEMP STRUCT 7
+#    type STRING COSMO_LOOKUP
+#    datatype STRARR 1
+#        RAD4ALP:dBZ        
+#    cosmo_type STRING TEMP
+#    regular_grid INT 1
+#    lookup_table INT 1
+#    MAKE_GLOBAL INT 1
+#    products STRUCT 3                
+#        EL001 STRUCT 3
+#            type  STRING PPI_IMAGE
+#            anglenr INT 2
+#            voltype STRING TEMP
+#        AZ093 STRUCT 4
+#            type  STRING PSEUDORHI_IMAGE
+#            angle FLOAT 93.
+#            AziTol FLOAT 1.
+#            voltype STRING TEMP
+#        SAVEVOL_TEMP STRUCT 2
+#            type   STRING SAVEVOL
+#            voltype STRING TEMP
+#            
 # ==========================================================================================
 #                 raw data processing
 # ==========================================================================================
+uPhiDP STRUCT 3
+   type     STRING RAW
+   datatype STRING RAD4ALP:uPhiDP
+   products STRUCT 2
+      EL001 STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING uPhiDP
+      AZ093 STRUCT 4
+         type  STRING PSEUDORHI_IMAGE
+         angle FLOAT 93.
+         AziTol FLOAT 1.
+         voltype STRING uPhiDP
+         
 ZH STRUCT 3
    type     STRING RAW
    datatype STRING RAD4ALP:dBZ
@@ -67,6 +89,24 @@ ZH STRUCT 3
          angle FLOAT 93.
          AziTol FLOAT 1.
          voltype STRING dBZ
+         
+ZH_TIME_HEIGHT STRUCT 8
+   type     STRING TIME_HEIGHT
+   datatype STRING RAD4ALP:dBZ
+   lon FLOAT 9.343
+   lat FLOAT 47.249
+   latlon_tol FLOAT 0.005
+   hres FLOAT 500.
+   hmax FLOAT 12000.
+   products STRUCT 2        
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING dBZ
+        SAVEVOL STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING dBZ
       
 
 # ==========================================================================================
@@ -90,6 +130,7 @@ RhoHV STRUCT 3
         PROC:SNRh
     MAKE_GLOBAL INT 1
 
+    
 # ==========================================================================================
 #                 echo identification
 # ==========================================================================================
@@ -117,15 +158,18 @@ echoFilter STRUCT 5
         RAD4ALP:uPhiDP        
     echo_type INT 3
     MAKE_GLOBAL INT 1
-    products STRUCT 2
-        EL001_RhoHV STRUCT 3
+    products STRUCT 3
+        EL001_RhoHVc STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 2
             voltype STRING RhoHVc
-        AZ093_RhoHV STRUCT 4
+        AZ093_RhoHVc STRUCT 4
             type  STRING PSEUDORHI_IMAGE
             angle FLOAT 93.
             AziTol FLOAT 1.
+            voltype STRING RhoHVc
+        SAVEVOL_RhoHVc STRUCT 2
+            type   STRING SAVEVOL
             voltype STRING RhoHVc
 
             
@@ -158,7 +202,7 @@ PhiDPc_smooth2w STRUCT 12
     rwindl FLOAT 3000.
     Zthr FLOAT 40.    
     MAKE_GLOBAL INT 1
-    products STRUCT 2
+    products STRUCT 3
       EL001 STRUCT 3
          type  STRING PPI_IMAGE
          anglenr INT 2
@@ -168,6 +212,9 @@ PhiDPc_smooth2w STRUCT 12
          angle FLOAT 93.
          AziTol FLOAT 1.
          voltype STRING PhiDPc
+      SAVEVOL_PhiDPc STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING PhiDPc
 	
 	
 # ==========================================================================================
@@ -203,7 +250,7 @@ KDPc_Vulpiani STRUCT 9
     parallel INT 0
     get_phidp INT 0
     MAKE_GLOBAL INT 1
-    products STRUCT 2
+    products STRUCT 3
       EL001 STRUCT 3
          type  STRING PPI_IMAGE
          anglenr INT 2
@@ -213,6 +260,9 @@ KDPc_Vulpiani STRUCT 9
          angle FLOAT 93.
          AziTol FLOAT 1.
          voltype STRING KDPc
+      SAVEVOL_KDPc STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING KDPc
 
 
 # ==========================================================================================
@@ -228,7 +278,7 @@ Att_ZPhi STRUCT 6
     ATT_METHOD STRING ZPhi
     fzl FLOAT 2000.
     MAKE_GLOBAL INT 1
-    products STRUCT 4
+    products STRUCT 6
         EL001_dBZc STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 2
@@ -246,6 +296,12 @@ Att_ZPhi STRUCT 6
             type  STRING PSEUDORHI_IMAGE
             angle FLOAT 93.
             AziTol FLOAT 1.
+            voltype STRING ZDRc
+        SAVEVOL_dBZc STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING dBZc
+        SAVEVOL_ZDRc STRUCT 2
+            type   STRING SAVEVOL
             voltype STRING ZDRc
             
 ZH_grid STRUCT 5
@@ -275,7 +331,25 @@ ZH_grid STRUCT 5
       SURFACE STRUCT 3
          type  STRING SURFACE_IMAGE
          voltype STRING dBZc
-         level INT 25      
+         level INT 25  
+
+ZHc_TIME_HEIGHT STRUCT 8
+   type     STRING TIME_HEIGHT
+   datatype STRING PROC:dBZc
+   lon FLOAT 9.343
+   lat FLOAT 47.249
+   latlon_tol FLOAT 0.005
+   hres FLOAT 500.
+   hmax FLOAT 12000.
+   products STRUCT 2        
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING dBZc
+        SAVEVOL STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING dBZc         
             
             
 # ==========================================================================================
@@ -292,7 +366,7 @@ hydroclass STRUCT 6
     HYDRO_METHOD STRING SEMISUPERVISED
     RADARCENTROIDS STRING A
     MAKE_GLOBAL INT 1
-    products STRUCT 2
+    products STRUCT 3
       EL001 STRUCT 3
          type  STRING PPI_IMAGE
          anglenr INT 2
@@ -302,6 +376,9 @@ hydroclass STRUCT 6
          angle FLOAT 93.
          AziTol FLOAT 1.
          voltype STRING hydro
+      SAVEVOL_hydro STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING hydro
          
 hydroclass_grid STRUCT 5
    type     STRING GRID
@@ -331,4 +408,22 @@ hydroclass_grid STRUCT 5
          type  STRING SURFACE_IMAGE
          voltype STRING hydro
          level INT 25
+         
+hydroclass_TIME_HEIGHT STRUCT 8
+   type     STRING TIME_HEIGHT
+   datatype STRING PROC:hydro
+   lon FLOAT 9.343
+   lat FLOAT 47.249
+   latlon_tol FLOAT 0.005
+   hres FLOAT 500.
+   hmax FLOAT 12000.
+   products STRUCT 2        
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING hydro
+        SAVEVOL STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING hydro
             
