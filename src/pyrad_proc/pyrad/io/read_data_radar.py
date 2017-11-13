@@ -38,7 +38,7 @@ import pyart
 try:
     import wradlib as wrl
     _WRADLIB_AVAILABLE = True
-except:
+except Exception:
     _WRADLIB_AVAILABLE = False
 
 from .read_data_other import read_status, read_rad4alp_cosmo, read_rad4alp_vis
@@ -334,16 +334,19 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
         dy = dayinfo[2:]
         subf = 'M'+radar_res+radar_name+yy+'hdf'+dy
         datapath = basepath+subf+'/'
-        filename = glob.glob(datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
         if not filename:
             basename = 'P'+radar_res+radar_name+dayinfo
             subf = 'P'+radar_res+radar_name+yy+'hdf'+dy
             datapath = basepath+subf+'/'
     else:
         datapath = basepath+dayinfo+'/'+basename+'/'
-        filename = glob.glob(datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
         if not filename:
-            basename = 'P'+radar_res+radar_name+dayinfo            
+            basename = 'P'+radar_res+radar_name+dayinfo
+            datapath = basepath+dayinfo+'/'+basename+'/'
     filename = glob.glob(datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
     if not filename:
         warn('No file found in '+datapath+basename+timeinfo+'*.'+scan_list[0])

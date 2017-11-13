@@ -79,7 +79,7 @@ for ((irad=0; irad<${nrad}; irad++)); do
             cp ${phdata_origbase}${yearl}/${years}${julday}/${file_type}${res}${radar}${years}${julday}.zip .
             unzip -o ${file_type}${res}${radar}${years}${julday}.zip
             chmod -R gu+rw ${data_destbase}${years}${julday}/${file_type}${res}${radar}${years}${julday}/
-            rm ${file_type}${res}${radar}${years}${julday}.zip
+            rm ${file_type}${res}${radar}${years}${julday}.zip            
         else
             # check type of file that exists in the repository
             if [ `ls ${rawdata_origbase}${yearl}/${years}${julday}/M${res}${radar}${years}${julday}.zip` ]
@@ -101,6 +101,15 @@ for ((irad=0; irad<${nrad}; irad++)); do
             unzip -o ${file_type}${res}${radar}${years}${julday}.zip
             chmod -R gu+rw ${data_destbase}${years}${julday}/${file_type}${res}${radar}${years}${julday}/
             rm ${file_type}${res}${radar}${years}${julday}.zip
+            
+            # create destination path for hydrometeor classification data
+            mkdir -p ${data_destbase}${years}${julday}/YM${radar}${years}${julday}/
+            cd ${data_destbase}${years}${julday}/YM${radar}${years}${julday}/
+            
+            cp ${phdata_origbase}${yearl}/${years}${julday}/YM${radar}${years}${julday}.zip .
+            unzip -o YM${radar}${years}${julday}.zip
+            chmod -R gu+rw ${data_destbase}${years}${julday}/YM${radar}${years}${julday}/
+            rm YM${radar}${years}${julday}.zip
         fi
     
         # create destination path for status data
