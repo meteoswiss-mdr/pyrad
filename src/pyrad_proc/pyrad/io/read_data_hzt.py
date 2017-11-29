@@ -172,7 +172,7 @@ def read_hzt_data(fname, chy0=255., chx0=-160.):
     ----------
     fname : str
         name of the file to read
-    chy0, chx0: south west point of grid in Swiss coordinates
+    chy0, chx0: south west point of grid in Swiss coordinates [km]
 
     Returns
     -------
@@ -200,16 +200,16 @@ def read_hzt_data(fname, chy0=255., chx0=-160.):
         'long_name': "x-coordinate in Swiss coordinate system",
         'standard_name': "projection_x_coordinate",
         'units': "m",
-        'data': (np.arange(int(ret.header['column']))+chy0 +
-                 float(ret.header['rect_xres'])/2.)
+        'data': (np.arange(int(ret.header['column']))*ret.header['rect_xres'] +
+                 chy0+float(ret.header['rect_xres'])/2.)*1000.
     }
     y_1 = {
         'axis': "Y",
         'long_name': "y-coordinate in Swiss coordinate system",
         'standard_name': "projection_y_coordinate",
         'units': "m",
-        'data': (np.arange(int(ret.header['row']))+chx0 +
-                 float(ret.header['rect_yres'])/2.)
+        'data': (np.arange(int(ret.header['row']))ret.header['rect_yres'] +
+                 chx0+float(ret.header['rect_yres'])/2.)*1000.
     }
 
     hzt_data = {
@@ -243,7 +243,7 @@ def _prepare_for_interpolation(x_radar, y_radar, hzt_coord, slice_xy=True):
     -------
     x_hzt, y_hzt : 1D arrays
         arrays containing the flatten swiss coordinates of the HZT data in
-        the area of interest
+        the area of interest [m]
     ind_xmin, ind_ymin, ind_xmax, ind_ymax : ints
         the minimum and maximum indices of each dimension
 
