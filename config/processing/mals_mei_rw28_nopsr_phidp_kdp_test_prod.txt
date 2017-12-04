@@ -4,8 +4,14 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 1
-   reflectivity
+dataSetList STRARR 6
+   l0:SNRh
+   l0:echoID
+   l1:echoFilter
+   l3:PhiDPc_smooth2w
+   l4:KDPc_leastsquare_2W
+   l2:PhiDPc_KDPc_Vulpiani
+   
       
 
 # ==========================================================================================
@@ -221,32 +227,32 @@ dataSetList STRARR 1
 #         angle FLOAT 6.
 #         EleTol FLOAT 1.
 #         voltype STRING KDP
-         
-reflectivity STRUCT 6
-   type     STRING TIME_HEIGHT
-   datatype STRING dBZ
-   lon FLOAT 8.21
-   lat FLOAT 46.72
-   hres FLOAT 500.
-   products STRUCT 1        
-      TIME_HEIGHT STRUCT 4
-         qvp_type STRING final
-         type STRING TIME_RANGE
-         anglenr INT 0
-         voltype STRING dBZ
-         
+#         
+#reflectivity STRUCT 6
+#   type     STRING TIME_HEIGHT
+#   datatype STRING dBZ
+#   lon FLOAT 8.21
+#   lat FLOAT 46.72
+#   hres FLOAT 500.
+#   products STRUCT 1        
+#      TIME_HEIGHT STRUCT 4
+#         qvp_type STRING final
+#         type STRING TIME_RANGE
+#         anglenr INT 0
+#         voltype STRING dBZ
+#         
 ## ==========================================================================================
 ##                 secondary moments products
 ## ==========================================================================================
-#SNRh STRUCT 4
-#    type STRING SNR
-#    datatype STRARR 2
-#        dBZ
-#        Nh
-#    output_type STRING SNRh
-#    MAKE_GLOBAL INT 1
-#		 
-#		 
+SNRh STRUCT 4
+    type STRING SNR
+    datatype STRARR 2
+        dBZ
+        Nh
+    output_type STRING SNRh
+    MAKE_GLOBAL INT 1
+		 
+		 
 # ==========================================================================================
 #                 echo identification
 # ==========================================================================================
@@ -380,33 +386,33 @@ echoFilter STRUCT 4
 ## ==========================================================================================
 ##                 filtration based on SNR
 ## ==========================================================================================
-#SNRFilter STRUCT 5
-#   type STRING SNR_FILTER
-#   datatype STRARR 2
-#      PROC:SNRh
-#      PROC:PhiDPc
-#   SNRmin FLOAT 10.
-#   MAKE_GLOBAL INT 1
-#   products STRUCT 4
-#      AZ103 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 4
-#         voltype STRING PhiDPc
-#      AZ107 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 6
-#         voltype STRING PhiDPc
-#      AZ111 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 8
-#         voltype STRING PhiDPc
-#      EL06 STRUCT 4
-#         type  STRING PSEUDOPPI_IMAGE
-#         angle FLOAT 6.
-#         EleTol FLOAT 1.
-#         voltype STRING PhiDPc 
-#   
-#
+SNRFilter STRUCT 5
+   type STRING SNR_FILTER
+   datatype STRARR 2
+      PROC:SNRh
+      PROC:PhiDPc
+   SNRmin FLOAT 10.
+   MAKE_GLOBAL INT 1
+   products STRUCT 4
+      AZ103 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING PhiDPc
+      AZ107 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING PhiDPc
+      AZ111 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING PhiDPc
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING PhiDPc 
+   
+
 # ==========================================================================================
 #                 PHIDP processing
 # ==========================================================================================   
@@ -441,40 +447,40 @@ echoFilter STRUCT 4
 #         EleTol FLOAT 1.
 #         voltype STRING PhiDPc    
 #    
-#PhiDPc_smooth2w STRUCT 12
-#    type STRING PHIDP_SMOOTH_2W
-#    datatype STRARR 2
-#        PROC:PhiDPc
-#        PROC:dBZc
-#    rmin FLOAT 1000.
-#    rmax FLOAT 50000.
-#    rcell FLOAT 1000.
-#    Zmin FLOAT 20.
-#    Zmax FLOAT 40.
-#    rwinds FLOAT 1000.
-#    rwindl FLOAT 3000.
-#    Zthr FLOAT 40.    
-#    MAKE_GLOBAL INT 0
-#    products STRUCT 4
-#      AZ103 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 4
-#         voltype STRING PhiDPc
-#      AZ107 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 6
-#         voltype STRING PhiDPc
-#      AZ111 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 8
-#         voltype STRING PhiDPc
-#      EL06 STRUCT 4
-#         type  STRING PSEUDOPPI_IMAGE
-#         angle FLOAT 6.
-#         EleTol FLOAT 1.
-#         voltype STRING PhiDPc 
-#	
-#	
+PhiDPc_smooth2w STRUCT 12
+    type STRING PHIDP_SMOOTH_2W
+    datatype STRARR 2
+        PROC:PhiDPc
+        PROC:dBZc
+    rmin FLOAT 1000.
+    rmax FLOAT 50000.
+    rcell FLOAT 1000.
+    Zmin FLOAT 20.
+    Zmax FLOAT 40.
+    rwinds FLOAT 1000.
+    rwindl FLOAT 3000.
+    Zthr FLOAT 40.    
+    MAKE_GLOBAL INT 1
+    products STRUCT 4
+      AZ103 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING PhiDPc
+      AZ107 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING PhiDPc
+      AZ111 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING PhiDPc
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING PhiDPc 
+	
+	
 # ==========================================================================================
 #                 KDP processing
 # ==========================================================================================   
@@ -503,80 +509,80 @@ echoFilter STRUCT 4
 #         EleTol FLOAT 1.
 #         voltype STRING KDPc
 #            
-#KDPc_leastsquare_2W STRUCT 7
-#    type STRING KDP_LEASTSQUARE_2W
-#    datatype STRARR 2
-#        PROC:PhiDPc
-#        PROC:dBZc
-#    rwinds FLOAT 1000.
-#    rwindl FLOAT 3000.
-#    Zthr FLOAT 40.    
-#    MAKE_GLOBAL INT 0
-#    products STRUCT 4
-#      AZ103 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 4
-#         voltype STRING KDPc
-#      AZ107 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 6
-#         voltype STRING KDPc
-#      AZ111 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 8
-#         voltype STRING KDPc
-#      EL06 STRUCT 4
-#         type  STRING PSEUDOPPI_IMAGE
-#         angle FLOAT 6.
-#         EleTol FLOAT 1.
-#         voltype STRING KDPc
-#
-#PhiDPc_KDPc_Vulpiani STRUCT 9
-#    type STRING PHIDP_KDP_VULPIANI
-#    datatype STRARR 1
-#        PROC:PhiDPc
-#    rwind FLOAT 2000.
-#    n_iter INT 10
-#    interp INT 0
-#    parallel INT 0
-#    get_phidp INT 1
-#    MAKE_GLOBAL INT 0
-#    products STRUCT 8
-#      AZ103_PhiDPc STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 4
-#         voltype STRING PhiDPc
-#      AZ107_PhiDPc STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 6
-#         voltype STRING PhiDPc
-#      AZ111_PhiDPc STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 8
-#         voltype STRING PhiDPc
-#      EL06_PhiDPc STRUCT 4
-#         type  STRING PSEUDOPPI_IMAGE
-#         angle FLOAT 6.
-#         EleTol FLOAT 1.
-#         voltype STRING PhiDPc
-#      AZ103_KDPc STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 4
-#         voltype STRING KDPc
-#      AZ107_KDPc STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 6
-#         voltype STRING KDPc
-#      AZ111_KDPc STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 8
-#         voltype STRING KDPc
-#      EL06_KDPc STRUCT 4
-#         type  STRING PSEUDOPPI_IMAGE
-#         angle FLOAT 6.
-#         EleTol FLOAT 1.
-#         voltype STRING KDPc         
-#    
+KDPc_leastsquare_2W STRUCT 7
+    type STRING KDP_LEASTSQUARE_2W
+    datatype STRARR 2
+        PROC:PhiDPc
+        PROC:dBZc
+    rwinds FLOAT 1000.
+    rwindl FLOAT 3000.
+    Zthr FLOAT 40.    
+    MAKE_GLOBAL INT 0
+    products STRUCT 4
+      AZ103 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING KDPc
+      AZ107 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING KDPc
+      AZ111 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING KDPc
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING KDPc
+
+PhiDPc_KDPc_Vulpiani STRUCT 9
+    type STRING PHIDP_KDP_VULPIANI
+    datatype STRARR 1
+        PROC:PhiDPc
+    rwind FLOAT 2000.
+    n_iter INT 10
+    interp INT 0
+    parallel INT 0
+    get_phidp INT 1
+    MAKE_GLOBAL INT 0
+    products STRUCT 8
+      AZ103_PhiDPc STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING PhiDPc
+      AZ107_PhiDPc STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING PhiDPc
+      AZ111_PhiDPc STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING PhiDPc
+      EL06_PhiDPc STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING PhiDPc
+      AZ103_KDPc STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING KDPc
+      AZ107_KDPc STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING KDPc
+      AZ111_KDPc STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING KDPc
+      EL06_KDPc STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING KDPc         
+    
 #PhiDPc_KDPc_Kalman STRUCT 6
 #    type STRING PHIDP_KDP_KALMAN
 #    datatype STRARR 1

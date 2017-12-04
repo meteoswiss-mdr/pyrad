@@ -208,7 +208,7 @@ def read_hzt_data(fname, chy0=255., chx0=-160.):
         'long_name': "y-coordinate in Swiss coordinate system",
         'standard_name': "projection_y_coordinate",
         'units': "m",
-        'data': (np.arange(int(ret.header['row']))ret.header['rect_yres'] +
+        'data': (np.arange(int(ret.header['row']))*ret.header['rect_yres'] +
                  chx0+float(ret.header['rect_yres'])/2.)*1000.
     }
 
