@@ -4,13 +4,8 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 6
-   l0:SNRh
-   l0:echoID
-   l1:echoFilter
-   l3:PhiDPc_smooth2w
-   l4:KDPc_leastsquare_2W
-   l2:PhiDPc_KDPc_Vulpiani
+dataSetList STRARR 1
+   H_ISO0
    
       
 
@@ -94,17 +89,35 @@ dataSetList STRARR 6
 #    lookup_table INT 0
 #    MAKE_GLOBAL INT 1    
 #
-#H_ISO0 STRUCT 5
-#    type STRING HZT
-#    datatype STRARR 1
-#        dBZ
-#    regular_grid INT 0
-#    keep_in_memory INT 1
-#    MAKE_GLOBAL INT 1    
-#
-#
-#        
-#    
+H_ISO0 STRUCT 6
+    type STRING HZT
+    datatype STRARR 1
+        dBZ
+    regular_grid INT 0
+    keep_in_memory INT 1
+    MAKE_GLOBAL INT 1  
+    products STRUCT 4
+      AZ103 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING H_ISO0
+      AZ107 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING H_ISO0
+      AZ111 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING H_ISO0
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING H_ISO0    
+
+
+        
+    
 # ==========================================================================================
 #                 raw data processing
 # ==========================================================================================

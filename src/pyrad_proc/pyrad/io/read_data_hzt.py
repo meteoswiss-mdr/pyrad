@@ -25,7 +25,7 @@ from ..io.io_aux import get_fieldname_cosmo
 from pyart.core import wgs84_to_swissCH1903
 from pyart.config import get_metadata, get_field_name
 from pyart.exceptions import MissingOptionalDependency
-from pyart.aux_io import metranet_read_cartesian
+from pyart.aux_io import read_product
 from ..io.read_data_cosmo import _put_radar_in_swiss_coord
 
 import time
@@ -161,6 +161,8 @@ def get_iso0_field(hzt_data, hzt_ind, z_radar, field_name='height_over_iso0'):
     field_dict['data'] = z_radar-values[hzt_ind['data'].flatten()].reshape(
         nrays, ngates)
 
+    print(field_dict['data'])
+
     return field_dict
 
 
@@ -180,7 +182,7 @@ def read_hzt_data(fname, chy0=255., chx0=-160.):
         dictionary with the data and metadata
 
     """
-    ret = metranet_read_cartesian(fname, physic_value=True)
+    ret = read_product(fname, physic_value=True, masked_array=True)
     var_data = {
         'units': 'meters_above_mean_sea_level',
         'data': ret.data,
@@ -200,16 +202,18 @@ def read_hzt_data(fname, chy0=255., chx0=-160.):
         'long_name': "x-coordinate in Swiss coordinate system",
         'standard_name': "projection_x_coordinate",
         'units': "m",
-        'data': (np.arange(int(ret.header['column']))*ret.header['rect_xres'] +
-                 chy0+float(ret.header['rect_xres'])/2.)*1000.
+        'data': ((np.arange(int(ret.header['column'])) *
+                 float(ret.header['rect_xres'])+chy0 +
+                 float(ret.header['rect_xres'])/2.)*1000.)
     }
     y_1 = {
         'axis': "Y",
         'long_name': "y-coordinate in Swiss coordinate system",
         'standard_name': "projection_y_coordinate",
         'units': "m",
-        'data': (np.arange(int(ret.header['row']))*ret.header['rect_yres'] +
-                 chx0+float(ret.header['rect_yres'])/2.)*1000.
+        'data': ((np.arange(int(ret.header['row'])) *
+                 float(ret.header['rect_yres'])+chx0 +
+                 float(ret.header['rect_yres'])/2.)*1000.)
     }
 
     hzt_data = {
