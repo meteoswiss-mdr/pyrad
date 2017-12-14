@@ -7,6 +7,7 @@ Auxiliary functions for reading/writing files
 .. autosummary::
     :toctree: generated/
 
+    map_hydro
     get_save_dir
     make_filename
     generate_field_name_str
@@ -35,10 +36,40 @@ import datetime
 import csv
 import xml.etree.ElementTree as et
 from warnings import warn
+from copy import deepcopy
 
 import numpy as np
 
 from pyart.config import get_metadata
+
+
+def map_hydro(hydro_data_op):
+    """
+    maps the operational hydrometeor classification identifiers to the ones
+    used by Py-ART
+
+    Parameters
+    ----------
+    hydro_data_op : numpy array
+        The operational hydrometeor classification data
+
+    Returns
+    -------
+    hydro_data_py : numpy array
+        The pyart hydrometeor classification data
+
+    """
+    hydro_data_py = deepcopy(hydro_data_op)
+    hydro_data_py[hydro_data_op == 25] = 2  # crystals
+    hydro_data_py[hydro_data_op == 50] = 1  # aggregate
+    hydro_data_py[hydro_data_op == 75] = 3  # light rain
+    hydro_data_py[hydro_data_op == 100] = 5  # rain
+    hydro_data_py[hydro_data_op == 125] = 4  # graupel
+    hydro_data_py[hydro_data_op == 150] = 7  # wet snow
+    hydro_data_py[hydro_data_op == 175] = 9  # ice hail
+    hydro_data_py[hydro_data_op == 200] = 8  # melting hail
+
+    return hydro_data_py
 
 
 def get_save_dir(basepath, procname, dsname, prdname, timeinfo=None,
@@ -518,23 +549,23 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
                 subf = ('M' + cfg['RadarRes'][ind_rad] +
                         cfg['RadarName'][ind_rad] + yy + 'hdf' + dy)
                 datapath = cfg['datapath'][ind_rad] + subf + '/'
-                
+
                 # check that M files exist. if not search P files
                 dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
                 if len(dayfilelist) == 0:
                     subf = ('P' + cfg['RadarRes'][ind_rad] +
-                        cfg['RadarName'][ind_rad] + yy + 'hdf' + dy)
+                            cfg['RadarName'][ind_rad] + yy + 'hdf' + dy)
                     datapath = cfg['datapath'][ind_rad] + subf + '/'
                     basename = ('P'+cfg['RadarRes'][ind_rad] +
-                        cfg['RadarName'][ind_rad]+dayinfo)                    
-            else:                
+                                cfg['RadarName'][ind_rad]+dayinfo)
+            else:
                 datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
-                
+
                 # check that M files exist. if not search P files
                 dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
                 if len(dayfilelist) == 0:
                     basename = ('P'+cfg['RadarRes'][ind_rad] +
-                        cfg['RadarName'][ind_rad]+dayinfo)
+                                cfg['RadarName'][ind_rad]+dayinfo)
                     datapath = (cfg['datapath'][ind_rad]+dayinfo+'/' +
                                 basename+'/')
             if (not os.path.isdir(datapath)):

@@ -46,5 +46,5 @@ configpath STRING $HOME/pyrad/config/
 locationConfigFile STRING $HOME/pyrad/config/processing/rad4alp_hydro_PLA_loc.txt
 
 # Configuration of the product generation
-productConfigFile STRING $HOME/pyrad/config/processing/rad4alp_hydro_PLA_prod_fvh_t2.txt
+productConfigFile STRING $HOME/pyrad/config/processing/rad4alp_hydro_PLA_prod.txt
 

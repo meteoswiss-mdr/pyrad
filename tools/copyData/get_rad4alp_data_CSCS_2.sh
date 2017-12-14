@@ -106,7 +106,7 @@ for ((irad=0; irad<${nrad}; irad++)); do
             mkdir -p ${data_destbase}${years}${julday}/YM${radar}${years}${julday}/
             cd ${data_destbase}${years}${julday}/YM${radar}${years}${julday}/
             
-            cp ${phdata_origbase}${yearl}/${years}${julday}/YM${radar}${years}${julday}.zip .
+            cp ${rawdata_origbase}${yearl}/${years}${julday}/YM${radar}${years}${julday}.zip .
             unzip -o YM${radar}${years}${julday}.zip
             chmod -R gu+rw ${data_destbase}${years}${julday}/YM${radar}${years}${julday}/
             rm YM${radar}${years}${julday}.zip
