@@ -183,6 +183,10 @@ def read_hzt_data(fname, chy0=255., chx0=-160.):
 
     """
     ret = read_product(fname, physic_value=True, masked_array=True)
+    if ret is None:
+        warn('Unable to read HZT file '+fname)
+        return None
+
     var_data = {
         'units': 'meters_above_mean_sea_level',
         'data': ret.data,

@@ -277,6 +277,9 @@ def process_hzt(procstatus, dscfg, radar_list=None):
     if keep_in_memory:
         if dscfg['initialized'] == 0:
             hzt_data = read_hzt_data(fname)
+            if hzt_data is None:
+                warn('HZT data not found')
+                return None, None
             hzt_coord = {
                 'x': hzt_data['x'],
                 'y': hzt_data['y']
@@ -303,6 +306,9 @@ def process_hzt(procstatus, dscfg, radar_list=None):
             hzt_data = dscfg['global_data']['hzt_data']
     else:
         hzt_data = read_hzt_data(fname)
+        if hzt_data is None:
+            warn('HZT data not found')
+            return None, None
         hzt_coord = {
             'x': hzt_data['x'],
             'y': hzt_data['y']
@@ -521,7 +527,7 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
                     cosmo_field_interp = interpol_field(
                         radar, radar_aux, field_name)
                     new_dataset.add_field(field_name, cosmo_field_interp)
-            except:
+            except Exception:
                 warn('Unable to add COSMO '+field_name +
                      ' field to radar object')
                 return None, None
@@ -605,6 +611,9 @@ def process_hzt_lookup_table(procstatus, dscfg, radar_list=None):
                 hzt_radar = pyart.io.read_cfradial(fname_ind2[0])
         else:
             hzt_data = read_hzt_data(fname)
+            if hzt_data is None:
+                warn('HZT data not found')
+                return None, None
             hzt_coord = {
                 'x': hzt_data['x'],
                 'y': hzt_data['y']
@@ -673,7 +682,7 @@ def process_hzt_lookup_table(procstatus, dscfg, radar_list=None):
             hzt_field_interp = interpol_field(
                 radar, radar_aux, 'height_over_iso0')
             new_dataset.add_field('height_over_iso0', hzt_field_interp)
-    except:
+    except Exception:
         warn('Unable to add height_over_iso0 ' +
              ' field to radar object')
         return None, None
@@ -800,6 +809,9 @@ def process_hzt_coord(procstatus, dscfg, radar_list=None):
     fname = find_hzt_file(dscfg['timeinfo'], dscfg, ind_rad=ind_rad)
 
     hzt_data = read_hzt_data(fname)
+    if hzt_data is None:
+        warn('HZT data not found')
+        return None, None
     hzt_coord = {
         'x': hzt_data['x'],
         'y': hzt_data['y']
