@@ -105,9 +105,9 @@ def main():
                     "====== PYRAD trajectory processing finished: ")
 
     # try:  #XXX
-    if args.preproc_cfgfile is not None:
-        pyrad_main(args.preproc_cfgfile, dt_starttime, dt_endtime,
-                   trajfile=args.trajfile, infostr=args.infostr)
+    #if args.preproc_cfgfile is not None:
+    #    pyrad_main(args.preproc_cfgfile, dt_starttime, dt_endtime,
+    #               trajfile=args.trajfile, infostr=args.infostr)
 
     pyrad_main(args.cfgfile, dt_starttime, dt_endtime,
                trajfile=args.trajfile, infostr=args.infostr)
