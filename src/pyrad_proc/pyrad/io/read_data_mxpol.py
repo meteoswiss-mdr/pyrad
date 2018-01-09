@@ -104,7 +104,7 @@ class pyrad_MXPOL(pyart.core.Radar):
         idx_stop = 0
         elevations = []
         azimuths = []
-		ranges = []
+	ranges = []
         nyquist = []
 
         # read data and create dictionaries
