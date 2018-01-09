@@ -104,7 +104,7 @@ class pyrad_MXPOL(pyart.core.Radar):
         idx_stop = 0
         elevations = []
         azimuths = []
-	ranges = []
+        ranges = []
         nyquist = []
 
         # read data and create dictionaries
@@ -124,7 +124,7 @@ class pyrad_MXPOL(pyart.core.Radar):
             elevations.extend(list(data['elevation']))
             nyquist.extend([data['nyquist_vel']]*N_az)
             azimuths.extend(list(data['azimuth']))
-			ranges.extend(list(data['range']))
+            ranges.extend(list(data['range']))
 
             for j, v in enumerate(varnames):
                 if v in data.keys():
