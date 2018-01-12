@@ -9,6 +9,7 @@ Functions for reading COSMO data
 
     cosmo2radar_data
     cosmo2radar_coord
+    hzt2radar_data
     get_cosmo_fields
     read_cosmo_data
     read_cosmo_coord
@@ -484,7 +485,7 @@ def _put_radar_in_swiss_coord(radar):
     Returns
     -------
     x_radar, y_radar, z_radar : 2D arrays
-        arrays containing swiss coordinates of the radar
+        arrays containing swiss coordinates of the radar [in m]
 
     """
     x0, y0, z0 = wgs84_to_swissCH1903(

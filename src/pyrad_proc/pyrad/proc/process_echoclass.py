@@ -627,6 +627,8 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
         return None, None
 
     if dscfg['HYDRO_METHOD'] == 'SEMISUPERVISED':
+        temp_field = None
+        iso0_field = None
         for datatypedescr in dscfg['datatype']:
             radarnr, datagroup, datatype, dataset, product = (
                 get_datatype_fields(datatypedescr))
@@ -648,6 +650,8 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
                 kdp_field = 'corrected_specific_differential_phase'
             if datatype == 'TEMP':
                 temp_field = 'temperature'
+            if datatype == 'H_ISO0':
+                iso0_field = 'height_over_iso0'
 
         ind_rad = int(radarnr[5:8])-1
         if radar_list[ind_rad] is None:
@@ -655,11 +659,29 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
             return None, None
         radar = radar_list[ind_rad]
 
+        if temp_field is None and iso0_field is None:
+            warn('iso0 or temperature fields needed to create hydrometeor ' +
+                 'classification field')
+            return None, None
+
+        if temp_field is not None and (temp_field not in radar.fields):
+            warn('Unable to create hydrometeor classification field. ' +
+                 'Missing temperature field')
+            return None, None
+
+        if iso0_field is not None and (iso0_field not in radar.fields):
+            warn('Unable to create hydrometeor classification field. ' +
+                 'Missing height over iso0 field')
+            return None, None
+
+        temp_ref = 'temperature'
+        if iso0_field is not None:
+            temp_ref = 'height_over_iso0'
+
         if ((refl_field not in radar.fields) or
                 (zdr_field not in radar.fields) or
                 (rhv_field not in radar.fields) or
-                (kdp_field not in radar.fields) or
-                (temp_field not in radar.fields)):
+                (kdp_field not in radar.fields)):
             warn('Unable to create hydrometeor classification field. ' +
                  'Missing data')
             return None, None
@@ -725,6 +747,26 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
                 53.2413,  1.8723, 0.3857, 0.9454, -0470.8]  # MH
             mass_centers[8, :] = [
                 44.7896,  0.0015, 0.1349, 0.9968,  1116.7]  # IH/HDG
+        elif dscfg['RADARCENTROIDS'] == 'W':
+            #       Zh      ZDR     kdp   RhoHV   delta_Z
+            mass_centers[0, :] = [
+                16.7650,  0.3754, 0.0442, 0.9866,  1409.0]  # DS
+            mass_centers[1, :] = [
+                01.4418,  0.3786, 0.0000, 0.9490,  1415.8]  # CR
+            mass_centers[2, :] = [
+                16.0987,  0.3238, 0.0000, 0.9871, -0818.7]  # LR
+            mass_centers[3, :] = [
+                36.5465,  0.2041, 0.0731, 0.9952,  0745.4]  # GR
+            mass_centers[4, :] = [
+                43.4011,  0.6658, 0.3241, 0.9894, -0778.5]  # RN
+            mass_centers[5, :] = [
+                00.9077, -0.4793, 0.0000, 0.9502,  1488.6]  # VI
+            mass_centers[6, :] = [
+                36.8091,  0.7266, 0.1284, 0.9924, -0071.1]  # WS
+            mass_centers[7, :] = [
+                53.8402,  0.8922, 0.5306, 0.9890, -1017.6]  # MH
+            mass_centers[8, :] = [
+                45.9686,  0.0845, 0.0963, 0.9940,  0867.4]  # IH/HDG
         elif dscfg['RADARCENTROIDS'] == 'DX50':
             #       Zh      ZDR     kdp   RhoHV   delta_Z
             mass_centers[0, :] = [
@@ -755,7 +797,8 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
             radar, mass_centers=mass_centers,
             weights=np.array([1., 1., 1., 0.75, 0.5]), refl_field=refl_field,
             zdr_field=zdr_field, rhv_field=rhv_field, kdp_field=kdp_field,
-            temp_field=temp_field, hydro_field=None)
+            temp_field=temp_field, iso0_field=iso0_field, hydro_field=None,
+            temp_ref=temp_ref)
 
         # prepare for exit
         new_dataset = deepcopy(radar)

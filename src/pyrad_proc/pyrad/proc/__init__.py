@@ -18,6 +18,8 @@ Auxiliary functions
     process_save_radar
     process_point_measurement
     process_grid
+    process_qvp
+    process_time_height
 
 Echo classification and filtering
 =================================
@@ -60,6 +62,7 @@ Monitoring, calibration and noise correction
     process_correct_noise_rhohv
     process_rhohv_rain
     process_zdr_precip
+    process_zdr_snow
     process_estimate_phidp0
     process_sun_hits
     process_selfconsistency_kdp_phidp
@@ -105,14 +108,18 @@ COSMO data
     process_cosmo
     process_cosmo_lookup_table
     process_cosmo_coord
+    process_hzt
+    process_hzt_lookup_table
+    process_hzt_coord
 
 
 """
 
 from .process_aux import get_process_func, process_raw, process_save_radar
-from .process_aux import process_point_measurement, process_grid
-from .process_traj import process_trajectory, process_traj_atplane, \
-    process_traj_antenna_pattern
+from .process_aux import process_point_measurement, process_grid, process_qvp
+from .process_aux import process_time_height
+from .process_traj import process_trajectory, process_traj_atplane
+from .process_traj import process_traj_antenna_pattern
 
 from .process_echoclass import process_echo_id, process_echo_filter
 from .process_echoclass import process_filter_snr, process_filter_visibility
@@ -131,7 +138,7 @@ from .process_phase import process_attenuation
 
 from .process_calib import process_correct_bias, process_correct_noise_rhohv
 from .process_calib import process_rhohv_rain, process_zdr_precip
-from .process_calib import process_estimate_phidp0
+from .process_calib import process_estimate_phidp0, process_zdr_snow
 from .process_calib import process_selfconsistency_kdp_phidp
 from .process_calib import process_selfconsistency_bias
 from .process_calib import process_monitoring
@@ -147,6 +154,7 @@ from .process_retrieve import process_rainrate, process_wind_vel
 from .process_retrieve import process_windshear
 
 from .process_cosmo import process_cosmo, process_cosmo_lookup_table
-from .process_cosmo import process_cosmo_coord
+from .process_cosmo import process_cosmo_coord, process_hzt
+from .process_cosmo import process_hzt_lookup_table, process_hzt_coord
 
 __all__ = [s for s in dir() if not s.startswith('_')]

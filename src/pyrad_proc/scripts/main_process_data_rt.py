@@ -11,7 +11,7 @@ Welcome to Pyrad!
 This program performs real time processing of the data
 
 To run the processing framework type:
-    python main_process_data.py \
+    python main_process_data_rt.py \
 [config_files] --starttime [process_start_time] --endtime [process_end_time] \
 --cfgpath [cfgpath] --proc_period [proc_period]
 
@@ -21,13 +21,13 @@ the user interrupts it.
 cfgpath is an optional argument with default: \
 '$HOME/pyrad/config/processing/'
 proc_period is the time that has to pass before attempting to restart the
-processing in s
+processing in [s]
 if proc_finish is not none it indicates the time the program is allowed to ran
 berfore forcing it to end
 
 
 Example:
-    python main_process_data.py 'paradiso_fvj_vol.txt' \
+    python main_process_data_rt.py 'paradiso_fvj_vol.txt' \
 'paradiso_fvj_rhi.txt' --starttime '20140523000000' \
 --endtime '20140523001000' --cfgpath '$HOME/pyrad/config/processing/' \
 --proc_period 60 --proc_finish 120

@@ -14,10 +14,13 @@ determined points or regions of interest.
     process_save_radar
     process_point_measurement
     process_grid
+    process_qvp
+    process_time_height
 """
 
 from copy import deepcopy
 from warnings import warn
+import datetime
 import numpy as np
 from netCDF4 import num2date
 
@@ -26,8 +29,7 @@ import pyart
 from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 from .process_traj import process_trajectory, process_traj_atplane, \
     process_traj_antenna_pattern
-
-from netCDF4 import num2date, date2num
+from ..util.radar_utils import find_rng_index
 
 
 def get_process_func(dataset_type, dsname):
@@ -56,6 +58,12 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'GRID':
         func_name = process_grid
         dsformat = 'GRID'
+    elif dataset_type == 'QVP':
+        func_name = process_qvp
+        dsformat = 'QVP'
+    elif dataset_type == 'TIME_HEIGHT':
+        func_name = process_time_height
+        dsformat = 'QVP'
     elif dataset_type == 'CDF':
         func_name = 'process_cdf'
     elif dataset_type == 'NCVOL':
@@ -116,6 +124,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_rhohv_rain'
     elif dataset_type == 'ZDR_PREC':
         func_name = 'process_zdr_precip'
+    elif dataset_type == 'ZDR_SNOW':
+        func_name = 'process_zdr_snow'
     elif dataset_type == 'SELFCONSISTENCY_KDP_PHIDP':
         func_name = 'process_selfconsistency_kdp_phidp'
     elif dataset_type == 'SELFCONSISTENCY_BIAS':
@@ -127,6 +137,13 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'COSMO_COORD':
         func_name = 'process_cosmo_coord'
         dsformat = 'COSMO_COORD'
+    elif dataset_type == 'HZT_COORD':
+        func_name = 'process_hzt_coord'
+        dsformat = 'COSMO_COORD'
+    elif dataset_type == 'HZT':
+        func_name = 'process_hzt'
+    elif dataset_type == 'HZT_LOOKUP':
+        func_name = 'process_hzt_lookup_table'
     elif dataset_type == 'TIME_AVG':
         func_name = 'process_time_avg'
         dsformat = 'TIMEAVG'
@@ -498,6 +515,10 @@ def process_grid(procstatus, dscfg, radar_list=None):
 
     radar = radar_list[ind_rad]
 
+    if field_name not in radar.fields:
+        warn('Field name '+field_name+' not available in radar object')
+        return None, None
+
     # default parameters
     xmin = -40.
     xmax = 40.
@@ -575,3 +596,368 @@ def process_grid(procstatus, dscfg, radar_list=None):
         fields=[field_name])
 
     return grid, ind_rad
+
+
+def process_qvp(procstatus, dscfg, radar_list=None):
+    """
+    Computes quasi vertical profiles
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : string. Dataset keyword
+            The data type where we want to extract the point measurement
+        anglenr : int
+            The sweep number to use. It assumes the radar volume consists on
+            PPI scans
+        hmax : float
+            The maximum height to plot [m]. Default 10000.
+        hres : float
+            The height resolution [m]. Default 50
+
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the QVP and a keyboard stating whether the
+        processing has finished or not.
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus == 0:
+        return None, None
+
+    if procstatus == 1:
+        for datatypedescr in dscfg['datatype']:
+            radarnr, datagroup, datatype, dataset, product = (
+                get_datatype_fields(datatypedescr))
+            break
+        field_name = get_fieldname_pyart(datatype)
+        ind_rad = int(radarnr[5:8])-1
+
+        if ((radar_list is None) or (radar_list[ind_rad] is None)):
+            warn('ERROR: No valid radar')
+            return None, None
+
+        radar = radar_list[ind_rad]
+
+        if field_name not in radar.fields:
+            warn('Field name '+field_name+' not available in radar object')
+            return None, None
+
+        # default parameters
+        anglenr = 0
+        hmax = 10000.
+        hres = 50.
+
+        if 'anglenr' in dscfg:
+            anglenr = dscfg['anglenr']
+        if 'hmax' in dscfg:
+            hmax = dscfg['hmax']
+        if 'hres' in dscfg:
+            hres = dscfg['hres']
+
+        radar_aux = deepcopy(radar)
+        radar_aux = radar_aux.extract_sweeps([anglenr])
+
+        # initialize dataset
+        if dscfg['initialized'] == 0:
+            qvp_aux = deepcopy(radar_aux)
+            # prepare space for field
+            qvp_aux.fields = dict()
+            qvp_aux.add_field(
+                field_name, deepcopy(radar_aux.fields[field_name]))
+            qvp_aux.fields[field_name]['data'] = np.array([], dtype='float64')
+
+            # fixed radar objects parameters
+            qvp_aux.range['data'] = np.arange(hmax/hres)*hres+hres/2.
+            qvp_aux.ngates = len(qvp_aux.range['data'])
+
+            qvp_aux.time['units'] = pyart.io.make_time_unit_str(
+                dscfg['timeinfo'])
+            qvp_aux.time['data'] = np.array([], dtype='float64')
+            qvp_aux.scan_type = 'qvp'
+            qvp_aux.sweep_mode['data'] = np.array(['qvp'])
+            qvp_aux.sweep_start_ray_index['data'] = np.array(
+                [0], dtype='int32')
+
+            # ray dependent radar objects parameters
+            qvp_aux.sweep_end_ray_index['data'] = np.array([-1], dtype='int32')
+            qvp_aux.rays_per_sweep = np.array([0], dtype='int32')
+            qvp_aux.azimuth['data'] = np.array([], dtype='float64')
+            qvp_aux.elevation['data'] = np.array([], dtype='float64')
+            qvp_aux.nrays = 0
+
+            global_dict = dict()
+            global_dict.update({'start_time': dscfg['timeinfo']})
+            global_dict.update({'radar_obj': qvp_aux})
+            dscfg['global_data'] = global_dict
+            dscfg['initialized'] = 1
+
+        # modify metadata
+        qvp = dscfg['global_data']['radar_obj']
+
+        start_time = num2date(0, qvp.time['units'], qvp.time['calendar'])
+        qvp.time['data'] = np.append(
+            qvp.time['data'], (dscfg['timeinfo'] - start_time).total_seconds())
+        qvp.sweep_end_ray_index['data'][0] += 1
+        qvp.rays_per_sweep[0] += 1
+        qvp.nrays += 1
+
+        qvp.azimuth['data'] = np.ones((qvp.nrays, ), dtype='float64')*0.
+        qvp.elevation['data'] = (
+            np.ones((qvp.nrays, ), dtype='float64') *
+            qvp.fixed_angle['data'][0])
+
+        qvp.gate_longitude['data'] = (
+            np.ones((qvp.nrays, qvp.ngates), dtype='float64') *
+            qvp.longitude['data'][0])
+        qvp.gate_latitude['data'] = (
+            np.ones((qvp.nrays, qvp.ngates), dtype='float64') *
+            qvp.latitude['data'][0])
+        qvp.gate_altitude['data'] = np.broadcast_to(
+            qvp.range['data'], (qvp.nrays, qvp.ngates))
+
+        # compute QVP data
+        values = np.ma.mean(radar_aux.fields[field_name]['data'], axis=0)
+        # altitude corresponding to qvp grid:
+        qvp_data = np.ma.zeros(qvp.ngates)
+        qvp_data[:] = np.ma.masked
+        for ind_r, h in enumerate(qvp.range['data']):
+            ind_h = find_rng_index(
+                radar_aux.gate_altitude['data'][0, :], h, rng_tol=hres/2.)
+            if ind_h is None:
+                continue
+            qvp_data[ind_r] = values[ind_h]
+
+        if np.size(qvp.fields[field_name]['data']) == 0:
+            qvp.fields[field_name]['data'] = qvp_data.reshape(1, qvp.ngates)
+        else:
+            qvp.fields[field_name]['data'] = np.ma.concatenate(
+                (qvp.fields[field_name]['data'],
+                 qvp_data.reshape(1, qvp.ngates)))
+
+        dscfg['global_data']['radar_obj'] = qvp
+
+        new_dataset = dict()
+        new_dataset.update({'radar_obj': qvp})
+        new_dataset.update({'radar_type': 'temporal'})
+        new_dataset.update({'start_time': dscfg['global_data']['start_time']})
+
+        return new_dataset, ind_rad
+
+    if procstatus == 2:
+        for datatypedescr in dscfg['datatype']:
+            radarnr, datagroup, datatype, dataset, product = (
+                get_datatype_fields(datatypedescr))
+            break
+
+        ind_rad = int(radarnr[5:8])-1
+
+        qvp = dscfg['global_data']['radar_obj']
+
+        new_dataset = dict()
+        new_dataset.update({'radar_obj': qvp})
+        new_dataset.update({'radar_type': 'final'})
+        new_dataset.update({'start_time': dscfg['global_data']['start_time']})
+
+        return new_dataset, ind_rad
+
+
+def process_time_height(procstatus, dscfg, radar_list=None):
+    """
+    Produces time height radar objects at a point of interest defined by
+    latitude and longitude
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : string. Dataset keyword
+            The data type where we want to extract the point measurement
+        lat, lon : float
+            latitude and longitude of the point of interest [deg]
+        latlon_tol : float
+            tolerance in latitude and longitude in deg. Default 0.0005
+        hmax : float
+            The maximum height to plot [m]. Default 10000.
+        hres : float
+            The height resolution [m]. Default 50
+
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the QVP and a keyboard stating whether the
+        processing has finished or not.
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus == 0:
+        return None, None
+
+    if procstatus == 1:
+        for datatypedescr in dscfg['datatype']:
+            radarnr, datagroup, datatype, dataset, product = (
+                get_datatype_fields(datatypedescr))
+            break
+        field_name = get_fieldname_pyart(datatype)
+        ind_rad = int(radarnr[5:8])-1
+
+        if ((radar_list is None) or (radar_list[ind_rad] is None)):
+            warn('ERROR: No valid radar')
+            return None, None
+
+        radar = radar_list[ind_rad]
+
+        if field_name not in radar.fields:
+            warn('Field name '+field_name+' not available in radar object')
+            return None, None
+
+        # default parameters
+        lon = dscfg['lon']
+        lat = dscfg['lat']
+        latlon_tol = 0.0005
+        if 'latlon_tol' in dscfg:
+            latlon_tol = dscfg['latlon_tol']
+
+        hmax = 10000.
+        hres = 50.
+        if 'hmax' in dscfg:
+            hmax = dscfg['hmax']
+        if 'hres' in dscfg:
+            hres = dscfg['hres']
+
+        radar_aux = deepcopy(radar)
+
+        # initialize dataset
+        if dscfg['initialized'] == 0:
+            th_aux = deepcopy(radar_aux)
+            # prepare space for field
+            th_aux.fields = dict()
+            th_aux.add_field(
+                field_name, deepcopy(radar_aux.fields[field_name]))
+            th_aux.fields[field_name]['data'] = np.array([], dtype='float64')
+
+            # fixed radar objects parameters
+            th_aux.range['data'] = np.arange(hmax/hres)*hres+hres/2.
+            th_aux.ngates = len(th_aux.range['data'])
+
+            th_aux.time['units'] = pyart.io.make_time_unit_str(
+                dscfg['timeinfo'])
+            th_aux.time['data'] = np.array([], dtype='float64')
+            th_aux.scan_type = 'time_height'
+            th_aux.sweep_mode['data'] = np.array(['time_height'])
+            th_aux.sweep_start_ray_index['data'] = np.array(
+                [0], dtype='int32')
+            th_aux.fixed_angle['data'] = np.array([90.], dtype='float64')
+            th_aux.sweep_number['data'] = np.array([0], dtype='int32')
+            th_aux.nsweeps = 1
+
+            # ray dependent radar objects parameters
+            th_aux.sweep_end_ray_index['data'] = np.array([-1], dtype='int32')
+            th_aux.rays_per_sweep = np.array([0], dtype='int32')
+            th_aux.azimuth['data'] = np.array([], dtype='float64')
+            th_aux.elevation['data'] = np.array([], dtype='float64')
+            th_aux.nrays = 0
+
+            global_dict = dict()
+            global_dict.update({'start_time': dscfg['timeinfo']})
+            global_dict.update({'radar_obj': th_aux})
+            dscfg['global_data'] = global_dict
+            dscfg['initialized'] = 1
+
+        # modify metadata
+        th = dscfg['global_data']['radar_obj']
+
+        start_time = num2date(0, th.time['units'], th.time['calendar'])
+        th.time['data'] = np.append(
+            th.time['data'], (dscfg['timeinfo'] - start_time).total_seconds())
+        th.sweep_end_ray_index['data'][0] += 1
+        th.rays_per_sweep[0] += 1
+        th.nrays += 1
+
+        th.azimuth['data'] = np.ones((th.nrays, ), dtype='float64')*0.
+        th.elevation['data'] = np.ones((th.nrays, ), dtype='float64')*90.
+
+        th.gate_longitude['data'] = (
+            np.ones((th.nrays, th.ngates), dtype='float64')*lon)
+        th.gate_latitude['data'] = (
+            np.ones((th.nrays, th.ngates), dtype='float64')*lat)
+        th.gate_altitude['data'] = np.broadcast_to(
+            th.range['data'], (th.nrays, th.ngates))
+
+        # find data
+        th_data = np.ma.zeros(th.ngates)
+        th_data[:] = np.ma.masked
+
+        # find gates close to lat lon point
+        inds = np.where(np.logical_and(
+            np.logical_and(
+                radar_aux.gate_latitude['data'][:, :] < lat+latlon_tol,
+                radar_aux.gate_latitude['data'][:, :] > lat-latlon_tol),
+            np.logical_and(
+                radar_aux.gate_longitude['data'][:, :] < lon+latlon_tol,
+                radar_aux.gate_longitude['data'][:, :] > lon-latlon_tol)))
+
+        # find closest altitude
+        if len(inds[0]) > 0:
+            values = radar_aux.fields[field_name]['data'][inds]
+            altitudes = radar_aux.gate_altitude['data'][inds]
+            for ind_r, h in enumerate(th.range['data']):
+                ind_h = find_rng_index(altitudes, h, rng_tol=hres/2.)
+                if ind_h is None:
+                    continue
+                th_data[ind_r] = values[ind_h]
+        else:
+            warn('No data found at point lat '+str(lat)+' +- ' +
+                 str(latlon_tol)+' lon '+str(lon)+' +- '+
+                 str(latlon_tol)+' deg')
+
+        if np.size(th.fields[field_name]['data']) == 0:
+            th.fields[field_name]['data'] = th_data.reshape(1, th.ngates)
+        else:
+            th.fields[field_name]['data'] = np.ma.concatenate(
+                (th.fields[field_name]['data'],
+                 th_data.reshape(1, th.ngates)))
+
+        dscfg['global_data']['radar_obj'] = th
+
+        new_dataset = dict()
+        new_dataset.update({'radar_obj': th})
+        new_dataset.update({'radar_type': 'temporal'})
+        new_dataset.update({'start_time': dscfg['global_data']['start_time']})
+
+        return new_dataset, ind_rad
+
+    if procstatus == 2:
+        for datatypedescr in dscfg['datatype']:
+            radarnr, datagroup, datatype, dataset, product = (
+                get_datatype_fields(datatypedescr))
+            break
+
+        ind_rad = int(radarnr[5:8])-1
+
+        th = dscfg['global_data']['radar_obj']
+
+        new_dataset = dict()
+        new_dataset.update({'radar_obj': th})
+        new_dataset.update({'radar_type': 'final'})
+        new_dataset.update({'start_time': dscfg['global_data']['start_time']})
+
+        return new_dataset, ind_rad

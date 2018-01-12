@@ -14,6 +14,7 @@ Functions for reading radar data files
     merge_scans_cosmo
     merge_scans_cosmo_rad4alp
     merge_scans_dem_rad4alp
+    merge_scans_hydro_rad4alp
     merge_fields_rainbow
     merge_fields_cfradial
     merge_fields_dem
@@ -38,14 +39,14 @@ import pyart
 try:
     import wradlib as wrl
     _WRADLIB_AVAILABLE = True
-except:
+except Exception:
     _WRADLIB_AVAILABLE = False
 
 from .read_data_other import read_status, read_rad4alp_cosmo, read_rad4alp_vis
 from .read_data_mxpol import pyrad_MXPOL, pyrad_MCH
 
 from .io_aux import get_datatype_metranet, get_fieldname_pyart, get_file_list
-from .io_aux import get_datatype_fields, get_datetime
+from .io_aux import get_datatype_fields, get_datetime, map_hydro
 from .io_aux import find_cosmo_file, find_rad4alpcosmo_file
 
 
@@ -78,6 +79,7 @@ def get_data(voltime, datatypesdescr, cfg):
     datatype_rad4alpcosmo = list()
     datatype_dem = list()
     datatype_rad4alpdem = list()
+    datatype_rad4alphydro = list()
     datatype_mxpol = list()
     for datatypedescr in datatypesdescr:
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
@@ -98,6 +100,8 @@ def get_data(voltime, datatypesdescr, cfg):
             datatype_dem.append(datatype)
         elif datagroup == 'RAD4ALPDEM':
             datatype_rad4alpdem.append(datatype)
+        elif datagroup == 'RAD4ALPHYDRO':
+            datatype_rad4alphydro.append(datatype)
         elif datagroup == 'MXPOL':
             datatype_mxpol.append(datatype)
 
@@ -110,6 +114,7 @@ def get_data(voltime, datatypesdescr, cfg):
     ndatatypes_rad4alpcosmo = len(datatype_rad4alpcosmo)
     ndatatypes_dem = len(datatype_dem)
     ndatatypes_rad4alpdem = len(datatype_rad4alpdem)
+    ndatatypes_rad4alphydro = len(datatype_rad4alphydro)
     ndatatypes_mxpol = len(datatype_mxpol)
 
     radar = None
@@ -183,6 +188,25 @@ def get_data(voltime, datatypesdescr, cfg):
         for i in range(ndatatypes_rad4alpdem):
             radar_aux = merge_scans_dem_rad4alp(
                 voltime, datatype_rad4alpdem[i], cfg, ind_rad=ind_rad)
+            if radar is None:
+                radar = radar_aux
+            else:
+                if radar_aux is not None:
+                    for field_name in radar_aux.fields.keys():
+                        radar.add_field(
+                            field_name, radar_aux.fields[field_name])
+
+    if ndatatypes_rad4alphydro > 0:
+        if ((cfg['RadarRes'][ind_rad] is None) or
+                (cfg['RadarName'][ind_rad] is None)):
+            raise ValueError(
+                'ERROR: Radar Name and Resolution ' +
+                'not specified in config file. ' +
+                'Unable to load rad4alp hydro data')
+
+        for i in range(ndatatypes_rad4alphydro):
+            radar_aux = merge_scans_hydro_rad4alp(
+                voltime, datatype_rad4alphydro[i], cfg, ind_rad=ind_rad)
             if radar is None:
                 radar = radar_aux
             else:
@@ -328,14 +352,25 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
     radar = None
     dayinfo = voltime.strftime('%y%j')
     timeinfo = voltime.strftime('%H%M')
-    basename = 'P'+radar_res+radar_name+dayinfo
+    basename = 'M'+radar_res+radar_name+dayinfo
     if cfg['path_convention'] == 'LTE':
         yy = dayinfo[0:2]
         dy = dayinfo[2:]
-        subf = 'P'+radar_res+radar_name+yy+'hdf'+dy
+        subf = 'M'+radar_res+radar_name+yy+'hdf'+dy
         datapath = basepath+subf+'/'
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
+        if not filename:
+            basename = 'P'+radar_res+radar_name+dayinfo
+            subf = 'P'+radar_res+radar_name+yy+'hdf'+dy
+            datapath = basepath+subf+'/'
     else:
         datapath = basepath+dayinfo+'/'+basename+'/'
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
+        if not filename:
+            basename = 'P'+radar_res+radar_name+dayinfo
+            datapath = basepath+dayinfo+'/'+basename+'/'
     filename = glob.glob(datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
     if not filename:
         warn('No file found in '+datapath+basename+timeinfo+'*.'+scan_list[0])
@@ -633,48 +668,190 @@ def merge_scans_dem_rad4alp(voltime, datatype, cfg, ind_rad=0):
 
     # create the radar object where to store the data
     # taking as reference the metranet polar file
+    radar = None
     dayinfo = voltime.strftime('%y%j')
     timeinfo = voltime.strftime('%H%M')
-    basename = 'P'+cfg['RadarRes'][ind_rad]+cfg['RadarName'][ind_rad]+dayinfo
-    datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
-    filename = glob.glob(
-        datapath+basename+timeinfo+'*.'+cfg['ScanList'][ind_rad][0])
+    radar_res = cfg['RadarRes'][ind_rad]
+    radar_name = cfg['RadarName'][ind_rad]
+    basepath = cfg['datapath'][ind_rad]
+    scan_list = cfg['ScanList'][ind_rad]
 
-    radar = None
+    basename = 'M'+radar_res+radar_name+dayinfo
+    if cfg['path_convention'] == 'LTE':
+        yy = dayinfo[0:2]
+        dy = dayinfo[2:]
+        subf = 'M'+radar_res+radar_name+yy+'hdf'+dy
+        datapath = basepath+subf+'/'
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
+        if not filename:
+            basename = 'P'+radar_res+radar_name+dayinfo
+            subf = 'P'+radar_res+radar_name+yy+'hdf'+dy
+            datapath = basepath+subf+'/'
+    else:
+        datapath = basepath+dayinfo+'/'+basename+'/'
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
+        if not filename:
+            basename = 'P'+radar_res+radar_name+dayinfo
+            datapath = basepath+dayinfo+'/'+basename+'/'
+    filename = glob.glob(datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
     if not filename:
-        warn('No file found in '+datapath+basename+timeinfo+'*.' +
-             cfg['ScanList'][ind_rad][0])
+        warn('No file found in '+datapath+basename+timeinfo+'*.'+scan_list[0])
     else:
         radar = get_data_rad4alp(
-            filename[0], ['dBZ'], cfg['ScanList'][ind_rad][0], cfg,
-            ind_rad=ind_rad)
+            filename[0], ['dBZ'], scan_list[0], cfg, ind_rad=ind_rad)
         radar.fields = dict()
 
         # add visibility data for first scan
         radar.add_field(
-            get_fieldname_pyart(datatype),
-            vis_list[int(cfg['ScanList'][ind_rad][0])-1])
+            get_fieldname_pyart(datatype), vis_list[int(scan_list[0])-1])
 
     # add the other scans
-    for i in range(1, len(cfg['ScanList'][ind_rad])):
+    for i in range(1, len(scan_list)):
         filename = glob.glob(
-            datapath+basename+timeinfo+'*.'+cfg['ScanList'][ind_rad][i])
+            datapath+basename+timeinfo+'*.'+scan_list[i])
         if not filename:
             warn('No file found in '+datapath+basename+timeinfo+'*.' +
-                 cfg['ScanList'][ind_rad][i])
-        else:
-            radar_aux = get_data_rad4alp(
-                filename[0], ['dBZ'], cfg['ScanList'][ind_rad][i], cfg,
-                ind_rad=ind_rad)
-            radar_aux.fields = dict()
+                 scan_list[i])
+            continue
+        radar_aux = get_data_rad4alp(
+            filename[0], ['dBZ'], scan_list[i], cfg, ind_rad=ind_rad)
+        radar_aux.fields = dict()
 
-            radar_aux.add_field(
-                get_fieldname_pyart(datatype),
-                vis_list[int(cfg['ScanList'][ind_rad][i])-1])
-            if radar is None:
-                radar = radar_aux
-            else:
-                radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
+        radar_aux.add_field(
+            get_fieldname_pyart(datatype), vis_list[int(scan_list[i])-1])
+        if radar is None:
+            radar = radar_aux
+        else:
+            radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
+
+    return radar
+
+
+def merge_scans_hydro_rad4alp(voltime, datatype, cfg, ind_rad=0):
+    """
+    merge rad4alp hydrometeor classification scans. If data for all the scans
+    cannot be retrieved returns None
+
+    Parameters
+    ----------
+    voltime: datetime object
+        reference time of the scan
+    datatype : str
+        name of the data type to read
+    cfg : dict
+        configuration dictionary
+    ind_rad : int
+        radar index
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+    radar = None
+    dayinfo = voltime.strftime('%y%j')
+    timeinfo = voltime.strftime('%H%M')
+    radar_res = cfg['RadarRes'][ind_rad]
+    radar_name = cfg['RadarName'][ind_rad]
+    basepath = cfg['datapath'][ind_rad]
+    scan_list = cfg['ScanList'][ind_rad]
+
+    # read hydrometeor classification data file for first scan
+    basename_hydro = 'YM'+radar_name+dayinfo
+    datapath_hydro = basepath+dayinfo+'/'+basename_hydro+'/'
+    filename_hydro = glob.glob(datapath_hydro+basename_hydro+timeinfo+'*.' +
+                               str(800+int(scan_list[0]))+'*')
+    if not filename_hydro:
+        warn('No file found in '+datapath_hydro+basename_hydro+timeinfo+'*.' +
+             str(800+int(scan_list[0])))
+        return None
+
+    hydro_obj = pyart.aux_io.read_product(
+        filename_hydro[0], physic_value=False, masked_array=True)
+
+    if hydro_obj is None:
+        warn('Unable to read file '+filename_hydro)
+        return None
+
+    hydro_field = get_fieldname_pyart(datatype)
+    hydro_dict = pyart.config.get_metadata(hydro_field)
+    hydro_dict['data'] = map_hydro(hydro_obj.data)
+
+    # create the radar object where to store the data
+    # taking as reference the metranet polar file
+    basename = 'M'+radar_res+radar_name+dayinfo
+    if cfg['path_convention'] == 'LTE':
+        yy = dayinfo[0:2]
+        dy = dayinfo[2:]
+        subf = 'M'+radar_res+radar_name+yy+'hdf'+dy
+        datapath = basepath+subf+'/'
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
+        if not filename:
+            basename = 'P'+radar_res+radar_name+dayinfo
+            subf = 'P'+radar_res+radar_name+yy+'hdf'+dy
+            datapath = basepath+subf+'/'
+    else:
+        datapath = basepath+dayinfo+'/'+basename+'/'
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
+        if not filename:
+            basename = 'P'+radar_res+radar_name+dayinfo
+            datapath = basepath+dayinfo+'/'+basename+'/'
+    filename = glob.glob(datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
+    if not filename:
+        warn('No file found in '+datapath+basename+timeinfo+'*.'+scan_list[0])
+    else:
+        radar = get_data_rad4alp(
+            filename[0], ['dBZ'], scan_list[0], cfg, ind_rad=ind_rad)
+        print(np.shape(radar.fields['reflectivity']['data']))
+        radar.fields = dict()
+
+        # add hydrometeor classification data for first scan
+        print(np.shape(hydro_dict['data']))
+
+        radar.add_field(hydro_field, hydro_dict)
+
+    # add the other scans
+    for i in range(1, len(scan_list)):
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*.'+scan_list[i]+'*')
+        if not filename:
+            warn('No file found in '+datapath+basename+timeinfo+'*.' +
+                 scan_list[i])
+            continue
+
+        radar_aux = get_data_rad4alp(
+            filename[0], ['dBZ'], scan_list[i], cfg, ind_rad=ind_rad)
+        radar_aux.fields = dict()
+
+        # read hydrometeor classification data file for other scans
+        filename_hydro = glob.glob(datapath_hydro+basename_hydro+timeinfo +
+                                   '*.'+str(800+int(scan_list[i]))+'*')
+        if not filename_hydro:
+            warn('No file found in '+datapath_hydro+basename_hydro+timeinfo +
+                 '*.'+str(800+int(scan_list[i])))
+            continue
+
+        hydro_obj = pyart.aux_io.read_product(
+            filename_hydro[0], physic_value=False, masked_array=True)
+
+        if hydro_obj is None:
+            warn('Unable to read file '+filename_hydro)
+            continue
+
+        hydro_field = get_fieldname_pyart(datatype)
+        hydro_dict = pyart.config.get_metadata(hydro_field)
+        hydro_dict['data'] = map_hydro(hydro_obj.data)
+
+        radar_aux.add_field(hydro_field, hydro_dict)
+        if radar is None:
+            radar = radar_aux
+        else:
+            radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
 
     return radar
 

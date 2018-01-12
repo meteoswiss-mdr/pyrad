@@ -1444,8 +1444,8 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
         dscfg.update({'asr_highbeam_antenna': cfg['asr_highbeam_antenna']})
     if ('asr_lowbeam_antenna' in cfg):
         dscfg.update({'asr_lowbeam_antenna': cfg['asr_lowbeam_antenna']})
-    if ('asr_position' in cfg):
-        dscfg.update({'asr_position': cfg['asr_position']})
+    if ('target_radar_pos' in cfg):
+        dscfg.update({'target_radar_pos': cfg['target_radar_pos']})
 
     # indicates the dataset has been initialized and aux data is available
     dscfg.update({'initialized': False})
@@ -1627,7 +1627,8 @@ def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
         if ((datagroup != 'COSMO') and (datagroup != 'RAD4ALPCOSMO') and
-                (datagroup != 'DEM') and (datagroup != 'RAD4ALPDEM')):
+                (datagroup != 'DEM') and (datagroup != 'RAD4ALPDEM') and
+                (datagroup != 'RAD4ALPHYDRO')):
             masterdatatypedescr = datatypedescr
             if scan_list is not None:
                 masterscan = scan_list[int(radarnr[5:8])-1][0]
@@ -1654,6 +1655,11 @@ def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
                     masterscan = scan_list[int(radarnr[5:8])-1][0]
                 break
             elif datagroup == 'RAD4ALPDEM':
+                masterdatatypedescr = radarnr+':RAD4ALP:dBZ'
+                if scan_list is not None:
+                    masterscan = scan_list[int(radarnr[5:8])-1][0]
+                break
+            elif datagroup == 'RAD4ALPHYDRO':
                 masterdatatypedescr = radarnr+':RAD4ALP:dBZ'
                 if scan_list is not None:
                     masterscan = scan_list[int(radarnr[5:8])-1][0]

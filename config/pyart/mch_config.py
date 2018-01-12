@@ -88,6 +88,8 @@ unfiltered_differential_reflectivity = 'unfiltered_differential_reflectivity'
 differential_reflectivity_in_precipitation = (
     'differential_reflectivity_in_precipitation')
 
+differential_reflectivity_in_snow = 'differential_reflectivity_in_snow'
+
 # Cross correlation ratio, correlation coefficient, RhoHV
 cross_correlation_ratio = 'cross_correlation_ratio'
 
@@ -172,7 +174,9 @@ colocated_gates = 'colocated_gates'
 # COSMO data fields
 temperature = 'temperature'
 iso0 = 'iso0'
+height_over_iso0 = 'height_over_iso0'
 cosmo_index = 'cosmo_index'
+hzt_index = 'hzt_index'
 
 # DEM fields
 visibility = 'visibility'
@@ -273,6 +277,7 @@ DEFAULT_FIELD_NAMES = {
         unfiltered_differential_reflectivity),
     'differential_reflectivity_in_precipitation': (
         differential_reflectivity_in_precipitation),
+    'differential_reflectivity_in_snow': differential_reflectivity_in_snow,
     'cross_correlation_ratio': cross_correlation_ratio,
     'corrected_cross_correlation_ratio': corrected_cross_correlation_ratio,
     'unfiltered_cross_correlation_ratio': unfiltered_cross_correlation_ratio,
@@ -328,7 +333,9 @@ DEFAULT_FIELD_NAMES = {
         corrected_path_integrated_differential_attenuation),
     'temperature': temperature,
     'iso0': iso0,
+    'height_over_iso0': height_over_iso0,
     'cosmo_index': cosmo_index,
+    'hzt_index': hzt_index,
     'visibility': visibility,
     'differential_phase_texture': differential_phase_texture,
     'cross_correlation_ratio_texture': cross_correlation_ratio_texture,
@@ -764,6 +771,12 @@ DEFAULT_METADATA = {
         'long_name': 'Differential reflectivity in precipitation',
         'coordinates': 'elevation azimuth range'},
 
+    differential_reflectivity_in_snow: {
+        'units': 'dB',
+        'standard_name': 'log_differential_reflectivity_hv_in_snow',
+        'long_name': 'Differential reflectivity in snow',
+        'coordinates': 'elevation azimuth range'},
+
     cross_correlation_ratio: {
         'units': 'ratio',
         'standard_name': 'cross_correlation_ratio_hv',
@@ -1065,11 +1078,24 @@ DEFAULT_METADATA = {
         'boundaries': [0.5, 1.5, 2.5, 3.5],
         'coordinates': 'elevation azimuth range'},
 
+    height_over_iso0: {
+        'units': 'm',
+        'standard_name': 'height_over_iso0',
+        'long_name': 'Height of the range bin respect to the iso0 level',
+        'coordinates': 'elevation azimuth range'},
+
     cosmo_index: {
         'units': 'dimensionless',
         'standard_name': 'cosmo_index',
         'long_name': (
             'indices of the COSMO model corresponding to each radar gate'),
+        'coordinates': 'elevation azimuth range'},
+
+    hzt_index: {
+        'units': 'dimensionless',
+        'standard_name': 'hzt_index',
+        'long_name': (
+            'indices of the HZT corresponding to each radar gate'),
         'coordinates': 'elevation azimuth range'},
 
     visibility: {
@@ -1886,6 +1912,7 @@ DEFAULT_FIELD_COLORMAP = {
     corrected_differential_reflectivity: 'pyart_RefDiff',
     unfiltered_differential_reflectivity: 'pyart_RefDiff',
     differential_reflectivity_in_precipitation: 'pyart_RefDiff',
+    differential_reflectivity_in_snow: 'pyart_RefDiff',
 
     cross_correlation_ratio: 'pyart_RefDiff',
     corrected_cross_correlation_ratio:  'pyart_RefDiff',
@@ -2008,6 +2035,7 @@ DEFAULT_FIELD_LIMITS = {
     corrected_differential_reflectivity: (-1., 8.),
     unfiltered_differential_reflectivity: (-1., 8.),
     differential_reflectivity_in_precipitation: (-10., 10.),
+    differential_reflectivity_in_snow: (-10., 10.),
 
     cross_correlation_ratio: (0.7, 1.),
     corrected_cross_correlation_ratio: (0.7, 1.),
@@ -2062,6 +2090,7 @@ DEFAULT_FIELD_LIMITS = {
     visibility: (0, 100),
 
     temperature: (-60, 30),
+    height_over_iso0: (-6000., 10000.),
 
     # Additional reflectivity like fields
     'CZ': (-10., 65.),

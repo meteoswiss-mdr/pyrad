@@ -22,6 +22,7 @@ from .process_product import generate_intercomp_products
 from .process_product import generate_time_avg_products
 from .process_product import generate_cosmo_coord_products
 from .process_product import generate_grid_products
+from .process_product import generate_qvp_products
 
 from .process_traj_products import generate_traj_product
 
@@ -62,6 +63,8 @@ def get_prodgen_func(dsformat, dsname, dstype):
         func = generate_colocated_gates_products
     elif dsformat == 'COSMO_COORD':
         func = generate_cosmo_coord_products
+    elif dsformat == 'QVP':
+        func = generate_qvp_products
     else:
         raise ValueError("ERROR: Unknown dataset format '%s' of dataset '%s'"
                          "(dataset type '%s')" % (dsformat, dsname, dstype))

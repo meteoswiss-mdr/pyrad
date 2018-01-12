@@ -7,6 +7,7 @@ Auxiliary functions for reading/writing files
 .. autosummary::
     :toctree: generated/
 
+    map_hydro
     get_save_dir
     make_filename
     generate_field_name_str
@@ -23,6 +24,7 @@ Auxiliary functions for reading/writing files
     get_datetime
     find_raw_cosmo_file
     find_cosmo_file
+    find_hzt_file
     find_rad4alpcosmo_file
 
 """
@@ -34,10 +36,40 @@ import datetime
 import csv
 import xml.etree.ElementTree as et
 from warnings import warn
+from copy import deepcopy
 
 import numpy as np
 
 from pyart.config import get_metadata
+
+
+def map_hydro(hydro_data_op):
+    """
+    maps the operational hydrometeor classification identifiers to the ones
+    used by Py-ART
+
+    Parameters
+    ----------
+    hydro_data_op : numpy array
+        The operational hydrometeor classification data
+
+    Returns
+    -------
+    hydro_data_py : numpy array
+        The pyart hydrometeor classification data
+
+    """
+    hydro_data_py = deepcopy(hydro_data_op)
+    hydro_data_py[hydro_data_op == 25] = 2  # crystals
+    hydro_data_py[hydro_data_op == 50] = 1  # aggregate
+    hydro_data_py[hydro_data_op == 75] = 3  # light rain
+    hydro_data_py[hydro_data_op == 100] = 5  # rain
+    hydro_data_py[hydro_data_op == 125] = 4  # graupel
+    hydro_data_py[hydro_data_op == 150] = 7  # wet snow
+    hydro_data_py[hydro_data_op == 175] = 9  # ice hail
+    hydro_data_py[hydro_data_op == 200] = 8  # melting hail
+
+    return hydro_data_py
 
 
 def get_save_dir(basepath, procname, dsname, prdname, timeinfo=None,
@@ -296,6 +328,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'corrected_unfiltered_differential_reflectivity'
     elif datatype == 'ZDR_prec':
         field_name = 'differential_reflectivity_in_precipitation'
+    elif datatype == 'ZDR_snow':
+        field_name = 'differential_reflectivity_in_snow'
 
     elif datatype == 'dBm':
         field_name = 'signal_power_hh'
@@ -397,8 +431,12 @@ def get_fieldname_pyart(datatype):
         field_name = 'temperature'
     elif datatype == 'ISO0':
         field_name = 'iso0'
+    elif datatype == 'H_ISO0':
+        field_name = 'height_over_iso0'
     elif datatype == 'cosmo_index':
         field_name = 'cosmo_index'
+    elif datatype == 'hzt_index':
+        field_name = 'hzt_index'
 
     elif datatype == 'VIS':
         field_name = 'visibility'
@@ -503,16 +541,33 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
                 warn('Unknown scan name')
                 return None
             dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%y%j')
-            basename = ('P'+cfg['RadarRes'][ind_rad] +
+            basename = ('M'+cfg['RadarRes'][ind_rad] +
                         cfg['RadarName'][ind_rad]+dayinfo)
             if cfg['path_convention'] == 'LTE':
                 yy = dayinfo[0:2]
                 dy = dayinfo[2:]
-                subf = ('P' + cfg['RadarRes'][ind_rad] +
+                subf = ('M' + cfg['RadarRes'][ind_rad] +
                         cfg['RadarName'][ind_rad] + yy + 'hdf' + dy)
                 datapath = cfg['datapath'][ind_rad] + subf + '/'
+
+                # check that M files exist. if not search P files
+                dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
+                if len(dayfilelist) == 0:
+                    subf = ('P' + cfg['RadarRes'][ind_rad] +
+                            cfg['RadarName'][ind_rad] + yy + 'hdf' + dy)
+                    datapath = cfg['datapath'][ind_rad] + subf + '/'
+                    basename = ('P'+cfg['RadarRes'][ind_rad] +
+                                cfg['RadarName'][ind_rad]+dayinfo)
             else:
                 datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
+
+                # check that M files exist. if not search P files
+                dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
+                if len(dayfilelist) == 0:
+                    basename = ('P'+cfg['RadarRes'][ind_rad] +
+                                cfg['RadarName'][ind_rad]+dayinfo)
+                    datapath = (cfg['datapath'][ind_rad]+dayinfo+'/' +
+                                basename+'/')
             if (not os.path.isdir(datapath)):
                 warn("WARNING: Unknown datapath '%s'" % datapath)
                 continue
@@ -878,6 +933,55 @@ def find_raw_cosmo_file(voltime, datatype, cfg, ind_rad=0):
 
     if not found:
         warn('WARNING: Unable to get COSMO '+datatype+' information')
+        return None
+    else:
+        return fname[0]
+
+
+def find_hzt_file(voltime, cfg, ind_rad=0):
+    """
+    Search an ISO-0 degree file in HZT format
+
+    Parameters
+    ----------
+    voltime : datetime object
+        volume scan time
+    cfg : dictionary of dictionaries
+        configuration info to figure out where the data is
+    ind_rad : int
+        radar index
+
+    Returns
+    -------
+    fname : str
+        Name of HZT file if it exists. None otherwise
+
+    """
+    # initial run time to look for
+    runhour0 = int(voltime.hour/cfg['CosmoRunFreq'])*cfg['CosmoRunFreq']
+    runtime0 = voltime.replace(hour=runhour0, minute=0, second=0)
+
+    # look for cosmo file
+    found = False
+    nruns_to_check = int((cfg['CosmoForecasted']-1)/cfg['CosmoRunFreq'])
+    for i in range(nruns_to_check):
+        runtime = runtime0-datetime.timedelta(hours=i * cfg['CosmoRunFreq'])
+        target_hour = int((voltime - runtime).total_seconds() / 3600.)
+        runtimestr = runtime.strftime('%y%j%H00')
+
+        daydir = runtime.strftime('%y%j')
+        datapath = cfg['cosmopath'][ind_rad]+'HZT/'+daydir+'/'
+        search_name = datapath+'HZT'+runtimestr+'0L.8'+'{:02d}'.format(
+            target_hour)
+
+        print('Looking for file: '+search_name)
+        fname = glob.glob(search_name)
+        if len(fname) > 0:
+            found = True
+            break
+
+    if not found:
+        warn('WARNING: Unable to find HZT file')
         return None
     else:
         return fname[0]

@@ -31,9 +31,13 @@ Reading cosmo data
 
     cosmo2radar_data
     cosmo2radar_coord
+    hzt2radar_data
+    hzt2radar_coord
     get_cosmo_fields
+    get_iso0_field
     read_cosmo_data
     read_cosmo_coord
+    read_hzt_data
 
 Reading other data
 ==================
@@ -93,6 +97,7 @@ Auxiliary functions
 .. autosummary::
     :toctree: generated/
 
+    map_hydro
     get_save_dir
     make_filename
     get_datetime
@@ -104,6 +109,7 @@ Auxiliary functions
     get_fieldname_cosmo
     generate_field_name_str
     find_raw_cosmo_file
+    find_hzt_file
     add_field
     interpol_field
     get_new_rainbow_file_name
@@ -134,6 +140,9 @@ from .read_data_cosmo import read_cosmo_data, read_cosmo_coord
 from .read_data_cosmo import cosmo2radar_data, cosmo2radar_coord
 from .read_data_cosmo import get_cosmo_fields
 
+from .read_data_hzt import read_hzt_data, hzt2radar_data, hzt2radar_coord
+from .read_data_hzt import get_iso0_field
+
 from .read_data_other import read_status, read_rad4alp_cosmo, read_rad4alp_vis
 from .read_data_other import read_timeseries, read_monitoring_ts, read_ts_cum
 from .read_data_other import get_sensor_data, read_smn, read_disdro_scattering
@@ -153,10 +162,11 @@ from .write_data import write_rhi_profile, write_field_coverage
 from .write_data import write_last_state, write_alarm_msg, send_msg
 
 from .io_aux import get_save_dir, make_filename, get_new_rainbow_file_name
-from .io_aux import get_datetime, get_dataset_fields
+from .io_aux import get_datetime, get_dataset_fields, map_hydro
 from .io_aux import get_file_list, get_datatype_fields
 from .io_aux import get_fieldname_pyart, get_field_unit, get_fieldname_cosmo
 from .io_aux import generate_field_name_str, find_raw_cosmo_file
+from .io_aux import find_hzt_file
 
 from .trajectory import Trajectory
 

@@ -4,12 +4,9 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 5
-   l0:echoID
-   l1:echoFilter
-   l2:outlierFilter
-   l3:wind
-   l4:windshear
+dataSetList STRARR 1
+   H_ISO0
+   
       
 
 # ==========================================================================================
@@ -24,14 +21,32 @@ dataSetList STRARR 5
 #            type  STRING SAVEVOL            
 #            voltype STRING cosmo_index
 #
-#TEMP STRUCT 6
-#    type STRING COSMO_LOOKUP
+#TEMP STRUCT 7
+#    type STRING COSMO
 #    datatype STRARR 1
 #        dBZ        
 #    cosmo_type STRING TEMP
 #    regular_grid INT 0
-#    lookup_table INT 1
+#    keep_in_memory INT 1
 #    MAKE_GLOBAL INT 1
+#    products STRUCT 4
+#      AZ103 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 4
+#         voltype STRING TEMP
+#      AZ107 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 6
+#         voltype STRING TEMP
+#      AZ111 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 8
+#         voltype STRING TEMP
+#      EL06 STRUCT 4
+#         type  STRING PSEUDOPPI_IMAGE
+#         angle FLOAT 6.
+#         EleTol FLOAT 1.
+#         voltype STRING TEMP
 #    
 #ISO0 STRUCT 3
 #    type STRING RAW
@@ -55,7 +70,53 @@ dataSetList STRARR 5
 #         angle FLOAT 6.
 #         EleTol FLOAT 1.
 #         voltype STRING ISO0
+#
+#
+#RAD2HZT STRUCT 3
+#    type STRING HZT_COORD
+#    datatype STRARR 1
+#        dBZ        
+#    products STRUCT 1        
+#        rad2cosmo STRUCT 2
+#            type  STRING SAVEVOL            
+#            voltype STRING hzt_index
+#            
+#H_ISO0_LOOKUP STRUCT 5
+#    type STRING HZT_LOOKUP
+#    datatype STRARR 1
+#        dBZ
+#    regular_grid INT 0
+#    lookup_table INT 0
+#    MAKE_GLOBAL INT 1    
+#
+H_ISO0 STRUCT 6
+    type STRING HZT
+    datatype STRARR 1
+        dBZ
+    regular_grid INT 0
+    keep_in_memory INT 1
+    MAKE_GLOBAL INT 1  
+    products STRUCT 4
+      AZ103 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING H_ISO0
+      AZ107 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING H_ISO0
+      AZ111 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING H_ISO0
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING H_ISO0    
 
+
+        
     
 # ==========================================================================================
 #                 raw data processing
@@ -86,6 +147,33 @@ dataSetList STRARR 5
 #         angle FLOAT 6.
 #         EleTol FLOAT 1.
 #         voltype STRING dBZ
+#
+#RhoHV STRUCT 3
+#   type     STRING RAW
+#   datatype STRING RhoHV
+#   products STRUCT 5
+#      AZ103 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 4
+#         voltype STRING RhoHV
+#      AZ107 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 6
+#         voltype STRING RhoHV
+#      AZ111 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 8
+#         voltype STRING RhoHV
+#      EL06 STRUCT 4
+#         type  STRING PSEUDOPPI_IMAGE
+#         angle FLOAT 6.
+#         EleTol FLOAT 1.
+#         voltype STRING RhoHV         
+#     EL06_MAP STRUCT 4
+#         type  STRING PSEUDOPPI_MAP
+#         angle FLOAT 6.
+#         EleTol FLOAT 1.
+#         voltype STRING RhoHV
 #         
 #uPhiDP_rainbow STRUCT 3
 #   type     STRING RAW
@@ -153,19 +241,31 @@ dataSetList STRARR 5
 #         EleTol FLOAT 1.
 #         voltype STRING KDP
 #         
+#reflectivity STRUCT 6
+#   type     STRING TIME_HEIGHT
+#   datatype STRING dBZ
+#   lon FLOAT 8.21
+#   lat FLOAT 46.72
+#   hres FLOAT 500.
+#   products STRUCT 1        
+#      TIME_HEIGHT STRUCT 4
+#         qvp_type STRING final
+#         type STRING TIME_RANGE
+#         anglenr INT 0
+#         voltype STRING dBZ
 #         
 ## ==========================================================================================
 ##                 secondary moments products
 ## ==========================================================================================
-#SNRh STRUCT 4
-#    type STRING SNR
-#    datatype STRARR 2
-#        dBZ
-#        Nh
-#    output_type STRING SNRh
-#    MAKE_GLOBAL INT 1
-#		 
-#		 
+SNRh STRUCT 4
+    type STRING SNR
+    datatype STRARR 2
+        dBZ
+        Nh
+    output_type STRING SNRh
+    MAKE_GLOBAL INT 1
+		 
+		 
 # ==========================================================================================
 #                 echo identification
 # ==========================================================================================
@@ -203,125 +303,129 @@ echoID STRUCT 4
 # echo type 3 : precip, 2 : clutter, 1 : noise
 echoFilter STRUCT 4
     type STRING ECHO_FILTER
-    datatype STRARR 2
+    datatype STRARR 6
         PROC:echoID        
-		V
+		dBZ
+        ZDR
+        KDP
+        RhoHV
+        PhiDP
     echo_type INT 3
     MAKE_GLOBAL INT 1
     
 # ==========================================================================================
 #                 outlier filter
 # ==========================================================================================    
-outlierFilter STRUCT 8
-    type STRING OUTLIER_FILTER
-    datatype STRARR 1
-        PROC:Vc
-    threshold FLOAT 10.
-    nb INT 2
-    nb_min INT 3
-    percentile_min FLOAT 5.
-    percentile_max float 95.
-    MAKE_GLOBAL INT 1
+#outlierFilter STRUCT 8
+#    type STRING OUTLIER_FILTER
+#    datatype STRARR 1
+#        PROC:Vc
+#    threshold FLOAT 10.
+#    nb INT 2
+#    nb_min INT 3
+#    percentile_min FLOAT 5.
+#    percentile_max float 95.
+#    MAKE_GLOBAL INT 1
     
     
 # ==========================================================================================
 #               wind velocity
 # ==========================================================================================
-wind STRUCT 5
-    type STRING WIND_VEL
-    datatype STRARR 1
-        PROC:Vc
-    vert_proj INT 0
-    MAKE_GLOBAL INT 1
-    products STRUCT 6
-      AZ103 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 4
-         voltype STRING wind_vel_h_az
-      AZ107 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 6
-         voltype STRING wind_vel_h_az
-      AZ111 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 8
-         voltype STRING wind_vel_h_az
-      EL06 STRUCT 4
-         type  STRING PSEUDOPPI_IMAGE
-         angle FLOAT 6.
-         EleTol FLOAT 1.
-         voltype STRING wind_vel_h_az
-	  PROFILE_hres100 STRUCT 7
-         type  STRING RHI_PROFILE
-         voltype STRING wind_vel_h_az
-         anglenr INT 6
-         rangeStart FLOAT        0
-         rangeStop  FLOAT    25000
-         heightResolution FLOAT 100.0
-         heightMax FLOAT 8000.
-      PROFILE_hres500 STRUCT 7
-         type  STRING RHI_PROFILE
-         voltype STRING wind_vel_h_az
-         anglenr INT 6
-         rangeStart FLOAT        0
-         rangeStop  FLOAT    25000
-         heightResolution FLOAT 500.0
-         heightMax FLOAT 8000.
-			
-			
-# ==========================================================================================
-#               wind shear
-# ==========================================================================================
-windshear STRUCT 4
-    type STRING WINDSHEAR
-    datatype STRARR 1
-        PROC:wind_vel_h_az
-    MAKE_GLOBAL INT 1
-    products STRUCT 3
-      AZ103 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 4
-         voltype STRING windshear_v
-      AZ107 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 6
-         voltype STRING windshear_v
-      AZ111 STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 8
-         voltype STRING windshear_v
-    
-
-## ==========================================================================================
-##                 filtration based on SNR
-## ==========================================================================================
-#SNRFilter STRUCT 5
-#   type STRING SNR_FILTER
-#   datatype STRARR 2
-#      PROC:SNRh
-#      PROC:PhiDPc
-#   SNRmin FLOAT 10.
-#   MAKE_GLOBAL INT 1
-#   products STRUCT 4
+#wind STRUCT 5
+#    type STRING WIND_VEL
+#    datatype STRARR 1
+#        PROC:Vc
+#    vert_proj INT 0
+#    MAKE_GLOBAL INT 1
+#    products STRUCT 6
 #      AZ103 STRUCT 3
 #         type  STRING RHI_IMAGE
 #         anglenr INT 4
-#         voltype STRING PhiDPc
+#         voltype STRING wind_vel_h_az
 #      AZ107 STRUCT 3
 #         type  STRING RHI_IMAGE
 #         anglenr INT 6
-#         voltype STRING PhiDPc
+#         voltype STRING wind_vel_h_az
 #      AZ111 STRUCT 3
 #         type  STRING RHI_IMAGE
 #         anglenr INT 8
-#         voltype STRING PhiDPc
+#         voltype STRING wind_vel_h_az
 #      EL06 STRUCT 4
 #         type  STRING PSEUDOPPI_IMAGE
 #         angle FLOAT 6.
 #         EleTol FLOAT 1.
-#         voltype STRING PhiDPc 
-#   
+#         voltype STRING wind_vel_h_az
+#	  PROFILE_hres100 STRUCT 7
+#         type  STRING RHI_PROFILE
+#         voltype STRING wind_vel_h_az
+#         anglenr INT 6
+#         rangeStart FLOAT        0
+#         rangeStop  FLOAT    25000
+#         heightResolution FLOAT 100.0
+#         heightMax FLOAT 8000.
+#      PROFILE_hres500 STRUCT 7
+#         type  STRING RHI_PROFILE
+#         voltype STRING wind_vel_h_az
+#         anglenr INT 6
+#         rangeStart FLOAT        0
+#         rangeStop  FLOAT    25000
+#         heightResolution FLOAT 500.0
+#         heightMax FLOAT 8000.
+#			
+#			
+# ==========================================================================================
+#               wind shear
+# ==========================================================================================
+#windshear STRUCT 4
+#    type STRING WINDSHEAR
+#    datatype STRARR 1
+#        PROC:wind_vel_h_az
+#    MAKE_GLOBAL INT 1
+#    products STRUCT 3
+#      AZ103 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 4
+#         voltype STRING windshear_v
+#      AZ107 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 6
+#         voltype STRING windshear_v
+#      AZ111 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 8
+#         voltype STRING windshear_v
+#    
 #
+## ==========================================================================================
+##                 filtration based on SNR
+## ==========================================================================================
+SNRFilter STRUCT 5
+   type STRING SNR_FILTER
+   datatype STRARR 2
+      PROC:SNRh
+      PROC:PhiDPc
+   SNRmin FLOAT 10.
+   MAKE_GLOBAL INT 1
+   products STRUCT 4
+      AZ103 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING PhiDPc
+      AZ107 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING PhiDPc
+      AZ111 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING PhiDPc
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING PhiDPc 
+   
+
 # ==========================================================================================
 #                 PHIDP processing
 # ==========================================================================================   
@@ -356,40 +460,40 @@ windshear STRUCT 4
 #         EleTol FLOAT 1.
 #         voltype STRING PhiDPc    
 #    
-#PhiDPc_smooth2w STRUCT 12
-#    type STRING PHIDP_SMOOTH_2W
-#    datatype STRARR 2
-#        PROC:PhiDPc
-#        PROC:dBZc
-#    rmin FLOAT 1000.
-#    rmax FLOAT 50000.
-#    rcell FLOAT 1000.
-#    Zmin FLOAT 20.
-#    Zmax FLOAT 40.
-#    rwinds FLOAT 1000.
-#    rwindl FLOAT 3000.
-#    Zthr FLOAT 40.    
-#    MAKE_GLOBAL INT 0
-#    products STRUCT 4
-#      AZ103 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 4
-#         voltype STRING PhiDPc
-#      AZ107 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 6
-#         voltype STRING PhiDPc
-#      AZ111 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 8
-#         voltype STRING PhiDPc
-#      EL06 STRUCT 4
-#         type  STRING PSEUDOPPI_IMAGE
-#         angle FLOAT 6.
-#         EleTol FLOAT 1.
-#         voltype STRING PhiDPc 
-#	
-#	
+PhiDPc_smooth2w STRUCT 12
+    type STRING PHIDP_SMOOTH_2W
+    datatype STRARR 2
+        PROC:PhiDPc
+        PROC:dBZc
+    rmin FLOAT 1000.
+    rmax FLOAT 50000.
+    rcell FLOAT 1000.
+    Zmin FLOAT 20.
+    Zmax FLOAT 40.
+    rwinds FLOAT 1000.
+    rwindl FLOAT 3000.
+    Zthr FLOAT 40.    
+    MAKE_GLOBAL INT 1
+    products STRUCT 4
+      AZ103 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING PhiDPc
+      AZ107 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING PhiDPc
+      AZ111 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING PhiDPc
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING PhiDPc 
+	
+	
 # ==========================================================================================
 #                 KDP processing
 # ==========================================================================================   
@@ -418,80 +522,80 @@ windshear STRUCT 4
 #         EleTol FLOAT 1.
 #         voltype STRING KDPc
 #            
-#KDPc_leastsquare_2W STRUCT 7
-#    type STRING KDP_LEASTSQUARE_2W
-#    datatype STRARR 2
-#        PROC:PhiDPc
-#        PROC:dBZc
-#    rwinds FLOAT 1000.
-#    rwindl FLOAT 3000.
-#    Zthr FLOAT 40.    
-#    MAKE_GLOBAL INT 0
-#    products STRUCT 4
-#      AZ103 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 4
-#         voltype STRING KDPc
-#      AZ107 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 6
-#         voltype STRING KDPc
-#      AZ111 STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 8
-#         voltype STRING KDPc
-#      EL06 STRUCT 4
-#         type  STRING PSEUDOPPI_IMAGE
-#         angle FLOAT 6.
-#         EleTol FLOAT 1.
-#         voltype STRING KDPc
-#
-#PhiDPc_KDPc_Vulpiani STRUCT 9
-#    type STRING PHIDP_KDP_VULPIANI
-#    datatype STRARR 1
-#        PROC:PhiDPc
-#    rwind FLOAT 2000.
-#    n_iter INT 10
-#    interp INT 0
-#    parallel INT 0
-#    get_phidp INT 1
-#    MAKE_GLOBAL INT 0
-#    products STRUCT 8
-#      AZ103_PhiDPc STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 4
-#         voltype STRING PhiDPc
-#      AZ107_PhiDPc STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 6
-#         voltype STRING PhiDPc
-#      AZ111_PhiDPc STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 8
-#         voltype STRING PhiDPc
-#      EL06_PhiDPc STRUCT 4
-#         type  STRING PSEUDOPPI_IMAGE
-#         angle FLOAT 6.
-#         EleTol FLOAT 1.
-#         voltype STRING PhiDPc
-#      AZ103_KDPc STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 4
-#         voltype STRING KDPc
-#      AZ107_KDPc STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 6
-#         voltype STRING KDPc
-#      AZ111_KDPc STRUCT 3
-#         type  STRING RHI_IMAGE
-#         anglenr INT 8
-#         voltype STRING KDPc
-#      EL06_KDPc STRUCT 4
-#         type  STRING PSEUDOPPI_IMAGE
-#         angle FLOAT 6.
-#         EleTol FLOAT 1.
-#         voltype STRING KDPc         
-#    
+KDPc_leastsquare_2W STRUCT 7
+    type STRING KDP_LEASTSQUARE_2W
+    datatype STRARR 2
+        PROC:PhiDPc
+        PROC:dBZc
+    rwinds FLOAT 1000.
+    rwindl FLOAT 3000.
+    Zthr FLOAT 40.    
+    MAKE_GLOBAL INT 0
+    products STRUCT 4
+      AZ103 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING KDPc
+      AZ107 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING KDPc
+      AZ111 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING KDPc
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING KDPc
+
+PhiDPc_KDPc_Vulpiani STRUCT 9
+    type STRING PHIDP_KDP_VULPIANI
+    datatype STRARR 1
+        PROC:PhiDPc
+    rwind FLOAT 2000.
+    n_iter INT 10
+    interp INT 0
+    parallel INT 0
+    get_phidp INT 1
+    MAKE_GLOBAL INT 0
+    products STRUCT 8
+      AZ103_PhiDPc STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING PhiDPc
+      AZ107_PhiDPc STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING PhiDPc
+      AZ111_PhiDPc STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING PhiDPc
+      EL06_PhiDPc STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING PhiDPc
+      AZ103_KDPc STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING KDPc
+      AZ107_KDPc STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING KDPc
+      AZ111_KDPc STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING KDPc
+      EL06_KDPc STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING KDPc         
+    
 #PhiDPc_KDPc_Kalman STRUCT 6
 #    type STRING PHIDP_KDP_KALMAN
 #    datatype STRARR 1
@@ -628,11 +732,103 @@ windshear STRUCT 4
 #         EleTol FLOAT 1.
 #         voltype STRING KDPc
 #         
-#         
+#
+# ==========================================================================================
+#                 Attenuation
+# ==========================================================================================
+Att_ZPhi_H_ISO0 STRUCT 6
+    type STRING ATTENUATION
+    datatype STRARR 4
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:PhiDPc
+        PROC:H_ISO0
+    ATT_METHOD STRING ZPhi
+    fzl FLOAT 2000.
+    MAKE_GLOBAL INT 1
+    products STRUCT 4
+      AZ103 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING Ah
+      AZ107 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING Ah
+      AZ111 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING Ah
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING Ah
+         
+Att_ZPhi_TEMP STRUCT 6
+    type STRING ATTENUATION
+    datatype STRARR 4
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:PhiDPc
+        PROC:TEMP
+    ATT_METHOD STRING ZPhi
+    fzl FLOAT 2000.
+    MAKE_GLOBAL INT 1
+    products STRUCT 4
+      AZ103 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 4
+         voltype STRING Ah
+      AZ107 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 6
+         voltype STRING Ah
+      AZ111 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 8
+         voltype STRING Ah
+      EL06 STRUCT 4
+         type  STRING PSEUDOPPI_IMAGE
+         angle FLOAT 6.
+         EleTol FLOAT 1.
+         voltype STRING Ah
+
+    
 # ==========================================================================================
 #                 hydrometeor classification products
 # ==========================================================================================
-hydroclass STRUCT 6
+#hydroclass_H_ISO0 STRUCT 6
+#    type STRING HYDROCLASS
+#    datatype STRARR 5
+#        PROC:dBZc
+#        PROC:ZDRc
+#        PROC:RhoHVc
+#        PROC:KDPc
+#        PROC:H_ISO0
+#    HYDRO_METHOD STRING SEMISUPERVISED
+#    RADARCENTROIDS STRING DX50
+#    MAKE_GLOBAL INT 1
+#	products STRUCT 4
+#      AZ103 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 4
+#         voltype STRING hydro
+#      AZ107 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 6
+#         voltype STRING hydro
+#      AZ111 STRUCT 3
+#         type  STRING RHI_IMAGE
+#         anglenr INT 8
+#         voltype STRING hydro
+#      EL06 STRUCT 4
+#         type  STRING PSEUDOPPI_IMAGE
+#         angle FLOAT 6.
+#         EleTol FLOAT 1.
+#         voltype STRING hydro
+
+hydroclass_TEMP STRUCT 6
     type STRING HYDROCLASS
     datatype STRARR 5
         PROC:dBZc
@@ -661,3 +857,4 @@ hydroclass STRUCT 6
          angle FLOAT 6.
          EleTol FLOAT 1.
          voltype STRING hydro
+         
