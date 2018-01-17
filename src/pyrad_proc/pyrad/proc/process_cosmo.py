@@ -483,6 +483,7 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
 
     dtcosmo = num2date(
         cosmo_data['time']['data'][:], cosmo_data['time']['units'])
+
     time_index = np.argmin(abs(dtcosmo-dscfg['timeinfo']))
 
     if (fname != dscfg['global_data']['cosmo_fname'] or
