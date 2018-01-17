@@ -216,6 +216,20 @@ def get_data(voltime, datatypesdescr, cfg):
                         radar.add_field(
                             field_name, radar_aux.fields[field_name])
 
+    # if it is specified, get the position from the config file
+    if 'RadarPosition' in cfg:
+        if 'latitude' in cfg['RadarPosition']:
+            radar.latitude['data'][0] = (
+                cfg['RadarPosition']['latitude'][ind_rad])
+        if 'longitude' in cfg['RadarPosition']:
+            radar.longitude['data'][0] = (
+                cfg['RadarPosition']['longitude'][ind_rad])
+        if 'altitude' in cfg['RadarPosition']:
+            radar.altitude['data'][0] = (
+                cfg['RadarPosition']['altitude'][ind_rad])
+        radar.init_gate_longitude_latitude()
+        radar.init_gate_altitude()
+
     return radar
 
 
