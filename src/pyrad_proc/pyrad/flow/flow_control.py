@@ -1357,6 +1357,13 @@ def _create_cfg_dict(cfgfile):
         if (type(cfg[param]) is str):
             cfg[param] = [cfg[param]]
 
+    # if specified in config, convert coordinates to arrays
+    if 'RadarPosition' in cfg:
+        fltarr_list = ['latitude', 'longitude', 'altitude']
+        for param in fltarr_list:
+            if (type(cfg['RadarPosition'][param]) is float):
+                cfg['RadarPosition'][param] = [cfg['RadarPosition'][param]]
+
     return cfg
 
 
@@ -1390,6 +1397,8 @@ def _create_datacfg_dict(cfg):
     datacfg.update({'CosmoRunFreq': int(cfg['CosmoRunFreq'])})
     datacfg.update({'CosmoForecasted': int(cfg['CosmoForecasted'])})
     datacfg.update({'path_convention': cfg['path_convention']})
+    if 'RadarPosition' in cfg:
+        datacfg.update({'RadarPosition': cfg['RadarPosition']})
 
     return datacfg
 

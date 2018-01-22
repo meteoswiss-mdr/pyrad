@@ -31,6 +31,7 @@ import glob
 import datetime
 import os
 from warnings import warn
+from copy import deepcopy
 
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
@@ -214,6 +215,20 @@ def get_data(voltime, datatypesdescr, cfg):
                     for field_name in radar_aux.fields.keys():
                         radar.add_field(
                             field_name, radar_aux.fields[field_name])
+
+    # if it is specified, get the position from the config file
+    if 'RadarPosition' in cfg:
+        if 'latitude' in cfg['RadarPosition']:
+            radar.latitude['data'][0] = (
+                cfg['RadarPosition']['latitude'][ind_rad])
+        if 'longitude' in cfg['RadarPosition']:
+            radar.longitude['data'][0] = (
+                cfg['RadarPosition']['longitude'][ind_rad])
+        if 'altitude' in cfg['RadarPosition']:
+            radar.altitude['data'][0] = (
+                cfg['RadarPosition']['altitude'][ind_rad])
+        radar.init_gate_longitude_latitude()
+        radar.init_gate_altitude()
 
     return radar
 
@@ -1292,7 +1307,7 @@ def interpol_field(radar_dest, radar_orig, field_name, fill_value=None):
 
     field_orig_data = radar_orig.fields[field_name]['data'].filled(
         fill_value=fill_value)
-    field_dest = radar_orig.fields[field_name]
+    field_dest = deepcopy(radar_orig.fields[field_name])
     field_dest['data'] = np.ma.empty((radar_dest.nrays, radar_dest.ngates))
     field_dest['data'][:] = np.ma.masked
 

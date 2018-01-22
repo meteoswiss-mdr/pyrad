@@ -483,6 +483,7 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
 
     dtcosmo = num2date(
         cosmo_data['time']['data'][:], cosmo_data['time']['units'])
+
     time_index = np.argmin(abs(dtcosmo-dscfg['timeinfo']))
 
     if (fname != dscfg['global_data']['cosmo_fname'] or
@@ -527,7 +528,8 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
                     cosmo_field_interp = interpol_field(
                         radar, radar_aux, field_name)
                     new_dataset.add_field(field_name, cosmo_field_interp)
-            except Exception:
+            except Exception as ee:
+                warn(str(ee))
                 warn('Unable to add COSMO '+field_name +
                      ' field to radar object')
                 return None, None
@@ -682,7 +684,8 @@ def process_hzt_lookup_table(procstatus, dscfg, radar_list=None):
             hzt_field_interp = interpol_field(
                 radar, radar_aux, 'height_over_iso0')
             new_dataset.add_field('height_over_iso0', hzt_field_interp)
-    except Exception:
+    except Exception as ee:
+        warn(str(ee))
         warn('Unable to add height_over_iso0 ' +
              ' field to radar object')
         return None, None
