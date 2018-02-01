@@ -77,6 +77,190 @@ def process_trajectory(procstatus, dscfg, radar_list=None, trajectory=None):
     return None, None
 
 
+def process_traj_lightning(procstatus, dscfg, radar_list=None,
+                           trajectory=None):
+    """
+    Return time series according to lightning trajectory
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+    trajectory : Trajectory object
+        containing trajectory samples
+
+    Returns
+    -------
+    trajectory : Trajectory object
+        Object holding time series
+    ind_rad : int
+        radar index
+
+    """
+
+    ang_tol = 1.2
+
+    if procstatus == 0:
+        # first call: nothing to do
+        return None, None
+
+    if procstatus == 2:
+        # last call: do the products
+        if (not dscfg['initialized']):
+            warn('ERROR: No trajectory dataset available!')
+            return None, None
+        trajdict = dscfg['traj_atplane_dict']
+        return trajdict['ts'], trajdict['ind_rad']
+
+    # Process
+    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+        dscfg['datatype'][0])
+    field_name = get_fieldname_pyart(datatype)
+    ind_rad = int(radarnr[5:8])-1
+    if ((radar_list is None) or (radar_list[ind_rad] is None)):
+        warn('ERROR: No valid radar found')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if field_name not in radar.fields:
+        warn("Datatype '%s' not available in radar data" % field_name)
+        return None, None
+
+    ttask_start = radar.time['data'].min()
+    dt_task_start = num2date(ttask_start, radar.time['units'],
+                             radar.time['calendar'])
+
+    if (not dscfg['initialized']):
+        # init
+        if (trajectory is None):
+            raise Exception("ERROR: Undefined trajectory for dataset '%s'"
+                            % dscfg['dsname'])
+
+        rad_traj = trajectory.add_radar(radar)
+
+        description = [
+            "Description:",
+            "Time series of a weather radar data type at the location",
+            "of the lightning flash.",
+            "The time samples where the flash was out of the weather radar",
+            "sector are NOT included in this file.",
+            "NaN (Not a number): No rain detected at the plane location."
+        ]
+
+        # Tmp: define timeformat="%Y-%m-%d %H:%M:%S.%f"
+        ts = TimeSeries(description, maxlength=trajectory.time_vector.size,
+                        datatype=datatype)
+
+        unit = get_field_unit(datatype)
+        name = get_field_name(datatype)
+        # Append empty series: Note: sequence matters!
+        ts.add_dataseries("at lightning", name, unit, color='b')
+        ts.add_dataseries("Mean", name, unit, color='r')
+        ts.add_dataseries("Min", name, unit, color='k', linestyle=':')
+        ts.add_dataseries("Max", name, unit, color='k', linestyle=':')
+        ts.add_dataseries("#Valid", "", "", plot=False)
+
+        data_is_log = False
+        if ('data_is_log' in dscfg):
+            data_is_log = (dscfg['data_is_log'] != 0)
+
+        trajdict = dict({
+                'radar_traj': rad_traj,
+                'radar_old': None,
+                'radar_old2': None,
+                'last_task_start_dt': None,
+                'ind_rad': ind_rad,
+                'ts': ts,
+                'data_is_log': data_is_log})
+        traj_ind = trajectory.get_samples_in_period(end=dt_task_start)
+
+        dscfg['traj_atplane_dict'] = trajdict
+        dscfg['initialized'] = True
+    else:
+        # init already done
+        trajdict = dscfg['traj_atplane_dict']
+        rad_traj = trajdict['radar_traj']
+        traj_ind = trajectory.get_samples_in_period(
+            start=trajdict['last_task_start_dt'], end=dt_task_start)
+        ts = trajdict['ts']
+        data_is_log = trajdict['data_is_log']
+
+    traj_time_vec = date2num(trajectory.time_vector, radar.time['units'],
+                             radar.time['calendar'])
+
+    if np.size(traj_ind) == 0:
+        warn('No trajectory samples within current period')
+        return None, None
+
+    for tind in np.nditer(traj_ind):
+        az = rad_traj.azimuth_vec[tind]
+        el = rad_traj.elevation_vec[tind]
+        rr = rad_traj.range_vec[tind]
+        tt = traj_time_vec[tind]
+
+        # Find closest azimuth and elevation ray
+        (radar_sel, ray_sel, rr_ind, el_vec_rnd, az_vec_rnd) = \
+            _get_closests_bin(az, el, rr, tt, radar, trajdict)
+
+        # Check if traj sample is within scan sector
+        if (_sample_out_of_sector(az, el, rr, radar_sel, ray_sel,
+                                  rr_ind, el_vec_rnd, az_vec_rnd)):
+            continue
+
+        # =====================================================================
+        # Get sample at bin
+        rdata = radar_sel.fields[field_name]['data']
+        val = rdata[ray_sel, rr_ind]
+
+        # =====================================================================
+        # Get samples around this cell (3x3 box)
+        el_res = np.median(np.diff(el_vec_rnd))
+        az_res = np.median(np.diff(az_vec_rnd))
+
+        d_el = np.abs(radar_sel.elevation['data'] -
+                      radar_sel.elevation['data'][ray_sel])
+        d_az = np.abs(radar_sel.azimuth['data'] -
+                      radar_sel.azimuth['data'][ray_sel])
+        cell_ind = np.where((d_el < el_res*ang_tol) & (d_az < az_res*ang_tol))
+
+        rr_min = rr_ind-1
+        if (rr_min < 0):
+            rr_min = 0
+        cell_vals = rdata[cell_ind, rr_min:rr_ind+2]
+
+        # =====================================================================
+        # Compute statistics and get number of valid data
+        if data_is_log:
+            vals_lin = np.ma.power(10., cell_vals/10.)
+            val_mean = np.ma.mean(vals_lin)
+            val_mean = 10. * np.ma.log10(val_mean)
+        else:
+            val_mean = np.ma.mean(cell_vals)
+        val_min = np.ma.min(cell_vals)
+        val_max = np.ma.max(cell_vals)
+
+        nvals_valid = np.count_nonzero(
+            np.logical_not(np.ma.getmaskarray(cell_vals)))
+        # =====================================================================
+        # Add to time series
+
+        ts.add_timesample(trajectory.time_vector[tind],
+                          (val, val_mean, val_min, val_max, nvals_valid))
+
+        # end loop over traj samples within period
+
+    trajdict['last_task_start_dt'] = dt_task_start
+    trajdict['radar_old2'] = trajdict['radar_old']
+    trajdict['radar_old'] = radar
+
+    return None, None
+
+
 def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
     """
     Return time series according to trajectory
@@ -345,12 +529,12 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             longitude = get_metadata('longitude')
             altitude = get_metadata('altitude')
 
-            latitude['data'] = np.array([dscfg['target_radar_pos']['latitude']],
-                                        dtype='float64')
-            longitude['data'] = np.array([dscfg['target_radar_pos']['longitude']],
-                                         dtype='float64')
-            altitude['data'] = np.array([dscfg['target_radar_pos']['altitude']],
-                                        dtype='float64')
+            latitude['data'] = np.array(
+                [dscfg['target_radar_pos']['latitude']], dtype='float64')
+            longitude['data'] = np.array(
+                [dscfg['target_radar_pos']['longitude']], dtype='float64')
+            altitude['data'] = np.array(
+                [dscfg['target_radar_pos']['altitude']], dtype='float64')
 
             target_radar = Target_Radar(latitude, longitude, altitude)
             rad_traj = trajectory.add_radar(target_radar)
@@ -603,7 +787,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
     if np.size(traj_ind) == 0:
         warn('No trajectory samples within current period')
         return None, None
-    
+
     for tind in np.nditer(traj_ind):
         az = rad_traj.azimuth_vec[tind]
         el = rad_traj.elevation_vec[tind]

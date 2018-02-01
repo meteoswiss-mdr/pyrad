@@ -15,6 +15,7 @@ Functions for reading auxiliary data
     read_colocated_data
     read_colocated_data_time_avg
     read_timeseries
+    read_lightning
     read_ts_cum
     read_monitoring_ts
     read_intercomp_scores_ts
@@ -36,6 +37,7 @@ import datetime
 import csv
 import xml.etree.ElementTree as et
 from warnings import warn
+from copy import deepcopy
 
 import numpy as np
 
@@ -444,6 +446,92 @@ def read_timeseries(fname):
     except EnvironmentError:
         warn('Unable to read file '+fname)
         return None, None
+
+
+def read_lightning(fname, filter_data=True):
+    """
+    Reads lightning data contained in a text file. The file has the following
+    fields:
+        flashnr: (0 is for noise)
+        UTC seconds of the day
+        Time within flash (in seconds)
+        Latitude (decimal degrees)
+        Longitude (decimal degrees)
+        Altitude (m MSL)
+        Power (dBm)
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+    filter_data : Boolean
+        if True filter noise (flashnr = 0)
+
+    Returns
+    -------
+    flashnr, time, time_in_flash, lat, lon, alt, dBm : tupple
+        A tupple containing the read values. None otherwise
+
+    """
+    try:
+        # get date from file name
+        bfile = os.path.basename(fname)
+        datetimestr = bfile[0:6]
+        fdatetime = datetime.datetime.strptime(datetimestr, '%y%m%d')
+
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                csvfile, fieldnames=['flashnr', 'time', 'time_in_flash',
+                                     'lat', 'lon', 'alt', 'dBm'],
+                delimiter=' ')
+            nrows = sum(1 for row in reader)
+
+            flashnr = np.ma.empty(nrows, dtype=int)
+            time_in_flash = np.ma.empty(nrows, dtype=float)
+            lat = np.ma.empty(nrows, dtype=float)
+            lon = np.ma.empty(nrows, dtype=float)
+            alt = np.ma.empty(nrows, dtype=float)
+            dBm = np.ma.empty(nrows, dtype=float)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                csvfile, fieldnames=['flashnr', 'time', 'time_in_flash',
+                                     'lat', 'lon', 'alt', 'dBm'],
+                delimiter=' ')
+            i = 0
+            time = list()
+            for row in reader:
+                flashnr[i] = int(row['flashnr'])
+                time.append(fdatetime+datetime.timedelta(
+                    seconds=float(row['time'])))
+                time_in_flash[i] = float(row['time_in_flash'])
+                lat[i] = float(row['lat'])
+                lon[i] = float(row['lon'])
+                alt[i] = float(row['alt'])
+                dBm[i] = float(row['dBm'])
+
+                i += 1
+
+            time = np.array(time)
+
+            if filter_data:
+                flashnr_aux = deepcopy(flashnr)
+                flashnr = flashnr[flashnr_aux > 0]
+                time = time[flashnr_aux > 0]
+                time_in_flash = time_in_flash[flashnr_aux > 0]
+                lat = lat[flashnr_aux > 0]
+                lon = lon[flashnr_aux > 0]
+                alt = alt[flashnr_aux > 0]
+                dBm = dBm[flashnr_aux > 0]
+
+            csvfile.close()
+
+            return flashnr, time, time_in_flash, lat, lon, alt, dBm
+    except EnvironmentError:
+        warn('Unable to read file '+fname)
+        return None, None, None, None, None, None, None
 
 
 def read_ts_cum(fname):
@@ -1117,7 +1205,7 @@ def read_smn(fname):
                 wspeed[i] = float(row['Windspeed'])
                 wdir[i] = float(row['Winddirection'])
                 i += 1
-                
+
             pressure = np.ma.masked_values(pressure, fill_value)
             temp = np.ma.masked_values(temp, fill_value)
             rh = np.ma.masked_values(rh, fill_value)

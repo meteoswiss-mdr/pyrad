@@ -73,7 +73,8 @@ MULTIPROCESSING_DSET = False
 ALLOW_USER_BREAK = True
 
 
-def main(cfgfile, starttime=None, endtime=None, trajfile="", infostr=""):
+def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
+         flashnr=0, infostr=""):
     """
     main flow control. Processes radar data off-line over a period of time
     given either by the user, a trajectory file, or determined by the last
@@ -88,6 +89,12 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", infostr=""):
         start and end time of the data to be processed
     trajfile : str
         path to file describing the trajectory
+    trajtype : str
+        type of trajectory file. Can be either 'plane' or 'lightning'
+    flashnr : int
+        If larger than 0 will select a flash in a lightning trajectory file.
+        If 0 the data corresponding to the trajectory of all flashes will be
+        plotted
     infostr : str
         Information string about the actual data processing
         (e.g. 'RUN57'). This string is added to product files.
@@ -111,7 +118,8 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", infostr=""):
 
     starttime, endtime, traj = _get_times_and_traj(
         trajfile, starttime, endtime, cfg['ScanPeriod'],
-        last_state_file=cfg['lastStateFile'])
+        last_state_file=cfg['lastStateFile'], trajtype=trajtype,
+        flashnr=flashnr)
 
     if (len(infostr) > 0):
         print('- Info string : ' + infostr)
@@ -138,6 +146,8 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", infostr=""):
             "' and master data type '" + masterdatatypedescr +
             "'")
     print('- Number of volumes to process: ' + str(nvolumes))
+    print('- Start time: ' + starttime.strftime("%Y-%m-%d %H:%M:%S"))
+    print('- end time: ' + endtime.strftime("%Y-%m-%d %H:%M:%S"))
 
     # initial processing of the datasets
     print('\n\n- Initializing datasets:')
@@ -487,7 +497,8 @@ def _user_input_listener(input_queue):
 
 
 def _get_times_and_traj(trajfile, starttime, endtime, scan_period,
-                        last_state_file=None):
+                        last_state_file=None, trajtype='plane',
+                        flashnr=0):
     """
     Gets the trajectory and the start time and end time if they have
     not been set
@@ -502,22 +513,28 @@ def _get_times_and_traj(trajfile, starttime, endtime, scan_period,
         the scan period in minutes
     last_state_file : str
         name of the file that stores the time of the last processed volume
+    trajtype : str
+        type of trajectory. Can be plane or lightning
+    flashnr : int
+        If type of trajectory is lightning, the flash number. 0 means all
+        flash numbers included
 
     """
     if (len(trajfile) > 0):
         print("- Trajectory file: " + trajfile)
         try:
-            traj = Trajectory(trajfile, starttime=starttime, endtime=endtime)
+            traj = Trajectory(trajfile, starttime=starttime, endtime=endtime,
+                              trajtype=trajtype, flashnr=flashnr)
         except Exception as ee:
             warn(str(ee))
             sys.exit(1)
 
         # Derive start and end time (if not specified by arguments)
         if (starttime is None):
-            scan_min = scan_period * 1.1  # [min]
+            scan_min = scan_period * 2  # [min]
             starttime = traj.get_start_time() - timedelta(minutes=scan_min)
         if (endtime is None):
-            scan_min = scan_period * 1.1  # [min]
+            scan_min = scan_period * 2  # [min]
             endtime = traj.get_end_time() + timedelta(minutes=scan_min)
     else:
         traj = None
