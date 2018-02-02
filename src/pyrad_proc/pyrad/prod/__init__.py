@@ -21,12 +21,15 @@ Product generation
 .. autosummary::
     :toctree: generated/
 
+    generate_cosmo_coord_products
+    generate_sun_hits_products
+    generate_intercomp_products
+    generate_colocated_gates_products
+    generate_time_avg_products
+    generate_qvp_products
     generate_vol_products
     generate_timeseries_products
-    generate_sun_hits_products
     generate_monitoring_products
-    generate_traj_products
-    generate_cosmo_coord_products
     generate_grid_products
 
 """
@@ -39,6 +42,11 @@ from .process_product import generate_sun_hits_products
 from .process_product import generate_monitoring_products
 from .process_product import generate_cosmo_coord_products
 from .process_product import generate_grid_products
+from .process_product import generate_intercomp_products
+from .process_product import generate_colocated_gates_products
+from .process_product import generate_time_avg_products
+from .process_product import generate_qvp_products
+
 
 from .process_traj_products import generate_traj_product
 
