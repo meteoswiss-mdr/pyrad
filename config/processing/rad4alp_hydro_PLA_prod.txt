@@ -5,7 +5,7 @@
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
 dataSetList STRARR 1
-    hydroclass_op
+    H_ISO0
     
 #   l0:TEMP   
 #   l0:SNRh
@@ -39,6 +39,24 @@ dataSetList STRARR 1
 #    regular_grid INT 1
 #    lookup_table INT 1
 #    MAKE_GLOBAL INT 1
+
+H_ISO0 STRUCT 6
+    type STRING HZT
+    datatype STRARR 1
+        RAD4ALP:dBZ
+    regular_grid INT 1
+    keep_in_memory INT 1
+    MAKE_GLOBAL INT 0  
+    products STRUCT 2
+      EL001 STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING H_ISO0
+      AZ093 STRUCT 4
+         type  STRING PSEUDORHI_IMAGE
+         angle FLOAT 93.
+         AziTol FLOAT 1.
+         voltype STRING H_ISO0
 #    
 #            
 ## ==========================================================================================
