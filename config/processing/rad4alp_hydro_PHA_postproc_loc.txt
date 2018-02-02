@@ -125,3 +125,4 @@ ppiMapImageConfig STRUCT 10
        lakes_europe
        rivers
        rivers_europe
+       

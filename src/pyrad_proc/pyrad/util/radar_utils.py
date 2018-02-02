@@ -666,9 +666,9 @@ def compute_histogram(field, field_name, step=None):
 
     """
     bins = get_histogram_bins(field_name, step=step)
-    field[field < bins[0]] = bins[0]
-    field[field > bins[-1]] = bins[-1]
     values = field.compressed()
+    values[values < bins[0]] = bins[0]
+    values[values > bins[-1]] = bins[-1]
 
     return bins, values
 
@@ -697,10 +697,9 @@ def compute_histogram_sweep(field, ray_start, ray_end, field_name, step=None):
 
     """
     bins = get_histogram_bins(field_name, step=step)
-    field_sweep = field[ray_start:ray_end+1, :]
-    field_sweep[field_sweep < bins[0]] = bins[0]
-    field_sweep[field_sweep > bins[-1]] = bins[-1]
-    values = field_sweep[ray_start:ray_end+1, :].compressed()
+    values = field[ray_start:ray_end+1, :].compressed()
+    values[values < bins[0]] = bins[0]
+    values[values > bins[-1]] = bins[-1]
 
     return bins, values
 
@@ -723,6 +722,10 @@ def get_histogram_bins(field_name, step=None):
         interval of each bin
 
     """
+    field_dict = pyart.config.get_metadata(field_name)
+    if 'boundaries' in field_dict:
+        return field_dict['boundaries']
+
     vmin, vmax = pyart.config.get_field_limits(field_name)
     if step is None:
         step = (vmax-vmin)/50.

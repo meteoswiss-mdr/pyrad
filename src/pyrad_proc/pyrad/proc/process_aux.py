@@ -27,8 +27,8 @@ from netCDF4 import num2date
 import pyart
 
 from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
-from .process_traj import process_trajectory, process_traj_atplane, \
-    process_traj_antenna_pattern
+from .process_traj import process_trajectory, process_traj_atplane
+from .process_traj import process_traj_antenna_pattern, process_traj_lightning
 from ..util.radar_utils import find_rng_index
 
 
@@ -179,6 +179,9 @@ def get_process_func(dataset_type, dsname):
         dsformat = 'TIMESERIES'
     elif dataset_type == 'TRAJ_ANTENNA_PATTERN':
         func_name = process_traj_antenna_pattern
+        dsformat = 'TIMESERIES'
+    elif dataset_type == 'TRAJ_LIGHTNING':
+        func_name = process_traj_lightning
         dsformat = 'TIMESERIES'
     else:
         raise ValueError("ERROR: Unknown dataset type '%s' of dataset '%s'"
@@ -926,7 +929,7 @@ def process_time_height(procstatus, dscfg, radar_list=None):
                 th_data[ind_r] = values[ind_h]
         else:
             warn('No data found at point lat '+str(lat)+' +- ' +
-                 str(latlon_tol)+' lon '+str(lon)+' +- '+
+                 str(latlon_tol)+' lon '+str(lon)+' +- ' +
                  str(latlon_tol)+' deg')
 
         if np.size(th.fields[field_name]['data']) == 0:

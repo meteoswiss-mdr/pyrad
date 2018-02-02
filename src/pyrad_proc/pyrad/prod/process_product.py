@@ -2267,6 +2267,30 @@ def generate_timeseries_products(dataset, prdcfg):
 
         return None
 
+    elif prdcfg['type'] == 'PLOT_HIST':
+
+        timeinfo = dataset.time_vector[0]
+
+        savedir = get_save_dir(prdcfg['basepath'], prdcfg['procname'],
+                               dssavedir, prdcfg['prdname'],
+                               timeinfo=timeinfo)
+
+        dstype_str = prdcfg['dstype'].lower().replace('_', '')
+
+        fname = make_filename('hist', dstype_str, dataset.datatype,
+                              prdcfg['imgformat'],
+                              prdcfginfo=None, timeinfo=timeinfo,
+                              timeformat='%Y%m%d%H%M%S',
+                              runinfo=prdcfg['runinfo'])
+
+        step = None
+        if ('step' in prdcfg):
+            step = prdcfg['step']
+
+        dataset.plot_hist(savedir + fname[0], step=step)
+
+        return None
+
     # ================================================================
     else:
         raise Exception("ERROR: Unsupported product type: '%s' of dataset '%s'"
@@ -2852,16 +2876,17 @@ def generate_grid_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=dataset['timeinfo'])
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname = make_filename(
             'savevol', prdcfg['dstype'], prdcfg['voltype'], ['nc'],
-            timeinfo=dataset['timeinfo'])
+            timeinfo=prdcfg['timeinfo'])
 
         for i in range(len(fname)):
             fname[i] = savedir+fname[i]
 
-        pyart.io.write_grid(fname[0], dataset)
+        pyart.io.write_grid(fname[0], dataset, write_point_x_y_z=True,
+                            write_point_lon_lat_alt=True)
         print('saved file: '+fname[0])
 
         return fname[0]
