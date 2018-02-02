@@ -31,7 +31,6 @@ disdropath STRING /data/scattering/dsd_ts/
 # Output data
 # --------------------------------------------
 saveimgbasepath STRING /store/msrad/radar/pyrad_products/
-saveimg         INT 1
 # Supported formats: eps, jpeg, jpg, pdf, pgf, png, ps, raw, rgba, svg, svgz, tif, tiff
 imgformat STRING png
 
