@@ -1313,7 +1313,7 @@ def plot_quantiles(quant, value, fname_list, labelx='quantile', labely='value',
 
 
 def plot_histogram(bins, values, fname_list, labelx='bins',
-                   labely='Number of Samples', titl='histogram'):
+                   labely='Number of Samples', titl='histogram', dpi=72):
     """
     computes and plots histogram
 

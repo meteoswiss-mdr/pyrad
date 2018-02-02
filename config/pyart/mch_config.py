@@ -2065,7 +2065,7 @@ DEFAULT_FIELD_LIMITS = {
     rain_rate: (0., 10.),
     radar_estimated_rain_rate: (0., 10.),
 
-    radar_echo_classification: (0, 9),
+    radar_echo_classification: (-0.5, 9.5),
     radar_echo_id: (0, 3),
 
     sun_hit_h: (0, 1),

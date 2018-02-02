@@ -159,7 +159,9 @@ def process_traj_lightning(procstatus, dscfg, radar_list=None,
         unit = get_field_unit(datatype)
         name = get_field_name(datatype)
         # Append empty series: Note: sequence matters!
-        ts.add_dataseries("at lightning", name, unit, color='b')
+        ts.add_dataseries("#Flash", "", "", plot=False)
+        ts.add_dataseries("Power", "", "dBm", plot=False)
+        ts.add_dataseries("at_flash", name, unit, color='b')
         ts.add_dataseries("Mean", name, unit, color='r')
         ts.add_dataseries("Min", name, unit, color='k', linestyle=':')
         ts.add_dataseries("Max", name, unit, color='k', linestyle=':')
@@ -202,6 +204,8 @@ def process_traj_lightning(procstatus, dscfg, radar_list=None,
         el = rad_traj.elevation_vec[tind]
         rr = rad_traj.range_vec[tind]
         tt = traj_time_vec[tind]
+        dBm = trajectory.dBm[tind]
+        flashnr = trajectory.flashnr_vec[tind]
 
         # Find closest azimuth and elevation ray
         (radar_sel, ray_sel, rr_ind, el_vec_rnd, az_vec_rnd) = \
@@ -249,8 +253,9 @@ def process_traj_lightning(procstatus, dscfg, radar_list=None,
         # =====================================================================
         # Add to time series
 
-        ts.add_timesample(trajectory.time_vector[tind],
-                          (val, val_mean, val_min, val_max, nvals_valid))
+        ts.add_timesample(
+            trajectory.time_vector[tind],
+            (flashnr, dBm, val, val_mean, val_min, val_max, nvals_valid))
 
         # end loop over traj samples within period
 
