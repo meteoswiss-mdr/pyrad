@@ -11,7 +11,7 @@ This program does the daily processing and post-processing over a period of \
 time.
 
 To run the processing framework type:
-    python main_process_data.py \
+    python main_process_data_period.py \
 [config_file] [process_start_date] [process_end_date] \
 --starttime [process_start_time] --endtime [process_end_time] \
 --postproc_cfgfile [postproc_config_file] --cfgpath [cfgpath]
@@ -23,8 +23,8 @@ cfgpath is an optional argument with default: \
 '$HOME/pyrad/config/processing/'
 
 Example:
-    python main_process_data.py 'paradiso_fvj_vol.txt' '20140523' '20140525' \
---starttime '000000' --endtime '001000' \
+    python main_process_data_period.py 'paradiso_fvj_vol.txt' '20140523' \
+'20140525' --starttime '000000' --endtime '001000' \
 --postproc_cfgfile 'mals_emm_vol_postproc.txt' \
 --cfgpath '$HOME/pyrad/config/processing/'
 

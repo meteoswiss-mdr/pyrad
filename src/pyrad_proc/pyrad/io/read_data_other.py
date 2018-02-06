@@ -110,7 +110,10 @@ def read_status(voltime, cfg, ind_rad=0):
     dayinfo = voltime.strftime('%y%j')
     timeinfo = voltime.strftime('%H%M')
     basename = 'ST'+cfg['RadarName'][ind_rad]+dayinfo
-    datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
+    if cfg['path_convention'] == 'RT':
+        datapath = cfg['datapath'][ind_rad]+'ST'+cfg['RadarName'][ind_rad]+'/'
+    else:
+        datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
     filename = glob.glob(datapath+basename+timeinfo+'*.xml')
     if len(filename) == 0:
         warn('rad4alp status file '+datapath+basename+timeinfo +

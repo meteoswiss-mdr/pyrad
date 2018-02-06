@@ -379,13 +379,21 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
             basename = 'P'+radar_res+radar_name+dayinfo
             subf = 'P'+radar_res+radar_name+yy+'hdf'+dy
             datapath = basepath+subf+'/'
-    else:
+    elif cfg['path_convention'] == 'MCH':
         datapath = basepath+dayinfo+'/'+basename+'/'
         filename = glob.glob(
             datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
         if not filename:
             basename = 'P'+radar_res+radar_name+dayinfo
             datapath = basepath+dayinfo+'/'+basename+'/'
+    else:
+        datapath = basepath+'M'+radar_res+radar_name+'/'
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
+        if not filename:
+            basename = 'P'+radar_res+radar_name+dayinfo
+            datapath = basepath+'P'+radar_res+radar_name+'/'
+
     filename = glob.glob(datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
     if not filename:
         warn('No file found in '+datapath+basename+timeinfo+'*.'+scan_list[0])
@@ -654,7 +662,7 @@ def merge_scans_cosmo_rad4alp(voltime, datatype, cfg, ind_rad=0):
 
 def merge_scans_dem_rad4alp(voltime, datatype, cfg, ind_rad=0):
     """
-    merge cosmo rad4alp scans. If data for all the scans cannot be retrieved
+    merge DEM rad4alp scans. If data for all the scans cannot be retrieved
     returns None
 
     Parameters
@@ -703,13 +711,21 @@ def merge_scans_dem_rad4alp(voltime, datatype, cfg, ind_rad=0):
             basename = 'P'+radar_res+radar_name+dayinfo
             subf = 'P'+radar_res+radar_name+yy+'hdf'+dy
             datapath = basepath+subf+'/'
-    else:
+    elif cfg['path_convention'] == 'MCH':
         datapath = basepath+dayinfo+'/'+basename+'/'
         filename = glob.glob(
             datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
         if not filename:
             basename = 'P'+radar_res+radar_name+dayinfo
             datapath = basepath+dayinfo+'/'+basename+'/'
+    else:
+        datapath = basepath+'M'+radar_res+radar_name+'/'
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
+        if not filename:
+            basename = 'P'+radar_res+radar_name+dayinfo
+            datapath = basepath+'P'+radar_res+radar_name+'/'
+
     filename = glob.glob(datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
     if not filename:
         warn('No file found in '+datapath+basename+timeinfo+'*.'+scan_list[0])
@@ -809,13 +825,21 @@ def merge_scans_hydro_rad4alp(voltime, datatype, cfg, ind_rad=0):
             basename = 'P'+radar_res+radar_name+dayinfo
             subf = 'P'+radar_res+radar_name+yy+'hdf'+dy
             datapath = basepath+subf+'/'
-    else:
+    elif cfg['path_convention'] == 'MCH':
         datapath = basepath+dayinfo+'/'+basename+'/'
         filename = glob.glob(
             datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
         if not filename:
             basename = 'P'+radar_res+radar_name+dayinfo
             datapath = basepath+dayinfo+'/'+basename+'/'
+    else:
+        datapath = basepath+'M'+radar_res+radar_name+'/'
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
+        if not filename:
+            basename = 'P'+radar_res+radar_name+dayinfo
+            datapath = basepath+'P'+radar_res+radar_name+'/'
+
     filename = glob.glob(datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
     if not filename:
         warn('No file found in '+datapath+basename+timeinfo+'*.'+scan_list[0])
