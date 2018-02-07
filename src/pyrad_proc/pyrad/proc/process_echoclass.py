@@ -889,12 +889,22 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
             warn('Unable to detect melting layer. Missing data')
             return None, None
 
-        # User defined variables here
-
-        ml = pyart.retrieve.melting_layer_giangrande(
-            radar, refl_field=refl_field, zdr_field=zdr_field,
-            rhv_field=rhv_field, temp_field=temp_field, iso0_field=iso0_field,
-            ml_field=None, temp_ref=temp_ref)
+        # User defined variables here. See line 516
+        
+        # initialize dataset
+        if dscfg['initialized'] == 0:
+            ml_vol, ml_stack = pyart.retrieve.melting_layer_giangrande(
+                radar, refl_field=refl_field, zdr_field=zdr_field,
+                rhv_field=rhv_field, temp_field=temp_field, iso0_field=iso0_field,
+                ml_field=None, temp_ref=temp_ref, ml_stack=None)                        
+            dscfg['initialized'] = 1            
+        else:
+            ml_vol, ml_stack = pyart.retrieve.melting_layer_giangrande(
+                radar, refl_field=refl_field, zdr_field=zdr_field,
+                rhv_field=rhv_field, temp_field=temp_field, iso0_field=iso0_field,
+                ml_field=None, temp_ref=temp_ref, ml_stack=dscfg['global_data'])        
+            
+        dscfg['global_data'] = ml_stack    
 
         # prepare for exit
         new_dataset = deepcopy(radar)
