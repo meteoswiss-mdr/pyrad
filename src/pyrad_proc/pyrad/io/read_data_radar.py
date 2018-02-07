@@ -1162,7 +1162,7 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
     Returns
     -------
     radar : Radar
-        radar object
+        radar object. None if the reading has not been successful
 
     """
     metranet_field_names = dict()
@@ -1186,36 +1186,64 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
             sweep_number = int(scan_name)-1
 
             if 'Nh' in datatype_list:
-                noise_h_vec = root.findall(
-                    "./sweep/RADAR/STAT/CALIB/noisepower_frontend_h_inuse")
-                rconst_h_vec = root.findall(
-                    "./sweep/RADAR/STAT/CALIB/rconst_h")
+                found = False
+                for sweep in root.findall('sweep'):
+                    sweep_number_file = (
+                        int(sweep.attrib['name'].split('.')[1])-1)
+                    if sweep_number_file == sweep_number:
+                        noise_h = sweep.find(
+                            "./RADAR/STAT/CALIB/noisepower_frontend_h_inuse")
+                        rconst_h = sweep.find("./RADAR/STAT/CALIB/rconst_h")
+                        if noise_h is None or rconst_h is None:
+                            warn('Horizontal channel noise power not ' +
+                                 'available for sweep '+scan_name)
+                            break
 
-                noisedBADU_h = 10.*np.log10(
-                    float(noise_h_vec[sweep_number].attrib['value']))
-                rconst_h = float(rconst_h_vec[sweep_number].attrib['value'])
+                        noisedBADU_h = 10.*np.log10(
+                            float(noise_h.attrib['value']))
+                        rconst_h = float(rconst_h.attrib['value'])
 
-                noisedBZ_h = pyart.retrieve.compute_noisedBZ(
-                    radar.nrays, noisedBADU_h+rconst_h, radar.range['data'],
-                    100., noise_field='noisedBZ_hh')
+                        noisedBZ_h = pyart.retrieve.compute_noisedBZ(
+                            radar.nrays, noisedBADU_h+rconst_h,
+                            radar.range['data'], 100.,
+                            noise_field='noisedBZ_hh')
 
-                radar.add_field('noisedBZ_hh', noisedBZ_h)
+                        radar.add_field('noisedBZ_hh', noisedBZ_h)
+
+                        found = True
+                if not found:
+                    warn('Horizontal channel noise power not ' +
+                         'available for sweep '+scan_name)
 
             if 'Nv' in datatype_list:
-                noise_v_vec = root.findall(
-                    "./sweep/RADAR/STAT/CALIB/noisepower_frontend_v_inuse")
-                rconst_v_vec = root.findall(
-                    "./sweep/RADAR/STAT/CALIB/rconst_v")
+                found = False
+                for sweep in root.findall('sweep'):
+                    sweep_number_file = (
+                        int(sweep.attrib['name'].split('.')[1])-1)
+                    if sweep_number_file == sweep_number:
+                        noise_v = sweep.find(
+                            "./RADAR/STAT/CALIB/noisepower_frontend_v_inuse")
+                        rconst_v = sweep.find("./RADAR/STAT/CALIB/rconst_v")
+                        if noise_v is None or rconst_v is None:
+                            warn('Vertical channel noise power not ' +
+                                 'available for sweep '+scan_name)
+                            break
 
-                noisedBADU_v = 10.*np.log10(
-                    float(noise_v_vec[sweep_number].attrib['value']))
-                rconst_v = float(rconst_v_vec[sweep_number].attrib['value'])
+                        noisedBADU_v = 10.*np.log10(
+                            float(noise_v.attrib['value']))
+                        rconst_h = float(rconst_h.attrib['value'])
 
-                noisedBZ_v = pyart.retrieve.compute_noisedBZ(
-                    radar.nrays, noisedBADU_v+rconst_v, radar.range['data'],
-                    100., noise_field='noisedBZ_vv')
+                        noisedBZ_v = pyart.retrieve.compute_noisedBZ(
+                            radar.nrays, noisedBADU_v+rconst_v,
+                            radar.range['data'], 100.,
+                            noise_field='noisedBZ_vv')
 
-                radar.add_field('noisedBZ_vv', noisedBZ_v)
+                        radar.add_field('noisedBZ_vv', noisedBZ_v)
+
+                        found = True
+                if not found:
+                    warn('Horizontal channel noise power not ' +
+                         'available for sweep '+scan_name)
 
     return radar
 
