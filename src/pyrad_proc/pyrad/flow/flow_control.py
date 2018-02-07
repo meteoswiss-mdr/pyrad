@@ -1447,6 +1447,7 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
     dscfg.update({'cosmopath': cfg['cosmopath']})
     dscfg.update({'CosmoRunFreq': cfg['CosmoRunFreq']})
     dscfg.update({'CosmoForecasted': cfg['CosmoForecasted']})
+    dscfg.update({'path_convention': cfg['path_convention']})
     dscfg.update({'RadarName': cfg['RadarName']})
     dscfg.update({'mflossh': cfg['mflossh']})
     dscfg.update({'mflossv': cfg['mflossv']})
@@ -1612,7 +1613,7 @@ def _get_datasets_list(cfg):
         a dictionary containing the list of datasets at each processing level
 
     """
-    dataset_levels = dict({'l0': list()})
+    dataset_levels = dict({'l00': list()})
     for datasetdescr in cfg['dataSetList']:
         proclevel, dataset = get_dataset_fields(datasetdescr)
         if proclevel in dataset_levels:

@@ -299,15 +299,19 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
                  str(fzl)+' m')
 
     if dscfg['initialized'] == 0:
+        # get frequency band
+        freq_band = pyart.retrieve.get_freq_band(
+            radar.instrument_parameters['frequency']['data'][0])
+
         # find unique elevations
         el_vec = np.unique(
-            (10.*radar.elevation['data'].astype(int)).astype(int))
+            (10.*np.round(radar.elevation['data'], decimals=1)).astype(int))
         zdr_kdpzh_list = list()
         el_list = list()
         for i in range(len(el_vec)):
             fname = (
                 dscfg['configpath'] + 'selfconsistency/' +
-                'selfconsistency_zdr_zhkdp_Xband_temp10_elev' +
+                'selfconsistency_zdr_zhkdp_'+freq_band+'band_temp10_elev' +
                 '{:03d}'.format(el_vec[i])+'_mu05.txt')
             zdr_kdpzh_table = read_selfconsistency(fname)
             if zdr_kdpzh_table is not None:
@@ -481,15 +485,19 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
                  str(fzl)+' m')
 
     if dscfg['initialized'] == 0:
+        # get frequency band
+        freq_band = pyart.retrieve.get_freq_band(
+            radar.instrument_parameters['frequency']['data'][0])
+
         # find unique elevations
         el_vec = np.unique(
-            (10.*radar.elevation['data'].astype(int)).astype(int))
+            (10.*np.round(radar.elevation['data'], decimals=1)).astype(int))
         zdr_kdpzh_list = list()
         el_list = list()
         for i in range(len(el_vec)):
             fname = (
                 dscfg['configpath'] + 'selfconsistency/' +
-                'selfconsistency_zdr_zhkdp_Xband_temp10_elev' +
+                'selfconsistency_zdr_zhkdp_'+freq_band+'band_temp10_elev' +
                 '{:03d}'.format(el_vec[i])+'_mu05.txt')
             zdr_kdpzh_table = read_selfconsistency(fname)
             if zdr_kdpzh_table is not None:
@@ -1070,7 +1078,8 @@ def process_zdr_snow(procstatus, dscfg, radar_list=None):
             (rhohv_field not in radar.fields) or
             (zdr_field not in radar.fields) or
             (phidp_field not in radar.fields) or
-            (snr_field not in radar.fields)):
+            (snr_field not in radar.fields) or
+            (hydro_field not in radar.fields)):
         warn('Unable to estimate ZDR in snow. Missing data')
         return None, None
 
@@ -2722,6 +2731,8 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
                 zdr_field = 'unfiltered_differential_reflectivity'
             if datatype == 'ZDRuc':
                 zdr_field = 'corrected_unfiltered_differential_reflectivity'
+            if datatype == 'ZDR':
+                zdr_field = 'differential_reflectivity'
 
         ind_rad = int(radarnr[5:8])-1
         if radar_list[ind_rad] is None:
