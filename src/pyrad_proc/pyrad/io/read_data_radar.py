@@ -1231,7 +1231,7 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
 
                         noisedBADU_v = 10.*np.log10(
                             float(noise_v.attrib['value']))
-                        rconst_h = float(rconst_h.attrib['value'])
+                        rconst_v = float(rconst_v.attrib['value'])
 
                         noisedBZ_v = pyart.retrieve.compute_noisedBZ(
                             radar.nrays, noisedBADU_v+rconst_v,

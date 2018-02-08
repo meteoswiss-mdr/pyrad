@@ -2778,6 +2778,8 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
             if radar.ray_angle_res is not None:
                 radar_par.update(
                     {'angle_step': (radar.ray_angle_res['data'][0])})
+            else:
+                warn('Angular resolution unknown.')
 
             radar_par.update({'timeinfo': dscfg['timeinfo']})
             dscfg['global_data'] = radar_par
@@ -2896,6 +2898,12 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
                 scale_factor = sun_pwr_drao/sun_pwr_ref
                 sun_pwr_h *= scale_factor
                 sun_pwr_v *= scale_factor
+            else:
+                warn('Unable to compute solar power reference. ' +
+                     'Missing DRAO data')
+        else:
+            warn('Unable to compute solar power reference. ' +
+                 'Missing radar parameters')
 
         sun_retrieval_h = pyart.correct.sun_retrieval(
             sun_hits[4], sun_hits[6], sun_hits[3], sun_hits[5],
