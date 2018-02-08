@@ -2046,7 +2046,8 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list, dpi=72):
 
     mask = np.ma.getmaskarray(value)
     if mask.all():
-        warn('Unable to create figure '+fname_list+'. No valid data')
+        warn('Unable to create figure '+' '.join(fname_list) +
+             '. No valid data')
         return None
 
     fig = plt.figure(figsize=[10, 6], dpi=dpi)

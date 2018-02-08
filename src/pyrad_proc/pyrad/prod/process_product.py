@@ -200,7 +200,7 @@ def generate_sun_hits_products(dataset, prdcfg):
 
         print('----- save to '+' '.join(fname))
 
-        return savedir+fname
+        return fname
 
     elif prdcfg['type'] == 'WRITE_SUN_RETRIEVAL':
         if 'sun_retrieval' not in dataset:
@@ -2593,7 +2593,7 @@ def generate_monitoring_products(dataset, prdcfg):
         value_last = cquant_vec[-1]
 
         if np_last < npoints_min:
-            warn('No valid data on day '+value_last.strftime('%d-%m-%Y'))
+            warn('No valid data on day '+date[-1].strftime('%d-%m-%Y'))
             return None
 
         # check if absolute value exceeded

@@ -29,13 +29,17 @@ dBmvu STRUCT 3
 # ==========================================================================================
 #                 sun hits
 # ==========================================================================================
-sun_hits STRUCT 6
+sun_hits STRUCT 10
     type STRING SUN_HITS
     datatype STRARR 3
         PROC:dBm
         PROC:dBmv
         RAD4ALP:ZDR
-    rmin FLOAT 40000.
+    rmin FLOAT 80000.
+    hmin FLOAT 10000.
+    nbins_min INT 60
+    max_std_pwr FLOAT 2.
+    max_std_zdr FLOAT 2.
     sun_hits_dir STRING SUN_HITS  # must be the same as product WRITE_SUN_HITS
     ndays INT 1
     products STRUCT 30

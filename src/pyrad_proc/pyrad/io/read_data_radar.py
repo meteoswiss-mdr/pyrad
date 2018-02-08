@@ -792,7 +792,16 @@ def merge_scans_hydro_rad4alp(voltime, datatype, cfg, ind_rad=0):
 
     # read hydrometeor classification data file for first scan
     basename_hydro = 'YM'+radar_name+dayinfo
-    datapath_hydro = basepath+dayinfo+'/'+basename_hydro+'/'
+    if cfg['path_convention'] == 'LTE':
+        yy = dayinfo[0:2]
+        dy = dayinfo[2:]
+        subf = 'M'+radar_res+radar_name+yy+'hdf'+dy
+        datapath_hydro = basepath+subf+'/'
+    elif cfg['path_convention'] == 'MCH':
+        datapath_hydro = basepath+dayinfo+'/'+basename_hydro+'/'
+    else:
+        datapath_hydro = basepath+'YM'+radar_name+'/'
+
     filename_hydro = glob.glob(datapath_hydro+basename_hydro+timeinfo+'*.' +
                                str(800+int(scan_list[0]))+'*')
     if not filename_hydro:
@@ -800,8 +809,10 @@ def merge_scans_hydro_rad4alp(voltime, datatype, cfg, ind_rad=0):
              str(800+int(scan_list[0])))
         return None
 
+    filename_hydro = filename_hydro[0]
+
     hydro_obj = pyart.aux_io.read_product(
-        filename_hydro[0], physic_value=False, masked_array=True)
+        filename_hydro, physic_value=False, masked_array=True)
 
     if hydro_obj is None:
         warn('Unable to read file '+filename_hydro)
@@ -875,8 +886,10 @@ def merge_scans_hydro_rad4alp(voltime, datatype, cfg, ind_rad=0):
                  '*.'+str(800+int(scan_list[i])))
             continue
 
+        filename_hydro = filename_hydro[0]
+
         hydro_obj = pyart.aux_io.read_product(
-            filename_hydro[0], physic_value=False, masked_array=True)
+            filename_hydro, physic_value=False, masked_array=True)
 
         if hydro_obj is None:
             warn('Unable to read file '+filename_hydro)
