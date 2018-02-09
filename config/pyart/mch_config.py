@@ -148,6 +148,7 @@ rain_rate = 'rain_rate'
 radar_estimated_rain_rate = 'radar_estimated_rain_rate'
 radar_echo_classification = 'radar_echo_classification'
 radar_echo_id = 'radar_echo_id'
+melting_layer = 'melting_layer'
 
 # attenuation
 specific_attenuation = 'specific_attenuation'
@@ -319,6 +320,7 @@ DEFAULT_FIELD_NAMES = {
     'radar_estimated_rain_rate': radar_estimated_rain_rate,
     'radar_echo_classification': radar_echo_classification,
     'radar_echo_id': radar_echo_id,
+    'melting_layer': melting_layer,
     'specific_attenuation': specific_attenuation,
     'path_integrated_attenuation': path_integrated_attenuation,
     'specific_differential_attenuation': specific_differential_attenuation,
@@ -991,6 +993,15 @@ DEFAULT_METADATA = {
         'labels': ['NOISE', 'CLT', 'PREC'],
         'ticks': [1, 2, 3],
         'boundaries': [0.5, 1.5, 2.5, 3.5],
+        'coordinates': 'elevation azimuth range'},
+
+    melting_layer: {
+        'units': 'legend',
+        'standard_name': 'melting_layer',
+        'long_name': 'Position of the range bin respect to the melting layer',
+        'labels': ['BELOW', 'ENTERING', 'INSIDE', 'EXITING', 'ABOVE'],
+        'ticks': [1, 2, 3, 4, 5],
+        'boundaries': [0.5, 1.5, 2.5, 3.5, 4.5, 5.5],
         'coordinates': 'elevation azimuth range'},
 
     specific_attenuation: {
@@ -1948,6 +1959,7 @@ DEFAULT_FIELD_COLORMAP = {
 
     radar_echo_classification: 'pyart_LangRainbow12',
     radar_echo_id: 'pyart_LangRainbow12',
+    melting_layer: 'pyart_LangRainbow12',
 
     specific_attenuation: 'pyart_Carbone17',
     path_integrated_attenuation: 'pyart_Carbone17',
@@ -2065,8 +2077,9 @@ DEFAULT_FIELD_LIMITS = {
     rain_rate: (0., 10.),
     radar_estimated_rain_rate: (0., 10.),
 
-    radar_echo_classification: (0, 9),
+    radar_echo_classification: (0., 9.),
     radar_echo_id: (0, 3),
+    melting_layer: (0, 5),
 
     sun_hit_h: (0, 1),
     sun_hit_v: (0, 1),

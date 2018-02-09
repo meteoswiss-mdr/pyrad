@@ -1,0 +1,72 @@
+#
+# Product generation configuration
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 3
+    TEMP_grid
+    ZH_grid
+    hydroclass_grid
+   
+   
+# ==========================================================================================
+#               COSMO data
+# ==========================================================================================
+TEMP_grid STRUCT 5
+    type STRING GRID
+    datatype STRING CFRADIAL:TEMP,TEMP,SAVEVOL_TEMP     
+    wfunc STRING NEAREST_NEIGHBOUR
+    gridConfig STRUCT 9
+      xmin FLOAT 0.
+      xmax FLOAT 100.
+      ymin FLOAT -50.
+      ymax FLOAT 60.
+      zmin FLOAT 0.
+      zmax FLOAT 12000.
+      hres FLOAT 500.
+      vres FLOAT 200.
+      altorig FLOAT 0.
+    products STRUCT 1                        
+        SAVEVOL_TEMP STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING TEMP
+            
+ZH_grid STRUCT 5
+   type     STRING GRID
+   datatype STRING CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
+   wfunc STRING NEAREST_NEIGHBOUR
+   gridConfig STRUCT 9
+      xmin FLOAT 0.
+      xmax FLOAT 100.
+      ymin FLOAT -50.
+      ymax FLOAT 60.
+      zmin FLOAT 0.
+      zmax FLOAT 12000.
+      hres FLOAT 500.
+      vres FLOAT 200.
+      altorig FLOAT 0.
+   products STRUCT 1                        
+        SAVEVOL_dBZc STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING dBZc
+         
+hydroclass_grid STRUCT 5
+   type     STRING GRID
+   datatype STRING CFRADIAL:hydro,hydroclass,SAVEVOL_hydro
+   wfunc STRING NEAREST_NEIGHBOUR   
+   gridConfig STRUCT 9
+      xmin FLOAT 0.
+      xmax FLOAT 100.
+      ymin FLOAT -50.
+      ymax FLOAT 60.
+      zmin FLOAT 0.
+      zmax FLOAT 12000.
+      hres FLOAT 500.
+      vres FLOAT 200.
+      altorig FLOAT 0.
+   products STRUCT 1                        
+        SAVEVOL_dBZc STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING hydro
+         

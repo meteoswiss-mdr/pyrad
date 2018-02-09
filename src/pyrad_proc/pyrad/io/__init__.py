@@ -65,6 +65,7 @@ Reading other data
     read_solar_flux
     read_selfconsistency
     read_antenna_pattern
+    read_lightning
 
 Writing data
 ==================
@@ -151,7 +152,7 @@ from .read_data_other import read_sun_hits, read_sun_hits_multiple_days
 from .read_data_other import read_sun_retrieval, read_solar_flux
 from .read_data_other import read_selfconsistency, read_colocated_gates
 from .read_data_other import read_colocated_data, read_antenna_pattern
-from .read_data_other import read_last_state
+from .read_data_other import read_last_state, read_lightning
 
 from .write_data import write_smn, write_ts_polar_data, write_ts_cum
 from .write_data import write_monitoring_ts, write_intercomp_scores_ts

@@ -54,8 +54,8 @@ CosmoRunFreq INT 3
 CosmoForecasted INT 7
 
 # radar constant
-radconsth FLOAT 73.23
-radconstv FLOAT 73.33
+radconsth FLOAT 71.67
+radconstv FLOAT 72.27
 
 # radar constant h, v (20141125)
 # A 72.78, 72.98

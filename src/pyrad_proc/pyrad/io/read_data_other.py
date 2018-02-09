@@ -15,6 +15,7 @@ Functions for reading auxiliary data
     read_colocated_data
     read_colocated_data_time_avg
     read_timeseries
+    read_lightning
     read_ts_cum
     read_monitoring_ts
     read_intercomp_scores_ts
@@ -36,6 +37,7 @@ import datetime
 import csv
 import xml.etree.ElementTree as et
 from warnings import warn
+from copy import deepcopy
 
 import numpy as np
 
@@ -75,7 +77,8 @@ def read_last_state(fname):
             except ValueError:
                 warn('File '+fname+' does not contain a valid date.')
                 return None
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return None
 
@@ -108,7 +111,10 @@ def read_status(voltime, cfg, ind_rad=0):
     dayinfo = voltime.strftime('%y%j')
     timeinfo = voltime.strftime('%H%M')
     basename = 'ST'+cfg['RadarName'][ind_rad]+dayinfo
-    datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
+    if cfg['path_convention'] == 'RT':
+        datapath = cfg['datapath'][ind_rad]+'ST'+cfg['RadarName'][ind_rad]+'/'
+    else:
+        datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
     filename = glob.glob(datapath+basename+timeinfo+'*.xml')
     if len(filename) == 0:
         warn('rad4alp status file '+datapath+basename+timeinfo +
@@ -164,7 +170,8 @@ def read_rad4alp_cosmo(fname, datatype):
             warn('Unknown COSMO data type '+datatype)
             return None
 
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return None
 
@@ -222,7 +229,8 @@ def read_rad4alp_vis(fname, datatype):
 
             return field_list
 
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return None
 
@@ -272,7 +280,8 @@ def read_colocated_gates(fname):
             csvfile.close()
 
             return rad1_ele, rad1_azi, rad1_rng, rad2_ele, rad2_azi, rad2_rng
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return None, None, None, None, None, None
 
@@ -328,7 +337,8 @@ def read_colocated_data(fname):
 
             return (rad1_ele, rad1_azi, rad1_rng, rad1_val,
                     rad2_ele, rad2_azi, rad2_rng, rad2_val)
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return None, None, None, None, None, None, None, None
 
@@ -394,7 +404,8 @@ def read_colocated_data_time_avg(fname):
                     rad1_dBZavg, rad1_PhiDPavg, rad1_Flagavg,
                     rad2_ele, rad2_azi, rad2_rng,
                     rad2_dBZavg, rad2_PhiDPavg, rad2_Flagavg)
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return (None, None, None, None, None, None, None, None, None, None,
                 None, None)
@@ -441,9 +452,97 @@ def read_timeseries(fname):
             csvfile.close()
 
             return date, value
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return None, None
+
+
+def read_lightning(fname, filter_data=True):
+    """
+    Reads lightning data contained in a text file. The file has the following
+    fields:
+        flashnr: (0 is for noise)
+        UTC seconds of the day
+        Time within flash (in seconds)
+        Latitude (decimal degrees)
+        Longitude (decimal degrees)
+        Altitude (m MSL)
+        Power (dBm)
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+    filter_data : Boolean
+        if True filter noise (flashnr = 0)
+
+    Returns
+    -------
+    flashnr, time, time_in_flash, lat, lon, alt, dBm : tupple
+        A tupple containing the read values. None otherwise
+
+    """
+    try:
+        # get date from file name
+        bfile = os.path.basename(fname)
+        datetimestr = bfile[0:6]
+        fdatetime = datetime.datetime.strptime(datetimestr, '%y%m%d')
+
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                csvfile, fieldnames=['flashnr', 'time', 'time_in_flash',
+                                     'lat', 'lon', 'alt', 'dBm'],
+                delimiter=' ')
+            nrows = sum(1 for row in reader)
+
+            flashnr = np.ma.empty(nrows, dtype=int)
+            time_in_flash = np.ma.empty(nrows, dtype=float)
+            lat = np.ma.empty(nrows, dtype=float)
+            lon = np.ma.empty(nrows, dtype=float)
+            alt = np.ma.empty(nrows, dtype=float)
+            dBm = np.ma.empty(nrows, dtype=float)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                csvfile, fieldnames=['flashnr', 'time', 'time_in_flash',
+                                     'lat', 'lon', 'alt', 'dBm'],
+                delimiter=' ')
+            i = 0
+            time = list()
+            for row in reader:
+                flashnr[i] = int(row['flashnr'])
+                time.append(fdatetime+datetime.timedelta(
+                    seconds=float(row['time'])))
+                time_in_flash[i] = float(row['time_in_flash'])
+                lat[i] = float(row['lat'])
+                lon[i] = float(row['lon'])
+                alt[i] = float(row['alt'])
+                dBm[i] = float(row['dBm'])
+
+                i += 1
+
+            time = np.array(time)
+
+            if filter_data:
+                flashnr_aux = deepcopy(flashnr)
+                flashnr = flashnr[flashnr_aux > 0]
+                time = time[flashnr_aux > 0]
+                time_in_flash = time_in_flash[flashnr_aux > 0]
+                lat = lat[flashnr_aux > 0]
+                lon = lon[flashnr_aux > 0]
+                alt = alt[flashnr_aux > 0]
+                dBm = dBm[flashnr_aux > 0]
+
+            csvfile.close()
+
+            return flashnr, time, time_in_flash, lat, lon, alt, dBm
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return None, None, None, None, None, None, None
 
 
 def read_ts_cum(fname):
@@ -493,7 +592,8 @@ def read_ts_cum(fname):
             csvfile.close()
 
             return date, np_radar, radar_value, np_sensor, sensor_value
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return None, None, None, None, None
 
@@ -550,9 +650,10 @@ def read_monitoring_ts(fname):
             csvfile.close()
 
             return date, np_t, central_quantile, low_quantile, high_quantile
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
-        return None, None
+        return None, None, None, None, None
 
 
 def read_intercomp_scores_ts(fname):
@@ -628,7 +729,8 @@ def read_intercomp_scores_ts(fname):
             return (date_vec, np_vec, meanbias_vec, medianbias_vec,
                     modebias_vec, corr_vec, slope_vec, intercep_vec,
                     intercep_slope1_vec)
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return None, None, None, None, None, None, None, None, None
 
@@ -820,7 +922,8 @@ def read_sun_hits(fname):
                     ph, ph_std, nph, nvalh, pv, pv_std, npv, nvalv,
                     zdr, zdr_std, nzdr, nvalzdr)
 
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return (None, None, None, None, None, None, None, None, None, None,
                 None, None, None, None, None, None, None, None, None)
@@ -950,7 +1053,8 @@ def read_sun_retrieval(fname):
                     nhits_zdr, zdr_sun_est, std_zdr_sun_est, dBm_sun_ref,
                     ref_time)
 
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return (None, None, None, None, None, None, None, None, None, None,
                 None, None, None, None, None, None, None, None, None, None,
@@ -1014,7 +1118,8 @@ def read_solar_flux(fname):
 
             return flux_datetime, flux_value
 
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return None, None
 
@@ -1117,7 +1222,7 @@ def read_smn(fname):
                 wspeed[i] = float(row['Windspeed'])
                 wdir[i] = float(row['Winddirection'])
                 i += 1
-                
+
             pressure = np.ma.masked_values(pressure, fill_value)
             temp = np.ma.masked_values(temp, fill_value)
             rh = np.ma.masked_values(rh, fill_value)
@@ -1131,7 +1236,8 @@ def read_smn(fname):
             csvfile.close()
 
             return id, date, pressure, temp, rh, precip, wspeed, wdir
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return None, None, None, None, None, None, None, None
 
@@ -1190,7 +1296,8 @@ def read_smn2(fname):
             csvfile.close()
 
             return id, date, value
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return None, None, None
 
@@ -1273,7 +1380,8 @@ def read_disdro_scattering(fname):
 
             return (date, preciptype, lwc, rr, zh, zv, zdr, ldr, ah, av,
                     adiff, kdp, deltaco, rhohv)
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return (None, None, None, None, None, None, None, None, None, None,
                 None, None, None)
@@ -1318,7 +1426,8 @@ def read_selfconsistency(fname):
             csvfile.close()
 
             return zdr_kdpzh_table
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return None
 
@@ -1345,7 +1454,8 @@ def read_antenna_pattern(fname, linear=False, twoway=False):
 
     try:
         pfile = open(fname, "r")
-    except:
+    except EnvironmentError as ee:
+        warn(str(ee))
         raise Exception("ERROR: Could not find|open antenna file '" +
                         fname+"'")
 

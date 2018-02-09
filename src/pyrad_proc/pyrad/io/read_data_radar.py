@@ -379,13 +379,21 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
             basename = 'P'+radar_res+radar_name+dayinfo
             subf = 'P'+radar_res+radar_name+yy+'hdf'+dy
             datapath = basepath+subf+'/'
-    else:
+    elif cfg['path_convention'] == 'MCH':
         datapath = basepath+dayinfo+'/'+basename+'/'
         filename = glob.glob(
             datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
         if not filename:
             basename = 'P'+radar_res+radar_name+dayinfo
             datapath = basepath+dayinfo+'/'+basename+'/'
+    else:
+        datapath = basepath+'M'+radar_res+radar_name+'/'
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
+        if not filename:
+            basename = 'P'+radar_res+radar_name+dayinfo
+            datapath = basepath+'P'+radar_res+radar_name+'/'
+
     filename = glob.glob(datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
     if not filename:
         warn('No file found in '+datapath+basename+timeinfo+'*.'+scan_list[0])
@@ -654,7 +662,7 @@ def merge_scans_cosmo_rad4alp(voltime, datatype, cfg, ind_rad=0):
 
 def merge_scans_dem_rad4alp(voltime, datatype, cfg, ind_rad=0):
     """
-    merge cosmo rad4alp scans. If data for all the scans cannot be retrieved
+    merge DEM rad4alp scans. If data for all the scans cannot be retrieved
     returns None
 
     Parameters
@@ -703,13 +711,21 @@ def merge_scans_dem_rad4alp(voltime, datatype, cfg, ind_rad=0):
             basename = 'P'+radar_res+radar_name+dayinfo
             subf = 'P'+radar_res+radar_name+yy+'hdf'+dy
             datapath = basepath+subf+'/'
-    else:
+    elif cfg['path_convention'] == 'MCH':
         datapath = basepath+dayinfo+'/'+basename+'/'
         filename = glob.glob(
             datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
         if not filename:
             basename = 'P'+radar_res+radar_name+dayinfo
             datapath = basepath+dayinfo+'/'+basename+'/'
+    else:
+        datapath = basepath+'M'+radar_res+radar_name+'/'
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
+        if not filename:
+            basename = 'P'+radar_res+radar_name+dayinfo
+            datapath = basepath+'P'+radar_res+radar_name+'/'
+
     filename = glob.glob(datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
     if not filename:
         warn('No file found in '+datapath+basename+timeinfo+'*.'+scan_list[0])
@@ -776,7 +792,16 @@ def merge_scans_hydro_rad4alp(voltime, datatype, cfg, ind_rad=0):
 
     # read hydrometeor classification data file for first scan
     basename_hydro = 'YM'+radar_name+dayinfo
-    datapath_hydro = basepath+dayinfo+'/'+basename_hydro+'/'
+    if cfg['path_convention'] == 'LTE':
+        yy = dayinfo[0:2]
+        dy = dayinfo[2:]
+        subf = 'M'+radar_res+radar_name+yy+'hdf'+dy
+        datapath_hydro = basepath+subf+'/'
+    elif cfg['path_convention'] == 'MCH':
+        datapath_hydro = basepath+dayinfo+'/'+basename_hydro+'/'
+    else:
+        datapath_hydro = basepath+'YM'+radar_name+'/'
+
     filename_hydro = glob.glob(datapath_hydro+basename_hydro+timeinfo+'*.' +
                                str(800+int(scan_list[0]))+'*')
     if not filename_hydro:
@@ -784,8 +809,10 @@ def merge_scans_hydro_rad4alp(voltime, datatype, cfg, ind_rad=0):
              str(800+int(scan_list[0])))
         return None
 
+    filename_hydro = filename_hydro[0]
+
     hydro_obj = pyart.aux_io.read_product(
-        filename_hydro[0], physic_value=False, masked_array=True)
+        filename_hydro, physic_value=False, masked_array=True)
 
     if hydro_obj is None:
         warn('Unable to read file '+filename_hydro)
@@ -809,13 +836,21 @@ def merge_scans_hydro_rad4alp(voltime, datatype, cfg, ind_rad=0):
             basename = 'P'+radar_res+radar_name+dayinfo
             subf = 'P'+radar_res+radar_name+yy+'hdf'+dy
             datapath = basepath+subf+'/'
-    else:
+    elif cfg['path_convention'] == 'MCH':
         datapath = basepath+dayinfo+'/'+basename+'/'
         filename = glob.glob(
             datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
         if not filename:
             basename = 'P'+radar_res+radar_name+dayinfo
             datapath = basepath+dayinfo+'/'+basename+'/'
+    else:
+        datapath = basepath+'M'+radar_res+radar_name+'/'
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
+        if not filename:
+            basename = 'P'+radar_res+radar_name+dayinfo
+            datapath = basepath+'P'+radar_res+radar_name+'/'
+
     filename = glob.glob(datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
     if not filename:
         warn('No file found in '+datapath+basename+timeinfo+'*.'+scan_list[0])
@@ -851,8 +886,10 @@ def merge_scans_hydro_rad4alp(voltime, datatype, cfg, ind_rad=0):
                  '*.'+str(800+int(scan_list[i])))
             continue
 
+        filename_hydro = filename_hydro[0]
+
         hydro_obj = pyart.aux_io.read_product(
-            filename_hydro[0], physic_value=False, masked_array=True)
+            filename_hydro, physic_value=False, masked_array=True)
 
         if hydro_obj is None:
             warn('Unable to read file '+filename_hydro)
@@ -1138,7 +1175,7 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
     Returns
     -------
     radar : Radar
-        radar object
+        radar object. None if the reading has not been successful
 
     """
     metranet_field_names = dict()
@@ -1162,36 +1199,64 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
             sweep_number = int(scan_name)-1
 
             if 'Nh' in datatype_list:
-                noise_h_vec = root.findall(
-                    "./sweep/RADAR/STAT/CALIB/noisepower_frontend_h_inuse")
-                rconst_h_vec = root.findall(
-                    "./sweep/RADAR/STAT/CALIB/rconst_h")
+                found = False
+                for sweep in root.findall('sweep'):
+                    sweep_number_file = (
+                        int(sweep.attrib['name'].split('.')[1])-1)
+                    if sweep_number_file == sweep_number:
+                        noise_h = sweep.find(
+                            "./RADAR/STAT/CALIB/noisepower_frontend_h_inuse")
+                        rconst_h = sweep.find("./RADAR/STAT/CALIB/rconst_h")
+                        if noise_h is None or rconst_h is None:
+                            warn('Horizontal channel noise power not ' +
+                                 'available for sweep '+scan_name)
+                            break
 
-                noisedBADU_h = 10.*np.log10(
-                    float(noise_h_vec[sweep_number].attrib['value']))
-                rconst_h = float(rconst_h_vec[sweep_number].attrib['value'])
+                        noisedBADU_h = 10.*np.log10(
+                            float(noise_h.attrib['value']))
+                        rconst_h = float(rconst_h.attrib['value'])
 
-                noisedBZ_h = pyart.retrieve.compute_noisedBZ(
-                    radar.nrays, noisedBADU_h+rconst_h, radar.range['data'],
-                    100., noise_field='noisedBZ_hh')
+                        noisedBZ_h = pyart.retrieve.compute_noisedBZ(
+                            radar.nrays, noisedBADU_h+rconst_h,
+                            radar.range['data'], 100.,
+                            noise_field='noisedBZ_hh')
 
-                radar.add_field('noisedBZ_hh', noisedBZ_h)
+                        radar.add_field('noisedBZ_hh', noisedBZ_h)
+
+                        found = True
+                if not found:
+                    warn('Horizontal channel noise power not ' +
+                         'available for sweep '+scan_name)
 
             if 'Nv' in datatype_list:
-                noise_v_vec = root.findall(
-                    "./sweep/RADAR/STAT/CALIB/noisepower_frontend_v_inuse")
-                rconst_v_vec = root.findall(
-                    "./sweep/RADAR/STAT/CALIB/rconst_v")
+                found = False
+                for sweep in root.findall('sweep'):
+                    sweep_number_file = (
+                        int(sweep.attrib['name'].split('.')[1])-1)
+                    if sweep_number_file == sweep_number:
+                        noise_v = sweep.find(
+                            "./RADAR/STAT/CALIB/noisepower_frontend_v_inuse")
+                        rconst_v = sweep.find("./RADAR/STAT/CALIB/rconst_v")
+                        if noise_v is None or rconst_v is None:
+                            warn('Vertical channel noise power not ' +
+                                 'available for sweep '+scan_name)
+                            break
 
-                noisedBADU_v = 10.*np.log10(
-                    float(noise_v_vec[sweep_number].attrib['value']))
-                rconst_v = float(rconst_v_vec[sweep_number].attrib['value'])
+                        noisedBADU_v = 10.*np.log10(
+                            float(noise_v.attrib['value']))
+                        rconst_v = float(rconst_v.attrib['value'])
 
-                noisedBZ_v = pyart.retrieve.compute_noisedBZ(
-                    radar.nrays, noisedBADU_v+rconst_v, radar.range['data'],
-                    100., noise_field='noisedBZ_vv')
+                        noisedBZ_v = pyart.retrieve.compute_noisedBZ(
+                            radar.nrays, noisedBADU_v+rconst_v,
+                            radar.range['data'], 100.,
+                            noise_field='noisedBZ_vv')
 
-                radar.add_field('noisedBZ_vv', noisedBZ_v)
+                        radar.add_field('noisedBZ_vv', noisedBZ_v)
+
+                        found = True
+                if not found:
+                    warn('Horizontal channel noise power not ' +
+                         'available for sweep '+scan_name)
 
     return radar
 

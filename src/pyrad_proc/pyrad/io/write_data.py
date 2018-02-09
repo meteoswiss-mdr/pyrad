@@ -992,7 +992,8 @@ def write_sun_hits(sun_hits, fname):
             writer.writeheader()
             for i in range(nhits):
                 writer.writerow({
-                    'time': sun_hits['time'][i],
+                    'time': sun_hits['time'][i].strftime(
+                        '%Y-%m-%d %H:%M:%S.%f'),
                     'ray': sun_hits['ray'][i],
                     'NPrng': sun_hits['NPrng'][i],
                     'rad_el': sun_hits['rad_el'][i],
@@ -1023,7 +1024,8 @@ def write_sun_hits(sun_hits, fname):
             writer = csv.DictWriter(csvfile, fieldnames)
             for i in range(nhits):
                 writer.writerow({
-                    'time': sun_hits['time'][i],
+                    'time': sun_hits['time'][i].strftime(
+                        '%Y-%m-%d %H:%M:%S.%f'),
                     'ray': sun_hits['ray'][i],
                     'NPrng': sun_hits['NPrng'][i],
                     'rad_el': sun_hits['rad_el'][i],
