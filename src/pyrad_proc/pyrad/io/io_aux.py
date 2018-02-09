@@ -104,7 +104,7 @@ def get_save_dir(basepath, procname, dsname, prdname, timeinfo=None,
     if timeinfo is None:
         savedir = basepath+procname+'/'+dsname+'/'+prdname+'/'
     else:
-        daydir = timeinfo.strftime('%Y-%m-%d')
+        daydir = timeinfo.strftime(timeformat)
         savedir = basepath+procname+'/'+daydir+'/'+dsname+'/'+prdname+'/'
 
     if create_dir is False:

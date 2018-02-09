@@ -206,12 +206,20 @@ def generate_sun_hits_products(dataset, prdcfg):
         if 'sun_retrieval' not in dataset:
             return None
 
+        timeinfo = None
+        timeformat = None
+        if 'add_date_in_fname' in prdcfg:
+            if prdcfg['add_date_in_fname']:
+                timeinfo = dataset['timeinfo']
+                timeformat = '%Y'
+
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=None)
 
         fname = make_filename(
-            'info', prdcfg['dstype'], 'retrieval', ['csv'])
+            'info', prdcfg['dstype'], 'retrieval', ['csv'], timeinfo=timeinfo,
+            timeformat=timeformat)
 
         for i in range(len(fname)):
             fname[i] = savedir+fname[i]
@@ -277,12 +285,20 @@ def generate_sun_hits_products(dataset, prdcfg):
         if 'dpi' in prdcfg:
             dpi = prdcfg['dpi']
 
+        timeinfo = None
+        timeformat = None
+        if 'add_date_in_fname' in prdcfg:
+            if prdcfg['add_date_in_fname']:
+                timeinfo = dataset['timeinfo']
+                timeformat = '%Y'
+
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdid'], timeinfo=None)
 
         fname = make_filename(
-            'info', prdcfg['dstype'], 'retrieval', ['csv'])
+            'info', prdcfg['dstype'], 'retrieval', ['csv'], timeinfo=timeinfo,
+            timeformat=timeformat)
 
         fname = savedir + fname[0]
 
@@ -305,13 +321,17 @@ def generate_sun_hits_products(dataset, prdcfg):
 
         fname = make_filename(
             'retrieval_ts', prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'])
+            prdcfg['imgformat'], timeinfo=timeinfo,
+            timeformat=timeformat)
 
         for i in range(len(fname)):
             fname[i] = savedir+fname[i]
 
+        titl = ('Sun Retrieval Time Series ' +
+                sun_retrieval[0][0].strftime('%Y%m%d')+'-' +
+                sun_retrieval[0][-1].strftime('%Y%m%d'))
         plot_sun_retrieval_ts(
-            sun_retrieval, prdcfg['voltype'], fname, dpi=dpi)
+            sun_retrieval, prdcfg['voltype'], fname, titl=titl, dpi=dpi)
 
         print('----- save to '+' '.join(fname))
 
@@ -2481,9 +2501,18 @@ def generate_monitoring_products(dataset, prdcfg):
                 prdcfg['type'])
             return None
 
-        csvtimeinfo = None
+        # put time info in file path and name
+        csvtimeinfo_path = None
+        csvtimeinfo_file = None
+        timeformat = None
         if hist_type == 'instant':
-            csvtimeinfo = prdcfg['timeinfo']
+            csvtimeinfo_path = prdcfg['timeinfo']
+            csvtimeinfo_file = prdcfg['timeinfo']
+            timeformat = '%Y%m%d'
+        elif 'add_date_in_fname' in prdcfg:
+            if prdcfg['add_date_in_fname']:
+                csvtimeinfo_file = prdcfg['timeinfo']
+                timeformat = '%Y'
 
         quantiles = np.array([25., 50., 75.])
         ref_value = 0.
@@ -2494,11 +2523,11 @@ def generate_monitoring_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=csvtimeinfo)
+            prdcfg['prdname'], timeinfo=csvtimeinfo_path)
 
         csvfname = make_filename(
             'ts', prdcfg['dstype'], prdcfg['voltype'], ['csv'],
-            timeinfo=csvtimeinfo, timeformat='%Y%m%d')[0]
+            timeinfo=csvtimeinfo_file, timeformat=timeformat)[0]
 
         csvfname = savedir+csvfname
 
@@ -2530,11 +2559,18 @@ def generate_monitoring_products(dataset, prdcfg):
         if hist_type == 'instant':
             figtimeinfo = date[0]
             titldate = date[0].strftime('%Y-%m-%d')
+        else:
+            titldate = (date[0].strftime('%Y%m%d')+'-' +
+                        date[-1].strftime('%Y%m%d'))
+            if 'add_date_in_fname' in prdcfg:
+                if prdcfg['add_date_in_fname']:
+                    figtimeinfo = date[0]
+                    timeformat = '%Y'
 
         figfname = make_filename(
             'ts', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
-            timeinfo=figtimeinfo, timeformat='%Y%m%d')
+            timeinfo=figtimeinfo, timeformat=timeformat)
 
         for i in range(len(figfname)):
             figfname[i] = savedir+figfname[i]
@@ -2543,10 +2579,22 @@ def generate_monitoring_products(dataset, prdcfg):
 
         labely = generate_field_name_str(prdcfg['voltype'])
 
+        np_min = 0
+        if 'npoints_min' in prdcfg:
+            np_min = prdcfg['npoints_min']
+
+        vmin = None
+        if 'vmin' in prdcfg:
+            vmin = prdcfg['vmin']
+
+        vmax = None
+        if 'vmax' in prdcfg:
+            vmin = prdcfg['vmax']
+
         plot_monitoring_ts(
             date, np_t_vec, cquant_vec, lquant_vec, hquant_vec, field_name,
-            figfname, ref_value=ref_value, labelx='Time UTC',
-            labely=labely, titl=titl)
+            figfname, ref_value=ref_value, vmin=vmin, vmax=vmax,
+            np_min=np_min, labelx='Time UTC', labely=labely, titl=titl)
         print('----- save to '+' '.join(figfname))
 
         # generate alarms if needed

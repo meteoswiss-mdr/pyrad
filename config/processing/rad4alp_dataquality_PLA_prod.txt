@@ -229,7 +229,8 @@ monitoring_RhoHV STRUCT 4
         PROC:RhoHV_rain
     step FLOAT 0.001
     products STRUCT 2
-        VOL_TS STRUCT 12
+        VOL_TS STRUCT 15
+            add_date_in_fname INT 1
             type STRING VOL_TS
             hist_type STRING cumulative
             voltype STRING RhoHV_rain
@@ -241,6 +242,8 @@ monitoring_RhoHV STRUCT 4
             tol_abs FLOAT 0.04
             tol_trend FLOAT 0.02
             npoints_min INT 5000
+            vmin FLOAT 0.95 
+            vmax FLOAT 1.01
             nevents_min INT 10
             alarm INT 1
             sender STRING jordi.figuerasiventura@meteoswiss.ch
@@ -257,7 +260,8 @@ monitoring_ZDR STRUCT 4
         PROC:ZDR_prec
     step FLOAT 0.05
     products STRUCT 2
-        VOL_TS STRUCT 11
+        VOL_TS STRUCT 14
+            add_date_in_fname INT 1
             type STRING VOL_TS
             hist_type STRING cumulative
             voltype STRING ZDR_prec         .
@@ -265,6 +269,8 @@ monitoring_ZDR STRUCT 4
             tol_abs FLOAT 0.2
             tol_trend FLOAT 0.2
             npoints_min INT 5000
+            vmin FLOAT -2. 
+            vmax FLOAT 2.
             nevents_min INT 10
             alarm INT 1
             sender STRING jordi.figuerasiventura@meteoswiss.ch
@@ -281,7 +287,8 @@ monitoring_ZDR_snow STRUCT 4
         PROC:ZDR_snow
     step FLOAT 0.05
     products STRUCT 2        
-        VOL_TS STRUCT 12
+        VOL_TS STRUCT 15
+            add_date_in_fname INT 1
             type STRING VOL_TS
             hist_type STRING cumulative
             voltype STRING ZDR_snow
@@ -293,6 +300,8 @@ monitoring_ZDR_snow STRUCT 4
             tol_abs FLOAT 0.2
             tol_trend FLOAT 0.2
             npoints_min INT 5000
+            vmin FLOAT -2. 
+            vmax FLOAT 2.
             nevents_min INT 10
             alarm INT 1
             sender STRING jordi.figuerasiventura@meteoswiss.ch
@@ -309,7 +318,8 @@ monitoring_Zh_bias STRUCT 4
         PROC:dBZ_bias
     step FLOAT 0.5
     products STRUCT 2
-        VOL_TS STRUCT 11
+        VOL_TS STRUCT 14
+            add_date_in_fname INT 1
             type STRING VOL_TS
             hist_type STRING cumulative
             voltype STRING dBZ_bias         .
@@ -317,6 +327,8 @@ monitoring_Zh_bias STRUCT 4
             tol_abs FLOAT 2.0
             tol_trend FLOAT 2.0
             npoints_min INT 100
+            vmin FLOAT -30. 
+            vmax FLOAT 30.
             nevents_min INT 10
             alarm INT 1
             sender STRING jordi.figuerasiventura@meteoswiss.ch
@@ -333,7 +345,8 @@ monitoring_PhiDP0 STRUCT 4
         PROC:PhiDP0
     step FLOAT 1.
     products STRUCT 2
-        VOL_TS STRUCT 11
+        VOL_TS STRUCT 14
+            add_date_in_fname INT 1
             type STRING VOL_TS
             hist_type STRING cumulative
             voltype STRING PhiDP0         .
@@ -342,6 +355,8 @@ monitoring_PhiDP0 STRUCT 4
             tol_trend FLOAT 10.
             npoints_min INT 500000
             nevents_min INT 10
+            vmin FLOAT -20. 
+            vmax FLOAT 20.
             alarm INT 1
             sender STRING jordi.figuerasiventura@meteoswiss.ch
             receiver_list STRARR 1

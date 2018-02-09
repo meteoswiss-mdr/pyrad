@@ -78,8 +78,9 @@ sun_hits STRUCT 10
             voltype STRING ZDR_sun_hit
         SUN_HITS STRUCT 1
             type STRING WRITE_SUN_HITS
-        SUN_RETRIEVAL STRUCT 1
+        SUN_RETRIEVAL STRUCT 2
             type STRING WRITE_SUN_RETRIEVAL
+            add_date_in_fname INT 1
         SUN_RETRIEVAL_PH STRUCT 2
             type STRING PLOT_SUN_RETRIEVAL
             voltype STRING dBm_sun_est
@@ -89,68 +90,84 @@ sun_hits STRUCT 10
         SUN_RETRIEVAL_ZDR STRUCT 2
             type STRING PLOT_SUN_RETRIEVAL
             voltype STRING ZDR_sun_est
-        SUN_RETRIEVAL_PH_TS STRUCT 3
+        SUN_RETRIEVAL_PH_TS STRUCT 4
             type STRING PLOT_SUN_RETRIEVAL_TS
+            add_date_in_fname INT 1
             voltype STRING dBm_sun_est
             prdid STRING SUN_RETRIEVAL
-        SUN_RETRIEVAL_RX_BIAS_H_TS STRUCT 3
+        SUN_RETRIEVAL_RX_BIAS_H_TS STRUCT 4
             type STRING PLOT_SUN_RETRIEVAL_TS
+            add_date_in_fname INT 1
             voltype STRING rx_bias_h
             prdid STRING SUN_RETRIEVAL
-        SUN_RETRIEVAL_AZ_BIAS_H_TS STRUCT 3
+        SUN_RETRIEVAL_AZ_BIAS_H_TS STRUCT 4
             type STRING PLOT_SUN_RETRIEVAL_TS
+            add_date_in_fname INT 1
             voltype STRING az_bias_h
             prdid STRING SUN_RETRIEVAL
-        SUN_RETRIEVAL_EL_BIAS_H_TS STRUCT 3
+        SUN_RETRIEVAL_EL_BIAS_H_TS STRUCT 4
             type STRING PLOT_SUN_RETRIEVAL_TS
+            add_date_in_fname INT 1
             voltype STRING el_bias_h
             prdid STRING SUN_RETRIEVAL
-        SUN_RETRIEVAL_AZ_WIDTH_H_TS STRUCT 3
+        SUN_RETRIEVAL_AZ_WIDTH_H_TS STRUCT 4
             type STRING PLOT_SUN_RETRIEVAL_TS
+            add_date_in_fname INT 1
             voltype STRING az_width_h
             prdid STRING SUN_RETRIEVAL
-        SUN_RETRIEVAL_EL_WIDTH_H_TS STRUCT 3
+        SUN_RETRIEVAL_EL_WIDTH_H_TS STRUCT 4
             type STRING PLOT_SUN_RETRIEVAL_TS
+            add_date_in_fname INT 1
             voltype STRING el_width_h
             prdid STRING SUN_RETRIEVAL
-        SUN_RETRIEVAL_NHITS_H_TS STRUCT 3
+        SUN_RETRIEVAL_NHITS_H_TS STRUCT 4
             type STRING PLOT_SUN_RETRIEVAL_TS
+            add_date_in_fname INT 1
             voltype STRING nhits_h
             prdid STRING SUN_RETRIEVAL
-        SUN_RETRIEVAL_PV_TS STRUCT 3
+        SUN_RETRIEVAL_PV_TS STRUCT 4
             type STRING PLOT_SUN_RETRIEVAL_TS
+            add_date_in_fname INT 1
             voltype STRING dBmv_sun_est
             prdid STRING SUN_RETRIEVAL
-        SUN_RETRIEVAL_RX_BIAS_V_TS STRUCT 3
+        SUN_RETRIEVAL_RX_BIAS_V_TS STRUCT 4
             type STRING PLOT_SUN_RETRIEVAL_TS
+            add_date_in_fname INT 1
             voltype STRING rx_bias_v
             prdid STRING SUN_RETRIEVAL
-        SUN_RETRIEVAL_AZ_BIAS_V_TS STRUCT 3
+        SUN_RETRIEVAL_AZ_BIAS_V_TS STRUCT 4
             type STRING PLOT_SUN_RETRIEVAL_TS
+            add_date_in_fname INT 1
             voltype STRING az_bias_v
             prdid STRING SUN_RETRIEVAL
-        SUN_RETRIEVAL_EL_BIAS_V_TS STRUCT 3
+        SUN_RETRIEVAL_EL_BIAS_V_TS STRUCT 4
             type STRING PLOT_SUN_RETRIEVAL_TS
+            add_date_in_fname INT 1
             voltype STRING el_bias_v
             prdid STRING SUN_RETRIEVAL
-        SUN_RETRIEVAL_AZ_WIDTH_V_TS STRUCT 3
+        SUN_RETRIEVAL_AZ_WIDTH_V_TS STRUCT 4
             type STRING PLOT_SUN_RETRIEVAL_TS
+            add_date_in_fname INT 1
             voltype STRING az_width_v
             prdid STRING SUN_RETRIEVAL
-        SUN_RETRIEVAL_EL_WIDTH_V_TS STRUCT 3
+        SUN_RETRIEVAL_EL_WIDTH_V_TS STRUCT 4
             type STRING PLOT_SUN_RETRIEVAL_TS
+            add_date_in_fname INT 1
             voltype STRING el_width_v
             prdid STRING SUN_RETRIEVAL
-        SUN_RETRIEVAL_NHITS_V_TS STRUCT 3
+        SUN_RETRIEVAL_NHITS_V_TS STRUCT 4
             type STRING PLOT_SUN_RETRIEVAL_TS
+            add_date_in_fname INT 1
             voltype STRING nhits_v
             prdid STRING SUN_RETRIEVAL
-        SUN_RETRIEVAL_ZDR_TS STRUCT 3
+        SUN_RETRIEVAL_ZDR_TS STRUCT 4
             type STRING PLOT_SUN_RETRIEVAL_TS
+            add_date_in_fname INT 1
             voltype STRING ZDR_sun_est
             prdid STRING SUN_RETRIEVAL
-        SUN_RETRIEVAL_NHITS_ZDR_TS STRUCT 3
+        SUN_RETRIEVAL_NHITS_ZDR_TS STRUCT 4
             type STRING PLOT_SUN_RETRIEVAL_TS
+            add_date_in_fname INT 1
             voltype STRING nhits_zdr
             prdid STRING SUN_RETRIEVAL
             

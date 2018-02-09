@@ -47,7 +47,6 @@ RADAR=$1
 echo "PROCESSING RADAR "${RADAR}
 
 # activate pyrad environment
-source deactivate
 source /srn/analysis/anaconda3/bin/activate pyrad
 
 proc_start=`date +%s`
@@ -85,7 +84,7 @@ CONFIGFILE=rad4alp_dataquality_PH${RADAR}.txt
 LOGFILE=$HOME/log/rad4alp_dataquality_PH${RADAR}.log
 dataquality $CONFIGFILE  $START_TIME $END_TIME $LOGFILE $RENAME_LOGFILES $LOG_APPENDIX
 
-source deactivate
+source /srn/analysis/anaconda3/bin/deactivate
 
 proc_end=`date +%s`
 runtime=$((proc_end-proc_start))
