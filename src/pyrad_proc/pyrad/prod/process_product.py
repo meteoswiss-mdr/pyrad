@@ -219,7 +219,7 @@ def generate_sun_hits_products(dataset, prdcfg):
 
         fname = make_filename(
             'info', prdcfg['dstype'], 'retrieval', ['csv'], timeinfo=timeinfo,
-            timeformat=timeformat)
+            timeformat=timeformat, runinfo=prdcfg['runinfo'])
 
         for i in range(len(fname)):
             fname[i] = savedir+fname[i]
@@ -298,7 +298,7 @@ def generate_sun_hits_products(dataset, prdcfg):
 
         fname = make_filename(
             'info', prdcfg['dstype'], 'retrieval', ['csv'], timeinfo=timeinfo,
-            timeformat=timeformat)
+            timeformat=timeformat, runinfo=prdcfg['runinfo'])
 
         fname = savedir + fname[0]
 
@@ -322,12 +322,12 @@ def generate_sun_hits_products(dataset, prdcfg):
         fname = make_filename(
             'retrieval_ts', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], timeinfo=timeinfo,
-            timeformat=timeformat)
+            timeformat=timeformat, runinfo=prdcfg['runinfo'])
 
         for i in range(len(fname)):
             fname[i] = savedir+fname[i]
 
-        titl = ('Sun Retrieval Time Series ' +
+        titl = (prdcfg['runinfo']+' Sun Retrieval ' +
                 sun_retrieval[0][0].strftime('%Y%m%d')+'-' +
                 sun_retrieval[0][-1].strftime('%Y%m%d'))
         plot_sun_retrieval_ts(
@@ -2527,7 +2527,8 @@ def generate_monitoring_products(dataset, prdcfg):
 
         csvfname = make_filename(
             'ts', prdcfg['dstype'], prdcfg['voltype'], ['csv'],
-            timeinfo=csvtimeinfo_file, timeformat=timeformat)[0]
+            timeinfo=csvtimeinfo_file, timeformat=timeformat,
+            runinfo=prdcfg['runinfo'])[0]
 
         csvfname = savedir+csvfname
 
@@ -2570,12 +2571,13 @@ def generate_monitoring_products(dataset, prdcfg):
         figfname = make_filename(
             'ts', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
-            timeinfo=figtimeinfo, timeformat=timeformat)
+            timeinfo=figtimeinfo, timeformat=timeformat,
+            runinfo=prdcfg['runinfo'])
 
         for i in range(len(figfname)):
             figfname[i] = savedir+figfname[i]
 
-        titl = ('Monitoring Time Series '+titldate)
+        titl = (prdcfg['runinfo']+' Monitoring '+titldate)
 
         labely = generate_field_name_str(prdcfg['voltype'])
 

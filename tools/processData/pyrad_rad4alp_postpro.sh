@@ -6,16 +6,16 @@
 #  $3 : Set to 1, if the log file must be renamed.
 #  $4 : Appendix to log file if $3 is true.
 function postprocessing {
-    if [ $3 != 0 ]; then
+    if [ $4 != 0 ]; then
         # Rename logfiles (day changed)
-        if [ -f $2 ]; then
-            mv $2 $2$4
+        if [ -f $3 ]; then
+            mv $3 $3$5
         fi
     fi
 
     # Run postproc processing
     cd ${pyradpath}
-    python main_process_data.py $1 >>$2 2>>$2
+    python main_process_data.py $1 -i $2 >>$3 2>>$3
 }
 
 # Call the realtime processing application with arguments.
@@ -26,16 +26,16 @@ function postprocessing {
 #  $5 : Set to 1, if the log file must be renamed.
 #  $6 : Appendix to log file if $5 is true.
 function dataquality {
-    if [ $5 != 0 ]; then
+    if [ $6 != 0 ]; then
         # Rename logfiles (day changed)
-        if [ -f $4 ]; then
-            mv $4 $4$6
+        if [ -f $5 ]; then
+            mv $5 $5$7
         fi
     fi
     
     # Run postproc processing
     cd ${pyradpath}
-    python main_process_data_period.py $1 $2 $3 >>$4 2>>$4
+    python main_process_data_period.py $1 $2 $3 -i $4 >>$5 2>>$5
 }
 
 # set permits
@@ -77,12 +77,12 @@ END_TIME=$(date --date ${TODAY}'-24 hours' +"%Y%m%d")
 # PL Data quality
 CONFIGFILE=rad4alp_dataquality_PL${RADAR}.txt
 LOGFILE=$HOME/log/rad4alp_dataquality_PL${RADAR}.log
-dataquality $CONFIGFILE  $START_TIME $END_TIME $LOGFILE $RENAME_LOGFILES $LOG_APPENDIX
+dataquality $CONFIGFILE  $START_TIME $END_TIME $RADAR $LOGFILE $RENAME_LOGFILES $LOG_APPENDIX
 
 # PH Data quality (sun monitoring)
 CONFIGFILE=rad4alp_dataquality_PH${RADAR}.txt
 LOGFILE=$HOME/log/rad4alp_dataquality_PH${RADAR}.log
-dataquality $CONFIGFILE  $START_TIME $END_TIME $LOGFILE $RENAME_LOGFILES $LOG_APPENDIX
+dataquality $CONFIGFILE  $START_TIME $END_TIME $RADAR $LOGFILE $RENAME_LOGFILES $LOG_APPENDIX
 
 source /srn/analysis/anaconda3/bin/deactivate
 

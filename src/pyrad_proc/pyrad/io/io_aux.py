@@ -157,7 +157,7 @@ def make_filename(prdtype, dstype, dsname, ext, prdcfginfo=None,
     else:
         cfgstr = '_' + prdcfginfo
 
-    if runinfo is None:
+    if runinfo is None or runinfo == '':
         runstr = ''
     else:
         runstr = runinfo + '_'
