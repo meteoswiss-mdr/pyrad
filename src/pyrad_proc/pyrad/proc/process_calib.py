@@ -440,6 +440,8 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
             rhohv = 'cross_correlation_ratio'
         if datatype == 'RhoHVc':
             rhohv = 'corrected_cross_correlation_ratio'
+        if datatype == 'uRhoHV':
+            rhohv = 'uncorrected_cross_correlation_ratio'
 
     ind_rad = int(radarnr[5:8])-1
     if radar_list[ind_rad] is None:
@@ -698,6 +700,8 @@ def process_rhohv_rain(procstatus, dscfg, radar_list=None):
             rhohv_field = 'cross_correlation_ratio'
         if datatype == 'RhoHVc':
             rhohv_field = 'corrected_cross_correlation_ratio'
+        if datatype == 'uRhoHV':
+            rhohv_field = 'uncorrected_cross_correlation_ratio'
         if datatype == 'dBZc':
             refl_field = 'corrected_reflectivity'
         if datatype == 'dBZ':
@@ -859,6 +863,8 @@ def process_zdr_precip(procstatus, dscfg, radar_list=None):
             rhohv_field = 'cross_correlation_ratio'
         if datatype == 'RhoHVc':
             rhohv_field = 'corrected_cross_correlation_ratio'
+        if datatype == 'uRhoHV':
+            rhohv_field = 'uncorrected_cross_correlation_ratio'
         if datatype == 'dBZc':
             refl_field = 'corrected_reflectivity'
         if datatype == 'dBZ':
@@ -1051,6 +1057,8 @@ def process_zdr_snow(procstatus, dscfg, radar_list=None):
             rhohv_field = 'cross_correlation_ratio'
         if datatype == 'RhoHVc':
             rhohv_field = 'corrected_cross_correlation_ratio'
+        if datatype == 'uRhoHV':
+            rhohv_field = 'uncorrected_cross_correlation_ratio'
         if datatype == 'dBZc':
             refl_field = 'corrected_reflectivity'
         if datatype == 'dBZ':
@@ -1659,6 +1667,7 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
     temp_name = None
     hydro_name = None
     iso0_name = None
+    echo_name = None
     for datatypedescr in dscfg['datatype']:
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
@@ -1703,14 +1712,15 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
             phidp_field = radar.fields[phidp_name]
             time_avg_flag['data'][phidp_field['data'] > phidpmax] += 1
 
-        if echo_name not in radar.fields:
-            warn('Missing echo ID data')
-            time_avg_flag['data'] += 100
-        else:
-            echo_field = radar.fields[echo_name]
-            time_avg_flag['data'][echo_field['data'] == 2] += 100
+        if echo_name is not None:
+            if echo_name not in radar.fields:
+                warn('Missing echo ID data')
+                time_avg_flag['data'] += 100
+            else:
+                echo_field = radar.fields[echo_name]
+                time_avg_flag['data'][echo_field['data'] == 2] += 100
 
-        if hydro_name is not None:
+        if hydro_name is not None and echo_name is not None:
             if ((hydro_name not in radar.fields) or
                     (echo_name not in radar.fields)):
                 warn('Missing hydrometeor classification data')
@@ -1737,12 +1747,12 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
                     warn('Unknown radar antenna beamwidth.')
                     beamwidth = None
 
-                mask_fzl, end_gate_arr = get_mask_fzl(
+                mask_fzl, end_gate_arr = pyart.correct.get_mask_fzl(
                     radar, fzl=None, doc=None, min_temp=0., max_h_iso0=0.,
                     thickness=700., beamwidth=beamwidth,
                     temp_field=temp_name, iso0_field=iso0_name,
                     temp_ref='temperature')
-                time_avg_flag['data'][mask] += 10000
+                time_avg_flag['data'][mask_fzl] += 10000
         elif iso0_name is not None:
             if iso0_name not in radar.fields:
                 warn('Missing height relative to iso0 data')
@@ -1756,12 +1766,12 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
                     warn('Unknown radar antenna beamwidth.')
                     beamwidth = None
 
-                mask_fzl, end_gate_arr = get_mask_fzl(
+                mask_fzl, end_gate_arr = pyart.correct.get_mask_fzl(
                     radar, fzl=None, doc=None, min_temp=0., max_h_iso0=0.,
                     thickness=700., beamwidth=beamwidth,
                     temp_field=temp_name, iso0_field=iso0_name,
                     temp_ref='height_over_iso0')
-                time_avg_flag['data'][mask] += 10000
+                time_avg_flag['data'][mask_fzl] += 10000
 
         radar_aux = deepcopy(radar)
         radar_aux.fields = dict()
@@ -2669,7 +2679,13 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
         datatype : list of string. Dataset keyword
             The input data types
         rmin : float. Dataset keyword
-            minimum range where to look for a sun hit signal [m]. Default 20
+            minimum range where to look for a sun hit signal [m].
+            Default 50000.
+        hmin : float. Dataset keyword
+            minimum altitude where to look for a sun hit signal [m MSL].
+            Default 10000. The actual range from which a sun hit signal will
+            be search will be the minimum between rmin and the range from
+            which the altitude is higher than hmin.
         delev_max : float. Dataset keyword
             maximum elevation distance from nominal radar elevation where to
             look for a sun hit signal [deg]. Default 1.5
@@ -2679,13 +2695,17 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
         elmin : float. Dataset keyword
             minimum radar elevation where to look for sun hits [deg].
             Default 1.
-        percent_bins : float. Dataset keyword.
-            minimum percentage of range bins that have to contain signal to
+        nbins_min : int. Dataset keyword.
+            minimum number of range bins that have to contain signal to
             consider the ray a potential sun hit. Default 10.
         attg : float. Dataset keyword
             gaseous attenuation. Default None
-        max_std : float. Dataset keyword
-            maximum standard deviation to consider the data noise. Default 1.
+        max_std_pwr : float. Dataset keyword
+            maximum standard deviation of the signal power to consider the
+            data a sun hit [dB]. Default 2.
+        max_std_zdr : float. Dataset keyword
+            maximum standard deviation of the ZDR to consider the
+            data a sun hit [dB]. Default 2.
         az_width_co : float. Dataset keyword
             co-polar antenna azimuth width (convoluted with sun width) [deg].
             Default None
@@ -2778,6 +2798,8 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
             if radar.ray_angle_res is not None:
                 radar_par.update(
                     {'angle_step': (radar.ray_angle_res['data'][0])})
+            else:
+                warn('Angular resolution unknown.')
 
             radar_par.update({'timeinfo': dscfg['timeinfo']})
             dscfg['global_data'] = radar_par
@@ -2786,35 +2808,42 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
         dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
 
         # default values
-        rmin = 20.
+        rmin = 50000.
+        hmin = 10000.
         delev_max = 1.5
         dazim_max = 1.5
         elmin = 1.
-        percent_bins = 10.
+        nbins_min = 20
         attg = None
-        max_std = 1.
+        max_std_pwr = 2.
+        max_std_zdr = 2.
 
         # user values
         if 'rmin' in dscfg:
             rmin = dscfg['rmin']
+        if 'hmin' in dscfg:
+            hmin = dscfg['hmin']
         if 'delev_max' in dscfg:
             delev_max = dscfg['delev_max']
         if 'dazim_max' in dscfg:
             dazim_max = dscfg['dazim_max']
         if 'elmin' in dscfg:
             elmin = dscfg['elmin']
-        if 'percent_bins' in dscfg:
-            percent_bins = dscfg['percent_bins']
+        if 'nbins_min' in dscfg:
+            nbins_min = dscfg['nbins_min']
         if 'attg' in dscfg:
             attg = dscfg['attg']
-        if 'max_std' in dscfg:
-            max_std = dscfg['max_std']
+        if 'max_std_pwr' in dscfg:
+            max_std_pwr = dscfg['max_std_pwr']
+        if 'max_std_zdr' in dscfg:
+            max_std_zdr = dscfg['max_std_zdr']
 
         ind_rmin = np.where(radar.range['data'] > rmin)[0][0]
 
         sun_hits, new_radar = pyart.correct.get_sun_hits(
             radar, delev_max=delev_max, dazim_max=dazim_max, elmin=elmin,
-            ind_rmin=ind_rmin, percent_bins=percent_bins, max_std=max_std,
+            rmin=rmin, hmin=hmin, nbins_min=nbins_min,
+            max_std_pwr=max_std_pwr, max_std_zdr=max_std_zdr,
             attg=attg, pwrh_field=pwrh_field, pwrv_field=pwrv_field,
             zdr_field=zdr_field)
 
@@ -2896,6 +2925,12 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
                 scale_factor = sun_pwr_drao/sun_pwr_ref
                 sun_pwr_h *= scale_factor
                 sun_pwr_v *= scale_factor
+            else:
+                warn('Unable to compute solar power reference. ' +
+                     'Missing DRAO data')
+        else:
+            warn('Unable to compute solar power reference. ' +
+                 'Missing radar parameters')
 
         sun_retrieval_h = pyart.correct.sun_retrieval(
             sun_hits[4], sun_hits[6], sun_hits[3], sun_hits[5],

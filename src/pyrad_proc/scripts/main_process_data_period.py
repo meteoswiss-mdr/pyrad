@@ -37,12 +37,14 @@ import datetime
 import argparse
 import os
 
-from pyrad.flow import main
+from pyrad.flow import main as pyrad_main
 
 print(__doc__)
 
 
-if __name__ == '__main__':
+def main():
+    """
+    """
 
     # parse the arguments
     parser = argparse.ArgumentParser(
@@ -65,6 +67,12 @@ if __name__ == '__main__':
         '--endtime', type=str, default='235959',
         help='end date of the data to be processed. Format ''hhmmss'' ')
 
+    parser.add_argument("-i", "--infostr",
+                        help="Information string about the actual data "
+                        "processing (e.g. 'RUN57'). This string is added "
+                        "to the filenames of the product files.",
+                        default="")
+
     parser.add_argument(
         '--postproc_cfgfile', type=str, default=None,
         help='name of main post-processing configuration file')
@@ -74,6 +82,11 @@ if __name__ == '__main__':
         help='configuration file path')
 
     args = parser.parse_args()
+
+    print("====== PYRAD data processing started: %s" %
+          datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
+    atexit.register(_print_end_msg,
+                    "====== PYRAD data processing finished: ")
 
     print('config path: '+args.cfgpath)
     print('config file: '+args.proc_cfgfile)
@@ -106,8 +119,34 @@ if __name__ == '__main__':
         proc_startdatetime = current_date + proc_starttime
         proc_enddatetime = current_date + proc_endtime
         try:
-            main(cfgfile_proc, proc_startdatetime, proc_enddatetime)
+            pyrad_main(cfgfile_proc, starttime=proc_startdatetime,
+                       endtime=proc_enddatetime, infostr=args.infostr)
             if args.postproc_cfgfile is not None:
-                main(cfgfile_postproc, proc_startdatetime, proc_enddatetime)
+                pyrad_main(cfgfile_postproc, starttime=proc_startdatetime,
+                           endtime=proc_enddatetime, infostr=args.infostr)
         except ValueError:
             print(ValueError)
+
+
+def _print_end_msg(text):
+    """
+    prints end message
+
+    Parameters
+    ----------
+    text : str
+        the text to be printed
+
+    Returns
+    -------
+    Nothing
+
+    """
+    print(text + datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
+
+
+# ---------------------------------------------------------
+# Start main:
+# ---------------------------------------------------------
+if __name__ == "__main__":
+    main()

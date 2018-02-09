@@ -1710,8 +1710,9 @@ def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
 
 
 def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name,
-                       fname_list, ref_value=None, labelx='Time [UTC]',
-                       labely='Value', titl='Time Series', dpi=72):
+                       fname_list, ref_value=None, vmin=None, vmax=None,
+                       np_min=0, labelx='Time [UTC]', labely='Value',
+                       titl='Time Series', dpi=72):
     """
     plots a time series of monitoring data
 
@@ -1729,6 +1730,10 @@ def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name,
         list of names of the files where to store the plot
     ref_value : float
         the reference value
+    vmin, vmax : float
+        The limits of the y axis
+    np_min : int
+        minimum number of points to consider the sample plotable
     labelx : str
         The label of the X axis
     labely : str
@@ -1744,24 +1749,54 @@ def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name,
         list of names of the created plots
 
     """
-    vmin, vmax = pyart.config.get_field_limits(field_name)
+    vmin_pyart, vmax_pyart = pyart.config.get_field_limits(field_name)
+    if vmin is None:
+        vmin = vmin_pyart
+    if vmax is None:
+        vmax = vmax_pyart
 
-    fig = plt.figure(figsize=[10, 6])
+    # plot only valid data (but keep first and last date)
+    date2 = np.array(date)
+    isvalid = np.logical_not(np.ma.getmaskarray(cquant))
+    if np_min > 0:
+        has_np = np_t > np_min
+        isvalid = np.logical_and(isvalid, has_np)
+
+    cquant_plt = cquant[isvalid]
+    lquant_plt = lquant[isvalid]
+    hquant_plt = hquant[isvalid]
+    date_plt = date2[isvalid]
+    if not isvalid[0]:
+        cquant_plt = np.ma.append(np.ma.masked, cquant_plt)
+        lquant_plt = np.ma.append(np.ma.masked, lquant_plt)
+        hquant_plt = np.ma.append(np.ma.masked, hquant_plt)
+        date_plt = np.ma.append(date2[0], date_plt)
+    if not isvalid[-1]:
+        cquant_plt = np.ma.append(cquant_plt, np.ma.masked)
+        lquant_plt = np.ma.append(lquant_plt, np.ma.masked)
+        hquant_plt = np.ma.append(hquant_plt, np.ma.masked)
+        date_plt = np.ma.append(date_plt, date2[-1])
+
+    fig = plt.figure(figsize=[15, 13], dpi=dpi)
 
     ax = fig.add_subplot(2, 1, 1)
-    plt.plot(date, cquant)
-    plt.plot(date, lquant, 'r')
-    plt.plot(date, hquant, 'r')
+    plt.plot(date_plt, cquant_plt, 'x-')
+    plt.plot(date_plt, lquant_plt, 'rx-')
+    plt.plot(date_plt, hquant_plt, 'rx-')
     if ref_value is not None:
-        plt.plot(date, np.zeros(len(date))+ref_value, 'k--')
+        plt.plot(date_plt, np.zeros(len(date_plt))+ref_value, 'k--')
     plt.ylabel(labely)
     plt.title(titl)
 
     axes = plt.gca()
     axes.set_ylim([vmin, vmax])
 
+    # tight x axis
+    plt.autoscale(enable=True, axis='x', tight=True)
+    plt.grid(True)
+
     ax = fig.add_subplot(2, 1, 2)
-    plt.plot(date, np_t)
+    plt.plot(date, np_t, 'x-')
 
     plt.ylabel('Number of Samples')
     plt.xlabel(labelx)
@@ -1769,6 +1804,9 @@ def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name,
     # rotates and right aligns the x labels, and moves the bottom of the
     # axes up to make room for them
     fig.autofmt_xdate()
+
+    # tight x axis
+    plt.autoscale(enable=True, axis='x', tight=True)
 
     for i in range(len(fname_list)):
         fig.savefig(fname_list[i], dpi=dpi)
@@ -1922,7 +1960,8 @@ def plot_sun_hits(field, field_name, fname_list, prdcfg):
     return fname_list
 
 
-def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list, dpi=72):
+def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list, labelx='Date',
+                          titl='Sun retrieval Time Series', dpi=72):
     """
     plots sun retrieval time series series
 
@@ -1934,6 +1973,10 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list, dpi=72):
         parameter to be plotted
     fname_list : list of str
         list of names of the files where to store the plot
+    labelx : str
+        the x label
+    titl : str
+        the title of the plot
     dpi : int
         dots per inch
 
@@ -1943,9 +1986,6 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list, dpi=72):
         list of names of the created plots
 
     """
-    labelx = 'Date'
-    titl = 'Sun retrieval Time Series'
-
     value_std = None
     ref = None
     date = sun_retrieval[1]
@@ -2046,22 +2086,50 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list, dpi=72):
 
     mask = np.ma.getmaskarray(value)
     if mask.all():
-        warn('Unable to create figure '+fname_list+'. No valid data')
+        warn('Unable to create figure '+' '.join(fname_list) +
+             '. No valid data')
         return None
 
+    # plot only valid data (but keep first and last date)
+    isvalid = np.logical_not(mask)
+    date2 = np.array(date)
+
+    value_plt = value[isvalid]
+    date_plt = date2[isvalid]
+    if not isvalid[0]:
+        value_plt = np.ma.append(np.ma.masked, value_plt)
+        date_plt = np.ma.append(date2[0], date_plt)
+    if not isvalid[-1]:
+        value_plt = np.ma.append(value_plt, np.ma.masked)
+        date_plt = np.ma.append(date_plt, date2[-1])
+
     fig = plt.figure(figsize=[10, 6], dpi=dpi)
-    plt.plot(date, value)
+    plt.plot(date_plt, value_plt, 'x-')
     if value_std is not None:
-        plt.plot(date, value+value_std, 'r')
-        plt.plot(date, value-value_std, 'r')
+        value_std_plt = value_std[isvalid]
+        if not isvalid[0]:
+            value_std_plt = np.ma.append(np.ma.masked, value_std_plt)
+        if not isvalid[-1]:
+            value_std_plt = np.ma.append(value_std_plt, np.ma.masked)
+
+        plt.plot(date_plt, value_plt+value_std_plt, 'rx-')
+        plt.plot(date_plt, value_plt-value_std_plt, 'rx-')
     if ref is not None:
-        plt.plot(date, ref, 'k--')
+        ref_plt = ref[isvalid]
+        if not isvalid[0]:
+            ref_plt = np.ma.append(np.ma.masked, ref_plt)
+        if not isvalid[-1]:
+            ref_plt = np.ma.append(ref_plt, np.ma.masked)
+        plt.plot(date_plt, ref_plt, 'k--')
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)
 
     axes = plt.gca()
     axes.set_ylim([vmin, vmax])
+    # tight x axis
+    plt.autoscale(enable=True, axis='x', tight=True)
+    plt.grid(True)
 
     # rotates and right aligns the x labels, and moves the bottom of the
     # axes up to make room for them

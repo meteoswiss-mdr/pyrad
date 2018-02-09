@@ -4,32 +4,24 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 25
+dataSetList STRARR 17
     l0:H_ISO0_LOOKUP
     l0:SNRh
-    l1:RhoHV
-    l2:echoID
-    l3:echoFilter
-    l4:visibilityFilter
-    l5:SNRFilter
-    l6:PhiDPc_smooth2w
-    l7:KDPc_leastsquare2w
-    l7:Att_ZPhi
-    l8:hydroclass
-    l9:dBZ_avg
-    l9:dBZv_avg
-    l9:PhiDP_avg
-    l9:flag_avg
-    l9:PhiDP0_estimation
-    l9:reflectivity_bias
-    l9:RhoHV_rain
-    l9:ZDR_rain
-    l9:ZDR_snow
-    l10:monitoring_RhoHV
-    l10:monitoring_ZDR
-    l10:monitoring_ZDR_snow
-    l10:monitoring_Zh_bias
-    l10:monitoring_PhiDP0
+    l0:PhiDPc
+    l1:dBZ_avg
+    l1:dBZv_avg
+    l1:PhiDP_avg
+    l1:flag_avg
+    l1:PhiDP0_estimation
+    l1:reflectivity_bias
+    l1:RhoHV_rain
+    l1:ZDR_rain
+    l1:ZDR_snow
+    l2:monitoring_RhoHV
+    l2:monitoring_ZDR
+    l2:monitoring_ZDR_snow
+    l2:monitoring_Zh_bias
+    l2:monitoring_PhiDP0
     
     
 # ==========================================================================================
@@ -50,7 +42,7 @@ H_ISO0_LOOKUP STRUCT 5
         RAD4ALP:dBZ
     regular_grid INT 1
     lookup_table INT 1
-    MAKE_GLOBAL INT 1    
+    MAKE_GLOBAL INT 1
     
 # ==========================================================================================
 #                 secondary moments products
@@ -62,156 +54,30 @@ SNRh STRUCT 4
         RAD4ALP:Nh
     output_type STRING SNRh
     MAKE_GLOBAL INT 1	
-	
-RhoHV STRUCT 3
-    type STRING RHOHV_CORRECTION
-    datatype STRARR 5
-        RAD4ALP:uRhoHV
-        RAD4ALP:ZDR
-        RAD4ALP:Nh
-        RAD4ALP:Nv
-        PROC:SNRh
-    MAKE_GLOBAL INT 1
-
     
-# ==========================================================================================
-#                 echo identification
-# ==========================================================================================
-echoID STRUCT 3
-    type STRING SAN
-    datatype STRARR 4
-        RAD4ALP:dBZ
-        RAD4ALP:ZDR
-        RAD4ALP:uPhiDP
-        PROC:RhoHV
-    MAKE_GLOBAL INT 1
-
-
-# ==========================================================================================
-#                 clutter and noise suppression
-# ==========================================================================================
-# echo type 3 : precip, 2 : clutter, 1 : noise
-echoFilter STRUCT 4
-    type STRING ECHO_FILTER
-    datatype STRARR 6
-        PROC:echoID
-        RAD4ALP:dBZ
-        RAD4ALP:dBZv
-        RAD4ALP:ZDR
-        PROC:RhoHV
-        RAD4ALP:uPhiDP
-    echo_type INT 3
-    MAKE_GLOBAL INT 1
-
-
-# ==========================================================================================
-#                 visibility filter
-# ==========================================================================================
-visibilityFilter STRUCT 4
-    type STRING VIS_FILTER
-    datatype STRARR 6
-        RAD4ALPDEM:VIS
-        PROC:dBZc
-        PROC:dBZvc
-        PROC:ZDRc
-        PROC:PhiDPc
-        PROC:RhoHVc
-    VISmin FLOAT 90.
-    MAKE_GLOBAL INT 1
-    
-# ==========================================================================================
-#                 filtration based on SNR
-# ==========================================================================================
-SNRFilter STRUCT 4
-   type STRING SNR_FILTER
-   datatype STRARR 2
-      PROC:SNRh
-      PROC:PhiDPc
-   SNRmin FLOAT 10.
-   MAKE_GLOBAL INT 1
-
 # ==========================================================================================
 #                 PHIDP processing
 # ==========================================================================================   
-PhiDPc_smooth2w STRUCT 11
-    type STRING PHIDP_SMOOTH_2W
+#correction of PhiDP offset
+PhiDPc STRUCT 8
+    type STRING PHIDP0_CORRECTION
     datatype STRARR 2
-        PROC:PhiDPc
-        PROC:dBZc
+        RAD4ALP:uPhiDP
+        RAD4ALP:dBZ
     rmin FLOAT 1000.
     rmax FLOAT 50000.
     rcell FLOAT 1000.
     Zmin FLOAT 20.
-    Zmax FLOAT 40.
-    rwinds FLOAT 2000.
-    rwindl FLOAT 6000.
-    Zthr FLOAT 40.    
+    Zmax FLOAT 40.    
     MAKE_GLOBAL INT 1    
-	
-	   
-# ==========================================================================================
-#                 KDP processing
-# ==========================================================================================   
-KDPc_leastsquare2w STRUCT 6
-    type STRING KDP_LEASTSQUARE_2W
-    datatype STRARR 2
-        PROC:PhiDPc
-        PROC:dBZc
-    rwinds FLOAT 2000.
-    rwindl FLOAT 6000.
-    Zthr FLOAT 40.    
-    MAKE_GLOBAL INT 1
-            
-#KDPc_Vulpiani STRUCT 8
-#    type STRING PHIDP_KDP_VULPIANI
-#    datatype STRARR 1
-#        PROC:PhiDPc
-#    rwind FLOAT 2000.
-#    n_iter INT 6
-#    interp INT 0
-#    parallel INT 0
-#    get_phidp INT 0
-#    MAKE_GLOBAL INT 1
-#
-#
-
-
-# ==========================================================================================
-#                 Attenuation
-# ==========================================================================================
-Att_ZPhi STRUCT 5
-    type STRING ATTENUATION
-    datatype STRARR 4
-        PROC:dBZc
-        PROC:ZDRc
-        PROC:PhiDPc
-        PROC:H_ISO0
-    ATT_METHOD STRING ZPhi
-    fzl FLOAT 2000.
-    MAKE_GLOBAL INT 1
-
-# ==========================================================================================
-#                 hydrometeor classification products
-# ==========================================================================================
-hydroclass STRUCT 5
-    type STRING HYDROCLASS
-    datatype STRARR 5
-        PROC:dBZc
-        PROC:ZDRc
-        PROC:RhoHVc
-        PROC:KDPc
-        PROC:H_ISO0
-    HYDRO_METHOD STRING SEMISUPERVISED
-    RADARCENTROIDS STRING A
-    MAKE_GLOBAL INT 1
-
+    
 # ==========================================================================================
 #                 temporal average
 # ==========================================================================================
 dBZ_avg STRUCT 6
     type STRING TIME_AVG
     datatype STRARR 1
-        PROC:dBZc
+        RAD4ALP:dBZ
     start_average FLOAT 0.
     period FLOAT 3600.
     lin_trans INT 1
@@ -223,7 +89,7 @@ dBZ_avg STRUCT 6
 dBZv_avg STRUCT 6
     type STRING TIME_AVG
     datatype STRARR 1
-        PROC:dBZvc
+        RAD4ALP:dBZv
     start_average FLOAT 0.
     period FLOAT 3600.
     lin_trans INT 1
@@ -235,7 +101,7 @@ dBZv_avg STRUCT 6
 PhiDP_avg STRUCT 5
     type STRING WEIGHTED_TIME_AVG
     datatype STRARR 2
-        PROC:dBZc
+        RAD4ALP:dBZ
         PROC:PhiDPc
     start_average FLOAT 0.
     period FLOAT 3600.
@@ -246,10 +112,9 @@ PhiDP_avg STRUCT 5
 
 flag_avg STRUCT 6
     type STRING FLAG_TIME_AVG
-    datatype STRARR 3
+    datatype STRARR 2
         PROC:PhiDPc
-        PROC:echoID
-        PROC:hydro
+        PROC:H_ISO0
     start_average FLOAT 0.
     period FLOAT 3600.
     phidpmax FLOAT 60.
@@ -266,7 +131,7 @@ PhiDP0_estimation STRUCT 8
     type STRING PHIDP0_ESTIMATE
     datatype STRARR 2
         RAD4ALP:uPhiDP
-        PROC:dBZc
+        RAD4ALP:dBZ
     rmin FLOAT 1000.
     rmax FLOAT 50000.
     rcell FLOAT 1000.
@@ -281,15 +146,15 @@ PhiDP0_estimation STRUCT 8
 reflectivity_bias STRUCT 5
     type STRING SELFCONSISTENCY_BIAS
     datatype STRARR 5
-        PROC:dBZc
-        PROC:ZDRc
+        RAD4ALP:dBZ
+        RAD4ALP:ZDR
         PROC:PhiDPc
-        PROC:RhoHVc
+        RAD4ALP:uRhoHV
         PROC:H_ISO0
     fzl FLOAT 2000.
     rsmooth FLOAT 1000.
     MAKE_GLOBAL INT 1
-
+    
 
 # ==========================================================================================
 #                 RhoHV in rain
@@ -297,8 +162,8 @@ reflectivity_bias STRUCT 5
 RhoHV_rain STRUCT 9
     type STRING RHOHV_RAIN
     datatype STRARR 3
-        PROC:RhoHVc
-        PROC:dBZc
+        RAD4ALP:uRhoHV
+        RAD4ALP:dBZ
         PROC:H_ISO0
     fzl FLOAT 2000.
     rmin FLOAT 1000.
@@ -315,10 +180,10 @@ RhoHV_rain STRUCT 9
 ZDR_rain STRUCT 12
     type STRING ZDR_PREC
     datatype STRARR 5
-        PROC:ZDRc
+        RAD4ALP:ZDR
         PROC:PhiDPc
-        PROC:RhoHVc
-        PROC:dBZc
+        RAD4ALP:uRhoHV
+        RAD4ALP:dBZ
         PROC:H_ISO0
     fzl FLOAT 2000.
     rmin FLOAT 1000.
@@ -332,17 +197,15 @@ ZDR_rain STRUCT 12
     MAKE_GLOBAL INT 1
     
     
-ZDR_snow STRUCT 16
+ZDR_snow STRUCT 13
     type STRING ZDR_SNOW
-    datatype STRARR 8
-        PROC:ZDRc
+    datatype STRARR 6
+        RAD4ALP:ZDR
         PROC:PhiDPc
-        PROC:RhoHVc
-        PROC:dBZc
-        PROC:hydro
-        PROC:SNRh
-        PROC:KDPc
-        PROC:H_ISO0    
+        RAD4ALP:uRhoHV
+        RAD4ALP:dBZ
+        RAD4ALPHYDRO:hydro
+        PROC:SNRh        
     rmin FLOAT 1000.
     rmax FLOAT 50000.
     Zmin FLOAT 0.
@@ -352,11 +215,8 @@ ZDR_snow STRUCT 16
     RhoHVmin FLOAT 0.97
     PhiDPmax FLOAT 10.
     elmax FLOAT 25.
-    TEMPmin FLOAT -50.
-    TEMPmax FLOAT -5.
     hydroclass FLTARR 1
-        1
-    KDPmax FLOAT 100.
+        1    
     MAKE_GLOBAL INT 1
 
 
@@ -369,7 +229,8 @@ monitoring_RhoHV STRUCT 4
         PROC:RhoHV_rain
     step FLOAT 0.001
     products STRUCT 2
-        VOL_TS STRUCT 12
+        VOL_TS STRUCT 15
+            add_date_in_fname INT 1
             type STRING VOL_TS
             hist_type STRING cumulative
             voltype STRING RhoHV_rain
@@ -381,6 +242,8 @@ monitoring_RhoHV STRUCT 4
             tol_abs FLOAT 0.04
             tol_trend FLOAT 0.02
             npoints_min INT 5000
+            vmin FLOAT 0.95 
+            vmax FLOAT 1.01
             nevents_min INT 10
             alarm INT 1
             sender STRING jordi.figuerasiventura@meteoswiss.ch
@@ -397,7 +260,8 @@ monitoring_ZDR STRUCT 4
         PROC:ZDR_prec
     step FLOAT 0.05
     products STRUCT 2
-        VOL_TS STRUCT 11
+        VOL_TS STRUCT 14
+            add_date_in_fname INT 1
             type STRING VOL_TS
             hist_type STRING cumulative
             voltype STRING ZDR_prec         .
@@ -405,6 +269,8 @@ monitoring_ZDR STRUCT 4
             tol_abs FLOAT 0.2
             tol_trend FLOAT 0.2
             npoints_min INT 5000
+            vmin FLOAT -2. 
+            vmax FLOAT 2.
             nevents_min INT 10
             alarm INT 1
             sender STRING jordi.figuerasiventura@meteoswiss.ch
@@ -421,7 +287,8 @@ monitoring_ZDR_snow STRUCT 4
         PROC:ZDR_snow
     step FLOAT 0.05
     products STRUCT 2        
-        VOL_TS STRUCT 12
+        VOL_TS STRUCT 15
+            add_date_in_fname INT 1
             type STRING VOL_TS
             hist_type STRING cumulative
             voltype STRING ZDR_snow
@@ -433,6 +300,8 @@ monitoring_ZDR_snow STRUCT 4
             tol_abs FLOAT 0.2
             tol_trend FLOAT 0.2
             npoints_min INT 5000
+            vmin FLOAT -2. 
+            vmax FLOAT 2.
             nevents_min INT 10
             alarm INT 1
             sender STRING jordi.figuerasiventura@meteoswiss.ch
@@ -449,7 +318,8 @@ monitoring_Zh_bias STRUCT 4
         PROC:dBZ_bias
     step FLOAT 0.5
     products STRUCT 2
-        VOL_TS STRUCT 11
+        VOL_TS STRUCT 14
+            add_date_in_fname INT 1
             type STRING VOL_TS
             hist_type STRING cumulative
             voltype STRING dBZ_bias         .
@@ -457,6 +327,8 @@ monitoring_Zh_bias STRUCT 4
             tol_abs FLOAT 2.0
             tol_trend FLOAT 2.0
             npoints_min INT 100
+            vmin FLOAT -30. 
+            vmax FLOAT 30.
             nevents_min INT 10
             alarm INT 1
             sender STRING jordi.figuerasiventura@meteoswiss.ch
@@ -473,7 +345,8 @@ monitoring_PhiDP0 STRUCT 4
         PROC:PhiDP0
     step FLOAT 1.
     products STRUCT 2
-        VOL_TS STRUCT 11
+        VOL_TS STRUCT 14
+            add_date_in_fname INT 1
             type STRING VOL_TS
             hist_type STRING cumulative
             voltype STRING PhiDP0         .
@@ -482,6 +355,8 @@ monitoring_PhiDP0 STRUCT 4
             tol_trend FLOAT 10.
             npoints_min INT 500000
             nevents_min INT 10
+            vmin FLOAT -20. 
+            vmax FLOAT 20.
             alarm INT 1
             sender STRING jordi.figuerasiventura@meteoswiss.ch
             receiver_list STRARR 1
