@@ -2506,12 +2506,12 @@ def generate_monitoring_products(dataset, prdcfg):
         csvtimeinfo_file = None
         timeformat = None
         if hist_type == 'instant':
-            csvtimeinfo_path = prdcfg['timeinfo']
-            csvtimeinfo_file = prdcfg['timeinfo']
+            csvtimeinfo_path = dataset['timeinfo']
+            csvtimeinfo_file = dataset['timeinfo']
             timeformat = '%Y%m%d'
         elif 'add_date_in_fname' in prdcfg:
             if prdcfg['add_date_in_fname']:
-                csvtimeinfo_file = prdcfg['timeinfo']
+                csvtimeinfo_file = dataset['timeinfo']
                 timeformat = '%Y'
 
         quantiles = np.array([25., 50., 75.])
