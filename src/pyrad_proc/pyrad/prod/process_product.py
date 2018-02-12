@@ -2591,7 +2591,7 @@ def generate_monitoring_products(dataset, prdcfg):
 
         vmax = None
         if 'vmax' in prdcfg:
-            vmin = prdcfg['vmax']
+            vmax = prdcfg['vmax']
 
         plot_monitoring_ts(
             date, np_t_vec, cquant_vec, lquant_vec, hquant_vec, field_name,
