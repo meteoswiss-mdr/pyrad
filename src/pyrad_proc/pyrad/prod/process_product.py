@@ -268,7 +268,9 @@ def generate_sun_hits_products(dataset, prdcfg):
             return None
 
         field = create_sun_retrieval_field(
-            dataset['sun_retrieval'][par], prdcfg['sunhitsImageConfig'])
+            dataset['sun_retrieval'][par], field_name,
+            prdcfg['sunhitsImageConfig'],
+            lant=dataset['sun_retrieval']['lant'])
 
         if field is not None:
             plot_sun_hits(field, field_name, fname, prdcfg)
@@ -328,13 +330,15 @@ def generate_sun_hits_products(dataset, prdcfg):
             fname[i] = savedir+fname[i]
 
         titl = (prdcfg['runinfo']+' Sun Retrieval ' +
-                sun_retrieval[0][0].strftime('%Y%m%d')+'-' +
-                sun_retrieval[0][-1].strftime('%Y%m%d'))
-        plot_sun_retrieval_ts(
+                sun_retrieval[1][0].strftime('%Y%m%d')+'-' +
+                sun_retrieval[1][-1].strftime('%Y%m%d'))
+        figfname = plot_sun_retrieval_ts(
             sun_retrieval, prdcfg['voltype'], fname, titl=titl, dpi=dpi)
 
-        print('----- save to '+' '.join(fname))
+        if figfname is None:
+            return None
 
+        print('----- save to '+' '.join(fname))
         return fname
 
     else:

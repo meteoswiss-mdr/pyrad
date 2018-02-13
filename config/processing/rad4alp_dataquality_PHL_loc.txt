@@ -52,8 +52,8 @@ CosmoRunFreq INT 3
 CosmoForecasted INT 7
 
 # radar constant
-radconsth FLOAT 72.69
-radconstv FLOAT 72.24
+radconsth FLOAT 72.53
+radconstv FLOAT 72.08
 
 # radar constant h, v (20141125)
 # A 72.78, 72.98
@@ -83,12 +83,12 @@ RadarBeamwidth FLOAT 1.0
 AntennaGain FLOAT 45.
 
 # receiver losses from antenna feed to reference point [dB]
-lrxh FLOAT 0.
-lrxv FLOAT 0.
+lrxh FLOAT 2.4
+lrxv FLOAT 1.95
 
 # dry radome losses [dB]
-lradomeh FLOAT 0.
-lradomev FLOAT 0.
+lradomeh FLOAT 0.2
+lradomev FLOAT 0.2
   
 ## Image config
 ppiImageConfig STRUCT 7

@@ -79,10 +79,10 @@ CONFIGFILE=rad4alp_dataquality_PL${RADAR}.txt
 LOGFILE=$HOME/log/rad4alp_dataquality_PL${RADAR}.log
 dataquality $CONFIGFILE  $START_TIME $END_TIME $RADAR $LOGFILE $RENAME_LOGFILES $LOG_APPENDIX
 
-# PH Data quality (sun monitoring)
-CONFIGFILE=rad4alp_dataquality_PH${RADAR}.txt
-LOGFILE=$HOME/log/rad4alp_dataquality_PH${RADAR}.log
-dataquality $CONFIGFILE  $START_TIME $END_TIME $RADAR $LOGFILE $RENAME_LOGFILES $LOG_APPENDIX
+# # PH Data quality (sun monitoring)
+# CONFIGFILE=rad4alp_dataquality_PH${RADAR}.txt
+# LOGFILE=$HOME/log/rad4alp_dataquality_PH${RADAR}.log
+# dataquality $CONFIGFILE  $START_TIME $END_TIME $RADAR $LOGFILE $RENAME_LOGFILES $LOG_APPENDIX
 
 source /srn/analysis/anaconda3/bin/deactivate
 
