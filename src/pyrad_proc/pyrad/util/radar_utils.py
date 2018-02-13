@@ -473,7 +473,7 @@ def create_sun_hits_field(rad_el, rad_az, sun_el, sun_az, data, imgcfg):
     return field
 
 
-def create_sun_retrieval_field(par, imgcfg):
+def create_sun_retrieval_field(par, field_name, imgcfg, lant=0.):
     """
     creates a sun retrieval field from the retrieval parameters
 
@@ -512,6 +512,9 @@ def create_sun_retrieval_field(par, imgcfg):
 
     field = (par[0]+par[1]*d_az_mat+par[2]*d_el_mat+par[3]*d_az_mat*d_az_mat +
              par[4]*d_el_mat*d_el_mat)
+    if field_name == 'sun_est_power_h' or field_name == 'sun_est_power_v':
+        # account for polarization of the antenna and scanning losses
+        field += 3.+lant
 
     return field
 

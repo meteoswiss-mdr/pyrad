@@ -35,6 +35,7 @@ Example:
 
 import datetime
 import argparse
+import atexit
 import os
 
 from pyrad.flow import main as pyrad_main

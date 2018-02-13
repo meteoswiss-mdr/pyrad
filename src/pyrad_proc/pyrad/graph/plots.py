@@ -2019,66 +2019,80 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list, labelx='Date',
     elif data_type == 'dBm_sun_est':
         value = sun_retrieval[7]
         value_std = sun_retrieval[8]
-        ref = sun_retrieval[19]
         labely = 'Sun Power H channel (dBm)'
         vmin = -110.
         vmax = -90.
     elif data_type == 'rx_bias_h':
-        value = sun_retrieval[7]-sun_retrieval[19]
+        value = (10.*np.ma.log10(sun_retrieval[9]) -
+                 10.*np.ma.log10(sun_retrieval[21]))
         value_std = sun_retrieval[8]
         ref = np.zeros(len(value))
         labely = 'Receiver bias H channel (dB)'
         vmin = -5.
         vmax = 5.
+    elif data_type == 'sf_h':
+        value = 10.*np.ma.log10(sun_retrieval[9])
+        # value_std = sun_retrieval[8]
+        ref = 10.*np.ma.log10(sun_retrieval[21])
+        labely = 'Observed solar flux H channel (dB(sfu))'
+        vmin = 15.
+        vmax = 25.
     elif data_type == 'nhits_v':
-        value = sun_retrieval[9]
+        value = sun_retrieval[10]
         labely = 'Number of sun hits V channel'
         vmin = 0
-        vmax = np.max(sun_retrieval[9])+1
+        vmax = np.max(sun_retrieval[10])+1
     elif data_type == 'el_width_v':
-        value = sun_retrieval[10]
+        value = sun_retrieval[11]
         labely = 'Elevation beamwidth V channel (Deg)'
         vmin = 0.
         vmax = 4.
     elif data_type == 'az_width_v':
-        value = sun_retrieval[11]
+        value = sun_retrieval[12]
         labely = 'Azimuth beamwidth V channel (Deg)'
         vmin = 0.
         vmax = 4.
     elif data_type == 'el_bias_v':
-        value = sun_retrieval[12]
+        value = sun_retrieval[13]
         ref = np.zeros(len(value))
         labely = 'Elevation pointing bias V channel (Deg)'
         vmin = -2.
         vmax = 2.
     elif data_type == 'az_bias_v':
-        value = sun_retrieval[13]
+        value = sun_retrieval[14]
         ref = np.zeros(len(value))
         labely = 'Azimuth pointing bias V channel (Deg)'
         vmin = -2.
         vmax = 2.
     elif data_type == 'dBmv_sun_est':
-        value = sun_retrieval[14]
-        value_std = sun_retrieval[15]
-        ref = sun_retrieval[19]
+        value = sun_retrieval[15]
+        value_std = sun_retrieval[16]
         labely = 'Sun Power V channel (dBm)'
         vmin = -110.
         vmax = -90.
     elif data_type == 'rx_bias_v':
-        value = sun_retrieval[14]-sun_retrieval[19]
-        value_std = sun_retrieval[15]
+        value = (10.*np.ma.log10(sun_retrieval[17]) -
+                 10.*np.ma.log10(sun_retrieval[21]))
+        value_std = sun_retrieval[16]
         ref = np.zeros(len(value))
         labely = 'Receiver bias V channel (dB)'
         vmin = -5.
         vmax = 5.
+    elif data_type == 'sf_v':
+        value = 10.*np.ma.log10(sun_retrieval[17])
+        # value_std = sun_retrieval[16]
+        ref = 10.*np.ma.log10(sun_retrieval[21])
+        labely = 'Observed solar flux V channel (dB(sfu))'
+        vmin = 15.
+        vmax = 25.
     elif data_type == 'nhits_zdr':
-        value = sun_retrieval[16]
+        value = sun_retrieval[18]
         labely = 'Number of sun hits ZDR'
         vmin = 0
-        vmax = np.max(sun_retrieval[16])+1
+        vmax = np.max(sun_retrieval[18])+1
     elif data_type == 'ZDR_sun_est':
-        value = sun_retrieval[17]
-        value_std = sun_retrieval[18]
+        value = sun_retrieval[19]
+        value_std = sun_retrieval[20]
         ref = np.zeros(len(value))
         labely = 'Sun ZDR (dB)'
         vmin = -2.
@@ -2117,9 +2131,9 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list, labelx='Date',
     if ref is not None:
         ref_plt = ref[isvalid]
         if not isvalid[0]:
-            ref_plt = np.ma.append(np.ma.masked, ref_plt)
+            ref_plt = np.ma.append(ref[0], ref_plt)
         if not isvalid[-1]:
-            ref_plt = np.ma.append(ref_plt, np.ma.masked)
+            ref_plt = np.ma.append(ref_plt, ref[-1])
         plt.plot(date_plt, ref_plt, 'k--')
     plt.xlabel(labelx)
     plt.ylabel(labely)

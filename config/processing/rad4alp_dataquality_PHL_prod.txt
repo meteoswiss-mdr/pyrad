@@ -42,7 +42,7 @@ sun_hits STRUCT 10
     max_std_zdr FLOAT 2.
     sun_hits_dir STRING SUN_HITS  # must be the same as product WRITE_SUN_HITS
     ndays INT 1
-    products STRUCT 30
+    products STRUCT 32
         PWRH STRUCT 3
             type STRING BSCOPE_IMAGE
             anglenr INT 0
@@ -95,6 +95,11 @@ sun_hits STRUCT 10
             add_date_in_fname INT 1
             voltype STRING dBm_sun_est
             prdid STRING SUN_RETRIEVAL
+        SUN_RETRIEVAL_SF_H_TS STRUCT 4
+            type STRING PLOT_SUN_RETRIEVAL_TS
+            add_date_in_fname INT 1
+            voltype STRING sf_h
+            prdid STRING SUN_RETRIEVAL
         SUN_RETRIEVAL_RX_BIAS_H_TS STRUCT 4
             type STRING PLOT_SUN_RETRIEVAL_TS
             add_date_in_fname INT 1
@@ -129,6 +134,11 @@ sun_hits STRUCT 10
             type STRING PLOT_SUN_RETRIEVAL_TS
             add_date_in_fname INT 1
             voltype STRING dBmv_sun_est
+            prdid STRING SUN_RETRIEVAL
+        SUN_RETRIEVAL_SF_V_TS STRUCT 4
+            type STRING PLOT_SUN_RETRIEVAL_TS
+            add_date_in_fname INT 1
+            voltype STRING sf_v
             prdid STRING SUN_RETRIEVAL
         SUN_RETRIEVAL_RX_BIAS_V_TS STRUCT 4
             type STRING PLOT_SUN_RETRIEVAL_TS

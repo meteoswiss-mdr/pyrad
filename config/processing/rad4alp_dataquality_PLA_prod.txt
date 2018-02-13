@@ -84,7 +84,7 @@ dBZ_avg STRUCT 6
     products STRUCT 1
         SAVEVOL STRUCT 2
             type  STRING SAVEVOL
-            voltype STRING dBZc
+            voltype STRING dBZ
 
 dBZv_avg STRUCT 6
     type STRING TIME_AVG
@@ -96,7 +96,7 @@ dBZv_avg STRUCT 6
     products STRUCT 1
         SAVEVOL STRUCT 2
             type  STRING SAVEVOL
-            voltype STRING dBZvc
+            voltype STRING dBZv
 
 PhiDP_avg STRUCT 5
     type STRING WEIGHTED_TIME_AVG
