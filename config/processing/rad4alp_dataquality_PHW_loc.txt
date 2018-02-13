@@ -55,18 +55,6 @@ CosmoForecasted INT 7
 radconsth FLOAT 73.8
 radconstv FLOAT 74.0
 
-# radar constant h, v (20141125)
-# A 72.78, 72.98
-# D	73.88, 73.88
-# L 72.57, 72.12
-# P 73.20, 73.23
-
-# radar constant h, v (20150127)
-# A 71.67, 72.27
-# D	73.23, 73.33
-# L 72.53, 72.08
-# P 72.68, 72.71
-
 # matching filter losses
 mflossh FLOAT 1.
 mflossv FLOAT 1.

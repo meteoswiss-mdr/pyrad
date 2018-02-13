@@ -941,9 +941,11 @@ def read_sun_retrieval(fname):
     Returns
     -------
     first_hit_time, last_hit_time, nhits_h, el_width_h, az_width_h, el_bias_h,
-    az_bias_h, dBm_sun_est, std_dBm_sun_est, nhits_v, el_width_v, az_width_v,
-    el_bias_v, az_bias_v, dBmv_sun_est, std_dBmv_sun_est, nhits_zdr,
-    zdr_sun_est, std_zdr_sun_est, dBm_sun_ref, ref_time : tupple
+    az_bias_h, dBm_sun_est, std_dBm_sun_est, sf_h,
+    nhits_v, el_width_v, az_width_v, el_bias_v, az_bias_v, dBmv_sun_est,
+    std_dBmv_sun_est, sf_v,
+    nhits_zdr, zdr_sun_est, std_zdr_sun_est,
+    sf_ref, ref_time : tupple
         Each parameter is an array containing a time series of information on
         a variable
 
@@ -962,6 +964,7 @@ def read_sun_retrieval(fname):
             az_bias_h = np.ma.empty(nrows, dtype=float)
             dBm_sun_est = np.ma.empty(nrows, dtype=float)
             std_dBm_sun_est = np.ma.empty(nrows, dtype=float)
+            sf_h = np.ma.empty(nrows, dtype=float)
 
             nhits_v = np.empty(nrows, dtype=int)
             el_width_v = np.ma.empty(nrows, dtype=float)
@@ -970,12 +973,13 @@ def read_sun_retrieval(fname):
             az_bias_v = np.ma.empty(nrows, dtype=float)
             dBmv_sun_est = np.ma.empty(nrows, dtype=float)
             std_dBmv_sun_est = np.ma.empty(nrows, dtype=float)
+            sf_v = np.ma.empty(nrows, dtype=float)
 
             nhits_zdr = np.empty(nrows, dtype=int)
             zdr_sun_est = np.ma.empty(nrows, dtype=float)
             std_zdr_sun_est = np.ma.empty(nrows, dtype=float)
 
-            dBm_sun_ref = np.ma.empty(nrows, dtype=float)
+            sf_ref = np.ma.empty(nrows, dtype=float)
 
             # now read the data
             csvfile.seek(0)
@@ -999,6 +1003,7 @@ def read_sun_retrieval(fname):
                 az_bias_h[i] = float(row['az_bias_h'])
                 dBm_sun_est[i] = float(row['dBm_sun_est'])
                 std_dBm_sun_est[i] = float(row['std(dBm_sun_est)'])
+                sf_h[i] = float(row['sf_h'])
 
                 nhits_v[i] = int(row['nhits_v'])
                 el_width_v[i] = float(row['el_width_v'])
@@ -1007,12 +1012,13 @@ def read_sun_retrieval(fname):
                 az_bias_v[i] = float(row['az_bias_v'])
                 dBmv_sun_est[i] = float(row['dBmv_sun_est'])
                 std_dBmv_sun_est[i] = float(row['std(dBmv_sun_est)'])
+                sf_v[i] = float(row['sf_v'])
 
                 nhits_zdr[i] = int(row['nhits_zdr'])
                 zdr_sun_est[i] = float(row['ZDR_sun_est'])
                 std_zdr_sun_est[i] = float(row['std(ZDR_sun_est)'])
 
-                dBm_sun_ref[i] = float(row['dBm_sun_ref'])
+                sf_ref[i] = float(row['sf_ref'])
                 if row['ref_time'] == 'None':
                     ref_time.append(None)
                 else:
@@ -1028,6 +1034,7 @@ def read_sun_retrieval(fname):
             dBm_sun_est = np.ma.masked_values(dBm_sun_est, get_fillvalue())
             std_dBm_sun_est = np.ma.masked_values(
                 std_dBm_sun_est, get_fillvalue())
+            sf_h = np.ma.masked_values(sf_h, get_fillvalue())
 
             el_width_v = np.ma.masked_values(el_width_v, get_fillvalue())
             az_width_v = np.ma.masked_values(az_width_v, get_fillvalue())
@@ -1036,29 +1043,29 @@ def read_sun_retrieval(fname):
             dBmv_sun_est = np.ma.masked_values(dBmv_sun_est, get_fillvalue())
             std_dBmv_sun_est = np.ma.masked_values(
                 std_dBmv_sun_est, get_fillvalue())
+            sf_v = np.ma.masked_values(sf_v, get_fillvalue())
 
             zdr_sun_est = np.ma.masked_values(zdr_sun_est, get_fillvalue())
             std_zdr_sun_est = np.ma.masked_values(
                 std_zdr_sun_est, get_fillvalue())
 
-            dBm_sun_ref = np.ma.masked_values(dBm_sun_ref, get_fillvalue())
+            sf_ref = np.ma.masked_values(sf_ref, get_fillvalue())
 
             csvfile.close()
 
             return (first_hit_time, last_hit_time, nhits_h,
                     el_width_h, az_width_h, el_bias_h, az_bias_h,
-                    dBm_sun_est, std_dBm_sun_est,
+                    dBm_sun_est, std_dBm_sun_est, sf_h,
                     nhits_v, el_width_v, az_width_v, el_bias_v, az_bias_v,
-                    dBmv_sun_est, std_dBmv_sun_est,
-                    nhits_zdr, zdr_sun_est, std_zdr_sun_est, dBm_sun_ref,
-                    ref_time)
+                    dBmv_sun_est, std_dBmv_sun_est, sf_v,
+                    nhits_zdr, zdr_sun_est, std_zdr_sun_est, sf_ref, ref_time)
 
     except EnvironmentError as ee:
         warn(str(ee))
         warn('Unable to read file '+fname)
         return (None, None, None, None, None, None, None, None, None, None,
                 None, None, None, None, None, None, None, None, None, None,
-                None)
+                None, None, None)
 
 
 def read_solar_flux(fname):

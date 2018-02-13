@@ -1077,6 +1077,7 @@ def write_sun_retrieval(sun_retrieval, fname):
         fill_value=get_fillvalue())
     std_dBm_sun_est = sun_retrieval['std(dBm_sun_est)'].filled(
         fill_value=get_fillvalue())
+    sf_h = sun_retrieval['sf_h'].filled(fill_value=get_fillvalue())
 
     el_width_v = sun_retrieval['el_width_v'].filled(fill_value=get_fillvalue())
     az_width_v = sun_retrieval['az_width_v'].filled(fill_value=get_fillvalue())
@@ -1086,12 +1087,13 @@ def write_sun_retrieval(sun_retrieval, fname):
         fill_value=get_fillvalue())
     std_dBmv_sun_est = sun_retrieval['std(dBmv_sun_est)'].filled(
         fill_value=get_fillvalue())
+    sf_v = sun_retrieval['sf_v'].filled(fill_value=get_fillvalue())
 
     zdr_sun_est = sun_retrieval['ZDR_sun_est'].filled(
         fill_value=get_fillvalue())
     std_zdr_sun_est = sun_retrieval['std(ZDR_sun_est)'].filled(
         fill_value=get_fillvalue())
-    dBm_sun_ref = sun_retrieval['dBm_sun_ref'].filled(
+    sf_ref = sun_retrieval['sf_ref'].filled(
         fill_value=get_fillvalue())
     ref_time = 'None'
     if sun_retrieval['ref_time'] is not None:
@@ -1109,9 +1111,11 @@ def write_sun_retrieval(sun_retrieval, fname):
                 'first_hit_time', 'last_hit_time',
                 'nhits_h', 'el_width_h', 'az_width_h',
                 'el_bias_h', 'az_bias_h', 'dBm_sun_est', 'std(dBm_sun_est)',
+                'sf_h',
                 'nhits_v', 'el_width_v', 'az_width_v',
                 'el_bias_v', 'az_bias_v', 'dBmv_sun_est', 'std(dBmv_sun_est)',
-                'nhits_zdr', 'ZDR_sun_est', 'std(ZDR_sun_est)', 'dBm_sun_ref',
+                'sf_v',
+                'nhits_zdr', 'ZDR_sun_est', 'std(ZDR_sun_est)', 'sf_ref',
                 'ref_time']
 
             writer = csv.DictWriter(csvfile, fieldnames)
@@ -1126,6 +1130,7 @@ def write_sun_retrieval(sun_retrieval, fname):
                  'az_bias_h': az_bias_h,
                  'dBm_sun_est': dBm_sun_est,
                  'std(dBm_sun_est)': std_dBm_sun_est,
+                 'sf_h': sf_h,
                  'nhits_v': sun_retrieval['nhits_v'],
                  'el_width_v': el_width_v,
                  'az_width_v': az_width_v,
@@ -1133,10 +1138,11 @@ def write_sun_retrieval(sun_retrieval, fname):
                  'az_bias_v': az_bias_v,
                  'dBmv_sun_est': dBmv_sun_est,
                  'std(dBmv_sun_est)': std_dBmv_sun_est,
+                 'sf_v': sf_v,
                  'nhits_zdr': sun_retrieval['nhits_zdr'],
                  'ZDR_sun_est': zdr_sun_est,
                  'std(ZDR_sun_est)': std_zdr_sun_est,
-                 'dBm_sun_ref': dBm_sun_ref,
+                 'sf_ref': sf_ref,
                  'ref_time': ref_time})
             csvfile.close()
     else:
@@ -1145,9 +1151,11 @@ def write_sun_retrieval(sun_retrieval, fname):
                 'first_hit_time', 'last_hit_time',
                 'nhits_h', 'el_width_h', 'az_width_h',
                 'el_bias_h', 'az_bias_h', 'dBm_sun_est', 'std(dBm_sun_est)',
+                'sf_h',
                 'nhits_v', 'el_width_v', 'az_width_v',
                 'el_bias_v', 'az_bias_v', 'dBmv_sun_est', 'std(dBmv_sun_est)',
-                'nhits_zdr', 'ZDR_sun_est', 'std(ZDR_sun_est)', 'dBm_sun_ref',
+                'sf_v',
+                'nhits_zdr', 'ZDR_sun_est', 'std(ZDR_sun_est)', 'sf_ref',
                 'ref_time']
 
             writer = csv.DictWriter(csvfile, fieldnames)
@@ -1161,6 +1169,7 @@ def write_sun_retrieval(sun_retrieval, fname):
                  'az_bias_h': az_bias_h,
                  'dBm_sun_est': dBm_sun_est,
                  'std(dBm_sun_est)': std_dBm_sun_est,
+                 'sf_h': sf_h,
                  'nhits_v': sun_retrieval['nhits_v'],
                  'el_width_v': el_width_v,
                  'az_width_v': az_width_v,
@@ -1168,10 +1177,11 @@ def write_sun_retrieval(sun_retrieval, fname):
                  'az_bias_v': az_bias_v,
                  'dBmv_sun_est': dBmv_sun_est,
                  'std(dBmv_sun_est)': std_dBmv_sun_est,
+                 'sf_v': sf_v,
                  'nhits_zdr': sun_retrieval['nhits_zdr'],
                  'ZDR_sun_est': zdr_sun_est,
                  'std(ZDR_sun_est)': std_zdr_sun_est,
-                 'dBm_sun_ref': dBm_sun_ref,
+                 'sf_ref': sf_ref,
                  'ref_time': ref_time})
             csvfile.close()
 

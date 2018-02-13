@@ -2896,13 +2896,10 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
         sun_pwr_h = sun_hits[7]
         sun_pwr_v = sun_hits[11]
 
-        sun_pwr_ref = np.ma.asarray(np.ma.masked)
+        # get DRAO reference
+        sf_ref = np.ma.asarray(np.ma.masked)
         ref_time = None
-        if (('pulse_width' in dscfg['global_data']) and
-                ('wavelen' in dscfg['global_data']) and
-                ('angle_step' in dscfg['global_data']) and
-                ('beamwidth' in dscfg['global_data']) and
-                (dscfg['AntennaGain'] is not None)):
+        if 'wavelen' in dscfg['global_data']:
 
             flx_dt, flx_val = read_solar_flux(
                 dscfg['solarfluxpath']+'fluxtable.txt')
@@ -2911,26 +2908,24 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
                 flx_dt_closest, flx_val_closest = get_closest_solar_flux(
                     sun_hits[0], flx_dt, flx_val)
 
-                sun_pwr_drao = pyart.correct.sun_power(
-                    flx_val_closest, dscfg['global_data']['pulse_width'],
-                    dscfg['global_data']['wavelen'], dscfg['AntennaGain'],
-                    dscfg['global_data']['angle_step'],
-                    dscfg['global_data']['beamwidth'], coeff_band=coeff_band)
+                # flux at radar wavelength
+                sf_radar = pyart.correct.solar_flux_lookup(
+                    flx_val_closest, dscfg['global_data']['wavelen'])
 
-                sun_pwr_ref = np.ma.asarray(sun_pwr_drao[-1])
+                sf_ref = np.ma.asarray(sf_radar[-1])
                 ref_time = flx_dt_closest[-1]
 
                 # scaling of the power to account for solar flux variations.
-                # The last sun hit is the reference
-                scale_factor = sun_pwr_drao/sun_pwr_ref
-                sun_pwr_h *= scale_factor
-                sun_pwr_v *= scale_factor
+                # The last sun hit is the reference. The scale factor is in dB
+                scale_factor = 10.*np.log10(sf_radar/sf_ref)
+                sun_pwr_h += scale_factor
+                sun_pwr_v += scale_factor
             else:
                 warn('Unable to compute solar power reference. ' +
                      'Missing DRAO data')
         else:
             warn('Unable to compute solar power reference. ' +
-                 'Missing radar parameters')
+                 'Missing radar wavelength')
 
         sun_retrieval_h = pyart.correct.sun_retrieval(
             sun_hits[4], sun_hits[6], sun_hits[3], sun_hits[5],
@@ -2958,6 +2953,7 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
             'last_hit_time': sun_hits[0][-1],
             'dBm_sun_est': np.ma.asarray(np.ma.masked),
             'std(dBm_sun_est)': np.ma.asarray(np.ma.masked),
+            'sf_h': np.ma.asarray(np.ma.masked),
             'az_bias_h': np.ma.asarray(np.ma.masked),
             'el_bias_h': np.ma.asarray(np.ma.masked),
             'az_width_h': np.ma.asarray(np.ma.masked),
@@ -2966,6 +2962,7 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
             'par_h': None,
             'dBmv_sun_est': np.ma.asarray(np.ma.masked),
             'std(dBmv_sun_est)': np.ma.asarray(np.ma.masked),
+            'sf_v': np.ma.asarray(np.ma.masked),
             'az_bias_v': np.ma.asarray(np.ma.masked),
             'el_bias_v': np.ma.asarray(np.ma.masked),
             'az_width_v': np.ma.asarray(np.ma.masked),
@@ -2978,14 +2975,43 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
             'el_bias_zdr': np.ma.asarray(np.ma.masked),
             'nhits_zdr': 0,
             'par_zdr': None,
-            'dBm_sun_ref': sun_pwr_ref,
-            'ref_time': ref_time}
+            'sf_ref': np.ma.asarray(sf_ref),
+            'ref_time': ref_time,
+            'lant': np.ma.asarray(np.ma.masked)}
 
         if sun_retrieval_h is not None:
-            sun_retrieval_dict['dBm_sun_est'] = np.ma.asarray(
-                sun_retrieval_h[0])
+            # correct for scanning losses and the polarization of the antenna
+            if (('angle_step' in dscfg['global_data']) and
+                    ('beamwidth' in dscfg['global_data'])):
+                lant = pyart.correct.scanning_losses(
+                    dscfg['global_data']['angle_step'],
+                    dscfg['global_data']['beamwidth'])
+
+            else:
+                warn('Unable to estimate scanning losses. ' +
+                     'Missing radar parameters. ' +
+                     'Antenna losses will be neglected')
+                lant = 0.
+            ptoa_h = sun_retrieval_h[0]+lant+3.
+
+            # compute observed solar flux
+            if (('pulse_width' in dscfg['global_data']) and
+                    ('wavelen' in dscfg['global_data']) and
+                    (dscfg['AntennaGain'] is not None)):
+                sf_h = pyart.correct.ptoa_to_sf(
+                    ptoa_h, dscfg['global_data']['pulse_width'],
+                    dscfg['global_data']['wavelen'],
+                    dscfg['AntennaGain'],
+                    )
+            else:
+                warn('Unable to estimate observed solar flux. ' +
+                     'Missing radar parameters')
+                sf_h = np.ma.asarray(np.ma.masked)
+
+            sun_retrieval_dict['dBm_sun_est'] = np.ma.asarray(ptoa_h)
             sun_retrieval_dict['std(dBm_sun_est)'] = np.ma.asarray(
                 sun_retrieval_h[1])
+            sun_retrieval_dict['sf_h'] = np.ma.asarray(sf_h)
             sun_retrieval_dict['az_bias_h'] = np.ma.asarray(
                 sun_retrieval_h[2])
             sun_retrieval_dict['el_bias_h'] = np.ma.asarray(
@@ -2996,11 +3022,39 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
                 sun_retrieval_h[5])
             sun_retrieval_dict['nhits_h'] = np.asarray(sun_retrieval_h[6])
             sun_retrieval_dict['par_h'] = np.ma.asarray(sun_retrieval_h[7])
+            sun_retrieval_dict['lant'] = np.ma.asarray(lant)
         if sun_retrieval_v is not None:
-            sun_retrieval_dict['dBmv_sun_est'] = np.ma.asarray(
-                sun_retrieval_v[0])
+            # correct for scanning losses and the polarization of the antenna
+            if (('angle_step' in dscfg['global_data']) and
+                    ('beamwidth' in dscfg['global_data'])):
+                lant = pyart.correct.scanning_losses(
+                    dscfg['global_data']['angle_step'],
+                    dscfg['global_data']['beamwidth'])
+            else:
+                lant = 0.
+                warn('Unable to estimate scanning losses. ' +
+                     'Missing radar parameters. ' +
+                     'Antenna losses will be neglected')
+            ptoa_v = sun_retrieval_v[0]+lant+3.
+
+            # compute observed solar flux
+            if (('pulse_width' in dscfg['global_data']) and
+                    ('wavelen' in dscfg['global_data']) and
+                    (dscfg['AntennaGain'] is not None)):
+                sf_v = pyart.correct.ptoa_to_sf(
+                    ptoa_v, dscfg['global_data']['pulse_width'],
+                    dscfg['global_data']['wavelen'],
+                    dscfg['AntennaGain'],
+                    )
+            else:
+                warn('Unable to estimate observed solar flux. ' +
+                     'Missing radar parameters')
+                sf_v = np.ma.asarray(np.ma.masked)
+
+            sun_retrieval_dict['dBmv_sun_est'] = np.ma.asarray(ptoa_v)
             sun_retrieval_dict['std(dBmv_sun_est)'] = np.ma.asarray(
                 sun_retrieval_v[1])
+            sun_retrieval_dict['sf_v'] = np.ma.asarray(sf_v)
             sun_retrieval_dict['az_bias_v'] = np.ma.asarray(
                 sun_retrieval_v[2])
             sun_retrieval_dict['el_bias_v'] = np.ma.asarray(
@@ -3011,6 +3065,7 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
                 sun_retrieval_v[5])
             sun_retrieval_dict['nhits_v'] = np.ma.asarray(sun_retrieval_v[6])
             sun_retrieval_dict['par_v'] = np.ma.asarray(sun_retrieval_v[7])
+            sun_retrieval_dict['lant'] = np.ma.asarray(lant)
         if sun_retrieval_zdr is not None:
             sun_retrieval_dict['ZDR_sun_est'] = np.ma.asarray(
                 sun_retrieval_zdr[0])
