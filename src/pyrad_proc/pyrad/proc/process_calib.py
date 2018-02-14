@@ -2917,7 +2917,7 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
 
                 # scaling of the power to account for solar flux variations.
                 # The last sun hit is the reference. The scale factor is in dB
-                scale_factor = 10.*np.log10(sf_radar/sf_ref)
+                scale_factor = -10.*np.log10(sf_radar/sf_ref)
                 sun_pwr_h += scale_factor
                 sun_pwr_v += scale_factor
             else:
