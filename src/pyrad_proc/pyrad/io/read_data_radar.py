@@ -163,8 +163,13 @@ def get_data(voltime, datatypesdescr, cfg):
             else:
                 if radar_aux is not None:
                     for field_name in radar_aux.fields.keys():
-                        radar.add_field(
-                            field_name, radar_aux.fields[field_name])
+                        try:
+                            radar.add_field(
+                                field_name, radar_aux.fields[field_name])
+                        except (ValueError, KeyError) as ee:
+                            warn("Unable to add field '"+field_name +
+                                 "' to radar object"
+                                 ": (%s)" % str(ee))
 
     # add DEM files to the radar field
     if ndatatypes_dem > 0 and _WRADLIB_AVAILABLE:
@@ -194,8 +199,13 @@ def get_data(voltime, datatypesdescr, cfg):
             else:
                 if radar_aux is not None:
                     for field_name in radar_aux.fields.keys():
-                        radar.add_field(
-                            field_name, radar_aux.fields[field_name])
+                        try:
+                            radar.add_field(
+                                field_name, radar_aux.fields[field_name])
+                        except (ValueError, KeyError) as ee:
+                            warn("Unable to add field '"+field_name +
+                                 "' to radar object"
+                                 ": (%s)" % str(ee))
 
     if ndatatypes_rad4alphydro > 0:
         if ((cfg['RadarRes'][ind_rad] is None) or
@@ -213,8 +223,13 @@ def get_data(voltime, datatypesdescr, cfg):
             else:
                 if radar_aux is not None:
                     for field_name in radar_aux.fields.keys():
-                        radar.add_field(
-                            field_name, radar_aux.fields[field_name])
+                        try:
+                            radar.add_field(
+                                field_name, radar_aux.fields[field_name])
+                        except (ValueError, KeyError) as ee:
+                            warn("Unable to add field '"+field_name +
+                                 "' to radar object"
+                                 ": (%s)" % str(ee))
 
     # if it is specified, get the position from the config file
     if 'RadarPosition' in cfg:
@@ -278,7 +293,7 @@ def merge_scans_rainbow(basepath, scan_list, voltime, scan_period,
                                      cfg, scan=scan_list[i])
 
             if (len(filelist) == 0):
-                print("ERROR: No data file found for scan '%s' "
+                warn("ERROR: No data file found for scan '%s' "
                       "between %s and %s" % (scan_list[i], voltime, endtime),
                       file=sys.stderr)
                 continue
@@ -857,12 +872,9 @@ def merge_scans_hydro_rad4alp(voltime, datatype, cfg, ind_rad=0):
     else:
         radar = get_data_rad4alp(
             filename[0], ['dBZ'], scan_list[0], cfg, ind_rad=ind_rad)
-        print(np.shape(radar.fields['reflectivity']['data']))
         radar.fields = dict()
 
         # add hydrometeor classification data for first scan
-        print(np.shape(hydro_dict['data']))
-
         radar.add_field(hydro_field, hydro_dict)
 
     # add the other scans
