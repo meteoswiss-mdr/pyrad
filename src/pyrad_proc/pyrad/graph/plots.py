@@ -2036,7 +2036,7 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list, labelx='Date',
         ref = 10.*np.ma.log10(sun_retrieval[21])
         labely = 'Observed solar flux H channel (dB(sfu))'
         vmin = 15.
-        vmax = 25.
+        vmax = 30.
     elif data_type == 'nhits_v':
         value = sun_retrieval[10]
         labely = 'Number of sun hits V channel'
@@ -2084,7 +2084,7 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list, labelx='Date',
         ref = 10.*np.ma.log10(sun_retrieval[21])
         labely = 'Observed solar flux V channel (dB(sfu))'
         vmin = 15.
-        vmax = 25.
+        vmax = 30.
     elif data_type == 'nhits_zdr':
         value = sun_retrieval[18]
         labely = 'Number of sun hits ZDR'
