@@ -767,6 +767,8 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
             'npoints': 0,
             'meanbias': np.ma.asarray(np.ma.masked),
             'medianbias': np.ma.asarray(np.ma.masked),
+            'quant25bias': np.ma.asarray(np.ma.masked),
+            'quant75bias': np.ma.asarray(np.ma.masked),
             'modebias': np.ma.asarray(np.ma.masked),
             'corr': np.ma.asarray(np.ma.masked),
             'slope': np.ma.asarray(np.ma.masked),
@@ -782,6 +784,8 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
         np.ma.mean(np.ma.power(10., 0.1*field2)) /
         np.ma.mean(np.ma.power(10., 0.1*field1)))
     medianbias = np.ma.median(field2-field1)
+    quant25bias = np.percentile((field2-field1).compressed(), 25.)
+    quant75bias = np.percentile((field2-field1).compressed(), 75.)
     ind_max_val1, ind_max_val2 = np.where(hist_2d == np.ma.amax(hist_2d))
     modebias = bins2[ind_max_val2[0]]-bins1[ind_max_val1[0]]
     slope, intercep, corr, pval, stderr = scipy.stats.linregress(
@@ -792,6 +796,8 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
         'npoints': npoints,
         'meanbias': np.ma.asarray(meanbias),
         'medianbias': np.ma.asarray(medianbias),
+        'quant25bias': np.ma.asarray(quant25bias),
+        'quant75bias': np.ma.asarray(quant75bias),
         'modebias': np.ma.asarray(modebias),
         'corr': np.ma.asarray(corr),
         'slope': np.ma.asarray(slope),
