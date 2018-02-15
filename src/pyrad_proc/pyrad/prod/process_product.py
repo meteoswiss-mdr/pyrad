@@ -509,11 +509,11 @@ def generate_intercomp_products(dataset, prdcfg):
             return None
 
         figtimeinfo = None
-        titldate = (date[0].strftime('%Y%m%d')+'-' +
-                    date[-1].strftime('%Y%m%d'))
+        titldate = (date_vec[0].strftime('%Y%m%d')+'-' +
+                    date_vec[-1].strftime('%Y%m%d'))
         if 'add_date_in_fname' in prdcfg:
             if prdcfg['add_date_in_fname']:
-                figtimeinfo = date[0]
+                figtimeinfo = date_vec[0]
                 timeformat = '%Y'
 
         figfname = make_filename(
@@ -2680,7 +2680,7 @@ def generate_monitoring_products(dataset, prdcfg):
         abs_exceeded = False
         if ((value_last > ref_value+tol_abs) or
                 (value_last < ref_value-tol_abs)):
-            warn('Value '+str(value_last)+'exceeds target '+str(ref_value) +
+            warn('Value '+str(value_last)+' exceeds target '+str(ref_value) +
                  ' +/- '+str(tol_abs))
             abs_exceeded = True
 

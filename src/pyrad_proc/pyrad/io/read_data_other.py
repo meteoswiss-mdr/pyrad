@@ -125,7 +125,7 @@ def read_status(voltime, cfg, ind_rad=0):
     return root
 
 
-def read_rad4alp_cosmo(fname, datatype):
+def read_rad4alp_cosmo(fname, datatype, ngates=0):
     """
     Reads rad4alp COSMO data binary file.
 
@@ -133,9 +133,11 @@ def read_rad4alp_cosmo(fname, datatype):
     ----------
     fname : str
         name of the file to read
-
     datatype : str
         name of the data type
+    ngates : int
+        maximum number of range gates per ray. If larger than 0 the radar
+        field will be cut accordingly.
 
     Returns
     -------
@@ -158,6 +160,8 @@ def read_rad4alp_cosmo(fname, datatype):
 
             field = get_metadata(field_name)
             field['data'] = field_data
+            if ngates > 0:
+                field['data'] = field['data'][:, :ngates]
             return field
         elif datatype == 'ISO0':
             field_name = get_fieldname_pyart(datatype)
@@ -165,11 +169,12 @@ def read_rad4alp_cosmo(fname, datatype):
 
             field = get_metadata(field_name)
             field['data'] = field_data
+            if ngates > 0:
+                field['data'] = field['data'][:, :ngates]
             return field
         else:
             warn('Unknown COSMO data type '+datatype)
             return None
-
     except EnvironmentError as ee:
         warn(str(ee))
         warn('Unable to read file '+fname)
