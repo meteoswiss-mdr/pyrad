@@ -475,13 +475,21 @@ def generate_intercomp_products(dataset, prdcfg):
             np.ma.asarray(dataset['intercomp_dict']['rad2_val']),
             field_name, field_name, step1=step, step2=step)
 
+        # put time info in file path and name
+        csvtimeinfo_file = None
+        timeformat = None
+        if 'add_date_in_fname' in prdcfg:
+            if prdcfg['add_date_in_fname']:
+                csvtimeinfo_file = dataset['timeinfo']
+                timeformat = '%Y'
+
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=None)
 
         csvfname = make_filename(
             'ts', prdcfg['dstype'], prdcfg['voltype'], ['csv'],
-            timeinfo=None, timeformat='%Y%m%d')[0]
+            timeinfo=csvtimeinfo_file, timeformat=timeformat)[0]
 
         csvfname = savedir+csvfname
 
@@ -490,8 +498,9 @@ def generate_intercomp_products(dataset, prdcfg):
             rad1_name=rad1_name, rad2_name=rad2_name)
         print('saved CSV file: '+csvfname)
 
-        (date_vec, np_vec, meanbias_vec, medianbias_vec, modebias_vec,
-         corr_vec, slope_vec, intercep_vec, intercep_slope1_vec) = (
+        (date_vec, np_vec, meanbias_vec, medianbias_vec, quant25bias_vec,
+         quant75bias_vec, modebias_vec, corr_vec, slope_vec, intercep_vec,
+         intercep_slope1_vec) = (
             read_intercomp_scores_ts(csvfname))
 
         if date_vec is None:
@@ -499,19 +508,36 @@ def generate_intercomp_products(dataset, prdcfg):
                 'Unable to plot time series. No valid data')
             return None
 
+        figtimeinfo = None
+        titldate = (date[0].strftime('%Y%m%d')+'-' +
+                    date[-1].strftime('%Y%m%d'))
+        if 'add_date_in_fname' in prdcfg:
+            if prdcfg['add_date_in_fname']:
+                figtimeinfo = date[0]
+                timeformat = '%Y'
+
         figfname = make_filename(
             'ts', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
-            timeinfo=None, timeformat='%Y%m%d')
+            timeinfo=figtimeinfo, timeformat=timeformat)
 
         for i in range(len(figfname)):
             figfname[i] = savedir+figfname[i]
 
-        titl = rad1_name+'-'+rad2_name+' '+field_name+' intercomparison'
+        np_min = 0
+        if 'npoints_min' in prdcfg:
+            np_min = prdcfg['npoints_min']
+        corr_min = 0.
+        if 'corr_min' in prdcfg:
+            corr_min = prdcfg['corr_min']
+
+        titl = (rad1_name+'-'+rad2_name+' '+field_name+' intercomparison ' +
+                titldate)
         plot_intercomp_scores_ts(
-            date_vec, np_vec, meanbias_vec, medianbias_vec, modebias_vec,
-            corr_vec, slope_vec, intercep_vec, intercep_slope1_vec, figfname,
-            ref_value=0., labelx='Time UTC', titl=titl)
+            date_vec, np_vec, meanbias_vec, medianbias_vec, quant25bias_vec,
+            quant75bias_vec, modebias_vec, corr_vec, slope_vec, intercep_vec,
+            intercep_slope1_vec, figfname, ref_value=0., np_min=np_min,
+            corr_min=corr_min, labelx='Time UTC', titl=titl)
         print('----- save to '+' '.join(figfname))
 
         return figfname

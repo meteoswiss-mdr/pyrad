@@ -1798,6 +1798,9 @@ def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name,
     ax = fig.add_subplot(2, 1, 2)
     plt.plot(date, np_t, 'x-')
 
+    if np_min is not None:
+        plt.plot(date, np.zeros(len(date))+np_min, 'k--')
+
     plt.ylabel('Number of Samples')
     plt.xlabel(labelx)
 
@@ -1816,8 +1819,10 @@ def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name,
 
 
 def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
-                             modebias_vec, corr_vec, slope_vec, intercep_vec,
+                             quant25bias_vec, quant75bias_vec, modebias_vec,
+                             corr_vec, slope_vec, intercep_vec,
                              intercep_slope1_vec, fname_list, ref_value=0.,
+                             np_min=0, corr_min=0.,
                              labelx='Time UTC',
                              titl='RADAR001-RADAR002 intercomparison',
                              dpi=72):
@@ -1832,6 +1837,7 @@ def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
         number of points
     meanbias_vec, medianbias_vec, modebias_vec : float array
         mean, median and mode bias
+    quant25bias_vec, quant75bias_vec: 25th and 75th percentile of the bias
     corr_vec : float array
         correlation
     slope_vec, intercep_vec : float array
@@ -1840,6 +1846,10 @@ def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
         the intercep point of a inear regression of slope 1
     ref_value : float
         the reference value
+    np_min : int
+        The minimum number of points to consider the result valid
+    corr_min : float
+        The minimum correlation to consider the results valid
     labelx : str
         The label of the X axis
     titl : str
@@ -1853,35 +1863,112 @@ def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
         dots per inch
 
     """
-    fig = plt.figure(figsize=[10, 16], dpi=dpi)
+    # plot only valid data (but keep first and last date)
+    date2 = np.array(date_vec)
+    isvalid = np.logical_not(np.ma.getmaskarray(medianbias_vec))
+    isvalid_corr = np.logical_not(np.ma.getmaskarray(corr_vec))
+    if np_min > 0:
+        has_np = np_vec > np_min
+        isvalid = np.logical_and(isvalid, has_np)
+    if corr_min > 0:
+        has_corr_min = corr_vec > corr_min
+        isvalid = np.logical_and(isvalid, has_corr_min)
 
-    ax = fig.add_subplot(3, 1, 1)
-    plt.plot(date_vec, meanbias_vec, 'b', label='mean')
-    plt.plot(date_vec, medianbias_vec, 'r', label='median')
-    plt.plot(date_vec, modebias_vec, 'g', label='mode')
-    plt.plot(date_vec, intercep_slope1_vec, 'y',
+    meanbias_plt = meanbias_vec[isvalid]
+    medianbias_plt = medianbias_vec[isvalid]
+    quant25bias_plt = quant25bias_vec[isvalid]
+    quant75bias_plt = quant75bias_vec[isvalid]
+    modebias_plt = modebias_vec[isvalid]
+    intercep_plt = intercep_slope1_vec[isvalid]
+    corr_plt = corr_vec[isvalid_corr]
+    date_corr = date2[isvalid_corr]
+    date_plt = date2[isvalid]
+    if not isvalid[0]:
+        meanbias_plt = np.ma.append(np.ma.masked, meanbias_plt)
+        medianbias_plt = np.ma.append(np.ma.masked, medianbias_plt)
+        quant25bias_plt = np.ma.append(np.ma.masked, quant25bias_plt)
+        quant75bias_plt = np.ma.append(np.ma.masked, quant75bias_plt)
+        modebias_plt = np.ma.append(np.ma.masked, modebias_plt)
+        intercep_plt = np.ma.append(np.ma.masked, intercep_plt)
+        date_plt = np.ma.append(date2[0], date_plt)
+    if not isvalid[-1]:
+        meanbias_plt = np.ma.append(meanbias_plt, np.ma.masked)
+        medianbias_plt = np.ma.append(medianbias_plt, np.ma.masked)
+        quant25bias_plt = np.ma.append(quant25bias_plt, np.ma.masked)
+        quant75bias_plt = np.ma.append(quant75bias_plt, np.ma.masked)
+        modebias_plt = np.ma.append(modebias_plt, np.ma.masked)
+        intercep_plt = np.ma.append(intercep_plt, np.ma.masked)
+        date_plt = np.ma.append(date_plt, date2[-1])
+
+    if not isvalid_corr[0]:
+        corr_plt = np.ma.append(np.ma.masked, corr_plt)
+        date_corr = np.ma.append(date2[0], date_corr)
+    if not isvalid_corr[-1]:
+        corr_plt = np.ma.append(corr_plt, np.ma.masked)
+        date_corr = np.ma.append(date_corr, date2[-1])
+
+    fig = plt.figure(figsize=[10, 20], dpi=dpi)
+
+    ax = fig.add_subplot(4, 1, 1)
+    plt.plot(date_plt, medianbias_plt, 'bx-', label='median')
+    plt.plot(date_plt, meanbias_plt, 'rx-', label='mean')
+    plt.plot(date_plt, modebias_plt, 'gx-', label='mode')
+    plt.plot(date_plt, intercep_plt, 'yx-',
              label='intercep of slope 1 LR')
     if ref_value is not None:
-        plt.plot(date_vec, np.zeros(len(date_vec))+ref_value, 'k--')
-    plt.legend(loc='best')
+        plt.plot(date_plt, np.zeros(len(date_plt))+ref_value, 'k--')
+    # plt.legend(loc='best')
     plt.ylabel('bias [dB]')
     plt.title(titl)
 
     axes = plt.gca()
     axes.set_ylim([-5., 5.])
 
-    ax = fig.add_subplot(3, 1, 2)
-    plt.plot(date_vec, corr_vec)
+    # tight x axis
+    plt.autoscale(enable=True, axis='x', tight=True)
+    plt.grid(True)
+
+    ax = fig.add_subplot(4, 1, 2)
+    plt.plot(date_plt, medianbias_plt, 'bx-', label='median')
+    plt.plot(date_plt, quant25bias_plt, 'rx-', label='25-percentile')
+    plt.plot(date_plt, quant75bias_plt, 'rx-', label='75-percentile')
+    if ref_value is not None:
+        plt.plot(date_plt, np.zeros(len(date_plt))+ref_value, 'k--')
+    # plt.legend(loc='best')
+    plt.ylabel('bias [dB]')
+
+    axes = plt.gca()
+    axes.set_ylim([-5., 5.])
+
+    # tight x axis
+    plt.autoscale(enable=True, axis='x', tight=True)
+    plt.grid(True)
+
+    ax = fig.add_subplot(4, 1, 3)
+    plt.plot(date_corr, corr_plt, 'bx-')
+
+    if corr_min > 0:
+        plt.plot(date_corr, np.zeros(len(date_corr))+corr_min, 'k--')
 
     plt.ylabel('correlation')
     axes = plt.gca()
     axes.set_ylim([0., 1.])
 
-    ax = fig.add_subplot(3, 1, 3)
-    plt.plot(date_vec, np_vec)
+    # tight x axis
+    plt.autoscale(enable=True, axis='x', tight=True)
+    plt.grid(True)
+
+    ax = fig.add_subplot(4, 1, 4)
+    plt.plot(date2, np_vec, 'bx-')
+
+    if np_min > 0:
+        plt.plot(date2, np.zeros(len(date2))+np_min, 'k--')
 
     plt.ylabel('Number of Samples')
     plt.xlabel(labelx)
+
+    # tight x axis
+    plt.autoscale(enable=True, axis='x', tight=True)
 
     # rotates and right aligns the x labels, and moves the bottom of the
     # axes up to make room for them
