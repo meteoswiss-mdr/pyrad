@@ -1947,6 +1947,14 @@ def process_colocated_gates(procstatus, dscfg, radar_list=None):
     radar1 = radar_list[ind_radar_list[0]]
     radar2 = radar_list[ind_radar_list[1]]
 
+    if radar1 is None or radar2 is None:
+        warn('Unable to inter-compare radars. Missing radar')
+
+    if 'instrument_name' in radar1.metadata:
+        print('Radar 1: '+radar1.metadata['instrument_name'])
+    if 'instrument_name' in radar2.metadata:
+        print('Radar 2: '+radar2.metadata['instrument_name'])
+
     coloc_gates_field = 'colocated_gates'
 
     h_tol = 100.
@@ -2009,6 +2017,11 @@ def process_colocated_gates(procstatus, dscfg, radar_list=None):
     if 'visibility' in radarnr_dict['RADAR'+'{:03d}'.format(
             ind_radar_list[0]+1)]:
         visib_field = 'visibility'
+    if vismin is not None and visib_field is None:
+        warn('Unable to filter data according to visibility. ' +
+             'Visibility field for RADAR'+'{:03d}'.format(
+                ind_radar_list[0]+1)+' not available')
+
     gate_coloc_rad1_dict = pyart.util.intersection(
         radar1, radar2,
         h_tol=h_tol, latlon_tol=latlon_tol, vol_d_tol=vol_d_tol,
@@ -2020,6 +2033,12 @@ def process_colocated_gates(procstatus, dscfg, radar_list=None):
     if 'visibility' in radarnr_dict['RADAR'+'{:03d}'.format(
             ind_radar_list[1]+1)]:
         visib_field = 'visibility'
+
+    if vismin is not None and visib_field is None:
+        warn('Unable to filter data according to visibility. ' +
+             'Visibility field for RADAR'+'{:03d}'.format(
+                ind_radar_list[1]+1)+' not available')
+
     gate_coloc_rad2_dict = pyart.util.intersection(
         radar2, radar1,
         h_tol=h_tol, latlon_tol=latlon_tol, vol_d_tol=vol_d_tol,

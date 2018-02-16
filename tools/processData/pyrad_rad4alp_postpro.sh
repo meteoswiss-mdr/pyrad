@@ -35,7 +35,7 @@ function dataquality {
     
     # Run postproc processing
     cd ${pyradpath}
-    python main_process_data_period.py $1 $2 $3 -i $4 >>$5 2>>$5
+    python main_process_data_period.py $1 $2 $3 --starttime '000001' --endtime '240000' -i $4 >>$5 2>>$5
 }
 
 # set permits
