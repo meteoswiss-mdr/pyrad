@@ -14,8 +14,11 @@ TimeSeries class implementation for holding timeseries data.
 
 import numpy as np
 from datetime import datetime
+from copy import deepcopy
 
-from ..graph.plots import plot_timeseries
+from ..graph.plots import plot_timeseries, plot_histogram
+from ..util.radar_utils import compute_histogram
+from ..io.io_aux import get_fieldname_pyart
 
 
 class TimeSeries(object):
@@ -94,7 +97,7 @@ class TimeSeries(object):
         Add a new sample to the time series.
         """
 
-        if (self.num_el + 1 > self.maxlength): # jgr changed from >= 
+        if (self.num_el + 1 > self.maxlength):  # jgr changed from >=
             raise Exception("ERROR: Cannot add time series sample. Max"
                             " length reached.")
 
@@ -150,8 +153,10 @@ class TimeSeries(object):
                       file=tsfile)
 
             for ds in self.dataseries:
-                print(", %14.4f" % (np.ma.filled(ds.data, fill_value=np.nan)[kk]),
-                      end="", file=tsfile)
+                print(
+                    ", %14.4f"
+                    % (np.ma.filled(ds.data, fill_value=np.nan)[kk]),
+                    end="", file=tsfile)
 
             print("", file=tsfile)
 
@@ -190,6 +195,29 @@ class TimeSeries(object):
                         labely=labely, timeformat="%H:%M",
                         colors=color_list, linestyles=lstyle_list,
                         ymin=ymin, ymax=ymax)
+
+    def plot_hist(self, fname, step=None):
+        """
+        Make histograms of time series
+        """
+
+        found = False
+        labely = None
+        ds_list = []
+        color_list = []
+        lstyle_list = []
+        for ds in self.dataseries:
+            if (ds.plot):
+                bins, values = compute_histogram(
+                    ds.data[:self.num_el], get_fieldname_pyart(self.datatype),
+                    step=step)
+                fname2 = fname.replace('.', '_'+ds.label+'.')
+                plot_histogram(
+                    bins, values, [fname2],
+                    labelx="%s [%s]" % (ds.unit_name, ds.unit),
+                    titl=("Trajectory Histogram %s" %
+                          self.time_vector[0].strftime("%Y-%m-%d")))
+                print("----- plot to '%s'" % fname2)
 
 
 class _DataSeries(object):

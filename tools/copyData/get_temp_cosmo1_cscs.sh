@@ -81,6 +81,7 @@ for ((iday=0; iday<${nday}; iday++)); do
 		
         mkdir -p ${datedir}
         cp ${cosmopathcscs}${cosmoFileRaw} ${datedir}
+        chmod -R gu+rw ${datedir}
         
         if [ $radar != "None" ]
         then                    

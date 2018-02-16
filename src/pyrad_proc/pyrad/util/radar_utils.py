@@ -473,7 +473,7 @@ def create_sun_hits_field(rad_el, rad_az, sun_el, sun_az, data, imgcfg):
     return field
 
 
-def create_sun_retrieval_field(par, imgcfg):
+def create_sun_retrieval_field(par, field_name, imgcfg, lant=0.):
     """
     creates a sun retrieval field from the retrieval parameters
 
@@ -512,6 +512,9 @@ def create_sun_retrieval_field(par, imgcfg):
 
     field = (par[0]+par[1]*d_az_mat+par[2]*d_el_mat+par[3]*d_az_mat*d_az_mat +
              par[4]*d_el_mat*d_el_mat)
+    if field_name == 'sun_est_power_h' or field_name == 'sun_est_power_v':
+        # account for polarization of the antenna and scanning losses
+        field += 3.+lant
 
     return field
 
@@ -666,9 +669,9 @@ def compute_histogram(field, field_name, step=None):
 
     """
     bins = get_histogram_bins(field_name, step=step)
-    field[field < bins[0]] = bins[0]
-    field[field > bins[-1]] = bins[-1]
     values = field.compressed()
+    values[values < bins[0]] = bins[0]
+    values[values > bins[-1]] = bins[-1]
 
     return bins, values
 
@@ -697,10 +700,9 @@ def compute_histogram_sweep(field, ray_start, ray_end, field_name, step=None):
 
     """
     bins = get_histogram_bins(field_name, step=step)
-    field_sweep = field[ray_start:ray_end+1, :]
-    field_sweep[field_sweep < bins[0]] = bins[0]
-    field_sweep[field_sweep > bins[-1]] = bins[-1]
-    values = field_sweep[ray_start:ray_end+1, :].compressed()
+    values = field[ray_start:ray_end+1, :].compressed()
+    values[values < bins[0]] = bins[0]
+    values[values > bins[-1]] = bins[-1]
 
     return bins, values
 
@@ -723,6 +725,10 @@ def get_histogram_bins(field_name, step=None):
         interval of each bin
 
     """
+    field_dict = pyart.config.get_metadata(field_name)
+    if 'boundaries' in field_dict:
+        return field_dict['boundaries']
+
     vmin, vmax = pyart.config.get_field_limits(field_name)
     if step is None:
         step = (vmax-vmin)/50.
@@ -761,6 +767,8 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
             'npoints': 0,
             'meanbias': np.ma.asarray(np.ma.masked),
             'medianbias': np.ma.asarray(np.ma.masked),
+            'quant25bias': np.ma.asarray(np.ma.masked),
+            'quant75bias': np.ma.asarray(np.ma.masked),
             'modebias': np.ma.asarray(np.ma.masked),
             'corr': np.ma.asarray(np.ma.masked),
             'slope': np.ma.asarray(np.ma.masked),
@@ -776,6 +784,8 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
         np.ma.mean(np.ma.power(10., 0.1*field2)) /
         np.ma.mean(np.ma.power(10., 0.1*field1)))
     medianbias = np.ma.median(field2-field1)
+    quant25bias = np.percentile((field2-field1).compressed(), 25.)
+    quant75bias = np.percentile((field2-field1).compressed(), 75.)
     ind_max_val1, ind_max_val2 = np.where(hist_2d == np.ma.amax(hist_2d))
     modebias = bins2[ind_max_val2[0]]-bins1[ind_max_val1[0]]
     slope, intercep, corr, pval, stderr = scipy.stats.linregress(
@@ -786,6 +796,8 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
         'npoints': npoints,
         'meanbias': np.ma.asarray(meanbias),
         'medianbias': np.ma.asarray(medianbias),
+        'quant25bias': np.ma.asarray(quant25bias),
+        'quant75bias': np.ma.asarray(quant75bias),
         'modebias': np.ma.asarray(modebias),
         'corr': np.ma.asarray(corr),
         'slope': np.ma.asarray(slope),

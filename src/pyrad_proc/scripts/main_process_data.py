@@ -20,6 +20,8 @@ the trajectory file or the last processed volume.
 postproc_cfgfile is an optional argument with default: None
 cfgpath is an optional argument with default: \
 '$HOME/pyrad/config/processing/'
+The trajectory file can be of type plane or type lightning. If it is of type \
+lightning the flash number can be specified
 
 Example:
     python main_process_data.py 'paradiso_fvj_vol.txt' --starttime \
@@ -77,6 +79,15 @@ def main():
                         help="Definition file of plane trajectory. "
                         "Configuration of scan sector, products, ...")
 
+    parser.add_argument("--trajtype", type=str, default='plane',
+                        help="Type of trajectory. "
+                        "Can be either 'plane' or 'lightning'")
+
+    parser.add_argument("--flashnr", type=int, default=0,
+                        help="If type of trajectory is 'lightning', "
+                        "flash number the data of which will be processed"
+                        "0 means that all lightning data will be processed")
+
     args = parser.parse_args()
 
     print("====== PYRAD data processing started: %s" %
@@ -106,13 +117,15 @@ def main():
     cfgfile_proc = args.cfgpath+args.proc_cfgfile
 
     pyrad_main(cfgfile_proc, starttime=proc_starttime, endtime=proc_endtime,
-               trajfile=args.trajfile, infostr=args.infostr)
+               trajfile=args.trajfile, infostr=args.infostr,
+               trajtype=args.trajtype, flashnr=args.flashnr)
 
     if args.postproc_cfgfile is not None:
         cfgfile_postproc = args.cfgpath+args.postproc_cfgfile
         pyrad_main(cfgfile_postproc, starttime=proc_starttime,
                    endtime=proc_endtime, trajfile=args.trajfile,
-                   infostr=args.infostr)
+                   infostr=args.infostr, trajtype=args.trajtype,
+                   flashnr=args.flashnr)
 
 
 def _print_end_msg(text):

@@ -19,6 +19,7 @@ Auxiliary functions
     process_point_measurement
     process_grid
     process_qvp
+    process_time_height
 
 Echo classification and filtering
 =================================
@@ -33,6 +34,7 @@ Echo classification and filtering
     process_filter_visibility
     process_outlier_filter
     process_hydroclass
+    process_melting_layer
 
 Phase processing and attenuation correction
 ===========================================
@@ -116,13 +118,14 @@ COSMO data
 
 from .process_aux import get_process_func, process_raw, process_save_radar
 from .process_aux import process_point_measurement, process_grid, process_qvp
-from .process_traj import process_trajectory, process_traj_atplane, \
-    process_traj_antenna_pattern
+from .process_aux import process_time_height
+from .process_traj import process_trajectory, process_traj_atplane
+from .process_traj import process_traj_antenna_pattern
 
 from .process_echoclass import process_echo_id, process_echo_filter
 from .process_echoclass import process_filter_snr, process_filter_visibility
 from .process_echoclass import process_outlier_filter, process_hydroclass
-from .process_echoclass import process_cdf
+from .process_echoclass import process_cdf, process_melting_layer
 
 from .process_phase import process_correct_phidp0
 from .process_phase import process_smooth_phidp_single_window

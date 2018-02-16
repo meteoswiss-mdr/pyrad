@@ -9,6 +9,7 @@ Converting to different coordinate systems.
     :toctree: generated/
 
     Trajectory
+    _Radar_Trajectory
 
 """
 
@@ -17,6 +18,9 @@ import datetime
 import locale
 import numpy as np
 from warnings import warn
+from copy import deepcopy
+
+from ..io.read_data_other import read_lightning
 
 import pyart
 
@@ -33,6 +37,8 @@ class Trajectory(object):
         Start time of trajectory processing.
     endtime : datetime
         End time of trajectory processing.
+    trajtype : str
+    Type of trajectory. Can be 'plane' or 'lightning'
     time_vector : Array of datetime objects
         Array containing the trajectory time samples
     wgs84_lat_deg : Array of floats
@@ -41,18 +47,42 @@ class Trajectory(object):
         WGS84 longitude samples in radian
     wgs84_alt_m : Array of floats
         WGS84 altitude samples in m
+    nsamples : int
+    Number of samples in the trajectory
+    _swiss_grid_done : Bool
+        Indicates that convertion to Swiss coordinates has been performed
+    swiss_chy, swiss_chx, swiss_chh : Array of floats
+        Swiss coordinates in m
+    radar_list : list
+          List of radars for which trajectories are going to be computed
+    flashnr : int
+          For 'lightning' only. Number of flash for which trajectory data
+          is going to be computed. If 0 all all flashes are going to be
+          considered.
+    time_in_flash : array of floats
+          For 'lightning' only. Time within flash (sec)
+    flashnr_vec : array of ints
+          For 'lightning' only. Flash number of each data sample
+    dBm : array of floats
+          For 'lightning' only. Lightning power (dBm)
+
 
     Methods:
     --------
     add_radar : Add a radar
+    calculate_velocities : Computes velocities
     get_start_time : Return time of first trajectory sample
     get_end_time : Return time of last trajectory sample
     get_samples_in_period : Get indices of samples within period
-    _read_traj : Read trajectory from file
+    _convert_traj_to_swissgrid : convert data from WGS84 to Swiss coordinates
+    _read_traj : Read plane trajectory from file
+    _read_traj_lightning : Read lightning trajectory from file
+    _get_total_seconds : Get the total time of the trajectory in seconds
 
     """
 
-    def __init__(self, filename, starttime=None, endtime=None):
+    def __init__(self, filename, starttime=None, endtime=None,
+                 trajtype='plane', flashnr=0):
         """
         Initalize the object.
 
@@ -66,11 +96,17 @@ class Trajectory(object):
         endtime : datetime
             End time of trajectory processing. If not given, use
             the time of the last trajectory sample.
+        trajtype : str
+            type of trajectory. Can be plane or lightning
+        flashnr : int
+            If type of trajectory is lightning, the flash number to check the
+            trajectory. 0 means all flash numbers included
         """
 
         self.filename = filename
         self.starttime = starttime
         self.endtime = endtime
+        self.trajtype = trajtype
 
         self.time_vector = np.array([], dtype=datetime.datetime)
         self.wgs84_lat_deg = np.array([], dtype=float)
@@ -85,10 +121,21 @@ class Trajectory(object):
 
         self.radar_list = []
 
+        if self.trajtype == 'lightning':
+            self.flashnr = flashnr
+            self.time_in_flash = np.array([], dtype=datetime.datetime)
+            self.dBm = np.array([], dtype=float)
+            self.flashnr_vec = np.array([], dtype=float)
+
         try:
-            self._read_traj()
+            if trajtype == 'plane':
+                self._read_traj()
+            else:
+                self._read_traj_lightning(flashnr)
         except:
-            raise
+            raise Exception(
+                "ERROR: Could not load trajectory data from file '" +
+                filename+"' into Trajectory object")
 
     def add_radar(self, radar):
         """
@@ -323,6 +370,76 @@ class Trajectory(object):
             tfile.close()
             if loc_set:
                 locale.setlocale(locale.LC_ALL, loc)  # restore saved locale
+
+        self.nsamples = len(self.time_vector)
+
+    def _read_traj_lightning(self, flashnr=0):
+        """
+        Read trajectory from lightning file
+
+        File format
+        -----------
+        Columns:
+        1. flashnr (0=noise)
+        2. Seconds since midnight (UTC)
+        2. Time in flash (s)
+        3. WGS84 latitude [deg]
+        4. WGS84 longitude [deg]
+        5. WGS84 altitude [m]
+        6. Power [dBm]
+
+        Parameters
+        ----------
+        flashnr : int
+            the flash number to keep. If 0 data from all flashes will be kept
+
+        """
+        flashnr_vec, time, time_in_flash, lat, lon, alt, dBm = read_lightning(
+            self.filename)
+
+        if flashnr_vec is None:
+            raise Exception("ERROR: Could not find|open trajectory file '" +
+                            self.filename+"'")
+
+        recording_started = True
+        if (self.starttime is not None):
+            recording_started = False
+        recording_check_stop = False
+        if (self.endtime is not None):
+            recording_check_stop = True
+
+        if flashnr > 0:
+            flashnr_vec_aux = deepcopy(flashnr_vec)
+            flashnr_vec = flashnr_vec[flashnr_vec_aux == flashnr]
+            time = time[flashnr_vec_aux == flashnr]
+            time_in_flash = time_in_flash[flashnr_vec_aux == flashnr]
+            lat = lat[flashnr_vec_aux == flashnr]
+            lon = lon[flashnr_vec_aux == flashnr]
+            alt = alt[flashnr_vec_aux == flashnr]
+            dBm = dBm[flashnr_vec_aux == flashnr]
+
+        for i in range(len(dBm)):
+
+            if (not recording_started):
+                if (time[i] < self.starttime):
+                    continue
+                else:
+                    recording_started = True
+
+            if (recording_check_stop):
+                if (time[i] > self.endtime):
+                    break
+
+            self.flashnr_vec = np.append(self.flashnr_vec, [flashnr_vec[i]])
+            self.time_vector = np.append(self.time_vector, [time[i]])
+            self.time_in_flash = np.append(
+                self.time_in_flash, [time_in_flash[i]])
+
+            self.wgs84_lat_deg = np.append(self.wgs84_lat_deg, [lat[i]])
+            self.wgs84_lon_deg = np.append(self.wgs84_lon_deg, [lon[i]])
+            self.wgs84_alt_m = np.append(self.wgs84_alt_m, [alt[i]])
+
+            self.dBm = np.append(self.dBm, [dBm[i]])
 
         self.nsamples = len(self.time_vector)
 

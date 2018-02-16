@@ -15,6 +15,7 @@ Functions for reading auxiliary data
     read_colocated_data
     read_colocated_data_time_avg
     read_timeseries
+    read_lightning
     read_ts_cum
     read_monitoring_ts
     read_intercomp_scores_ts
@@ -36,6 +37,7 @@ import datetime
 import csv
 import xml.etree.ElementTree as et
 from warnings import warn
+from copy import deepcopy
 
 import numpy as np
 
@@ -75,7 +77,8 @@ def read_last_state(fname):
             except ValueError:
                 warn('File '+fname+' does not contain a valid date.')
                 return None
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return None
 
@@ -108,7 +111,10 @@ def read_status(voltime, cfg, ind_rad=0):
     dayinfo = voltime.strftime('%y%j')
     timeinfo = voltime.strftime('%H%M')
     basename = 'ST'+cfg['RadarName'][ind_rad]+dayinfo
-    datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
+    if cfg['path_convention'] == 'RT':
+        datapath = cfg['datapath'][ind_rad]+'ST'+cfg['RadarName'][ind_rad]+'/'
+    else:
+        datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
     filename = glob.glob(datapath+basename+timeinfo+'*.xml')
     if len(filename) == 0:
         warn('rad4alp status file '+datapath+basename+timeinfo +
@@ -119,7 +125,7 @@ def read_status(voltime, cfg, ind_rad=0):
     return root
 
 
-def read_rad4alp_cosmo(fname, datatype):
+def read_rad4alp_cosmo(fname, datatype, ngates=0):
     """
     Reads rad4alp COSMO data binary file.
 
@@ -127,9 +133,11 @@ def read_rad4alp_cosmo(fname, datatype):
     ----------
     fname : str
         name of the file to read
-
     datatype : str
         name of the data type
+    ngates : int
+        maximum number of range gates per ray. If larger than 0 the radar
+        field will be cut accordingly.
 
     Returns
     -------
@@ -152,6 +160,8 @@ def read_rad4alp_cosmo(fname, datatype):
 
             field = get_metadata(field_name)
             field['data'] = field_data
+            if ngates > 0:
+                field['data'] = field['data'][:, :ngates]
             return field
         elif datatype == 'ISO0':
             field_name = get_fieldname_pyart(datatype)
@@ -159,12 +169,14 @@ def read_rad4alp_cosmo(fname, datatype):
 
             field = get_metadata(field_name)
             field['data'] = field_data
+            if ngates > 0:
+                field['data'] = field['data'][:, :ngates]
             return field
         else:
             warn('Unknown COSMO data type '+datatype)
             return None
-
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return None
 
@@ -222,14 +234,15 @@ def read_rad4alp_vis(fname, datatype):
 
             return field_list
 
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return None
 
 
 def read_colocated_gates(fname):
     """
-    Reads a csv files containing the posistion of colocated gates
+    Reads a csv files containing the position of colocated gates
 
     Parameters
     ----------
@@ -238,7 +251,8 @@ def read_colocated_gates(fname):
 
     Returns
     -------
-    rad1_ele , rad1_azi, rad1_rng, rad2_ele, rad2_azi, rad2_rng : tupple
+    rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,
+    rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi, rad2_rng : tupple
         A tupple with the data read. None otherwise
 
     """
@@ -248,9 +262,13 @@ def read_colocated_gates(fname):
             reader = csv.DictReader(
                 row for row in csvfile if not row.startswith('#'))
             nrows = sum(1 for row in reader)
+            rad1_ray_ind = np.empty(nrows, dtype=int)
+            rad1_rng_ind = np.empty(nrows, dtype=int)
             rad1_ele = np.empty(nrows, dtype=float)
             rad1_azi = np.empty(nrows, dtype=float)
             rad1_rng = np.empty(nrows, dtype=float)
+            rad2_ray_ind = np.empty(nrows, dtype=int)
+            rad2_rng_ind = np.empty(nrows, dtype=int)
             rad2_ele = np.empty(nrows, dtype=float)
             rad2_azi = np.empty(nrows, dtype=float)
             rad2_rng = np.empty(nrows, dtype=float)
@@ -261,9 +279,13 @@ def read_colocated_gates(fname):
                 row for row in csvfile if not row.startswith('#'))
             i = 0
             for row in reader:
+                rad1_ray_ind[i] = int(row['rad1_ray_ind'])
+                rad1_rng_ind[i] = int(row['rad1_rng_ind'])
                 rad1_ele[i] = float(row['rad1_ele'])
                 rad1_azi[i] = float(row['rad1_azi'])
                 rad1_rng[i] = float(row['rad1_rng'])
+                rad2_ray_ind[i] = int(row['rad2_ray_ind'])
+                rad2_rng_ind[i] = int(row['rad2_rng_ind'])
                 rad2_ele[i] = float(row['rad2_ele'])
                 rad2_azi[i] = float(row['rad2_azi'])
                 rad2_rng[i] = float(row['rad2_rng'])
@@ -271,10 +293,12 @@ def read_colocated_gates(fname):
 
             csvfile.close()
 
-            return rad1_ele, rad1_azi, rad1_rng, rad2_ele, rad2_azi, rad2_rng
-    except EnvironmentError:
+            return (rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,
+                    rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi, rad2_rng)
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
-        return None, None, None, None, None, None
+        return None, None, None, None, None, None, None, None, None, None
 
 
 def read_colocated_data(fname):
@@ -288,8 +312,9 @@ def read_colocated_data(fname):
 
     Returns
     -------
-    rad1_ele , rad1_azi, rad1_rng, rad1_val, rad2_ele, rad2_azi, rad2_rng,
-    rad2_val : tupple
+    rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng, rad1_val,
+    rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi, rad2_rng, rad2_val :
+        tupple
         A tupple with the data read. None otherwise
 
     """
@@ -299,10 +324,14 @@ def read_colocated_data(fname):
             reader = csv.DictReader(
                 row for row in csvfile if not row.startswith('#'))
             nrows = sum(1 for row in reader)
+            rad1_ray_ind = np.empty(nrows, dtype=int)
+            rad1_rng_ind = np.empty(nrows, dtype=int)
             rad1_ele = np.empty(nrows, dtype=float)
             rad1_azi = np.empty(nrows, dtype=float)
             rad1_rng = np.empty(nrows, dtype=float)
             rad1_val = np.empty(nrows, dtype=float)
+            rad2_ray_ind = np.empty(nrows, dtype=int)
+            rad2_rng_ind = np.empty(nrows, dtype=int)
             rad2_ele = np.empty(nrows, dtype=float)
             rad2_azi = np.empty(nrows, dtype=float)
             rad2_rng = np.empty(nrows, dtype=float)
@@ -314,10 +343,14 @@ def read_colocated_data(fname):
                 row for row in csvfile if not row.startswith('#'))
             i = 0
             for row in reader:
+                rad1_ray_ind[i] = int(row['rad1_ray_ind'])
+                rad1_rng_ind[i] = int(row['rad1_rng_ind'])
                 rad1_ele[i] = float(row['rad1_ele'])
                 rad1_azi[i] = float(row['rad1_azi'])
                 rad1_rng[i] = float(row['rad1_rng'])
                 rad1_val[i] = float(row['rad1_val'])
+                rad2_ray_ind[i] = int(row['rad2_ray_ind'])
+                rad2_rng_ind[i] = int(row['rad2_rng_ind'])
                 rad2_ele[i] = float(row['rad2_ele'])
                 rad2_azi[i] = float(row['rad2_azi'])
                 rad2_rng[i] = float(row['rad2_rng'])
@@ -326,11 +359,14 @@ def read_colocated_data(fname):
 
             csvfile.close()
 
-            return (rad1_ele, rad1_azi, rad1_rng, rad1_val,
-                    rad2_ele, rad2_azi, rad2_rng, rad2_val)
-    except EnvironmentError:
+            return (rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,
+                    rad1_val, rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi,
+                    rad2_rng, rad2_val)
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
-        return None, None, None, None, None, None, None, None
+        return (None, None, None, None, None, None, None, None, None, None,
+                None, None)
 
 
 def read_colocated_data_time_avg(fname):
@@ -344,8 +380,9 @@ def read_colocated_data_time_avg(fname):
 
     Returns
     -------
-    rad1_ele , rad1_azi, rad1_rng, rad1_val, rad2_ele, rad2_azi, rad2_rng,
-    rad2_val : tupple
+    rad1_ray_ind, rad1_rng_ind, rad1_ele , rad1_azi, rad1_rng, rad1_val,
+    rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi, rad2_rng, rad2_val :
+        tupple
         A tupple with the data read. None otherwise
 
     """
@@ -355,12 +392,16 @@ def read_colocated_data_time_avg(fname):
             reader = csv.DictReader(
                 row for row in csvfile if not row.startswith('#'))
             nrows = sum(1 for row in reader)
+            rad1_ray_ind = np.empty(nrows, dtype=int)
+            rad1_rng_ind = np.empty(nrows, dtype=int)
             rad1_ele = np.empty(nrows, dtype=float)
             rad1_azi = np.empty(nrows, dtype=float)
             rad1_rng = np.empty(nrows, dtype=float)
             rad1_dBZavg = np.empty(nrows, dtype=float)
             rad1_PhiDPavg = np.empty(nrows, dtype=float)
             rad1_Flagavg = np.empty(nrows, dtype=float)
+            rad2_ray_ind = np.empty(nrows, dtype=int)
+            rad2_rng_ind = np.empty(nrows, dtype=int)
             rad2_ele = np.empty(nrows, dtype=float)
             rad2_azi = np.empty(nrows, dtype=float)
             rad2_rng = np.empty(nrows, dtype=float)
@@ -374,12 +415,16 @@ def read_colocated_data_time_avg(fname):
                 row for row in csvfile if not row.startswith('#'))
             i = 0
             for row in reader:
+                rad1_ray_ind[i] = int(row['rad1_ray_ind'])
+                rad1_rng_ind[i] = int(row['rad1_rng_ind'])
                 rad1_ele[i] = float(row['rad1_ele'])
                 rad1_azi[i] = float(row['rad1_azi'])
                 rad1_rng[i] = float(row['rad1_rng'])
                 rad1_dBZavg[i] = float(row['rad1_dBZavg'])
                 rad1_PhiDPavg[i] = float(row['rad1_PhiDPavg'])
                 rad1_Flagavg[i] = float(row['rad1_Flagavg'])
+                rad2_ray_ind[i] = int(row['rad2_ray_ind'])
+                rad2_rng_ind[i] = int(row['rad2_rng_ind'])
                 rad2_ele[i] = float(row['rad2_ele'])
                 rad2_azi[i] = float(row['rad2_azi'])
                 rad2_rng[i] = float(row['rad2_rng'])
@@ -390,14 +435,15 @@ def read_colocated_data_time_avg(fname):
 
             csvfile.close()
 
-            return (rad1_ele, rad1_azi, rad1_rng,
+            return (rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,
                     rad1_dBZavg, rad1_PhiDPavg, rad1_Flagavg,
-                    rad2_ele, rad2_azi, rad2_rng,
+                    rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi, rad2_rng,
                     rad2_dBZavg, rad2_PhiDPavg, rad2_Flagavg)
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return (None, None, None, None, None, None, None, None, None, None,
-                None, None)
+                None, None, None, None, None, None)
 
 
 def read_timeseries(fname):
@@ -441,9 +487,97 @@ def read_timeseries(fname):
             csvfile.close()
 
             return date, value
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return None, None
+
+
+def read_lightning(fname, filter_data=True):
+    """
+    Reads lightning data contained in a text file. The file has the following
+    fields:
+        flashnr: (0 is for noise)
+        UTC seconds of the day
+        Time within flash (in seconds)
+        Latitude (decimal degrees)
+        Longitude (decimal degrees)
+        Altitude (m MSL)
+        Power (dBm)
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+    filter_data : Boolean
+        if True filter noise (flashnr = 0)
+
+    Returns
+    -------
+    flashnr, time, time_in_flash, lat, lon, alt, dBm : tupple
+        A tupple containing the read values. None otherwise
+
+    """
+    try:
+        # get date from file name
+        bfile = os.path.basename(fname)
+        datetimestr = bfile[0:6]
+        fdatetime = datetime.datetime.strptime(datetimestr, '%y%m%d')
+
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                csvfile, fieldnames=['flashnr', 'time', 'time_in_flash',
+                                     'lat', 'lon', 'alt', 'dBm'],
+                delimiter=' ')
+            nrows = sum(1 for row in reader)
+
+            flashnr = np.ma.empty(nrows, dtype=int)
+            time_in_flash = np.ma.empty(nrows, dtype=float)
+            lat = np.ma.empty(nrows, dtype=float)
+            lon = np.ma.empty(nrows, dtype=float)
+            alt = np.ma.empty(nrows, dtype=float)
+            dBm = np.ma.empty(nrows, dtype=float)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                csvfile, fieldnames=['flashnr', 'time', 'time_in_flash',
+                                     'lat', 'lon', 'alt', 'dBm'],
+                delimiter=' ')
+            i = 0
+            time = list()
+            for row in reader:
+                flashnr[i] = int(row['flashnr'])
+                time.append(fdatetime+datetime.timedelta(
+                    seconds=float(row['time'])))
+                time_in_flash[i] = float(row['time_in_flash'])
+                lat[i] = float(row['lat'])
+                lon[i] = float(row['lon'])
+                alt[i] = float(row['alt'])
+                dBm[i] = float(row['dBm'])
+
+                i += 1
+
+            time = np.array(time)
+
+            if filter_data:
+                flashnr_aux = deepcopy(flashnr)
+                flashnr = flashnr[flashnr_aux > 0]
+                time = time[flashnr_aux > 0]
+                time_in_flash = time_in_flash[flashnr_aux > 0]
+                lat = lat[flashnr_aux > 0]
+                lon = lon[flashnr_aux > 0]
+                alt = alt[flashnr_aux > 0]
+                dBm = dBm[flashnr_aux > 0]
+
+            csvfile.close()
+
+            return flashnr, time, time_in_flash, lat, lon, alt, dBm
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return None, None, None, None, None, None, None
 
 
 def read_ts_cum(fname):
@@ -493,7 +627,8 @@ def read_ts_cum(fname):
             csvfile.close()
 
             return date, np_radar, radar_value, np_sensor, sensor_value
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return None, None, None, None, None
 
@@ -550,9 +685,10 @@ def read_monitoring_ts(fname):
             csvfile.close()
 
             return date, np_t, central_quantile, low_quantile, high_quantile
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
-        return None, None
+        return None, None, None, None, None
 
 
 def read_intercomp_scores_ts(fname):
@@ -566,8 +702,9 @@ def read_intercomp_scores_ts(fname):
 
     Returns
     -------
-    date_vec, np_vec, meanbias_vec, medianbias_vec, modebias_vec, corr_vec,
-    slope_vec, intercep_vec, intercep_slope1_vec : tupple
+    date_vec, np_vec, meanbias_vec, medianbias_vec, quant25bias_vec,
+    quant75bias_vec, modebias_vec, corr_vec, slope_vec, intercep_vec,
+    intercep_slope1_vec : tupple
         The read data. None otherwise
 
     """
@@ -581,6 +718,8 @@ def read_intercomp_scores_ts(fname):
             np_vec = np.zeros(nrows, dtype=int)
             meanbias_vec = np.ma.empty(nrows, dtype=float)
             medianbias_vec = np.ma.empty(nrows, dtype=float)
+            quant25bias_vec = np.ma.empty(nrows, dtype=float)
+            quant75bias_vec = np.ma.empty(nrows, dtype=float)
             modebias_vec = np.ma.empty(nrows, dtype=float)
             corr_vec = np.ma.empty(nrows, dtype=float)
             slope_vec = np.ma.empty(nrows, dtype=float)
@@ -600,6 +739,8 @@ def read_intercomp_scores_ts(fname):
                 np_vec[i] = int(row['NP'])
                 meanbias_vec[i] = float(row['mean_bias'])
                 medianbias_vec[i] = float(row['median_bias'])
+                quant25bias_vec[i] = float(row['quant25_bias'])
+                quant75bias_vec[i] = float(row['quant75_bias'])
                 modebias_vec[i] = float(row['mode_bias'])
                 corr_vec[i] = float(row['corr'])
                 slope_vec[i] = float(row['slope_of_linear_regression'])
@@ -612,6 +753,10 @@ def read_intercomp_scores_ts(fname):
                 meanbias_vec, get_fillvalue())
             medianbias_vec = np.ma.masked_values(
                 medianbias_vec, get_fillvalue())
+            quant25bias_vec = np.ma.masked_values(
+                quant25bias_vec, get_fillvalue())
+            quant75bias_vec = np.ma.masked_values(
+                quant75bias_vec, get_fillvalue())
             modebias_vec = np.ma.masked_values(
                 modebias_vec, get_fillvalue())
             corr_vec = np.ma.masked_values(
@@ -626,11 +771,13 @@ def read_intercomp_scores_ts(fname):
             csvfile.close()
 
             return (date_vec, np_vec, meanbias_vec, medianbias_vec,
-                    modebias_vec, corr_vec, slope_vec, intercep_vec,
-                    intercep_slope1_vec)
-    except EnvironmentError:
+                    quant25bias_vec, quant75bias_vec, modebias_vec, corr_vec,
+                    slope_vec, intercep_vec, intercep_slope1_vec)
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
-        return None, None, None, None, None, None, None, None, None
+        return (None, None, None, None, None, None, None, None, None, None,
+                None)
 
 
 def read_sun_hits_multiple_days(cfg, time_ref, nfiles=1):
@@ -820,7 +967,8 @@ def read_sun_hits(fname):
                     ph, ph_std, nph, nvalh, pv, pv_std, npv, nvalv,
                     zdr, zdr_std, nzdr, nvalzdr)
 
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return (None, None, None, None, None, None, None, None, None, None,
                 None, None, None, None, None, None, None, None, None)
@@ -838,9 +986,11 @@ def read_sun_retrieval(fname):
     Returns
     -------
     first_hit_time, last_hit_time, nhits_h, el_width_h, az_width_h, el_bias_h,
-    az_bias_h, dBm_sun_est, std_dBm_sun_est, nhits_v, el_width_v, az_width_v,
-    el_bias_v, az_bias_v, dBmv_sun_est, std_dBmv_sun_est, nhits_zdr,
-    zdr_sun_est, std_zdr_sun_est, dBm_sun_ref, ref_time : tupple
+    az_bias_h, dBm_sun_est, std_dBm_sun_est, sf_h,
+    nhits_v, el_width_v, az_width_v, el_bias_v, az_bias_v, dBmv_sun_est,
+    std_dBmv_sun_est, sf_v,
+    nhits_zdr, zdr_sun_est, std_zdr_sun_est,
+    sf_ref, ref_time : tupple
         Each parameter is an array containing a time series of information on
         a variable
 
@@ -859,6 +1009,7 @@ def read_sun_retrieval(fname):
             az_bias_h = np.ma.empty(nrows, dtype=float)
             dBm_sun_est = np.ma.empty(nrows, dtype=float)
             std_dBm_sun_est = np.ma.empty(nrows, dtype=float)
+            sf_h = np.ma.empty(nrows, dtype=float)
 
             nhits_v = np.empty(nrows, dtype=int)
             el_width_v = np.ma.empty(nrows, dtype=float)
@@ -867,12 +1018,13 @@ def read_sun_retrieval(fname):
             az_bias_v = np.ma.empty(nrows, dtype=float)
             dBmv_sun_est = np.ma.empty(nrows, dtype=float)
             std_dBmv_sun_est = np.ma.empty(nrows, dtype=float)
+            sf_v = np.ma.empty(nrows, dtype=float)
 
             nhits_zdr = np.empty(nrows, dtype=int)
             zdr_sun_est = np.ma.empty(nrows, dtype=float)
             std_zdr_sun_est = np.ma.empty(nrows, dtype=float)
 
-            dBm_sun_ref = np.ma.empty(nrows, dtype=float)
+            sf_ref = np.ma.empty(nrows, dtype=float)
 
             # now read the data
             csvfile.seek(0)
@@ -896,6 +1048,7 @@ def read_sun_retrieval(fname):
                 az_bias_h[i] = float(row['az_bias_h'])
                 dBm_sun_est[i] = float(row['dBm_sun_est'])
                 std_dBm_sun_est[i] = float(row['std(dBm_sun_est)'])
+                sf_h[i] = float(row['sf_h'])
 
                 nhits_v[i] = int(row['nhits_v'])
                 el_width_v[i] = float(row['el_width_v'])
@@ -904,12 +1057,13 @@ def read_sun_retrieval(fname):
                 az_bias_v[i] = float(row['az_bias_v'])
                 dBmv_sun_est[i] = float(row['dBmv_sun_est'])
                 std_dBmv_sun_est[i] = float(row['std(dBmv_sun_est)'])
+                sf_v[i] = float(row['sf_v'])
 
                 nhits_zdr[i] = int(row['nhits_zdr'])
                 zdr_sun_est[i] = float(row['ZDR_sun_est'])
                 std_zdr_sun_est[i] = float(row['std(ZDR_sun_est)'])
 
-                dBm_sun_ref[i] = float(row['dBm_sun_ref'])
+                sf_ref[i] = float(row['sf_ref'])
                 if row['ref_time'] == 'None':
                     ref_time.append(None)
                 else:
@@ -925,6 +1079,7 @@ def read_sun_retrieval(fname):
             dBm_sun_est = np.ma.masked_values(dBm_sun_est, get_fillvalue())
             std_dBm_sun_est = np.ma.masked_values(
                 std_dBm_sun_est, get_fillvalue())
+            sf_h = np.ma.masked_values(sf_h, get_fillvalue())
 
             el_width_v = np.ma.masked_values(el_width_v, get_fillvalue())
             az_width_v = np.ma.masked_values(az_width_v, get_fillvalue())
@@ -933,28 +1088,29 @@ def read_sun_retrieval(fname):
             dBmv_sun_est = np.ma.masked_values(dBmv_sun_est, get_fillvalue())
             std_dBmv_sun_est = np.ma.masked_values(
                 std_dBmv_sun_est, get_fillvalue())
+            sf_v = np.ma.masked_values(sf_v, get_fillvalue())
 
             zdr_sun_est = np.ma.masked_values(zdr_sun_est, get_fillvalue())
             std_zdr_sun_est = np.ma.masked_values(
                 std_zdr_sun_est, get_fillvalue())
 
-            dBm_sun_ref = np.ma.masked_values(dBm_sun_ref, get_fillvalue())
+            sf_ref = np.ma.masked_values(sf_ref, get_fillvalue())
 
             csvfile.close()
 
             return (first_hit_time, last_hit_time, nhits_h,
                     el_width_h, az_width_h, el_bias_h, az_bias_h,
-                    dBm_sun_est, std_dBm_sun_est,
+                    dBm_sun_est, std_dBm_sun_est, sf_h,
                     nhits_v, el_width_v, az_width_v, el_bias_v, az_bias_v,
-                    dBmv_sun_est, std_dBmv_sun_est,
-                    nhits_zdr, zdr_sun_est, std_zdr_sun_est, dBm_sun_ref,
-                    ref_time)
+                    dBmv_sun_est, std_dBmv_sun_est, sf_v,
+                    nhits_zdr, zdr_sun_est, std_zdr_sun_est, sf_ref, ref_time)
 
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return (None, None, None, None, None, None, None, None, None, None,
                 None, None, None, None, None, None, None, None, None, None,
-                None)
+                None, None, None)
 
 
 def read_solar_flux(fname):
@@ -1014,7 +1170,8 @@ def read_solar_flux(fname):
 
             return flux_datetime, flux_value
 
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return None, None
 
@@ -1117,7 +1274,7 @@ def read_smn(fname):
                 wspeed[i] = float(row['Windspeed'])
                 wdir[i] = float(row['Winddirection'])
                 i += 1
-                
+
             pressure = np.ma.masked_values(pressure, fill_value)
             temp = np.ma.masked_values(temp, fill_value)
             rh = np.ma.masked_values(rh, fill_value)
@@ -1131,7 +1288,8 @@ def read_smn(fname):
             csvfile.close()
 
             return id, date, pressure, temp, rh, precip, wspeed, wdir
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return None, None, None, None, None, None, None, None
 
@@ -1190,7 +1348,8 @@ def read_smn2(fname):
             csvfile.close()
 
             return id, date, value
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return None, None, None
 
@@ -1273,7 +1432,8 @@ def read_disdro_scattering(fname):
 
             return (date, preciptype, lwc, rr, zh, zv, zdr, ldr, ah, av,
                     adiff, kdp, deltaco, rhohv)
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return (None, None, None, None, None, None, None, None, None, None,
                 None, None, None)
@@ -1318,7 +1478,8 @@ def read_selfconsistency(fname):
             csvfile.close()
 
             return zdr_kdpzh_table
-    except EnvironmentError:
+    except EnvironmentError as ee:
+        warn(str(ee))
         warn('Unable to read file '+fname)
         return None
 
@@ -1345,7 +1506,8 @@ def read_antenna_pattern(fname, linear=False, twoway=False):
 
     try:
         pfile = open(fname, "r")
-    except:
+    except EnvironmentError as ee:
+        warn(str(ee))
         raise Exception("ERROR: Could not find|open antenna file '" +
                         fname+"'")
 
