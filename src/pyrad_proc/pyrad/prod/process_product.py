@@ -375,11 +375,11 @@ def generate_intercomp_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
         fname = make_filename(
             'colocated_data', prdcfg['dstype'], prdcfg['voltype'],
-            ['csv'], timeinfo=prdcfg['timeinfo'],
+            ['csv'], timeinfo=dataset['timeinfo'],
             timeformat='%Y%m%d')
 
         fname = savedir+fname[0]
@@ -395,11 +395,11 @@ def generate_intercomp_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
         fname = make_filename(
             'colocated_data', prdcfg['dstype'], prdcfg['voltype'],
-            ['csv'], timeinfo=prdcfg['timeinfo'],
+            ['csv'], timeinfo=dataset['timeinfo'],
             timeformat='%Y%m%d')
 
         fname = savedir+fname[0]
@@ -489,6 +489,7 @@ def generate_intercomp_products(dataset, prdcfg):
 
         csvfname = make_filename(
             'ts', prdcfg['dstype'], prdcfg['voltype'], ['csv'],
+            prdcfginfo=rad1_name+'-'+rad2_name,
             timeinfo=csvtimeinfo_file, timeformat=timeformat)[0]
 
         csvfname = savedir+csvfname
@@ -508,6 +509,11 @@ def generate_intercomp_products(dataset, prdcfg):
                 'Unable to plot time series. No valid data')
             return None
 
+        if len(date_vec) < 2:
+            warn(
+                'Unable to plot time series. Not enough points')
+            return None
+
         figtimeinfo = None
         titldate = (date_vec[0].strftime('%Y%m%d')+'-' +
                     date_vec[-1].strftime('%Y%m%d'))
@@ -518,7 +524,7 @@ def generate_intercomp_products(dataset, prdcfg):
 
         figfname = make_filename(
             'ts', prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'],
+            prdcfg['imgformat'], prdcfginfo=rad1_name+'-'+rad2_name,
             timeinfo=figtimeinfo, timeformat=timeformat)
 
         for i in range(len(figfname)):

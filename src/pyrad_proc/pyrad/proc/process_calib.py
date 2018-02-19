@@ -2120,13 +2120,17 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
     if procstatus == 0:
         savedir = dscfg['colocgatespath']+dscfg['coloc_radars_name']+'/'
 
+        prdtype = 'info'
+        if 'prdtype' in dscfg:
+            prdtype = dscfg['prdtype']
+
         fname = make_filename(
-            'info', 'COLOCATED_GATES', dscfg['coloc_radars_name'], ['csv'],
-            timeinfo=None)
+            prdtype, 'COLOCATED_GATES', dscfg['coloc_radars_name'], ['csv'],
+            timeinfo=None)[0]
 
         (rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,
          rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi, rad2_rng) = (
-            read_colocated_gates(savedir+fname[0]))
+            read_colocated_gates(savedir+fname))
 
         if rad1_ele is None:
             raise ValueError('Unable to intercompare radars. ' +
@@ -2173,6 +2177,7 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
 
         if radar1 is None or radar2 is None:
             warn('Unable to inter-compare radars. Missing radar')
+            return None, None
 
         if ((field_name not in radar1.fields) or
                 (field_name not in radar2.fields)):
@@ -2337,6 +2342,7 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
             intercomp_dict['rad2_Flagavg'] = flag2_vec
 
         new_dataset = {'intercomp_dict': intercomp_dict,
+                       'timeinfo': dscfg['global_data']['timeinfo'],
                        'final': False}
         return new_dataset, None
 
@@ -2428,13 +2434,17 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
     if procstatus == 0:
         savedir = dscfg['colocgatespath']+dscfg['coloc_radars_name']+'/'
 
+        prdtype = 'info'
+        if 'prdtype' in dscfg:
+            prdtype = dscfg['prdtype']
+
         fname = make_filename(
-            'info', 'COLOCATED_GATES', dscfg['coloc_radars_name'], ['csv'],
-            timeinfo=None)
+            prdtype, 'COLOCATED_GATES', dscfg['coloc_radars_name'], ['csv'],
+            timeinfo=None)[0]
 
         (rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,
          rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi, rad2_rng) = (
-            read_colocated_gates(savedir+fname[0]))
+            read_colocated_gates(savedir+fname))
 
         if rad1_ele is None:
             raise ValueError('Unable to intercompare radars. ' +
@@ -2498,6 +2508,7 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
 
         if radar1 is None or radar2 is None:
             warn('Unable to inter-compare radars. Missing radar')
+            return None, None
 
         if ((rad1_refl_field not in radar1.fields) or
                 (rad1_phidp_field not in radar1.fields) or
@@ -2731,6 +2742,7 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
             intercomp_dict['rad2_Flagavg'] = flag2_vec
 
         new_dataset = {'intercomp_dict': intercomp_dict,
+                       'timeinfo': dscfg['global_data']['timeinfo'],
                        'final': False}
         return new_dataset, None
 

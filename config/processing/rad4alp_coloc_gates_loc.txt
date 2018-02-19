@@ -1,0 +1,146 @@
+#
+# Configuration for PARADISO tests at the airport Payerne
+
+# Number of radars to process
+NumRadars INT 5
+
+# Time tolerance when processing multiple radars [s]
+TimeTol FLOAT 600.
+
+# rad4alp radar name
+RadarName STRARR 5
+    A
+    D
+    L
+    P
+    W
+
+# rad4alp radar range resolution L:Low H:High
+RadarRes STRARR 5
+    L
+    L
+    L
+    L
+    L
+
+path_convention STRING RT
+
+# Names of the radar scans in the specified sector
+ScanList STRARR 100
+	RADAR001:001  # masterscan: first scan of a volume
+	RADAR001:002
+	RADAR001:003
+	RADAR001:004
+	RADAR001:005
+	RADAR001:006
+	RADAR001:007
+	RADAR001:008
+	RADAR001:009
+	RADAR001:010
+	RADAR001:011
+	RADAR001:012
+	RADAR001:013
+	RADAR001:014
+	RADAR001:015
+	RADAR001:016
+	RADAR001:017
+	RADAR001:018
+	RADAR001:019
+	RADAR001:020
+    RADAR002:001  # masterscan: first scan of a volume
+	RADAR002:002
+	RADAR002:003
+	RADAR002:004
+	RADAR002:005
+	RADAR002:006
+	RADAR002:007
+	RADAR002:008
+	RADAR002:009
+	RADAR002:010
+	RADAR002:011
+	RADAR002:012
+	RADAR002:013
+	RADAR002:014
+	RADAR002:015
+	RADAR002:016
+	RADAR002:017
+	RADAR002:018
+	RADAR002:019
+	RADAR002:020
+    RADAR003:001  # masterscan: first scan of a volume
+	RADAR003:002
+	RADAR003:003
+	RADAR003:004
+	RADAR003:005
+	RADAR003:006
+	RADAR003:007
+	RADAR003:008
+	RADAR003:009
+	RADAR003:010
+	RADAR003:011
+	RADAR003:012
+	RADAR003:013
+	RADAR003:014
+	RADAR003:015
+	RADAR003:016
+	RADAR003:017
+	RADAR003:018
+	RADAR003:019
+	RADAR003:020
+    RADAR004:001  # masterscan: first scan of a volume
+	RADAR004:002
+	RADAR004:003
+	RADAR004:004
+	RADAR004:005
+	RADAR004:006
+	RADAR004:007
+	RADAR004:008
+	RADAR004:009
+	RADAR004:010
+	RADAR004:011
+	RADAR004:012
+	RADAR004:013
+	RADAR004:014
+	RADAR004:015
+	RADAR004:016
+	RADAR004:017
+	RADAR004:018
+	RADAR004:019
+	RADAR004:020
+    RADAR005:001  # masterscan: first scan of a volume
+	RADAR005:002
+	RADAR005:003
+	RADAR005:004
+	RADAR005:005
+	RADAR005:006
+	RADAR005:007
+	RADAR005:008
+	RADAR005:009
+	RADAR005:010
+	RADAR005:011
+	RADAR005:012
+	RADAR005:013
+	RADAR005:014
+	RADAR005:015
+	RADAR005:016
+	RADAR005:017
+	RADAR005:018
+	RADAR005:019
+	RADAR005:020
+
+# angles from 001 to 020
+# ['-0.2', '0.4',  '1.0',  '1.6',  '2.5',  '3.5',  '4.5',  '5.5',  '6.5',  '7.5',
+#   '8.5', '9.5', '11.0', '13.0', '16.0', '20.0', '25.0', '30.0', '35.0', '40.0']
+
+# Repetition time of the scans [min]
+ScanPeriod INT 5
+  
+## Image config
+ppiImageConfig STRUCT 7
+   xsize      FLOAT    8.   # image size [inches] (default dots per inch (dpi):72)
+   ysize      FLOAT    7.   # image size [inches] (default dots per inch (dpi):72)
+   xmin       FLOAT -200.0  # Min distance on horizontal axis [km]
+   xmax       FLOAT  200.0  # Max distance on horizontal axis [km]
+   ymin       FLOAT -200.0  # Min distance on vertical axis [km]
+   ymax       FLOAT  200.0  # Max distance on vertical axis [km]
+   rngRing    FLOAT  20.0   # distance between range rings (0 no range ring) [km]

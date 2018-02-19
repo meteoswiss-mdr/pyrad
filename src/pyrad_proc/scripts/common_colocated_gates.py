@@ -91,8 +91,13 @@ def main():
 
         # keep only duplicated data
         df_common = df[df.duplicated(keep=False)].drop_duplicates()
+        common_dict = df_common.to_dict(orient='list')
 
         print('Number of common gates', df_common.shape)
+        print('rad1 elev min/max', np.min(common_dict['rad1_ele']),
+              np.max(common_dict['rad1_ele']))
+        print('rad2 elev min/max', np.min(common_dict['rad2_ele']),
+              np.max(common_dict['rad2_ele']))
 
         # write resultant output
         fname1_out = (
@@ -102,7 +107,6 @@ def main():
             file_path+'PL'+rad2+'_'+'PL'+rad1 +
             '/info_common_COLOCATED_GATES_PL'+rad2+'_PL'+rad1+'.csv')
 
-        common_dict = df_common.to_dict(orient='list')
         rad1_dict = {
             'rad1_ray_ind': np.asarray(common_dict['rad1_ray_ind']),
             'rad1_rng_ind': np.asarray(common_dict['rad1_rng_ind']),
