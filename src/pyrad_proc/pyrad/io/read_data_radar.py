@@ -1249,8 +1249,12 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
     if cfg['path_convention'] == 'LTE':
         radar = pyrad_MCH(filename, field_names=metranet_field_names)
     else:
-        radar = pyart.aux_io.read_metranet(
-            filename, field_names=metranet_field_names, rmax=cfg['rmax'])
+        try:
+            radar = pyart.aux_io.read_metranet(
+                filename, field_names=metranet_field_names, rmax=cfg['rmax'])
+        except ValueError as ee:
+            warn("Unable to read file '"+filename+": (%s)" % str(ee))
+            return None
 
     # create secondary moments
     if ('Nh' in datatype_list) or ('Nv' in datatype_list):

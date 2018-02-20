@@ -4,14 +4,10 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 17
+dataSetList STRARR 13
     l0:H_ISO0_LOOKUP
     l0:SNRh
-    l0:PhiDPc
-    l1:dBZ_avg
-    l1:dBZv_avg
-    l1:PhiDP_avg
-    l1:flag_avg
+    l0:PhiDPc    
     l1:PhiDP0_estimation
     l1:reflectivity_bias
     l1:RhoHV_rain
@@ -71,58 +67,6 @@ PhiDPc STRUCT 8
     Zmax FLOAT 40.    
     MAKE_GLOBAL INT 1    
     
-# ==========================================================================================
-#                 temporal average
-# ==========================================================================================
-dBZ_avg STRUCT 6
-    type STRING TIME_AVG
-    datatype STRARR 1
-        RAD4ALP:dBZ
-    start_average FLOAT 0.
-    period FLOAT 3600.
-    lin_trans INT 1
-    products STRUCT 1
-        SAVEVOL STRUCT 2
-            type  STRING SAVEVOL
-            voltype STRING dBZ
-
-dBZv_avg STRUCT 6
-    type STRING TIME_AVG
-    datatype STRARR 1
-        RAD4ALP:dBZv
-    start_average FLOAT 0.
-    period FLOAT 3600.
-    lin_trans INT 1
-    products STRUCT 1
-        SAVEVOL STRUCT 2
-            type  STRING SAVEVOL
-            voltype STRING dBZv
-
-PhiDP_avg STRUCT 5
-    type STRING WEIGHTED_TIME_AVG
-    datatype STRARR 2
-        RAD4ALP:dBZ
-        PROC:PhiDPc
-    start_average FLOAT 0.
-    period FLOAT 3600.
-    products STRUCT 1
-        SAVEVOL STRUCT 2
-            type  STRING SAVEVOL
-            voltype STRING PhiDPc
-
-flag_avg STRUCT 6
-    type STRING FLAG_TIME_AVG
-    datatype STRARR 2
-        PROC:PhiDPc
-        PROC:H_ISO0
-    start_average FLOAT 0.
-    period FLOAT 3600.
-    phidpmax FLOAT 60.
-    products STRUCT 1
-        SAVEVOL STRUCT 2
-            type  STRING SAVEVOL
-            voltype STRING time_avg_flag
-
 
 # ==========================================================================================
 #                 PhiDP0

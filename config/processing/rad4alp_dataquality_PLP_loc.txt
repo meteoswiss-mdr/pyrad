@@ -15,6 +15,9 @@ RadarRes STRING	L
 
 path_convention STRING RT
 
+# maximum radar range [m]
+rmax FLOAT 50000.
+
 # Names of the radar scans in the specified sector
 ScanList STRARR 20
 	  001  # masterscan: first scan of a volume
