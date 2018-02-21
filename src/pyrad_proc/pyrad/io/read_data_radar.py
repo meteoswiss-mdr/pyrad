@@ -1414,7 +1414,8 @@ def add_field(radar_dest, radar_orig):
     return radar_dest
 
 
-def interpol_field(radar_dest, radar_orig, field_name, fill_value=None):
+def interpol_field(radar_dest, radar_orig, field_name, fill_value=None,
+                   ang_tol=0.5):
     """
     interpolates field field_name contained in radar_orig to the grid in
     radar_dest
@@ -1427,6 +1428,11 @@ def interpol_field(radar_dest, radar_orig, field_name, fill_value=None):
         the radar object containing the original field
     field_name: str
         name of the field to interpolate
+    fill_value: float
+        The fill value
+    ang_tol : float
+        angle tolerance to determine whether the radar origin sweep is the
+        radar destination sweep
 
     Returns
     -------
@@ -1434,6 +1440,11 @@ def interpol_field(radar_dest, radar_orig, field_name, fill_value=None):
         interpolated field and metadata
 
     """
+    if radar_dest.nsweeps != radar_orig.nsweeps:
+        warn('Number of sweeps in destination radar object different from ' +
+             'origin radar object. Orig: '+str(radar_orig.nsweeps) +
+             ' Dest : '+str(radar_dest.nsweeps))
+
     if fill_value is None:
         fill_value = pyart.config.get_fillvalue()
 
@@ -1444,41 +1455,58 @@ def interpol_field(radar_dest, radar_orig, field_name, fill_value=None):
     field_dest['data'][:] = np.ma.masked
 
     for sweep in range(radar_dest.nsweeps):
-        sweep_start_orig = radar_orig.sweep_start_ray_index['data'][sweep]
-        sweep_end_orig = radar_orig.sweep_end_ray_index['data'][sweep]
-
         sweep_start_dest = radar_dest.sweep_start_ray_index['data'][sweep]
         sweep_end_dest = radar_dest.sweep_end_ray_index['data'][sweep]
+        fixed_angle = radar_dest.fixed_angle['data'][sweep]
+        nrays_sweep = radar_dest.rays_per_sweep['data'][sweep]
 
-        if radar_dest.scan_type == 'ppi':
-            angle_old = np.sort(radar_orig.azimuth['data'][
-                sweep_start_orig:sweep_end_orig+1])
-            ind_ang = np.argsort(radar_orig.azimuth['data'][
-                sweep_start_orig:sweep_end_orig+1])
-            angle_new = radar_dest.azimuth['data'][
-                sweep_start_dest:sweep_end_dest+1]
-        elif radar_dest.scan_type == 'rhi':
-            angle_old = np.sort(radar_orig.elevation['data'][
-                sweep_start_orig:sweep_end_orig+1])
-            ind_ang = np.argsort(radar_orig.azimuth['data'][
-                sweep_start_orig:sweep_end_orig+1])
-            angle_new = radar_dest.elevation['data'][
-                sweep_start_dest:sweep_end_dest+1]
+        # look for nearest angle
+        delta_ang = np.absolute(radar_orig.fixed_angle['data']-fixed_angle)
+        ind_sweep_orig = np.argmin(delta_ang)
 
-        field_orig_sweep_data = field_orig_data[
-            sweep_start_orig:sweep_end_orig+1, :]
-        interpol_func = RegularGridInterpolator(
-            (angle_old, radar_orig.range['data']),
-            field_orig_sweep_data[ind_ang], method='nearest',
-            bounds_error=False, fill_value=fill_value)
+        if delta_ang[ind_sweep_orig] > ang_tol:
+            warn('No fixed angle of origin radar object matches the fixed ' +
+                 'angle of destination radar object for sweep nr ' +
+                 str(sweep)+' with fixed angle '+str(fixed_angle)+'+/-' +
+                 str(ang_tol))
+            field_dest_sweep = np.ma.empty((nrays_sweep, radar_dest.ngates),
+                                           dtype=float)
+            field_dest_sweep[:] = np.ma.masked
+        else:
+            sweep_start_orig = radar_orig.sweep_start_ray_index['data'][
+                ind_sweep_orig]
+            sweep_end_orig = radar_orig.sweep_end_ray_index['data'][
+                ind_sweep_orig]
 
-        # interpolate data to radar_dest grid
-        angv, rngv = np.meshgrid(
-            angle_new, radar_dest.range['data'], indexing='ij')
+            if radar_dest.scan_type == 'ppi':
+                angle_old = np.sort(radar_orig.azimuth['data'][
+                    sweep_start_orig:sweep_end_orig+1])
+                ind_ang = np.argsort(radar_orig.azimuth['data'][
+                    sweep_start_orig:sweep_end_orig+1])
+                angle_new = radar_dest.azimuth['data'][
+                    sweep_start_dest:sweep_end_dest+1]
+            elif radar_dest.scan_type == 'rhi':
+                angle_old = np.sort(radar_orig.elevation['data'][
+                    sweep_start_orig:sweep_end_orig+1])
+                ind_ang = np.argsort(radar_orig.elevation['data'][
+                    sweep_start_orig:sweep_end_orig+1])
+                angle_new = radar_dest.elevation['data'][
+                    sweep_start_dest:sweep_end_dest+1]
 
-        field_dest_sweep = interpol_func((angv, rngv))
-        field_dest_sweep = np.ma.masked_where(
-            field_dest_sweep == fill_value, field_dest_sweep)
+            field_orig_sweep_data = field_orig_data[
+                sweep_start_orig:sweep_end_orig+1, :]
+            interpol_func = RegularGridInterpolator(
+                (angle_old, radar_orig.range['data']),
+                field_orig_sweep_data[ind_ang], method='nearest',
+                bounds_error=False, fill_value=fill_value)
+
+            # interpolate data to radar_dest grid
+            angv, rngv = np.meshgrid(
+                angle_new, radar_dest.range['data'], indexing='ij')
+
+            field_dest_sweep = interpol_func((angv, rngv))
+            field_dest_sweep = np.ma.masked_where(
+                field_dest_sweep == fill_value, field_dest_sweep)
 
         field_dest['data'][sweep_start_dest:sweep_end_dest+1, :] = (
             field_dest_sweep)
