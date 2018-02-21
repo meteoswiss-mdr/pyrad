@@ -104,7 +104,7 @@ def get_save_dir(basepath, procname, dsname, prdname, timeinfo=None,
     if timeinfo is None:
         savedir = basepath+procname+'/'+dsname+'/'+prdname+'/'
     else:
-        daydir = timeinfo.strftime('%Y-%m-%d')
+        daydir = timeinfo.strftime(timeformat)
         savedir = basepath+procname+'/'+daydir+'/'+dsname+'/'+prdname+'/'
 
     if create_dir is False:
@@ -157,7 +157,7 @@ def make_filename(prdtype, dstype, dsname, ext, prdcfginfo=None,
     else:
         cfgstr = '_' + prdcfginfo
 
-    if runinfo is None:
+    if runinfo is None or runinfo == '':
         runstr = ''
     else:
         runstr = runinfo + '_'
@@ -558,7 +558,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
                     datapath = cfg['datapath'][ind_rad] + subf + '/'
                     basename = ('P'+cfg['RadarRes'][ind_rad] +
                                 cfg['RadarName'][ind_rad]+dayinfo)
-            else:
+            elif cfg['path_convention'] == 'MCH':
                 datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
 
                 # check that M files exist. if not search P files
@@ -568,6 +568,20 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
                                 cfg['RadarName'][ind_rad]+dayinfo)
                     datapath = (cfg['datapath'][ind_rad]+dayinfo+'/' +
                                 basename+'/')
+            else:
+                datapath = (
+                    cfg['datapath'][ind_rad]+'M'+cfg['RadarRes'][ind_rad] +
+                    cfg['RadarName'][ind_rad]+'/')
+
+                # check that M files exist. if not search P files
+                dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
+                if len(dayfilelist) == 0:
+                    basename = ('P'+cfg['RadarRes'][ind_rad] +
+                                cfg['RadarName'][ind_rad]+dayinfo)
+                    datapath = (
+                        cfg['datapath'][ind_rad]+'P'+cfg['RadarRes'][ind_rad] +
+                        cfg['RadarName'][ind_rad]+'/')
+
             if (not os.path.isdir(datapath)):
                 warn("WARNING: Unknown datapath '%s'" % datapath)
                 continue
@@ -783,11 +797,13 @@ def get_dataset_fields(datasetdescr):
     """
     descrfields = datasetdescr.split(':')
     if len(descrfields) == 1:
-        proclevel = 'l0'
+        proclevel = 'l00'
         dataset = descrfields[0]
     else:
         proclevel = descrfields[0]
         dataset = descrfields[1]
+        if len(proclevel) == 2:
+            proclevel = proclevel[0]+'0'+proclevel[1]
 
     return proclevel, dataset
 
@@ -970,7 +986,10 @@ def find_hzt_file(voltime, cfg, ind_rad=0):
         runtimestr = runtime.strftime('%y%j%H00')
 
         daydir = runtime.strftime('%y%j')
-        datapath = cfg['cosmopath'][ind_rad]+'HZT/'+daydir+'/'
+        if cfg['path_convention'] == 'RT':
+            datapath = cfg['cosmopath'][ind_rad]+'HZT/'
+        else:
+            datapath = cfg['cosmopath'][ind_rad]+'HZT/'+daydir+'/'
         search_name = datapath+'HZT'+runtimestr+'0L.8'+'{:02d}'.format(
             target_hour)
 

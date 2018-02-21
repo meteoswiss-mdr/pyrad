@@ -299,15 +299,19 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
                  str(fzl)+' m')
 
     if dscfg['initialized'] == 0:
+        # get frequency band
+        freq_band = pyart.retrieve.get_freq_band(
+            radar.instrument_parameters['frequency']['data'][0])
+
         # find unique elevations
         el_vec = np.unique(
-            (10.*radar.elevation['data'].astype(int)).astype(int))
+            (10.*np.round(radar.elevation['data'], decimals=1)).astype(int))
         zdr_kdpzh_list = list()
         el_list = list()
         for i in range(len(el_vec)):
             fname = (
                 dscfg['configpath'] + 'selfconsistency/' +
-                'selfconsistency_zdr_zhkdp_Xband_temp10_elev' +
+                'selfconsistency_zdr_zhkdp_'+freq_band+'band_temp10_elev' +
                 '{:03d}'.format(el_vec[i])+'_mu05.txt')
             zdr_kdpzh_table = read_selfconsistency(fname)
             if zdr_kdpzh_table is not None:
@@ -436,6 +440,8 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
             rhohv = 'cross_correlation_ratio'
         if datatype == 'RhoHVc':
             rhohv = 'corrected_cross_correlation_ratio'
+        if datatype == 'uRhoHV':
+            rhohv = 'uncorrected_cross_correlation_ratio'
 
     ind_rad = int(radarnr[5:8])-1
     if radar_list[ind_rad] is None:
@@ -481,15 +487,19 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
                  str(fzl)+' m')
 
     if dscfg['initialized'] == 0:
+        # get frequency band
+        freq_band = pyart.retrieve.get_freq_band(
+            radar.instrument_parameters['frequency']['data'][0])
+
         # find unique elevations
         el_vec = np.unique(
-            (10.*radar.elevation['data'].astype(int)).astype(int))
+            (10.*np.round(radar.elevation['data'], decimals=1)).astype(int))
         zdr_kdpzh_list = list()
         el_list = list()
         for i in range(len(el_vec)):
             fname = (
                 dscfg['configpath'] + 'selfconsistency/' +
-                'selfconsistency_zdr_zhkdp_Xband_temp10_elev' +
+                'selfconsistency_zdr_zhkdp_'+freq_band+'band_temp10_elev' +
                 '{:03d}'.format(el_vec[i])+'_mu05.txt')
             zdr_kdpzh_table = read_selfconsistency(fname)
             if zdr_kdpzh_table is not None:
@@ -690,6 +700,8 @@ def process_rhohv_rain(procstatus, dscfg, radar_list=None):
             rhohv_field = 'cross_correlation_ratio'
         if datatype == 'RhoHVc':
             rhohv_field = 'corrected_cross_correlation_ratio'
+        if datatype == 'uRhoHV':
+            rhohv_field = 'uncorrected_cross_correlation_ratio'
         if datatype == 'dBZc':
             refl_field = 'corrected_reflectivity'
         if datatype == 'dBZ':
@@ -851,6 +863,8 @@ def process_zdr_precip(procstatus, dscfg, radar_list=None):
             rhohv_field = 'cross_correlation_ratio'
         if datatype == 'RhoHVc':
             rhohv_field = 'corrected_cross_correlation_ratio'
+        if datatype == 'uRhoHV':
+            rhohv_field = 'uncorrected_cross_correlation_ratio'
         if datatype == 'dBZc':
             refl_field = 'corrected_reflectivity'
         if datatype == 'dBZ':
@@ -1043,6 +1057,8 @@ def process_zdr_snow(procstatus, dscfg, radar_list=None):
             rhohv_field = 'cross_correlation_ratio'
         if datatype == 'RhoHVc':
             rhohv_field = 'corrected_cross_correlation_ratio'
+        if datatype == 'uRhoHV':
+            rhohv_field = 'uncorrected_cross_correlation_ratio'
         if datatype == 'dBZc':
             refl_field = 'corrected_reflectivity'
         if datatype == 'dBZ':
@@ -1070,7 +1086,8 @@ def process_zdr_snow(procstatus, dscfg, radar_list=None):
             (rhohv_field not in radar.fields) or
             (zdr_field not in radar.fields) or
             (phidp_field not in radar.fields) or
-            (snr_field not in radar.fields)):
+            (snr_field not in radar.fields) or
+            (hydro_field not in radar.fields)):
         warn('Unable to estimate ZDR in snow. Missing data')
         return None, None
 
@@ -1650,6 +1667,7 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
     temp_name = None
     hydro_name = None
     iso0_name = None
+    echo_name = None
     for datatypedescr in dscfg['datatype']:
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
@@ -1694,14 +1712,15 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
             phidp_field = radar.fields[phidp_name]
             time_avg_flag['data'][phidp_field['data'] > phidpmax] += 1
 
-        if echo_name not in radar.fields:
-            warn('Missing echo ID data')
-            time_avg_flag['data'] += 100
-        else:
-            echo_field = radar.fields[echo_name]
-            time_avg_flag['data'][echo_field['data'] == 2] += 100
+        if echo_name is not None:
+            if echo_name not in radar.fields:
+                warn('Missing echo ID data')
+                time_avg_flag['data'] += 100
+            else:
+                echo_field = radar.fields[echo_name]
+                time_avg_flag['data'][echo_field['data'] == 2] += 100
 
-        if hydro_name is not None:
+        if hydro_name is not None and echo_name is not None:
             if ((hydro_name not in radar.fields) or
                     (echo_name not in radar.fields)):
                 warn('Missing hydrometeor classification data')
@@ -1728,12 +1747,12 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
                     warn('Unknown radar antenna beamwidth.')
                     beamwidth = None
 
-                mask_fzl, end_gate_arr = get_mask_fzl(
+                mask_fzl, end_gate_arr = pyart.correct.get_mask_fzl(
                     radar, fzl=None, doc=None, min_temp=0., max_h_iso0=0.,
                     thickness=700., beamwidth=beamwidth,
                     temp_field=temp_name, iso0_field=iso0_name,
                     temp_ref='temperature')
-                time_avg_flag['data'][mask] += 10000
+                time_avg_flag['data'][mask_fzl] += 10000
         elif iso0_name is not None:
             if iso0_name not in radar.fields:
                 warn('Missing height relative to iso0 data')
@@ -1747,12 +1766,12 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
                     warn('Unknown radar antenna beamwidth.')
                     beamwidth = None
 
-                mask_fzl, end_gate_arr = get_mask_fzl(
+                mask_fzl, end_gate_arr = pyart.correct.get_mask_fzl(
                     radar, fzl=None, doc=None, min_temp=0., max_h_iso0=0.,
                     thickness=700., beamwidth=beamwidth,
                     temp_field=temp_name, iso0_field=iso0_name,
                     temp_ref='height_over_iso0')
-                time_avg_flag['data'][mask] += 10000
+                time_avg_flag['data'][mask_fzl] += 10000
 
         radar_aux = deepcopy(radar)
         radar_aux.fields = dict()
@@ -1928,6 +1947,14 @@ def process_colocated_gates(procstatus, dscfg, radar_list=None):
     radar1 = radar_list[ind_radar_list[0]]
     radar2 = radar_list[ind_radar_list[1]]
 
+    if radar1 is None or radar2 is None:
+        warn('Unable to inter-compare radars. Missing radar')
+
+    if 'instrument_name' in radar1.metadata:
+        print('Radar 1: '+radar1.metadata['instrument_name'])
+    if 'instrument_name' in radar2.metadata:
+        print('Radar 2: '+radar2.metadata['instrument_name'])
+
     coloc_gates_field = 'colocated_gates'
 
     h_tol = 100.
@@ -1990,6 +2017,11 @@ def process_colocated_gates(procstatus, dscfg, radar_list=None):
     if 'visibility' in radarnr_dict['RADAR'+'{:03d}'.format(
             ind_radar_list[0]+1)]:
         visib_field = 'visibility'
+    if vismin is not None and visib_field is None:
+        warn('Unable to filter data according to visibility. ' +
+             'Visibility field for RADAR'+'{:03d}'.format(
+                ind_radar_list[0]+1)+' not available')
+
     gate_coloc_rad1_dict = pyart.util.intersection(
         radar1, radar2,
         h_tol=h_tol, latlon_tol=latlon_tol, vol_d_tol=vol_d_tol,
@@ -2001,6 +2033,12 @@ def process_colocated_gates(procstatus, dscfg, radar_list=None):
     if 'visibility' in radarnr_dict['RADAR'+'{:03d}'.format(
             ind_radar_list[1]+1)]:
         visib_field = 'visibility'
+
+    if vismin is not None and visib_field is None:
+        warn('Unable to filter data according to visibility. ' +
+             'Visibility field for RADAR'+'{:03d}'.format(
+                ind_radar_list[1]+1)+' not available')
+
     gate_coloc_rad2_dict = pyart.util.intersection(
         radar2, radar1,
         h_tol=h_tol, latlon_tol=latlon_tol, vol_d_tol=vol_d_tol,
@@ -2082,21 +2120,30 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
     if procstatus == 0:
         savedir = dscfg['colocgatespath']+dscfg['coloc_radars_name']+'/'
 
-        fname = make_filename(
-            'info', 'COLOCATED_GATES', dscfg['coloc_radars_name'], ['csv'],
-            timeinfo=None)
+        prdtype = 'info'
+        if 'prdtype' in dscfg:
+            prdtype = dscfg['prdtype']
 
-        (rad1_ele, rad1_azi, rad1_rng,
-         rad2_ele, rad2_azi, rad2_rng) = read_colocated_gates(savedir+fname[0])
+        fname = make_filename(
+            prdtype, 'COLOCATED_GATES', dscfg['coloc_radars_name'], ['csv'],
+            timeinfo=None)[0]
+
+        (rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,
+         rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi, rad2_rng) = (
+            read_colocated_gates(savedir+fname))
 
         if rad1_ele is None:
             raise ValueError('Unable to intercompare radars. ' +
                              'Missing colocated gates file')
 
         dscfg['global_data'] = {
+            'rad1_ray_ind': rad1_ray_ind,
+            'rad1_rng_ind': rad1_rng_ind,
             'rad1_ele': rad1_ele,
             'rad1_azi': rad1_azi,
             'rad1_rng': rad1_rng,
+            'rad2_ray_ind': rad2_ray_ind,
+            'rad2_rng_ind': rad2_rng_ind,
             'rad2_ele': rad2_ele,
             'rad2_azi': rad2_azi,
             'rad2_rng': rad2_rng}
@@ -2128,6 +2175,10 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
         radar1 = radar_list[ind_radar_list[0]]
         radar2 = radar_list[ind_radar_list[1]]
 
+        if radar1 is None or radar2 is None:
+            warn('Unable to inter-compare radars. Missing radar')
+            return None, None
+
         if ((field_name not in radar1.fields) or
                 (field_name not in radar2.fields)):
             warn('Unable to get values of field '+field_name +
@@ -2146,22 +2197,15 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
         rad1_field = radar1.fields[field_name]['data']
         rad2_field = radar2.fields[field_name]['data']
 
-        azi_tol = 0.5
-        ele_tol = 0.5
-        rng_tol = 50.
-
-        if 'azi_tol' in dscfg:
-            azi_tol = dscfg['azi_tol']
-        if 'ele_tol' in dscfg:
-            ele_tol = dscfg['ele_tol']
-        if 'rng_tol' in dscfg:
-            rng_tol = dscfg['rng_tol']
-
         intercomp_dict = {
+            'rad1_ray_ind': [],
+            'rad1_rng_ind': [],
             'rad1_ele': [],
             'rad1_azi': [],
             'rad1_rng': [],
             'rad1_val': [],
+            'rad2_ray_ind': [],
+            'rad2_rng_ind': [],
             'rad2_ele': [],
             'rad2_azi': [],
             'rad2_rng': [],
@@ -2171,74 +2215,134 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
         avg_rad1, avg_rad2, avg_rad_lim = get_range_bins_to_avg(
             radar1.range['data'], radar2.range['data'])
 
-        for i in range(len(dscfg['global_data']['rad1_ele'])):
-            ind_ray_rad1 = find_ray_index(
-                radar1.elevation['data'], radar1.azimuth['data'],
-                dscfg['global_data']['rad1_ele'][i],
-                dscfg['global_data']['rad1_azi'][i],
-                ele_tol=ele_tol, azi_tol=azi_tol)
-            if ind_ray_rad1 is None:
-                continue
-            ind_rng_rad1 = find_rng_index(
-                radar1.range['data'], dscfg['global_data']['rad1_rng'][i],
-                rng_tol=rng_tol)
-            if ind_rng_rad1 is None:
-                continue
+        # rays are indexed to regular grid
+        rays_are_indexed = False
+        if 'rays_are_indexed' in dscfg:
+            rays_are_indexed = dscfg['rays_are_indexed']
 
-            ind_ray_rad2 = find_ray_index(
-                radar2.elevation['data'], radar2.azimuth['data'],
-                dscfg['global_data']['rad2_ele'][i],
-                dscfg['global_data']['rad2_azi'][i],
-                ele_tol=ele_tol, azi_tol=azi_tol)
-            if ind_ray_rad2 is None:
-                continue
-            ind_rng_rad2 = find_rng_index(
-                radar2.range['data'], dscfg['global_data']['rad2_rng'][i],
-                rng_tol=rng_tol)
-            if ind_rng_rad2 is None:
-                continue
+        if not rays_are_indexed:
+            azi_tol = 0.5
+            ele_tol = 0.5
+            rng_tol = 50.
 
-            val1 = np.ma.asarray(rad1_field[ind_ray_rad1, ind_rng_rad1])
-            val2 = np.ma.asarray(rad2_field[ind_ray_rad2, ind_rng_rad2])
-            if avg_rad1:
-                if (ind_rng_rad1+avg_rad_lim[1] >= radar1.ngates or
-                        ind_rng_rad1+avg_rad_lim[0] < 0):
+            if 'azi_tol' in dscfg:
+                azi_tol = dscfg['azi_tol']
+            if 'ele_tol' in dscfg:
+                ele_tol = dscfg['ele_tol']
+            if 'rng_tol' in dscfg:
+                rng_tol = dscfg['rng_tol']
+
+            for i in range(len(dscfg['global_data']['rad1_ele'])):
+                ind_ray_rad1 = find_ray_index(
+                    radar1.elevation['data'], radar1.azimuth['data'],
+                    dscfg['global_data']['rad1_ele'][i],
+                    dscfg['global_data']['rad1_azi'][i],
+                    ele_tol=ele_tol, azi_tol=azi_tol)
+                if ind_ray_rad1 is None:
                     continue
-                ind_rng = list(range(
-                    ind_rng_rad1+avg_rad_lim[0],
-                    ind_rng_rad1+avg_rad_lim[1]+1))
-                val1 = np.ma.asarray(np.ma.mean(
-                    rad1_field[ind_ray_rad1, ind_rng]))
-            elif avg_rad2:
-                if (ind_rng_rad2+avg_rad_lim[1] >= radar2.ngates or
-                        ind_rng_rad2+avg_rad_lim[0] < 0):
+                ind_rng_rad1 = find_rng_index(
+                    radar1.range['data'], dscfg['global_data']['rad1_rng'][i],
+                    rng_tol=rng_tol)
+                if ind_rng_rad1 is None:
                     continue
-                ind_rng = list(range(
-                    ind_rng_rad2+avg_rad_lim[0],
-                    ind_rng_rad2+avg_rad_lim[1]+1))
-                val2 = np.ma.asarray(np.ma.mean(
-                    rad2_field[ind_ray_rad2, ind_rng]))
 
-            if val1.mask or val2.mask:
-                continue
+                ind_ray_rad2 = find_ray_index(
+                    radar2.elevation['data'], radar2.azimuth['data'],
+                    dscfg['global_data']['rad2_ele'][i],
+                    dscfg['global_data']['rad2_azi'][i],
+                    ele_tol=ele_tol, azi_tol=azi_tol)
+                if ind_ray_rad2 is None:
+                    continue
+                ind_rng_rad2 = find_rng_index(
+                    radar2.range['data'], dscfg['global_data']['rad2_rng'][i],
+                    rng_tol=rng_tol)
+                if ind_rng_rad2 is None:
+                    continue
 
-            intercomp_dict['rad1_ele'].append(
-                radar1.elevation['data'][ind_ray_rad1])
-            intercomp_dict['rad1_azi'].append(
-                radar1.azimuth['data'][ind_ray_rad1])
-            intercomp_dict['rad1_rng'].append(
-                radar1.range['data'][ind_rng_rad1])
-            intercomp_dict['rad1_val'].append(val1)
+                val1 = np.ma.asarray(rad1_field[ind_ray_rad1, ind_rng_rad1])
+                val2 = np.ma.asarray(rad2_field[ind_ray_rad2, ind_rng_rad2])
+                if avg_rad1:
+                    if (ind_rng_rad1+avg_rad_lim[1] >= radar1.ngates or
+                            ind_rng_rad1+avg_rad_lim[0] < 0):
+                        continue
+                    ind_rng = list(range(
+                        ind_rng_rad1+avg_rad_lim[0],
+                        ind_rng_rad1+avg_rad_lim[1]+1))
+                    val1 = np.ma.asarray(np.ma.mean(
+                        rad1_field[ind_ray_rad1, ind_rng]))
+                elif avg_rad2:
+                    if (ind_rng_rad2+avg_rad_lim[1] >= radar2.ngates or
+                            ind_rng_rad2+avg_rad_lim[0] < 0):
+                        continue
+                    ind_rng = list(range(
+                        ind_rng_rad2+avg_rad_lim[0],
+                        ind_rng_rad2+avg_rad_lim[1]+1))
+                    val2 = np.ma.asarray(np.ma.mean(
+                        rad2_field[ind_ray_rad2, ind_rng]))
 
-            intercomp_dict['rad2_ele'].append(
-                radar2.elevation['data'][ind_ray_rad2])
-            intercomp_dict['rad2_azi'].append(
-                radar2.azimuth['data'][ind_ray_rad2])
-            intercomp_dict['rad2_rng'].append(
-                radar2.range['data'][ind_rng_rad2])
-            intercomp_dict['rad2_val'].append(val2)
+                if val1.mask or val2.mask:
+                    continue
+
+                intercomp_dict['rad1_ray_ind'].append(ind_ray_rad1)
+                intercomp_dict['rad1_rng_ind'].append(ind_rng_rad1)
+                intercomp_dict['rad1_ele'].append(
+                    radar1.elevation['data'][ind_ray_rad1])
+                intercomp_dict['rad1_azi'].append(
+                    radar1.azimuth['data'][ind_ray_rad1])
+                intercomp_dict['rad1_rng'].append(
+                    radar1.range['data'][ind_rng_rad1])
+                intercomp_dict['rad1_val'].append(val1)
+
+                intercomp_dict['rad2_ray_ind'].append(ind_ray_rad2)
+                intercomp_dict['rad2_rng_ind'].append(ind_rng_rad2)
+                intercomp_dict['rad2_ele'].append(
+                    radar2.elevation['data'][ind_ray_rad2])
+                intercomp_dict['rad2_azi'].append(
+                    radar2.azimuth['data'][ind_ray_rad2])
+                intercomp_dict['rad2_rng'].append(
+                    radar2.range['data'][ind_rng_rad2])
+                intercomp_dict['rad2_val'].append(val2)
+        else:
+            rad1_ray_ind = deepcopy(dscfg['global_data']['rad1_ray_ind'])
+            rad1_rng_ind = deepcopy(dscfg['global_data']['rad1_rng_ind'])
+            rad2_ray_ind = deepcopy(dscfg['global_data']['rad2_ray_ind'])
+            rad2_rng_ind = deepcopy(dscfg['global_data']['rad2_rng_ind'])
+
+            val1_vec = rad1_field[rad1_ray_ind, rad1_rng_ind]
+            val2_vec = rad2_field[rad1_ray_ind, rad1_rng_ind]
+
+            mask_val1 = np.ma.getmaskarray(val1_vec)
+            mask_val2 = np.ma.getmaskarray(val2_vec)
+
+            isvalid = np.logical_not(np.logical_and(mask_val1, mask_val2))
+
+            val1_vec = val1_vec[isvalid]
+            val2_vec = val2_vec[isvalid]
+            rad1_ray_ind = rad1_ray_ind[isvalid]
+            rad1_rng_ind = rad1_rng_ind[isvalid]
+            rad2_ray_ind = rad2_ray_ind[isvalid]
+            rad2_rng_ind = rad2_rng_ind[isvalid]
+
+            intercomp_dict['rad1_ray_ind'] = rad1_ray_ind
+            intercomp_dict['rad1_rng_ind'] = rad1_rng_ind
+            intercomp_dict['rad1_ele'] = radar1.elevation['data'][rad1_ray_ind]
+            intercomp_dict['rad1_azi'] = radar1.azimuth['data'][rad1_ray_ind]
+            intercomp_dict['rad1_rng'] = radar1.range['data'][rad1_rng_ind]
+            intercomp_dict['rad1_dBZavg'] = refl1_vec
+            intercomp_dict['rad1_PhiDPavg'] = phidp1_vec
+            intercomp_dict['rad1_Flagavg'] = flag1_vec
+
+            intercomp_dict['rad2_ray_ind'] = rad2_ray_ind
+            intercomp_dict['rad2_rng_ind'] = rad2_rng_ind
+            intercomp_dict['rad2_ele'] = radar2.elevation['data'][rad2_ray_ind]
+            intercomp_dict['rad2_azi'] = radar2.azimuth['data'][rad2_ray_ind]
+            intercomp_dict['rad2_rng'] = radar2.range['data'][rad2_rng_ind]
+            intercomp_dict['rad2_dBZavg'] = refl2_vec
+            intercomp_dict['rad2_PhiDPavg'] = phidp2_vec
+            intercomp_dict['rad2_Flagavg'] = flag2_vec
 
         new_dataset = {'intercomp_dict': intercomp_dict,
+                       'timeinfo': dscfg['global_data']['timeinfo'],
                        'final': False}
         return new_dataset, None
 
@@ -2258,15 +2362,19 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
 
         intercomp_dict = {
             'rad1_name': dscfg['global_data']['rad1_name'],
-            'rad1_ele': coloc_data[0],
-            'rad1_azi': coloc_data[1],
-            'rad1_rng': coloc_data[2],
-            'rad1_val': coloc_data[3],
+            'rad1_ray_ind': coloc_data[0],
+            'rad1_rng_ind': coloc_data[1],
+            'rad1_ele': coloc_data[2],
+            'rad1_azi': coloc_data[3],
+            'rad1_rng': coloc_data[4],
+            'rad1_val': coloc_data[5],
             'rad2_name': dscfg['global_data']['rad2_name'],
-            'rad2_ele': coloc_data[4],
-            'rad2_azi': coloc_data[5],
-            'rad2_rng': coloc_data[6],
-            'rad2_val': coloc_data[7]}
+            'rad2_ray_ind': coloc_data[6],
+            'rad2_rng_ind': coloc_data[7],
+            'rad2_ele': coloc_data[8],
+            'rad2_azi': coloc_data[9],
+            'rad2_rng': coloc_data[10],
+            'rad2_val': coloc_data[11]}
 
         new_dataset = {'intercomp_dict': intercomp_dict,
                        'timeinfo': dscfg['global_data']['timeinfo'],
@@ -2326,21 +2434,30 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
     if procstatus == 0:
         savedir = dscfg['colocgatespath']+dscfg['coloc_radars_name']+'/'
 
-        fname = make_filename(
-            'info', 'COLOCATED_GATES', dscfg['coloc_radars_name'], ['csv'],
-            timeinfo=None)
+        prdtype = 'info'
+        if 'prdtype' in dscfg:
+            prdtype = dscfg['prdtype']
 
-        (rad1_ele, rad1_azi, rad1_rng,
-         rad2_ele, rad2_azi, rad2_rng) = read_colocated_gates(savedir+fname[0])
+        fname = make_filename(
+            prdtype, 'COLOCATED_GATES', dscfg['coloc_radars_name'], ['csv'],
+            timeinfo=None)[0]
+
+        (rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,
+         rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi, rad2_rng) = (
+            read_colocated_gates(savedir+fname))
 
         if rad1_ele is None:
             raise ValueError('Unable to intercompare radars. ' +
                              'Missing colocated gates file')
 
         dscfg['global_data'] = {
+            'rad1_ray_ind': rad1_ray_ind,
+            'rad1_rng_ind': rad1_rng_ind,
             'rad1_ele': rad1_ele,
             'rad1_azi': rad1_azi,
             'rad1_rng': rad1_rng,
+            'rad2_ray_ind': rad2_ray_ind,
+            'rad2_rng_ind': rad2_rng_ind,
             'rad2_ele': rad2_ele,
             'rad2_azi': rad2_azi,
             'rad2_rng': rad2_rng}
@@ -2389,6 +2506,10 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
         radar1 = radar_list[ind_radar_list[0]]
         radar2 = radar_list[ind_radar_list[1]]
 
+        if radar1 is None or radar2 is None:
+            warn('Unable to inter-compare radars. Missing radar')
+            return None, None
+
         if ((rad1_refl_field not in radar1.fields) or
                 (rad1_phidp_field not in radar1.fields) or
                 (rad1_flag_field not in radar1.fields) or
@@ -2416,24 +2537,17 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
         flag1 = radar1.fields[rad1_flag_field]['data']
         flag2 = radar2.fields[rad2_flag_field]['data']
 
-        azi_tol = 0.5
-        ele_tol = 0.5
-        rng_tol = 50.
-
-        if 'azi_tol' in dscfg:
-            azi_tol = dscfg['azi_tol']
-        if 'ele_tol' in dscfg:
-            ele_tol = dscfg['ele_tol']
-        if 'rng_tol' in dscfg:
-            rng_tol = dscfg['rng_tol']
-
         intercomp_dict = {
+            'rad1_ray_ind': [],
+            'rad1_rng_ind': [],
             'rad1_ele': [],
             'rad1_azi': [],
             'rad1_rng': [],
             'rad1_dBZavg': [],
             'rad1_PhiDPavg': [],
             'rad1_Flagavg': [],
+            'rad2_ray_ind': [],
+            'rad2_rng_ind': [],
             'rad2_ele': [],
             'rad2_azi': [],
             'rad2_rng': [],
@@ -2445,117 +2559,190 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
         avg_rad1, avg_rad2, avg_rad_lim = get_range_bins_to_avg(
             radar1.range['data'], radar2.range['data'])
 
-        for i in range(len(dscfg['global_data']['rad1_ele'])):
-            ind_ray_rad1 = find_ray_index(
-                radar1.elevation['data'], radar1.azimuth['data'],
-                dscfg['global_data']['rad1_ele'][i],
-                dscfg['global_data']['rad1_azi'][i],
-                ele_tol=ele_tol, azi_tol=azi_tol)
-            if ind_ray_rad1 is None:
-                continue
-            ind_rng_rad1 = find_rng_index(
-                radar1.range['data'], dscfg['global_data']['rad1_rng'][i],
-                rng_tol=rng_tol)
-            if ind_rng_rad1 is None:
-                continue
+        # rays are indexed to regular grid
+        rays_are_indexed = False
+        if 'rays_are_indexed' in dscfg:
+            rays_are_indexed = dscfg['rays_are_indexed']
 
-            ind_ray_rad2 = find_ray_index(
-                radar2.elevation['data'], radar2.azimuth['data'],
-                dscfg['global_data']['rad2_ele'][i],
-                dscfg['global_data']['rad2_azi'][i],
-                ele_tol=ele_tol, azi_tol=azi_tol)
-            if ind_ray_rad2 is None:
-                continue
-            ind_rng_rad2 = find_rng_index(
-                radar2.range['data'], dscfg['global_data']['rad2_rng'][i],
-                rng_tol=rng_tol)
-            if ind_rng_rad2 is None:
-                continue
+        if not rays_are_indexed:
+            azi_tol = 0.5
+            ele_tol = 0.5
+            rng_tol = 50.
 
-            refl1_val = np.ma.asarray(refl1[ind_ray_rad1, ind_rng_rad1])
-            refl2_val = np.ma.asarray(refl2[ind_ray_rad2, ind_rng_rad2])
+            if 'azi_tol' in dscfg:
+                azi_tol = dscfg['azi_tol']
+            if 'ele_tol' in dscfg:
+                ele_tol = dscfg['ele_tol']
+            if 'rng_tol' in dscfg:
+                rng_tol = dscfg['rng_tol']
 
-            phidp1_val = np.ma.asarray(
-                phidp1[ind_ray_rad1, ind_rng_rad1])
-            phidp2_val = np.ma.asarray(
-                phidp2[ind_ray_rad2, ind_rng_rad2])
-
-            flag1_val = flag1[ind_ray_rad1, ind_rng_rad1]
-            flag2_val = flag2[ind_ray_rad2, ind_rng_rad2]
-
-            if avg_rad1:
-                if (ind_rng_rad1+avg_rad_lim[1] >= radar1.ngates or
-                        ind_rng_rad1+avg_rad_lim[0] < 0):
+            for i in range(len(dscfg['global_data']['rad1_ele'])):
+                ind_ray_rad1 = find_ray_index(
+                    radar1.elevation['data'], radar1.azimuth['data'],
+                    dscfg['global_data']['rad1_ele'][i],
+                    dscfg['global_data']['rad1_azi'][i],
+                    ele_tol=ele_tol, azi_tol=azi_tol)
+                if ind_ray_rad1 is None:
                     continue
-                ind_rng = list(range(
-                    ind_rng_rad1+avg_rad_lim[0],
-                    ind_rng_rad1+avg_rad_lim[1]+1))
-                refl1_val = np.ma.asarray(np.ma.mean(
-                    refl1[ind_ray_rad1, ind_rng]))
-                phidp1_val = np.ma.asarray(np.ma.mean(
-                    phidp1[ind_ray_rad1, ind_rng]))
-
-                rad1_flag = flag1[ind_ray_rad1, ind_rng_rad1]
-
-                rad1_excess_phi = rad1_flag % 100
-                rad1_clt = ((rad1_flag-rad1_excess_phi) % 10000) / 100
-                rad1_prec = (
-                    ((rad1_flag-rad1_clt*100-rad1_excess_phi) % 1000000) /
-                    10000)
-
-                flag1_val = int(
-                    10000*np.max(rad1_prec)+100*np.max(rad1_clt) +
-                    np.max(rad1_excess_phi))
-
-            elif avg_rad2:
-                if (ind_rng_rad2+avg_rad_lim[1] >= radar2.ngates or
-                        ind_rng_rad2+avg_rad_lim[0] < 0):
+                ind_rng_rad1 = find_rng_index(
+                    radar1.range['data'], dscfg['global_data']['rad1_rng'][i],
+                    rng_tol=rng_tol)
+                if ind_rng_rad1 is None:
                     continue
-                ind_rng = list(range(
-                    ind_rng_rad2+avg_rad_lim[0],
-                    ind_rng_rad2+avg_rad_lim[1]+1))
-                refl2_val = np.ma.asarray(np.ma.mean(
-                    refl2[ind_ray_rad2, ind_rng]))
-                phidp2_val = np.ma.asarray(np.ma.mean(
-                    phidp2[ind_ray_rad1, ind_rng]))
 
-                rad2_flag = flag2[ind_ray_rad1, ind_rng_rad1]
+                ind_ray_rad2 = find_ray_index(
+                    radar2.elevation['data'], radar2.azimuth['data'],
+                    dscfg['global_data']['rad2_ele'][i],
+                    dscfg['global_data']['rad2_azi'][i],
+                    ele_tol=ele_tol, azi_tol=azi_tol)
+                if ind_ray_rad2 is None:
+                    continue
+                ind_rng_rad2 = find_rng_index(
+                    radar2.range['data'], dscfg['global_data']['rad2_rng'][i],
+                    rng_tol=rng_tol)
+                if ind_rng_rad2 is None:
+                    continue
 
-                rad2_excess_phi = rad2_flag % 100
-                rad2_clt = ((rad2_flag-rad2_excess_phi) % 10000) / 100
-                rad2_prec = (
-                    ((rad2_flag-rad2_clt*100-rad2_excess_phi) % 1000000) /
-                    10000)
+                refl1_val = np.ma.asarray(refl1[ind_ray_rad1, ind_rng_rad1])
+                refl2_val = np.ma.asarray(refl2[ind_ray_rad2, ind_rng_rad2])
 
-                flag2_val = int(
-                    10000*np.max(rad2_prec)+100*np.max(rad2_clt) +
-                    np.max(rad2_excess_phi))
+                phidp1_val = np.ma.asarray(
+                    phidp1[ind_ray_rad1, ind_rng_rad1])
+                phidp2_val = np.ma.asarray(
+                    phidp2[ind_ray_rad2, ind_rng_rad2])
 
-            if (refl1_val.mask or refl2_val.mask or phidp1_val.mask or
-                    phidp2_val.mask):
-                continue
+                flag1_val = flag1[ind_ray_rad1, ind_rng_rad1]
+                flag2_val = flag2[ind_ray_rad2, ind_rng_rad2]
 
-            intercomp_dict['rad1_ele'].append(
-                radar1.elevation['data'][ind_ray_rad1])
-            intercomp_dict['rad1_azi'].append(
-                radar1.azimuth['data'][ind_ray_rad1])
-            intercomp_dict['rad1_rng'].append(
-                radar1.range['data'][ind_rng_rad1])
-            intercomp_dict['rad1_dBZavg'].append(refl1_val)
-            intercomp_dict['rad1_PhiDPavg'].append(phidp1_val)
-            intercomp_dict['rad1_Flagavg'].append(flag1_val)
+                if avg_rad1:
+                    if (ind_rng_rad1+avg_rad_lim[1] >= radar1.ngates or
+                            ind_rng_rad1+avg_rad_lim[0] < 0):
+                        continue
+                    ind_rng = list(range(
+                        ind_rng_rad1+avg_rad_lim[0],
+                        ind_rng_rad1+avg_rad_lim[1]+1))
+                    refl1_val = np.ma.asarray(np.ma.mean(
+                        refl1[ind_ray_rad1, ind_rng]))
+                    phidp1_val = np.ma.asarray(np.ma.mean(
+                        phidp1[ind_ray_rad1, ind_rng]))
 
-            intercomp_dict['rad2_ele'].append(
-                radar2.elevation['data'][ind_ray_rad2])
-            intercomp_dict['rad2_azi'].append(
-                radar2.azimuth['data'][ind_ray_rad2])
-            intercomp_dict['rad2_rng'].append(
-                radar2.range['data'][ind_rng_rad2])
-            intercomp_dict['rad2_dBZavg'].append(refl2_val)
-            intercomp_dict['rad2_PhiDPavg'].append(phidp2_val)
-            intercomp_dict['rad2_Flagavg'].append(flag2_val)
+                    rad1_flag = flag1[ind_ray_rad1, ind_rng_rad1]
+
+                    rad1_excess_phi = rad1_flag % 100
+                    rad1_clt = ((rad1_flag-rad1_excess_phi) % 10000) / 100
+                    rad1_prec = (
+                        ((rad1_flag-rad1_clt*100-rad1_excess_phi) % 1000000) /
+                        10000)
+
+                    flag1_val = int(
+                        10000*np.max(rad1_prec)+100*np.max(rad1_clt) +
+                        np.max(rad1_excess_phi))
+
+                elif avg_rad2:
+                    if (ind_rng_rad2+avg_rad_lim[1] >= radar2.ngates or
+                            ind_rng_rad2+avg_rad_lim[0] < 0):
+                        continue
+                    ind_rng = list(range(
+                        ind_rng_rad2+avg_rad_lim[0],
+                        ind_rng_rad2+avg_rad_lim[1]+1))
+                    refl2_val = np.ma.asarray(np.ma.mean(
+                        refl2[ind_ray_rad2, ind_rng]))
+                    phidp2_val = np.ma.asarray(np.ma.mean(
+                        phidp2[ind_ray_rad1, ind_rng]))
+
+                    rad2_flag = flag2[ind_ray_rad1, ind_rng_rad1]
+
+                    rad2_excess_phi = rad2_flag % 100
+                    rad2_clt = ((rad2_flag-rad2_excess_phi) % 10000) / 100
+                    rad2_prec = (
+                        ((rad2_flag-rad2_clt*100-rad2_excess_phi) % 1000000) /
+                        10000)
+
+                    flag2_val = int(
+                        10000*np.max(rad2_prec)+100*np.max(rad2_clt) +
+                        np.max(rad2_excess_phi))
+
+                if (refl1_val.mask or refl2_val.mask or phidp1_val.mask or
+                        phidp2_val.mask):
+                    continue
+
+                intercomp_dict['rad1_ray_ind'].append(ind_ray_rad1)
+                intercomp_dict['rad1_rng_ind'].append(ind_rng_rad1)
+                intercomp_dict['rad1_ele'].append(
+                    radar1.elevation['data'][ind_ray_rad1])
+                intercomp_dict['rad1_azi'].append(
+                    radar1.azimuth['data'][ind_ray_rad1])
+                intercomp_dict['rad1_rng'].append(
+                    radar1.range['data'][ind_rng_rad1])
+                intercomp_dict['rad1_dBZavg'].append(refl1_val)
+                intercomp_dict['rad1_PhiDPavg'].append(phidp1_val)
+                intercomp_dict['rad1_Flagavg'].append(flag1_val)
+
+                intercomp_dict['rad2_ray_ind'].append(ind_ray_rad2)
+                intercomp_dict['rad2_rng_ind'].append(ind_rng_rad2)
+                intercomp_dict['rad2_ele'].append(
+                    radar2.elevation['data'][ind_ray_rad2])
+                intercomp_dict['rad2_azi'].append(
+                    radar2.azimuth['data'][ind_ray_rad2])
+                intercomp_dict['rad2_rng'].append(
+                    radar2.range['data'][ind_rng_rad2])
+                intercomp_dict['rad2_dBZavg'].append(refl2_val)
+                intercomp_dict['rad2_PhiDPavg'].append(phidp2_val)
+                intercomp_dict['rad2_Flagavg'].append(flag2_val)
+        else:
+            rad1_ray_ind = deepcopy(dscfg['global_data']['rad1_ray_ind'])
+            rad1_rng_ind = deepcopy(dscfg['global_data']['rad1_rng_ind'])
+            rad2_ray_ind = deepcopy(dscfg['global_data']['rad2_ray_ind'])
+            rad2_rng_ind = deepcopy(dscfg['global_data']['rad2_rng_ind'])
+
+            refl1_vec = refl1[rad1_ray_ind, rad1_rng_ind]
+            phidp1_vec = phidp1[rad1_ray_ind, rad1_rng_ind]
+            flag1_vec = flag1[rad1_ray_ind, rad1_rng_ind]
+
+            refl2_vec = refl2[rad2_ray_ind, rad2_rng_ind]
+            phidp2_vec = phidp2[rad2_ray_ind, rad2_rng_ind]
+            flag2_vec = flag2[rad2_ray_ind, rad2_rng_ind]
+
+            mask_refl1 = np.ma.getmaskarray(refl1_vec)
+            mask_phidp1 = np.ma.getmaskarray(phidp1_vec)
+            mask_refl2 = np.ma.getmaskarray(refl2_vec)
+            mask_phidp2 = np.ma.getmaskarray(phidp2_vec)
+
+            isvalid = np.logical_not(
+                np.logical_and(np.logical_and(mask_refl1, mask_refl2),
+                               np.logical_and(mask_phidp1, mask_phidp2)))
+
+            refl1_vec = refl1_vec[isvalid]
+            phidp1_vec = phidp1_vec[isvalid]
+            flag1_vec = flag1_vec[isvalid]
+            refl2_vec = refl2_vec[isvalid]
+            phidp2_vec = phidp2_vec[isvalid]
+            flag2_vec = flag2_vec[isvalid]
+            rad1_ray_ind = rad1_ray_ind[isvalid]
+            rad1_rng_ind = rad1_rng_ind[isvalid]
+            rad2_ray_ind = rad2_ray_ind[isvalid]
+            rad2_rng_ind = rad2_rng_ind[isvalid]
+
+            intercomp_dict['rad1_ray_ind'] = rad1_ray_ind
+            intercomp_dict['rad1_rng_ind'] = rad1_rng_ind
+            intercomp_dict['rad1_ele'] = radar1.elevation['data'][rad1_ray_ind]
+            intercomp_dict['rad1_azi'] = radar1.azimuth['data'][rad1_ray_ind]
+            intercomp_dict['rad1_rng'] = radar1.range['data'][rad1_rng_ind]
+            intercomp_dict['rad1_dBZavg'] = refl1_vec
+            intercomp_dict['rad1_PhiDPavg'] = phidp1_vec
+            intercomp_dict['rad1_Flagavg'] = flag1_vec
+
+            intercomp_dict['rad2_ray_ind'] = rad2_ray_ind
+            intercomp_dict['rad2_rng_ind'] = rad2_rng_ind
+            intercomp_dict['rad2_ele'] = radar2.elevation['data'][rad2_ray_ind]
+            intercomp_dict['rad2_azi'] = radar2.azimuth['data'][rad2_ray_ind]
+            intercomp_dict['rad2_rng'] = radar2.range['data'][rad2_rng_ind]
+            intercomp_dict['rad2_dBZavg'] = refl2_vec
+            intercomp_dict['rad2_PhiDPavg'] = phidp2_vec
+            intercomp_dict['rad2_Flagavg'] = flag2_vec
 
         new_dataset = {'intercomp_dict': intercomp_dict,
+                       'timeinfo': dscfg['global_data']['timeinfo'],
                        'final': False}
         return new_dataset, None
 
@@ -2586,8 +2773,9 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
 
         fname = savedir+fname[0]
 
-        (rad1_ele, rad1_azi, rad1_rng, rad1_dBZ, rad1_phi, rad1_flag,
-         rad2_ele, rad2_azi, rad2_rng, rad2_dBZ, rad2_phi, rad2_flag) = (
+        (rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng, rad1_dBZ,
+         rad1_phi, rad1_flag, rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi,
+         rad2_rng, rad2_dBZ, rad2_phi, rad2_flag) = (
             read_colocated_data_time_avg(fname))
 
         rad1_excess_phi = (rad1_flag % 100).astype(int)
@@ -2628,11 +2816,15 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
 
         intercomp_dict = {
             'rad1_name': dscfg['global_data']['rad1_name'],
+            'rad1_ray_ind': rad1_ray_ind[ind_val],
+            'rad1_rng_ind': rad1_rng_ind[ind_val],
             'rad1_ele': rad1_ele[ind_val],
             'rad1_azi': rad1_azi[ind_val],
             'rad1_rng': rad1_rng[ind_val],
             'rad1_val': rad1_dBZ[ind_val],
             'rad2_name': dscfg['global_data']['rad2_name'],
+            'rad2_ray_ind': rad1_ray_ind[ind_val],
+            'rad2_rng_ind': rad1_rng_ind[ind_val],
             'rad2_ele': rad2_ele[ind_val],
             'rad2_azi': rad2_azi[ind_val],
             'rad2_rng': rad2_rng[ind_val],
@@ -2660,7 +2852,13 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
         datatype : list of string. Dataset keyword
             The input data types
         rmin : float. Dataset keyword
-            minimum range where to look for a sun hit signal [m]. Default 20
+            minimum range where to look for a sun hit signal [m].
+            Default 50000.
+        hmin : float. Dataset keyword
+            minimum altitude where to look for a sun hit signal [m MSL].
+            Default 10000. The actual range from which a sun hit signal will
+            be search will be the minimum between rmin and the range from
+            which the altitude is higher than hmin.
         delev_max : float. Dataset keyword
             maximum elevation distance from nominal radar elevation where to
             look for a sun hit signal [deg]. Default 1.5
@@ -2670,13 +2868,17 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
         elmin : float. Dataset keyword
             minimum radar elevation where to look for sun hits [deg].
             Default 1.
-        percent_bins : float. Dataset keyword.
-            minimum percentage of range bins that have to contain signal to
+        nbins_min : int. Dataset keyword.
+            minimum number of range bins that have to contain signal to
             consider the ray a potential sun hit. Default 10.
         attg : float. Dataset keyword
             gaseous attenuation. Default None
-        max_std : float. Dataset keyword
-            maximum standard deviation to consider the data noise. Default 1.
+        max_std_pwr : float. Dataset keyword
+            maximum standard deviation of the signal power to consider the
+            data a sun hit [dB]. Default 2.
+        max_std_zdr : float. Dataset keyword
+            maximum standard deviation of the ZDR to consider the
+            data a sun hit [dB]. Default 2.
         az_width_co : float. Dataset keyword
             co-polar antenna azimuth width (convoluted with sun width) [deg].
             Default None
@@ -2722,6 +2924,8 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
                 zdr_field = 'unfiltered_differential_reflectivity'
             if datatype == 'ZDRuc':
                 zdr_field = 'corrected_unfiltered_differential_reflectivity'
+            if datatype == 'ZDR':
+                zdr_field = 'differential_reflectivity'
 
         ind_rad = int(radarnr[5:8])-1
         if radar_list[ind_rad] is None:
@@ -2767,6 +2971,8 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
             if radar.ray_angle_res is not None:
                 radar_par.update(
                     {'angle_step': (radar.ray_angle_res['data'][0])})
+            else:
+                warn('Angular resolution unknown.')
 
             radar_par.update({'timeinfo': dscfg['timeinfo']})
             dscfg['global_data'] = radar_par
@@ -2775,35 +2981,42 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
         dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
 
         # default values
-        rmin = 20.
+        rmin = 50000.
+        hmin = 10000.
         delev_max = 1.5
         dazim_max = 1.5
         elmin = 1.
-        percent_bins = 10.
+        nbins_min = 20
         attg = None
-        max_std = 1.
+        max_std_pwr = 2.
+        max_std_zdr = 2.
 
         # user values
         if 'rmin' in dscfg:
             rmin = dscfg['rmin']
+        if 'hmin' in dscfg:
+            hmin = dscfg['hmin']
         if 'delev_max' in dscfg:
             delev_max = dscfg['delev_max']
         if 'dazim_max' in dscfg:
             dazim_max = dscfg['dazim_max']
         if 'elmin' in dscfg:
             elmin = dscfg['elmin']
-        if 'percent_bins' in dscfg:
-            percent_bins = dscfg['percent_bins']
+        if 'nbins_min' in dscfg:
+            nbins_min = dscfg['nbins_min']
         if 'attg' in dscfg:
             attg = dscfg['attg']
-        if 'max_std' in dscfg:
-            max_std = dscfg['max_std']
+        if 'max_std_pwr' in dscfg:
+            max_std_pwr = dscfg['max_std_pwr']
+        if 'max_std_zdr' in dscfg:
+            max_std_zdr = dscfg['max_std_zdr']
 
         ind_rmin = np.where(radar.range['data'] > rmin)[0][0]
 
         sun_hits, new_radar = pyart.correct.get_sun_hits(
             radar, delev_max=delev_max, dazim_max=dazim_max, elmin=elmin,
-            ind_rmin=ind_rmin, percent_bins=percent_bins, max_std=max_std,
+            rmin=rmin, hmin=hmin, nbins_min=nbins_min,
+            max_std_pwr=max_std_pwr, max_std_zdr=max_std_zdr,
             attg=attg, pwrh_field=pwrh_field, pwrv_field=pwrv_field,
             zdr_field=zdr_field)
 
@@ -2856,13 +3069,10 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
         sun_pwr_h = sun_hits[7]
         sun_pwr_v = sun_hits[11]
 
-        sun_pwr_ref = np.ma.asarray(np.ma.masked)
+        # get DRAO reference
+        sf_ref = np.ma.asarray(np.ma.masked)
         ref_time = None
-        if (('pulse_width' in dscfg['global_data']) and
-                ('wavelen' in dscfg['global_data']) and
-                ('angle_step' in dscfg['global_data']) and
-                ('beamwidth' in dscfg['global_data']) and
-                (dscfg['AntennaGain'] is not None)):
+        if 'wavelen' in dscfg['global_data']:
 
             flx_dt, flx_val = read_solar_flux(
                 dscfg['solarfluxpath']+'fluxtable.txt')
@@ -2871,20 +3081,24 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
                 flx_dt_closest, flx_val_closest = get_closest_solar_flux(
                     sun_hits[0], flx_dt, flx_val)
 
-                sun_pwr_drao = pyart.correct.sun_power(
-                    flx_val_closest, dscfg['global_data']['pulse_width'],
-                    dscfg['global_data']['wavelen'], dscfg['AntennaGain'],
-                    dscfg['global_data']['angle_step'],
-                    dscfg['global_data']['beamwidth'], coeff_band=coeff_band)
+                # flux at radar wavelength
+                sf_radar = pyart.correct.solar_flux_lookup(
+                    flx_val_closest, dscfg['global_data']['wavelen'])
 
-                sun_pwr_ref = np.ma.asarray(sun_pwr_drao[-1])
+                sf_ref = np.ma.asarray(sf_radar[-1])
                 ref_time = flx_dt_closest[-1]
 
                 # scaling of the power to account for solar flux variations.
-                # The last sun hit is the reference
-                scale_factor = sun_pwr_drao/sun_pwr_ref
-                sun_pwr_h *= scale_factor
-                sun_pwr_v *= scale_factor
+                # The last sun hit is the reference. The scale factor is in dB
+                scale_factor = -10.*np.log10(sf_radar/sf_ref)
+                sun_pwr_h += scale_factor
+                sun_pwr_v += scale_factor
+            else:
+                warn('Unable to compute solar power reference. ' +
+                     'Missing DRAO data')
+        else:
+            warn('Unable to compute solar power reference. ' +
+                 'Missing radar wavelength')
 
         sun_retrieval_h = pyart.correct.sun_retrieval(
             sun_hits[4], sun_hits[6], sun_hits[3], sun_hits[5],
@@ -2912,6 +3126,7 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
             'last_hit_time': sun_hits[0][-1],
             'dBm_sun_est': np.ma.asarray(np.ma.masked),
             'std(dBm_sun_est)': np.ma.asarray(np.ma.masked),
+            'sf_h': np.ma.asarray(np.ma.masked),
             'az_bias_h': np.ma.asarray(np.ma.masked),
             'el_bias_h': np.ma.asarray(np.ma.masked),
             'az_width_h': np.ma.asarray(np.ma.masked),
@@ -2920,6 +3135,7 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
             'par_h': None,
             'dBmv_sun_est': np.ma.asarray(np.ma.masked),
             'std(dBmv_sun_est)': np.ma.asarray(np.ma.masked),
+            'sf_v': np.ma.asarray(np.ma.masked),
             'az_bias_v': np.ma.asarray(np.ma.masked),
             'el_bias_v': np.ma.asarray(np.ma.masked),
             'az_width_v': np.ma.asarray(np.ma.masked),
@@ -2932,14 +3148,43 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
             'el_bias_zdr': np.ma.asarray(np.ma.masked),
             'nhits_zdr': 0,
             'par_zdr': None,
-            'dBm_sun_ref': sun_pwr_ref,
-            'ref_time': ref_time}
+            'sf_ref': np.ma.asarray(sf_ref),
+            'ref_time': ref_time,
+            'lant': np.ma.asarray(np.ma.masked)}
 
         if sun_retrieval_h is not None:
-            sun_retrieval_dict['dBm_sun_est'] = np.ma.asarray(
-                sun_retrieval_h[0])
+            # correct for scanning losses and the polarization of the antenna
+            if (('angle_step' in dscfg['global_data']) and
+                    ('beamwidth' in dscfg['global_data'])):
+                lant = pyart.correct.scanning_losses(
+                    dscfg['global_data']['angle_step'],
+                    dscfg['global_data']['beamwidth'])
+
+            else:
+                warn('Unable to estimate scanning losses. ' +
+                     'Missing radar parameters. ' +
+                     'Antenna losses will be neglected')
+                lant = 0.
+            ptoa_h = sun_retrieval_h[0]+lant+3.
+
+            # compute observed solar flux
+            if (('pulse_width' in dscfg['global_data']) and
+                    ('wavelen' in dscfg['global_data']) and
+                    (dscfg['AntennaGain'] is not None)):
+                sf_h = pyart.correct.ptoa_to_sf(
+                    ptoa_h, dscfg['global_data']['pulse_width'],
+                    dscfg['global_data']['wavelen'],
+                    dscfg['AntennaGain'],
+                    )
+            else:
+                warn('Unable to estimate observed solar flux. ' +
+                     'Missing radar parameters')
+                sf_h = np.ma.asarray(np.ma.masked)
+
+            sun_retrieval_dict['dBm_sun_est'] = np.ma.asarray(ptoa_h)
             sun_retrieval_dict['std(dBm_sun_est)'] = np.ma.asarray(
                 sun_retrieval_h[1])
+            sun_retrieval_dict['sf_h'] = np.ma.asarray(sf_h)
             sun_retrieval_dict['az_bias_h'] = np.ma.asarray(
                 sun_retrieval_h[2])
             sun_retrieval_dict['el_bias_h'] = np.ma.asarray(
@@ -2950,11 +3195,39 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
                 sun_retrieval_h[5])
             sun_retrieval_dict['nhits_h'] = np.asarray(sun_retrieval_h[6])
             sun_retrieval_dict['par_h'] = np.ma.asarray(sun_retrieval_h[7])
+            sun_retrieval_dict['lant'] = np.ma.asarray(lant)
         if sun_retrieval_v is not None:
-            sun_retrieval_dict['dBmv_sun_est'] = np.ma.asarray(
-                sun_retrieval_v[0])
+            # correct for scanning losses and the polarization of the antenna
+            if (('angle_step' in dscfg['global_data']) and
+                    ('beamwidth' in dscfg['global_data'])):
+                lant = pyart.correct.scanning_losses(
+                    dscfg['global_data']['angle_step'],
+                    dscfg['global_data']['beamwidth'])
+            else:
+                lant = 0.
+                warn('Unable to estimate scanning losses. ' +
+                     'Missing radar parameters. ' +
+                     'Antenna losses will be neglected')
+            ptoa_v = sun_retrieval_v[0]+lant+3.
+
+            # compute observed solar flux
+            if (('pulse_width' in dscfg['global_data']) and
+                    ('wavelen' in dscfg['global_data']) and
+                    (dscfg['AntennaGain'] is not None)):
+                sf_v = pyart.correct.ptoa_to_sf(
+                    ptoa_v, dscfg['global_data']['pulse_width'],
+                    dscfg['global_data']['wavelen'],
+                    dscfg['AntennaGain'],
+                    )
+            else:
+                warn('Unable to estimate observed solar flux. ' +
+                     'Missing radar parameters')
+                sf_v = np.ma.asarray(np.ma.masked)
+
+            sun_retrieval_dict['dBmv_sun_est'] = np.ma.asarray(ptoa_v)
             sun_retrieval_dict['std(dBmv_sun_est)'] = np.ma.asarray(
                 sun_retrieval_v[1])
+            sun_retrieval_dict['sf_v'] = np.ma.asarray(sf_v)
             sun_retrieval_dict['az_bias_v'] = np.ma.asarray(
                 sun_retrieval_v[2])
             sun_retrieval_dict['el_bias_v'] = np.ma.asarray(
@@ -2965,6 +3238,7 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
                 sun_retrieval_v[5])
             sun_retrieval_dict['nhits_v'] = np.ma.asarray(sun_retrieval_v[6])
             sun_retrieval_dict['par_v'] = np.ma.asarray(sun_retrieval_v[7])
+            sun_retrieval_dict['lant'] = np.ma.asarray(lant)
         if sun_retrieval_zdr is not None:
             sun_retrieval_dict['ZDR_sun_est'] = np.ma.asarray(
                 sun_retrieval_zdr[0])

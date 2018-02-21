@@ -148,6 +148,7 @@ rain_rate = 'rain_rate'
 radar_estimated_rain_rate = 'radar_estimated_rain_rate'
 radar_echo_classification = 'radar_echo_classification'
 radar_echo_id = 'radar_echo_id'
+melting_layer = 'melting_layer'
 
 # attenuation
 specific_attenuation = 'specific_attenuation'
@@ -319,6 +320,7 @@ DEFAULT_FIELD_NAMES = {
     'radar_estimated_rain_rate': radar_estimated_rain_rate,
     'radar_echo_classification': radar_echo_classification,
     'radar_echo_id': radar_echo_id,
+    'melting_layer': melting_layer,
     'specific_attenuation': specific_attenuation,
     'path_integrated_attenuation': path_integrated_attenuation,
     'specific_differential_attenuation': specific_differential_attenuation,
@@ -641,28 +643,26 @@ DEFAULT_METADATA = {
     # Reflectivity fields
     reflectivity: {
         'units': 'dBZ',
-        'standard_name': 'equivalent_reflectivity_factor',
-        'long_name': 'Reflectivity',
+        'standard_name': 'horizontal_reflectivity',
+        'long_name': 'Horizontal Reflectivity',
         'coordinates': 'elevation azimuth range'},
 
     corrected_reflectivity: {
         'units': 'dBZ',
-        'standard_name': 'corrected_equivalent_reflectivity_factor',
-        'long_name': 'Corrected reflectivity',
+        'standard_name': 'horizontal_reflectivity',
+        'long_name': 'Corrected Horizontal Reflectivity',
         'coordinates': 'elevation azimuth range'},
 
     reflectivity_vv: {
         'units': 'dBZ',
-        'standard_name': (
-            'equivalent_reflectivity_factor_vertical_polarization'),
-        'long_name': 'Reflectivity vertical',
+        'standard_name': 'vertical_reflectivity',
+        'long_name': 'Vertical Reflectivity',
         'coordinates': 'elevation azimuth range'},
 
     corrected_reflectivity_vv: {
         'units': 'dBZ',
-        'standard_name': (
-            'corrected_equivalent_reflectivity_factor_vertical_polarization'),
-        'long_name': 'Corrected reflectivity vertical',
+        'standard_name': 'vertical_reflectivity',
+        'long_name': 'Corrected Vertical Reflectivity',
         'coordinates': 'elevation azimuth range'},
 
     total_power: {
@@ -728,93 +728,92 @@ DEFAULT_METADATA = {
     # Velocity fields
     velocity: {
         'units': 'm/s',
-        'standard_name': 'radial_velocity_of_scatterers_away_from_instrument',
+        'standard_name': 'mean_Doppler_velocity',
         'long_name': 'Mean Doppler velocity',
         'coordinates': 'elevation azimuth range'},
 
     corrected_velocity: {
         'units': 'm/s',
-        'standard_name': (
-            'corrected_radial_velocity_of_scatterers_away_from_instrument'),
+        'standard_name': 'mean_Doppler_velocity',
         'long_name': 'Corrected mean Doppler velocity',
         'coordinates': 'elevation azimuth range'},
 
     # Spectrum width fields
     spectrum_width: {
         'units': 'm/s',
-        'standard_name': 'doppler_spectrum_width',
+        'standard_name': 'Doppler_spectrum_width',
         'long_name': 'Doppler spectrum width',
         'coordinates': 'elevation azimuth range'},
 
     corrected_spectrum_width: {
         'units': 'm/s',
-        'standard_name': 'corrected_doppler_spectrum_width',
+        'standard_name': 'Doppler_spectrum_width',
         'long_name': 'Corrected Doppler spectrum width',
         'coordinates': 'elevation azimuth range'},
 
     # Dual-polarization fields
     differential_reflectivity: {
         'units': 'dB',
-        'standard_name': 'log_differential_reflectivity_hv',
+        'standard_name': 'differential_reflectivity',
         'long_name': 'Differential reflectivity',
         'coordinates': 'elevation azimuth range'},
 
     corrected_differential_reflectivity: {
         'units': 'dB',
-        'standard_name': 'corrected_log_differential_reflectivity_hv',
+        'standard_name': 'differential_reflectivity',
         'long_name': 'Corrected differential reflectivity',
         'coordinates': 'elevation azimuth range'},
 
     differential_reflectivity_in_precipitation: {
         'units': 'dB',
-        'standard_name': 'log_differential_reflectivity_hv_in_precipitation',
+        'standard_name': 'differential_reflectivity_in_precip',
         'long_name': 'Differential reflectivity in precipitation',
         'coordinates': 'elevation azimuth range'},
 
     differential_reflectivity_in_snow: {
         'units': 'dB',
-        'standard_name': 'log_differential_reflectivity_hv_in_snow',
+        'standard_name': 'differential_reflectivity_in_snow',
         'long_name': 'Differential reflectivity in snow',
         'coordinates': 'elevation azimuth range'},
 
     cross_correlation_ratio: {
-        'units': 'ratio',
-        'standard_name': 'cross_correlation_ratio_hv',
-        'long_name': 'Cross correlation ratio (RHOHV)',
+        'units': '-',
+        'standard_name': 'copolar_correlation_coefficient',
+        'long_name': 'Copolar correlation coefficient (RHOHV)',
         'coordinates': 'elevation azimuth range'},
 
     corrected_cross_correlation_ratio: {
-        'units': 'ratio',
-        'standard_name': 'corrected_cross_correlation_ratio_hv',
-        'long_name': 'Corrected cross correlation ratio (RHOHV)',
+        'units': '-',
+        'standard_name': 'copolar_correlation_coefficient',
+        'long_name': 'Corrected copolar correlation coefficient (RHOHV)',
         'coordinates': 'elevation azimuth range'},
 
     unfiltered_cross_correlation_ratio: {
-        'units': 'ratio',
-        'standard_name': 'unfiltered_cross_correlation_ratio_hv',
-        'long_name': 'Unfiltered cross correlation ratio (RHOHV)',
+        'units': '-',
+        'standard_name': 'copolar_correlation_coefficient',
+        'long_name': 'Unfiltered copolar correlation coefficient (RHOHV)',
         'coordinates': 'elevation azimuth range'},
 
     uncorrected_cross_correlation_ratio: {
-        'units': 'ratio',
-        'standard_name': 'uncorrected_cross_correlation_ratio_hv',
-        'long_name': 'Uncorrected cross correlation ratio (RHOHV)',
+        'units': '-',
+        'standard_name': 'copolar_correlation_coefficient',
+        'long_name': 'Uncorrected copolar correlation coefficient (RHOHV)',
         'coordinates': 'elevation azimuth range'},
 
     logarithmic_cross_correlation_ratio: {
         'units': 'dB',
-        'standard_name': 'logarithmic_cross_correlation_ratio_hv',
-        'long_name': 'Logarithmic cross correlation ratio (L)',
+        'standard_name': 'logarithmic_copolar_correlation_coefficient',
+        'long_name': 'Logarithmic copolar correlation coefficient (L)',
         'coordinates': 'elevation azimuth range'},
 
     cross_correlation_ratio_in_rain: {
-        'units': 'ratio',
-        'standard_name': 'cross_correlation_ratio_in_rain',
-        'long_name': 'cross correlation ratio in rain',
+        'units': '-',
+        'standard_name': 'copolar_correlation_coefficient_in_rain',
+        'long_name': 'copolar correlation coefficient in rain',
         'coordinates': 'elevation azimuth range'},
 
     normalized_coherent_power: {
-        'units': 'ratio',
+        'units': '-',
         'standard_name': 'normalized_coherent_power',
         'long_name': 'Normalized coherent power',
         'valid_max': 1.0,
@@ -823,39 +822,39 @@ DEFAULT_METADATA = {
         'coordinates': 'elevation azimuth range'},
 
     differential_phase: {
-        'units': 'degrees',
-        'standard_name': 'differential_phase_hv',
-        'long_name': 'Differential phase (PhiDP)',
+        'units': 'deg',
+        'standard_name': 'differential_phase',
+        'long_name': 'Differential propagation phase (PhiDP)',
         'valid_max': 180.0,
         'valid_min': -180.0,
         'coordinates': 'elevation azimuth range'},
 
     unfolded_differential_phase: {
-        'units': 'degrees',
-        'standard_name': 'differential_phase_hv',
-        'long_name': 'Unfolded differential phase',
+        'units': 'deg',
+        'standard_name': 'differential_phase',
+        'long_name': 'Unfolded differential propagation phase',
         'coordinates': 'elevation azimuth range'},
 
     corrected_differential_phase: {
-        'units': 'degrees',
-        'standard_name': 'differential_phase_hv',
-        'long_name': 'Corrected differential phase',
+        'units': 'deg',
+        'standard_name': 'differential_phase',
+        'long_name': 'Corrected differential propagation phase',
         'coordinates': 'elevation azimuth range'},
 
     uncorrected_differential_phase: {
-        'units': 'degrees',
-        'standard_name': 'differential_phase_hv',
-        'long_name': 'Uncorrected differential phase',
+        'units': 'deg',
+        'standard_name': 'differential_phase',
+        'long_name': 'Uncorrected differential propagation phase',
         'coordinates': 'elevation azimuth range'},
 
     uncorrected_unfiltered_differential_phase: {
-        'units': 'degrees',
-        'standard_name': 'differential_phase_hv',
-        'long_name': 'Uncorrected unfiltered differential phase',
+        'units': 'deg',
+        'standard_name': 'differential_phase',
+        'long_name': 'Uncorrected unfiltered differential propagation phase',
         'coordinates': 'elevation azimuth range'},
 
     system_differential_phase: {
-        'units': 'degrees',
+        'units': 'deg',
         'standard_name': 'system_differential_phase',
         'long_name': 'System differential phase (PhiDP0)',
         'coordinates': 'elevation azimuth range'},
@@ -867,14 +866,14 @@ DEFAULT_METADATA = {
         'coordinates': 'elevation azimuth'},
 
     specific_differential_phase: {
-        'units': 'degrees/km',
-        'standard_name': 'specific_differential_phase_hv',
+        'units': 'deg/km',
+        'standard_name': 'specific_differential_phase',
         'long_name': 'Specific differential phase (KDP)',
         'coordinates': 'elevation azimuth range'},
 
     corrected_specific_differential_phase: {
-        'units': 'degrees/km',
-        'standard_name': 'specific_differential_phase_hv',
+        'units': 'deg/km',
+        'standard_name': 'specific_differential_phase',
         'long_name': 'Corrected specific differential phase (KDP)',
         'coordinates': 'elevation azimuth range'},
 
@@ -882,19 +881,19 @@ DEFAULT_METADATA = {
     # Depolarization ratio fields
     linear_depolarization_ratio: {
         'units': 'dB',
-        'standard_name': 'log_linear_depolarization_ratio_hv',
+        'standard_name': 'linear_depolarization_ratio',
         'long_name': 'Linear depolarization ratio',
         'coordinates': 'elevation azimuth range'},
 
     linear_depolarization_ratio_h: {
         'units': 'dB',
-        'standard_name': 'log_linear_depolarization_ratio_h',
+        'standard_name': 'linear_depolarization_ratio_h',
         'long_name': 'Linear depolarization ratio horizontal',
         'coordinates': 'elevation azimuth range'},
 
     linear_depolarization_ratio_v: {
         'units': 'dB',
-        'standard_name': 'log_linear_depolarization_ratio_v',
+        'standard_name': 'linear_depolarization_ratio_v',
         'long_name': 'Linear depolarization ratio vertical',
         'coordinates': 'elevation azimuth range'},
 
@@ -936,19 +935,19 @@ DEFAULT_METADATA = {
         'coordinates': 'elevation azimuth range'},
 
     rain_rate: {
-        'units': 'kg/m2/s',
+        'units': 'mm/h',
         'standard_name': 'rain_rate',
         'long_name': 'Rain rate',
         'coordinates': 'elevation azimuth range'},
 
     radar_estimated_rain_rate: {
-        'units': 'mm/hr',
+        'units': 'mm/h',
         'standard_name': 'radar_estimated_rain_rate',
         'long_name': 'Radar estimated rain rate',
         'coordinates': 'elevation azimuth range'},
 
     sun_hit_h: {
-        'units': 'dimensionless',
+        'units': '-',
         'standard_name': 'sun_hit_h',
         'long_name': 'sun hit radar bins horizontal polarization',
         'labels': ['OTHER', 'SUN'],
@@ -957,7 +956,7 @@ DEFAULT_METADATA = {
         'coordinates': 'elevation azimuth range'},
 
     sun_hit_v: {
-        'units': 'dimensionless',
+        'units': '-',
         'standard_name': 'sun_hit_v',
         'long_name': 'sun hit radar bins vertical polarization',
         'labels': ['OTHER', 'SUN'],
@@ -966,7 +965,7 @@ DEFAULT_METADATA = {
         'coordinates': 'elevation azimuth range'},
 
     sun_hit_zdr: {
-        'units': 'dimensionless',
+        'units': '-',
         'standard_name': 'sun_hit_zdr',
         'long_name': 'sun hit radar bins differential reflectivity',
         'labels': ['OTHER', 'SUN'],
@@ -975,9 +974,9 @@ DEFAULT_METADATA = {
         'coordinates': 'elevation azimuth range'},
 
     radar_echo_classification: {
-        'units': 'legend',
+        'units': '-',
         'standard_name': 'radar_echo_classification',
-        'long_name': 'Radar Echo classification',
+        'long_name': 'Radar echo classification',
         'labels': ['NC', 'DS', 'CR', 'LR', 'GR', 'RN', 'VI', 'WS', 'MH',
                    'IH/HDG'],
         'ticks': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
@@ -985,12 +984,21 @@ DEFAULT_METADATA = {
         'coordinates': 'elevation azimuth range'},
 
     radar_echo_id: {
-        'units': 'legend',
+        'units': '-',
         'standard_name': 'radar_echo_id',
         'long_name': 'Radar Echo Identification',
         'labels': ['NOISE', 'CLT', 'PREC'],
         'ticks': [1, 2, 3],
         'boundaries': [0.5, 1.5, 2.5, 3.5],
+        'coordinates': 'elevation azimuth range'},
+
+    melting_layer: {
+        'units': '-',
+        'standard_name': 'melting_layer',
+        'long_name': 'Position of the range bin respect to the melting layer',
+        'labels': ['BELOW', 'ENTERING', 'INSIDE', 'EXITING', 'ABOVE'],
+        'ticks': [1, 2, 3, 4, 5],
+        'boundaries': [0.5, 1.5, 2.5, 3.5, 4.5, 5.5],
         'coordinates': 'elevation azimuth range'},
 
     specific_attenuation: {
@@ -1019,25 +1027,25 @@ DEFAULT_METADATA = {
 
     corrected_specific_attenuation: {
         'units': 'dB/km',
-        'standard_name': 'corrected_specific_attenuation',
+        'standard_name': 'specific_attenuation',
         'long_name': 'Corrected specific attenuation',
         'coordinates': 'elevation azimuth range'},
 
     corrected_path_integrated_attenuation: {
         'units': 'dB',
-        'standard_name': 'corrected_path_integrated_attenuation',
+        'standard_name': 'path_integrated_attenuation',
         'long_name': 'Corrected path integrated attenuation',
         'coordinates': 'elevation azimuth range'},
 
     corrected_specific_differential_attenuation: {
         'units': 'dB/km',
-        'standard_name': 'corrected_specific_differential_attenuation',
+        'standard_name': 'specific_differential_attenuation',
         'long_name': 'Corrected specific differential attenuation',
         'coordinates': 'elevation azimuth range'},
 
     corrected_path_integrated_differential_attenuation: {
         'units': 'dB',
-        'standard_name': 'corrected_path_integrated_differential_attenuation',
+        'standard_name': 'path_integrated_differential_attenuation',
         'long_name': 'Corrected path integrated differential attenuation',
         'coordinates': 'elevation azimuth range'},
 
@@ -1064,13 +1072,13 @@ DEFAULT_METADATA = {
 
     # COSMO model data
     temperature: {
-        'units': 'degrees Celsius',
+        'units': 'deg Celsius',
         'standard_name': 'temperature',
         'long_name': 'Temperature',
         'coordinates': 'elevation azimuth range'},
 
     iso0: {
-        'units': 'dimensionless',
+        'units': '-',
         'standard_name': 'iso0',
         'long_name': 'Position of the range bin respect to the iso0 level',
         'labels': ['BELOW', 'INSIDE', 'ABOVE'],
@@ -1085,83 +1093,83 @@ DEFAULT_METADATA = {
         'coordinates': 'elevation azimuth range'},
 
     cosmo_index: {
-        'units': 'dimensionless',
+        'units': 'bin index',
         'standard_name': 'cosmo_index',
         'long_name': (
             'indices of the COSMO model corresponding to each radar gate'),
         'coordinates': 'elevation azimuth range'},
 
     hzt_index: {
-        'units': 'dimensionless',
+        'units': 'bin index',
         'standard_name': 'hzt_index',
         'long_name': (
             'indices of the HZT corresponding to each radar gate'),
         'coordinates': 'elevation azimuth range'},
 
     visibility: {
-        'units': 'percentage',
+        'units': 'percent',
         'standard_name': 'visibility',
         'long_name': 'visibility',
         'coordinates': 'elevation azimuth range'},
 
     # Textures
     differential_phase_texture: {
-        'units': 'degrees',
-        'standard_name': 'differential_phase_hv_texture',
-        'long_name': 'Texture of differential phase (PhiDP)',
+        'units': 'deg',
+        'standard_name': 'differential_phase_texture',
+        'long_name': 'Differential phase texture (PhiDP)',
         'coordinates': 'elevation azimuth range'},
 
     differential_reflectivity_texture: {
         'units': 'dB',
         'standard_name': 'differential_reflectivity_texture',
-        'long_name': 'Texture of differential reflectivity',
+        'long_name': 'differential reflectivity texture',
         'coordinates': 'elevation azimuth range'},
 
     reflectivity_texture: {
         'units': 'dB',
         'standard_name': 'reflectivity_texture',
-        'long_name': 'Texture of reflectivity',
+        'long_name': 'reflectivity texture',
         'coordinates': 'elevation azimuth range'},
 
     cross_correlation_ratio_texture: {
-        'units': 'ratio',
-        'standard_name': 'cross_correlation_ratio_texture',
-        'long_name': 'Texture of the cross correlation ratio',
+        'units': '-',
+        'standard_name': 'copolar_correlation_coefficient_texture',
+        'long_name': 'Copolar correlation coefficient texture',
         'coordinates': 'elevation azimuth range'},
 
     # Wind retrieval fields
     eastward_wind_component: {
-        'units': 'meters_per_second',
+        'units': 'm/s',
         'standard_name': 'eastward_wind_component',
         'long_name': 'Eastward wind component'},
 
     northward_wind_component: {
-        'units': 'meters_per_second',
+        'units': 'm/s',
         'standard_name': 'northward_wind_component',
         'long_name': 'Northward wind component'},
 
     vertical_wind_component: {
-        'units': 'meters_per_second',
+        'units': 'm/s',
         'standard_name': 'vertical_wind_component',
         'long_name': 'Vertical wind component'},
 
     azimuthal_horizontal_wind_component: {
-        'units': 'meters_per_second',
+        'units': 'm/s',
         'standard_name': 'azimuthal_horizontal_wind_component',
         'long_name': 'Azimuthal horizontal wind component'},
 
     vertical_wind_shear: {
-        'units': 'meters_per_second_per_km',
+        'units': 'm/s/km',
         'standard_name': 'vertical_wind_shear',
         'long_name': 'Vertical wind shear'},
 
     wind_speed: {
-        'units': 'meters_per_second',
+        'units': 'm/s',
         'standard_name': 'horizontal_wind_speed',
         'long_name': 'Horizontal wind speed'},
 
     wind_direction: {
-        'units': 'degrees_from_north',
+        'units': 'deg_from_north',
         'standard_name': 'horizontal_wind_direction',
         'long_name': 'Horizontal wind direction'},
 
@@ -1948,6 +1956,7 @@ DEFAULT_FIELD_COLORMAP = {
 
     radar_echo_classification: 'pyart_LangRainbow12',
     radar_echo_id: 'pyart_LangRainbow12',
+    melting_layer: 'pyart_LangRainbow12',
 
     specific_attenuation: 'pyart_Carbone17',
     path_integrated_attenuation: 'pyart_Carbone17',
@@ -2065,8 +2074,9 @@ DEFAULT_FIELD_LIMITS = {
     rain_rate: (0., 10.),
     radar_estimated_rain_rate: (0., 10.),
 
-    radar_echo_classification: (-0.5, 9.5),
+    radar_echo_classification: (0., 9.),
     radar_echo_id: (0, 3),
+    melting_layer: (0, 5),
 
     sun_hit_h: (0, 1),
     sun_hit_v: (0, 1),

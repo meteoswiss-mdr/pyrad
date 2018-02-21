@@ -130,16 +130,17 @@ def get_data(voltime, datatypesdescr, cfg):
             cfg['RadarName'][ind_rad], cfg['RadarRes'][ind_rad], voltime,
             datatype_rad4alp, cfg, ind_rad=ind_rad)
 
-    if ndatatypes_cfradial > 0:
-        radar_aux = merge_fields_cfradial(
-            cfg['loadbasepath'][ind_rad], cfg['loadname'][ind_rad], voltime,
-            datatype_cfradial, dataset_cfradial, product_cfradial)
-        radar = add_field(radar, radar_aux)
-
-    if ndatatypes_mxpol > 0:
+    elif ndatatypes_mxpol > 0:
         radar = merge_scans_mxpol(
             cfg['datapath'][ind_rad], cfg['ScanList'][ind_rad], voltime,
             datatype_mxpol, cfg, ind_rad=ind_rad)
+
+    if ndatatypes_cfradial > 0:
+        radar_aux = merge_fields_cfradial(
+            cfg['loadbasepath'][ind_rad], cfg['loadname'][ind_rad], voltime,
+            datatype_cfradial, dataset_cfradial, product_cfradial,
+            cfg['rmax'])
+        radar = add_field(radar, radar_aux)
 
     # add COSMO files to the radar field
     if ndatatypes_cosmo > 0 and _WRADLIB_AVAILABLE:
@@ -163,8 +164,13 @@ def get_data(voltime, datatypesdescr, cfg):
             else:
                 if radar_aux is not None:
                     for field_name in radar_aux.fields.keys():
-                        radar.add_field(
-                            field_name, radar_aux.fields[field_name])
+                        try:
+                            radar.add_field(
+                                field_name, radar_aux.fields[field_name])
+                        except (ValueError, KeyError) as ee:
+                            warn("Unable to add field '"+field_name +
+                                 "' to radar object"
+                                 ": (%s)" % str(ee))
 
     # add DEM files to the radar field
     if ndatatypes_dem > 0 and _WRADLIB_AVAILABLE:
@@ -194,8 +200,13 @@ def get_data(voltime, datatypesdescr, cfg):
             else:
                 if radar_aux is not None:
                     for field_name in radar_aux.fields.keys():
-                        radar.add_field(
-                            field_name, radar_aux.fields[field_name])
+                        try:
+                            radar.add_field(
+                                field_name, radar_aux.fields[field_name])
+                        except (ValueError, KeyError) as ee:
+                            warn("Unable to add field '"+field_name +
+                                 "' to radar object"
+                                 ": (%s)" % str(ee))
 
     if ndatatypes_rad4alphydro > 0:
         if ((cfg['RadarRes'][ind_rad] is None) or
@@ -213,8 +224,13 @@ def get_data(voltime, datatypesdescr, cfg):
             else:
                 if radar_aux is not None:
                     for field_name in radar_aux.fields.keys():
-                        radar.add_field(
-                            field_name, radar_aux.fields[field_name])
+                        try:
+                            radar.add_field(
+                                field_name, radar_aux.fields[field_name])
+                        except (ValueError, KeyError) as ee:
+                            warn("Unable to add field '"+field_name +
+                                 "' to radar object"
+                                 ": (%s)" % str(ee))
 
     # if it is specified, get the position from the config file
     if 'RadarPosition' in cfg:
@@ -278,9 +294,9 @@ def merge_scans_rainbow(basepath, scan_list, voltime, scan_period,
                                      cfg, scan=scan_list[i])
 
             if (len(filelist) == 0):
-                print("ERROR: No data file found for scan '%s' "
-                      "between %s and %s" % (scan_list[i], voltime, endtime),
-                      file=sys.stderr)
+                warn("ERROR: No data file found for scan '%s' "
+                     "between %s and %s" % (scan_list[i], voltime, endtime),
+                     file=sys.stderr)
                 continue
             scantime = get_datetime(filelist[0], datadescriptor)
 
@@ -379,13 +395,21 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
             basename = 'P'+radar_res+radar_name+dayinfo
             subf = 'P'+radar_res+radar_name+yy+'hdf'+dy
             datapath = basepath+subf+'/'
-    else:
+    elif cfg['path_convention'] == 'MCH':
         datapath = basepath+dayinfo+'/'+basename+'/'
         filename = glob.glob(
             datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
         if not filename:
             basename = 'P'+radar_res+radar_name+dayinfo
             datapath = basepath+dayinfo+'/'+basename+'/'
+    else:
+        datapath = basepath+'M'+radar_res+radar_name+'/'
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
+        if not filename:
+            basename = 'P'+radar_res+radar_name+dayinfo
+            datapath = basepath+'P'+radar_res+radar_name+'/'
+
     filename = glob.glob(datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
     if not filename:
         warn('No file found in '+datapath+basename+timeinfo+'*.'+scan_list[0])
@@ -619,7 +643,11 @@ def merge_scans_cosmo_rad4alp(voltime, datatype, cfg, ind_rad=0):
             ind_rad=ind_rad)
         radar.fields = dict()
 
-        cosmo_field = read_rad4alp_cosmo(filename_list[0], datatype)
+        ngates = 0
+        if cfg['rmax'] > 0:
+            ngates = radar.ngates
+        cosmo_field = read_rad4alp_cosmo(
+            filename_list[0], datatype, ngates=ngates)
         if cosmo_field is None:
             return None
 
@@ -638,7 +666,11 @@ def merge_scans_cosmo_rad4alp(voltime, datatype, cfg, ind_rad=0):
                 ind_rad=ind_rad)
             radar_aux.fields = dict()
 
-            cosmo_field = read_rad4alp_cosmo(filename_list[i], datatype)
+            ngates = 0
+            if cfg['rmax'] > 0:
+                ngates = radar_aux.ngates
+            cosmo_field = read_rad4alp_cosmo(
+                filename_list[i], datatype, ngates=ngates)
             if cosmo_field is None:
                 return None
 
@@ -654,7 +686,7 @@ def merge_scans_cosmo_rad4alp(voltime, datatype, cfg, ind_rad=0):
 
 def merge_scans_dem_rad4alp(voltime, datatype, cfg, ind_rad=0):
     """
-    merge cosmo rad4alp scans. If data for all the scans cannot be retrieved
+    merge DEM rad4alp scans. If data for all the scans cannot be retrieved
     returns None
 
     Parameters
@@ -703,13 +735,21 @@ def merge_scans_dem_rad4alp(voltime, datatype, cfg, ind_rad=0):
             basename = 'P'+radar_res+radar_name+dayinfo
             subf = 'P'+radar_res+radar_name+yy+'hdf'+dy
             datapath = basepath+subf+'/'
-    else:
+    elif cfg['path_convention'] == 'MCH':
         datapath = basepath+dayinfo+'/'+basename+'/'
         filename = glob.glob(
             datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
         if not filename:
             basename = 'P'+radar_res+radar_name+dayinfo
             datapath = basepath+dayinfo+'/'+basename+'/'
+    else:
+        datapath = basepath+'M'+radar_res+radar_name+'/'
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
+        if not filename:
+            basename = 'P'+radar_res+radar_name+dayinfo
+            datapath = basepath+'P'+radar_res+radar_name+'/'
+
     filename = glob.glob(datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
     if not filename:
         warn('No file found in '+datapath+basename+timeinfo+'*.'+scan_list[0])
@@ -719,8 +759,14 @@ def merge_scans_dem_rad4alp(voltime, datatype, cfg, ind_rad=0):
         radar.fields = dict()
 
         # add visibility data for first scan
-        radar.add_field(
-            get_fieldname_pyart(datatype), vis_list[int(scan_list[0])-1])
+        if cfg['rmax'] > 0:
+            ngates = radar.ngates
+            radar.add_field(
+                get_fieldname_pyart(datatype),
+                vis_list[int(scan_list[0])-1][:, :ngates])
+        else:
+            radar.add_field(
+                get_fieldname_pyart(datatype), vis_list[int(scan_list[0])-1])
 
     # add the other scans
     for i in range(1, len(scan_list)):
@@ -734,8 +780,14 @@ def merge_scans_dem_rad4alp(voltime, datatype, cfg, ind_rad=0):
             filename[0], ['dBZ'], scan_list[i], cfg, ind_rad=ind_rad)
         radar_aux.fields = dict()
 
-        radar_aux.add_field(
-            get_fieldname_pyart(datatype), vis_list[int(scan_list[i])-1])
+        if cfg['rmax'] > 0:
+            ngates = radar_aux.ngates
+            radar_aux.add_field(
+                get_fieldname_pyart(datatype),
+                vis_list[int(scan_list[0])-1][:, :ngates])
+        else:
+            radar_aux.add_field(
+                get_fieldname_pyart(datatype), vis_list[int(scan_list[i])-1])
         if radar is None:
             radar = radar_aux
         else:
@@ -776,7 +828,16 @@ def merge_scans_hydro_rad4alp(voltime, datatype, cfg, ind_rad=0):
 
     # read hydrometeor classification data file for first scan
     basename_hydro = 'YM'+radar_name+dayinfo
-    datapath_hydro = basepath+dayinfo+'/'+basename_hydro+'/'
+    if cfg['path_convention'] == 'LTE':
+        yy = dayinfo[0:2]
+        dy = dayinfo[2:]
+        subf = 'M'+radar_res+radar_name+yy+'hdf'+dy
+        datapath_hydro = basepath+subf+'/'
+    elif cfg['path_convention'] == 'MCH':
+        datapath_hydro = basepath+dayinfo+'/'+basename_hydro+'/'
+    else:
+        datapath_hydro = basepath+'YM'+radar_name+'/'
+
     filename_hydro = glob.glob(datapath_hydro+basename_hydro+timeinfo+'*.' +
                                str(800+int(scan_list[0]))+'*')
     if not filename_hydro:
@@ -784,8 +845,10 @@ def merge_scans_hydro_rad4alp(voltime, datatype, cfg, ind_rad=0):
              str(800+int(scan_list[0])))
         return None
 
+    filename_hydro = filename_hydro[0]
+
     hydro_obj = pyart.aux_io.read_product(
-        filename_hydro[0], physic_value=False, masked_array=True)
+        filename_hydro, physic_value=False, masked_array=True)
 
     if hydro_obj is None:
         warn('Unable to read file '+filename_hydro)
@@ -809,25 +872,33 @@ def merge_scans_hydro_rad4alp(voltime, datatype, cfg, ind_rad=0):
             basename = 'P'+radar_res+radar_name+dayinfo
             subf = 'P'+radar_res+radar_name+yy+'hdf'+dy
             datapath = basepath+subf+'/'
-    else:
+    elif cfg['path_convention'] == 'MCH':
         datapath = basepath+dayinfo+'/'+basename+'/'
         filename = glob.glob(
             datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
         if not filename:
             basename = 'P'+radar_res+radar_name+dayinfo
             datapath = basepath+dayinfo+'/'+basename+'/'
+    else:
+        datapath = basepath+'M'+radar_res+radar_name+'/'
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
+        if not filename:
+            basename = 'P'+radar_res+radar_name+dayinfo
+            datapath = basepath+'P'+radar_res+radar_name+'/'
+
     filename = glob.glob(datapath+basename+timeinfo+'*.'+scan_list[0] + '*')
     if not filename:
         warn('No file found in '+datapath+basename+timeinfo+'*.'+scan_list[0])
     else:
         radar = get_data_rad4alp(
             filename[0], ['dBZ'], scan_list[0], cfg, ind_rad=ind_rad)
-        print(np.shape(radar.fields['reflectivity']['data']))
         radar.fields = dict()
 
         # add hydrometeor classification data for first scan
-        print(np.shape(hydro_dict['data']))
-
+        if cfg['rmax'] > 0.:
+            ngates = radar.ngates
+            hydro_dict['data'] = hydro_dict['data'][:, :ngates]
         radar.add_field(hydro_field, hydro_dict)
 
     # add the other scans
@@ -851,8 +922,10 @@ def merge_scans_hydro_rad4alp(voltime, datatype, cfg, ind_rad=0):
                  '*.'+str(800+int(scan_list[i])))
             continue
 
+        filename_hydro = filename_hydro[0]
+
         hydro_obj = pyart.aux_io.read_product(
-            filename_hydro[0], physic_value=False, masked_array=True)
+            filename_hydro, physic_value=False, masked_array=True)
 
         if hydro_obj is None:
             warn('Unable to read file '+filename_hydro)
@@ -862,6 +935,9 @@ def merge_scans_hydro_rad4alp(voltime, datatype, cfg, ind_rad=0):
         hydro_dict = pyart.config.get_metadata(hydro_field)
         hydro_dict['data'] = map_hydro(hydro_obj.data)
 
+        if cfg['rmax'] > 0.:
+            ngates = radar_aux.ngates
+            hydro_dict['data'] = hydro_dict['data'][:, :ngates]
         radar_aux.add_field(hydro_field, hydro_dict)
         if radar is None:
             radar = radar_aux
@@ -936,7 +1012,7 @@ def merge_fields_rainbow(basepath, scan_name, voltime, datatype_list):
 
 
 def merge_fields_cfradial(basepath, loadname, voltime, datatype_list,
-                          dataset_list, product_list):
+                          dataset_list, product_list, rmax=0.):
     """
     merge CF/Radial fields into a single radar object.
 
@@ -955,6 +1031,8 @@ def merge_fields_cfradial(basepath, loadname, voltime, datatype_list,
         Used to get path.
     product_list : list
         list of products. Used to get path
+    rmax : float
+        maximum range that will be kept.
 
     Returns
     -------
@@ -974,6 +1052,17 @@ def merge_fields_cfradial(basepath, loadname, voltime, datatype_list,
              '.nc')
     else:
         radar = pyart.io.read_cfradial(filename[0])
+        if rmax > 0.:
+            radar.range['data'] = radar.range['data'][
+                radar.range['data'] < rmax]
+            radar.ngates = len(radar.range['data'])
+            for field in radar.fields:
+                radar.fields[field]['data'] = (
+                    radar.fields[field]['data'][:, :ngates])
+            radar.gate_x['data'] = radar.gate_x['data'][:, :ngates]
+            radar.init_gate_x_y_z()
+            radar.init_gate_longitude_latitude()
+            radar.init_gate_altitude()
 
     # add other fields in the same scan
     for i in range(1, len(datatype_list)):
@@ -985,6 +1074,17 @@ def merge_fields_cfradial(basepath, loadname, voltime, datatype_list,
                  '.nc')
         else:
             radar_aux = pyart.io.read_cfradial(filename[0])
+            if rmax > 0.:
+                radar_aux.range['data'] = radar_aux.range['data'][
+                    radar_aux.range['data'] < rmax]
+                radar_aux.ngates = len(radar_aux.range['data'])
+                for field in radar_aux.fields:
+                    radar_aux.fields[field]['data'] = (
+                        radar_aux.fields[field]['data'][:, :ngates])
+                radar_aux.gate_x['data'] = radar_aux.gate_x['data'][:, :ngates]
+                radar_aux.init_gate_x_y_z()
+                radar_aux.init_gate_longitude_latitude()
+                radar_aux.init_gate_altitude()
             if radar is None:
                 radar = radar_aux
             else:
@@ -1138,7 +1238,7 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
     Returns
     -------
     radar : Radar
-        radar object
+        radar object. None if the reading has not been successful
 
     """
     metranet_field_names = dict()
@@ -1149,8 +1249,12 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
     if cfg['path_convention'] == 'LTE':
         radar = pyrad_MCH(filename, field_names=metranet_field_names)
     else:
-        radar = pyart.aux_io.read_metranet(
-            filename, field_names=metranet_field_names)
+        try:
+            radar = pyart.aux_io.read_metranet(
+                filename, field_names=metranet_field_names, rmax=cfg['rmax'])
+        except ValueError as ee:
+            warn("Unable to read file '"+filename+": (%s)" % str(ee))
+            return None
 
     # create secondary moments
     if ('Nh' in datatype_list) or ('Nv' in datatype_list):
@@ -1162,36 +1266,64 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
             sweep_number = int(scan_name)-1
 
             if 'Nh' in datatype_list:
-                noise_h_vec = root.findall(
-                    "./sweep/RADAR/STAT/CALIB/noisepower_frontend_h_inuse")
-                rconst_h_vec = root.findall(
-                    "./sweep/RADAR/STAT/CALIB/rconst_h")
+                found = False
+                for sweep in root.findall('sweep'):
+                    sweep_number_file = (
+                        int(sweep.attrib['name'].split('.')[1])-1)
+                    if sweep_number_file == sweep_number:
+                        noise_h = sweep.find(
+                            "./RADAR/STAT/CALIB/noisepower_frontend_h_inuse")
+                        rconst_h = sweep.find("./RADAR/STAT/CALIB/rconst_h")
+                        if noise_h is None or rconst_h is None:
+                            warn('Horizontal channel noise power not ' +
+                                 'available for sweep '+scan_name)
+                            break
 
-                noisedBADU_h = 10.*np.log10(
-                    float(noise_h_vec[sweep_number].attrib['value']))
-                rconst_h = float(rconst_h_vec[sweep_number].attrib['value'])
+                        noisedBADU_h = 10.*np.log10(
+                            float(noise_h.attrib['value']))
+                        rconst_h = float(rconst_h.attrib['value'])
 
-                noisedBZ_h = pyart.retrieve.compute_noisedBZ(
-                    radar.nrays, noisedBADU_h+rconst_h, radar.range['data'],
-                    100., noise_field='noisedBZ_hh')
+                        noisedBZ_h = pyart.retrieve.compute_noisedBZ(
+                            radar.nrays, noisedBADU_h+rconst_h,
+                            radar.range['data'], 100.,
+                            noise_field='noisedBZ_hh')
 
-                radar.add_field('noisedBZ_hh', noisedBZ_h)
+                        radar.add_field('noisedBZ_hh', noisedBZ_h)
+
+                        found = True
+                if not found:
+                    warn('Horizontal channel noise power not ' +
+                         'available for sweep '+scan_name)
 
             if 'Nv' in datatype_list:
-                noise_v_vec = root.findall(
-                    "./sweep/RADAR/STAT/CALIB/noisepower_frontend_v_inuse")
-                rconst_v_vec = root.findall(
-                    "./sweep/RADAR/STAT/CALIB/rconst_v")
+                found = False
+                for sweep in root.findall('sweep'):
+                    sweep_number_file = (
+                        int(sweep.attrib['name'].split('.')[1])-1)
+                    if sweep_number_file == sweep_number:
+                        noise_v = sweep.find(
+                            "./RADAR/STAT/CALIB/noisepower_frontend_v_inuse")
+                        rconst_v = sweep.find("./RADAR/STAT/CALIB/rconst_v")
+                        if noise_v is None or rconst_v is None:
+                            warn('Vertical channel noise power not ' +
+                                 'available for sweep '+scan_name)
+                            break
 
-                noisedBADU_v = 10.*np.log10(
-                    float(noise_v_vec[sweep_number].attrib['value']))
-                rconst_v = float(rconst_v_vec[sweep_number].attrib['value'])
+                        noisedBADU_v = 10.*np.log10(
+                            float(noise_v.attrib['value']))
+                        rconst_v = float(rconst_v.attrib['value'])
 
-                noisedBZ_v = pyart.retrieve.compute_noisedBZ(
-                    radar.nrays, noisedBADU_v+rconst_v, radar.range['data'],
-                    100., noise_field='noisedBZ_vv')
+                        noisedBZ_v = pyart.retrieve.compute_noisedBZ(
+                            radar.nrays, noisedBADU_v+rconst_v,
+                            radar.range['data'], 100.,
+                            noise_field='noisedBZ_vv')
 
-                radar.add_field('noisedBZ_vv', noisedBZ_v)
+                        radar.add_field('noisedBZ_vv', noisedBZ_v)
+
+                        found = True
+                if not found:
+                    warn('Horizontal channel noise power not ' +
+                         'available for sweep '+scan_name)
 
     return radar
 

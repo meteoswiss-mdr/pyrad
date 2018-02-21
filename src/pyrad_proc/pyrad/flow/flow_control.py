@@ -1353,6 +1353,8 @@ def _create_cfg_dict(cfgfile):
         cfg.update({'AntennaGain': None})
     if 'attg' not in cfg:
         cfg.update({'attg': None})
+    if 'rmax' not in cfg:
+        cfg.update({'rmax': 0.})
     if 'ScanPeriod' not in cfg:
         warn('WARNING: Scan period not specified. ' +
              'Assumed default value 5 min')
@@ -1414,6 +1416,7 @@ def _create_datacfg_dict(cfg):
     datacfg.update({'CosmoRunFreq': int(cfg['CosmoRunFreq'])})
     datacfg.update({'CosmoForecasted': int(cfg['CosmoForecasted'])})
     datacfg.update({'path_convention': cfg['path_convention']})
+    datacfg.update({'rmax': cfg['rmax']})
     if 'RadarPosition' in cfg:
         datacfg.update({'RadarPosition': cfg['RadarPosition']})
 
@@ -1447,6 +1450,7 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
     dscfg.update({'cosmopath': cfg['cosmopath']})
     dscfg.update({'CosmoRunFreq': cfg['CosmoRunFreq']})
     dscfg.update({'CosmoForecasted': cfg['CosmoForecasted']})
+    dscfg.update({'path_convention': cfg['path_convention']})
     dscfg.update({'RadarName': cfg['RadarName']})
     dscfg.update({'mflossh': cfg['mflossh']})
     dscfg.update({'mflossv': cfg['mflossv']})
@@ -1612,7 +1616,7 @@ def _get_datasets_list(cfg):
         a dictionary containing the list of datasets at each processing level
 
     """
-    dataset_levels = dict({'l0': list()})
+    dataset_levels = dict({'l00': list()})
     for datasetdescr in cfg['dataSetList']:
         proclevel, dataset = get_dataset_fields(datasetdescr)
         if proclevel in dataset_levels:

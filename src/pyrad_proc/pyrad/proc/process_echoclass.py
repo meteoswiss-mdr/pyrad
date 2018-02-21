@@ -14,6 +14,7 @@ Functions for echo classification and filtering
     process_filter_visibility
     process_outlier_filter
     process_hydroclass
+    process_melting_layer
 
 """
 
@@ -804,5 +805,110 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
         new_dataset = deepcopy(radar)
         new_dataset.fields = dict()
         new_dataset.add_field('radar_echo_classification', hydro)
+
+        return new_dataset, ind_rad
+
+
+def process_melting_layer(procstatus, dscfg, radar_list=None):
+    """
+    Detects the melting layer
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    if dscfg['ML_METHOD'] == 'GIANGRANDE':
+        temp_field = None
+        iso0_field = None
+        for datatypedescr in dscfg['datatype']:
+            radarnr, datagroup, datatype, dataset, product = (
+                get_datatype_fields(datatypedescr))
+            if datatype == 'dBZ':
+                refl_field = 'reflectivity'
+            if datatype == 'dBZc':
+                refl_field = 'corrected_reflectivity'
+            if datatype == 'ZDR':
+                zdr_field = 'differential_reflectivity'
+            if datatype == 'ZDRc':
+                zdr_field = 'corrected_differential_reflectivity'
+            if datatype == 'RhoHV':
+                rhv_field = 'cross_correlation_ratio'
+            if datatype == 'RhoHVc':
+                rhv_field = 'corrected_cross_correlation_ratio'
+            if datatype == 'TEMP':
+                temp_field = 'temperature'
+            if datatype == 'H_ISO0':
+                iso0_field = 'height_over_iso0'
+
+        ind_rad = int(radarnr[5:8])-1
+        if radar_list[ind_rad] is None:
+            warn('No valid radar')
+            return None, None
+        radar = radar_list[ind_rad]
+
+        if temp_field is None and iso0_field is None:
+            warn('iso0 or temperature fields needed to detect melting layer')
+            return None, None
+
+        if temp_field is not None and (temp_field not in radar.fields):
+            warn('Unable to detect melting layer. Missing temperature field')
+            return None, None
+
+        if iso0_field is not None and (iso0_field not in radar.fields):
+            warn('Unable to detect melting layer. ' +
+                 'Missing height over iso0 field')
+            return None, None
+
+        temp_ref = 'temperature'
+        if iso0_field is not None:
+            temp_ref = 'height_over_iso0'
+
+        if ((refl_field not in radar.fields) or
+                (zdr_field not in radar.fields) or
+                (rhv_field not in radar.fields)):
+            warn('Unable to detect melting layer. Missing data')
+            return None, None
+
+        # User defined variables here. See line 516
+        
+        # initialize dataset
+        if dscfg['initialized'] == 0:
+            ml_vol, ml_stack = pyart.retrieve.melting_layer_giangrande(
+                radar, refl_field=refl_field, zdr_field=zdr_field,
+                rhv_field=rhv_field, temp_field=temp_field, iso0_field=iso0_field,
+                ml_field=None, temp_ref=temp_ref, ml_stack=None)                        
+            dscfg['initialized'] = 1            
+        else:
+            ml_vol, ml_stack = pyart.retrieve.melting_layer_giangrande(
+                radar, refl_field=refl_field, zdr_field=zdr_field,
+                rhv_field=rhv_field, temp_field=temp_field, iso0_field=iso0_field,
+                ml_field=None, temp_ref=temp_ref, ml_stack=dscfg['global_data'])        
+            
+        dscfg['global_data'] = ml_stack    
+
+        # prepare for exit
+        new_dataset = deepcopy(radar)
+        new_dataset.fields = dict()
+        new_dataset.add_field('melting_layer', ml)
 
         return new_dataset, ind_rad

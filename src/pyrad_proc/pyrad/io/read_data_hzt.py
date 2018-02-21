@@ -161,8 +161,6 @@ def get_iso0_field(hzt_data, hzt_ind, z_radar, field_name='height_over_iso0'):
     field_dict['data'] = z_radar-values[hzt_ind['data'].flatten()].reshape(
         nrays, ngates)
 
-    print(field_dict['data'])
-
     return field_dict
 
 

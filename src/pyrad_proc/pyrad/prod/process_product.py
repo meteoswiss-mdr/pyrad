@@ -200,18 +200,26 @@ def generate_sun_hits_products(dataset, prdcfg):
 
         print('----- save to '+' '.join(fname))
 
-        return savedir+fname
+        return fname
 
     elif prdcfg['type'] == 'WRITE_SUN_RETRIEVAL':
         if 'sun_retrieval' not in dataset:
             return None
+
+        timeinfo = None
+        timeformat = None
+        if 'add_date_in_fname' in prdcfg:
+            if prdcfg['add_date_in_fname']:
+                timeinfo = dataset['timeinfo']
+                timeformat = '%Y'
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=None)
 
         fname = make_filename(
-            'info', prdcfg['dstype'], 'retrieval', ['csv'])
+            'info', prdcfg['dstype'], 'retrieval', ['csv'], timeinfo=timeinfo,
+            timeformat=timeformat, runinfo=prdcfg['runinfo'])
 
         for i in range(len(fname)):
             fname[i] = savedir+fname[i]
@@ -260,7 +268,9 @@ def generate_sun_hits_products(dataset, prdcfg):
             return None
 
         field = create_sun_retrieval_field(
-            dataset['sun_retrieval'][par], prdcfg['sunhitsImageConfig'])
+            dataset['sun_retrieval'][par], field_name,
+            prdcfg['sunhitsImageConfig'],
+            lant=dataset['sun_retrieval']['lant'])
 
         if field is not None:
             plot_sun_hits(field, field_name, fname, prdcfg)
@@ -277,12 +287,20 @@ def generate_sun_hits_products(dataset, prdcfg):
         if 'dpi' in prdcfg:
             dpi = prdcfg['dpi']
 
+        timeinfo = None
+        timeformat = None
+        if 'add_date_in_fname' in prdcfg:
+            if prdcfg['add_date_in_fname']:
+                timeinfo = dataset['timeinfo']
+                timeformat = '%Y'
+
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdid'], timeinfo=None)
 
         fname = make_filename(
-            'info', prdcfg['dstype'], 'retrieval', ['csv'])
+            'info', prdcfg['dstype'], 'retrieval', ['csv'], timeinfo=timeinfo,
+            timeformat=timeformat, runinfo=prdcfg['runinfo'])
 
         fname = savedir + fname[0]
 
@@ -305,16 +323,22 @@ def generate_sun_hits_products(dataset, prdcfg):
 
         fname = make_filename(
             'retrieval_ts', prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'])
+            prdcfg['imgformat'], timeinfo=timeinfo,
+            timeformat=timeformat, runinfo=prdcfg['runinfo'])
 
         for i in range(len(fname)):
             fname[i] = savedir+fname[i]
 
-        plot_sun_retrieval_ts(
-            sun_retrieval, prdcfg['voltype'], fname, dpi=dpi)
+        titl = (prdcfg['runinfo']+' Sun Retrieval ' +
+                sun_retrieval[1][0].strftime('%Y%m%d')+'-' +
+                sun_retrieval[1][-1].strftime('%Y%m%d'))
+        figfname = plot_sun_retrieval_ts(
+            sun_retrieval, prdcfg['voltype'], fname, titl=titl, dpi=dpi)
+
+        if figfname is None:
+            return None
 
         print('----- save to '+' '.join(fname))
-
         return fname
 
     else:
@@ -351,11 +375,11 @@ def generate_intercomp_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
         fname = make_filename(
             'colocated_data', prdcfg['dstype'], prdcfg['voltype'],
-            ['csv'], timeinfo=prdcfg['timeinfo'],
+            ['csv'], timeinfo=dataset['timeinfo'],
             timeformat='%Y%m%d')
 
         fname = savedir+fname[0]
@@ -371,11 +395,11 @@ def generate_intercomp_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
         fname = make_filename(
             'colocated_data', prdcfg['dstype'], prdcfg['voltype'],
-            ['csv'], timeinfo=prdcfg['timeinfo'],
+            ['csv'], timeinfo=dataset['timeinfo'],
             timeformat='%Y%m%d')
 
         fname = savedir+fname[0]
@@ -451,13 +475,22 @@ def generate_intercomp_products(dataset, prdcfg):
             np.ma.asarray(dataset['intercomp_dict']['rad2_val']),
             field_name, field_name, step1=step, step2=step)
 
+        # put time info in file path and name
+        csvtimeinfo_file = None
+        timeformat = None
+        if 'add_date_in_fname' in prdcfg:
+            if prdcfg['add_date_in_fname']:
+                csvtimeinfo_file = dataset['timeinfo']
+                timeformat = '%Y'
+
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=None)
 
         csvfname = make_filename(
             'ts', prdcfg['dstype'], prdcfg['voltype'], ['csv'],
-            timeinfo=None, timeformat='%Y%m%d')[0]
+            prdcfginfo=rad1_name+'-'+rad2_name,
+            timeinfo=csvtimeinfo_file, timeformat=timeformat)[0]
 
         csvfname = savedir+csvfname
 
@@ -466,8 +499,9 @@ def generate_intercomp_products(dataset, prdcfg):
             rad1_name=rad1_name, rad2_name=rad2_name)
         print('saved CSV file: '+csvfname)
 
-        (date_vec, np_vec, meanbias_vec, medianbias_vec, modebias_vec,
-         corr_vec, slope_vec, intercep_vec, intercep_slope1_vec) = (
+        (date_vec, np_vec, meanbias_vec, medianbias_vec, quant25bias_vec,
+         quant75bias_vec, modebias_vec, corr_vec, slope_vec, intercep_vec,
+         intercep_slope1_vec) = (
             read_intercomp_scores_ts(csvfname))
 
         if date_vec is None:
@@ -475,19 +509,41 @@ def generate_intercomp_products(dataset, prdcfg):
                 'Unable to plot time series. No valid data')
             return None
 
+        if len(date_vec) < 2:
+            warn(
+                'Unable to plot time series. Not enough points')
+            return None
+
+        figtimeinfo = None
+        titldate = (date_vec[0].strftime('%Y%m%d')+'-' +
+                    date_vec[-1].strftime('%Y%m%d'))
+        if 'add_date_in_fname' in prdcfg:
+            if prdcfg['add_date_in_fname']:
+                figtimeinfo = date_vec[0]
+                timeformat = '%Y'
+
         figfname = make_filename(
             'ts', prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'],
-            timeinfo=None, timeformat='%Y%m%d')
+            prdcfg['imgformat'], prdcfginfo=rad1_name+'-'+rad2_name,
+            timeinfo=figtimeinfo, timeformat=timeformat)
 
         for i in range(len(figfname)):
             figfname[i] = savedir+figfname[i]
 
-        titl = rad1_name+'-'+rad2_name+' '+field_name+' intercomparison'
+        np_min = 0
+        if 'npoints_min' in prdcfg:
+            np_min = prdcfg['npoints_min']
+        corr_min = 0.
+        if 'corr_min' in prdcfg:
+            corr_min = prdcfg['corr_min']
+
+        titl = (rad1_name+'-'+rad2_name+' '+field_name+' intercomparison ' +
+                titldate)
         plot_intercomp_scores_ts(
-            date_vec, np_vec, meanbias_vec, medianbias_vec, modebias_vec,
-            corr_vec, slope_vec, intercep_vec, intercep_slope1_vec, figfname,
-            ref_value=0., labelx='Time UTC', titl=titl)
+            date_vec, np_vec, meanbias_vec, medianbias_vec, quant25bias_vec,
+            quant75bias_vec, modebias_vec, corr_vec, slope_vec, intercep_vec,
+            intercep_slope1_vec, figfname, ref_value=0., np_min=np_min,
+            corr_min=corr_min, labelx='Time UTC', titl=titl)
         print('----- save to '+' '.join(figfname))
 
         return figfname
@@ -2481,9 +2537,18 @@ def generate_monitoring_products(dataset, prdcfg):
                 prdcfg['type'])
             return None
 
-        csvtimeinfo = None
+        # put time info in file path and name
+        csvtimeinfo_path = None
+        csvtimeinfo_file = None
+        timeformat = None
         if hist_type == 'instant':
-            csvtimeinfo = prdcfg['timeinfo']
+            csvtimeinfo_path = dataset['timeinfo']
+            csvtimeinfo_file = dataset['timeinfo']
+            timeformat = '%Y%m%d'
+        elif 'add_date_in_fname' in prdcfg:
+            if prdcfg['add_date_in_fname']:
+                csvtimeinfo_file = dataset['timeinfo']
+                timeformat = '%Y'
 
         quantiles = np.array([25., 50., 75.])
         ref_value = 0.
@@ -2494,11 +2559,12 @@ def generate_monitoring_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=csvtimeinfo)
+            prdcfg['prdname'], timeinfo=csvtimeinfo_path)
 
         csvfname = make_filename(
             'ts', prdcfg['dstype'], prdcfg['voltype'], ['csv'],
-            timeinfo=csvtimeinfo, timeformat='%Y%m%d')[0]
+            timeinfo=csvtimeinfo_file, timeformat=timeformat,
+            runinfo=prdcfg['runinfo'])[0]
 
         csvfname = savedir+csvfname
 
@@ -2530,23 +2596,43 @@ def generate_monitoring_products(dataset, prdcfg):
         if hist_type == 'instant':
             figtimeinfo = date[0]
             titldate = date[0].strftime('%Y-%m-%d')
+        else:
+            titldate = (date[0].strftime('%Y%m%d')+'-' +
+                        date[-1].strftime('%Y%m%d'))
+            if 'add_date_in_fname' in prdcfg:
+                if prdcfg['add_date_in_fname']:
+                    figtimeinfo = date[0]
+                    timeformat = '%Y'
 
         figfname = make_filename(
             'ts', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
-            timeinfo=figtimeinfo, timeformat='%Y%m%d')
+            timeinfo=figtimeinfo, timeformat=timeformat,
+            runinfo=prdcfg['runinfo'])
 
         for i in range(len(figfname)):
             figfname[i] = savedir+figfname[i]
 
-        titl = ('Monitoring Time Series '+titldate)
+        titl = (prdcfg['runinfo']+' Monitoring '+titldate)
 
         labely = generate_field_name_str(prdcfg['voltype'])
 
+        np_min = 0
+        if 'npoints_min' in prdcfg:
+            np_min = prdcfg['npoints_min']
+
+        vmin = None
+        if 'vmin' in prdcfg:
+            vmin = prdcfg['vmin']
+
+        vmax = None
+        if 'vmax' in prdcfg:
+            vmax = prdcfg['vmax']
+
         plot_monitoring_ts(
             date, np_t_vec, cquant_vec, lquant_vec, hquant_vec, field_name,
-            figfname, ref_value=ref_value, labelx='Time UTC',
-            labely=labely, titl=titl)
+            figfname, ref_value=ref_value, vmin=vmin, vmax=vmax,
+            np_min=np_min, labelx='Time UTC', labely=labely, titl=titl)
         print('----- save to '+' '.join(figfname))
 
         # generate alarms if needed
@@ -2593,14 +2679,14 @@ def generate_monitoring_products(dataset, prdcfg):
         value_last = cquant_vec[-1]
 
         if np_last < npoints_min:
-            warn('No valid data on day '+value_last.strftime('%d-%m-%Y'))
+            warn('No valid data on day '+date[-1].strftime('%d-%m-%Y'))
             return None
 
         # check if absolute value exceeded
         abs_exceeded = False
         if ((value_last > ref_value+tol_abs) or
                 (value_last < ref_value-tol_abs)):
-            warn('Value '+str(value_last)+'exceeds target '+str(ref_value) +
+            warn('Value '+str(value_last)+' exceeds target '+str(ref_value) +
                  ' +/- '+str(tol_abs))
             abs_exceeded = True
 
