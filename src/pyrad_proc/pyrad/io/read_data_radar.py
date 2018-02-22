@@ -26,7 +26,6 @@ Functions for reading radar data files
 
 """
 
-import sys
 import glob
 import datetime
 import os
@@ -295,8 +294,7 @@ def merge_scans_rainbow(basepath, scan_list, voltime, scan_period,
 
             if (len(filelist) == 0):
                 warn("ERROR: No data file found for scan '%s' "
-                     "between %s and %s" % (scan_list[i], voltime, endtime),
-                     file=sys.stderr)
+                     "between %s and %s" % (scan_list[i], voltime, endtime))
                 continue
             scantime = get_datetime(filelist[0], datadescriptor)
 
