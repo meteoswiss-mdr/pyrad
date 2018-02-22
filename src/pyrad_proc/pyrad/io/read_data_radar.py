@@ -26,7 +26,6 @@ Functions for reading radar data files
 
 """
 
-import sys
 import glob
 import datetime
 import os
@@ -295,8 +294,7 @@ def merge_scans_rainbow(basepath, scan_list, voltime, scan_period,
 
             if (len(filelist) == 0):
                 warn("ERROR: No data file found for scan '%s' "
-                     "between %s and %s" % (scan_list[i], voltime, endtime),
-                     file=sys.stderr)
+                     "between %s and %s" % (scan_list[i], voltime, endtime))
                 continue
             scantime = get_datetime(filelist[0], datadescriptor)
 
@@ -428,6 +426,8 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
         else:
             radar_aux = get_data_rad4alp(
                 filename[0], datatype_list, scan_list[i], cfg, ind_rad=ind_rad)
+            if radar_aux is None:
+                continue
 
             if radar is None:
                 radar = radar_aux
@@ -641,17 +641,18 @@ def merge_scans_cosmo_rad4alp(voltime, datatype, cfg, ind_rad=0):
         radar = get_data_rad4alp(
             filename[0], ['dBZ'], cfg['ScanList'][ind_rad][0], cfg,
             ind_rad=ind_rad)
-        radar.fields = dict()
+        if radar is not None:
+            radar.fields = dict()
 
-        ngates = 0
-        if cfg['rmax'] > 0:
-            ngates = radar.ngates
-        cosmo_field = read_rad4alp_cosmo(
-            filename_list[0], datatype, ngates=ngates)
-        if cosmo_field is None:
-            return None
+            ngates = 0
+            if cfg['rmax'] > 0:
+                ngates = radar.ngates
+            cosmo_field = read_rad4alp_cosmo(
+                filename_list[0], datatype, ngates=ngates)
+            if cosmo_field is None:
+                return None
 
-        radar.add_field(get_fieldname_pyart(datatype), cosmo_field)
+            radar.add_field(get_fieldname_pyart(datatype), cosmo_field)
 
     # add the other scans
     for i in range(1, len(cfg['ScanList'][ind_rad])):
@@ -664,6 +665,8 @@ def merge_scans_cosmo_rad4alp(voltime, datatype, cfg, ind_rad=0):
             radar_aux = get_data_rad4alp(
                 filename[0], ['dBZ'], cfg['ScanList'][ind_rad][i], cfg,
                 ind_rad=ind_rad)
+            if radar_aux is None:
+                return None
             radar_aux.fields = dict()
 
             ngates = 0
@@ -756,17 +759,20 @@ def merge_scans_dem_rad4alp(voltime, datatype, cfg, ind_rad=0):
     else:
         radar = get_data_rad4alp(
             filename[0], ['dBZ'], scan_list[0], cfg, ind_rad=ind_rad)
-        radar.fields = dict()
 
-        # add visibility data for first scan
-        if cfg['rmax'] > 0:
-            ngates = radar.ngates
-            radar.add_field(
-                get_fieldname_pyart(datatype),
-                vis_list[int(scan_list[0])-1][:, :ngates])
-        else:
-            radar.add_field(
-                get_fieldname_pyart(datatype), vis_list[int(scan_list[0])-1])
+        if radar is not None:
+            radar.fields = dict()
+
+            # add visibility data for first scan
+            if cfg['rmax'] > 0:
+                ngates = radar.ngates
+                radar.add_field(
+                    get_fieldname_pyart(datatype),
+                    vis_list[int(scan_list[0])-1][:, :ngates])
+            else:
+                radar.add_field(
+                    get_fieldname_pyart(datatype),
+                    vis_list[int(scan_list[0])-1])
 
     # add the other scans
     for i in range(1, len(scan_list)):
@@ -778,8 +784,10 @@ def merge_scans_dem_rad4alp(voltime, datatype, cfg, ind_rad=0):
             continue
         radar_aux = get_data_rad4alp(
             filename[0], ['dBZ'], scan_list[i], cfg, ind_rad=ind_rad)
-        radar_aux.fields = dict()
+        if radar_aux is None:
+            continue
 
+        radar_aux.fields = dict()
         if cfg['rmax'] > 0:
             ngates = radar_aux.ngates
             radar_aux.add_field(
@@ -893,13 +901,14 @@ def merge_scans_hydro_rad4alp(voltime, datatype, cfg, ind_rad=0):
     else:
         radar = get_data_rad4alp(
             filename[0], ['dBZ'], scan_list[0], cfg, ind_rad=ind_rad)
-        radar.fields = dict()
+        if radar is not None:
+            radar.fields = dict()
 
-        # add hydrometeor classification data for first scan
-        if cfg['rmax'] > 0.:
-            ngates = radar.ngates
-            hydro_dict['data'] = hydro_dict['data'][:, :ngates]
-        radar.add_field(hydro_field, hydro_dict)
+            # add hydrometeor classification data for first scan
+            if cfg['rmax'] > 0.:
+                ngates = radar.ngates
+                hydro_dict['data'] = hydro_dict['data'][:, :ngates]
+            radar.add_field(hydro_field, hydro_dict)
 
     # add the other scans
     for i in range(1, len(scan_list)):
@@ -912,6 +921,8 @@ def merge_scans_hydro_rad4alp(voltime, datatype, cfg, ind_rad=0):
 
         radar_aux = get_data_rad4alp(
             filename[0], ['dBZ'], scan_list[i], cfg, ind_rad=ind_rad)
+        if radar_aux is None:
+            continue
         radar_aux.fields = dict()
 
         # read hydrometeor classification data file for other scans
@@ -1249,8 +1260,12 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
     if cfg['path_convention'] == 'LTE':
         radar = pyrad_MCH(filename, field_names=metranet_field_names)
     else:
-        radar = pyart.aux_io.read_metranet(
-            filename, field_names=metranet_field_names, rmax=cfg['rmax'])
+        try:
+            radar = pyart.aux_io.read_metranet(
+                filename, field_names=metranet_field_names, rmax=cfg['rmax'])
+        except ValueError as ee:
+            warn("Unable to read file '"+filename+": (%s)" % str(ee))
+            return None
 
     # create secondary moments
     if ('Nh' in datatype_list) or ('Nv' in datatype_list):
@@ -1410,7 +1425,8 @@ def add_field(radar_dest, radar_orig):
     return radar_dest
 
 
-def interpol_field(radar_dest, radar_orig, field_name, fill_value=None):
+def interpol_field(radar_dest, radar_orig, field_name, fill_value=None,
+                   ang_tol=0.5):
     """
     interpolates field field_name contained in radar_orig to the grid in
     radar_dest
@@ -1423,6 +1439,11 @@ def interpol_field(radar_dest, radar_orig, field_name, fill_value=None):
         the radar object containing the original field
     field_name: str
         name of the field to interpolate
+    fill_value: float
+        The fill value
+    ang_tol : float
+        angle tolerance to determine whether the radar origin sweep is the
+        radar destination sweep
 
     Returns
     -------
@@ -1430,6 +1451,11 @@ def interpol_field(radar_dest, radar_orig, field_name, fill_value=None):
         interpolated field and metadata
 
     """
+    if radar_dest.nsweeps != radar_orig.nsweeps:
+        warn('Number of sweeps in destination radar object different from ' +
+             'origin radar object. Orig: '+str(radar_orig.nsweeps) +
+             ' Dest : '+str(radar_dest.nsweeps))
+
     if fill_value is None:
         fill_value = pyart.config.get_fillvalue()
 
@@ -1440,41 +1466,58 @@ def interpol_field(radar_dest, radar_orig, field_name, fill_value=None):
     field_dest['data'][:] = np.ma.masked
 
     for sweep in range(radar_dest.nsweeps):
-        sweep_start_orig = radar_orig.sweep_start_ray_index['data'][sweep]
-        sweep_end_orig = radar_orig.sweep_end_ray_index['data'][sweep]
-
         sweep_start_dest = radar_dest.sweep_start_ray_index['data'][sweep]
         sweep_end_dest = radar_dest.sweep_end_ray_index['data'][sweep]
+        fixed_angle = radar_dest.fixed_angle['data'][sweep]
+        nrays_sweep = radar_dest.rays_per_sweep['data'][sweep]
 
-        if radar_dest.scan_type == 'ppi':
-            angle_old = np.sort(radar_orig.azimuth['data'][
-                sweep_start_orig:sweep_end_orig+1])
-            ind_ang = np.argsort(radar_orig.azimuth['data'][
-                sweep_start_orig:sweep_end_orig+1])
-            angle_new = radar_dest.azimuth['data'][
-                sweep_start_dest:sweep_end_dest+1]
-        elif radar_dest.scan_type == 'rhi':
-            angle_old = np.sort(radar_orig.elevation['data'][
-                sweep_start_orig:sweep_end_orig+1])
-            ind_ang = np.argsort(radar_orig.azimuth['data'][
-                sweep_start_orig:sweep_end_orig+1])
-            angle_new = radar_dest.elevation['data'][
-                sweep_start_dest:sweep_end_dest+1]
+        # look for nearest angle
+        delta_ang = np.absolute(radar_orig.fixed_angle['data']-fixed_angle)
+        ind_sweep_orig = np.argmin(delta_ang)
 
-        field_orig_sweep_data = field_orig_data[
-            sweep_start_orig:sweep_end_orig+1, :]
-        interpol_func = RegularGridInterpolator(
-            (angle_old, radar_orig.range['data']),
-            field_orig_sweep_data[ind_ang], method='nearest',
-            bounds_error=False, fill_value=fill_value)
+        if delta_ang[ind_sweep_orig] > ang_tol:
+            warn('No fixed angle of origin radar object matches the fixed ' +
+                 'angle of destination radar object for sweep nr ' +
+                 str(sweep)+' with fixed angle '+str(fixed_angle)+'+/-' +
+                 str(ang_tol))
+            field_dest_sweep = np.ma.empty((nrays_sweep, radar_dest.ngates),
+                                           dtype=float)
+            field_dest_sweep[:] = np.ma.masked
+        else:
+            sweep_start_orig = radar_orig.sweep_start_ray_index['data'][
+                ind_sweep_orig]
+            sweep_end_orig = radar_orig.sweep_end_ray_index['data'][
+                ind_sweep_orig]
 
-        # interpolate data to radar_dest grid
-        angv, rngv = np.meshgrid(
-            angle_new, radar_dest.range['data'], indexing='ij')
+            if radar_dest.scan_type == 'ppi':
+                angle_old = np.sort(radar_orig.azimuth['data'][
+                    sweep_start_orig:sweep_end_orig+1])
+                ind_ang = np.argsort(radar_orig.azimuth['data'][
+                    sweep_start_orig:sweep_end_orig+1])
+                angle_new = radar_dest.azimuth['data'][
+                    sweep_start_dest:sweep_end_dest+1]
+            elif radar_dest.scan_type == 'rhi':
+                angle_old = np.sort(radar_orig.elevation['data'][
+                    sweep_start_orig:sweep_end_orig+1])
+                ind_ang = np.argsort(radar_orig.elevation['data'][
+                    sweep_start_orig:sweep_end_orig+1])
+                angle_new = radar_dest.elevation['data'][
+                    sweep_start_dest:sweep_end_dest+1]
 
-        field_dest_sweep = interpol_func((angv, rngv))
-        field_dest_sweep = np.ma.masked_where(
-            field_dest_sweep == fill_value, field_dest_sweep)
+            field_orig_sweep_data = field_orig_data[
+                sweep_start_orig:sweep_end_orig+1, :]
+            interpol_func = RegularGridInterpolator(
+                (angle_old, radar_orig.range['data']),
+                field_orig_sweep_data[ind_ang], method='nearest',
+                bounds_error=False, fill_value=fill_value)
+
+            # interpolate data to radar_dest grid
+            angv, rngv = np.meshgrid(
+                angle_new, radar_dest.range['data'], indexing='ij')
+
+            field_dest_sweep = interpol_func((angv, rngv))
+            field_dest_sweep = np.ma.masked_where(
+                field_dest_sweep == fill_value, field_dest_sweep)
 
         field_dest['data'][sweep_start_dest:sweep_end_dest+1, :] = (
             field_dest_sweep)

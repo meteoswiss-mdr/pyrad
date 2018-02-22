@@ -66,7 +66,7 @@ hydroclass_grid STRUCT 5
       vres FLOAT 200.
       altorig FLOAT 0.
    products STRUCT 1                        
-        SAVEVOL_dBZc STRUCT 2
+        SAVEVOL_hydro STRUCT 2
             type   STRING SAVEVOL
             voltype STRING hydro
          
