@@ -15,7 +15,7 @@ function postprocessing {
 
     # Run postproc processing
     cd ${pyradpath}
-    python main_process_data.py $1 -i $2 >>$3 2>>$3
+    python -u main_process_data.py $1 -i $2 >>$3 2>>$3
 }
 
 # Call the realtime processing application with arguments.
@@ -35,7 +35,7 @@ function dataquality {
     
     # Run postproc processing
     cd ${pyradpath}
-    python main_process_data_period.py $1 $2 $3 --starttime '000001' --endtime '240000' -i $4 >>$5 2>>$5
+    python -u main_process_data_period.py $1 $2 $3 --starttime '000001' --endtime '240000' -i $4 >>$5 2>>$5
 }
 
 # set permits
