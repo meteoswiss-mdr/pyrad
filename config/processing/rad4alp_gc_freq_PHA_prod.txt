@@ -1,0 +1,161 @@
+#
+# Product generation configuration
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 5
+    l0:dBZ
+    l0:CLT    
+    l0:echoID
+    l1:dBZ_clt
+    l2:clt_freq
+    
+# ==========================================================================================
+#                 raw data products
+# ==========================================================================================
+dBZ STRUCT 4
+    type STRING RAW
+    datatype STRARR 1
+        RAD4ALP:dBZ
+    MAKE_GLOBAL INT 0
+    products STRUCT 3                
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING dBZ
+        EL000_4 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 1
+            voltype STRING dBZ
+        EL001_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING dBZ
+            
+CLT STRUCT 4
+    type STRING RAW
+    datatype STRARR 1
+        RAD4ALP:CLT
+    MAKE_GLOBAL INT 0
+    products STRUCT 3                
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING CLT
+        EL000_4 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 1
+            voltype STRING CLT
+        EL001_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING CLT
+            
+# ==========================================================================================
+#                 Secondary moment products data products
+# ==========================================================================================
+echoID STRUCT 4
+    type STRING CLT_TO_SAN
+    datatype STRARR 1
+        RAD4ALP:CLT
+    MAKE_GLOBAL INT 1
+    products STRUCT 3                
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING echoID
+        EL000_4 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 1
+            voltype STRING echoID
+        EL001_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING echoID
+            
+# ==========================================================================================
+#                 echoFiltering
+# ==========================================================================================
+# echo type 3 : precip, 2 : clutter, 1 : noise
+# keep only clutter echoes
+dBZ_clt STRUCT 5
+    type STRING ECHO_FILTER
+    datatype STRARR 2
+        PROC:echoID
+        RAD4ALP:dBZ        
+    echo_type INT 2
+    MAKE_GLOBAL INT 1
+    products STRUCT 3                
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING dBZc
+        EL000_4 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 1
+            voltype STRING dBZc
+        EL001_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING dBZc
+            
+# ==========================================================================================
+#                 Frequency of occurrence
+# ==========================================================================================
+clt_freq STRUCT 7
+    type STRING OCCURRENCE
+    datatype STRARR 2
+        PROC:dBZc    
+        PROC:echoID
+    filter_prec STRING None
+    val_min FLOAT 0.
+    regular_grid INT 1
+    MAKE_GLOBAL INT 0
+    products STRUCT 12                
+        ELN00_2_occu STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING occurrence
+        EL000_4_occu STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 1
+            voltype STRING occurrence
+        EL001_0_occu STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING occurrence
+        ELN00_2_freq_occu STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING freq_occu
+        EL000_4_freq_occu STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 1
+            voltype STRING freq_occu
+        EL001_0_freq_occu STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING freq_occu
+        ELN00_2_nsamples STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING nsamples
+        EL000_4_nsamples STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 1
+            voltype STRING nsamples
+        EL001_0_nsamples STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING nsamples
+        EXCESS_GATES STRUCT 2
+            type STRING WRITE_EXCESS_GATES
+            quant_min FLOAT 95.        
+        SAVEVOL_nsamples STRUCT 2
+            type  STRING SAVEVOL
+            voltype STRING nsamples
+        SAVEVOL_occurrence STRUCT 2
+            type  STRING SAVEVOL
+            voltype STRING occurrence
+            

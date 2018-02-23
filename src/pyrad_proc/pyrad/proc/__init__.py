@@ -28,6 +28,7 @@ Echo classification and filtering
     :toctree: generated/
 
     process_echo_id
+    process_clt_to_echo_id
     process_echo_filter
     process_cdf
     process_filter_snr
@@ -68,7 +69,10 @@ Monitoring, calibration and noise correction
     process_sun_hits
     process_selfconsistency_kdp_phidp
     process_selfconsistency_bias
+    process_occurrence
+    process_occurrence_period
     process_monitoring
+    process_gc_monitoring
     process_time_avg
     process_weighted_time_avg
     process_time_avg_flag
@@ -123,6 +127,7 @@ from .process_traj import process_trajectory, process_traj_atplane
 from .process_traj import process_traj_antenna_pattern
 
 from .process_echoclass import process_echo_id, process_echo_filter
+from .process_echoclass import process_clt_to_echo_id
 from .process_echoclass import process_filter_snr, process_filter_visibility
 from .process_echoclass import process_outlier_filter, process_hydroclass
 from .process_echoclass import process_cdf, process_melting_layer
@@ -142,7 +147,9 @@ from .process_calib import process_rhohv_rain, process_zdr_precip
 from .process_calib import process_estimate_phidp0, process_zdr_snow
 from .process_calib import process_selfconsistency_kdp_phidp
 from .process_calib import process_selfconsistency_bias
-from .process_calib import process_monitoring
+from .process_calib import process_monitoring, process_occurrence
+from .process_calib import process_occurrence_period
+from .process_calib import process_gc_monitoring
 from .process_calib import process_time_avg, process_weighted_time_avg
 from .process_calib import process_time_avg_flag
 from .process_calib import process_colocated_gates, process_intercomp

@@ -1069,8 +1069,8 @@ def merge_fields_cfradial(basepath, loadname, voltime, datatype_list,
             radar.ngates = len(radar.range['data'])
             for field in radar.fields:
                 radar.fields[field]['data'] = (
-                    radar.fields[field]['data'][:, :ngates])
-            radar.gate_x['data'] = radar.gate_x['data'][:, :ngates]
+                    radar.fields[field]['data'][:, :radar.ngates])
+            radar.gate_x['data'] = radar.gate_x['data'][:, :radar.ngates]
             radar.init_gate_x_y_z()
             radar.init_gate_longitude_latitude()
             radar.init_gate_altitude()
@@ -1091,8 +1091,9 @@ def merge_fields_cfradial(basepath, loadname, voltime, datatype_list,
                 radar_aux.ngates = len(radar_aux.range['data'])
                 for field in radar_aux.fields:
                     radar_aux.fields[field]['data'] = (
-                        radar_aux.fields[field]['data'][:, :ngates])
-                radar_aux.gate_x['data'] = radar_aux.gate_x['data'][:, :ngates]
+                        radar_aux.fields[field]['data'][:, :radar_aux.ngates])
+                radar_aux.gate_x['data'] = (
+                    radar_aux.gate_x['data'][:, :radar_aux.ngates])
                 radar_aux.init_gate_x_y_z()
                 radar_aux.init_gate_longitude_latitude()
                 radar_aux.init_gate_altitude()

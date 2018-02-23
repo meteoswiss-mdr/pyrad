@@ -148,6 +148,7 @@ rain_rate = 'rain_rate'
 radar_estimated_rain_rate = 'radar_estimated_rain_rate'
 radar_echo_classification = 'radar_echo_classification'
 radar_echo_id = 'radar_echo_id'
+clutter_exit_code = 'clutter_exit_code'
 melting_layer = 'melting_layer'
 
 # attenuation
@@ -171,6 +172,8 @@ sun_hit_zdr = 'sun_hit_zdr'
 number_of_samples = 'number_of_samples'
 time_avg_flag = 'time_avg_flag'
 colocated_gates = 'colocated_gates'
+occurrence = 'occurrence'
+frequency_of_occurrence = 'frequency_of_occurrence'
 
 # COSMO data fields
 temperature = 'temperature'
@@ -320,6 +323,7 @@ DEFAULT_FIELD_NAMES = {
     'radar_estimated_rain_rate': radar_estimated_rain_rate,
     'radar_echo_classification': radar_echo_classification,
     'radar_echo_id': radar_echo_id,
+    'clutter_exit_code': clutter_exit_code,
     'melting_layer': melting_layer,
     'specific_attenuation': specific_attenuation,
     'path_integrated_attenuation': path_integrated_attenuation,
@@ -355,6 +359,8 @@ DEFAULT_FIELD_NAMES = {
     'number_of_samples': number_of_samples,
     'colocated_gates': colocated_gates,
     'time_avg_flag': time_avg_flag,
+    'occurrence': occurrence,
+    'frequency_of_occurrence': frequency_of_occurrence,
     'interpolated_profile': interpolated_profile,
 }
 
@@ -992,6 +998,15 @@ DEFAULT_METADATA = {
         'boundaries': [0.5, 1.5, 2.5, 3.5],
         'coordinates': 'elevation azimuth range'},
 
+    clutter_exit_code: {
+        'units': '-',
+        'standard_name': 'clutter_exit_code',
+        'long_name': 'Clutter Exit Code',
+        #  'labels': ['NOISE', 'PREC', 'CLT'],
+        #  'ticks': [1, 50, 150],
+        #  'boundaries': [0.5, 1.5, 99.5, 200.],
+        'coordinates': 'elevation azimuth range'},
+
     melting_layer: {
         'units': '-',
         'standard_name': 'melting_layer',
@@ -1052,7 +1067,20 @@ DEFAULT_METADATA = {
     number_of_samples: {
         'units': 'count',
         'standard_name': 'number_of_samples',
-        'long_name': 'Number of samples in average',
+        'long_name': 'Number of samples',
+        'valid_min': 0,
+        'coordinates': 'elevation azimuth range'},
+
+    occurrence: {
+        'units': 'count',
+        'standard_name': 'occurrence',
+        'long_name': 'occurrence',
+        'coordinates': 'elevation azimuth range'},
+
+    frequency_of_occurrence: {
+        'units': 'percent',
+        'standard_name': 'frequency_of_occurrence',
+        'long_name': 'Frequency of occurrence',
         'coordinates': 'elevation azimuth range'},
 
     time_avg_flag: {
@@ -1861,7 +1889,6 @@ def spectrum_width_limit(container=None, selection=0):
     else:
         return (0., 4.)
 
-# map each field to a colormap
 
 DEFAULT_FIELD_COLORMAP = {
     # field name : colormap
@@ -1881,6 +1908,8 @@ DEFAULT_FIELD_COLORMAP = {
     signal_to_noise_ratio_vv: 'pyart_Carbone17',
 
     visibility: 'pyart_Carbone17',
+    frequency_of_occurrence: 'pyart_Carbone17',
+    occurrence: 'pyart_Carbone17',
 
     noisedBZ_hh: 'pyart_NWSRef',
     noisedBZ_vv: 'pyart_NWSRef',
@@ -1956,6 +1985,7 @@ DEFAULT_FIELD_COLORMAP = {
 
     radar_echo_classification: 'pyart_LangRainbow12',
     radar_echo_id: 'pyart_LangRainbow12',
+    clutter_exit_code: 'pyart_LangRainbow12',
     melting_layer: 'pyart_LangRainbow12',
 
     specific_attenuation: 'pyart_Carbone17',
@@ -2077,6 +2107,7 @@ DEFAULT_FIELD_LIMITS = {
     radar_echo_classification: (0., 9.),
     radar_echo_id: (0, 3),
     melting_layer: (0, 5),
+    clutter_exit_code: (0, 200),
 
     sun_hit_h: (0, 1),
     sun_hit_v: (0, 1),
@@ -2098,6 +2129,7 @@ DEFAULT_FIELD_LIMITS = {
     interpolated_profile: (0, 10000),
 
     visibility: (0, 100),
+    frequency_of_occurrence: (0, 100),
 
     temperature: (-60, 30),
     height_over_iso0: (-6000., 10000.),

@@ -17,6 +17,7 @@ Functions for writing pyrad output data
     write_ts_polar_data
     write_ts_cum
     write_monitoring_ts
+    write_excess_gates
     write_intercomp_scores_ts
     write_colocated_gates
     write_colocated_data
@@ -667,6 +668,59 @@ def write_monitoring_ts(start_time, np_t, values, quantiles, datatype, fname):
                  'low_quantile': values_aux[0],
                  'high_quantile': values_aux[2]})
             csvfile.close()
+
+    return fname
+
+
+def write_excess_gates(excess_dict, fname):
+    """
+    Writes the position and values of gates that have a frequency of
+    occurrence higher than a particular threshold
+
+    Parameters
+    ----------
+    excess_dict : dict
+        dictionary containing the gates parameters
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    ngates = len(excess_dict['ray_ind'])
+    with open(fname, 'w', newline='') as csvfile:
+        csvfile.write('# Gates exceeding '+str(excess_dict['quant_min']) +
+                      ' percentile data file\n')
+        csvfile.write('# Comment lines are preceded by "#"\n')
+        csvfile.write(
+            '# Data collection start time: ' +
+            excess_dict['starttime'].strftime('%Y-%m-%d %H:%M:%S UTC')+'\n')
+        csvfile.write(
+            '# Data collection end time: ' +
+            excess_dict['endtime'].strftime('%Y-%m-%d %H:%M:%S UTC')+'\n')
+        csvfile.write('# Number of gates in file: '+str(ngates)+'\n')
+        csvfile.write('#\n')
+
+        fieldnames = [
+            'ray_ind', 'rng_ind', 'ele', 'azi', 'rng', 'nsamples',
+            'occurrence', 'freq_occu']
+        writer = csv.DictWriter(csvfile, fieldnames)
+        writer.writeheader()
+        for i in range(ngates):
+            writer.writerow({
+                'ray_ind': excess_dict['ray_ind'][i],
+                'rng_ind': excess_dict['rng_ind'][i],
+                'ele': excess_dict['ele'][i],
+                'azi': excess_dict['azi'][i],
+                'rng': excess_dict['rng'][i],
+                'nsamples': excess_dict['nsamples'][i],
+                'occurrence': excess_dict['occurrence'][i],
+                'freq_occu': excess_dict['freq_occu'][i]})
+
+        csvfile.close()
 
     return fname
 

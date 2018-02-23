@@ -1,0 +1,58 @@
+#
+# Product generation configuration
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 2
+    monitoring_clt_Zh
+    monitoring_clt_Zv
+    
+# ==========================================================================================
+#                 monitoring
+# ==========================================================================================
+monitoring_clt_Zh STRUCT 7
+    type STRING GC_MONITORING
+    datatype STRARR 1
+        RAD4ALP:dBZ
+    step FLOAT 0.5
+    val_min FLOAT 10.
+    excessgates_fname STRING 20170629010000_excess_gates_OCCURRENCE_EXCESS_GATES_quant95.0.csv
+    regular_grid INT 1
+    products STRUCT 2
+        VOL_TS STRUCT 5
+            add_date_in_fname INT 1
+            type STRING VOL_TS
+            hist_type STRING cumulative
+            voltype STRING dBZ
+            quantiles FLTARR 3
+                50.
+                95.
+                99.                        
+        VOL_HISTOGRAM STRUCT 3
+            type STRING VOL_HISTOGRAM
+            hist_type STRING cumulative
+            voltype STRING dBZ
+            
+monitoring_clt_Zv STRUCT 7
+    type STRING GC_MONITORING
+    datatype STRARR 1
+        RAD4ALP:dBZv
+    step FLOAT 0.5
+    val_min FLOAT 10.
+    excessgates_fname STRING 20170629010000_excess_gates_OCCURRENCE_EXCESS_GATES_quant95.0.csv
+    regular_grid INT 1
+    products STRUCT 2
+        VOL_TS STRUCT 5
+            add_date_in_fname INT 1
+            type STRING VOL_TS
+            hist_type STRING cumulative
+            voltype STRING dBZv
+            quantiles FLTARR 3
+                50.
+                95.
+                99.                        
+        VOL_HISTOGRAM STRUCT 3
+            type STRING VOL_HISTOGRAM
+            hist_type STRING cumulative
+            voltype STRING dBZv

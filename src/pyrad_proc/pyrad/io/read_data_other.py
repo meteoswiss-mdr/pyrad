@@ -11,6 +11,7 @@ Functions for reading auxiliary data
     read_status
     read_rad4alp_cosmo
     read_rad4alp_vis
+    read_excess_gates
     read_colocated_gates
     read_colocated_data
     read_colocated_data_time_avg
@@ -238,6 +239,64 @@ def read_rad4alp_vis(fname, datatype):
         warn(str(ee))
         warn('Unable to read file '+fname)
         return None
+
+
+def read_excess_gates(fname):
+    """
+    Reads a csv files containing the position of gates exceeding
+    a given percentile of frequency of occurrence
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,
+    rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi, rad2_rng : tupple
+        A tupple with the data read. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            nrows = sum(1 for row in reader)
+            ray_ind = np.empty(nrows, dtype=int)
+            rng_ind = np.empty(nrows, dtype=int)
+            ele = np.empty(nrows, dtype=float)
+            azi = np.empty(nrows, dtype=float)
+            rng = np.empty(nrows, dtype=float)
+            nsamples = np.empty(nrows, dtype=int)
+            occurrence = np.empty(nrows, dtype=int)
+            freq_occu = np.empty(nrows, dtype=float)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            i = 0
+            for row in reader:
+                ray_ind[i] = int(row['ray_ind'])
+                rng_ind[i] = int(row['rng_ind'])
+                ele[i] = float(row['ele'])
+                azi[i] = float(row['azi'])
+                rng[i] = float(row['rng'])
+                nsamples[i] = int(row['nsamples'])
+                occurrence[i] = int(row['occurrence'])
+                freq_occu[i] = float(row['freq_occu'])
+                i += 1
+
+            csvfile.close()
+
+            return (ray_ind, rng_ind, ele, azi, rng, nsamples, occurrence,
+                    freq_occu)
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return None, None, None, None, None, None, None, None
 
 
 def read_colocated_gates(fname):

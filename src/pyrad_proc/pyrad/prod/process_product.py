@@ -7,6 +7,7 @@ Functions for obtaining Pyrad products from the datasets
 .. autosummary::
     :toctree: generated/
 
+    generate_occurrence_products
     generate_cosmo_coord_products
     generate_sun_hits_products
     generate_intercomp_products
@@ -44,6 +45,7 @@ from ..io.write_data import write_colocated_data_time_avg, write_cdf
 from ..io.write_data import write_intercomp_scores_ts, write_ts_cum
 from ..io.write_data import write_rhi_profile, write_field_coverage
 from ..io.write_data import write_last_state, write_alarm_msg, send_msg
+from ..io.write_data import write_excess_gates
 
 from ..graph.plots import plot_ppi, plot_ppi_map, plot_rhi, plot_cappi
 from ..graph.plots import plot_bscope, plot_timeseries, plot_timeseries_comp
@@ -64,6 +66,102 @@ from ..util.radar_utils import compute_quantiles_from_hist, compute_2d_stats
 from ..util.stat_utils import quantiles_weighted
 
 
+def generate_occurrence_products(dataset, prdcfg):
+    """
+    generates occurrence products
+
+    Parameters
+    ----------
+    dataset : tuple
+        radar object and metadata dictionary
+
+    prdcfg : dictionary of dictionaries
+        product configuration dictionary of dictionaries
+
+    Returns
+    -------
+    filename : str
+        the name of the file created. None otherwise
+
+    """
+    instant = False
+    if 'instant' in prdcfg:
+        instant = prdcfg['instant']
+
+    if not instant and not dataset['occu_final']:
+        return None
+
+    if prdcfg['type'] == 'WRITE_EXCESS_GATES':
+        if not dataset['occu_final']:
+            return None
+
+        radar = dataset['radar_obj']
+        if (('frequency_of_occurrence' not in radar.fields) or
+                ('occurrence' not in radar.fields) or
+                ('number_of_samples' not in radar.fields)):
+            warn('Unable to create quantile excess gates file. '
+                 'Missing data')
+            return None
+
+        dssavedir = prdcfg['dsname']
+        if ('dssavename' in prdcfg):
+            dssavedir = prdcfg['dssavename']
+
+        quant_min = 95.
+        if 'quant_min' in prdcfg:
+            quant_min = prdcfg['quant_min']
+
+        # get index of gates exceeding quantile
+        freq_occu = radar.fields['frequency_of_occurrence'][
+            'data']
+        ind_ray, ind_rng = np.where(freq_occu > quant_min)
+        if len(ind_ray) == 0:
+            warn('No data exceeds the frequency of occurrence ' +
+                 str(quant_min)+' %')
+            return None
+
+        excess_dict = {
+            'starttime': dataset['starttime'],
+            'endtime': dataset['endtime'],
+            'quant_min': quant_min,
+            'ray_ind': ind_ray,
+            'rng_ind': ind_rng,
+            'ele': radar.elevation['data'][ind_ray],
+            'azi': radar.azimuth['data'][ind_ray],
+            'rng': radar.range['data'][ind_rng],
+            'nsamples': (
+                radar.fields['number_of_samples']['data'][ind_ray, ind_rng]),
+            'occurrence': (
+                radar.fields['occurrence']['data'][ind_ray, ind_rng]),
+            'freq_occu': freq_occu[ind_ray, ind_rng]
+        }
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=dataset['endtime'])
+
+        fname = make_filename(
+            'excess_gates', prdcfg['dstype'], prdcfg['prdname'], ['csv'],
+            prdcfginfo='quant'+'{:.1f}'.format(quant_min),
+            timeinfo=dataset['endtime'])
+
+        fname = savedir+fname[0]
+
+        fname = write_excess_gates(excess_dict, fname)
+
+        if fname is not None:
+            print('saved excess gates file: '+fname)
+
+        return fname
+    else:
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if ((field_name == 'frequency_of_occurrence') and
+                (not dataset['occu_final'])):
+            return None
+        if dataset['occu_final']:
+            prdcfg['timeinfo'] = dataset['endtime']
+        return generate_vol_products(dataset['radar_obj'], prdcfg)
+
+
 def generate_cosmo_coord_products(dataset, prdcfg):
     """
     generates COSMO coordinates products
@@ -71,7 +169,7 @@ def generate_cosmo_coord_products(dataset, prdcfg):
     Parameters
     ----------
     dataset : tuple
-        radar object and sun hits dictionary
+        radar object containing the COSMO coordinates
 
     prdcfg : dictionary of dictionaries
         product configuration dictionary of dictionaries

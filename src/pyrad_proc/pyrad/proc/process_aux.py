@@ -82,6 +82,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_cdr'
     elif dataset_type == 'SAN':
         func_name = 'process_echo_id'
+    elif dataset_type == 'CLT_TO_SAN':
+        func_name = 'process_clt_to_echo_id'
     elif dataset_type == 'ECHO_FILTER':
         func_name = 'process_echo_filter'
     elif dataset_type == 'SNR_FILTER':
@@ -167,6 +169,15 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'MONITORING':
         func_name = 'process_monitoring'
         dsformat = 'MONITORING'
+    elif dataset_type == 'GC_MONITORING':
+        func_name = 'process_gc_monitoring'
+        dsformat = 'MONITORING'
+    elif dataset_type == 'OCCURRENCE':
+        func_name = 'process_occurrence'
+        dsformat = 'OCCURRENCE'
+    elif dataset_type == 'OCCURRENCE_PERIOD':
+        func_name = 'process_occurrence_period'
+        dsformat = 'OCCURRENCE'
     elif dataset_type == 'SUN_HITS':
         func_name = 'process_sun_hits'
         dsformat = 'SUN_HITS'
