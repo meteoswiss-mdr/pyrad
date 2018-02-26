@@ -303,6 +303,18 @@ def merge_scans_rainbow(basepath, scan_list, voltime, scan_period,
 
             radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
 
+    # keep only PPIs within elevation limits
+    if cfg['elmin'] != -600. or cfg['elmax'] != 600.:
+        if radar.scan_type == 'ppi':
+            ind_sweeps = np.where(np.logical_and(
+                radar.fixed_angle['data'] > cfg['elmin'],
+                radar.fixed_angle['data'] < cfg['elmax']))[0]
+            if len(ind_sweeps) == 0:
+                warn('Elevation angles outside of specified angle range. ' +
+                     'Min angle: '+str(elmin)+' Max angle: '+str(elmax))
+                return None
+            radar = radar.extract_sweeps(ind_sweeps)
+
     return radar
 
 

@@ -41,10 +41,11 @@ fill_value = -9999.0
 
 # Radar reflectivity fields, DZ
 reflectivity = 'reflectivity'
-corrected_reflectivity = 'corrected_reflectivity'
+corrected_reflectivity = 'unfiltered_reflectivity'
 total_power = 'total_power'
 
 unfiltered_reflectivity = 'unfiltered_reflectivity'
+corrected_unfiltered_reflectivity = 'corrected_unfiltered_reflectivity'
 reflectivity_vv = 'reflectivity_vv'
 corrected_reflectivity_vv = 'corrected_reflectivity_vv'
 unfiltered_reflectivity_vv = 'unfiltered_reflectivity_vv'
@@ -253,6 +254,7 @@ DEFAULT_FIELD_NAMES = {
     'corrected_reflectivity': corrected_reflectivity,
     'total_power': total_power,
     'unfiltered_reflectivity': unfiltered_reflectivity,
+    'corrected_unfiltered_reflectivity': corrected_unfiltered_reflectivity,
     'reflectivity_vv': reflectivity_vv,
     'corrected_reflectivity_vv': corrected_reflectivity_vv,
     'unfiltered_reflectivity_vv': unfiltered_reflectivity_vv,
@@ -1896,6 +1898,7 @@ DEFAULT_FIELD_COLORMAP = {
     corrected_reflectivity: 'pyart_NWSRef',
     total_power: 'pyart_NWSRef',
     unfiltered_reflectivity: 'pyart_NWSRef',
+    corrected_unfiltered_reflectivity: 'pyart_NWSRef',
     reflectivity_vv: 'pyart_NWSRef',
     corrected_reflectivity_vv: 'pyart_NWSRef',
     unfiltered_reflectivity_vv: 'pyart_NWSRef',
@@ -2028,6 +2031,7 @@ DEFAULT_FIELD_LIMITS = {
     corrected_reflectivity: (-30., 75.),
     total_power: (-30., 75.),
     unfiltered_reflectivity: (-30., 75.),
+    corrected_unfiltered_reflectivity:  (-30., 75.),
     reflectivity_vv: (-30., 75.),
     corrected_reflectivity_vv: (-30., 75.),
     unfiltered_reflectivity_vv: (-30., 75.),
