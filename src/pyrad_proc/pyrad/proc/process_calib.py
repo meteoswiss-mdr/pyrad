@@ -1290,13 +1290,13 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
         2 post-processing
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
-        
+
         excessgatespath : str. Config keyword
             The path to the gates in excess of quantile location
         excessgates_fname : str. Dataset keyword
             The name of the gates in excess of quantile file
         datatype : list of string. Dataset keyword
-            The input data types        
+            The input data types
         step : float. Dataset keyword
             The width of the histogram bin. Default is None. In that case the
             default step in function get_histogram_bins is used
@@ -1536,21 +1536,16 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
             ngates_prec = np.size(prec_field[prec_field == 3])
 
             percent_prec = ngates_prec/ngates_total*100.
-
+            warn('Percent gates with precipitation: '+str(percent_prec)+'\n')
             if percent_prec > percent_prec_max:
                 if filter_prec == 'keep_dry':
                     warn('Radar volume is precipitation contaminated.\n' +
-                         'Percent gates with precipitation: ' +
-                         str(percent_prec) +
-                         '\nMaximum percentage allowed: ' +
-                         str(percent_prec_max))
+                         'Maximum percentage allowed: '+str(percent_prec_max))
                     return None, None
             else:
                 if filter_prec == 'keep_wet':
                     warn('Radar volume has not enough precipitation.\n' +
-                         'Percent gates with precipitation: ' +
-                         str(percent_prec) +
-                         '\nMaximum percentage allowed: ' +
+                         'Minimum percentage required: ' +
                          str(percent_prec_max))
                     return None, None
 
@@ -1658,7 +1653,7 @@ def process_occurrence_period(procstatus, dscfg, radar_list=None):
         data set configuration. Accepted Configuration Keywords::
 
         datatype : list of string. Dataset keyword
-            The input data types        
+            The input data types
         regular_grid : Boolean. Dataset keyword
             Whether the radar has a Boolean grid or not. Default False
     radar_list : list of Radar objects
