@@ -1612,9 +1612,6 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
 
             return new_dataset, ind_rad
 
-        print(radar_aux.fields['occurrence']['data'].mask)
-        print(radar_aux.fields['number_of_samples']['data'].mask)
-
         # accumulate data
         regular_grid = False
         if 'regular_grid' in dscfg:
@@ -1650,9 +1647,6 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
                 'starttime': dscfg['global_data']['starttime'],
                 'endtime': dscfg['global_data']['endtime'],
                 'occu_final': False}
-
-        print(occu_interp['data'].mask)
-        print(npoints_interp['data'].mask)
 
         return new_dataset, ind_rad
 
