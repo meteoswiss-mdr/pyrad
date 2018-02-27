@@ -159,6 +159,7 @@ def generate_occurrence_products(dataset, prdcfg):
             return None
         if dataset['occu_final']:
             prdcfg['timeinfo'] = dataset['endtime']
+
         return generate_vol_products(dataset['radar_obj'], prdcfg)
 
 

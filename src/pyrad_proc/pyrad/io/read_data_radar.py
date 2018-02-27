@@ -1114,6 +1114,10 @@ def merge_fields_cfradial(basepath, loadname, voltime, datatype_list,
             else:
                 add_field(radar, radar_aux)
 
+    for field in radar.fields:
+        radar.fields[field]['data'] = np.ma.asarray(
+            radar.fields[field]['data'])
+
     return radar
 
 

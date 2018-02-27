@@ -1381,6 +1381,41 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
             ray_ind = dscfg['global_data']['ray_ind']
             rng_ind = dscfg['global_data']['rng_ind']
             field = field[ray_ind, rng_ind]
+        else:
+            azi_tol = 0.5
+            ele_tol = 0.5
+            rng_tol = 50.
+
+            if 'azi_tol' in dscfg:
+                azi_tol = dscfg['azi_tol']
+            if 'ele_tol' in dscfg:
+                ele_tol = dscfg['ele_tol']
+            if 'rng_tol' in dscfg:
+                rng_tol = dscfg['rng_tol']
+
+            # get indexes of gates close to target
+            ray_ind = np.ma.empty(len(dscfg['global_data']['ray_ind']))
+            ray_ind[:] = np.ma.masked
+            rng_ind = np.ma.empty(len(dscfg['global_data']['ray_ind']))
+            rng_ind[:] = np.ma.masked
+            for i in range(len(dscfg['global_data']['ele'])):
+                ind_ray_rad = find_ray_index(
+                    radar_aux.elevation['data'], radar_aux.azimuth['data'],
+                    dscfg['global_data']['ele'][i],
+                    dscfg['global_data']['azi'][i],
+                    ele_tol=ele_tol, azi_tol=azi_tol)
+                if ind_ray_rad is None:
+                    continue
+                ind_rng_rad = find_rng_index(
+                    radar_aux.range['data'], dscfg['global_data']['rng'][i],
+                    rng_tol=rng_tol)
+                if ind_rng_rad is None:
+                    continue
+                ray_ind[i] = ind_ray_rad
+                rng_ind[i] = ind_rng_rad
+            ray_ind = ray_ind.compressed()
+            rng_ind = rng_ind.compressed()
+            field = field[ray_ind, rng_ind]
 
         # filter out low values
         val_min = None
@@ -1577,6 +1612,9 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
 
             return new_dataset, ind_rad
 
+        print(radar_aux.fields['occurrence']['data'].mask)
+        print(radar_aux.fields['number_of_samples']['data'].mask)
+
         # accumulate data
         regular_grid = False
         if 'regular_grid' in dscfg:
@@ -1612,6 +1650,9 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
                 'starttime': dscfg['global_data']['starttime'],
                 'endtime': dscfg['global_data']['endtime'],
                 'occu_final': False}
+
+        print(occu_interp['data'].mask)
+        print(npoints_interp['data'].mask)
 
         return new_dataset, ind_rad
 

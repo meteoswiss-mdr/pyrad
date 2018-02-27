@@ -41,7 +41,7 @@ fill_value = -9999.0
 
 # Radar reflectivity fields, DZ
 reflectivity = 'reflectivity'
-corrected_reflectivity = 'unfiltered_reflectivity'
+corrected_reflectivity = 'corrected_reflectivity'
 total_power = 'total_power'
 
 unfiltered_reflectivity = 'unfiltered_reflectivity'
@@ -655,6 +655,12 @@ DEFAULT_METADATA = {
         'long_name': 'Horizontal Reflectivity',
         'coordinates': 'elevation azimuth range'},
 
+    unfiltered_reflectivity: {
+        'units': 'dBZ',
+        'standard_name': 'horizontal_reflectivity',
+        'long_name': 'Unfiltered Horizontal Reflectivity',
+        'coordinates': 'elevation azimuth range'},
+
     corrected_reflectivity: {
         'units': 'dBZ',
         'standard_name': 'horizontal_reflectivity',
@@ -665,6 +671,12 @@ DEFAULT_METADATA = {
         'units': 'dBZ',
         'standard_name': 'vertical_reflectivity',
         'long_name': 'Vertical Reflectivity',
+        'coordinates': 'elevation azimuth range'},
+
+    unfiltered_reflectivity_vv: {
+        'units': 'dBZ',
+        'standard_name': 'vertical_reflectivity',
+        'long_name': 'Unfiltered Vertical Reflectivity',
         'coordinates': 'elevation azimuth range'},
 
     corrected_reflectivity_vv: {
