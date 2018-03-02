@@ -19,7 +19,10 @@ Functions for reading auxiliary data
     read_lightning
     read_ts_cum
     read_monitoring_ts
+    read_monitoring_ts_old
     read_intercomp_scores_ts
+    read_intercomp_scores_ts_old
+    read_intercomp_scores_ts_old_v0
     read_sun_hits_multiple_days
     read_sun_hits
     read_sun_retrieval
@@ -750,6 +753,61 @@ def read_monitoring_ts(fname):
         return None, None, None, None, None
 
 
+def read_monitoring_ts_old(fname):
+    """
+    Reads an old format of the monitoring time series contained in a text file
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    date , np_t, central_quantile, low_quantile, high_quantile : tupple
+        The read data in the current format. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                (row for row in csvfile if not row.startswith('#')),
+                fieldnames=['Date [YYJJJ]', 'Npoints', 'Value'])
+            nrows = sum(1 for row in reader)
+            np_t = np.zeros(nrows, dtype=int)
+            central_quantile = np.ma.empty(nrows, dtype=float)
+            low_quantile = np.ma.empty(nrows, dtype=float)
+            low_quantile[:] = np.ma.masked
+            high_quantile = np.ma.empty(nrows, dtype=float)
+            high_quantile[:] = np.ma.masked
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                (row for row in csvfile if not row.startswith('#')),
+                fieldnames=['Date [YYJJJ]', 'Npoints', 'Value']
+                )
+            i = 0
+            date = list()
+            for row in reader:
+                date.append(datetime.datetime.strptime(
+                    row['Date [YYJJJ]'], '%y%j'))
+                np_t[i] = int(row['Npoints'])
+                central_quantile[i] = float(row['Value'])
+                i += 1
+
+            central_quantile = np.ma.masked_invalid(central_quantile)
+
+            csvfile.close()
+
+            return date, np_t, central_quantile, low_quantile, high_quantile
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return None, None, None, None, None
+
+
 def read_intercomp_scores_ts(fname):
     """
     Reads a radar intercomparison scores csv file
@@ -828,6 +886,206 @@ def read_intercomp_scores_ts(fname):
                 intercep_slope1_vec, get_fillvalue())
 
             csvfile.close()
+
+            return (date_vec, np_vec, meanbias_vec, medianbias_vec,
+                    quant25bias_vec, quant75bias_vec, modebias_vec, corr_vec,
+                    slope_vec, intercep_vec, intercep_slope1_vec)
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return (None, None, None, None, None, None, None, None, None, None,
+                None)
+
+
+def read_intercomp_scores_ts_old(fname):
+    """
+    Reads a radar intercomparison scores csv file in old format
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    date_vec, np_vec, meanbias_vec, medianbias_vec, quant25bias_vec,
+    quant75bias_vec, modebias_vec, corr_vec, slope_vec, intercep_vec,
+    intercep_slope1_vec : tupple
+        The read data. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                (row for row in csvfile if not row.startswith('#')),
+                fieldnames=['date', 'NP', 'mode_bias', 'median_bias',
+                            'mean_bias', 'corr', 'slope_of_linear_regression',
+                            'intercep_of_linear_regression'],
+                dialect='excel-tab')
+            nrows = sum(1 for row in reader)
+
+            np_vec = np.zeros(nrows, dtype=int)
+            meanbias_vec = np.ma.empty(nrows, dtype=float)
+            medianbias_vec = np.ma.empty(nrows, dtype=float)
+            quant25bias_vec = np.ma.empty(nrows, dtype=float)
+            quant25bias_vec[:] = np.ma.masked
+            quant75bias_vec = np.ma.empty(nrows, dtype=float)
+            quant75bias_vec[:] = np.ma.masked
+            modebias_vec = np.ma.empty(nrows, dtype=float)
+            corr_vec = np.ma.empty(nrows, dtype=float)
+            slope_vec = np.ma.empty(nrows, dtype=float)
+            intercep_vec = np.ma.empty(nrows, dtype=float)
+            intercep_slope1_vec = np.ma.empty(nrows, dtype=float)
+            intercep_slope1_vec[:] = np.ma.masked
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                (row for row in csvfile if not row.startswith('#')),
+                fieldnames=['date', 'NP', 'mode_bias', 'median_bias',
+                            'mean_bias', 'corr', 'slope_of_linear_regression',
+                            'intercep_of_linear_regression'],
+                dialect='excel-tab')
+            i = 0
+            date_vec = list()
+            for row in reader:
+                date_vec.append(datetime.datetime.strptime(
+                    row['date'], '%y%j'))
+                np_vec[i] = int(row['NP'])
+                meanbias_vec[i] = float(row['mean_bias'])
+                medianbias_vec[i] = float(row['median_bias'])
+                modebias_vec[i] = float(row['mode_bias'])
+                corr_vec[i] = float(row['corr'])
+                slope_vec[i] = float(row['slope_of_linear_regression'])
+                intercep_vec[i] = float(row['intercep_of_linear_regression'])
+                i += 1
+
+            meanbias_vec = np.ma.masked_invalid(meanbias_vec)
+            medianbias_vec = np.ma.masked_invalid(medianbias_vec)
+            modebias_vec = np.ma.masked_invalid(modebias_vec)
+            corr_vec = np.ma.masked_invalid(corr_vec)
+            slope_vec = np.ma.masked_invalid(slope_vec)
+            intercep_vec = np.ma.masked_invalid(intercep_vec)
+
+            csvfile.close()
+
+            return (date_vec, np_vec, meanbias_vec, medianbias_vec,
+                    quant25bias_vec, quant75bias_vec, modebias_vec, corr_vec,
+                    slope_vec, intercep_vec, intercep_slope1_vec)
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return (None, None, None, None, None, None, None, None, None, None,
+                None)
+
+
+def read_intercomp_scores_ts_old_v0(fname, corr_min=0.6, np_min=9):
+    """
+    Reads a radar intercomparison scores csv file in the oldest format
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    date_vec, np_vec, meanbias_vec, medianbias_vec, quant25bias_vec,
+    quant75bias_vec, modebias_vec, corr_vec, slope_vec, intercep_vec,
+    intercep_slope1_vec : tupple
+        The read data. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                (row for row in csvfile if not row.startswith('#')),
+                fieldnames=['date', 'ele', 'NP', 'mean_bias', 'corr'],
+                dialect='excel-tab')
+            nrows = sum(1 for row in reader)
+
+            np_aux_vec = np.zeros(nrows, dtype=int)
+            meanbias_aux_vec = np.ma.empty(nrows, dtype=float)
+            corr_aux_vec = np.ma.empty(nrows, dtype=float)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                (row for row in csvfile if not row.startswith('#')),
+                fieldnames=['date', 'ele', 'NP', 'mean_bias', 'corr'],
+                dialect='excel-tab')
+            i = 0
+            date_aux_vec = list()
+            for row in reader:
+                date_aux_vec.append(datetime.datetime.strptime(
+                    row['date'], '%y%j'))
+                np_aux_vec[i] = int(row['NP'])
+                meanbias_aux_vec[i] = float(row['mean_bias'])
+                corr_aux_vec[i] = float(row['corr'])
+                i += 1
+
+            meanbias_aux_vec = np.ma.masked_invalid(meanbias_aux_vec)
+            corr_aux_vec = np.ma.masked_invalid(corr_aux_vec)
+
+            csvfile.close()
+
+            date_aux_vec = np.asarray(date_aux_vec)
+            date_vec, unique_ind = np.unique(date_aux_vec, return_index=True)
+            nelements = len(date_vec)
+
+            np_vec = np.zeros(nelements, dtype=int)
+            meanbias_vec = np.ma.empty(nelements, dtype=float)
+            corr_vec = np.ma.empty(nelements, dtype=float)
+            for i in range(nelements-1):
+                ind_aux = np.arange(unique_ind[i], unique_ind[i+1])
+                np_aux = np_aux_vec[ind_aux]
+                meanbias_aux = meanbias_aux_vec[ind_aux]
+                corr_aux = corr_aux_vec[ind_aux]
+
+                ind_valid = np.where(np.logical_and(
+                    corr_aux > corr_min, np_aux > np_min))
+                np_aux = np_aux[ind_valid]
+                meanbias_aux = meanbias_aux[ind_valid]
+                corr_aux = corr_aux[ind_valid]
+
+                np_vec[i] = np.sum(np_aux, dtype=int)
+                if np_vec[i] == 0:
+                    continue
+                meanbias_vec[i] = np.sum(np_aux*meanbias_aux)/np_vec[i]
+                corr_vec[i] = np.sum(np_aux*corr_aux)/np_vec[i]
+
+            # last date
+            ind_aux = np.arange(unique_ind[-1], len(date_aux_vec))
+            np_aux = np_aux_vec[ind_aux]
+            meanbias_aux = meanbias_aux_vec[ind_aux]
+            corr_aux = corr_aux_vec[ind_aux]
+
+            ind_valid = np.where(np.logical_and(
+                corr_aux > corr_min, np_aux > np_min))
+            np_aux = np_aux[ind_valid]
+            meanbias_aux = meanbias_aux[ind_valid]
+            corr_aux = corr_aux[ind_valid]
+            np_vec[-1] = np.sum(np_aux, dtype=int)
+            if np_vec[-1] > 0:
+                meanbias_vec[-1] = np.sum(np_aux*meanbias_aux)/np_vec[-1]
+                corr_vec[-1] = np.sum(np_aux*corr_aux)/np_vec[-1]
+
+            medianbias_vec = np.ma.empty(nelements, dtype=float)
+            medianbias_vec[:] = np.ma.masked
+            quant25bias_vec = np.ma.empty(nelements, dtype=float)
+            quant25bias_vec[:] = np.ma.masked
+            quant75bias_vec = np.ma.empty(nelements, dtype=float)
+            quant75bias_vec[:] = np.ma.masked
+            modebias_vec = np.ma.empty(nelements, dtype=float)
+            modebias_vec[:] = np.ma.masked
+            slope_vec = np.ma.empty(nelements, dtype=float)
+            slope_vec[:] = np.ma.masked
+            intercep_vec = np.ma.empty(nelements, dtype=float)
+            intercep_vec[:] = np.ma.masked
+            intercep_slope1_vec = np.ma.empty(nelements, dtype=float)
+            intercep_slope1_vec[:] = np.ma.masked
 
             return (date_vec, np_vec, meanbias_vec, medianbias_vec,
                     quant25bias_vec, quant75bias_vec, modebias_vec, corr_vec,

@@ -1865,7 +1865,7 @@ def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
     """
     # plot only valid data (but keep first and last date)
     date2 = np.array(date_vec)
-    isvalid = np.logical_not(np.ma.getmaskarray(medianbias_vec))
+    isvalid = np.logical_not(np.ma.getmaskarray(meanbias_vec))
     isvalid_corr = np.logical_not(np.ma.getmaskarray(corr_vec))
     if np_min > 0:
         has_np = np_vec > np_min
