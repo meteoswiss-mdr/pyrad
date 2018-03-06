@@ -14,6 +14,7 @@ Miscellaneous functions dealing with radar data
     get_range_bins_to_avg
     find_ray_index
     find_rng_index
+    find_colocated_indexes
     time_avg_range
     get_closest_solar_flux
     create_sun_hits_field
@@ -335,6 +336,76 @@ def find_rng_index(rng_vec, rng, rng_tol=0.):
         return None
 
     return ind_rng
+
+
+def find_colocated_indexes(radar1, radar2, rad1_ele, rad1_azi, rad1_rng,
+                           rad2_ele, rad2_azi, rad2_rng, ele_tol=0.5,
+                           azi_tol=0.5, rng_tol=50.):
+    """
+    Given the theoretical elevation, azimuth and range of the co-located gates
+    of two radars and a given tolerance returns the indices of the gates for
+    the current radars
+
+    Parameters
+    ----------
+    radar1, radar2 : radar objects
+        the two radar objects
+    rad1_ele, rad1_azi, rad1_rng : array of floats
+        the radar coordinates of the radar1 gates
+    rad2_ele, rad2_azi, rad2_rng : array of floats
+        the radar coordinates of the radar2 gates
+    ele_tol, azi_tol : floats
+        azimuth and elevation angle tolerance [deg]
+    rng_tol : float
+        range Tolerance [m]
+
+    Returns
+    -------
+    ind_ray_rad1, ind_rng_rad1, ind_ray_rad2, ind_rng_rad2 : array of ints
+        the ray and range indexes of each radar gate
+
+    """
+    ngates = len(rad1_ele)
+    ind_ray_rad1 = np.ma.empty(ngates, dtype=int)
+    ind_ray_rad1[:] = np.ma.masked
+    ind_rng_rad1 = np.ma.empty(ngates, dtype=int)
+    ind_rng_rad1[:] = np.ma.masked
+    ind_ray_rad2 = np.ma.empty(ngates, dtype=int)
+    ind_ray_rad2[:] = np.ma.masked
+    ind_rng_rad2 = np.ma.empty(ngates, dtype=int)
+    ind_rng_rad2[:] = np.ma.masked
+    for i in range(ngates):
+        ind_ray_rad1_aux = find_ray_index(
+            radar1.elevation['data'], radar1.azimuth['data'], rad1_ele[i],
+            rad1_azi[i], ele_tol=ele_tol, azi_tol=azi_tol)
+        if ind_ray_rad1_aux is None:
+            continue
+        ind_rng_rad1_aux = find_rng_index(
+            radar1.range['data'], rad1_rng[i], rng_tol=rng_tol)
+        if ind_rng_rad1_aux is None:
+            continue
+
+        ind_ray_rad2_aux = find_ray_index(
+            radar2.elevation['data'], radar2.azimuth['data'], rad2_ele[i],
+            rad2_azi[i], ele_tol=ele_tol, azi_tol=azi_tol)
+        if ind_ray_rad2_aux is None:
+            continue
+        ind_rng_rad2_aux = find_rng_index(
+            radar2.range['data'], rad2_rng[i], rng_tol=rng_tol)
+        if ind_rng_rad2_aux is None:
+            continue
+
+        ind_ray_rad1[i] = ind_ray_rad1_aux
+        ind_rng_rad1[i] = ind_rng_rad1_aux
+        ind_ray_rad2[i] = ind_ray_rad2_aux
+        ind_rng_rad2[i] = ind_rng_rad2_aux
+
+    ind_ray_rad1 = ind_ray_rad1.compressed()
+    ind_rng_rad1 = ind_rng_rad1.compressed()
+    ind_ray_rad2 = ind_ray_rad2.compressed()
+    ind_rng_rad2 = ind_rng_rad2.compressed()
+
+    return ind_ray_rad1, ind_rng_rad1, ind_ray_rad2, ind_rng_rad2
 
 
 def time_avg_range(timeinfo, avg_starttime, avg_endtime, period):
