@@ -374,9 +374,9 @@ def read_colocated_data(fname):
 
     Returns
     -------
-    rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng, rad1_val,
-    rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi, rad2_rng, rad2_val :
-        tupple
+    rad1_time, rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,
+    rad1_val, rad2_time, rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi,
+    rad2_rng, rad2_val : tupple
         A tupple with the data read. None otherwise
 
     """
@@ -386,12 +386,14 @@ def read_colocated_data(fname):
             reader = csv.DictReader(
                 row for row in csvfile if not row.startswith('#'))
             nrows = sum(1 for row in reader)
+            rad1_time = np.empty(nrows, dtype=datetime.datetime)
             rad1_ray_ind = np.empty(nrows, dtype=int)
             rad1_rng_ind = np.empty(nrows, dtype=int)
             rad1_ele = np.empty(nrows, dtype=float)
             rad1_azi = np.empty(nrows, dtype=float)
             rad1_rng = np.empty(nrows, dtype=float)
             rad1_val = np.empty(nrows, dtype=float)
+            rad2_time = np.empty(nrows, dtype=datetime.datetime)
             rad2_ray_ind = np.empty(nrows, dtype=int)
             rad2_rng_ind = np.empty(nrows, dtype=int)
             rad2_ele = np.empty(nrows, dtype=float)
@@ -405,12 +407,16 @@ def read_colocated_data(fname):
                 row for row in csvfile if not row.startswith('#'))
             i = 0
             for row in reader:
+                rad1_time[i] = datetime.datetime.strptime(
+                    row['rad1_time'], '%Y%m%d%H%M%S')
                 rad1_ray_ind[i] = int(row['rad1_ray_ind'])
                 rad1_rng_ind[i] = int(row['rad1_rng_ind'])
                 rad1_ele[i] = float(row['rad1_ele'])
                 rad1_azi[i] = float(row['rad1_azi'])
                 rad1_rng[i] = float(row['rad1_rng'])
                 rad1_val[i] = float(row['rad1_val'])
+                rad2_time[i] = datetime.datetime.strptime(
+                    row['rad2_time'], '%Y%m%d%H%M%S')
                 rad2_ray_ind[i] = int(row['rad2_ray_ind'])
                 rad2_rng_ind[i] = int(row['rad2_rng_ind'])
                 rad2_ele[i] = float(row['rad2_ele'])
@@ -421,14 +427,14 @@ def read_colocated_data(fname):
 
             csvfile.close()
 
-            return (rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,
-                    rad1_val, rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi,
-                    rad2_rng, rad2_val)
+            return (rad1_time, rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi,
+                    rad1_rng, rad1_val, rad2_time, rad2_ray_ind, rad2_rng_ind,
+                    rad2_ele, rad2_azi, rad2_rng, rad2_val)
     except EnvironmentError as ee:
         warn(str(ee))
         warn('Unable to read file '+fname)
         return (None, None, None, None, None, None, None, None, None, None,
-                None, None)
+                None, None, None, None)
 
 
 def read_colocated_data_time_avg(fname):
@@ -442,9 +448,9 @@ def read_colocated_data_time_avg(fname):
 
     Returns
     -------
-    rad1_ray_ind, rad1_rng_ind, rad1_ele , rad1_azi, rad1_rng, rad1_val,
-    rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi, rad2_rng, rad2_val :
-        tupple
+    rad1_time, rad1_ray_ind, rad1_rng_ind, rad1_ele , rad1_azi, rad1_rng,
+    rad1_val, rad2_time, rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi,
+    rad2_rng, rad2_val : tupple
         A tupple with the data read. None otherwise
 
     """
@@ -454,6 +460,7 @@ def read_colocated_data_time_avg(fname):
             reader = csv.DictReader(
                 row for row in csvfile if not row.startswith('#'))
             nrows = sum(1 for row in reader)
+            rad1_time = np.empty(nrows, dtype=datetime.datetime)
             rad1_ray_ind = np.empty(nrows, dtype=int)
             rad1_rng_ind = np.empty(nrows, dtype=int)
             rad1_ele = np.empty(nrows, dtype=float)
@@ -462,6 +469,7 @@ def read_colocated_data_time_avg(fname):
             rad1_dBZavg = np.empty(nrows, dtype=float)
             rad1_PhiDPavg = np.empty(nrows, dtype=float)
             rad1_Flagavg = np.empty(nrows, dtype=float)
+            rad2_time = np.empty(nrows, dtype=datetime.datetime)
             rad2_ray_ind = np.empty(nrows, dtype=int)
             rad2_rng_ind = np.empty(nrows, dtype=int)
             rad2_ele = np.empty(nrows, dtype=float)
@@ -477,6 +485,8 @@ def read_colocated_data_time_avg(fname):
                 row for row in csvfile if not row.startswith('#'))
             i = 0
             for row in reader:
+                rad1_time[i] = datetime.datetime.strptime(
+                    row['rad1_time'], '%Y%m%d%H%M%S')
                 rad1_ray_ind[i] = int(row['rad1_ray_ind'])
                 rad1_rng_ind[i] = int(row['rad1_rng_ind'])
                 rad1_ele[i] = float(row['rad1_ele'])
@@ -485,6 +495,8 @@ def read_colocated_data_time_avg(fname):
                 rad1_dBZavg[i] = float(row['rad1_dBZavg'])
                 rad1_PhiDPavg[i] = float(row['rad1_PhiDPavg'])
                 rad1_Flagavg[i] = float(row['rad1_Flagavg'])
+                rad2_time[i] = datetime.datetime.strptime(
+                    row['rad2_time'], '%Y%m%d%H%M%S')
                 rad2_ray_ind[i] = int(row['rad2_ray_ind'])
                 rad2_rng_ind[i] = int(row['rad2_rng_ind'])
                 rad2_ele[i] = float(row['rad2_ele'])
@@ -497,15 +509,15 @@ def read_colocated_data_time_avg(fname):
 
             csvfile.close()
 
-            return (rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,
-                    rad1_dBZavg, rad1_PhiDPavg, rad1_Flagavg,
-                    rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi, rad2_rng,
-                    rad2_dBZavg, rad2_PhiDPavg, rad2_Flagavg)
+            return (rad1_time, rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi,
+                    rad1_rng, rad1_dBZavg, rad1_PhiDPavg, rad1_Flagavg,
+                    rad2_time, rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi,
+                    rad2_rng, rad2_dBZavg, rad2_PhiDPavg, rad2_Flagavg)
     except EnvironmentError as ee:
         warn(str(ee))
         warn('Unable to read file '+fname)
         return (None, None, None, None, None, None, None, None, None, None,
-                None, None, None, None, None, None)
+                None, None, None, None, None, None, None, None)
 
 
 def read_timeseries(fname):
