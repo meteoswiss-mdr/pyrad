@@ -34,6 +34,7 @@ import csv
 from warnings import warn
 import smtplib
 from email.message import EmailMessage
+import numpy as np
 
 from pyart.config import get_fillvalue, get_metadata
 
@@ -608,13 +609,13 @@ def write_monitoring_ts(start_time, np_t, values, quantiles, datatype, fname):
 
     Parameters
     ----------
-    start_time : datetime object
+    start_time : datetime object or array of date time objects
         the time of the monitoring
-    np_t : int
+    np_t : int or array of ints
         the total number of points
-    values: float array
+    values: float array with 3 elements of array of arrays
         the values at certain quantiles
-    quantiles: float array
+    quantiles: float array with 3 elements
         the quantiles computed
     fname : str
         file name where to store the data
@@ -625,7 +626,16 @@ def write_monitoring_ts(start_time, np_t, values, quantiles, datatype, fname):
         the name of the file where data has written
 
     """
-    values_aux = values.filled(fill_value=get_fillvalue())
+    nvalues = np.size(start_time)
+    if nvalues == 1:
+        start_time_aux = np.asarray([start_time])
+        np_t_aux = np.asarray([np_t])
+        values_aux = np.asarray([values.filled(fill_value=get_fillvalue())])
+    else:
+        start_time_aux = np.asarray(start_time)
+        values_aux = values.filled(fill_value=get_fillvalue())
+        np_t_aux = np_t
+
     filelist = glob.glob(fname)
     if len(filelist) == 0:
         with open(fname, 'w', newline='') as csvfile:
@@ -642,31 +652,33 @@ def write_monitoring_ts(start_time, np_t, values, quantiles, datatype, fname):
             csvfile.write('# Fill Value: '+str(get_fillvalue())+'\n')
             csvfile.write(
                 '# Start: ' +
-                start_time.strftime('%Y-%m-%d %H:%M:%S UTC')+'\n')
+                start_time_aux[0].strftime('%Y-%m-%d %H:%M:%S UTC')+'\n')
             csvfile.write('#\n')
 
             fieldnames = ['date', 'NP', 'central_quantile', 'low_quantile',
                           'high_quantile']
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
-            writer.writerow(
-                {'date': start_time.strftime('%Y%m%d%H%M%S'),
-                 'NP': np_t,
-                 'central_quantile': values_aux[1],
-                 'low_quantile': values_aux[0],
-                 'high_quantile': values_aux[2]})
+            for i in range(nvalues):
+                writer.writerow({
+                    'date': start_time_aux[i].strftime('%Y%m%d%H%M%S'),
+                    'NP': np_t_aux[i],
+                    'central_quantile': values_aux[i, 1],
+                    'low_quantile': values_aux[i, 0],
+                    'high_quantile': values_aux[i, 2]})
             csvfile.close()
     else:
         with open(fname, 'a', newline='') as csvfile:
             fieldnames = ['date', 'NP', 'central_quantile', 'low_quantile',
                           'high_quantile']
             writer = csv.DictWriter(csvfile, fieldnames)
-            writer.writerow(
-                {'date': start_time.strftime('%Y%m%d%H%M%S'),
-                 'NP': np_t,
-                 'central_quantile': values_aux[1],
-                 'low_quantile': values_aux[0],
-                 'high_quantile': values_aux[2]})
+            for i in range(nvalues):
+                writer.writerow({
+                    'date': start_time_aux[i].strftime('%Y%m%d%H%M%S'),
+                    'NP': np_t_aux[i],
+                    'central_quantile': values_aux[i, 1],
+                    'low_quantile': values_aux[i, 0],
+                    'high_quantile': values_aux[i, 2]})
             csvfile.close()
 
     return fname
@@ -732,7 +744,7 @@ def write_intercomp_scores_ts(start_time, stats, field_name, fname,
 
     Parameters
     ----------
-    start_time : datetime object
+    start_time : datetime object or array of date time objects
         the time of the intercomparison
     stats : dict
         dictionary containing the statistics
@@ -749,6 +761,8 @@ def write_intercomp_scores_ts(start_time, stats, field_name, fname,
         the name of the file where data has written
 
     """
+    nvalues = np.size(start_time)
+
     meanbias = stats['meanbias'].filled(fill_value=get_fillvalue())
     medianbias = stats['medianbias'].filled(fill_value=get_fillvalue())
     quant25bias = stats['quant25bias'].filled(fill_value=get_fillvalue())
@@ -759,6 +773,22 @@ def write_intercomp_scores_ts(start_time, stats, field_name, fname,
     intercep = stats['intercep'].filled(fill_value=get_fillvalue())
     intercep_slope_1 = stats['intercep_slope_1'].filled(
         fill_value=get_fillvalue())
+
+    if nvalues == 1:
+        start_time_aux = np.asarray([start_time])
+        meanbias = np.asarray([meanbias])
+        medianbias = np.asarray([medianbias])
+        quant25bias = np.asarray([quant25bias])
+        quant75bias = np.asarray([quant75bias])
+        modebias = np.asarray([modebias])
+        corr = np.asarray([corr])
+        slope = np.asarray([slope])
+        intercep = np.asarray([intercep])
+        intercep_slope_1 = np.asarray([intercep_slope_1])
+        np_t = np.asarray([stats['npoints']])
+    else:
+        start_time_aux = np.asarray(start_time)
+        np_t = stats['npoints']
 
     filelist = glob.glob(fname)
     if len(filelist) == 0:
@@ -774,7 +804,7 @@ def write_intercomp_scores_ts(start_time, stats, field_name, fname,
             csvfile.write('# Fill Value: '+str(get_fillvalue())+'\n')
             csvfile.write(
                 '# Start: ' +
-                start_time.strftime('%Y-%m-%d %H:%M:%S UTC')+'\n')
+                start_time_aux[0].strftime('%Y-%m-%d %H:%M:%S UTC')+'\n')
             csvfile.write('#\n')
 
             fieldnames = ['date', 'NP', 'mean_bias', 'median_bias',
@@ -785,19 +815,21 @@ def write_intercomp_scores_ts(start_time, stats, field_name, fname,
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
 
-            writer.writerow(
-                {'date': start_time.strftime('%Y%m%d%H%M%S'),
-                 'NP': stats['npoints'],
-                 'mean_bias': meanbias,
-                 'median_bias': medianbias,
-                 'quant25_bias': quant25bias,
-                 'quant75_bias': quant75bias,
-                 'mode_bias': modebias,
-                 'corr': corr,
-                 'slope_of_linear_regression': slope,
-                 'intercep_of_linear_regression': intercep,
-                 'intercep_of_linear_regression_of_slope_1': intercep_slope_1
-                 })
+            for i in range(nvalues):
+                writer.writerow({
+                    'date': start_time_aux[i].strftime('%Y%m%d%H%M%S'),
+                    'NP': np_t[i],
+                    'mean_bias': meanbias[i],
+                    'median_bias': medianbias[i],
+                    'quant25_bias': quant25bias[i],
+                    'quant75_bias': quant75bias[i],
+                    'mode_bias': modebias[i],
+                    'corr': corr[i],
+                    'slope_of_linear_regression': slope[i],
+                    'intercep_of_linear_regression': intercep[i],
+                    'intercep_of_linear_regression_of_slope_1': (
+                        intercep_slope_1[i])
+                    })
             csvfile.close()
     else:
         with open(fname, 'a', newline='') as csvfile:
@@ -807,19 +839,21 @@ def write_intercomp_scores_ts(start_time, stats, field_name, fname,
                           'intercep_of_linear_regression',
                           'intercep_of_linear_regression_of_slope_1']
             writer = csv.DictWriter(csvfile, fieldnames)
-            writer.writerow(
-                {'date': start_time.strftime('%Y%m%d%H%M%S'),
-                 'NP': stats['npoints'],
-                 'mean_bias': meanbias,
-                 'median_bias': medianbias,
-                 'quant25_bias': quant25bias,
-                 'quant75_bias': quant75bias,
-                 'mode_bias': modebias,
-                 'corr': corr,
-                 'slope_of_linear_regression': slope,
-                 'intercep_of_linear_regression': intercep,
-                 'intercep_of_linear_regression_of_slope_1': intercep_slope_1
-                 })
+            for i in range(nvalues):
+                writer.writerow({
+                    'date': start_time_aux[i].strftime('%Y%m%d%H%M%S'),
+                    'NP': np_t[i],
+                    'mean_bias': meanbias[i],
+                    'median_bias': medianbias[i],
+                    'quant25_bias': quant25bias[i],
+                    'quant75_bias': quant75bias[i],
+                    'mode_bias': modebias[i],
+                    'corr': corr[i],
+                    'slope_of_linear_regression': slope[i],
+                    'intercep_of_linear_regression': intercep[i],
+                    'intercep_of_linear_regression_of_slope_1': (
+                        intercep_slope_1[i])
+                    })
             csvfile.close()
 
     return fname
@@ -897,16 +931,26 @@ def write_colocated_data(coloc_data, fname):
             csvfile.write('#\n')
 
             fieldnames = [
-                'rad1_ele', 'rad1_azi', 'rad1_rng', 'rad1_val',
-                'rad2_ele', 'rad2_azi', 'rad2_rng', 'rad2_val']
+                'rad1_time', 'rad1_ray_ind', 'rad1_rng_ind', 'rad1_ele',
+                'rad1_azi', 'rad1_rng', 'rad1_val', 'rad2_time',
+                'rad2_ray_ind', 'rad2_rng_ind', 'rad2_ele', 'rad2_azi',
+                'rad2_rng', 'rad2_val']
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
             for i in range(ngates):
                 writer.writerow({
+                    'rad1_time': (
+                        coloc_data['rad1_time'][i].strftime('%Y%m%d%H%M%S')),
+                    'rad1_ray_ind': coloc_data['rad1_ray_ind'][i],
+                    'rad1_rng_ind': coloc_data['rad1_rng_ind'][i],
                     'rad1_ele': coloc_data['rad1_ele'][i],
                     'rad1_azi': coloc_data['rad1_azi'][i],
                     'rad1_rng': coloc_data['rad1_rng'][i],
                     'rad1_val': coloc_data['rad1_val'][i],
+                    'rad2_time': (
+                        coloc_data['rad2_time'][i].strftime('%Y%m%d%H%M%S')),
+                    'rad2_ray_ind': coloc_data['rad2_ray_ind'][i],
+                    'rad2_rng_ind': coloc_data['rad2_rng_ind'][i],
                     'rad2_ele': coloc_data['rad2_ele'][i],
                     'rad2_azi': coloc_data['rad2_azi'][i],
                     'rad2_rng': coloc_data['rad2_rng'][i],
@@ -916,15 +960,25 @@ def write_colocated_data(coloc_data, fname):
     else:
         with open(fname, 'a', newline='') as csvfile:
             fieldnames = [
-                'rad1_ele', 'rad1_azi', 'rad1_rng', 'rad1_val',
-                'rad2_ele', 'rad2_azi', 'rad2_rng', 'rad2_val']
+                'rad1_time', 'rad1_ray_ind', 'rad1_rng_ind', 'rad1_ele',
+                'rad1_azi', 'rad1_rng', 'rad1_val', 'rad2_time',
+                'rad2_ray_ind', 'rad2_rng_ind', 'rad2_ele', 'rad2_azi',
+                'rad2_rng', 'rad2_val']
             writer = csv.DictWriter(csvfile, fieldnames)
             for i in range(ngates):
                 writer.writerow({
+                    'rad1_time': (
+                        coloc_data['rad1_time'][i].strftime('%Y%m%d%H%M%S')),
+                    'rad1_ray_ind': coloc_data['rad1_ray_ind'][i],
+                    'rad1_rng_ind': coloc_data['rad1_rng_ind'][i],
                     'rad1_ele': coloc_data['rad1_ele'][i],
                     'rad1_azi': coloc_data['rad1_azi'][i],
                     'rad1_rng': coloc_data['rad1_rng'][i],
                     'rad1_val': coloc_data['rad1_val'][i],
+                    'rad2_time': (
+                        coloc_data['rad2_time'][i].strftime('%Y%m%d%H%M%S')),
+                    'rad2_ray_ind': coloc_data['rad2_ray_ind'][i],
+                    'rad2_rng_ind': coloc_data['rad2_rng_ind'][i],
                     'rad2_ele': coloc_data['rad2_ele'][i],
                     'rad2_azi': coloc_data['rad2_azi'][i],
                     'rad2_rng': coloc_data['rad2_rng'][i],
@@ -960,14 +1014,17 @@ def write_colocated_data_time_avg(coloc_data, fname):
             csvfile.write('#\n')
 
             fieldnames = [
-                'rad1_ray_ind', 'rad1_rng_ind', 'rad1_ele', 'rad1_azi',
-                'rad1_rng', 'rad1_dBZavg', 'rad1_PhiDPavg', 'rad1_Flagavg',
-                'rad2_ray_ind', 'rad2_rng_ind', 'rad2_ele', 'rad2_azi',
-                'rad2_rng', 'rad2_dBZavg', 'rad2_PhiDPavg', 'rad2_Flagavg']
+                'rad1_time', 'rad1_ray_ind', 'rad1_rng_ind', 'rad1_ele',
+                'rad1_azi', 'rad1_rng', 'rad1_dBZavg', 'rad1_PhiDPavg',
+                'rad1_Flagavg', 'rad2_time', 'rad2_ray_ind', 'rad2_rng_ind',
+                'rad2_ele', 'rad2_azi', 'rad2_rng', 'rad2_dBZavg',
+                'rad2_PhiDPavg', 'rad2_Flagavg']
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
             for i in range(ngates):
                 writer.writerow({
+                    'rad1_time': (
+                        coloc_data['rad1_time'][i].strftime('%Y%m%d%H%M%S')),
                     'rad1_ray_ind': coloc_data['rad1_ray_ind'][i],
                     'rad1_rng_ind': coloc_data['rad1_rng_ind'][i],
                     'rad1_ele': coloc_data['rad1_ele'][i],
@@ -977,6 +1034,8 @@ def write_colocated_data_time_avg(coloc_data, fname):
                     'rad1_PhiDPavg': coloc_data['rad1_PhiDPavg'][i],
                     'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
                     'rad1_Flagavg': coloc_data['rad1_Flagavg'][i],
+                    'rad2_time': (
+                        coloc_data['rad2_time'][i].strftime('%Y%m%d%H%M%S')),
                     'rad2_ray_ind': coloc_data['rad2_ray_ind'][i],
                     'rad2_rng_ind': coloc_data['rad2_rng_ind'][i],
                     'rad2_ele': coloc_data['rad2_ele'][i],
@@ -990,13 +1049,16 @@ def write_colocated_data_time_avg(coloc_data, fname):
     else:
         with open(fname, 'a', newline='') as csvfile:
             fieldnames = [
-                'rad1_ray_ind', 'rad1_rng_ind', 'rad1_ele', 'rad1_azi',
-                'rad1_rng', 'rad1_dBZavg', 'rad1_PhiDPavg', 'rad1_Flagavg',
-                'rad2_ray_ind', 'rad2_rng_ind', 'rad2_ele', 'rad2_azi',
-                'rad2_rng', 'rad2_dBZavg', 'rad2_PhiDPavg', 'rad2_Flagavg']
+                'rad1_time', 'rad1_ray_ind', 'rad1_rng_ind', 'rad1_ele',
+                'rad1_azi', 'rad1_rng', 'rad1_dBZavg', 'rad1_PhiDPavg',
+                'rad1_Flagavg', 'rad2_time', 'rad2_ray_ind', 'rad2_rng_ind',
+                'rad2_ele', 'rad2_azi', 'rad2_rng', 'rad2_dBZavg',
+                'rad2_PhiDPavg', 'rad2_Flagavg']
             writer = csv.DictWriter(csvfile, fieldnames)
             for i in range(ngates):
                 writer.writerow({
+                    'rad1_time': (
+                        coloc_data['rad1_time'][i].strftime('%Y%m%d%H%M%S')),
                     'rad1_ray_ind': coloc_data['rad1_ray_ind'][i],
                     'rad1_rng_ind': coloc_data['rad1_rng_ind'][i],
                     'rad1_ele': coloc_data['rad1_ele'][i],
@@ -1006,6 +1068,8 @@ def write_colocated_data_time_avg(coloc_data, fname):
                     'rad1_PhiDPavg': coloc_data['rad1_PhiDPavg'][i],
                     'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
                     'rad1_Flagavg': coloc_data['rad1_Flagavg'][i],
+                    'rad2_time': (
+                        coloc_data['rad2_time'][i].strftime('%Y%m%d%H%M%S')),
                     'rad2_ray_ind': coloc_data['rad2_ray_ind'][i],
                     'rad2_rng_ind': coloc_data['rad2_rng_ind'][i],
                     'rad2_ele': coloc_data['rad2_ele'][i],

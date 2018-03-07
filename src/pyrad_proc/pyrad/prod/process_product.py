@@ -159,6 +159,7 @@ def generate_occurrence_products(dataset, prdcfg):
             return None
         if dataset['occu_final']:
             prdcfg['timeinfo'] = dataset['endtime']
+
         return generate_vol_products(dataset['radar_obj'], prdcfg)
 
 
@@ -446,7 +447,7 @@ def generate_sun_hits_products(dataset, prdcfg):
 
 def generate_intercomp_products(dataset, prdcfg):
     """
-    generates radar intercomparison products
+    Generates radar intercomparison products.
 
     Parameters
     ----------
@@ -652,7 +653,7 @@ def generate_intercomp_products(dataset, prdcfg):
 
 def generate_colocated_gates_products(dataset, prdcfg):
     """
-    generates colocated gates products
+    Generates colocated gates products
 
     Parameters
     ----------
@@ -731,7 +732,8 @@ def generate_time_avg_products(dataset, prdcfg):
 
 def generate_qvp_products(dataset, prdcfg):
     """
-    generates QVP products
+    Generates quasi vertical profile products. Quasi vertical profiles
+    come from azimuthal averaging of polarimetric radar data.
 
     Parameters
     ----------
@@ -761,7 +763,7 @@ def generate_qvp_products(dataset, prdcfg):
 
 def generate_vol_products(dataset, prdcfg):
     """
-    generates radar volume products
+    Generates radar volume products.
 
     Parameters
     ----------
@@ -2015,7 +2017,7 @@ def generate_vol_products(dataset, prdcfg):
 
 def generate_timeseries_products(dataset, prdcfg):
     """
-    generates time series products
+    Generates time series products
 
     Parameters
     ----------

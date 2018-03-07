@@ -55,7 +55,10 @@ Reading other data
     read_timeseries
     read_ts_cum
     read_monitoring_ts
+    read_monitoring_ts_old
     read_intercomp_scores_ts
+    read_intercomp_scores_ts_old
+    read_intercomp_scores_ts_old_v0
     get_sensor_data
     read_smn
     read_smn2
@@ -148,8 +151,11 @@ from .read_data_hzt import get_iso0_field
 
 from .read_data_other import read_status, read_rad4alp_cosmo, read_rad4alp_vis
 from .read_data_other import read_timeseries, read_monitoring_ts, read_ts_cum
+from .read_data_other import read_monitoring_ts_old
 from .read_data_other import get_sensor_data, read_smn, read_disdro_scattering
 from .read_data_other import read_smn2, read_intercomp_scores_ts
+from .read_data_other import read_intercomp_scores_ts_old
+from .read_data_other import read_intercomp_scores_ts_old_v0
 from .read_data_other import read_sun_hits, read_sun_hits_multiple_days
 from .read_data_other import read_sun_retrieval, read_solar_flux
 from .read_data_other import read_selfconsistency, read_colocated_gates
