@@ -8,8 +8,8 @@
  
 module use /apps/escha/UES/RH7.3_PE17.02/sandbox/hvictor/easybuild/modules/all
 module load greasy/2.1-cscs-gmvolf-17.02
+
+TASKS_FILE=$1
  
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-greasy -f tasks
-
-
+greasy -f ${TASKS_FILE}

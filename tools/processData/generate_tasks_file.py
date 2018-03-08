@@ -25,17 +25,17 @@ print(__doc__)
 def main():
     """
     """
-    ftasks_name = os.path.expanduser('~')+'/pyrad/tools/processData/tasks'
+    ftasks_name = os.path.expanduser('~')+'/pyrad/tools/processData/tasks_rad4alp_PLA'
     task = (
         os.path.expanduser('~') +
         '/pyrad/tools/processData/get_and_process_rad4alp_data_cscs.sh')
 
     # generate list of dates
-    start_date = datetime.datetime(2018, 1, 1)
+    start_date = datetime.datetime(2018, 1, 3)
     ndays = 2
     datelist = pd.date_range(start_date, periods=ndays).tolist()
 
-    datelist.append(datetime.datetime(2018, 3, 7))
+    # datelist.append(datetime.datetime(2018, 3, 7))
 
     # start and end time of processing each date
     start_time = '000001'
@@ -79,6 +79,8 @@ def main():
                 ' --hzt_destbase '+hzt_destbase+'\n')
 
         txtfile.close()
+        
+        print('written task file '+ftasks_name)
 
 
 def _print_end_msg(text):

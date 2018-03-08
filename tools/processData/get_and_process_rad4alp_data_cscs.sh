@@ -31,7 +31,6 @@
 #            archive. Default 0
 # --hzt_destbase : HZT data destination base path. 
 #                  Default /store/msrad/cosmo/cosmo1/HZT/
-
 umask 0002;
 export PATH="/store/msrad/utils/anaconda3/bin:$PATH"
 
@@ -166,8 +165,12 @@ if [ "$GET_COSMO" -eq 1 ]; then
 fi
 
 for ((iday=0; iday<${nday}; iday++)); do
+    procday_start=`date +%s`
+    
     DAY=${day_vec[${iday}]}
     for ((icfg=0; icfg<${ncfg}; icfg++)); do
+        proccfg_start=`date +%s`
+        
         CFGFILE=${cfgfile_vec[${icfg}]}
         IFS='.' read -r CFGFILE_BASE TERMINATION <<< "$CFGFILE"
         
@@ -177,24 +180,46 @@ for ((iday=0; iday<${nday}; iday++)); do
         fi        
         
         if [ "$GET_DATA" -eq 1 ]; then
+            echo $(date --utc)" ${CFGFILE} Getting data for radar ${RADAR} with resolution ${RES} and day ${DAY}"
+            proc_start=`date +%s`
+            
             # Copy data from CSCS repository into the folder structure to process it
             LOGFILE=$HOME/log/${DAY}_${CFGFILE_BASE}_get_rad4alp_data_CSCS.log
             bash $HOME/pyrad/tools/copyData/get_rad4alp_data_CSCS_2.sh -r $RADAR -e $RES -d $DAY -p $DATA_DESTBASE >$LOGFILE 2>$LOGFILE
+            
+            proc_end=`date +%s`
+            runtime=$((proc_end-proc_start))
+            echo $(date --utc)" ${CFGFILE} Finished getting data for radar ${RADAR} with resolution ${RES} and day ${DAY}. Run time: ${runtime} s"
         fi
     
         if [ "$GET_COSMO" -eq 1 ]; then
-            # Get COSMO temperature information files
+            echo $(date --utc)" ${CFGFILE} Getting COSMO data for runs ${RUN_TIME} and day ${DAY}"
+            proc_start=`date +%s`
+            
+            # Get COSMO temperature information files            
             LOGFILE=$HOME/log/${DAY}_${CFGFILE_BASE}_temp_cosmo1_rad4alp.log
             bash $HOME/pyrad/tools/copyData/get_temp_cosmo1_cscs.sh -d $DAY -t ${RUN_TIME} -p $COSMO_DESTBASE >$LOGFILE 2>$LOGFILE
+            
+            proc_end=`date +%s`
+            runtime=$((proc_end-proc_start))
+            echo $(date --utc)" ${CFGFILE} Finished getting COSMO data for runs ${RUN_TIME} and day ${DAY}. Run time: ${runtime} s"
         fi
         
         if [ "$GET_HZT" -eq 1 ]; then
+            echo $(date --utc)" Getting HZT data for day ${DAY}"
+            proc_start=`date +%s`
+            
             # copy HZT files to right folder
             LOGFILE=$HOME/log/${DAY}_${CFGFILE_BASE}_hzt_rad4alp.log
             bash $HOME/pyrad/tools/copyData/get_hzt_cscs.sh -d $DAY -p $HZT_DESTBASE >$LOGFILE 2>$LOGFILE
+            
+            proc_end=`date +%s`
+            runtime=$((proc_end-proc_start))
+            echo $(date --utc)" ${CFGFILE} Finished getting HZT data for day ${DAY}. Run time: ${runtime} s"
         fi
         
-        echo "Processing config file ${CFGFILE} on day ${DAY}"
+        echo $(date --utc)" ${CFGFILE} Processing config file ${CFGFILE} on day ${DAY}"
+        proc_start=`date +%s`
         
         # process data
         source activate pyrad
@@ -205,17 +230,50 @@ for ((iday=0; iday<${nday}; iday++)); do
         
         source deactivate
         
+        proc_end=`date +%s`
+        runtime=$((proc_end-proc_start))
+        echo $(date --utc)" ${CFGFILE} Finished Processing config file ${CFGFILE} on day ${DAY}. Run time: ${runtime} s"
+        
         if [ "$RM_DATA" -eq 1 ] && [ "$GET_DATA" -eq 1 ]; then
+            echo $(date --utc)" ${CFGFILE} Removing data for radar ${RADAR} with resolution ${RES} and day ${DAY}"
+            proc_start=`date +%s`
+            
             LOGFILE=$HOME/log/${DAY}_${RADAR}${RES}_rm_rad4alp_data_CSCS.log
             bash $HOME/pyrad/tools/copyData/rm_rad4alp_data_CSCS_2.sh -r $RADAR -e $RES -d $DAY -p $DATA_DESTBASE >$LOGFILE 2>$LOGFILE
+            
+            proc_end=`date +%s`
+            runtime=$((proc_end-proc_start))
+            echo $(date --utc)" ${CFGFILE} Finished removing data for radar ${RADAR} with resolution ${RES} and day ${DAY}. Run time: ${runtime} s"
         fi        
         if [ "$RM_COSMO" -eq 1 ] && [ "$GET_COSMO" -eq 1 ]; then
+            echo $(date --utc)" ${CFGFILE} Removing COSMO data for runs ${RUN_TIME} and day ${DAY}"
+            proc_start=`date +%s`
+            
             LOGFILE=$HOME/log/${DAY}_${RADAR}${RES}_rm_temp_cosmo1_cscs.log
-            bash $HOME/pyrad/tools/copyData/rm_temp_cosmo1_cscs.sh -d $DAY -t ${RUN_TIME} -p $COSMO_DESTBASE >$LOGFILE 2>$LOGFILE        
+            bash $HOME/pyrad/tools/copyData/rm_temp_cosmo1_cscs.sh -d $DAY -t ${RUN_TIME} -p $COSMO_DESTBASE >$LOGFILE 2>$LOGFILE  
+
+            proc_end=`date +%s`
+            runtime=$((proc_end-proc_start))
+            echo $(date --utc)" ${CFGFILE} Finished removing COSMO data for runs ${RUN_TIME} and day ${DAY}. Run time: ${runtime} s"
         fi        
         if [ "$RM_HZT" -eq 1 ] && [ "$GET_HZT" -eq 1 ]; then
+            echo $(date --utc)" ${CFGFILE} Removing HZT data for day ${DAY}"
+            proc_start=`date +%s`
+            
             LOGFILE=$HOME/log/${DAY}_${RADAR}${RES}_rm_hzt_cscs.log
-            bash $HOME/pyrad/tools/copyData/rm_hzt_data_cscs.sh -d $DAY -p $HZT_DESTBASE >$LOGFILE 2>$LOGFILE        
+            bash $HOME/pyrad/tools/copyData/rm_hzt_data_cscs.sh -d $DAY -p $HZT_DESTBASE >$LOGFILE 2>$LOGFILE   
+
+            proc_end=`date +%s`
+            runtime=$((proc_end-proc_start))
+            echo $(date --utc)" ${CFGFILE} Finished removing HZT data for day ${DAY}. Run time: ${runtime} s"
         fi
+        
+        proccfg_end=`date +%s`
+        runtime=$((proccfg_end-proccfg_start))
+        echo $(date --utc)" ${CFGFILE} ${DAY} Run time: ${runtime} s"
     done
+    
+    procday_end=`date +%s`
+    runtime=$((procday_end-procday_start))
+    echo $(date --utc)" ${DAY} Run time: ${runtime} s"
 done
