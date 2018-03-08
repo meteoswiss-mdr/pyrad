@@ -59,6 +59,10 @@ do
         res="$2"
         shift # past argument
         ;;
+        -p|--dest_base)
+        cosmobaseraw="$2"
+        shift # past argument        
+        ;;   
     esac
     shift # past argument or value
 done

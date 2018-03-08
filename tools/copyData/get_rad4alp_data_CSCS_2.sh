@@ -38,8 +38,12 @@ do
         ;;        
         -e|--res)
         res="$2"
-        shift # past argument
+        shift # past argument        
         ;;        
+        -p|--dest_base)
+        data_destbase="$2"
+        shift # past argument        
+        ;;    
     esac
     shift # past argument or value
 done
