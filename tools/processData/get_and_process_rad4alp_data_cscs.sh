@@ -10,13 +10,21 @@
 # --end_time : end time of the processing each day
 # -c --cfgfile: config files used in the processing.
 #               If more than one separate with a comma
+# -p --cfgpath: path of the config files used in the processing.
+#               If more than one separate with a comma
+#               If more than one there must be as many as config files
 # -r --radar: Name of the radar the data of which should be retrieved.
 #             Can be A,D,L,P,W. If more than one separate with a comma.
 #             There must be as many as config files
 # -e --res: Resolution of the radar data. Can be H or L.
 #           If more than one radar is retrieved separate with a comma.
 #           There must be as many as config files
+# -i --info: Info string to be added in the name of some output products
+#            If more than one config file is used separate with a comma.
+#            To be used there must be as many as config files
 # --get_data : if set, get radar data. Default 1
+# --ele : radar elevations to retrieve in format 001 to 020
+#         if "all" retrieve all the elevations
 # --rm_data : if set, remove radar data after processing if data was fetched
 #             from archive. Default 0
 # --data_destbase : rad4alp data destination base path. 
@@ -29,6 +37,8 @@
 # --get_hzt : if set, get HZT data. Default 0
 # --rm_hzt : if set, remove HZT data after processing if data was fecthed from
 #            archive. Default 0
+# -h|--hour : hour from run of iso0 to retrieved format 00 to 06
+#             if "all" all forecast times will be retrieved
 # --hzt_destbase : HZT data destination base path. 
 #                  Default /store/msrad/cosmo/cosmo1/HZT/
 umask 0002;
@@ -51,6 +61,12 @@ COSMO_DESTBASE=/store/msrad/cosmo/cosmo1/TEMP/raw1/
 GET_HZT=0
 RM_HZT=0
 HZT_DESTBASE=/store/msrad/cosmo/cosmo1/HZT/
+
+info_vec=''
+cfgpath_vec="$HOME/pyrad/config/processing/"
+
+ELE='all'
+HOUR='all'
 while [[ $# -gt 1 ]]
 do
     key="$1"
@@ -80,6 +96,14 @@ do
         IFS=$OIFS
         shift # past argument
         ;;
+        -p|--cfgpath)
+        CFGPATH="$2"
+        OIFS=$IFS
+        IFS=','
+        read -r -a cfgpath_vec <<< "$CFGPATH"
+        IFS=$OIFS
+        shift # past argument
+        ;;
         -r|--radar)
         RADAR="$2"
         OIFS=$IFS
@@ -94,12 +118,24 @@ do
         IFS=','
         read -r -a res_vec <<< "$RES"
         IFS=$OIFS
+        shift # past argument
+        ;;        
+        -i|--info)
+        INFO="$2"
+        OIFS=$IFS
+        IFS=','
+        read -r -a info_vec <<< "$INFO"
+        IFS=$OIFS
         shift # past argument        
         ;; 
         --get_data)
         GET_DATA="$2"
         shift # past argument        
         ;;
+        --ele)
+        ELE="$2"
+        shift # past argument                
+        ;; 
         --rm_data)
         RM_DATA="$2"
         shift # past argument        
@@ -124,6 +160,10 @@ do
         GET_HZT="$2"
         shift # past argument        
         ;;
+        -h|--hour)
+        HOUR="$2"
+        shift # past argument                
+        ;; 
         --rm_hzt)
         RM_HZT="$2"
         shift # past argument        
@@ -141,6 +181,8 @@ nday=${#day_vec[@]}
 ncfg=${#cfgfile_vec[@]}
 nrad=${#radar_vec[@]}
 nres=${#res_vec[@]}
+ninfo=${#info_vec[@]}
+ncfgpath=${#cfgpath_vec[@]}
 
 if [ "$ncfg" -ne "$nrad" ] || [ "$ncfg" -ne "$nres" ];then
   echo "In order to retrieve radar data the number of radars and resolutions should be the same as the number of config files"
@@ -152,14 +194,14 @@ if [ "$ncfg" -ne "$nrad" ] || [ "$ncfg" -ne "$nres" ];then
 fi
 
 # get COSMO run time
-if [ "$GET_COSMO" -eq 1 ]; then
+if [ "$GET_COSMO" -eq 1 ] || [ "$GET_HZT" -eq 1 ]; then
     run_period=3
     start_hour=$(echo ${START_TIME} | cut -c1-2)
     end_hour=$(echo ${END_TIME} | cut -c1-2)
     vals=($(seq $start_hour $run_period $end_hour))
     nvals=${#vals[@]}
     RUN_TIME=$(printf %02d ${vals[0]})
-    for ((ivals=1; ivals<${nvals}-1; ivals++)); do
+    for ((ivals=1; ivals<${nvals}; ivals++)); do
         RUN_TIME="${RUN_TIME},$(printf %02d ${vals[${ivals}]})"
     done
 fi
@@ -177,7 +219,17 @@ for ((iday=0; iday<${nday}; iday++)); do
         if [ "$ncfg" -eq "$nrad" ] || [ "$ncfg" -eq "$nres" ];then
             RADAR=${radar_vec[${icfg}]}
             RES=${res_vec[${icfg}]}
-        fi        
+        fi
+        if [ "$ncfg" -eq "$ninfo" ];then
+            INFO=${info_vec[${icfg}]}
+        else
+            INFO=''
+        fi
+        if [ "$ncfgpath" -eq "$ncfg" ];then
+            CFGPATH=${cfgpath_vec[${icfg}]}
+        else
+            CFGPATH="$HOME/pyrad/config/processing/"
+        fi
         
         if [ "$GET_DATA" -eq 1 ]; then
             echo $(date --utc)" ${CFGFILE} Getting data for radar ${RADAR} with resolution ${RES} and day ${DAY}"
@@ -185,7 +237,7 @@ for ((iday=0; iday<${nday}; iday++)); do
             
             # Copy data from CSCS repository into the folder structure to process it
             LOGFILE=$HOME/log/${DAY}_${CFGFILE_BASE}_get_rad4alp_data_CSCS.log
-            bash $HOME/pyrad/tools/copyData/get_rad4alp_data_CSCS_2.sh -r $RADAR -e $RES -d $DAY -p $DATA_DESTBASE >$LOGFILE 2>$LOGFILE
+            bash $HOME/pyrad/tools/copyData/get_rad4alp_data_CSCS_2.sh -r $RADAR -e $RES -d $DAY --start_time ${START_TIME} --end_time ${END_TIME} -p $DATA_DESTBASE --ele $ELE >$LOGFILE 2>$LOGFILE
             
             proc_end=`date +%s`
             runtime=$((proc_end-proc_start))
@@ -211,7 +263,7 @@ for ((iday=0; iday<${nday}; iday++)); do
             
             # copy HZT files to right folder
             LOGFILE=$HOME/log/${DAY}_${CFGFILE_BASE}_hzt_rad4alp.log
-            bash $HOME/pyrad/tools/copyData/get_hzt_cscs.sh -d $DAY -p $HZT_DESTBASE >$LOGFILE 2>$LOGFILE
+            bash $HOME/pyrad/tools/copyData/get_hzt_cscs.sh -d $DAY -t ${RUN_TIME} -h $HOUR -p $HZT_DESTBASE >$LOGFILE 2>$LOGFILE
             
             proc_end=`date +%s`
             runtime=$((proc_end-proc_start))
@@ -226,7 +278,7 @@ for ((iday=0; iday<${nday}; iday++)); do
         
         LOGFILE=$HOME/log/${DAY}_${CFGFILE_BASE}.log
         cd ${pyradpath}
-        python -u main_process_data_period.py ${CFGFILE} ${DAY} ${DAY} --starttime ${START_TIME} --endtime ${END_TIME} >$LOGFILE 2>&1
+        python -u main_process_data_period.py ${CFGFILE} ${DAY} ${DAY} --starttime ${START_TIME} --endtime ${END_TIME} -i ${INFO} --cfgpath ${CFGPATH} >$LOGFILE 2>&1
         
         source deactivate
         
