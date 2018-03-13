@@ -81,7 +81,7 @@ s_s=$(echo ${START_TIME} | cut -c5-6)
 
 if [ $s_s -gt 0 ]; then
     s_s=00
-    m_s="$(($m_s + 1))"
+    m_s="$(($m_s + 5))"
 fi
 m_s=$[(${m_s}/5)*5]
 if [ $m_s -gt 60 ]; then
@@ -90,7 +90,7 @@ if [ $m_s -gt 60 ]; then
 fi
 st=$h_s:$m_s:$s_s
 st_s=$(date --date $st +%s)
-st_ref=$(date --date 00:05:00 +%s)
+st_ref=$(date --date 00:00:00 +%s)
 dt_st=$((st_ref-st_s))
 
 # set end time as multiple of 5 minutes
@@ -101,7 +101,7 @@ s_e=$(echo ${END_TIME} | cut -c5-6)
 
 if [ $s_e -gt 0 ]; then
     s_e=00
-    m_e="$(($m_e + 1))"
+    m_e="$(($m_e + 5))"
 fi
 m_e=$[(${m_e}/5)*5]
 m_e=$(printf %02d ${m_e})

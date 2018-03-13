@@ -54,6 +54,10 @@ for ((iday=0; iday<${nday}; iday++)); do
     years=$(date --date "${day_vec[${iday}]}" +"%y")
     julday=$(date --date "${day_vec[${iday}]}" +"%j")
     
+    yearl_end=$(date -d "$(date --date "${day_vec[${iday}]}")+1 day" +"%Y")
+    years_end=$(date -d "$(date --date "${day_vec[${iday}]}")+1 day" +"%y")
+    julday_end=$(date -d "$(date --date "${day_vec[${iday}]}")+1 day" +"%j")
+    
     echo "Removing day "${years}${julday}        
     
     for ((irad=0; irad<${nrad}; irad++)); do
@@ -62,31 +66,109 @@ for ((iday=0; iday<${nday}; iday++)); do
         
         if [ "${res}" == "H" ]
         then            
-            # remove path for polar data
-            rm -rf ${data_destbase}${years}${julday}/M${res}${radar}${years}${julday}/
-            rm -rf ${data_destbase}${years}${julday}/P${res}${radar}${years}${julday}/        
+            # remove polar data from 00:05 to 23:55
+            find ${data_destbase}${years}${julday}/M${res}${radar}${years}${julday}/ -type f -not -name M${res}${radar}${years}${julday}0000*.* -delete
+            find ${data_destbase}${years}${julday}/P${res}${radar}${years}${julday}/ -type f -not -name P${res}${radar}${years}${julday}0000*.* -delete
             
-            path_ML=${data_destbase}${years}${julday}/ML${radar}${years}${julday}/
-            path_PL=${data_destbase}${years}${julday}/PL${radar}${years}${julday}/
+            # remove directory if empty
+            if [ ! "$(ls -A ${data_destbase}${years}${julday}/M${res}${radar}${years}${julday})" ]; then
+                rm -rf ${data_destbase}${years}${julday}/M${res}${radar}${years}${julday}
+            fi
+            if [ ! "$(ls -A ${data_destbase}${years}${julday}/P${res}${radar}${years}${julday})" ]; then
+                rm -rf ${data_destbase}${years}${julday}/P${res}${radar}${years}${julday}
+            fi
+                        
+            # remove polar data at 00:00 the next day
+            rm -f ${data_destbase}${years_end}${julday_end}/M${res}${radar}${years_end}${julday_end}/M${res}${radar}${years_end}${julday_end}0000*.*
+            rm -f ${data_destbase}${years_end}${julday_end}/P${res}${radar}${years_end}${julday_end}/P${res}${radar}${years_end}${julday_end}0000*.*
             
+            # remove directory if empty
+            if [ ! "$(ls -A ${data_destbase}${years_end}${julday_end}/M${res}${radar}${years_end}${julday_end})" ]; then
+                rm -rf ${data_destbase}${years_end}${julday_end}/M${res}${radar}${years_end}${julday_end}
+            fi
+            if [ ! "$(ls -A ${data_destbase}${years_end}${julday_end}/P${res}${radar}${years_end}${julday_end})" ]; then
+                rm -rf ${data_destbase}${years_end}${julday_end}/P${res}${radar}${years_end}${julday_end}
+            fi
+                        
             # check if there is L polar data directory. If not remove also status data
+            path_ML=${data_destbase}${years}${julday}/ML${radar}${years}${julday}/
+            path_PL=${data_destbase}${years}${julday}/PL${radar}${years}${julday}/            
             if [ ! -d "${path_ML}" ] && [ ! -d "${path_PL}" ]; then
-                rm -rf ${data_destbase}${years}${julday}/ST${radar}${years}${julday}/                
+                find ${data_destbase}${years}${julday}/ST${radar}${years}${julday}/ -type f -not -name ST${radar}${years}${julday}0000*.xml -delete                                
+            fi
+            # remove directory if empty
+            if [ ! "$(ls -A ${data_destbase}${years}${julday}/ST${radar}${years}${julday})" ]; then
+                rm -rf ${data_destbase}${years}${julday}/ST${radar}${years}${julday}
+            fi
+            
+            # check if there is L polar data directory next day. If not remove also status data
+            path_ML=${data_destbase}${years_end}${julday_end}/ML${radar}${years_end}${julday_end}/
+            path_PL=${data_destbase}${years_end}${julday_end}/PL${radar}${years_end}${julday_end}/            
+            if [ ! -d "${path_ML}" ] && [ ! -d "${path_PL}" ]; then
+                rm -f ${data_destbase}${years_end}${julday_end}/ST${radar}${years_end}${julday_end}/ST${radar}${years_end}${julday_end}0000*.xml
+            fi
+            # remove directory if empty
+            if [ ! "$(ls -A ${data_destbase}${years_end}${julday_end}/ST${radar}${years_end}${julday_end})" ]; then
+                rm -rf ${data_destbase}${years_end}${julday_end}/ST${radar}${years_end}${julday_end}
             fi
         else            
-            # remove path for polar data
-            rm -rf ${data_destbase}${years}${julday}/M${res}${radar}${years}${julday}/
-            rm -rf ${data_destbase}${years}${julday}/P${res}${radar}${years}${julday}/
+            # remove polar data from 00:05 to 23:55
+            find ${data_destbase}${years}${julday}/M${res}${radar}${years}${julday}/ -type f -not -name M${res}${radar}${years}${julday}0000*.* -delete
+            find ${data_destbase}${years}${julday}/P${res}${radar}${years}${julday}/ -type f -not -name P${res}${radar}${years}${julday}0000*.* -delete
+            
+            # remove directory if empty
+            if [ ! "$(ls -A ${data_destbase}${years}${julday}/M${res}${radar}${years}${julday})" ]; then
+                rm -rf ${data_destbase}${years}${julday}/M${res}${radar}${years}${julday}
+            fi
+            if [ ! "$(ls -A ${data_destbase}${years}${julday}/P${res}${radar}${years}${julday})" ]; then
+                rm -rf ${data_destbase}${years}${julday}/P${res}${radar}${years}${julday}
+            fi
+            
+            # remove polar data at 00:00 the next day
+            rm -f ${data_destbase}${years_end}${julday_end}/M${res}${radar}${years_end}${julday_end}/M${res}${radar}${years_end}${julday_end}0000*.*
+            rm -f ${data_destbase}${years_end}${julday_end}/P${res}${radar}${years_end}${julday_end}/P${res}${radar}${years_end}${julday_end}0000*.*
+            
+            # remove directory if empty
+            if [ ! "$(ls -A ${data_destbase}${years_end}${julday_end}/M${res}${radar}${years_end}${julday_end})" ]; then
+                rm -rf ${data_destbase}${years_end}${julday_end}/M${res}${radar}${years_end}${julday_end}
+            fi
+            if [ ! "$(ls -A ${data_destbase}${years_end}${julday_end}/P${res}${radar}${years_end}${julday_end})" ]; then
+                rm -rf ${data_destbase}${years_end}${julday_end}/P${res}${radar}${years_end}${julday_end}
+            fi
                         
             # remove hydrometeor classification data
-            rm -rf ${data_destbase}${years}${julday}/YM${radar}${years}${julday}/
+            find ${data_destbase}${years}${julday}/YM${radar}${years}${julday}/ -type f -not -name YM${radar}${years}${julday}0000*.* -delete            
+            rm -f ${data_destbase}${years_end}${julday_end}/YM${radar}${years_end}${julday_end}/YM${radar}${years_end}${julday_end}0000*.*
+            
+            # remove directory if empty
+            if [ ! "$(ls -A ${data_destbase}${years}${julday}/YM${radar}${years}${julday})" ]; then
+                rm -rf ${data_destbase}${years}${julday}/YM${radar}${years}${julday}
+            fi
+            if [ ! "$(ls -A ${data_destbase}${years_end}${julday_end}/YM${radar}${years_end}${julday_end})" ]; then
+                rm -rf ${data_destbase}${years_end}${julday_end}/YM${radar}${years_end}${julday_end}
+            fi            
             
             path_MH=${data_destbase}${years}${julday}/MH${radar}${years}${julday}/
             path_PH=${data_destbase}${years}${julday}/PH${radar}${years}${julday}/
             
             # check if there is L polar data directory. If not remove also status data
             if [ ! -d "${path_MH}" ] && [ ! -d "${path_PH}" ]; then
-                rm -rf ${data_destbase}${years}${julday}/ST${radar}${years}${julday}/                
+                find ${data_destbase}${years}${julday}/ST${radar}${years}${julday}/ -type f -not -name ST${radar}${years}${julday}0000*.xml -delete
+            fi
+            # remove directory if empty
+            if [ ! "$(ls -A ${data_destbase}${years}${julday}/ST${radar}${years}${julday})" ]; then
+                rm -rf ${data_destbase}${years}${julday}/ST${radar}${years}${julday}
+            fi
+            
+            # check if there is L polar data directory next day. If not remove also status data
+            path_ML=${data_destbase}${years_end}${julday_end}/ML${radar}${years_end}${julday_end}/
+            path_PL=${data_destbase}${years_end}${julday_end}/PL${radar}${years_end}${julday_end}/            
+            if [ ! -d "${path_ML}" ] && [ ! -d "${path_PL}" ]; then
+                rm -f ${data_destbase}${years_end}${julday_end}/ST${res}${radar}${years_end}${julday_end}/ST${res}${radar}${years_end}${julday_end}0000*.xml
+            fi
+            # remove directory if empty
+            if [ ! "$(ls -A ${data_destbase}${years_end}${julday_end}/ST${radar}${years_end}${julday_end})" ]; then
+                rm -rf ${data_destbase}${years_end}${julday_end}/ST${radar}${years_end}${julday_end}
             fi
         fi        
     done
@@ -94,5 +176,8 @@ for ((iday=0; iday<${nday}; iday++)); do
     # remove day directory if empty
     if [ ! "$(ls -A ${data_destbase}${years}${julday})" ]; then
         rm -rf ${data_destbase}${years}${julday}
+    fi
+    if [ ! "$(ls -A ${data_destbase}${years_end}${julday_end})" ]; then
+        rm -rf ${data_destbase}${years_end}${julday_end}
     fi
 done

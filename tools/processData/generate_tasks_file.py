@@ -120,15 +120,11 @@ def main():
     # data is to be retrieved from the archive
     # info has to have the same number of cfgfiles to be applied
     # cfgpath can have one value or as many as cfg files
-    cfgfiles = (
-        'cscs_rad4alp_gc_freq_PHA.txt,' +
-        'cscs_rad4alp_gc_freq_PHD.txt,' +
-        'cscs_rad4alp_gc_freq_PHL.txt,' +
-        'cscs_rad4alp_gc_freq_PHP.txt,' +
+    cfgfiles = (        
         'cscs_rad4alp_gc_freq_PHW.txt')
-    radar = 'A,D,L,P,W'
-    res = 'H,H,H,H,H'
-    info = 'A,D,L,P,W'
+    radar = 'W'
+    res = 'H'
+    info = 'W'
     cfgpath = os.path.expanduser('~')+'/pyrad/config/processing/'
 
     # ele: elevations to get from archive format 001 to 020

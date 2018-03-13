@@ -42,6 +42,7 @@ import csv
 import xml.etree.ElementTree as et
 from warnings import warn
 from copy import deepcopy
+import fcntl
 
 import numpy as np
 
@@ -707,7 +708,7 @@ def read_ts_cum(fname):
         return None, None, None, None, None
 
 
-def read_monitoring_ts(fname):
+def read_monitoring_ts(fname, sort_by_date=False):
     """
     Reads a monitoring time series contained in a csv file
 
@@ -715,6 +716,8 @@ def read_monitoring_ts(fname):
     ----------
     fname : str
         path of time series file
+    sort_by_date : bool
+        if True, the read data is sorted by date prior to exit
 
     Returns
     -------
@@ -724,6 +727,16 @@ def read_monitoring_ts(fname):
     """
     try:
         with open(fname, 'r', newline='') as csvfile:
+            while True:
+                try:
+                    fcntl.flock(csvfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    break
+                except OSError as e:
+                    if e.errno != errno.EAGAIN:
+                        raise
+                    else:
+                        time.sleep(0.1)
+
             # first count the lines
             reader = csv.DictReader(
                 row for row in csvfile if not row.startswith('#'))
@@ -732,6 +745,7 @@ def read_monitoring_ts(fname):
             central_quantile = np.ma.empty(nrows, dtype=float)
             low_quantile = np.ma.empty(nrows, dtype=float)
             high_quantile = np.ma.empty(nrows, dtype=float)
+            date = np.empty(nrows, dtype=datetime.datetime)
 
             # now read the data
             csvfile.seek(0)
@@ -739,10 +753,9 @@ def read_monitoring_ts(fname):
                 row for row in csvfile if not row.startswith('#')
                 )
             i = 0
-            date = list()
             for row in reader:
-                date.append(datetime.datetime.strptime(
-                    row['date'], '%Y%m%d%H%M%S'))
+                date[i] = datetime.datetime.strptime(
+                    row['date'], '%Y%m%d%H%M%S')
                 np_t[i] = int(row['NP'])
                 central_quantile[i] = float(row['central_quantile'])
                 low_quantile[i] = float(row['low_quantile'])
@@ -756,7 +769,15 @@ def read_monitoring_ts(fname):
             high_quantile = np.ma.masked_values(
                 high_quantile, get_fillvalue())
 
+            fcntl.flock(csvfile, fcntl.LOCK_UN)
             csvfile.close()
+
+            if sort_by_date:
+                ind = np.argsort(date)
+                date = date[ind]
+                central_quantile = central_quantile[ind]
+                low_quantile = low_quantile[ind]
+                high_quantile = high_quantile[ind]
 
             return date, np_t, central_quantile, low_quantile, high_quantile
     except EnvironmentError as ee:

@@ -1450,6 +1450,7 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
         else:
             dscfg['global_data']['hist_obj'].fields[field_name]['data'] += (
                 field_dict['data'].filled(fill_value=0)).astype('int64')
+            
             dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
 
         dataset = dict()

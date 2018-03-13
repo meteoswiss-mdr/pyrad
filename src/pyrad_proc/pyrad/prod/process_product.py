@@ -2652,10 +2652,16 @@ def generate_monitoring_products(dataset, prdcfg):
 
         quantiles = np.array([25., 50., 75.])
         ref_value = 0.
+        sort_by_date = False
+        rewrite = False
         if 'quantiles' in prdcfg:
             quantiles = prdcfg['quantiles']
         if 'ref_value' in prdcfg:
             ref_value = prdcfg['ref_value']
+        if 'sort_by_date' in prdcfg:
+            sort_by_date = prdcfg['sort_by_date']
+        if 'rewrite' in prdcfg:
+            rewrite = prdcfg['rewrite']
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -2684,12 +2690,19 @@ def generate_monitoring_products(dataset, prdcfg):
         print('saved CSV file: '+csvfname)
 
         date, np_t_vec, cquant_vec, lquant_vec, hquant_vec = (
-            read_monitoring_ts(csvfname))
+            read_monitoring_ts(csvfname, sort_by_date=sort_by_date))
 
         if date is None:
             warn(
                 'Unable to plot time series. No valid data')
             return None
+
+        if rewrite:
+            val_vec = np.ma.asarray(
+                    [lquant_vec, cquant_vec, hquant_vec]).T
+            write_monitoring_ts(
+                date, np_t_vec, val_vec, quantiles, prdcfg['voltype'],
+                csvfname, rewrite=True)
 
         figtimeinfo = None
         titldate = ''
