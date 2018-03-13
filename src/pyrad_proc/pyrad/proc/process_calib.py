@@ -32,6 +32,7 @@ Functions for monitoring data quality and correct bias and noise effects
 from copy import deepcopy
 from warnings import warn
 import datetime
+from netCDF4 import num2date
 
 import numpy as np
 
@@ -49,6 +50,7 @@ from ..io.read_data_radar import interpol_field
 from ..util.radar_utils import get_closest_solar_flux, get_histogram_bins
 from ..util.radar_utils import time_avg_range, get_range_bins_to_avg
 from ..util.radar_utils import find_ray_index, find_rng_index
+from ..util.radar_utils import find_colocated_indexes
 
 
 def process_correct_bias(procstatus, dscfg, radar_list=None):
@@ -1381,6 +1383,41 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
             ray_ind = dscfg['global_data']['ray_ind']
             rng_ind = dscfg['global_data']['rng_ind']
             field = field[ray_ind, rng_ind]
+        else:
+            azi_tol = 0.5
+            ele_tol = 0.5
+            rng_tol = 50.
+
+            if 'azi_tol' in dscfg:
+                azi_tol = dscfg['azi_tol']
+            if 'ele_tol' in dscfg:
+                ele_tol = dscfg['ele_tol']
+            if 'rng_tol' in dscfg:
+                rng_tol = dscfg['rng_tol']
+
+            # get indexes of gates close to target
+            ray_ind = np.ma.empty(len(dscfg['global_data']['ray_ind']))
+            ray_ind[:] = np.ma.masked
+            rng_ind = np.ma.empty(len(dscfg['global_data']['ray_ind']))
+            rng_ind[:] = np.ma.masked
+            for i in range(len(dscfg['global_data']['ele'])):
+                ind_ray_rad = find_ray_index(
+                    radar_aux.elevation['data'], radar_aux.azimuth['data'],
+                    dscfg['global_data']['ele'][i],
+                    dscfg['global_data']['azi'][i],
+                    ele_tol=ele_tol, azi_tol=azi_tol)
+                if ind_ray_rad is None:
+                    continue
+                ind_rng_rad = find_rng_index(
+                    radar_aux.range['data'], dscfg['global_data']['rng'][i],
+                    rng_tol=rng_tol)
+                if ind_rng_rad is None:
+                    continue
+                ray_ind[i] = ind_ray_rad
+                rng_ind[i] = ind_rng_rad
+            ray_ind = ray_ind.compressed()
+            rng_ind = rng_ind.compressed()
+            field = field[ray_ind, rng_ind]
 
         # filter out low values
         val_min = None
@@ -1413,6 +1450,7 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
         else:
             dscfg['global_data']['hist_obj'].fields[field_name]['data'] += (
                 field_dict['data'].filled(fill_value=0)).astype('int64')
+            
             dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
 
         dataset = dict()
@@ -2694,12 +2732,14 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
         rad2_field = radar2.fields[field_name]['data']
 
         intercomp_dict = {
+            'rad1_time': [],
             'rad1_ray_ind': [],
             'rad1_rng_ind': [],
             'rad1_ele': [],
             'rad1_azi': [],
             'rad1_rng': [],
             'rad1_val': [],
+            'rad2_time': [],
             'rad2_ray_ind': [],
             'rad2_rng_ind': [],
             'rad2_ele': [],
@@ -2728,114 +2768,118 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
             if 'rng_tol' in dscfg:
                 rng_tol = dscfg['rng_tol']
 
-            for i in range(len(dscfg['global_data']['rad1_ele'])):
-                ind_ray_rad1 = find_ray_index(
-                    radar1.elevation['data'], radar1.azimuth['data'],
-                    dscfg['global_data']['rad1_ele'][i],
-                    dscfg['global_data']['rad1_azi'][i],
-                    ele_tol=ele_tol, azi_tol=azi_tol)
-                if ind_ray_rad1 is None:
-                    continue
-                ind_rng_rad1 = find_rng_index(
-                    radar1.range['data'], dscfg['global_data']['rad1_rng'][i],
-                    rng_tol=rng_tol)
-                if ind_rng_rad1 is None:
-                    continue
-
-                ind_ray_rad2 = find_ray_index(
-                    radar2.elevation['data'], radar2.azimuth['data'],
-                    dscfg['global_data']['rad2_ele'][i],
-                    dscfg['global_data']['rad2_azi'][i],
-                    ele_tol=ele_tol, azi_tol=azi_tol)
-                if ind_ray_rad2 is None:
-                    continue
-                ind_rng_rad2 = find_rng_index(
-                    radar2.range['data'], dscfg['global_data']['rad2_rng'][i],
-                    rng_tol=rng_tol)
-                if ind_rng_rad2 is None:
-                    continue
-
-                val1 = np.ma.asarray(rad1_field[ind_ray_rad1, ind_rng_rad1])
-                val2 = np.ma.asarray(rad2_field[ind_ray_rad2, ind_rng_rad2])
-                if avg_rad1:
-                    if (ind_rng_rad1+avg_rad_lim[1] >= radar1.ngates or
-                            ind_rng_rad1+avg_rad_lim[0] < 0):
-                        continue
-                    ind_rng = list(range(
-                        ind_rng_rad1+avg_rad_lim[0],
-                        ind_rng_rad1+avg_rad_lim[1]+1))
-                    val1 = np.ma.asarray(np.ma.mean(
-                        rad1_field[ind_ray_rad1, ind_rng]))
-                elif avg_rad2:
-                    if (ind_rng_rad2+avg_rad_lim[1] >= radar2.ngates or
-                            ind_rng_rad2+avg_rad_lim[0] < 0):
-                        continue
-                    ind_rng = list(range(
-                        ind_rng_rad2+avg_rad_lim[0],
-                        ind_rng_rad2+avg_rad_lim[1]+1))
-                    val2 = np.ma.asarray(np.ma.mean(
-                        rad2_field[ind_ray_rad2, ind_rng]))
-
-                if val1.mask or val2.mask:
-                    continue
-
-                intercomp_dict['rad1_ray_ind'].append(ind_ray_rad1)
-                intercomp_dict['rad1_rng_ind'].append(ind_rng_rad1)
-                intercomp_dict['rad1_ele'].append(
-                    radar1.elevation['data'][ind_ray_rad1])
-                intercomp_dict['rad1_azi'].append(
-                    radar1.azimuth['data'][ind_ray_rad1])
-                intercomp_dict['rad1_rng'].append(
-                    radar1.range['data'][ind_rng_rad1])
-                intercomp_dict['rad1_val'].append(val1)
-
-                intercomp_dict['rad2_ray_ind'].append(ind_ray_rad2)
-                intercomp_dict['rad2_rng_ind'].append(ind_rng_rad2)
-                intercomp_dict['rad2_ele'].append(
-                    radar2.elevation['data'][ind_ray_rad2])
-                intercomp_dict['rad2_azi'].append(
-                    radar2.azimuth['data'][ind_ray_rad2])
-                intercomp_dict['rad2_rng'].append(
-                    radar2.range['data'][ind_rng_rad2])
-                intercomp_dict['rad2_val'].append(val2)
+            rad1_ray_ind, rad1_rng_ind, rad2_ray_ind, rad2_rng_ind = (
+                find_colocated_indexes(
+                    radar1, radar2, dscfg['global_data']['rad1_ele'],
+                    dscfg['global_data']['rad1_azi'],
+                    dscfg['global_data']['rad1_rng'],
+                    dscfg['global_data']['rad2_ele'],
+                    dscfg['global_data']['rad2_azi'],
+                    dscfg['global_data']['rad2_rng'], ele_tol=ele_tol,
+                    azi_tol=azi_tol, rng_tol=rng_tol))
         else:
             rad1_ray_ind = deepcopy(dscfg['global_data']['rad1_ray_ind'])
             rad1_rng_ind = deepcopy(dscfg['global_data']['rad1_rng_ind'])
             rad2_ray_ind = deepcopy(dscfg['global_data']['rad2_ray_ind'])
             rad2_rng_ind = deepcopy(dscfg['global_data']['rad2_rng_ind'])
 
+        # keep only indices of valid gates
+        val1_vec = rad1_field[rad1_ray_ind, rad1_rng_ind]
+        val2_vec = rad2_field[rad1_ray_ind, rad1_rng_ind]
+
+        mask_val1 = np.ma.getmaskarray(val1_vec)
+        mask_val2 = np.ma.getmaskarray(val2_vec)
+
+        isvalid = np.logical_not(np.logical_or(mask_val1, mask_val2))
+
+        rad1_ray_ind = rad1_ray_ind[isvalid]
+        rad1_rng_ind = rad1_rng_ind[isvalid]
+        rad2_ray_ind = rad2_ray_ind[isvalid]
+        rad2_rng_ind = rad2_rng_ind[isvalid]
+
+        # if averaging required loop over valid gates and average
+        if avg_rad1:
+            ngates_valid = len(rad1_ray_ind)
+            val1_vec = np.ma.empty(ngates_valid, dtype=float)
+            val1_vec[:] = np.ma.masked
+            is_valid_avg = np.zeros(ngates_valid, dtype=bool)
+            for i in range(ngates_valid):
+                if rad1_rng_ind[i]+avg_rad_lim[1] >= radar1.ngates:
+                    continue
+                if rad1_rng_ind[i]+avg_rad_lim[0] < 0:
+                    continue
+                ind_rng = list(range(rad1_rng_ind[i]+avg_rad_lim[0],
+                                     rad1_rng_ind[i]+avg_rad_lim[1]+1))
+
+                if np.any(np.ma.getmaskarray(
+                        rad1_field[rad1_ray_ind[i], ind_rng])):
+                    continue
+
+                val1_vec[i] = np.ma.asarray(np.ma.mean(
+                    rad1_field[rad1_ray_ind[i], ind_rng]))
+
+                is_valid_avg[i] = True
+
+            rad1_ray_ind = rad1_ray_ind[is_valid_avg]
+            rad1_rng_ind = rad1_rng_ind[is_valid_avg]
+            rad2_ray_ind = rad2_ray_ind[is_valid_avg]
+            rad2_rng_ind = rad2_rng_ind[is_valid_avg]
+
+            val1_vec = val1_vec[is_valid_avg]
+            val2_vec = rad2_field[rad2_ray_ind, rad2_rng_ind]
+
+        elif avg_rad2:
+            ngates_valid = len(rad2_ray_ind)
+            val2_vec = np.ma.empty(ngates_valid, dtype=float)
+            val2_vec[:] = np.ma.masked
+            is_valid_avg = np.zeros(ngates_valid, dtype=bool)
+            for i in range(ngates_valid):
+                if rad2_rng_ind[i]+avg_rad_lim[1] >= radar2.ngates:
+                    continue
+                if rad2_rng_ind[i]+avg_rad_lim[0] < 0:
+                    continue
+                ind_rng = list(range(rad2_rng_ind[i]+avg_rad_lim[0],
+                                     rad2_rng_ind[i]+avg_rad_lim[1]+1))
+
+                if np.any(np.ma.getmaskarray(
+                        rad2_field[rad2_ray_ind[i], ind_rng])):
+                    continue
+
+                val2_vec[i] = np.ma.asarray(np.ma.mean(
+                    rad2_field[rad2_ray_ind[i], ind_rng]))
+
+                is_valid_avg[i] = True
+
+            rad1_ray_ind = rad1_ray_ind[is_valid_avg]
+            rad1_rng_ind = rad1_rng_ind[is_valid_avg]
+            rad2_ray_ind = rad2_ray_ind[is_valid_avg]
+            rad2_rng_ind = rad2_rng_ind[is_valid_avg]
+
+            val2_vec = val2_vec[is_valid_avg]
             val1_vec = rad1_field[rad1_ray_ind, rad1_rng_ind]
-            val2_vec = rad2_field[rad1_ray_ind, rad1_rng_ind]
-
-            mask_val1 = np.ma.getmaskarray(val1_vec)
-            mask_val2 = np.ma.getmaskarray(val2_vec)
-
-            isvalid = np.logical_not(np.logical_and(mask_val1, mask_val2))
-
+        else:
             val1_vec = val1_vec[isvalid]
             val2_vec = val2_vec[isvalid]
-            rad1_ray_ind = rad1_ray_ind[isvalid]
-            rad1_rng_ind = rad1_rng_ind[isvalid]
-            rad2_ray_ind = rad2_ray_ind[isvalid]
-            rad2_rng_ind = rad2_rng_ind[isvalid]
 
-            intercomp_dict['rad1_ray_ind'] = rad1_ray_ind
-            intercomp_dict['rad1_rng_ind'] = rad1_rng_ind
-            intercomp_dict['rad1_ele'] = radar1.elevation['data'][rad1_ray_ind]
-            intercomp_dict['rad1_azi'] = radar1.azimuth['data'][rad1_ray_ind]
-            intercomp_dict['rad1_rng'] = radar1.range['data'][rad1_rng_ind]
-            intercomp_dict['rad1_dBZavg'] = refl1_vec
-            intercomp_dict['rad1_PhiDPavg'] = phidp1_vec
-            intercomp_dict['rad1_Flagavg'] = flag1_vec
+        intercomp_dict['rad1_time'] = num2date(
+            radar1.time['data'][rad1_ray_ind], radar1.time['units'],
+            radar1.time['calendar'])
+        intercomp_dict['rad1_ray_ind'] = rad1_ray_ind
+        intercomp_dict['rad1_rng_ind'] = rad1_rng_ind
+        intercomp_dict['rad1_ele'] = radar1.elevation['data'][rad1_ray_ind]
+        intercomp_dict['rad1_azi'] = radar1.azimuth['data'][rad1_ray_ind]
+        intercomp_dict['rad1_rng'] = radar1.range['data'][rad1_rng_ind]
+        intercomp_dict['rad1_val'] = val1_vec
 
-            intercomp_dict['rad2_ray_ind'] = rad2_ray_ind
-            intercomp_dict['rad2_rng_ind'] = rad2_rng_ind
-            intercomp_dict['rad2_ele'] = radar2.elevation['data'][rad2_ray_ind]
-            intercomp_dict['rad2_azi'] = radar2.azimuth['data'][rad2_ray_ind]
-            intercomp_dict['rad2_rng'] = radar2.range['data'][rad2_rng_ind]
-            intercomp_dict['rad2_dBZavg'] = refl2_vec
-            intercomp_dict['rad2_PhiDPavg'] = phidp2_vec
-            intercomp_dict['rad2_Flagavg'] = flag2_vec
+        intercomp_dict['rad2_time'] = num2date(
+            radar2.time['data'][rad2_ray_ind], radar2.time['units'],
+            radar2.time['calendar'])
+        intercomp_dict['rad2_ray_ind'] = rad2_ray_ind
+        intercomp_dict['rad2_rng_ind'] = rad2_rng_ind
+        intercomp_dict['rad2_ele'] = radar2.elevation['data'][rad2_ray_ind]
+        intercomp_dict['rad2_azi'] = radar2.azimuth['data'][rad2_ray_ind]
+        intercomp_dict['rad2_rng'] = radar2.range['data'][rad2_rng_ind]
+        intercomp_dict['rad2_val'] = val2_vec
 
         new_dataset = {'intercomp_dict': intercomp_dict,
                        'timeinfo': dscfg['global_data']['timeinfo'],
@@ -2858,19 +2902,21 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
 
         intercomp_dict = {
             'rad1_name': dscfg['global_data']['rad1_name'],
-            'rad1_ray_ind': coloc_data[0],
-            'rad1_rng_ind': coloc_data[1],
-            'rad1_ele': coloc_data[2],
-            'rad1_azi': coloc_data[3],
-            'rad1_rng': coloc_data[4],
-            'rad1_val': coloc_data[5],
+            'rad1_time': coloc_data[0],
+            'rad1_ray_ind': coloc_data[1],
+            'rad1_rng_ind': coloc_data[2],
+            'rad1_ele': coloc_data[3],
+            'rad1_azi': coloc_data[4],
+            'rad1_rng': coloc_data[5],
+            'rad1_val': coloc_data[6],
             'rad2_name': dscfg['global_data']['rad2_name'],
-            'rad2_ray_ind': coloc_data[6],
-            'rad2_rng_ind': coloc_data[7],
-            'rad2_ele': coloc_data[8],
-            'rad2_azi': coloc_data[9],
-            'rad2_rng': coloc_data[10],
-            'rad2_val': coloc_data[11]}
+            'rad2_time': coloc_data[7],
+            'rad2_ray_ind': coloc_data[8],
+            'rad2_rng_ind': coloc_data[9],
+            'rad2_ele': coloc_data[10],
+            'rad2_azi': coloc_data[11],
+            'rad2_rng': coloc_data[12],
+            'rad2_val': coloc_data[13]}
 
         new_dataset = {'intercomp_dict': intercomp_dict,
                        'timeinfo': dscfg['global_data']['timeinfo'],
@@ -3034,6 +3080,7 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
         flag2 = radar2.fields[rad2_flag_field]['data']
 
         intercomp_dict = {
+            'rad1_time': [],
             'rad1_ray_ind': [],
             'rad1_rng_ind': [],
             'rad1_ele': [],
@@ -3042,6 +3089,7 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
             'rad1_dBZavg': [],
             'rad1_PhiDPavg': [],
             'rad1_Flagavg': [],
+            'rad2_time': [],
             'rad2_ray_ind': [],
             'rad2_rng_ind': [],
             'rad2_ele': [],
@@ -3060,6 +3108,7 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
         if 'rays_are_indexed' in dscfg:
             rays_are_indexed = dscfg['rays_are_indexed']
 
+        # get current radars gates indices
         if not rays_are_indexed:
             azi_tol = 0.5
             ele_tol = 0.5
@@ -3072,170 +3121,184 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
             if 'rng_tol' in dscfg:
                 rng_tol = dscfg['rng_tol']
 
-            for i in range(len(dscfg['global_data']['rad1_ele'])):
-                ind_ray_rad1 = find_ray_index(
-                    radar1.elevation['data'], radar1.azimuth['data'],
-                    dscfg['global_data']['rad1_ele'][i],
-                    dscfg['global_data']['rad1_azi'][i],
-                    ele_tol=ele_tol, azi_tol=azi_tol)
-                if ind_ray_rad1 is None:
-                    continue
-                ind_rng_rad1 = find_rng_index(
-                    radar1.range['data'], dscfg['global_data']['rad1_rng'][i],
-                    rng_tol=rng_tol)
-                if ind_rng_rad1 is None:
-                    continue
-
-                ind_ray_rad2 = find_ray_index(
-                    radar2.elevation['data'], radar2.azimuth['data'],
-                    dscfg['global_data']['rad2_ele'][i],
-                    dscfg['global_data']['rad2_azi'][i],
-                    ele_tol=ele_tol, azi_tol=azi_tol)
-                if ind_ray_rad2 is None:
-                    continue
-                ind_rng_rad2 = find_rng_index(
-                    radar2.range['data'], dscfg['global_data']['rad2_rng'][i],
-                    rng_tol=rng_tol)
-                if ind_rng_rad2 is None:
-                    continue
-
-                refl1_val = np.ma.asarray(refl1[ind_ray_rad1, ind_rng_rad1])
-                refl2_val = np.ma.asarray(refl2[ind_ray_rad2, ind_rng_rad2])
-
-                phidp1_val = np.ma.asarray(
-                    phidp1[ind_ray_rad1, ind_rng_rad1])
-                phidp2_val = np.ma.asarray(
-                    phidp2[ind_ray_rad2, ind_rng_rad2])
-
-                flag1_val = flag1[ind_ray_rad1, ind_rng_rad1]
-                flag2_val = flag2[ind_ray_rad2, ind_rng_rad2]
-
-                if avg_rad1:
-                    if (ind_rng_rad1+avg_rad_lim[1] >= radar1.ngates or
-                            ind_rng_rad1+avg_rad_lim[0] < 0):
-                        continue
-                    ind_rng = list(range(
-                        ind_rng_rad1+avg_rad_lim[0],
-                        ind_rng_rad1+avg_rad_lim[1]+1))
-                    refl1_val = np.ma.asarray(np.ma.mean(
-                        refl1[ind_ray_rad1, ind_rng]))
-                    phidp1_val = np.ma.asarray(np.ma.mean(
-                        phidp1[ind_ray_rad1, ind_rng]))
-
-                    rad1_flag = flag1[ind_ray_rad1, ind_rng_rad1]
-
-                    rad1_excess_phi = rad1_flag % 100
-                    rad1_clt = ((rad1_flag-rad1_excess_phi) % 10000) / 100
-                    rad1_prec = (
-                        ((rad1_flag-rad1_clt*100-rad1_excess_phi) % 1000000) /
-                        10000)
-
-                    flag1_val = int(
-                        10000*np.max(rad1_prec)+100*np.max(rad1_clt) +
-                        np.max(rad1_excess_phi))
-
-                elif avg_rad2:
-                    if (ind_rng_rad2+avg_rad_lim[1] >= radar2.ngates or
-                            ind_rng_rad2+avg_rad_lim[0] < 0):
-                        continue
-                    ind_rng = list(range(
-                        ind_rng_rad2+avg_rad_lim[0],
-                        ind_rng_rad2+avg_rad_lim[1]+1))
-                    refl2_val = np.ma.asarray(np.ma.mean(
-                        refl2[ind_ray_rad2, ind_rng]))
-                    phidp2_val = np.ma.asarray(np.ma.mean(
-                        phidp2[ind_ray_rad1, ind_rng]))
-
-                    rad2_flag = flag2[ind_ray_rad1, ind_rng_rad1]
-
-                    rad2_excess_phi = rad2_flag % 100
-                    rad2_clt = ((rad2_flag-rad2_excess_phi) % 10000) / 100
-                    rad2_prec = (
-                        ((rad2_flag-rad2_clt*100-rad2_excess_phi) % 1000000) /
-                        10000)
-
-                    flag2_val = int(
-                        10000*np.max(rad2_prec)+100*np.max(rad2_clt) +
-                        np.max(rad2_excess_phi))
-
-                if (refl1_val.mask or refl2_val.mask or phidp1_val.mask or
-                        phidp2_val.mask):
-                    continue
-
-                intercomp_dict['rad1_ray_ind'].append(ind_ray_rad1)
-                intercomp_dict['rad1_rng_ind'].append(ind_rng_rad1)
-                intercomp_dict['rad1_ele'].append(
-                    radar1.elevation['data'][ind_ray_rad1])
-                intercomp_dict['rad1_azi'].append(
-                    radar1.azimuth['data'][ind_ray_rad1])
-                intercomp_dict['rad1_rng'].append(
-                    radar1.range['data'][ind_rng_rad1])
-                intercomp_dict['rad1_dBZavg'].append(refl1_val)
-                intercomp_dict['rad1_PhiDPavg'].append(phidp1_val)
-                intercomp_dict['rad1_Flagavg'].append(flag1_val)
-
-                intercomp_dict['rad2_ray_ind'].append(ind_ray_rad2)
-                intercomp_dict['rad2_rng_ind'].append(ind_rng_rad2)
-                intercomp_dict['rad2_ele'].append(
-                    radar2.elevation['data'][ind_ray_rad2])
-                intercomp_dict['rad2_azi'].append(
-                    radar2.azimuth['data'][ind_ray_rad2])
-                intercomp_dict['rad2_rng'].append(
-                    radar2.range['data'][ind_rng_rad2])
-                intercomp_dict['rad2_dBZavg'].append(refl2_val)
-                intercomp_dict['rad2_PhiDPavg'].append(phidp2_val)
-                intercomp_dict['rad2_Flagavg'].append(flag2_val)
+            rad1_ray_ind, rad1_rng_ind, rad2_ray_ind, rad2_rng_ind = (
+                find_colocated_indexes(
+                    radar1, radar2, dscfg['global_data']['rad1_ele'],
+                    dscfg['global_data']['rad1_azi'],
+                    dscfg['global_data']['rad1_rng'],
+                    dscfg['global_data']['rad2_ele'],
+                    dscfg['global_data']['rad2_azi'],
+                    dscfg['global_data']['rad2_rng'], ele_tol=ele_tol,
+                    azi_tol=azi_tol, rng_tol=rng_tol))
         else:
             rad1_ray_ind = deepcopy(dscfg['global_data']['rad1_ray_ind'])
             rad1_rng_ind = deepcopy(dscfg['global_data']['rad1_rng_ind'])
             rad2_ray_ind = deepcopy(dscfg['global_data']['rad2_ray_ind'])
             rad2_rng_ind = deepcopy(dscfg['global_data']['rad2_rng_ind'])
 
-            refl1_vec = refl1[rad1_ray_ind, rad1_rng_ind]
-            phidp1_vec = phidp1[rad1_ray_ind, rad1_rng_ind]
-            flag1_vec = flag1[rad1_ray_ind, rad1_rng_ind]
+        # keep only indices and data of valid gates
+        refl1_vec = refl1[rad1_ray_ind, rad1_rng_ind]
+        phidp1_vec = phidp1[rad1_ray_ind, rad1_rng_ind]
+        flag1_vec = flag1[rad1_ray_ind, rad1_rng_ind]
+
+        refl2_vec = refl2[rad2_ray_ind, rad2_rng_ind]
+        phidp2_vec = phidp2[rad2_ray_ind, rad2_rng_ind]
+        flag2_vec = flag2[rad2_ray_ind, rad2_rng_ind]
+
+        mask_refl1 = np.ma.getmaskarray(refl1_vec)
+        mask_phidp1 = np.ma.getmaskarray(phidp1_vec)
+        mask_refl2 = np.ma.getmaskarray(refl2_vec)
+        mask_phidp2 = np.ma.getmaskarray(phidp2_vec)
+
+        isvalid = np.logical_not(
+            np.logical_or(np.logical_or(mask_refl1, mask_refl2),
+                          np.logical_or(mask_phidp1, mask_phidp2)))
+
+        rad1_ray_ind = rad1_ray_ind[isvalid]
+        rad1_rng_ind = rad1_rng_ind[isvalid]
+        rad2_ray_ind = rad2_ray_ind[isvalid]
+        rad2_rng_ind = rad2_rng_ind[isvalid]
+
+        # if averaging required loop over valid gates and average
+        # only if all gates valid
+        if avg_rad1:
+            ngates_valid = len(rad1_ray_ind)
+            refl1_vec = np.ma.empty(ngates_valid, dtype=float)
+            refl1_vec[:] = np.ma.masked
+            phidp1_vec = np.ma.empty(ngates_valid, dtype=float)
+            phidp1_vec[:] = np.ma.masked
+            flag1_vec = np.ma.empty(ngates_valid, dtype=int)
+            flag1_vec[:] = np.ma.masked
+            is_valid_avg = np.zeros(ngates_valid, dtype=bool)
+            for i in range(ngates_valid):
+                if rad1_rng_ind[i]+avg_rad_lim[1] >= radar1.ngates:
+                    continue
+                if rad1_rng_ind[i]+avg_rad_lim[0] < 0:
+                    continue
+                ind_rng = list(range(rad1_rng_ind[i]+avg_rad_lim[0],
+                                     rad1_rng_ind[i]+avg_rad_lim[1]+1))
+
+                if np.any(np.ma.getmaskarray(
+                        refl1[rad1_ray_ind[i], ind_rng])):
+                    continue
+                if np.any(np.ma.getmaskarray(
+                        phidp1[rad1_ray_ind[i], ind_rng])):
+                    continue
+
+                refl1_vec[i] = np.ma.asarray(np.ma.mean(
+                    refl1[rad1_ray_ind[i], ind_rng]))
+                phidp1_vec[i] = np.ma.asarray(np.ma.mean(
+                    phidp1[rad1_ray_ind[i], ind_rng]))
+
+                rad1_flag = flag1[rad1_ray_ind[i], ind_rng]
+
+                rad1_excess_phi = rad1_flag % 100
+                rad1_clt = ((rad1_flag-rad1_excess_phi) % 10000) / 100
+                rad1_prec = (
+                    ((rad1_flag-rad1_clt*100-rad1_excess_phi) % 1000000) /
+                    10000)
+
+                flag1_vec[i] = int(
+                    10000*np.max(rad1_prec)+100*np.max(rad1_clt) +
+                    np.max(rad1_excess_phi))
+                is_valid_avg[i] = True
+
+            rad1_ray_ind = rad1_ray_ind[is_valid_avg]
+            rad1_rng_ind = rad1_rng_ind[is_valid_avg]
+            rad2_ray_ind = rad2_ray_ind[is_valid_avg]
+            rad2_rng_ind = rad2_rng_ind[is_valid_avg]
+
+            refl1_vec = refl1_vec[is_valid_avg]
+            phidp1_vec = phidp1_vec[is_valid_avg]
+            flag1_vec = flag1_vec[is_valid_avg]
 
             refl2_vec = refl2[rad2_ray_ind, rad2_rng_ind]
             phidp2_vec = phidp2[rad2_ray_ind, rad2_rng_ind]
             flag2_vec = flag2[rad2_ray_ind, rad2_rng_ind]
 
-            mask_refl1 = np.ma.getmaskarray(refl1_vec)
-            mask_phidp1 = np.ma.getmaskarray(phidp1_vec)
-            mask_refl2 = np.ma.getmaskarray(refl2_vec)
-            mask_phidp2 = np.ma.getmaskarray(phidp2_vec)
+        elif avg_rad2:
+            ngates_valid = len(rad2_ray_ind)
+            refl2_vec = np.ma.empty(ngates_valid, dtype=float)
+            refl2_vec[:] = np.ma.masked
+            phidp2_vec = np.ma.empty(ngates_valid, dtype=float)
+            phidp2_vec[:] = np.ma.masked
+            flag2_vec = np.ma.empty(ngates_valid, dtype=int)
+            flag2_vec[:] = np.ma.masked
+            is_valid_avg = np.zeros(ngates_valid, dtype=bool)
+            for i in range(ngates_valid):
+                if rad2_rng_ind[i]+avg_rad_lim[1] >= radar2.ngates:
+                    continue
+                if rad2_rng_ind[i]+avg_rad_lim[0] < 0:
+                    continue
+                ind_rng = list(range(rad2_rng_ind[i]+avg_rad_lim[0],
+                                     rad2_rng_ind[i]+avg_rad_lim[1]+1))
 
-            isvalid = np.logical_not(
-                np.logical_and(np.logical_and(mask_refl1, mask_refl2),
-                               np.logical_and(mask_phidp1, mask_phidp2)))
+                if np.any(np.ma.getmaskarray(
+                        refl2[rad2_ray_ind[i], ind_rng])):
+                    continue
+                if np.any(np.ma.getmaskarray(
+                        phidp2[rad2_ray_ind[i], ind_rng])):
+                    continue
 
+                refl2_vec[i] = np.ma.asarray(np.ma.mean(
+                    refl2[rad2_ray_ind[i], ind_rng]))
+                phidp2_vec[i] = np.ma.asarray(np.ma.mean(
+                    phidp2[rad2_ray_ind[i], ind_rng]))
+
+                rad2_flag = flag2[rad2_ray_ind[i], ind_rng]
+
+                rad2_excess_phi = rad2_flag % 100
+                rad2_clt = ((rad2_flag-rad2_excess_phi) % 10000) / 100
+                rad2_prec = (
+                    ((rad2_flag-rad2_clt*100-rad2_excess_phi) % 1000000) /
+                    10000)
+
+                flag2_vec[i] = int(
+                    10000*np.max(rad2_prec)+100*np.max(rad2_clt) +
+                    np.max(rad2_excess_phi))
+                is_valid_avg[i] = True
+
+            rad1_ray_ind = rad1_ray_ind[is_valid_avg]
+            rad1_rng_ind = rad1_rng_ind[is_valid_avg]
+            rad2_ray_ind = rad2_ray_ind[is_valid_avg]
+            rad2_rng_ind = rad2_rng_ind[is_valid_avg]
+
+            refl2_vec = refl2_vec[is_valid_avg]
+            phidp2_vec = phidp2_vec[is_valid_avg]
+            flag2_vec = flag2_vec[is_valid_avg]
+
+            refl1_vec = refl1[rad1_ray_ind, rad1_rng_ind]
+            phidp1_vec = phidp1[rad1_ray_ind, rad1_rng_ind]
+            flag1_vec = flag1[rad1_ray_ind, rad1_rng_ind]
+        else:
             refl1_vec = refl1_vec[isvalid]
             phidp1_vec = phidp1_vec[isvalid]
             flag1_vec = flag1_vec[isvalid]
             refl2_vec = refl2_vec[isvalid]
             phidp2_vec = phidp2_vec[isvalid]
             flag2_vec = flag2_vec[isvalid]
-            rad1_ray_ind = rad1_ray_ind[isvalid]
-            rad1_rng_ind = rad1_rng_ind[isvalid]
-            rad2_ray_ind = rad2_ray_ind[isvalid]
-            rad2_rng_ind = rad2_rng_ind[isvalid]
 
-            intercomp_dict['rad1_ray_ind'] = rad1_ray_ind
-            intercomp_dict['rad1_rng_ind'] = rad1_rng_ind
-            intercomp_dict['rad1_ele'] = radar1.elevation['data'][rad1_ray_ind]
-            intercomp_dict['rad1_azi'] = radar1.azimuth['data'][rad1_ray_ind]
-            intercomp_dict['rad1_rng'] = radar1.range['data'][rad1_rng_ind]
-            intercomp_dict['rad1_dBZavg'] = refl1_vec
-            intercomp_dict['rad1_PhiDPavg'] = phidp1_vec
-            intercomp_dict['rad1_Flagavg'] = flag1_vec
+        intercomp_dict['rad1_time'] = np.empty(
+            len(rad1_ray_ind), dtype=datetime.datetime)
+        intercomp_dict['rad1_time'][:] = dscfg['global_data']['timeinfo']
+        intercomp_dict['rad1_ray_ind'] = rad1_ray_ind
+        intercomp_dict['rad1_rng_ind'] = rad1_rng_ind
+        intercomp_dict['rad1_ele'] = radar1.elevation['data'][rad1_ray_ind]
+        intercomp_dict['rad1_azi'] = radar1.azimuth['data'][rad1_ray_ind]
+        intercomp_dict['rad1_rng'] = radar1.range['data'][rad1_rng_ind]
+        intercomp_dict['rad1_dBZavg'] = refl1_vec
+        intercomp_dict['rad1_PhiDPavg'] = phidp1_vec
+        intercomp_dict['rad1_Flagavg'] = flag1_vec
 
-            intercomp_dict['rad2_ray_ind'] = rad2_ray_ind
-            intercomp_dict['rad2_rng_ind'] = rad2_rng_ind
-            intercomp_dict['rad2_ele'] = radar2.elevation['data'][rad2_ray_ind]
-            intercomp_dict['rad2_azi'] = radar2.azimuth['data'][rad2_ray_ind]
-            intercomp_dict['rad2_rng'] = radar2.range['data'][rad2_rng_ind]
-            intercomp_dict['rad2_dBZavg'] = refl2_vec
-            intercomp_dict['rad2_PhiDPavg'] = phidp2_vec
-            intercomp_dict['rad2_Flagavg'] = flag2_vec
+        intercomp_dict['rad2_time'] = deepcopy(intercomp_dict['rad1_time'])
+        intercomp_dict['rad2_ray_ind'] = rad2_ray_ind
+        intercomp_dict['rad2_rng_ind'] = rad2_rng_ind
+        intercomp_dict['rad2_ele'] = radar2.elevation['data'][rad2_ray_ind]
+        intercomp_dict['rad2_azi'] = radar2.azimuth['data'][rad2_ray_ind]
+        intercomp_dict['rad2_rng'] = radar2.range['data'][rad2_rng_ind]
+        intercomp_dict['rad2_dBZavg'] = refl2_vec
+        intercomp_dict['rad2_PhiDPavg'] = phidp2_vec
+        intercomp_dict['rad2_Flagavg'] = flag2_vec
 
         new_dataset = {'intercomp_dict': intercomp_dict,
                        'timeinfo': dscfg['global_data']['timeinfo'],
@@ -3269,9 +3332,9 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
 
         fname = savedir+fname[0]
 
-        (rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng, rad1_dBZ,
-         rad1_phi, rad1_flag, rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi,
-         rad2_rng, rad2_dBZ, rad2_phi, rad2_flag) = (
+        (rad1_time, rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,
+         rad1_dBZ, rad1_phi, rad1_flag, rad2_time, rad2_ray_ind, rad2_rng_ind,
+         rad2_ele, rad2_azi, rad2_rng, rad2_dBZ, rad2_phi, rad2_flag) = (
             read_colocated_data_time_avg(fname))
 
         rad1_excess_phi = (rad1_flag % 100).astype(int)
@@ -3312,6 +3375,7 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
 
         intercomp_dict = {
             'rad1_name': dscfg['global_data']['rad1_name'],
+            'rad1_time': rad1_time[ind_val],
             'rad1_ray_ind': rad1_ray_ind[ind_val],
             'rad1_rng_ind': rad1_rng_ind[ind_val],
             'rad1_ele': rad1_ele[ind_val],
@@ -3319,6 +3383,7 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
             'rad1_rng': rad1_rng[ind_val],
             'rad1_val': rad1_dBZ[ind_val],
             'rad2_name': dscfg['global_data']['rad2_name'],
+            'rad2_time': rad2_time[ind_val],
             'rad2_ray_ind': rad1_ray_ind[ind_val],
             'rad2_rng_ind': rad1_rng_ind[ind_val],
             'rad2_ele': rad2_ele[ind_val],

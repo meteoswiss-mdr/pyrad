@@ -1,6 +1,6 @@
 # Name of this configuration:
 # Will be used in product generation save path
-name STRING rad4alp_gc_PHA
+name STRING rad4alp_gc_PHD
 
 # ---------------------------------------------------------
 #  Raw data pathes
@@ -19,11 +19,7 @@ dempath STRING /store/msrad/radar/rad4alp/visibRad4Alp/
 
 # Loading of saved datasets
 loadbasepath STRING /store/msrad/radar/pyrad_products/
-loadname STRING  rad4alp_gc_PHA
-
-# Base path for excess gates data
-excessgatespath STRING /store/msrad/radar/pyrad_products/rad4alp_gc_PHA/2018-02-01/clt_freq_period/EXCESS_GATES/
-
+loadname STRING  rad4alp_gc_PHD
 
 # ------------------------------------------------------------
 # Auxiliary data pathes
@@ -52,7 +48,7 @@ imgformat STRING png
 configpath STRING $HOME/pyrad/config/
 
 # Configuration of the radar location and approach direction
-locationConfigFile STRING $HOME/pyrad/config/processing/rad4alp_gc_PHA_loc.txt
+locationConfigFile STRING $HOME/pyrad/config/processing/rad4alp_gc_PHD_loc.txt
 
 # Configuration of the product generation
-productConfigFile STRING $HOME/pyrad/config/processing/rad4alp_gc_freq_PHA_prod.txt
+productConfigFile STRING $HOME/pyrad/config/processing/rad4alp_gc_freq_period_PHD_prod.txt
