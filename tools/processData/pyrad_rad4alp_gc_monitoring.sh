@@ -82,7 +82,7 @@ echo "END TIME OF DATA TO BE PROCESSED "${END_TIME}
 
 # PH Data quality (ground clutter monitoring)
 CONFIGFILE=rad4alp_gc_freq_PH${RADAR}.txt
-LOGFILE=$HOME/log/rad4alp_gc_freq_PH${RADAR}.log
+LOGFILE=/srn/scratch/log/rad4alp_gc_freq_PH${RADAR}.log
 dataquality $CONFIGFILE  $START_TIME $END_TIME $RADAR $LOGFILE $RENAME_LOGFILES $LOG_APPENDIX
 
 source /srn/analysis/anaconda3/bin/deactivate
