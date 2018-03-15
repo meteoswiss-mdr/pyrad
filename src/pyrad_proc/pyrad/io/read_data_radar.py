@@ -26,7 +26,6 @@ Functions for reading radar data files
 
 """
 
-import sys
 import glob
 import datetime
 import os
@@ -295,8 +294,7 @@ def merge_scans_rainbow(basepath, scan_list, voltime, scan_period,
 
             if (len(filelist) == 0):
                 warn("ERROR: No data file found for scan '%s' "
-                     "between %s and %s" % (scan_list[i], voltime, endtime),
-                     file=sys.stderr)
+                     "between %s and %s" % (scan_list[i], voltime, endtime))
                 continue
             scantime = get_datetime(filelist[0], datadescriptor)
 
@@ -304,6 +302,18 @@ def merge_scans_rainbow(basepath, scan_list, voltime, scan_period,
                 basepath, scan_list[i], scantime, datatype_list)
 
             radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
+
+    # keep only PPIs within elevation limits
+    if cfg['elmin'] != -600. or cfg['elmax'] != 600.:
+        if radar.scan_type == 'ppi':
+            ind_sweeps = np.where(np.logical_and(
+                radar.fixed_angle['data'] > cfg['elmin'],
+                radar.fixed_angle['data'] < cfg['elmax']))[0]
+            if len(ind_sweeps) == 0:
+                warn('Elevation angles outside of specified angle range. ' +
+                     'Min angle: '+str(elmin)+' Max angle: '+str(elmax))
+                return None
+            radar = radar.extract_sweeps(ind_sweeps)
 
     return radar
 
@@ -428,6 +438,8 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
         else:
             radar_aux = get_data_rad4alp(
                 filename[0], datatype_list, scan_list[i], cfg, ind_rad=ind_rad)
+            if radar_aux is None:
+                continue
 
             if radar is None:
                 radar = radar_aux
@@ -641,17 +653,18 @@ def merge_scans_cosmo_rad4alp(voltime, datatype, cfg, ind_rad=0):
         radar = get_data_rad4alp(
             filename[0], ['dBZ'], cfg['ScanList'][ind_rad][0], cfg,
             ind_rad=ind_rad)
-        radar.fields = dict()
+        if radar is not None:
+            radar.fields = dict()
 
-        ngates = 0
-        if cfg['rmax'] > 0:
-            ngates = radar.ngates
-        cosmo_field = read_rad4alp_cosmo(
-            filename_list[0], datatype, ngates=ngates)
-        if cosmo_field is None:
-            return None
+            ngates = 0
+            if cfg['rmax'] > 0:
+                ngates = radar.ngates
+            cosmo_field = read_rad4alp_cosmo(
+                filename_list[0], datatype, ngates=ngates)
+            if cosmo_field is None:
+                return None
 
-        radar.add_field(get_fieldname_pyart(datatype), cosmo_field)
+            radar.add_field(get_fieldname_pyart(datatype), cosmo_field)
 
     # add the other scans
     for i in range(1, len(cfg['ScanList'][ind_rad])):
@@ -664,6 +677,8 @@ def merge_scans_cosmo_rad4alp(voltime, datatype, cfg, ind_rad=0):
             radar_aux = get_data_rad4alp(
                 filename[0], ['dBZ'], cfg['ScanList'][ind_rad][i], cfg,
                 ind_rad=ind_rad)
+            if radar_aux is None:
+                return None
             radar_aux.fields = dict()
 
             ngates = 0
@@ -756,17 +771,20 @@ def merge_scans_dem_rad4alp(voltime, datatype, cfg, ind_rad=0):
     else:
         radar = get_data_rad4alp(
             filename[0], ['dBZ'], scan_list[0], cfg, ind_rad=ind_rad)
-        radar.fields = dict()
 
-        # add visibility data for first scan
-        if cfg['rmax'] > 0:
-            ngates = radar.ngates
-            radar.add_field(
-                get_fieldname_pyart(datatype),
-                vis_list[int(scan_list[0])-1][:, :ngates])
-        else:
-            radar.add_field(
-                get_fieldname_pyart(datatype), vis_list[int(scan_list[0])-1])
+        if radar is not None:
+            radar.fields = dict()
+
+            # add visibility data for first scan
+            if cfg['rmax'] > 0:
+                ngates = radar.ngates
+                radar.add_field(
+                    get_fieldname_pyart(datatype),
+                    vis_list[int(scan_list[0])-1][:, :ngates])
+            else:
+                radar.add_field(
+                    get_fieldname_pyart(datatype),
+                    vis_list[int(scan_list[0])-1])
 
     # add the other scans
     for i in range(1, len(scan_list)):
@@ -778,8 +796,10 @@ def merge_scans_dem_rad4alp(voltime, datatype, cfg, ind_rad=0):
             continue
         radar_aux = get_data_rad4alp(
             filename[0], ['dBZ'], scan_list[i], cfg, ind_rad=ind_rad)
-        radar_aux.fields = dict()
+        if radar_aux is None:
+            continue
 
+        radar_aux.fields = dict()
         if cfg['rmax'] > 0:
             ngates = radar_aux.ngates
             radar_aux.add_field(
@@ -893,13 +913,14 @@ def merge_scans_hydro_rad4alp(voltime, datatype, cfg, ind_rad=0):
     else:
         radar = get_data_rad4alp(
             filename[0], ['dBZ'], scan_list[0], cfg, ind_rad=ind_rad)
-        radar.fields = dict()
+        if radar is not None:
+            radar.fields = dict()
 
-        # add hydrometeor classification data for first scan
-        if cfg['rmax'] > 0.:
-            ngates = radar.ngates
-            hydro_dict['data'] = hydro_dict['data'][:, :ngates]
-        radar.add_field(hydro_field, hydro_dict)
+            # add hydrometeor classification data for first scan
+            if cfg['rmax'] > 0.:
+                ngates = radar.ngates
+                hydro_dict['data'] = hydro_dict['data'][:, :ngates]
+            radar.add_field(hydro_field, hydro_dict)
 
     # add the other scans
     for i in range(1, len(scan_list)):
@@ -912,6 +933,8 @@ def merge_scans_hydro_rad4alp(voltime, datatype, cfg, ind_rad=0):
 
         radar_aux = get_data_rad4alp(
             filename[0], ['dBZ'], scan_list[i], cfg, ind_rad=ind_rad)
+        if radar_aux is None:
+            continue
         radar_aux.fields = dict()
 
         # read hydrometeor classification data file for other scans
@@ -1058,8 +1081,8 @@ def merge_fields_cfradial(basepath, loadname, voltime, datatype_list,
             radar.ngates = len(radar.range['data'])
             for field in radar.fields:
                 radar.fields[field]['data'] = (
-                    radar.fields[field]['data'][:, :ngates])
-            radar.gate_x['data'] = radar.gate_x['data'][:, :ngates]
+                    radar.fields[field]['data'][:, :radar.ngates])
+            radar.gate_x['data'] = radar.gate_x['data'][:, :radar.ngates]
             radar.init_gate_x_y_z()
             radar.init_gate_longitude_latitude()
             radar.init_gate_altitude()
@@ -1080,8 +1103,9 @@ def merge_fields_cfradial(basepath, loadname, voltime, datatype_list,
                 radar_aux.ngates = len(radar_aux.range['data'])
                 for field in radar_aux.fields:
                     radar_aux.fields[field]['data'] = (
-                        radar_aux.fields[field]['data'][:, :ngates])
-                radar_aux.gate_x['data'] = radar_aux.gate_x['data'][:, :ngates]
+                        radar_aux.fields[field]['data'][:, :radar_aux.ngates])
+                radar_aux.gate_x['data'] = (
+                    radar_aux.gate_x['data'][:, :radar_aux.ngates])
                 radar_aux.init_gate_x_y_z()
                 radar_aux.init_gate_longitude_latitude()
                 radar_aux.init_gate_altitude()
@@ -1089,6 +1113,10 @@ def merge_fields_cfradial(basepath, loadname, voltime, datatype_list,
                 radar = radar_aux
             else:
                 add_field(radar, radar_aux)
+
+    for field in radar.fields:
+        radar.fields[field]['data'] = np.ma.asarray(
+            radar.fields[field]['data'])
 
     return radar
 

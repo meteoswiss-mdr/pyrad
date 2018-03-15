@@ -1317,6 +1317,8 @@ def _create_cfg_dict(cfgfile):
         cfg.update({'psrpath': None})
     if 'colocgatespath' not in cfg:
         cfg.update({'colocgatespath': None})
+    if 'excessgatespath' not in cfg:
+        cfg.update({'excessgatespath': None})
     if 'dempath' not in cfg:
         cfg.update({'dempath': None})
     if 'smnpath' not in cfg:
@@ -1355,6 +1357,10 @@ def _create_cfg_dict(cfgfile):
         cfg.update({'attg': None})
     if 'rmax' not in cfg:
         cfg.update({'rmax': 0.})
+    if 'elmin' not in cfg:
+        cfg.update({'elmin': -600.})
+    if 'elmax' not in cfg:
+        cfg.update({'elmax': 600.})
     if 'ScanPeriod' not in cfg:
         warn('WARNING: Scan period not specified. ' +
              'Assumed default value 5 min')
@@ -1417,6 +1423,8 @@ def _create_datacfg_dict(cfg):
     datacfg.update({'CosmoForecasted': int(cfg['CosmoForecasted'])})
     datacfg.update({'path_convention': cfg['path_convention']})
     datacfg.update({'rmax': cfg['rmax']})
+    datacfg.update({'elmin': cfg['elmin']})
+    datacfg.update({'elmax': cfg['elmax']})
     if 'RadarPosition' in cfg:
         datacfg.update({'RadarPosition': cfg['RadarPosition']})
 
@@ -1447,6 +1455,7 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
     dscfg.update({'lastStateFile': cfg['lastStateFile']})
     dscfg.update({'solarfluxpath': cfg['solarfluxpath']})
     dscfg.update({'colocgatespath': cfg['colocgatespath']})
+    dscfg.update({'excessgatespath': cfg['excessgatespath']})
     dscfg.update({'cosmopath': cfg['cosmopath']})
     dscfg.update({'CosmoRunFreq': cfg['CosmoRunFreq']})
     dscfg.update({'CosmoForecasted': cfg['CosmoForecasted']})

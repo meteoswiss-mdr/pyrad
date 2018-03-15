@@ -21,6 +21,7 @@ from .process_product import generate_colocated_gates_products
 from .process_product import generate_intercomp_products
 from .process_product import generate_time_avg_products
 from .process_product import generate_cosmo_coord_products
+from .process_product import generate_occurrence_products
 from .process_product import generate_grid_products
 from .process_product import generate_qvp_products
 
@@ -55,6 +56,8 @@ def get_prodgen_func(dsformat, dsname, dstype):
         func = generate_sun_hits_products
     elif dsformat == 'MONITORING':
         func = generate_monitoring_products
+    elif dsformat == 'OCCURRENCE':
+        func = generate_occurrence_products
     elif dsformat == 'INTERCOMP':
         func = generate_intercomp_products
     elif dsformat == 'TRAJ_ONLY':

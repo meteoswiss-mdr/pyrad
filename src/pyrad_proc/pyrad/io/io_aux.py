@@ -276,6 +276,9 @@ def get_datatype_metranet(datatype):
     elif datatype == 'W':
         datatype_metranet = 'WID'
         field_name = 'spectrum_width'
+    elif datatype == 'CLT':
+        datatype_metranet = 'CLT'
+        field_name = 'clutter_exit_code'
     else:
         raise ValueError(
             'ERROR: Metranet fields do not contain datatype '+datatype)
@@ -443,6 +446,12 @@ def get_fieldname_pyart(datatype):
 
     elif datatype == 'echoID':
         field_name = 'radar_echo_id'
+    elif datatype == 'CLT':
+        field_name = 'clutter_exit_code'
+    elif datatype == 'occurrence':
+        field_name = 'occurrence'
+    elif datatype == 'freq_occu':
+        field_name = 'frequency_of_occurrence'
     elif datatype == 'RR':
         field_name = 'radar_estimated_rain_rate'
     elif datatype == 'hydro':
@@ -451,6 +460,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'time_avg_flag'
     elif datatype == 'colocated_gates':
         field_name = 'colocated_gates'
+    elif datatype == 'nsamples':
+        field_name = 'number_of_samples'
     else:
         raise ValueError('ERROR: Unknown data type '+datatype)
 

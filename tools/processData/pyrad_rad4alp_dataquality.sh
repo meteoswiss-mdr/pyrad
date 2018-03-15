@@ -15,7 +15,7 @@ function postprocessing {
 
     # Run postproc processing
     cd ${pyradpath}
-    python main_process_data.py $1 -i $2 >>$3 2>>$3
+    python -u main_process_data.py $1 -i $2 >>$3 2>>$3
 }
 
 # Call the realtime processing application with arguments.
@@ -35,7 +35,7 @@ function dataquality {
     
     # Run postproc processing
     cd ${pyradpath}
-    python main_process_data_period.py $1 $2 $3 --starttime '000001' --endtime '240000' -i $4 >>$5 2>>$5
+    python -u main_process_data_period.py $1 $2 $3 --starttime '000001' --endtime '240000' -i $4 >>$5 2>>$5
 }
 
 # set permits
@@ -82,7 +82,7 @@ echo "END TIME OF DATA TO BE PROCESSED "${END_TIME}
 
 # PL Data quality
 CONFIGFILE=rad4alp_dataquality_PL${RADAR}.txt
-LOGFILE=$HOME/log/rad4alp_dataquality_PL${RADAR}.log
+LOGFILE=/srn/scratch/log/rad4alp_dataquality_PL${RADAR}.log
 dataquality $CONFIGFILE  $START_TIME $END_TIME $RADAR $LOGFILE $RENAME_LOGFILES $LOG_APPENDIX
 
 # Copy data to rad4alp archive
@@ -90,10 +90,10 @@ ORIG_FILES="/srn/analysis/pyrad_products/rad4alp_dataquality_PL${RADAR}/monitori
 DEST_PATH="/www/proj/Radar/LIVE/archive/ARCHIVE/mon_pol/"
 cp ${ORIG_FILES} ${DEST_PATH}
 
-# # PH Data quality (sun monitoring)
-# CONFIGFILE=rad4alp_dataquality_PH${RADAR}.txt
-# LOGFILE=$HOME/log/rad4alp_dataquality_PH${RADAR}.log
-# dataquality $CONFIGFILE  $START_TIME $END_TIME $RADAR $LOGFILE $RENAME_LOGFILES $LOG_APPENDIX
+## PH Data quality (ground clutter monitoring)
+#CONFIGFILE=rad4alp_dataquality_PH${RADAR}.txt
+#LOGFILE=$HOME/log/rad4alp_gc_freq_PH${RADAR}.log
+#dataquality $CONFIGFILE  $START_TIME $END_TIME $RADAR $LOGFILE $RENAME_LOGFILES $LOG_APPENDIX
 
 source /srn/analysis/anaconda3/bin/deactivate
 

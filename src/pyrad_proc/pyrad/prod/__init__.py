@@ -21,6 +21,7 @@ Product generation
 .. autosummary::
     :toctree: generated/
 
+    generate_occurrence_products
     generate_cosmo_coord_products
     generate_sun_hits_products
     generate_intercomp_products
@@ -46,6 +47,7 @@ from .process_product import generate_intercomp_products
 from .process_product import generate_colocated_gates_products
 from .process_product import generate_time_avg_products
 from .process_product import generate_qvp_products
+from .process_product import generate_occurrence_products
 
 
 from .process_traj_products import generate_traj_product

@@ -34,7 +34,8 @@ from ..util.radar_utils import find_rng_index
 
 def get_process_func(dataset_type, dsname):
     """
-    maps the dataset type into its processing function and data set format
+    Maps the dataset type into its processing function and data set format
+    associated. 
 
     Parameters
     ----------
@@ -45,7 +46,7 @@ def get_process_func(dataset_type, dsname):
 
     Returns
     -------
-    func_name : str or function
+    func_name : str or processing function
         pyrad function used to process the data set type
     dsformat : str
         data set format, i.e.: 'VOL', etc.
@@ -82,6 +83,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_cdr'
     elif dataset_type == 'SAN':
         func_name = 'process_echo_id'
+    elif dataset_type == 'CLT_TO_SAN':
+        func_name = 'process_clt_to_echo_id'
     elif dataset_type == 'ECHO_FILTER':
         func_name = 'process_echo_filter'
     elif dataset_type == 'SNR_FILTER':
@@ -167,6 +170,15 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'MONITORING':
         func_name = 'process_monitoring'
         dsformat = 'MONITORING'
+    elif dataset_type == 'GC_MONITORING':
+        func_name = 'process_gc_monitoring'
+        dsformat = 'MONITORING'
+    elif dataset_type == 'OCCURRENCE':
+        func_name = 'process_occurrence'
+        dsformat = 'OCCURRENCE'
+    elif dataset_type == 'OCCURRENCE_PERIOD':
+        func_name = 'process_occurrence_period'
+        dsformat = 'OCCURRENCE'
     elif dataset_type == 'SUN_HITS':
         func_name = 'process_sun_hits'
         dsformat = 'SUN_HITS'
@@ -194,7 +206,7 @@ def get_process_func(dataset_type, dsname):
 
 def process_raw(procstatus, dscfg, radar_list=None):
     """
-    dummy function that returns the initial input data set
+    Dummy function that returns the initial input data set
 
     Parameters
     ----------
@@ -233,7 +245,7 @@ def process_raw(procstatus, dscfg, radar_list=None):
 
 def process_save_radar(procstatus, dscfg, radar_list=None):
     """
-    dummy function that allows to save the entire radar object
+    Dummy function that allows to save the entire radar object
 
     Parameters
     ----------
@@ -272,7 +284,7 @@ def process_save_radar(procstatus, dscfg, radar_list=None):
 
 def process_point_measurement(procstatus, dscfg, radar_list=None):
     """
-    Obtains the radar data at a point measurement
+    Obtains the radar data at a point location.
 
     Parameters
     ----------
@@ -284,41 +296,53 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
 
         datatype : string. Dataset keyword
             The data type where we want to extract the point measurement
+
         latlon : boolean. Dataset keyword
             if True position is obtained from latitude, longitude information,
             otherwise position is obtained from antenna coordinates
             (range, azimuth, elevation).
+
         truealt : boolean. Dataset keyword
             if True the user input altitude is used to determine the point of
             interest.
             if False use the altitude at a given radar elevation ele over the
             point of interest.
+
         lon : float. Dataset keyword
             the longitude [deg]. Use when latlon is True.
+
         lat : float. Dataset keyword
             the latitude [deg]. Use when latlon is True.
+
         alt : float. Dataset keyword
             altitude [m MSL]. Use when latlon is True.
+
         ele : float. Dataset keyword
             radar elevation [deg]. Use when latlon is False or when latlon is
             True and truealt is False
+
         azi : float. Dataset keyword
             radar azimuth [deg]. Use when latlon is False
+
         rng : float. Dataset keyword
             range from radar [m]. Use when latlon is False
+
         AziTol : float. Dataset keyword
             azimuthal tolerance to determine which radar azimuth to use [deg]
+
         EleTol : float. Dataset keyword
             elevation tolerance to determine which radar elevation to use [deg]
+
         RngTol : float. Dataset keyword
             range tolerance to determine which radar bin to use [m]
+
     radar_list : list of Radar objects
-        Optional. list of radar objects
+          Optional. list of radar objects
 
     Returns
     -------
     new_dataset : dict
-        dictionary containing the data and metadata of the point of interest
+        dictionary containing the data and metadata at the point of interest
     ind_rad : int
         radar index
 
@@ -605,7 +629,8 @@ def process_grid(procstatus, dscfg, radar_list=None):
 
 def process_qvp(procstatus, dscfg, radar_list=None):
     """
-    Computes quasi vertical profiles
+    Computes quasi vertical profiles, by averaging over height levels
+    PPI or RHI data.
 
     Parameters
     ----------
@@ -617,11 +642,14 @@ def process_qvp(procstatus, dscfg, radar_list=None):
 
         datatype : string. Dataset keyword
             The data type where we want to extract the point measurement
+
         anglenr : int
             The sweep number to use. It assumes the radar volume consists on
             PPI scans
+
         hmax : float
             The maximum height to plot [m]. Default 10000.
+
         hres : float
             The height resolution [m]. Default 50
 
@@ -780,7 +808,9 @@ def process_qvp(procstatus, dscfg, radar_list=None):
 def process_time_height(procstatus, dscfg, radar_list=None):
     """
     Produces time height radar objects at a point of interest defined by
-    latitude and longitude
+    latitude and longitude. A time-height contains the evolution
+    of the vertical structure of radar measurements above the location
+    of interest.
 
     Parameters
     ----------
