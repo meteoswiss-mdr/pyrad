@@ -184,13 +184,13 @@ monitoring_clt_Zh STRUCT 7
                 50.
                 95.
                 99.
-            ref_value FLOAT 67.
+            ref_value FLOAT 66.
             tol_abs FLOAT 1.
             tol_trend FLOAT 1.
             npoints_min INT 100000
             nevents_min INT 10
-            vmin FLOAT 62.
-            vmax FLOAT 72.
+            vmin FLOAT 61.
+            vmax FLOAT 71.
             alarm INT 1
             sender STRING jordi.figuerasiventura@meteoswiss.ch
             receiver_list STRARR 1
@@ -220,13 +220,13 @@ monitoring_clt_Zv STRUCT 7
                 50.
                 95.
                 99.
-            ref_value FLOAT 69.5
+            ref_value FLOAT 66.
             tol_abs FLOAT 1.
             tol_trend FLOAT 1.
             npoints_min INT 100000
             nevents_min INT 10
-            vmin FLOAT 64.5
-            vmax FLOAT 74.5
+            vmin FLOAT 61.
+            vmax FLOAT 71.
             alarm INT 1
             sender STRING jordi.figuerasiventura@meteoswiss.ch
             receiver_list STRARR 1

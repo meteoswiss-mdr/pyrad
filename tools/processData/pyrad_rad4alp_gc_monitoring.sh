@@ -85,6 +85,15 @@ CONFIGFILE=rad4alp_gc_freq_PH${RADAR}.txt
 LOGFILE=/srn/scratch/log/rad4alp_gc_freq_PH${RADAR}.log
 dataquality $CONFIGFILE  $START_TIME $END_TIME $RADAR $LOGFILE $RENAME_LOGFILES $LOG_APPENDIX
 
+# Copy data to rad4alp archive
+ORIG_FILES="/srn/analysis/pyrad_products/rad4alp_gc_PH${RADAR}/monitoring_clt_Z?/VOL_TS/*.png"
+DEST_PATH="/www/proj/Radar/LIVE/archive/ARCHIVE/mon_pol/"
+cp ${ORIG_FILES} ${DEST_PATH}
+
+# Rename H channel files
+cd ${DEST_PATH}
+rename -v -f -e s/dBZ.png/dBZh.png/ *_GC_MONITORING_dBZ.png
+
 source /srn/analysis/anaconda3/bin/deactivate
 
 proc_end=`date +%s`
