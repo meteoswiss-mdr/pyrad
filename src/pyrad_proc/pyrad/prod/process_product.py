@@ -581,6 +581,10 @@ def generate_intercomp_products(dataset, prdcfg):
             if prdcfg['add_date_in_fname']:
                 csvtimeinfo_file = dataset['timeinfo']
                 timeformat = '%Y'
+        if 'sort_by_date' in prdcfg:
+            sort_by_date = prdcfg['sort_by_date']
+        if 'rewrite' in prdcfg:
+            rewrite = prdcfg['rewrite']
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -601,7 +605,7 @@ def generate_intercomp_products(dataset, prdcfg):
         (date_vec, np_vec, meanbias_vec, medianbias_vec, quant25bias_vec,
          quant75bias_vec, modebias_vec, corr_vec, slope_vec, intercep_vec,
          intercep_slope1_vec) = (
-            read_intercomp_scores_ts(csvfname))
+            read_intercomp_scores_ts(csvfname, sort_by_date=sort_by_date))
 
         if date_vec is None:
             warn(
@@ -612,6 +616,23 @@ def generate_intercomp_products(dataset, prdcfg):
             warn(
                 'Unable to plot time series. Not enough points')
             return None
+            
+        if rewrite:
+            stats = {
+                    'npoints': np_vec,
+                    'meanbias': meanbias_vec,
+                    'medianbias': medianbias_vec,
+                    'quant25bias': quant25bias_vec,
+                    'quant75bias': quant75bias_vec,
+                    'modebias': modebias_vec,
+                    'corr': corr_vec,
+                    'slope': slope_vec,
+                    'intercep': intercep_vec,
+                    'intercep_slope_1': intercep_slope1_vec
+                }
+            write_intercomp_scores_ts(
+                date_vec, stats, field_name, csvfname,
+                rad1_name=rad1_name, rad2_name=rad2_name)
 
         figtimeinfo = None
         titldate = (date_vec[0].strftime('%Y%m%d')+'-' +
