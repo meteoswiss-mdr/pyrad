@@ -8,10 +8,12 @@ NumRadars INT 1
 TimeTol FLOAT 3600.
 
 # rad4alp radar name
-RadarName STRING D
+RadarName STRING A
 
 # rad4alp radar range resolution L:Low H:High
 RadarRes STRING	L
+
+path_convention STRING RT
 
 # maximum radar range [m] (0. will take the one from the data)
 rmax FLOAT 150000.

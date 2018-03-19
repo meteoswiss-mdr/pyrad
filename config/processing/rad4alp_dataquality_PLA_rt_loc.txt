@@ -8,16 +8,18 @@ NumRadars INT 1
 TimeTol FLOAT 3600.
 
 # rad4alp radar name
-RadarName STRING D
+RadarName STRING A
 
 # rad4alp radar range resolution L:Low H:High
 RadarRes STRING	L
 
-# maximum radar range [m] (0. will take the one from the data)
-rmax FLOAT 150000.
+path_convention STRING RT
+
+# maximum radar range [m]
+rmax FLOAT 50000.
 
 # Names of the radar scans in the specified sector
-ScanList STRARR 12
+ScanList STRARR 20
 	  001  # masterscan: first scan of a volume
 	  002
 	  003
@@ -30,6 +32,14 @@ ScanList STRARR 12
 	  010
 	  011
 	  012
+	  013
+	  014
+	  015
+	  016
+	  017
+	  018
+	  019
+	  020
 
 # angles from 001 to 020
 # ['-0.2', '0.4',  '1.0',  '1.6',  '2.5',  '3.5',  '4.5',  '5.5',  '6.5',  '7.5',

@@ -1,6 +1,6 @@
 # Name of this configuration:
 # Will be used in product generation save path
-name STRING rad4alp_avg_PLD
+name STRING rad4alp_avg_PLW
 
 # ---------------------------------------------------------
 #  Raw data pathes
@@ -9,13 +9,13 @@ name STRING rad4alp_avg_PLD
 # Base path of the raw data.
 # Note: Must have a trailing '/'
 # ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
-datapath STRING /srn/data/
+datapath STRING /store/msrad/radar/rad4alp/tmp/
 
 # Base path for cosmo data
-cosmopath STRING /srn/analysis/cosmo/
+cosmopath STRING /store/msrad/cosmo/tmp/
 
 # Base path for dem data
-dempath STRING /opt/ccs4/lookuptables/
+dempath STRING /store/msrad/radar/rad4alp/visibRad4Alp/
 
 
 # ------------------------------------------------------------
@@ -28,12 +28,12 @@ dempath STRING /opt/ccs4/lookuptables/
 #disdropath STRING /data/scattering/dsd_ts/
 
 # Base path for solar flux data
-#solarfluxpath STRING /data/solar_flux/
+#solarfluxpath STRING /srn/analysis/solar_flux/
 
 # --------------------------------------------
 # Output data
 # --------------------------------------------
-saveimgbasepath STRING /srn/analysis/pyrad_products/
+saveimgbasepath STRING /store/msrad/radar/pyrad_products/
 # Supported formats: eps, jpeg, jpg, pdf, pgf, png, ps, raw, rgba, svg, svgz, tif, tiff
 imgformat STRING png	
 
@@ -45,7 +45,7 @@ imgformat STRING png
 configpath STRING $HOME/pyrad/config/
 
 # Configuration of the radar location and approach direction
-locationConfigFile STRING $HOME/pyrad/config/processing/rad4alp_avg_PLD_rt_loc.txt
+locationConfigFile STRING $HOME/pyrad/config/processing/rad4alp_avg_PLW_loc.txt
 
 # Configuration of the product generation
-productConfigFile STRING $HOME/pyrad/config/processing/rad4alp_avg_PLD_prod.txt
+productConfigFile STRING $HOME/pyrad/config/processing/rad4alp_avg_PLW_prod.txt
