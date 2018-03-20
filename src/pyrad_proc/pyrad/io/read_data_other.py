@@ -42,6 +42,7 @@ import csv
 import xml.etree.ElementTree as et
 from warnings import warn
 from copy import deepcopy
+import fcntl
 
 import numpy as np
 
@@ -707,7 +708,7 @@ def read_ts_cum(fname):
         return None, None, None, None, None
 
 
-def read_monitoring_ts(fname):
+def read_monitoring_ts(fname, sort_by_date=False):
     """
     Reads a monitoring time series contained in a csv file
 
@@ -715,6 +716,8 @@ def read_monitoring_ts(fname):
     ----------
     fname : str
         path of time series file
+    sort_by_date : bool
+        if True, the read data is sorted by date prior to exit
 
     Returns
     -------
@@ -724,6 +727,16 @@ def read_monitoring_ts(fname):
     """
     try:
         with open(fname, 'r', newline='') as csvfile:
+            while True:
+                try:
+                    fcntl.flock(csvfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    break
+                except OSError as e:
+                    if e.errno != errno.EAGAIN:
+                        raise
+                    else:
+                        time.sleep(0.1)
+
             # first count the lines
             reader = csv.DictReader(
                 row for row in csvfile if not row.startswith('#'))
@@ -732,6 +745,7 @@ def read_monitoring_ts(fname):
             central_quantile = np.ma.empty(nrows, dtype=float)
             low_quantile = np.ma.empty(nrows, dtype=float)
             high_quantile = np.ma.empty(nrows, dtype=float)
+            date = np.empty(nrows, dtype=datetime.datetime)
 
             # now read the data
             csvfile.seek(0)
@@ -739,16 +753,18 @@ def read_monitoring_ts(fname):
                 row for row in csvfile if not row.startswith('#')
                 )
             i = 0
-            date = list()
             for row in reader:
-                date.append(datetime.datetime.strptime(
-                    row['date'], '%Y%m%d%H%M%S'))
+                date[i] = datetime.datetime.strptime(
+                    row['date'], '%Y%m%d%H%M%S')
                 np_t[i] = int(row['NP'])
                 central_quantile[i] = float(row['central_quantile'])
                 low_quantile[i] = float(row['low_quantile'])
                 high_quantile[i] = float(row['high_quantile'])
                 i += 1
 
+            fcntl.flock(csvfile, fcntl.LOCK_UN)
+            csvfile.close()
+            
             central_quantile = np.ma.masked_values(
                 central_quantile, get_fillvalue())
             low_quantile = np.ma.masked_values(
@@ -756,7 +772,13 @@ def read_monitoring_ts(fname):
             high_quantile = np.ma.masked_values(
                 high_quantile, get_fillvalue())
 
-            csvfile.close()
+            if sort_by_date:
+                ind = np.argsort(date)
+                date = date[ind]
+                np_t = np_t[ind]
+                central_quantile = central_quantile[ind]
+                low_quantile = low_quantile[ind]
+                high_quantile = high_quantile[ind]
 
             return date, np_t, central_quantile, low_quantile, high_quantile
     except EnvironmentError as ee:
@@ -820,7 +842,7 @@ def read_monitoring_ts_old(fname):
         return None, None, None, None, None
 
 
-def read_intercomp_scores_ts(fname):
+def read_intercomp_scores_ts(fname, sort_by_date=False):
     """
     Reads a radar intercomparison scores csv file
 
@@ -828,6 +850,8 @@ def read_intercomp_scores_ts(fname):
     ----------
     fname : str
         path of time series file
+    sort_by_date : bool
+        if True, the read data is sorted by date prior to exit
 
     Returns
     -------
@@ -839,6 +863,15 @@ def read_intercomp_scores_ts(fname):
     """
     try:
         with open(fname, 'r', newline='') as csvfile:
+            while True:
+                try:
+                    fcntl.flock(csvfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    break
+                except OSError as e:
+                    if e.errno != errno.EAGAIN:
+                        raise
+                    else:
+                        time.sleep(0.1)
             # first count the lines
             reader = csv.DictReader(
                 row for row in csvfile if not row.startswith('#'))
@@ -854,17 +887,17 @@ def read_intercomp_scores_ts(fname):
             slope_vec = np.ma.empty(nrows, dtype=float)
             intercep_vec = np.ma.empty(nrows, dtype=float)
             intercep_slope1_vec = np.ma.empty(nrows, dtype=float)
+            date_vec = np.empty(nrows, dtype=datetime.datetime)
 
             # now read the data
             csvfile.seek(0)
             reader = csv.DictReader(
                 row for row in csvfile if not row.startswith('#')
                 )
-            i = 0
-            date_vec = list()
+            i = 0            
             for row in reader:
-                date_vec.append(datetime.datetime.strptime(
-                    row['date'], '%Y%m%d%H%M%S'))
+                date_vec[i] = datetime.datetime.strptime(
+                    row['date'], '%Y%m%d%H%M%S')
                 np_vec[i] = int(row['NP'])
                 meanbias_vec[i] = float(row['mean_bias'])
                 medianbias_vec[i] = float(row['median_bias'])
@@ -878,6 +911,9 @@ def read_intercomp_scores_ts(fname):
                     row['intercep_of_linear_regression_of_slope_1'])
                 i += 1
 
+            fcntl.flock(csvfile, fcntl.LOCK_UN)
+            csvfile.close()
+            
             meanbias_vec = np.ma.masked_values(
                 meanbias_vec, get_fillvalue())
             medianbias_vec = np.ma.masked_values(
@@ -896,8 +932,20 @@ def read_intercomp_scores_ts(fname):
                 intercep_vec, get_fillvalue())
             intercep_slope1_vec = np.ma.masked_values(
                 intercep_slope1_vec, get_fillvalue())
-
-            csvfile.close()
+            
+            if sort_by_date:
+                ind = np.argsort(date_vec)
+                date_vec = date_vec[ind]
+                np_vec = np_vec[ind]
+                meanbias_vec = meanbias_vec[ind]
+                medianbias_vec = medianbias_vec[ind]
+                quant25bias_vec = quant25bias_vec[ind]
+                quant75bias_vec = quant75bias_vec[ind]
+                modebias_vec = modebias_vec[ind]
+                corr_vec = corr_vec[ind]
+                slope_vec = slope_vec[ind]
+                intercep_vec = intercep_vec[ind]
+                intercep_slope1_vec = intercep_slope1_vec[ind]                
 
             return (date_vec, np_vec, meanbias_vec, medianbias_vec,
                     quant25bias_vec, quant75bias_vec, modebias_vec, corr_vec,

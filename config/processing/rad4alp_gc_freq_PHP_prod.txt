@@ -4,10 +4,13 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 3    
+dataSetList STRARR 5
     l0:echoID
     l1:dBZ_clt
     l2:clt_freq
+    l0:monitoring_clt_Zh
+    l0:monitoring_clt_Zv
+
     
 # ==========================================================================================
 #                 raw data products
@@ -156,4 +159,81 @@ clt_freq STRUCT 7
 #            type  STRING PPI_IMAGE
 #            anglenr INT 2
 #            voltype STRING occurrence
+
+
+# ==========================================================================================
+#                 monitoring
+# ==========================================================================================
+monitoring_clt_Zh STRUCT 7
+    type STRING GC_MONITORING
+    datatype STRARR 1
+        RAD4ALP:dBZ
+    step FLOAT 0.5
+    val_min FLOAT 10.
+    excessgates_fname STRING 20180201000000_excess_gates_OCCURRENCE_PERIOD_EXCESS_GATES_quant95.0.csv
+    regular_grid INT 0
+    products STRUCT 2
+        VOL_TS STRUCT 17
+            sort_by_date INT 1
+            rewrite INT 0
+            add_date_in_fname INT 1
+            type STRING VOL_TS
+            hist_type STRING cumulative
+            voltype STRING dBZ
+            quantiles FLTARR 3
+                50.
+                95.
+                99.
+            ref_value FLOAT 69.
+            tol_abs FLOAT 1.
+            tol_trend FLOAT 1.
+            npoints_min INT 100000
+            nevents_min INT 10
+            vmin FLOAT 64.
+            vmax FLOAT 74.
+            alarm INT 1
+            sender STRING jordi.figuerasiventura@meteoswiss.ch
+            receiver_list STRARR 1
+                jordi.figuerasiventura@meteoswiss.ch
+        VOL_HISTOGRAM STRUCT 3
+            type STRING VOL_HISTOGRAM
+            hist_type STRING cumulative
+            voltype STRING dBZ
+
+monitoring_clt_Zv STRUCT 7
+    type STRING GC_MONITORING
+    datatype STRARR 1
+        RAD4ALP:dBZv
+    step FLOAT 0.5
+    val_min FLOAT 10.
+    excessgates_fname STRING 20180201000000_excess_gates_OCCURRENCE_PERIOD_EXCESS_GATES_quant95.0.csv
+    regular_grid INT 0
+    products STRUCT 2
+        VOL_TS STRUCT 17
+            sort_by_date INT 1
+            rewrite INT 0
+            add_date_in_fname INT 1
+            type STRING VOL_TS
+            hist_type STRING cumulative
+            voltype STRING dBZv
+            quantiles FLTARR 3
+                50.
+                95.
+                99.
+            ref_value FLOAT 68.5
+            tol_abs FLOAT 1.
+            tol_trend FLOAT 1.
+            npoints_min INT 100000
+            nevents_min INT 10
+            vmin FLOAT 63.5
+            vmax FLOAT 73.5
+            alarm INT 1
+            sender STRING jordi.figuerasiventura@meteoswiss.ch
+            receiver_list STRARR 1
+                jordi.figuerasiventura@meteoswiss.ch
+        VOL_HISTOGRAM STRUCT 3
+            type STRING VOL_HISTOGRAM
+            hist_type STRING cumulative
+            voltype STRING dBZv
+
         
