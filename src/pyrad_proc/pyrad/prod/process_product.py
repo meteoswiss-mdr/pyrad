@@ -577,6 +577,8 @@ def generate_intercomp_products(dataset, prdcfg):
         # put time info in file path and name
         csvtimeinfo_file = None
         timeformat = None
+        sort_by_date = False
+        rewrite = False
         if 'add_date_in_fname' in prdcfg:
             if prdcfg['add_date_in_fname']:
                 csvtimeinfo_file = dataset['timeinfo']
@@ -616,7 +618,7 @@ def generate_intercomp_products(dataset, prdcfg):
             warn(
                 'Unable to plot time series. Not enough points')
             return None
-            
+
         if rewrite:
             stats = {
                     'npoints': np_vec,

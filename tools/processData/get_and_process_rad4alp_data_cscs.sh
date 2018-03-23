@@ -62,7 +62,7 @@ GET_HZT=0
 RM_HZT=0
 HZT_DESTBASE=/store/msrad/cosmo/cosmo1/HZT/
 
-info_vec=''
+info_vec='None'
 cfgpath_vec="$HOME/pyrad/config/processing/"
 
 ELE='all'
@@ -223,7 +223,7 @@ for ((iday=0; iday<${nday}; iday++)); do
         if [ "$ncfg" -eq "$ninfo" ];then
             INFO=${info_vec[${icfg}]}
         else
-            INFO=''
+            INFO='None'
         fi
         if [ "$ncfgpath" -eq "$ncfg" ];then
             CFGPATH=${cfgpath_vec[${icfg}]}

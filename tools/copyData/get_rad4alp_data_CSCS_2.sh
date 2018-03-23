@@ -182,8 +182,12 @@ for ((irad=0; irad<${nrad}; irad++)); do
                     else
                         time_rad=${time_vec[${itime}]}
                     fi
-                    for ((iele=0; iele<${nele}; iele++)); do
+                    if [ "${ele_vec}" = "all" ]; then
+                        ele=*
+                    else
                         ele=${ele_vec[${iele}]}
+                    fi
+                    for ((iele=0; iele<${nele}; iele++)); do                        
                         unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.${ele} -d ${data_destpath}
                     done
                 done
@@ -246,8 +250,12 @@ for ((irad=0; irad<${nrad}; irad++)); do
                     else
                         time_rad=${time_vec[${itime}]}
                     fi
-                    for ((iele=0; iele<${nele}; iele++)); do
+                    if [ "${ele_vec}" = "all" ]; then
+                        ele=*
+                    else
                         ele=${ele_vec[${iele}]}
+                    fi
+                    for ((iele=0; iele<${nele}; iele++)); do                        
                         unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.${ele} -d ${data_destpath}
                     done
                 done
@@ -267,8 +275,12 @@ for ((irad=0; irad<${nrad}; irad++)); do
                     else
                         time_rad=${time_vec[${itime}]}
                     fi
-                    for ((iele=0; iele<${nele}; iele++)); do
+                    if [ "${ele_vec}" = "all" ]; then
+                        ele=*
+                    else
                         ele="$((${ele_vec[${iele}]} + 800))"
+                    fi
+                    for ((iele=0; iele<${nele}; iele++)); do                        
                         unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.${ele} -d ${data_destpath}
                     done
                 done
@@ -330,8 +342,7 @@ for ((irad=0; irad<${nrad}; irad++)); do
         else 
             for ((itime=0; itime<${ntime}; itime++)); do
                 time_rad=${time_vec[${itime}]}
-                for ((iele=0; iele<${nele}; iele++)); do
-                    ele="$((${ele_vec[${iele}]} + 800))"
+                for ((iele=0; iele<${nele}; iele++)); do                    
                     unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.xml -d ${data_destpath}
                 done
             done
