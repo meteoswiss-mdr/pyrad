@@ -586,7 +586,7 @@ The fields are described in Table~\ref{tab_location_config_params}.
 \hline
 \endlastfoot
 
-RadarName      & STRING    & Short version name of a rad4alp radar (i.e. A, D, L, P) or DX50, MXPol for the X-band radars.\\
+RadarName      & STRING    & Short version name of a C-band radar (i.e. A, D, L, P) or DX50, MXPol for the X-band radars.\\
 RadarRes      & STRING    & rad4alp radar resolution (H or L). Only necessary if rad4alp data is processed\\
 
 RadarBeamwidth & FLOAT & Radar antenna beam width [Deg]\\
@@ -594,17 +594,22 @@ AntennaGaindB & FLOAT & antenna gain [dB]\\
 ScanList           & STRARR    & A list with the scans used for this data processing.
                                  Note that the first scan in this list is used as master scan.
                                  The master scan must be the first (temporal) scan of the
-                                 corresponding rainbow task. In case of composite volumes the master scan is usually a PPI and the following are RHIs. If the radar processed is rad4alp the scan list consists of the radar elevation (i.e. from 001 to 020).\\
+                                 corresponding rainbow task. In case of composite volumes the master scan is usually a PPI and the following are RHIs. If the radar processed is MCH C-band the scan list consists of the radar elevation (i.e. from 001 to 020).\\
                    &           & All scan names must have a trailing '/' except if rad4alp data is processed\\
 %compose\_volume    & INT       & Boolean (defaul 0/NO). If 1, the volumes of the ScanList are composed to form a COMPOSITE\_VOLUME dataset (See~\ref{subsec_composite_volume_dataset})\\
 ScanPeriod         & FLOAT     & Repetition period of each scan in minutes.\\
 Azimtol            & FLOAT     & Tolerance in azimuth for irregular data. (0.5 is a good value)\\
 clutterMap         & STRING    & Clutter map of the data processing. The clutter map is
                                  located at <configpath>/clutter/<clutterMap>\\
+AntennaGain        & FLOAT & Radar antenna gain. Not used for X-band MCH data. \\ 
+radarconsth(v)        & FLOAT & Radar constant h (v). Not mandatory. \\
+mflossh(v)            & Matched filter losses h (v). Not mandatory. \\
+attg                & FLOAT & Gas attenuation coeafficient ({\bf units?} (1 way attenuation) \\                                
 CosmoRunFreq & INT &  Frequency of a COSMO model run in hours.\\
 CosmoForecasted & INT & Hours forecasted by the COSMO model.\\
 rmax            & FLOAT & For C-band data, the maximum range in [m] to be considered. USeful for speed
                                  considerations.   \\
+elmax           & FLOAT & Maximum elevation [$^\circ$] to consider  \\                                 
 ppiImageConfig     & STRUCT    & Structure defining the PPI image generating. The following 6
                                  fields are described below:\\
 rhiImageConfig     & STRUCT    & Structure defining the RHI image generating. The following 6
@@ -1130,16 +1135,18 @@ dataset block of the product configuration file. Dataset types can be found in T
 %\rowcolors{1}{darkgray}{lightgray}
 %\begin{tabularx}{\textwidth}{lXl}
 %{\bf Name} & {\bf Description} & {\bf Reference}\\
-\subsection{Product Configuration File}
+\subsection{Dataset type and format}
 
-The product configuration files describes the products that are generated
-for the data processing. The fields are described in
-Table~\ref{tab_product_config_params}.
+ The field ``type'', for each dataset listed in the product configuration, takes the values as in
+Table~\ref{tab_datasets_type}. Depending on the type, the proper pyrad/pyart processing routine is 
+applied. Each dataset type has a dataset ``format'' (more types may correspond to the same format),
+that will be used to generate the appropriate products.
+
 
 \begin{longtable}{p{0.40\textwidth}p{0.40\textwidth}p{0.10\textwidth}}
 \caption{List of dataset types with basic identification.}\\
 \label{tab_datasets_type}
-\bf{Name}          & \bf{Type} & \bf{Reference}\\
+\bf{Type}          & \bf{(Format) Explanation} & \bf{Reference}\\
 \hline
 \endfirsthead
 
@@ -1156,63 +1163,66 @@ Table~\ref{tab_product_config_params}.
 \hline
 \endlastfoot
 
-RAW & Process raw data &  \\
-GRID & Grid data & \\
-QVP & Quasi-Vertical-Profile & \\
-TIME\_HEIGHT & Time-height time series & \\
-CDF & Cumulative Density Function & \\
-NCVOL & Volume in NetCDF format & \\
-PWR & Signal power & \\
-SNR & Signal-to-noise ratio & \\
-RHOHV\_CORRECTION & Noise correction $\rho_{HV}$ & \\
-BIAS\_CORRECTION & Bias correction & \\
-L & &  \\
-CDR & & \\
-SAN & Echo identification/sanity & \\
-CLT\_TO\_SAN & Clutter to echo classification & \\
-ECHO\_FILTER & Filter on echo classification & \\
-SNR\_FILTER & Filter on SNR & \\
-VIS\_FILTER & Filter on visibility & \\
-OUTLIER\_FILTER & Filter outliers & \\
-PHIDP0\_CORRECTION & Correct on starting $\Phi_{dp}$ & \\
-PHIDP\_SMOOTH\_1w & Single window wmoothing of $\Phi_{dp}$ & \\
-PHIDP\_SMOOTH\_2w & Double window wmoothing of $\Phi_{dp}$ & \\
-PHIDP\_KDP\_VULPIANI & $\Phi_{dp}$ and $K_{dp}$ estimation by Vulpiani et al. & \\
-PHIDP\_KDP\_KALMAN & $\Phi_{dp}$ and $K_{dp}$ estimation by Schneebeli et al. & \\
-PHIDP\_KDP\_MAESAKA & $\Phi_{dp}$ and $K_{dp}$ estimation by Maesaka et al. & \\
-PHIDP\_KDP\_LP & $\Phi_{dp}$ and $K_{dp}$ estimation by ?? & \\
-KDP\_LEASTSQUARE\_1W &  $K_{dp}$ estimation, single window least square & \\
-KDP\_LEASTSQUARE\_2W &  $K_{dp}$ estimation, double window least square & \\
-ATTENUATION &  Radaar attenuation & \\
-RAINRATE & Rainrate estimation & \\
-WIND\_VEL & Wind velocity (radial) estimation & \\
-WINDSHEAR & Wind shear (spectral width) & \\
-HYDROCLASS & Hydrometeor identification & \\
-ML\_DETECTION &  Melting layer detection & \\
-PHIDP0\_ESTIMATE &  Estimation of $\Phi_{dp0}$ & \\
-RHOHV\_RAIN &  $\rho_{hv}$ in rain & \\
-ZDR\_PREC &  $Z_{DR}$ in precipitation& \\
-ZDR\_SNOW &  $Z_{DR}$ in  snow & \\
-SELFCONSISTENCY\_KDP\_PHIDP & Self consistency & \\
-SELFCONSISTENCY\_BIAS & Bias from consistency & \\
-COSMO & COSMO data & \\
-COSMO\_LOOKUP & Cosmo lookup table & \\
-COSMO\_COORD & Cosmo coordinates & \\
-HZT\_LOOKUP & HZT lookup table & \\
-TIME\_AVG & Time averaging & \\
-FLAG\_TIME\_AVG & Time average flag& \\
-COLOCATED\_GATES & Process colocated gates of radars & \\
-INTERCOMP & Radars intercomparison & \\
-INTERCOMP\_TIME\_AVG & Time average intercomparison& \\
-MONITORING & Data monitoring & \\
-GC\_MONITORING & Data monitoring ?? & \\
-OCCURRENCE &  & \\
-SUN\_HITS & Sun hits in radar data & \\
-TIMESERIES & Time series & \\
-TRAJ & Trajectory & \\
-TRAJ\_ATPLANE & Trajectory at plane/object location & \\
-TRAJ\_ANTENNA\_PATTERN & Trajectory at plane/object location, given antenna pattern & \\
-TRAJ\_LIGHTNING & Trajectory at lighning locations & \\
+RAW & (VOL) Process raw data &  \\
+GRID & (GRID) Grid data & \\
+QVP & (QVP) Quasi-Vertical-Profile & \\
+TIME\_HEIGHT & (QVP) Time-height time series & \\
+CDF & (VOL)  Cumulative Density Function & \\
+NCVOL & (VOL) Volume in NetCDF format & \\
+PWR & (VOL) Signal power & \\
+SNR & (VOL) Signal-to-noise ratio & \\
+RHOHV\_CORRECTION & (VOL) Noise correction $\rho_{HV}$ & \\
+BIAS\_CORRECTION & (VOL) Bias correction & \\
+L & (VOL) &  \\
+CDR & (VOL) & \\
+SAN & (VOL) Echo identification/sanity & \\
+CLT\_TO\_SAN & (VOL) Clutter to echo classification & \\
+ECHO\_FILTER & (VOL)   Filter on echo classification & \\
+SNR\_FILTER & (VOL) Filter on SNR & \\
+VIS\_FILTER & (VOL) Filter on visibility & \\
+OUTLIER\_FILTER & (VOL) Filter outliers & \\
+PHIDP0\_CORRECTION & (VOL) Correct on starting $\Phi_{dp}$ & \\
+PHIDP\_SMOOTH\_1w & (VOL) Single window wmoothing of $\Phi_{dp}$ & \\
+PHIDP\_SMOOTH\_2w & (VOL) Double window wmoothing of $\Phi_{dp}$ & \\
+PHIDP\_KDP\_VULPIANI & (VOL) $\Phi_{dp}$ and $K_{dp}$ estimation by Vulpiani et al. & \\
+PHIDP\_KDP\_KALMAN & (VOL) $\Phi_{dp}$ and $K_{dp}$ estimation by Schneebeli et al. & \\
+PHIDP\_KDP\_MAESAKA & (VOL) $\Phi_{dp}$ and $K_{dp}$ estimation by Maesaka et al. & \\
+PHIDP\_KDP\_LP & (VOL) $\Phi_{dp}$ and $K_{dp}$ estimation by ?? & \\
+KDP\_LEASTSQUARE\_1W & (VOL) $K_{dp}$ estimation, single window least square & \\
+KDP\_LEASTSQUARE\_2W & (VOL) $K_{dp}$ estimation, double window least square & \\
+ATTENUATION & (VOL) Radar attenuation & \\
+RAINRATE & (VOL) Rainrate estimation & \\
+WIND\_VEL & (VOL) Wind velocity (radial) estimation & \\
+WINDSHEAR & (VOL) Wind shear (spectral width) & \\
+HYDROCLASS & (VOL) Hydrometeor identification & \\
+ML\_DETECTION &  (VOL) Melting layer detection & \\
+PHIDP0\_ESTIMATE &  (VOL) Estimation of $\Phi_{dp0}$ & \\
+RHOHV\_RAIN & (VOL) $\rho_{hv}$ in rain & \\
+ZDR\_PREC &  (VOL) $Z_{DR}$ in precipitation& \\
+ZDR\_SNOW &  (VOL) $Z_{DR}$ in  snow & \\
+SELFCONSISTENCY\_KDP\_PHIDP & (VOL) Self consistency & \\
+SELFCONSISTENCY\_BIAS & (VOL) Bias from consistency & \\
+COSMO & (VOL) COSMO data & \\
+COSMO\_LOOKUP & (VOL) Cosmo lookup table & \\
+COSMO\_COORD & (COSMO\_COORD) Cosmo coordinates & \\
+HZT\_LOOKUP & (VOL) HZT lookup table & \\
+HZT  & (VOL) & \\ 
+TIME\_AVG & (TIMEAVG) Time averaging & \\
+FLAG\_TIME\_AVG & (TIMEAVG) Time average flag& \\
+COLOCATED\_GATES & (COLOCATED\_GATES) Process colocated gates of radars & \\
+INTERCOMP & (INTERCOMP) Radars intercomparison & \\
+INTERCOMP\_TIME\_AVG & (INTERCOMP) Time average intercomparison& \\
+MONITORING & (MONITORING) Data monitoring & \\
+GC\_MONITORING & (MONITORING) Data monitoring ?? & \\
+OCCURRENCE & (OCCURRENCE) & \\
+OCCURRENCE\_PERIOD & (OCCURRENCE) & \\
+SUN\_HITS & (SUN\_HITS) Sun hits in radar data & \\
+POINT\_MEASUREMENT & (TIMESERIES) & \\
+TIMESERIES & (TIMESERIES) Time series & \\
+TRAJ & (TRAJ\_ONLY) Trajectory & \\
+TRAJ\_ATPLANE & (TIMESERIES) Trajectory at plane/object location & \\
+TRAJ\_ANTENNA\_PATTERN & (TIMESERIES) Trajectory at plane/object location, given antenna pattern & \\
+TRAJ\_LIGHTNING & (TIMESERIES) Trajectory at lighning locations & \\
 
 \end{longtable}
 
@@ -1222,8 +1232,9 @@ TRAJ\_LIGHTNING & Trajectory at lighning locations & \\
 %\end{table}
 
 
+\subsection{Datasets and configuration parameters}
 
-
+{\bf TODO TODO}
 
 
 
@@ -1238,455 +1249,379 @@ TRAJ\_LIGHTNING & Trajectory at lighning locations & \\
 \section{Products}
 \label{sub_products}
 
-For each dataset format several products can be generated.
-The following tables list the possible products for each dataset format.
+For each dataset format several products can be generated, as seen in the product generation file.
+The list of products for each dataset are passed as a string array, and each product is defined as a structure.
+Different product ``type'' can be selected, determining the subsequent process.
+Not all product types are available for each data type. 
+The following tables and sections list the possible products for each dataset format.
+
+
+\subsection{VOL products}
+Listed here are the products for VOL dataset formats.
 
 \begin{table}[H]
 \rowcolors{1}{darkgray}{lightgray}
 \begin{tabularx}{\textwidth}{lXl}
-{\bf Name}      & {\bf Description}                      & {\bf Reference}\\
-PPI\_IMAGE      & PPI image of constant elevation        & Section~\ref{subsec_ppi_image}\\
-PPI\_MAP        & PPI image on a map                     & {\bf TODO: describe it} \\
-PSEUDOPPI\_IMAGE  & {\bf TODO: describe}                 & {\bf TODO: describe it} \\
-PSEUDOPPI\_MAP  & {\bf TODO: describe}                 & {\bf TODO: describe it} \\
-RHI\_IMAGE      & RHI image of constant azimuth          & Section~\ref{subsec_rhi_image}\\
-RHI\_PROFILE    & Averaged height profile                & Section~\ref{subsec_rhi_profile}\\
-PSEUDORHI\_IMAGE   & {\bf TODO: describe}                 & {\bf TODO: describe it} \\
-CAPPI\_IMAGE        & Constant altitude PPI image            & Section~\ref{subsec_cappi}\\
-PLOT\_ALONG\_COORD & {\bf TODO: describe}                 & {\bf TODO: describe it} \\
-BSCOPE\_IMAGE & {\bf TODO: describe}                 & {\bf TODO: describe it} \\
-TIME\_RANGE & {\bf TODO: describe}                 & {\bf TODO: describe it} \\
-HISTOGRAM & {\bf TODO: describe}                 & {\bf TODO: describe it} \\
-QUANTILES & {\bf TODO: describe}                 & {\bf TODO: describe it} \\
-FIELD\_COVERAGE & {\bf TODO: describe}                 & {\bf TODO: describe it} \\
-CDF & {\bf TODO: describe}                 & {\bf TODO: describe it} \\
-SAVEVOL         & Save the generated dataset volume        & Section~\ref{subsec_savevol}\\
-SAVEALL & {\bf TODO: describe}                 & {\bf TODO: describe it} \\
-SAVESTATE       & Save the time of the processed volume. & Section~\ref{subsec_savestate}\\
-& {\bf TODO: check -jgr- and -fvj- all the products below, what to do.} & \\
-
-WGS84\_IMAGE    & Image in WGS84 coordinates {}          & Section~\ref{subsec_wgs84_image}\\
-CH1903\_IMAGE   & Image in Swiss coordinates             & Section~\ref{subsec_ch1903_image}\\
-
-CAPPI\_ASCII    & XXX to be described                    & Section~\ref{subsec_CAPPI_ASCII}\\
-PLOT\_LINES     & Plot values along a coordinate, holding
-                  the other two fixed.                   & Section~\ref{subsec_plot_lines}\\
-CDF\_STAT       & Cumulative distribution function       & Section~\ref{subsec_cdf_stat}\\
-
-NETCDF\_CONV    & Save data in netcdf file format        & Section~\ref{subsec_netcdf_conv}\\
-MELTLAYER\_IMAGE &   Azimuth-Height graphic indicating the
-                  areas suspected to belong to the melting layer & Section~\ref{subsec_meltlayer_image}\\
-MELTLAYER\_TS   & Time series plot with the evolution
-                  of the melting layer.                  & Section~\ref{subsec_meltlayer_ts}\\
-SAVE\_DEM       & Save a PPI in DEM format.              & Section~\ref{subsec_SAVE_DEM}\\
-RNGVSANG\_IMAGE & Range versus angle image at a particular
-                  elevation or azimuth.                  & Section~\ref{subsec_rngvsang}\\
-SAVESLICE\_PPI\_ASCII & XXX to be described              & Section~\ref{subsec_SAVESLICE_PPI_ASCII}\\
-CONST\_RANGE\_IMAGE & Make a azimuth elevation plot at
-                  fixed range.                           & Section~\ref{subsec_CONST_RANGE_IMAGE}\\
-CONTOUR\_RANGE\_IMAGE & make a contour plot (azimuth vs.
-                  elevation) at a fixed range gate       & Section~\ref{subsec_CONTOUR_RANGE_IMAGE}\\
-CONTOUR\_RANGE\_IMAGE\_3D & make a contour plot (azimuth
-                  vs. elevation) at a fixed range gate   & Section~\ref{subsec_CONTOUR_RANGE_IMAGE_3D}\\
-WRITE\_BIN      & Write bin values to a file.            & Section~\ref{subsec_WRITE_BIN}\\
-WRITE\_MEAN     & Write statistic values of a region to
-                  a file.                                & Section~\ref{subsec_WRITE_MEAN}\\
+{\bf Name}      & {\bf Description}                      & {\bf Reference} \\
+PPI\_IMAGE      & PPI image of constant elevation        &  {Sec:~\ref{subsec_ppi_image}} \\
+PPI\_MAP        & PPI image on a map                     &  {Sec:~\ref{subsec_ppi_map}}    \\
+PSEUDOPPI\_IMAGE  & Reconstructed PPI from non-PPI data  &  {Sec:~\ref{subsec_pseudoppi_image}}   \\
+PSEUDOPPI\_MAP  & PSEUDO-PPI on a map                 &  {Sec: ~\ref{subsec_pseudoppi_map}} \\
+RHI\_IMAGE      & RHI image of constant azimuth          & Sec: ~\ref{subsec_rhi_image}   \\
+RHI\_PROFILE    & Averaged height profile                & Sec: ~\ref{subsec_rhi_profile} \\
+PSEUDORHI\_IMAGE   &                 & Sec: ~\ref{subsec_pseudorhi_image}    \\
+CAPPI\_IMAGE        & Constant altitude PPI image            &  Sec: ~\ref{subsec_cappi_image}   \\
+PLOT\_ALONG\_COORD & Plot along coordinates                 & Sec: ~\ref{subsec_plot_along_coord}  \\
+BSCOPE\_IMAGE & B-scope type image (ray versus range)    &  Sec: ~\ref{subsec_bscope_image} \\
+TIME\_RANGE & Time vs range display                 &  Sec: ~\ref{subsec_time_range}  \\
+HISTOGRAM & Histogram of the variable               &  Sec: ~\ref{subsec_histogram}  \\
+QUANTILES & Quantiles of some variables               & Sec: ~\ref{subsec_quantiles}  \\
+FIELD\_COVERAGE &                & Sec: ~\ref{subsec_field_coverage}  \\
+CDF & Cumulative density function  & Sec: ~\ref{subsec_cdf}  \\
+SAVEVOL         & Save the generated dataset volume        & Sec: ~\ref{subsec_savevol}  \\
+SAVEALL & {\bf TODO: describe}                 & Sec: ~\ref{subsec_saveall}  \\
+SAVESTATE       & Save the time of the processed volume. & Sec: ~\ref{subsec_savestate} \\
 \end{tabularx}
-\caption{List of all possible product types for dataset with VOL or ARRAY\_VOL format}
+\caption{List of all possible product types for dataset VOL format}
 \label{tab_products_VOL}
 \end{table}
 
+
+\subsubsection{PPI\_IMAGE}
+   \label{subsec_ppi_image}
+
+ PPI image of constant elevation.
+The parameters of a \emph{PPI\_IMAGE} product are listed in Table~\ref{tab_product_ppi_image}.
+
 \begin{table}[H]
-\rowcolors{1}{darkgray}{lightgray}
-\begin{tabularx}{\textwidth}{lXl}
-{\bf Name} & {\bf Description} & {\bf Reference}\\
-WRITE\_SUN\_HITS & {\bf TODO: describe} & {\bf TODO} \\
-PLOT\_SUN\_HITS & {\bf TODO: does it replace psunhits below?} & {\bf TODO} \\
-WRITE\_SUN\_RETRIEVAL & {\bf TODO: describe} & {\bf TODO} \\
-PLOT\_SUN\_RETRIEVAL & {\bf TODO: describe} & {\bf TODO} \\
-PLOT\_SUN\_RETRIEVAL\_TS & {\bf TODO: describe} & {\bf TODO} \\
+ \rowcolors{1}{darkgray}{lightgray}
+ \begin{tabularx}{\textwidth}{llX}
+ \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
+ TYPE           & STRING     & Must be \emph{PPI\_IMAGE}.\\
+ anglenr        & INT        & Elevation number (starting with 0) of the PPI image
+                               to generate.\\
+ voltype        & STRING     &  A valid datatype string (i.e., KDP, KDPc, TYPE, dBZ\dots)\\
 
-& {\bf TODO: check what to do with the IDL products below} & \\
+ \end{tabularx}
+ \caption{Parameters of a PPI\_IMAGE product.}
+ \label{tab_product_ppi_image}
+\end{table}
+ The dimension and boundaries of the PPI image are set in the location configuration file (Sec.~\ref{subsec_location_config}).
+
+\subsubsection{PPI\_MAP}
+   \label{subsec_ppi_map}
+
+ PPI image of constant elevation on a map
+The parameters of a \emph{PPI\_MAP} product are the same as listed in Table~\ref{tab_product_ppi_image}.
+ The dimension and boundaries of the PPI map are set in the location configuration file (Sec.~\ref{subsec_location_config}).
+ 
+ 
+ \subsubsection{PSEUDOPPI\_IMAGE}
+    \label{subsec_pseudoppi_image}
+Pseudo-PPI is a PPI reconstruction from volumic data (they can be also a series of RHIs), not from genuine PPIs. 
+It is displayed as a PPI. The parameters of a PSEUDOPPI\_IMAGE can be found in Table~\ref{tab_product_pseudoppi_image}.
+
+\begin{table}[H]
+ \rowcolors{1}{darkgray}{lightgray}
+ \begin{tabularx}{\textwidth}{llX}
+ \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
+ TYPE           & STRING     & Must be \emph{PSEUDOPPI\_IMAGE}.\\
+ angle          & FLOAT      & Elevation angle, in degrees of the pseudo-PPI \\
+ voltype        & STRING     & A valid datatype string (i.e., KDP, KDPc, TYPE, dBZ\dots)\\
+ EleTol         & FLOAT      & Elevation tolerance on the given angle, in degrees. \\
+ \end{tabularx}
+ \caption{Parameters of a PSEUDOPPI\_IMAGE product.}
+ \label{tab_product_pseudoppi_image}
+\end{table}
+
+\subsubsection{PSEUDOPPI\_MAP}
+   \label{subsec_pseudoppi_map}
+As for Sec.~\ref{subsec_pseudoppi_image}, but displayed on a map. 
+
+\subsubsection*{RHI\_IMAGE}
+   \label{subsec_rhi_image}
+RHI image of constant azimuth.
+The parameters of a \emph{RHI\_IMAGE} product are listed in Table~\ref{tab_product_rhi_image}.
+
+\begin{table}[H]
+ \rowcolors{1}{darkgray}{lightgray}
+ \begin{tabularx}{\textwidth}{llX}
+ \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
+ TYPE           & STRING     & Must be \emph{RHI\_IMAGE}.\\
+ anglenr        & INT        & Azimuth number (starting with 0) of the RHI image
+                               to generate.\\
+ voltype        & STRING     &  A valid datatype string (i.e., KDP, KDPc, TYPE, dBZ\dots)\\
+
+ \end{tabularx}
+ \caption{Parameters of a RHI\_IMAGE product.}
+ \label{tab_product_ppi_image}
+\end{table}
+ The dimension and boundaries of the RHI image are set in the location configuration file (Sec.~\ref{subsec_location_config}).
 
 
-PSUNHITS\_IMAGE    & Creates a 2D plot where the x axis is the difference between azimuth position of the radar and the azimuth position of the sun, the y axis is the difference between elevation position of the radar and elevation position of the sun and color coded us the estimated sun hits power          & Section~\ref{subsec_psunhits_image}\\
-PSUNRETRIEVAL\_IMAGE    & As above but with the retrieved sun power        & Section~\ref{subsec_psunretrieval_image}\\
-ZDRSUNHITS\_IMAGE    & As above but with the Zdr of the sun hits        & Section~\ref{subsec_zdrsunhits_image}\\
-ZDRSUNRETRIEVAL\_IMAGE    & as above but with the retrieved Zdr of the sun  & Section~\ref{subsec_zdrsunretrieval_image}\\
-SUNRETRIEVAL\_TS    & Plot a time series showing the evolution of a sun retrieval parameter        & Section~\ref{subsec_sunretrieval_ts}\\
-\end{tabularx}
-\caption{List of specific product types for dataset with SUN\_HITS format. In addition to them, all the product types for dataset with VOL format can be applied.}
-\label{tab_products_SUN_MONITORING}
+
+\subsubsection{PSEUDORHI\_IMAGE}
+    \label{subsec_pseudorhi_image}
+Pseudo-RHI is a PPI reconstruction from volumic data, not from genuine RHIs. 
+It is displayed as a PPI. The parameters of a PSEUDORHI\_IMAGE can be found in Table~~\ref{tab_product_pseudorhi_image}.
+
+\begin{table}[H]
+ \rowcolors{1}{darkgray}{lightgray}
+ \begin{tabularx}{\textwidth}{llX}
+ \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
+ TYPE           & STRING     & Must be \emph{PSEUDORHI\_IMAGE}.\\
+ angle          & FLOAT      & Azimuth angle, in degrees of the pseudo-RHI \\
+ voltype        & STRING     & A valid datatype string (i.e., KDP, KDPc, TYPE, dBZ\dots)\\
+ EleTol         & FLOAT      & Azimuth tolerance on the given angle, in degrees. \\
+ \end{tabularx}
+ \caption{Parameters of a PSEUDORHI\_IMAGE product.}
+ \label{tab_product_pseudorhi_image}
 \end{table}
 
 
-\begin{table}[H]
-\rowcolors{1}{darkgray}{lightgray}
-\begin{tabularx}{\textwidth}{lXl}
-{\bf Name} & {\bf Description} & {\bf Reference}\\
-& {\bf TODO: outdated? or replaced?} & \\
 
+ \subsubsection{RHI\_PROFILE}
+ \label{subsec_rhi_profile}
 
-POLAR\_AZ\_EL\_IMAGE  & A polar azimuth elevation plot             & Section~\ref{subsec_polar_az_el_image}\\
-DISTANCE\_VS\_AZIMUTH\_IMAGE  & Make a 2D ``data'' vs azimuth plot & Section~\ref{subsec_distance_vs_azimuth_image}\\
-QUANTILE\_STAT        & Make ``data'' vs azimuth statistics        & Section~\ref{subsec_quantile_stat}\\
-\end{tabularx}
-\caption{List of all possible product types for dataset with RAY format}
-\label{tab_products_RAY}
-\end{table}
+Averaged height profile. The dataset is limited by the  \emph{rangeStart} and
+ \emph{rangeStop} parameters. For each radar gate the vertical height is calculated,
+ the heights are divided into height layers. For each height layer the median, the
+ 15\% and 75\% quantiles are calculated.
 
-\begin{table}[H]
-\rowcolors{1}{darkgray}{lightgray}
-\begin{tabularx}{\textwidth}{lXl}
-{\bf Name} & {\bf Description} & {\bf Reference}\\
+The product is a figure data value vs. altitude with median  and the two
+ quantile curves. Also a text file with the height profile is
+ generated. The height resolution in the text file is according the parameter
+ \emph{heightResolution}. In the image file the height resolution is always
+ 100~m. The height is given in meters above sea level.
 
-PLOT\_AND\_WRITE\_POINT    & Plots a time series with the evolution of a variable at a particular point. Writes the same information in a file. & Section~\ref{subsec_plot_and_write_point}\\
-PLOT\_CUMULATIVE\_POINT    & Plots a time series with the accumulation in time of a variable at a particular point.  & Section~\ref{subsec_plot_cumulative_point}\\
-COMPARE\_POINT             & Time series plot showing the evolution of a radar variable and a variable from another sensor placed at a particular point. & Section~\ref{subsec_compare_point}\\
-COMPARE\_CUMULATIVE\_POINT & Time series plot showing the accumulated value of a radar variable and a variable from another sensor placed at a particular point. & Section~\ref{subsec_compare_cumulative_point}\\
-COMPARE\_TIME\_AVG & {\bf TODO} & {\bf TODO} \\
-PLOT\_AND\_WRITE           & Make a plot of a timeseries. And write
-                             the timeseries to a file.              & Section~\ref{subsec_plot_and_write}\\
-\end{tabularx}
-\caption{List of all possible product types for dataset with TIMESERIES format}
-\label{tab_products_TIMESERIES}
-\end{table}
+The parameters of a \emph{RHI\_PROFILE} product are listed in Table~\ref{tab_product_rhi_profile}.
 
 \begin{table}[H]
-\rowcolors{1}{darkgray}{lightgray}
-\begin{tabularx}{\textwidth}{lXl}
-{\bf Name} & {\bf Description} & {\bf Reference}\\
-& {\bf TODO: is it still of interest? is it replaced by QVP? } & \\
-TIME\_ARRAY\_IMAGE & Plot time-array plot (e.g. a time-height
-                     array).                                  & Section~\ref{subsec_time_array_image}\\
-TIME\_ARRAY\_FILE & XXX to be described & Section~\ref{subsec_time_array_file}\\
-\end{tabularx}
-\caption{List of all possible product types for dataset with TIMEARRAY format}
-\label{tab_products_TIMEARRAY}
-\end{table}
+ \rowcolors{1}{darkgray}{lightgray}
+ \begin{tabularx}{\textwidth}{llX}
+ \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
+ TYPE           & STRING     & Must be \emph{RHI\_PROFILE}.\\
+ anglenr        & INT        & Azimuth number (starting with 0) of the RHI image
+                               to generate.\\
+ rangeStart     & FLOAT      & Minimal distance to the radar for the gates to be used for the
+                               RHI\_PROFILE processing. Given in meters.\\
+ rangeStop      & FLOAT      & Maximal distance to the radar for the gates to be used for the
+                               RHI\_PROFILE processing. Given in meters.\\
+ heightResolution & FLOAT    & Resolution of the height layers for the processing. Is only
+                               applied to the text output file. The profile image height
+                               resolution is fixed to 100~m.\\
+ heightMax & FLOAT    & Maximum height to consider, in [m].\\   
+  voltype        & STRING     & A valid datatype string (i.e., KDP, KDPc, TYPE, dBZ\dots)\\
+                           
+ \end{tabularx}
+ \caption{Parameters of a RHI\_PROFILE product.}
+ \label{tab_product_rhi_profile}
+ \end{table}
 
+ \subsubsection{CAPPI\_IMAGE}
+ \label{subsec_cappi_image}
 
-\begin{table}[H]
-\rowcolors{1}{darkgray}{lightgray}
-\begin{tabularx}{\textwidth}{lXl}
-{\bf Name} & {\bf Description} & {\bf Reference}\\
-& {\bf TODO: is it still of interest? } & \\
+The parameters of a \emph{CAPPI\_IMAGE} product are listed in Table~\ref{tab_product_cappi}.
 
-TIME\_ARRAY\_IMAGE & Plot time-array plot (e.g. a time-height
-                     array).                                  & Section~\ref{subsec_time_array_array_image}\\
+ \begin{table}[H]
+ \rowcolors{1}{darkgray}{lightgray}
+ \begin{tabularx}{\textwidth}{llX}
+ \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
+ TYPE           & STRING     & Must be \emph{CAPPI\_IMAGE}.\\
+  voltype        & STRING     & A valid datatype string (i.e., KDP, KDPc, TYPE, dBZ\dots)\\
+ altitude       & FLOAT      & Altitude of the CAPPI. In meters above see level.\\
+ \end{tabularx}
+ \caption{Parameters of a CAPPI product.}
+ \label{tab_product_cappi}
+ \end{table}
 
-TIME\_ARRAY\_MAP   & Plot time-array on a map & Section~\ref{subsec_time_array_map}\\
-\end{tabularx}
-\caption{List of all possible product types for dataset with TIMEARRAY\_ARRAY format}
-\label{tab_products_TIMEARRAY_array}
-\end{table}
-
-
-\begin{table}[H]
-\rowcolors{1}{darkgray}{lightgray}
-\begin{tabularx}{\textwidth}{lXl}
-{\bf Name} & {\bf Description} & {\bf Reference}\\
-& {\bf TODO: now TRAJ and TRAJ\_ONLY are merged in Pyrad, right?} & \\
-TRAJ\_PLOT    & Plot the range, elevation, azimuth of a plane
-                trajectory.                            & Section~\ref{subsec_traj_plot}\\
-TRAJ\_TEXT    & Write the range, elevation, azimuth of a plane
-                trajectory to a text file.             & Section~\ref{subsec_traj_text}\\
-TRAJ\_ANTENNA & Plot the radar antenna movement.       & Section~\ref{subsec_traj_antenna}\\
-TRAJ\_DX50\_ANTENNA\_HITS & Compare the DX50 antenna movement
-                with a plane trajectory. Possible hits are
-                listed.                                & Section~\ref{subsec_traj_dx50_antenna_hits}\\
-\end{tabularx}
-\caption{List of all possible product types for dataset with TRAJ\_ONLY format}
-\label{tab_products_TRAJ_ONLY}
-\end{table}
+\subsubsection{PLOT\_ALONG\_COORD}
+  \label{subsec_plot_along_coord}
+Plotting along a given coordinate. The parameters of a PLOT\_ALONG\_COORD product are listed in Table~\ref{tab_product_plot_along_coord}.
 
 \begin{table}[H]
-\rowcolors{1}{darkgray}{lightgray}
-\begin{tabularx}{\textwidth}{lXl}
-{\bf Name} & {\bf Description} & {\bf Reference}\\
-& {\bf TODO: of interest?} & \\
+ \rowcolors{1}{darkgray}{lightgray}
+ \begin{tabularx}{\textwidth}{llX}
+ \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
+ TYPE           & STRING     & Must be \emph{PLOT\_ALONG\_COORD}.\\
+ voltype        & STRING     & A valid datatype string (i.e., KDP, KDPc, TYPE, dBZ\dots)\\
+ mode           & STRING     & \emph{ALONG\_RNG}, or \emph{ALONG\_AZI}, or \emph{ALONG\_ELE}. It sets the radar dimension along which to plot. \\
+ fix\_azimuths & FLTARR & All fixed azuth angles (same length of a given second dimension) \\
+ fix\_elevations & FLTARR & All fixed elevation angles. \\ 
+ fix\_ranges & FLTARR &  All fixed ranges in meters. \\
+ AngTol & FLOAT & Tolerance on the angles, in degrees. \\
+ value\_start & FLOAT & Starting value of the extracted profile. Units depend on selected ``mode'' \\
+ value\_end   & FLOAT & Ending value of the extracted profile. Units depend on selected ``mode''\\
+ \end{tabularx}
+ \caption{Parameters of a PLOT\_ALONG\_COORD product.}
+ \label{tab_product_plot_along_coord}
+ \end{table}
 
-RHI\_TRAJ     & Overplot the trajectory over a RHI image
-                with azimuth according to the planes
-                azimuth angle.                         & Section~\ref{subsec_rhi_traj}\\
-PPI\_TRAJ     & Overplot the trajectory over a PPI image
-                with elevation according to the planes
-                elevation angle.                       & Section~\ref{subsec_ppi_traj}\\
-\end{tabularx}
-\caption{List of all possible product types for dataset with TRAJ\_VOL\_COMPOSITE format}
-\label{tab_products_TRAJ_VOL_COMPOSITE}
-\end{table}
+If for, example we are interested in extracting data along range (i.e. a radial), we will set the mode as \emph{ALONG\_RNG}, and we will provide the given couples of fixed elevations and azimuths (we will not provide fixed ranges). 
 
-\begin{table}[H]
-\rowcolors{1}{darkgray}{lightgray}
-\begin{tabularx}{\textwidth}{lXl}
-{\bf Name} & {\bf Description} & {\bf Reference}\\
-& {\bf TODO: of interest?} & \\
+ \subsubsection{BSCOPE\_IMAGE}
+ \label{subsec_bscope_image}
 
-SPECTRUM\_IMAGE & Plot of a single spectrum & Section~\ref{subsec_spectrum_image}\\
-VERTICAL\_SPECTRUM\_IMAGE & XXX to be described & Section~\ref{subsec_VERTICAL_SPECTRUM_IMAGE}\\
-SINGLE\_SPECTRUM\_IMAGE   & XXX to be described & Section~\ref{subsec_SINGLE_SPECTRUM_IMAGE}\\
-SAVE\_PSR\_VOLUME         & XXX to be described & Section~\ref{subsec_SAVE_PSR_VOLUME}\\
-SPEC\_ALONG               & Plot the spectrum along the range, along
-                            the azimuth or along an elevation  & Section~\ref{subsec_SPEC_ALONG}\\
-IQ\_ALONG               & Plot the IQ data along the range, along
-                            the azimuth or along an elevation  & Section~\ref{subsec_iq_along}\\
-\end{tabularx}
-\caption{List of all possible product types for dataset with PSR format}
-\label{tab_products_PSR}
-\end{table}
+The parameters of a \emph{BSCOPE\_IMAGE} product are listed in Table~\ref{tab_product_bscope_image}.
+A B-scope is the typical 2D radar display given by ray vs range.
 
-\begin{table}[H]
-\rowcolors{1}{darkgray}{lightgray}
-\begin{tabularx}{\textwidth}{lXl}
-{\bf Name} & {\bf Description} & {\bf Reference}\\
-VOL\_HISTOGRAM & {\bf TODO: describe} & {\bf TODO: describe} \\
-PPI\_HISTOGRAM & {\bf TODO: describe} & {\bf TODO: describe} \\
-ANGULAR\_DENSITY & {\bf TODO: describe} & {\bf TODO: describe} \\
-VOL\_TS & {\bf TODO: describe} & {\bf TODO: describe} \\
-SAVEVOL & {\bf TODO: describe} & {\bf TODO: describe} \\
+ \begin{table}[H]
+ \rowcolors{1}{darkgray}{lightgray}
+ \begin{tabularx}{\textwidth}{llX}
+ \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
+ TYPE           & STRING     & Must be \emph{BSCOPE\_IMAGE}.\\
+  voltype        & STRING     & A valid datatype string (i.e., KDP, KDPc, TYPE, dBZ\dots)\\
+ anglenr        & INT        & Azimuth number (starting with 0) or elevation number (starting with 0)
+                               to generate.\\
+ \end{tabularx}
+ \caption{Parameters of a radar BSCOPE product.}
+ \label{tab_product_bscope_image}
+ \end{table}
 
-& {\bf TODO: check what to do with legacy products below} & \\
+\subsubsection{TIME\_RANGE}
+   \label{subsec_time_range}
+Time vs range radar image from volume data. The parameters are given in Table~\ref{tab_product_time_range}. Somehow similar to a BSCOPE.
 
-WRITE\_PHIDP0 & Writes the information of the monitoring of the differential phase offset. & Section~\ref{subsec_WRITE_PHIDP0}\\
-WRITE\_ZDRBIAS & Writes the information of the monitoring of the Zdr value in moderate rain. & Section~\ref{subsec_WRITE_ZDRBIAS}\\
-WRITE\_RHOAV & Writes the information of the monitoring of the Rhohv in rain. & Section~\ref{subsec_WRITE_RHOAV}\\
-WRITE\_ZHBIAS & Writes the information of the monitoring of the reflectivity bias. & Section~\ref{subsec_WRITE_ZHBIAS}\\
-PLOT\_PHIDP0 & Plots the differential phase offset as a function of azimuth for one elevation. & Section~\ref{subsec_PLOT_PHIDP0}\\
-PLOT\_ZDRBIAS & Plots the Zdr in moderate rain as a function of azimuth for one elevation. & Section~\ref{subsec_PLOT_ZDRBIAS}\\
-PLOT\_ZHBIAS & Plots the Zh bias as a function of azimuth for one elevation. & Section~\ref{subsec_PLOT_ZHBIAS}\\
-PLOT\_PHIDP0\_DAY\_TS & Plots the instantaneous evolution of the differential phase offset. & Section~\ref{subsec_PLOT_PHIDP0_DAY_TS}\\
-PLOT\_ZDRBIAS\_DAY\_TS & Plots the instantaneous evolution of the Zdr in moderate rain. & Section~\ref{subsec_PLOT_ZDRBIAS_DAY_TS}\\
-PLOT\_RHOAV\_DAY\_TS & Plots the instantaneous evolution of the RhoHV in rain. & Section~\ref{subsec_PLOT_RHOAV_DAY_TS}\\
-PLOT\_ZHBIAS\_DAY\_TS & Plots the instantaneous evolution of the Zh bias. & Section~\ref{subsec_PLOT_ZHBIAS_DAY_TS}\\
-PLOT\_AND\_WRITE\_PHIDP0\_TS & Plots the evolution on a daily basis of the phidp offset. Writes the same information in a file & Section~\ref{subsec_PLOT_AND_WRITE_PHIDP0_TS}\\
-PLOT\_AND\_WRITE\_ZDRBIAS\_TS & Plots the evolution on a daily basis of the Zdr in moderate rain. Writes the same information in a file & Section~\ref{subsec_PLOT_AND_WRITE_ZDRBIAS_TS}\\
-PLOT\_AND\_WRITE\_RHOAV\_TS & Plots the evolution on a daily basis of the RhoHV in rain. Writes the same information in a file & Section~\ref{subsec_PLOT_AND_WRITE_RHOAV_TS}\\
-PLOT\_AND\_WRITE\_ZHBIAS\_TS & Plots the evolution on a daily basis of the Zh bias. Writes the same information in a file & Section~\ref{subsec_PLOT_AND_WRITE_ZHBIAS_TS}\\
-\end{tabularx}
-\caption{List of all possible product types for dataset with MONITORING format}
-\label{tab_products_MONITORING}
-\end{table}
+ \begin{table}[H]
+ \rowcolors{1}{darkgray}{lightgray}
+ \begin{tabularx}{\textwidth}{llX}
+ \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
+ TYPE           & STRING     & Must be \emph{TIME\_RANGE}.\\
+  voltype       & STRING     & A valid datatype string (i.e., KDP, KDPc, TYPE, dBZ\dots)\\
+ anglenr        & INT        & Azimuth number (starting with 0) or elevation number (starting with 0)
+                               to generate.\\
+ \end{tabularx}
+ \caption{Parameters of a radar TIME\_RANGE product.}
+ \label{tab_product_time_range}
+ \end{table}
+
+\subsubsection{HISTOGRAM}
+   \label{subsec_histogram}
+   Histogram of VOL data. The HISTOGRAM product accept the following parameters:
 
 \begin{table}[H]
-\rowcolors{1}{darkgray}{lightgray}
-\begin{tabularx}{\textwidth}{lXl}
-{\bf Name} & {\bf Description} & {\bf Reference}\\
-& {\bf TODO: Are XVSC substituted/merged by INTERCOMP format?} & \\
-PLOT\_INTERCOMP & scatter plot between the pairs of time-averaged reflectivity data at each (or all) elevations. Computation of various statistics & Section~\ref{subsec_products_PLOT_INTERCOMP}\\
-PLOT\_AND\_WRITE\_INTERCOMP\_TS   & Computes various statistics and plots the daily evolution of the median bias & Section~\ref{subsec_products_PLOT_AND_WRITE_INTERCOMP_TS}\\
-\end{tabularx}
-\caption{List of all possible product types for dataset with XVSC format}
-\label{tab_products_XVSC}
-\end{table}
+ \rowcolors{1}{darkgray}{lightgray}
+ \begin{tabularx}{\textwidth}{llX}
+ \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
+ TYPE           & STRING     & Must be \emph{TIME\_RANGE}.\\
+ voltype       & STRING     & A valid datatype string (i.e., KDP, KDPc, TYPE, dBZ\dots)\\
+ anglenr        & INT        & Azimuth number (starting with 0) or elevation number (starting with 0)
+                               to generate.\\
+ \end{tabularx}
+ \caption{Parameters of a radar HISTOGRAM product.}
+ \label{tab_product_histogram}
+ \end{table}
+ 
+\subsubsection{QUANTILES}
+   \label{subsec_quantiles}
+Generate quantiles of volume data, for a given variable type. The parameters of a QUANTILE product can be found in Table~\ref{tab_product_quantiles}   
+   
+   
+\begin{table}[H]
+ \rowcolors{1}{darkgray}{lightgray}
+ \begin{tabularx}{\textwidth}{llX}
+ \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
+ TYPE           & STRING     & Must be \emph{QUANTILES}.\\
+ voltype        & STRING     & Type of volume (i.e., KDP, KDPc, TYPE, dBZ\dots)\\
+ quantiles      & FLTARR     & List of quantiles to compute. Example: 50 (50\%, median).\\
+ \end{tabularx}
+ \caption{Parameters of a radar QUANTILES product.}
+ \label{tab_product_quantiles}
+ \end{table}   
+    
+    
+\subsubsection{FIELD\_COVERAGE}
+   \label{subsec_field_coverage}
+Field coverage (for eaxample rain extension) of a given volume type. For its configuration, please see Table~\ref{tab_product_quantiles}   
+   
+   
+\begin{table}[H]
+ \rowcolors{1}{darkgray}{lightgray}
+ \begin{tabularx}{\textwidth}{llX}
+ \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
+ TYPE           & STRING      & Must be \emph{FIELD\_COVERAGE}.\\
+ voltype        & STRING      & Type of volume (i.e., KDP, KDPc, TYPE, dBZ\dots)\\
+ threshold      & FLOAT       & To be given. Threshold on the chosen variable to discriminate its field.\\
+ nvalid\_min & FLOAT &  Default: 5. Minimum number of valid points.\\
+ ele\_res & FLOAT &  Default: 1. Elevation resolution to be used, in degrees.\\
+ azi\_res & FLOAT &  Default: 2. Azimuth resolution to be used, in degrees.\\
+ ele\_min & FLOAT &  Default: 0. Minimum elevation angle to use, in degrees.\\
+ ele\_max & FLOAT &  Default: 30.Maximum elevation angle to use, in degrees.\\
+ ele\_step & FLOAT &  Default: 5. Elevation step to use, in degrees.\\
+ ele\_sec\_start & FLOAT & degrees \\
+ ele\_sec\_stop & FLOAT &  degrees \\
+ quantiles & FLTARR & Quantiles to be considered. \\
+ \end{tabularx}
+ \caption{Parameters of a radar FIELD\_COVERAGE product.}
+ \label{tab_product_field_coverage}
+ \end{table}   
+        
+\subsubsection{CDF}
+   \label{subsec_cdf}
+Cumulative density function, whose parameters are listed in  Table~\ref{tab_product_cdf}.   
+   
+\begin{table}[H]
+ \rowcolors{1}{darkgray}{lightgray}
+ \begin{tabularx}{\textwidth}{llX}
+ \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
+ TYPE           & STRING      & Must be \emph{CDF}.\\
+ voltype        & STRING      & Type of volume (i.e., KDP, KDPc, TYPE, dBZ\dots)\\
+ sector         & STRUCT      & If givem a structure used to limit the domain. It includes the fields:    \emph{rmin, rmax, azmin,azmax, elmin, elmax, hmin, hmax}. Also only some of those can be given. \\
+ vismin        & FLOAT & \\
+ absolute      & INT   & Boolean.  \\
+ quantiles     & FLTARR & List of quantiles to be used \\
+ use\_nans     & INT  & Boolean. Default False \\
+ nan\_value    & FLOAT & Default is 0. Value for NaN data \\
+ filterclt   & INT & Boolean. Default is 0 (false). Filter clutter or not. \\
+ filterprec  & INTARR & ???\\
+  \end{tabularx}
+ \caption{Parameters of a radar CDF product.}
+ \label{tab_product_cdf}
+ \end{table}       
+ 
+ \subsubsection{SAVEVOL}
+ \label{subsec_savevol}
+
+Save the generated dataset volume in NetCDF cfradial. The \emph{TRAJ\_SAVED} datasets
+ read the saved files and combine them with trajectory data.
+The parameters of a \emph{SAVEVOL} product are listed in Table~\ref{tab_product_savevol}.
 
 \begin{table}[H]
-\rowcolors{1}{darkgray}{lightgray}
-\begin{tabularx}{\textwidth}{lXl}
-{\bf Name} & {\bf Description} & {\bf Reference}\\
-PLOT\_INTERCOMP & scatter plot between the pairs of polarimetric data at each (or all) elevations. Computation of various statistics & Section~\ref{subsec_products_PLOT_INTERCOMP2}\\
-\end{tabularx}
-\caption{List of all possible product types for dataset with INTERCOMP format}
-\label{tab_products_INTERCOMP}
-\end{table}
+ \rowcolors{1}{darkgray}{lightgray}
+ \begin{tabularx}{\textwidth}{llX}
+ \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
+ TYPE           & STRING     & Must be \emph{SAVEVOL}.\\
+ \end{tabularx}
+ \caption{Parameters of a SAVEVOL product.}
+ \label{tab_product_savevol}
+ \end{table}
+
+\subsubsection{SAVESTATE}
+ \label{subsec_savestate}
+
+Save the time of the processed volume. This is used for the realtime processing.
+ The time is written to the file defined by the config parameter \emph{lastStateFile}.
+
+Use this product only for one dataset and only for the realtime processing.
+ Because the time is written the same file independently of the dataset. Thus, the previous
+ time can be easily overwritten if not paying attenuation.
+
+The parameters of a \emph{SAVESTATE} product are listed in Table~\ref{tab_product_savestate}.
 
 \begin{table}[H]
-\rowcolors{1}{darkgray}{lightgray}
-\begin{tabularx}{\textwidth}{lXl}
-{\bf Name} & {\bf Description} & {\bf Reference}\\
-& {\bf TODO: Are those merged in VOL?} & \\
+ \rowcolors{1}{darkgray}{lightgray}
+ \begin{tabularx}{\textwidth}{llX}
+ \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
+ TYPE           & STRING     & Must be \emph{SAVESTATE}.\\
+ \end{tabularx}
+ \caption{Parameters of a SAVESTATE product.}
+ \label{tab_product_savestate}
+ \end{table}
 
-WRITE\_2DHIST & writes a 2D histogram in a file & Section~\ref{subsec_products_WRITE_2DHIST}\\
-PLOT\_2DHIST & plots a 2D histogram & Section~\ref{subsec_products_PLOT_2DHIST}\\
-WRITE\_HIST & writes a 1D histogram in a file & Section~\ref{subsec_products_WRITE_HIST}\\
-PLOT\_HIST & plots a 1D histogram & Section~\ref{subsec_products_PLOT_HIST}\\
-\end{tabularx}
-\caption{List of all possible product types for dataset with HISTOGRAM format}
-\label{tab_products_HISTOGRAM}
-\end{table}
+\subsubsection{SAVEALL}
+   \label{subsec_saveall}
+SAVEALL is similar to SAVEVOL.
 
-\begin{table}[H]
-\rowcolors{1}{darkgray}{lightgray}
-\begin{tabularx}{\textwidth}{lXl}
-{\bf Name} & {\bf Description} & {\bf Reference}\\
-& {\bf TODO: what to do with them?} & \\
-
-PPI\_RHI\_IMAGE   & Plot one PPI and up to 3 RHIs on the same image.    & Section~\ref{subsec_ppi_rhi_image}.\\
-CELL\_3D\_IMAGE   & Plot in 3D composite volume data inside a bounding box centered along a given RHI direction
-                                                                        & Section~\ref{subsec_cell_3d_image}.\\
-RADAR\_3D\_IMAGE  & Plot  in 3D composite volume data over a given spatial domain
-                                                                         & Section~\ref{subsec_radar_3d_image}\\
-\end{tabularx}
-\caption{List of all possible product types for COMPOSITE\_VOLUME datasets.}
-\label{tab_products_composite_volume}
-\end{table}
-
-{\bf TODO: in Pyrad there are also: COLOCATED\_GATES\_PRODUCTS, QVP\_PRODUCTS, GRID\_PRODUCTS, COSMO\_COORD\_PRODUCTS. Clarify how those relate with the IDL framework.}
-
-{\bf TODO: uncomment the description of the products below here, when defined which ones to keep}
-
-\subsection{VOL Products}
-
-%% \subsubsection{PPI\_IMAGE}
-%% \label{subsec_ppi_image}
-
-%% PPI image of constant elevation.
-
-%% The parameters of a \emph{PPI\_IMAGE} product are listed in Table~\ref{tab_product_ppi_image}.
-
-%% \begin{table}[H]
-%% \rowcolors{1}{darkgray}{lightgray}
-%% \begin{tabularx}{\textwidth}{llX}
-%% \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
-%% TYPE           & STRING     & Must be \emph{PPI\_IMAGE}.\\
-%% anglenr        & INT        & Elevation number (starting with 0) of the PPI image
-%%                               to generate.\\
-%% voltype        & STRING     & REQUIRED for ARRAY\_VOL: A valid datatype string (i.e., KDP, KDPc, TYPE, dBZ\dots)\\
-%% transparent    & INT        & OPTIONAL. It set to 1, the title, legend, frame and
-%%                               all description is removed and the image background
-%%                               is set to transparent. If not given or set to 0,
-%%                               the image background is white.\\
-%% NOSANITY       & INT        & If set to 1 and the sanity volume is available, the
-%%                               sanity information (clutter, noise, melting layer) is
-%%                               not added to the image.\\
-%% \end{tabularx}
-%% \caption{Parameters of a PPI\_IMAGE product.}
-%% \label{tab_product_ppi_image}
-%% \end{table}
-%% The dimension and boundaries of the PPI image are set in the location configuration file (Sec.~\ref{subsec_location_config}).
-
-
-%% \subsubsection{WGS84\_IMAGE}
-%% \label{subsec_wgs84_image}
-
-%% Image at constant height in WGS84 coordinates.
-
-%% The parameters of a \emph{WGS84\_IMAGE} product are listed in Table~\ref{tab_product_wgs84_image}.
-
-%% \begin{table}[H]
-%% \rowcolors{1}{darkgray}{lightgray}
-%% \begin{tabularx}{\textwidth}{llX}
-%% \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
-%% TYPE        & STRING    & Must be \emph{WGS84\_IMAGE}.\\
-%% R\_TOL    & FLOAT       & Range tolerance when performing the interpolation [m]. Default 100.\\
-%% AZ\_TOL        & FLOAT    & Azimuth tolerance when performing the interpolation [deg]. Default 0.5.\\
-%% EL\_TOL        & FLOAT    & Elevation tolerance when performing the interpolation [deg]. Default 0.5.\\
-%% ALTITUDE    & FLOAT    & Altitude plotted [m MSL]\\
-%% \end{tabularx}
-%% \caption{Parameters of a WGS84\_IMAGE product.}
-%% \label{tab_product_wgs84_image}
-%% \end{table}
-%% The dimension and boundaries of the WGS84 image are set in the location configuration file (Sec.~\ref{subsec_location_config}).
-
-
-%% \subsubsection{CH1903\_IMAGE}
-%% \label{subsec_ch1903_image}
-
-%% Image at constant height in Swiss coordinates.
-
-%% The parameters of a \emph{CH1903\_IMAGE} product are listed in Table~\ref{tab_product_ch1903_image}.
-
-%% \begin{table}[H]
-%% \rowcolors{1}{darkgray}{lightgray}
-%% \begin{tabularx}{\textwidth}{llX}
-%% \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
-%% TYPE        & STRING    & Must be \emph{WGS84\_IMAGE}.\\
-%% R\_TOL    & FLOAT       & Range tolerance when performing the interpolation [m]. Default 100.\\
-%% AZ\_TOL        & FLOAT    & Azimuth tolerance when performing the interpolation [deg]. Default 0.5.\\
-%% EL\_TOL        & FLOAT    & Elevation tolerance when performing the interpolation [deg]. Default 0.5.\\
-%% ALTITUDE    & FLOAT    & Altitude plotted [m MSL]\\
-%% \end{tabularx}
-%% \caption{Parameters of a CH1903\_IMAGE product.}
-%% \label{tab_product_ch1903_image}
-%% \end{table}
-%% The dimension and boundaries of the CH1903 image are set in the location configuration file (Sec.~\ref{subsec_location_config}).
-
-%% \subsubsection{RHI\_IMAGE}
-%% \label{subsec_rhi_image}
-
-%%  RHI image of constant azimuth.
-
-%% The parameters of a \emph{RHI\_IMAGE} product are listed in Table~\ref{tab_product_rhi_image}.
-
-%% \begin{table}[H]
-%% \rowcolors{1}{darkgray}{lightgray}
-%% \begin{tabularx}{\textwidth}{llX}
-%% \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
-%% TYPE           & STRING     & Must be \emph{RHI\_IMAGE}.\\
-%% anglenr        & INT        & Azimuth number (starting with 0) of the RHI image
-%%                               to generate.\\
-%% voltype        & STRING     & REQUIRED: A valid datatype string (i.e., KDP, KDPc, TYPE, dBZ\dots)\\
-%% transparent    & INT        & OPTIONAL. It set to 1, the title, legend, frame and
-%%                               all description is removed and the image background
-%%                               is set to transparent. If not given or set to 0,
-%%                               the image background is white.\\
-%% NOSANITY       & INT        & If set to 1 and the sanity volume is available, the
-%%                               sanity information (clutter, noise, melting layer) is
-%%                               not added to the image.\\
-%% \end{tabularx}
-%% \caption{Parameters of a RHI\_IMAGE product.}
-%% \label{tab_product_rhi_image}
-%% \end{table}
-%% The dimension and boundaries of the PPI image are set in the location configuration file (Sec.~\ref{subsec_location_config}.
-
-%% \subsubsection{RHI\_PROFILE}
-%% \label{subsec_rhi_profile}
-
-%% Averaged height profile. The dataset is limited by the  \emph{rangeStart} and
-%% \emph{rangeStop} parameters. For each radar gate the vertical height is calculated,
-%% the heights are divided into height layers. For each height layer the median, the
-%% 15\% and 75\% quantiles are calculated.
-
-%% The product is a figure data value vs. altitude with median (blue) and the two
-%% quantile curves (gray, dashed). Also a text file with the height profile is
-%% generated. The height resolution in the text file is according the parameter
-%% \emph{heightResolution}. In the image file the height resolution is always
-%% 100~m. The height is given in meters above sea level.
-
-%% The parameters of a \emph{RHI\_PROFILE} product are listed in Table~\ref{tab_product_rhi_profile}.
-
-%% \begin{table}[H]
-%% \rowcolors{1}{darkgray}{lightgray}
-%% \begin{tabularx}{\textwidth}{llX}
-%% \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
-%% TYPE           & STRING     & Must be \emph{RHI\_PROFILE}.\\
-%% anglenr        & INT        & Azimuth number (starting with 0) of the RHI image
-%%                               to generate.\\
-%% rangeStart     & FLOAT      & Minimal distance to the radar for the gates to be used for the
-%%                               RHI\_PROFILE processing. Given in meters.\\
-%% rangeStop      & FLOAT      & Maximal distance to the radar for the gates to be used for the
-%%                               RHI\_PROFILE processing. Given in meters.\\
-%% heightResolution & FLOAT    & Resolution of the height layers for the processing. Is only
-%%                               applied to the text output file. The profile image height
-%%                               resolution is fixed to 100~m.\\
-%% \end{tabularx}
-%% \caption{Parameters of a RHI\_PROFILE product.}
-%% \label{tab_product_rhi_profile}
-%% \end{table}
-
-%% \subsubsection{CAPPI}
-%% \label{subsec_cappi}
-
-%% The parameters of a \emph{CAPPI} product are listed in Table~\ref{tab_product_cappi}.
-
-%% \begin{table}[H]
-%% \rowcolors{1}{darkgray}{lightgray}
-%% \begin{tabularx}{\textwidth}{llX}
-%% \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
-%% TYPE           & STRING     & Must be \emph{CAPPI}.\\
-%% altitude       & FLOAT      & Altitude of the CAPPI. In meters above see level.\\
-%% transparent    & INT        & OPTIONAL. It set to 1, the title, legend, frame and
-%%                               all description is removed and the image background
-%%                               is set to transparent. If not given or set to 0,
-%%                               the image background is white.\\
-%% \end{tabularx}
-%% \caption{Parameters of a CAPPI product.}
-%% \label{tab_product_cappi}
-%% \end{table}
-
-%% \subsubsection{CAPPI\_ASCII}
-%% \label{subsec_CAPPI_ASCII}
-%% XXX to be described
 
 %% \subsubsection{PLOT\_LINES}
 %% \label{subsec_plot_lines}
@@ -1776,46 +1711,9 @@ RADAR\_3D\_IMAGE  & Plot  in 3D composite volume data over a given spatial domai
 %% \label{tab_product_cdf_stat}
 %% \end{table}
 
-%% \subsubsection{SAVEVOL}
-%% \label{subsec_savevol}
 
-%% Save the generated dataset volume as binary IDL file. The \emph{TRAJ\_SAVED} datasets
-%% read the saved files and combine them with trajectory data.
 
-%% The parameters of a \emph{SAVEVOL} product are listed in Table~\ref{tab_product_savevol}.
 
-%% \begin{table}[H]
-%% \rowcolors{1}{darkgray}{lightgray}
-%% \begin{tabularx}{\textwidth}{llX}
-
-%% \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
-%% TYPE           & STRING     & Must be \emph{SAVEVOL}.\\
-%% \end{tabularx}
-%% \caption{Parameters of a SAVEVOL product.}
-%% \label{tab_product_savevol}
-%% \end{table}
-
-%% \subsubsection{SAVESTATE}
-%% \label{subsec_savestate}
-
-%% Save the time of the processed volume. This is used for the realtime processing.
-%% The time is written to the file defined by the config parameter \emph{lastStateFile}.
-
-%% Use this product only for one dataset and only for the realtime processing.
-%% Because the time is written the same file independently of the dataset. Thus, the previous
-%% time can be easily overwritten if not paying attenuation.
-
-%% The parameters of a \emph{SAVESTATE} product are listed in Table~\ref{tab_product_savestate}.
-
-%% \begin{table}[H]
-%% \rowcolors{1}{darkgray}{lightgray}
-%% \begin{tabularx}{\textwidth}{llX}
-%% \bf{Parameter}  & \bf{Type}  & \bf{Description}\\
-%% TYPE           & STRING     & Must be \emph{SAVESTATE}.\\
-%% \end{tabularx}
-%% \caption{Parameters of a SAVESTATE product.}
-%% \label{tab_product_savestate}
-%% \end{table}
 
 %% \subsubsection{NETCDF\_CONV}
 %% \label{subsec_netcdf_conv}
@@ -2008,6 +1906,179 @@ RADAR\_3D\_IMAGE  & Plot  in 3D composite volume data over a given spatial domai
 %% \caption{Parameters of a WRITE\_MEAN.}
 %% \label{tab_product_WRITE_MEAN}
 %% \end{table}
+
+
+
+
+
+
+
+
+\newpage
+\subsection{Timeseries products}
+Listed here are the products for TIMESERIES dataset format.
+
+\begin{table}[H]
+\rowcolors{1}{darkgray}{lightgray}
+\begin{tabularx}{\textwidth}{lXl}
+{\bf Name} & {\bf Description} & {\bf Reference}\\
+
+PLOT\_AND\_WRITE\_POINT    & Plots a time series with the evolution of a variable at a particular point. Writes the same information in a file. & \\
+PLOT\_CUMULATIVE\_POINT    & Plots a time series with the accumulation in time of a variable at a particular point.  & \\
+COMPARE\_POINT             & Time series plot showing the evolution of a radar variable and a variable from another sensor placed at a particular point. & \\
+COMPARE\_CUMULATIVE\_POINT & Time series plot showing the accumulated value of a radar variable and a variable from another sensor placed at a particular point. & \\
+COMPARE\_TIME\_AVG & {\bf TODO} & {\bf TODO} \\
+PLOT\_AND\_WRITE           & Make a plot of a timeseries. And write
+                             the timeseries to a file.              & \\
+PLOT\_HIST           & Plot a histogram of the timeseries.  & \\                             
+\end{tabularx}
+\caption{List of all possible product types for dataset with TIMESERIES format}
+\label{tab_products_TIMESERIES}
+\end{table}
+
+\subsection{Grid products}
+Listed here are the products for grid data type.
+
+\begin{table}[H]
+\rowcolors{1}{darkgray}{lightgray}
+\begin{tabularx}{\textwidth}{lXl}
+{\bf Name} & {\bf Description} & {\bf Reference}\\
+
+SURFACE\_IMAGE    &  &  \\
+LATITUDE\_SLICE &  & \\
+LONGITUDE\_SLICE &  & \\
+CROSS\_SECTION &  & \\
+SAVEVOL & Save the volume product & \\
+
+                 
+\end{tabularx}
+\caption{List of all possible product types for dataset with GRID format}
+\label{tab_products_GRID}
+\end{table}
+
+\subsection{TIMEAVG products}
+TIMEAVG dataset products are the same as VOL products.
+
+\subsection{SUN\_HITS products}
+SUN\_HITS dataset format products are listed here:
+
+
+
+\begin{table}[H]
+\rowcolors{1}{darkgray}{lightgray}
+\begin{tabularx}{\textwidth}{lXl}
+{\bf Name} & {\bf Description} & {\bf Reference}\\
+WRITE\_SUN\_HITS & Write sun hits data &  \\
+PLOT\_SUN\_HITS & Plot sun hits data &  \\
+WRITE\_SUN\_RETRIEVAL & Write sun retrieval data &  \\
+PLOT\_SUN\_RETRIEVAL & Plot sun retrieval data &  \\
+PLOT\_SUN\_RETRIEVAL\_TS & Plot sun retrieval time series &  \\
+
+\end{tabularx}
+\caption{List of all the possible product types for datasets of SUN\_HITS format}
+\label{tab_products_SUN_HITS}
+\end{table}
+
+\subsection{MONITORING products}
+MONITORING dataset products are listed here:
+
+\begin{table}[H]
+\rowcolors{1}{darkgray}{lightgray}
+\begin{tabularx}{\textwidth}{lXl}
+{\bf Name} & {\bf Description} & {\bf Reference}\\
+VOL\_HISTOGRAM & Compute volumic data histogram. &  \\
+PPI\_HISTOGRAM & Compute PPI data histogram. &  \\
+ANGULAR\_DENSITY & Density plot along angles &  \\
+VOL\_TS & & \\
+SAVEVOL & Save the volume data in NetCDF format. & \\
+
+\end{tabularx}
+\caption{List of all the possible product types for datasets of MONITORING format}
+\label{tab_products_MONITORING}
+\end{table}
+
+\subsection{OCCURRENCE products}
+OCCURRENCE dataset products are listed here:
+
+\begin{table}[H]
+\rowcolors{1}{darkgray}{lightgray}
+\begin{tabularx}{\textwidth}{lXl}
+{\bf Name} & {\bf Description} & {\bf Reference}\\
+ WRITE\_EXCESS\_GATES &  &  \\
+\end{tabularx}
+\caption{List of all the possible product types for datasets of OCCURRENCE format}
+\label{tab_products_OCCURRENCE}
+\end{table}
+
+\subsection{INTERCOMP products}
+INTERCOMP dataset products are listed here:
+
+\begin{table}[H]
+\rowcolors{1}{darkgray}{lightgray}
+\begin{tabularx}{\textwidth}{lXl}
+{\bf Name} & {\bf Description} & {\bf Reference}\\
+ WRITE\_INTERCOMP & Write intercomparison between radars &  \\
+ WRITE\_INTERCOMP\_TIME\_AVG & Write time-averaged intercomparison  &  \\
+ PLOT\_AND\_WRITE\_INTERCOMP\_TS & Plot and write the timeseries of intercomparison & \\
+
+\end{tabularx}
+\caption{List of all the possible product types of INTERCOMP format}
+\label{tab_products_INTERCOMP}
+\end{table}
+
+\subsection{TRAJ\_ONLY products}
+TRAJ\_ONLY (trajectory only, without radar data interpolated) products are listed here:
+
+\begin{table}[H]
+\rowcolors{1}{darkgray}{lightgray}
+\begin{tabularx}{\textwidth}{lXl}
+{\bf Name} & {\bf Description} & {\bf Reference}\\
+ TRAJ\_PLOT & Plot of a given trajectory, in radar coordinates &  \\
+ TRAJ\_TEXT & Text file of  a given trajectory &  \\
+ 
+
+\end{tabularx}
+\caption{List of all the possible product types of TRAJ\_ONLY format}
+\label{tab_products_TRAJ_ONLY}
+\end{table}
+
+\subsection{COLOCATED\_GATES}
+COLOCATED\_GATES dataset products are listed here:
+
+\begin{table}[H]
+\rowcolors{1}{darkgray}{lightgray}
+\begin{tabularx}{\textwidth}{lXl}
+{\bf Name} & {\bf Description} & {\bf Reference}\\
+ WRITE\_COLOCATED\_GATES & Write colocated gates products. &  \\
+\end{tabularx}
+\caption{List of all the possible product types of COLOCATED\_GATES format}
+\label{tab_products_COLOCATED_GATES}
+\end{table}
+
+
+
+\subsection{COSMO\_COORD products}
+COSMO\_COORD dataset products are listed here:
+
+\begin{table}[H]
+\rowcolors{1}{darkgray}{lightgray}
+\begin{tabularx}{\textwidth}{lXl}
+{\bf Name} & {\bf Description} & {\bf Reference}\\
+ SAVEVOL & Save data in NetCDF format &  \\
+\end{tabularx}
+\caption{List of all the possible product types of COSMO\_COORD format}
+\label{tab_products_COSMO_COORD}
+\end{table}
+
+
+\subsection{QVP products}
+QVP (quasi-vertical-profiles) products are a part of VOL products, although generated over several volumes. The datset format is although QVP instead of VOL.
+
+\newpage
+\newpage
+\newpage
+
+
 
 %% \subsection{SUN\_MONITORING Products}
 
