@@ -577,10 +577,16 @@ def generate_intercomp_products(dataset, prdcfg):
         # put time info in file path and name
         csvtimeinfo_file = None
         timeformat = None
+        sort_by_date = False
+        rewrite = False
         if 'add_date_in_fname' in prdcfg:
             if prdcfg['add_date_in_fname']:
                 csvtimeinfo_file = dataset['timeinfo']
                 timeformat = '%Y'
+        if 'sort_by_date' in prdcfg:
+            sort_by_date = prdcfg['sort_by_date']
+        if 'rewrite' in prdcfg:
+            rewrite = prdcfg['rewrite']
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -601,7 +607,7 @@ def generate_intercomp_products(dataset, prdcfg):
         (date_vec, np_vec, meanbias_vec, medianbias_vec, quant25bias_vec,
          quant75bias_vec, modebias_vec, corr_vec, slope_vec, intercep_vec,
          intercep_slope1_vec) = (
-            read_intercomp_scores_ts(csvfname))
+            read_intercomp_scores_ts(csvfname, sort_by_date=sort_by_date))
 
         if date_vec is None:
             warn(
@@ -612,6 +618,23 @@ def generate_intercomp_products(dataset, prdcfg):
             warn(
                 'Unable to plot time series. Not enough points')
             return None
+
+        if rewrite:
+            stats = {
+                    'npoints': np_vec,
+                    'meanbias': meanbias_vec,
+                    'medianbias': medianbias_vec,
+                    'quant25bias': quant25bias_vec,
+                    'quant75bias': quant75bias_vec,
+                    'modebias': modebias_vec,
+                    'corr': corr_vec,
+                    'slope': slope_vec,
+                    'intercep': intercep_vec,
+                    'intercep_slope_1': intercep_slope1_vec
+                }
+            write_intercomp_scores_ts(
+                date_vec, stats, field_name, csvfname,
+                rad1_name=rad1_name, rad2_name=rad2_name)
 
         figtimeinfo = None
         titldate = (date_vec[0].strftime('%Y%m%d')+'-' +
@@ -2716,6 +2739,247 @@ def generate_monitoring_products(dataset, prdcfg):
                 if prdcfg['add_date_in_fname']:
                     figtimeinfo = date[0]
                     timeformat = '%Y'
+
+        figfname = make_filename(
+            'ts', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'],
+            timeinfo=figtimeinfo, timeformat=timeformat,
+            runinfo=prdcfg['runinfo'])
+
+        for i in range(len(figfname)):
+            figfname[i] = savedir+figfname[i]
+
+        titl = (prdcfg['runinfo']+' Monitoring '+titldate)
+
+        labely = generate_field_name_str(prdcfg['voltype'])
+
+        np_min = 0
+        if 'npoints_min' in prdcfg:
+            np_min = prdcfg['npoints_min']
+
+        vmin = None
+        if 'vmin' in prdcfg:
+            vmin = prdcfg['vmin']
+
+        vmax = None
+        if 'vmax' in prdcfg:
+            vmax = prdcfg['vmax']
+
+        plot_monitoring_ts(
+            date, np_t_vec, cquant_vec, lquant_vec, hquant_vec, field_name,
+            figfname, ref_value=ref_value, vmin=vmin, vmax=vmax,
+            np_min=np_min, labelx='Time UTC', labely=labely, titl=titl)
+        print('----- save to '+' '.join(figfname))
+
+        # generate alarms if needed
+        alarm = 0
+        if 'alarm' in prdcfg:
+            alarm = prdcfg['alarm']
+
+        if not alarm:
+            return figfname
+
+        if 'tol_abs' not in prdcfg:
+            warn('unable to send alarm. Missing tolerance on target')
+            return None
+
+        if 'tol_trend' not in prdcfg:
+            warn('unable to send alarm. Missing tolerance in trend')
+            return None
+
+        if 'npoints_min' not in prdcfg:
+            warn('unable to send alarm. ' +
+                 'Missing minimum number of valid points per event')
+            return None
+
+        if 'nevents_min' not in prdcfg:
+            warn('unable to send alarm. ' +
+                 'Missing minimum number of events to compute trend')
+            return None
+
+        if 'sender' not in prdcfg:
+            warn('unable to send alarm. Missing email sender')
+            return None
+        if 'receiver_list' not in prdcfg:
+            warn('unable to send alarm. Missing email receivers')
+            return None
+
+        tol_abs = prdcfg['tol_abs']
+        tol_trend = prdcfg['tol_trend']
+        npoints_min = prdcfg['npoints_min']
+        nevents_min = prdcfg['nevents_min']
+        sender = prdcfg['sender']
+        receiver_list = prdcfg['receiver_list']
+
+        np_last = np_t_vec[-1]
+        value_last = cquant_vec[-1]
+
+        if np_last < npoints_min:
+            warn('No valid data on day '+date[-1].strftime('%d-%m-%Y'))
+            return None
+
+        # check if absolute value exceeded
+        abs_exceeded = False
+        if ((value_last > ref_value+tol_abs) or
+                (value_last < ref_value-tol_abs)):
+            warn('Value '+str(value_last)+' exceeds target '+str(ref_value) +
+                 ' +/- '+str(tol_abs))
+            abs_exceeded = True
+
+        # compute trend and check if last value exceeds it
+        mask = np.ma.getmaskarray(cquant_vec)
+        ind = np.where(np.logical_and(
+            np.logical_not(mask), np_t_vec >= npoints_min))[0]
+        nvalid = len(ind)
+        if nvalid <= nevents_min:
+            warn('Not enough points to compute reliable trend')
+            np_trend = 0
+            value_trend = np.ma.masked
+        else:
+            np_trend_vec = np_t_vec[ind][-(nevents_min+1):-1]
+            data_trend_vec = cquant_vec[ind][-(nevents_min+1):-1]
+
+            np_trend = np.sum(np_trend_vec)
+            value_trend = np.sum(data_trend_vec*np_trend_vec)/np_trend
+
+        trend_exceeded = False
+        if np_trend > 0:
+            if ((value_last > value_trend+tol_trend) or
+                    (value_last < value_trend-tol_trend)):
+                warn('Value '+str(value_last)+'exceeds trend ' +
+                     str(value_trend)+' +/- '+str(tol_trend))
+                trend_exceeded = True
+
+        if abs_exceeded is False and trend_exceeded is False:
+            return None
+
+        alarm_dir = savedir+'/alarms/'
+        if not os.path.isdir(alarm_dir):
+            os.makedirs(alarm_dir)
+        alarm_fname = make_filename(
+            'alarm', prdcfg['dstype'], prdcfg['voltype'], ['txt'],
+            timeinfo=start_time, timeformat='%Y%m%d')[0]
+        alarm_fname = alarm_dir+alarm_fname
+
+        field_dict = pyart.config.get_metadata(field_name)
+        param_name = get_field_name(field_dict, field_name)
+        param_name_unit = param_name+' ['+field_dict['units']+']'
+
+        write_alarm_msg(
+            prdcfg['RadarName'][0], param_name_unit, start_time, ref_value,
+            tol_abs, np_trend, value_trend, tol_trend, nevents_min, np_last,
+            value_last, alarm_fname)
+
+        print('----- saved monitoring alarm to '+alarm_fname)
+
+        subject = ('NO REPLY: '+param_name+' monitoring alarm for radar ' +
+                   prdcfg['RadarName'][0]+' on day ' +
+                   start_time.strftime('%d-%m-%Y'))
+        send_msg(sender, receiver_list, subject, alarm_fname)
+
+        return alarm_fname
+
+    elif prdcfg['type'] == 'CUMUL_VOL_TS':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in hist_obj.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # put time info in file path and name
+        csvtimeinfo_path = dataset['timeinfo']
+        csvtimeinfo_file = dataset['timeinfo']
+        timeformat = '%Y%m%d'
+
+        quantiles = np.array([25., 50., 75.])
+        ref_value = 0.
+        sort_by_date = False
+        rewrite = False
+        if 'quantiles' in prdcfg:
+            quantiles = prdcfg['quantiles']
+        if 'ref_value' in prdcfg:
+            ref_value = prdcfg['ref_value']
+        if 'sort_by_date' in prdcfg:
+            sort_by_date = prdcfg['sort_by_date']
+        if 'rewrite' in prdcfg:
+            rewrite = prdcfg['rewrite']
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prod_ref'], timeinfo=csvtimeinfo_path)
+
+        csvfname = make_filename(
+            'ts', prdcfg['dstype'], prdcfg['voltype'], ['csv'],
+            timeinfo=csvtimeinfo_file, timeformat=timeformat,
+            runinfo=prdcfg['runinfo'])[0]
+
+        csvfname = savedir+csvfname
+
+        date, np_t_vec, cquant_vec, lquant_vec, hquant_vec = (
+            read_monitoring_ts(csvfname))
+
+        if date is None:
+            warn(
+                'Unable to plot time series. No valid data')
+            return None
+
+        cquant = np.ma.average(cquant_vec, weights=np_t_vec)
+        lquant = np.ma.average(lquant_vec, weights=np_t_vec)
+        hquant = np.ma.average(hquant_vec, weights=np_t_vec)
+        values = np.ma.asarray([lquant, cquant, hquant])
+        start_time = date[0]
+        np_t = np.ma.sum(np_t_vec, dtype=int)
+        if np.ma.getmaskarray(np_t):
+            np_t = 0
+
+        csvtimeinfo_path = None
+        csvtimeinfo_file = None
+        timeformat = None
+        if 'add_date_in_fname' in prdcfg:
+            if prdcfg['add_date_in_fname']:
+                csvtimeinfo_file = dataset['timeinfo']
+                timeformat = '%Y'
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=csvtimeinfo_path)
+
+        csvfname = make_filename(
+            'ts', prdcfg['dstype'], prdcfg['voltype'], ['csv'],
+            timeinfo=csvtimeinfo_file, timeformat=timeformat,
+            runinfo=prdcfg['runinfo'])[0]
+
+        csvfname = savedir+csvfname
+
+        write_monitoring_ts(
+            start_time, np_t, values, quantiles, prdcfg['voltype'], csvfname)
+        print('saved CSV file: '+csvfname)
+
+        date, np_t_vec, cquant_vec, lquant_vec, hquant_vec = (
+            read_monitoring_ts(csvfname, sort_by_date=sort_by_date))
+
+        if date is None:
+            warn(
+                'Unable to plot time series. No valid data')
+            return None
+
+        if rewrite:
+            val_vec = np.ma.asarray(
+                    [lquant_vec, cquant_vec, hquant_vec]).T
+            write_monitoring_ts(
+                date, np_t_vec, val_vec, quantiles, prdcfg['voltype'],
+                csvfname, rewrite=True)
+
+        figtimeinfo = None
+        titldate = ''
+        titldate = (date[0].strftime('%Y%m%d')+'-' +
+                    date[-1].strftime('%Y%m%d'))
+        if 'add_date_in_fname' in prdcfg:
+            if prdcfg['add_date_in_fname']:
+                figtimeinfo = date[0]
+                timeformat = '%Y'
 
         figfname = make_filename(
             'ts', prdcfg['dstype'], prdcfg['voltype'],
