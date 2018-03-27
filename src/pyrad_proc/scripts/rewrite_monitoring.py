@@ -17,6 +17,7 @@ time order
 import datetime
 import atexit
 import numpy as np
+import os
 
 from pyrad.io import read_monitoring_ts, write_monitoring_ts
 from pyrad.graph import plot_monitoring_ts
@@ -34,8 +35,8 @@ def main():
         '/store/msrad/radar/pyrad_products/')
     output_base = (
         '/store/msrad/radar/pyrad_products/')
-    rad_vec = ['A', 'D', 'L', 'P', 'W']
-    var_vec = ['dBZ', 'dBZv']
+    rad_vec = ['D']
+    var_vec = ['PhiDP0', 'RhoHV_rain', 'ZDR_prec', 'ZDR_snow', 'dBZ_bias']
     year_vec = [datetime.datetime(2018, 1, 1)]
 
     plot_data = True
@@ -49,16 +50,45 @@ def main():
         print('Processing Radar '+rad)
         for j, var in enumerate(var_vec):
             if var == 'dBZ':
+                basedir = 'rad4alp_gc_PH'+rad
                 dsdir = 'monitoring_clt_Zh'
                 mon_type = 'GC_MONITORING'
                 quantiles = [50., 95., 99.]
             elif var == 'dBZv':
+                basedir = 'rad4alp_gc_PH'+rad
                 dsdir = 'monitoring_clt_Zv'
                 mon_type = 'GC_MONITORING'
                 quantiles = [50., 95., 99.]
+            elif var == 'RhoHV_rain':
+                basedir = 'rad4alp_dataquality_PL'+rad
+                dsdir = 'monitoring_RhoHV'
+                mon_type = 'MONITORING'
+                quantiles = [65., 80., 95.]
+            elif var == 'PhiDP0':
+                basedir = 'rad4alp_dataquality_PL'+rad
+                dsdir = 'monitoring_PhiDP0'
+                mon_type = 'MONITORING'
+                quantiles = [25., 50., 75.]
+            elif var == 'ZDR_prec':
+                basedir = 'rad4alp_dataquality_PL'+rad
+                dsdir = 'monitoring_ZDR'
+                mon_type = 'MONITORING'
+                quantiles = [25., 50., 75.]
+            elif var == 'ZDR_snow':
+                basedir = 'rad4alp_dataquality_PL'+rad
+                dsdir = 'monitoring_ZDR_snow'
+                mon_type = 'MONITORING'
+                quantiles = [25., 50., 75.]
+            elif var == 'dBZ_bias':
+                basedir = 'rad4alp_dataquality_PL'+rad
+                dsdir = 'monitoring_Zh_bias'
+                mon_type = 'MONITORING'
+                quantiles = [25., 50., 75.]
 
-            input_path = input_base+'rad4alp_gc_PH'+rad+'/'+dsdir+'/VOL_TS/'
-            output_path = output_base+'rad4alp_gc_PH'+rad+'/'+dsdir+'/VOL_TS/'
+            input_path = input_base+basedir+'/'+dsdir+'/VOL_TS/'
+            output_path = output_base+basedir+'/'+dsdir+'/VOL_TS/'
+            if not os.path.isdir(output_path):
+                os.makedirs(output_path)
 
             print('- Processing Variable '+var)
             for k, year in enumerate(year_vec):
@@ -148,6 +178,31 @@ def main():
                         vmin = 21.5
                         vmax = 31.5
                         np_min = 100000
+                elif var == 'RhoHV_rain':
+                    ref_value = 0.99
+                    vmin = 0.95
+                    vmax = 1.01
+                    np_min = 5000
+                elif var == 'PhiDP0':
+                    ref_value = 0.
+                    vmin = -20.
+                    vmax = 20.
+                    np_min = 500000
+                elif var == 'ZDR_prec':
+                    ref_value = 0.2
+                    vmin = -2.
+                    vmax = 2.
+                    np_min = 5000
+                elif var == 'ZDR_snow':
+                    ref_value = 0.2
+                    vmin = -2.
+                    vmax = 2.
+                    np_min = 5000
+                elif var == 'dBZ_bias':
+                    ref_value = 0.
+                    vmin = -30.
+                    vmax = 30.
+                    np_min = 100
 
                 fname = plot_monitoring_ts(
                     date, np_t_vec, cquant_vec, lquant_vec, hquant_vec,

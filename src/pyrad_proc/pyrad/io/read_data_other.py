@@ -125,9 +125,14 @@ def read_status(voltime, cfg, ind_rad=0):
         warn('rad4alp status file '+datapath+basename+timeinfo +
              '*.xml not found')
         return None
-    root = et.parse(filename[0]).getroot()
+    try:
+        root = et.parse(filename[0]).getroot()
+        return root
+    except et.ParseError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+filename[0])
 
-    return root
+        return None
 
 
 def read_rad4alp_cosmo(fname, datatype, ngates=0):
@@ -764,7 +769,7 @@ def read_monitoring_ts(fname, sort_by_date=False):
 
             fcntl.flock(csvfile, fcntl.LOCK_UN)
             csvfile.close()
-            
+
             central_quantile = np.ma.masked_values(
                 central_quantile, get_fillvalue())
             low_quantile = np.ma.masked_values(
@@ -894,7 +899,7 @@ def read_intercomp_scores_ts(fname, sort_by_date=False):
             reader = csv.DictReader(
                 row for row in csvfile if not row.startswith('#')
                 )
-            i = 0            
+            i = 0
             for row in reader:
                 date_vec[i] = datetime.datetime.strptime(
                     row['date'], '%Y%m%d%H%M%S')
@@ -913,7 +918,7 @@ def read_intercomp_scores_ts(fname, sort_by_date=False):
 
             fcntl.flock(csvfile, fcntl.LOCK_UN)
             csvfile.close()
-            
+
             meanbias_vec = np.ma.masked_values(
                 meanbias_vec, get_fillvalue())
             medianbias_vec = np.ma.masked_values(
@@ -932,7 +937,7 @@ def read_intercomp_scores_ts(fname, sort_by_date=False):
                 intercep_vec, get_fillvalue())
             intercep_slope1_vec = np.ma.masked_values(
                 intercep_slope1_vec, get_fillvalue())
-            
+
             if sort_by_date:
                 ind = np.argsort(date_vec)
                 date_vec = date_vec[ind]
@@ -945,7 +950,7 @@ def read_intercomp_scores_ts(fname, sort_by_date=False):
                 corr_vec = corr_vec[ind]
                 slope_vec = slope_vec[ind]
                 intercep_vec = intercep_vec[ind]
-                intercep_slope1_vec = intercep_slope1_vec[ind]                
+                intercep_slope1_vec = intercep_slope1_vec[ind]
 
             return (date_vec, np_vec, meanbias_vec, medianbias_vec,
                     quant25bias_vec, quant75bias_vec, modebias_vec, corr_vec,
