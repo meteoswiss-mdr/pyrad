@@ -183,13 +183,13 @@ for ((irad=0; irad<${nrad}; irad++)); do
                         time_rad=${time_vec[${itime}]}
                     fi
                     if [ "${ele_vec}" = "all" ]; then
-                        ele=*
+                        unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.* -d ${data_destpath}
                     else
-                        ele=${ele_vec[${iele}]}
-                    fi
-                    for ((iele=0; iele<${nele}; iele++)); do                        
-                        unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.${ele} -d ${data_destpath}
-                    done
+                        for ((iele=0; iele<${nele}; iele++)); do                        
+                            ele=${ele_vec[${iele}]}
+                            unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.${ele} -d ${data_destpath}
+                        done                        
+                    fi                    
                 done
             fi
             chmod -R gu+rw ${data_destpath}
@@ -251,13 +251,14 @@ for ((irad=0; irad<${nrad}; irad++)); do
                         time_rad=${time_vec[${itime}]}
                     fi
                     if [ "${ele_vec}" = "all" ]; then
-                        ele=*
+                        unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.* -d ${data_destpath}                        
                     else
-                        ele=${ele_vec[${iele}]}
+                        for ((iele=0; iele<${nele}; iele++)); do                        
+                            ele=${ele_vec[${iele}]}
+                            unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.${ele} -d ${data_destpath}                        
+                        done                        
                     fi
-                    for ((iele=0; iele<${nele}; iele++)); do                        
-                        unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.${ele} -d ${data_destpath}
-                    done
+                    
                 done
             fi
             chmod -R gu+rw ${data_destpath}
@@ -276,13 +277,13 @@ for ((irad=0; irad<${nrad}; irad++)); do
                         time_rad=${time_vec[${itime}]}
                     fi
                     if [ "${ele_vec}" = "all" ]; then
-                        ele=*
-                    else
-                        ele="$((${ele_vec[${iele}]} + 800))"
-                    fi
-                    for ((iele=0; iele<${nele}; iele++)); do                        
-                        unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.${ele} -d ${data_destpath}
-                    done
+                        unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.* -d ${data_destpath}
+                    else                        
+                        for ((iele=0; iele<${nele}; iele++)); do                        
+                            ele="$((${ele_vec[${iele}]} + 800))"
+                            unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.${ele} -d ${data_destpath}
+                        done
+                    fi                    
                 done
             fi
             chmod -R gu+rw ${data_destpath}

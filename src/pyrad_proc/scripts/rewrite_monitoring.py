@@ -35,7 +35,7 @@ def main():
         '/store/msrad/radar/pyrad_products/')
     output_base = (
         '/store/msrad/radar/pyrad_products/')
-    rad_vec = ['A', 'D', 'L', 'P', 'W']
+    rad_vec = ['D']
     var_vec = ['PhiDP0', 'RhoHV_rain', 'ZDR_prec', 'ZDR_snow', 'dBZ_bias']
     year_vec = [datetime.datetime(2018, 1, 1)]
 
