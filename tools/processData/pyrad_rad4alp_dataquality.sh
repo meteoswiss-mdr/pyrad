@@ -82,7 +82,7 @@ echo "END TIME OF DATA TO BE PROCESSED "${END_TIME}
 
 # PL Data quality
 CONFIGFILE=rad4alp_dataquality_PL${RADAR}.txt
-LOGFILE=$HOME/log/rad4alp_dataquality_PL${RADAR}.log
+LOGFILE=/srn/scratch/log/rad4alp_dataquality_PL${RADAR}.log
 dataquality $CONFIGFILE  $START_TIME $END_TIME $RADAR $LOGFILE $RENAME_LOGFILES $LOG_APPENDIX
 
 # Copy data to rad4alp archive

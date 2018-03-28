@@ -9,10 +9,10 @@ name STRING rad4alp_gc_PHA
 # Base path of the raw data.
 # Note: Must have a trailing '/'
 # ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
-datapath STRING /store/msrad/radar/rad4alp/rawdata/
+datapath STRING /store/msrad/radar/rad4alp/tmp/
 
 # Base path for cosmo data
-cosmopath STRING /store/msrad/cosmo/cosmo1/
+cosmopath STRING /store/msrad/cosmo/tmp/
 
 # Base path for dem data
 dempath STRING /store/msrad/radar/rad4alp/visibRad4Alp/
@@ -20,6 +20,10 @@ dempath STRING /store/msrad/radar/rad4alp/visibRad4Alp/
 # Loading of saved datasets
 loadbasepath STRING /store/msrad/radar/pyrad_products/
 loadname STRING  rad4alp_gc_PHA
+
+# Base path for excess gates data
+excessgatespath STRING /store/msrad/radar/pyrad_products/rad4alp_gc_PHA/2018-02-01/clt_freq_period/EXCESS_GATES/
+
 
 # ------------------------------------------------------------
 # Auxiliary data pathes
@@ -36,7 +40,7 @@ loadname STRING  rad4alp_gc_PHA
 # --------------------------------------------
 # Output data
 # --------------------------------------------
-saveimgbasepath STRING /store/msrad/radar/pyrad_products/
+saveimgbasepath STRING /store/msrad/radar/pyrad_test/
 # Supported formats: eps, jpeg, jpg, pdf, pgf, png, ps, raw, rgba, svg, svgz, tif, tiff
 imgformat STRING png	
 
@@ -51,4 +55,4 @@ configpath STRING $HOME/pyrad/config/
 locationConfigFile STRING $HOME/pyrad/config/processing/rad4alp_gc_PHA_loc.txt
 
 # Configuration of the product generation
-productConfigFile STRING $HOME/pyrad/config/processing/rad4alp_gc_freq_PHA_prod.txt
+productConfigFile STRING $HOME/pyrad/config/processing/rad4alp_gc_freq_PHA_prod_test.txt

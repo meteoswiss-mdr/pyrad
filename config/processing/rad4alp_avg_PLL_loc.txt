@@ -13,8 +13,6 @@ RadarName STRING L
 # rad4alp radar range resolution L:Low H:High
 RadarRes STRING	L
 
-path_convention STRING RT
-
 # maximum radar range [m] (0. will take the one from the data)
 rmax FLOAT 150000.
 

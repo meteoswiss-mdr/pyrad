@@ -59,13 +59,13 @@ import numpy as np
 
 import pyart
 
+
 from ..util.radar_utils import compute_quantiles_sweep
 from ..util.radar_utils import compute_quantiles_from_hist
 from ..util.radar_utils import compute_histogram_sweep
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-# Debug
-# import pdb
+
 
 
 def plot_surface(grid, field_name, level, prdcfg, fname_list):
@@ -1518,6 +1518,7 @@ def plot_timeseries(tvec, data, fname_list, labelx='Time [UTC]',
     --------
     201?.??.?? -fvj- creation
     2017.08.21 -jgr- modified margins and grid + minor graphical updates
+    2018.03.05 -jgr- added x-limit of x axis to avoid unwanted error messages
 
     """
     if period > 0:
@@ -1548,6 +1549,7 @@ def plot_timeseries(tvec, data, fname_list, labelx='Time [UTC]',
     ax.set_xlabel(labelx)
     ax.set_ylabel(labely)
     ax.set_ylim(bottom=ymin, top=ymax)
+    ax.set_xlim([tvec[0],tvec[-1]])
 
     # Turn on the grid
     ax.grid()
@@ -1865,7 +1867,7 @@ def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
     """
     # plot only valid data (but keep first and last date)
     date2 = np.array(date_vec)
-    isvalid = np.logical_not(np.ma.getmaskarray(medianbias_vec))
+    isvalid = np.logical_not(np.ma.getmaskarray(meanbias_vec))
     isvalid_corr = np.logical_not(np.ma.getmaskarray(corr_vec))
     if np_min > 0:
         has_np = np_vec > np_min

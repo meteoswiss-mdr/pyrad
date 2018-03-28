@@ -17,6 +17,7 @@ from warnings import warn
 import numpy as np
 from netCDF4 import num2date, date2num
 import sys
+import gc
 
 from pyart.config import get_metadata
 from pyart.core import Radar
@@ -488,6 +489,10 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
         tadict = dscfg['traj_antenna_dict']
         return tadict['ts'], tadict['ind_rad']
 
+    # Tolerance in azimuth to find traj for the reference radar, also in range
+    az_traj_tol=10
+    rg_traj_tol=10000 #m
+
     # Process
     radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
         dscfg['datatype'][0])
@@ -711,7 +716,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
 
         ts = TimeSeries(description, maxlength=trajectory.time_vector.size,
                         datatype=datatype)
-
+        
         unit = get_field_unit(datatype)
         name = get_field_name(datatype)
         # Quantiles of interest
@@ -880,19 +885,30 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
                             r_azimuth, r_elevation)
 
             # flag regions with colocated usable data in r_radar
-            r_ind_invalid = r_radar.gate_altitude['data'] > max_altitude
-            r_radar.fields['colocated_gates']['data'][r_ind_invalid] = 0
-
+            ##r_ind_invalid = r_radar.gate_altitude['data'] > max_altitude
+            ##r_radar.fields['colocated_gates']['data'][r_ind_invalid] = 0
+             
+            # Find minimum and maximum azimuth in trajectory in this 
+            # time step. 
+            azmin=az-az_traj_tol
+            azmax=az+az_traj_tol
+            rmin=rr-rg_traj_tol
+            rmax=rr+rg_traj_tol
+            if (azmin < 0):
+               azmin=azmin+360              
+            if (azmax > 360):
+               azmax=azmax-360 
+          
             # flag regions with colocated usable data in radar_sel
             gate_coloc_radar_sel = intersection(
                 radar_sel, r_radar, h_tol=alt_tol, latlon_tol=latlon_tol,
                 vol_d_tol=None, vismin=None, hmin=None, hmax=max_altitude,
-                rmin=None, rmax=None, elmin=None, elmax=None, azmin=None,
-                azmax=None, visib_field=None,
+                rmin=rmin, rmax=rmax, elmin=None, elmax=None, azmin=azmin,
+                azmax=azmax, visib_field=None,
                 intersec_field='colocated_gates')
             radar_sel.add_field('colocated_gates', gate_coloc_radar_sel,
                                 replace_existing=True)
-
+           
             (colgates, r_radar_colg) = colocated_gates(r_radar, radar_sel,
                                                        h_tol=alt_tol,
                                                        latlon_tol=latlon_tol)
@@ -920,12 +936,16 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
 
         ts.add_timesample(trajectory.time_vector[tind],
                           (np.concatenate([[avg], qvals, [nvals_valid]])))
-
+       
         # end loop over traj samples within period
 
     tadict['last_task_start_dt'] = dt_task_start
     tadict['radar_old2'] = tadict['radar_old']
     tadict['radar_old'] = radar
+
+    # Collect garbage
+    gc.collect()
+    
 
     return None, None
 
