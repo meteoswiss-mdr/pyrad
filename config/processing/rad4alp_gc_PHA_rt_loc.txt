@@ -37,7 +37,7 @@ CosmoRunFreq INT 3
 # hours forecasted in cosmo run [h]
 CosmoForecasted INT 7
   
-## Image config
+# Image config
 ppiImageConfig STRUCT 7
    xsize      FLOAT    10.   # image size [inches] (default dots per inch (dpi):72)
    ysize      FLOAT     8.   # image size [inches] (default dots per inch (dpi):72)

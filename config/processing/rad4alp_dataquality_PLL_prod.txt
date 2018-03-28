@@ -274,7 +274,7 @@ monitoring_Zh_bias STRUCT 4
             vmin FLOAT -30. 
             vmax FLOAT 30.
             nevents_min INT 10
-            alarm INT 1
+            alarm INT 0
             sender STRING jordi.figuerasiventura@meteoswiss.ch
             receiver_list STRARR 1
                 jordi.figuerasiventura@meteoswiss.ch

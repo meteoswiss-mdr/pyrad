@@ -116,15 +116,20 @@ def main():
         proc_endtime = datetime.datetime.strptime(args.endtime, '%Y%m%d%H%M%S')
     cfgfile_proc = args.cfgpath+args.proc_cfgfile
 
+    if args.infostr == 'None':
+        infostr = ''
+    else:
+        infostr = args.infostr
+
     pyrad_main(cfgfile_proc, starttime=proc_starttime, endtime=proc_endtime,
-               trajfile=args.trajfile, infostr=args.infostr,
+               trajfile=args.trajfile, infostr=infostr,
                trajtype=args.trajtype, flashnr=args.flashnr)
 
     if args.postproc_cfgfile is not None:
         cfgfile_postproc = args.cfgpath+args.postproc_cfgfile
         pyrad_main(cfgfile_postproc, starttime=proc_starttime,
                    endtime=proc_endtime, trajfile=args.trajfile,
-                   infostr=args.infostr, trajtype=args.trajtype,
+                   infostr=infostr, trajtype=args.trajtype,
                    flashnr=args.flashnr)
 
 

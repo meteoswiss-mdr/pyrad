@@ -87,7 +87,7 @@ for ((irad=0; irad<${nrad}; irad++)); do
     proc_start_int=`date +%s`
 
     CONFIGFILE=rad4alp_avg_PL${RADAR}.txt
-    LOGFILE=$HOME/log/rad4alp_avg_PL${RADAR}.log    
+    LOGFILE=/srn/scratch/log/rad4alp_avg_PL${RADAR}.log    
     dataquality $CONFIGFILE  $START_TIME $END_TIME $RADAR $LOGFILE $RENAME_LOGFILES $LOG_APPENDIX
 
     proc_end_int=`date +%s`
@@ -100,7 +100,7 @@ echo "PROCESSING radar intercomparison"
 proc_start_int=`date +%s`
 
 CONFIGFILE=rad4alp_intercomp.txt
-LOGFILE=$HOME/log/rad4alp_intercomp.log
+LOGFILE=/srn/scratch/log/rad4alp_intercomp.log
 dataquality $CONFIGFILE  $START_TIME $END_TIME intercomp $LOGFILE $RENAME_LOGFILES $LOG_APPENDIX
 
 # Copy data to rad4alp archive

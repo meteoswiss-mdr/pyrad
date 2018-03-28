@@ -31,22 +31,18 @@ def main():
     """
 
     input_path = (
-        '/home/lom/users/fvj/tmp/')
+        '/store/msrad/radar/monitoring/polarimetry/monitoring_ts/')
     output_path = (
-        '/home/lom/users/fvj/tmp/')
-    rad_vec = ['A', 'D', 'L', 'P', 'W']
+        '/store/msrad/radar/monitoring/polarimetry/')
+    rad_vec = ['D']
     var_input_vec = ['phidp0', 'rhoav', 'zdrbias', 'zhbias']
     var_output_vec = ['PhiDP0', 'RhoHV_rain', 'ZDR_prec', 'dBZ_bias']
-    quantiles_vec = np.asarray([
-        [25., 50., 75.], [65., 80., 95.], [25., 50., 75.], [25., 50., 75.]])
-    ref_value_vec = [0., 0.99, 0.2, 0.]
-    vmin_vec = [-20., 0.95, -2., -30.]
-    vmax_vec = [20., 1.01, 2., 30.]
-    np_min_vec = [500., 5000., 5000., 500.]
     year_vec = [
         datetime.datetime(2013, 1, 1), datetime.datetime(2014, 1, 1),
         datetime.datetime(2015, 1, 1), datetime.datetime(2016, 1, 1),
         datetime.datetime(2017, 1, 1)]
+
+    plot_data = True
 
     print("====== Monitoring format conversion started: %s" %
           datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
@@ -57,11 +53,42 @@ def main():
         print('Processing Radar '+rad)
         for j, var_input in enumerate(var_input_vec):
             var_output = var_output_vec[j]
-            quantiles = quantiles_vec[j, :]
-            ref_value = ref_value_vec[j]
-            vmin = vmin_vec[j]
-            vmax = vmax_vec[j]
-            np_min = np_min_vec[j]
+            if var_output == 'dBZ':
+                basedir = 'rad4alp_gc_PH'+rad
+                dsdir = 'monitoring_clt_Zh'
+                mon_type = 'GC_MONITORING'
+                quantiles = [50., 95., 99.]
+            elif var_output == 'dBZv':
+                basedir = 'rad4alp_gc_PH'+rad
+                dsdir = 'monitoring_clt_Zv'
+                mon_type = 'GC_MONITORING'
+                quantiles = [50., 95., 99.]
+            elif var_output == 'RhoHV_rain':
+                basedir = 'rad4alp_dataquality_PL'+rad
+                dsdir = 'monitoring_RhoHV'
+                mon_type = 'MONITORING'
+                quantiles = [65., 80., 95.]
+            elif var_output == 'PhiDP0':
+                basedir = 'rad4alp_dataquality_PL'+rad
+                dsdir = 'monitoring_PhiDP0'
+                mon_type = 'MONITORING'
+                quantiles = [25., 50., 75.]
+            elif var_output == 'ZDR_prec':
+                basedir = 'rad4alp_dataquality_PL'+rad
+                dsdir = 'monitoring_ZDR'
+                mon_type = 'MONITORING'
+                quantiles = [25., 50., 75.]
+            elif var_output == 'ZDR_snow':
+                basedir = 'rad4alp_dataquality_PL'+rad
+                dsdir = 'monitoring_ZDR_snow'
+                mon_type = 'MONITORING'
+                quantiles = [25., 50., 75.]
+            elif var_output == 'dBZ_bias':
+                basedir = 'rad4alp_dataquality_PL'+rad
+                dsdir = 'monitoring_Zh_bias'
+                mon_type = 'MONITORING'
+                quantiles = [25., 50., 75.]
+
             print('- Processing Variable '+var_output)
             for k, year in enumerate(year_vec):
                 print('-- Processing Year '+year.strftime('%Y'))
@@ -70,10 +97,10 @@ def main():
                     var_input+'.csv')
                 fname_output = (
                     output_path+year.strftime('%Y')+'_'+rad +
-                    '_ts_MONITORING_'+var_output+'.csv')
+                    '_ts_'+mon_type+'_'+var_output+'.csv')
                 figfname = [
                     output_path+year.strftime('%Y')+'_'+rad +
-                    '_ts_MONITORING_'+var_output+'.png']
+                    '_ts_'+mon_type+'_'+var_output+'.png']
 
                 date, np_t_vec, cquant_vec, lquant_vec, hquant_vec = (
                     read_monitoring_ts_old(fname_input))
@@ -84,9 +111,13 @@ def main():
                 val_vec = np.ma.asarray(
                     [lquant_vec, cquant_vec, hquant_vec]).T
                 print(np.shape(val_vec))
-                write_monitoring_ts(
+                fname = write_monitoring_ts(
                     date, np_t_vec, val_vec, quantiles, var_output,
                     fname_output)
+                print('written file '+fname)
+
+                if not plot_data:
+                    continue
 
                 titldate = (date[0].strftime('%Y%m%d')+'-' +
                             date[-1].strftime('%Y%m%d'))
@@ -94,11 +125,38 @@ def main():
 
                 labely = generate_field_name_str(var_output)
 
-                plot_monitoring_ts(
+                if var_output == 'RhoHV_rain':
+                    ref_value = 0.99
+                    vmin = 0.95
+                    vmax = 1.01
+                    np_min = 5000
+                elif var_output == 'PhiDP0':
+                    ref_value = 0.
+                    vmin = -20.
+                    vmax = 20.
+                    np_min = 5000
+                elif var_output == 'ZDR_prec':
+                    ref_value = 0.2
+                    vmin = -2.
+                    vmax = 2.
+                    np_min = 5000
+                elif var_output == 'ZDR_snow':
+                    ref_value = 0.2
+                    vmin = -2.
+                    vmax = 2.
+                    np_min = 5000
+                elif var_output == 'dBZ_bias':
+                    ref_value = 0.
+                    vmin = -30.
+                    vmax = 30.
+                    np_min = 500
+
+                fname = plot_monitoring_ts(
                     date, np_t_vec, cquant_vec, lquant_vec, hquant_vec,
                     get_fieldname_pyart(var_output), figfname,
                     ref_value=ref_value, vmin=vmin, vmax=vmax, np_min=np_min,
                     labelx='Time UTC', labely=labely, titl=titl)
+                print('plotted file '+' '.join(fname))
 
 
 def _print_end_msg(text):
