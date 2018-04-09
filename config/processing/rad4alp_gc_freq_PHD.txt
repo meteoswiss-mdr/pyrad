@@ -21,6 +21,9 @@ dempath STRING /opt/ccs4/lookuptables/
 loadbasepath STRING /srn/analysis/pyrad_products/
 loadname STRING  rad4alp_gc_PHD
 
+# Base path for excess gates data
+excessgatespath STRING /srn/analysis/pyrad_products/rad4alp_gc_PHD/2018-02-01/clt_freq_period/EXCESS_GATES/
+
 # ------------------------------------------------------------
 # Auxiliary data pathes
 # ------------------------------------------------------------

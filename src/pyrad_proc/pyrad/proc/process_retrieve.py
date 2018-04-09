@@ -559,7 +559,7 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
                 radar, alphazr=0.0376, betazr=0.6112, alphazs=0.1, betazs=0.5,
                 alphaa=None, betaa=None, mp_factor=0.6, refl_field=refl_field,
                 a_field=a_field, hydro_field=hydro_field, rr_field=None,
-                master_field=refl_field, thresh=0.04, thresh_max=False)
+                master_field=refl_field, thresh=0.04, thresh_max=True)
         elif refl_field in radar.fields:
             warn('Unable to compute rainfall rate using hydrometeor ' +
                  'classification. Missing data. ' +

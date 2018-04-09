@@ -34,23 +34,24 @@ functions to control the Pyrad data processing flow
 """
 from __future__ import print_function
 import sys
-import fcntl
 import warnings
 from warnings import warn
 import traceback
 import os
 from datetime import datetime
 from datetime import timedelta
-import atexit
 import inspect
 import gc
-import numpy as np
 import multiprocessing as mp
 import queue
 import time
 import threading
 import glob
 from copy import deepcopy
+
+from pyrad import proc
+from pyrad import version as pyrad_version
+from pyart import version as pyart_version
 
 from ..io.config import read_config
 from ..io.read_data_radar import get_data
@@ -64,13 +65,11 @@ from ..io.write_data import write_last_state
 from ..proc.process_aux import get_process_func
 from ..prod.product_aux import get_prodgen_func
 
-from pyrad import proc, prod
-from pyrad import version as pyrad_version
-from pyart import version as pyart_version
+#from memory_profiler import profile
 
 MULTIPROCESSING_PROD = False
 MULTIPROCESSING_DSET = False
-ALLOW_USER_BREAK = True
+ALLOW_USER_BREAK = False
 
 
 def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
@@ -121,7 +120,7 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
         last_state_file=cfg['lastStateFile'], trajtype=trajtype,
         flashnr=flashnr)
 
-    if (len(infostr) > 0):
+    if infostr:
         print('- Info string : ' + infostr)
 
     # get data types and levels
@@ -159,7 +158,7 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
         if ALLOW_USER_BREAK:
             # check if user has requested exit
             try:
-                user_input = input_queue.get_nowait()
+                input_queue.get_nowait()
                 warn('Program terminated by user')
                 break
             except queue.Empty:
@@ -251,15 +250,15 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
     dataset_levels_list = []
     last_processed_list = []
 
-    for icfg in range(len(cfgfile_list)):
-        cfg = _create_cfg_dict(cfgfile_list[icfg])
+    for icfg, cfgfile in enumerate(cfgfile_list):
+        cfg = _create_cfg_dict(cfgfile)
         if infostr_list is not None:
             infostr = infostr_list[icfg]
         else:
             infostr = ""
         datacfg = _create_datacfg_dict(cfg)
 
-        if (len(infostr) > 0):
+        if infostr:
             print('- Info string : ' + infostr)
 
         # find out last processed volume
@@ -268,7 +267,7 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
             print('- last processed volume unknown')
         else:
             print('- last processed volume: '+last_processed.strftime(
-                  '%Y%m%d%H%M%S'))
+                '%Y%m%d%H%M%S'))
         last_processed_list.append(last_processed)
 
         # get data types and levels
@@ -341,7 +340,7 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
                 continue
 
         vol_processed = False
-        for icfg in range(len(cfg_list)):
+        for icfg, cfg in enumerate(cfg_list):
             if ALLOW_USER_BREAK:
                 # check if user has requested exit
                 try:
@@ -352,7 +351,6 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
                 except queue.Empty:
                     pass
 
-            cfg = cfg_list[icfg]
             datacfg = datacfg_list[icfg]
             dscfg = dscfg_list[icfg]
             datatypesdescr_list = datatypesdescr_list_list[icfg]
@@ -370,8 +368,7 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
             if masterfile is None:
                 last_processed_list[icfg] = last_processed
                 if last_processed is not None:
-                    fprocessed = write_last_state(
-                        last_processed, cfg['lastStateFile'])
+                    write_last_state(last_processed, cfg['lastStateFile'])
                 continue
 
             print('\n- master file: ' + os.path.basename(masterfile))
@@ -387,8 +384,7 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
                 infostr=infostr)
 
             last_processed_list[icfg] = master_voltime
-            fprocessed = write_last_state(
-                master_voltime, cfg['lastStateFile'])
+            write_last_state(master_voltime, cfg['lastStateFile'])
             dscfg_list[icfg] = dscfg
 
             vol_processed = True
@@ -429,8 +425,7 @@ def main_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
     if end_proc:
         # post-processing of the datasets
         print('\n\n- Post-processing datasets:')
-        for icfg in range(len(cfg_list)):
-            cfg = cfg_list[icfg]
+        for icfg, cfg in enumerate(cfg_list):
             dscfg = dscfg_list[icfg]
             dataset_levels = dataset_levels_list[icfg]
             if infostr_list is not None:
@@ -495,7 +490,7 @@ def _user_input_listener(input_queue):
             break
         time.sleep(1)
 
-
+#@profile
 def _get_times_and_traj(trajfile, starttime, endtime, scan_period,
                         last_state_file=None, trajtype='plane',
                         flashnr=0):
@@ -520,20 +515,20 @@ def _get_times_and_traj(trajfile, starttime, endtime, scan_period,
         flash numbers included
 
     """
-    if (len(trajfile) > 0):
+    if trajfile:
         print("- Trajectory file: " + trajfile)
         try:
             traj = Trajectory(trajfile, starttime=starttime, endtime=endtime,
                               trajtype=trajtype, flashnr=flashnr)
-        except Exception as ee:
-            warn(str(ee))
+        except Exception as inst:
+            warn(str(inst))
             sys.exit(1)
 
         # Derive start and end time (if not specified by arguments)
-        if (starttime is None):
+        if starttime is None:
             scan_min = scan_period * 2  # [min]
             starttime = traj.get_start_time() - timedelta(minutes=scan_min)
-        if (endtime is None):
+        if endtime is None:
             scan_min = scan_period * 2  # [min]
             endtime = traj.get_end_time() + timedelta(minutes=scan_min)
     else:
@@ -625,7 +620,7 @@ def _initialize_datasets(dataset_levels, cfg, traj=None, infostr=None):
         else:
             for dataset in dataset_levels[level]:
                 dscfg.update({dataset: _create_dscfg_dict(cfg, dataset)})
-                new_dataset, ind_rad, jobs_ds = _generate_dataset(
+                _generate_dataset(
                     dataset, cfg, dscfg[dataset], proc_status=0,
                     radar_list=None, voltime=None, trajectory=traj,
                     runinfo=infostr)
@@ -694,10 +689,10 @@ def _process_datasets(dataset_levels, cfg, dscfg, radar_list, master_voltime,
             for job in jobs:
                 new_dataset, ind_rad, make_global, jobs_ds = (
                     out_queue.get())
-                result = _add_dataset(
+                _add_dataset(
                     new_dataset, radar_list, ind_rad,
                     make_global=make_global)
-                if len(jobs_ds) > 0:
+                if jobs_ds:
                     jobs_prod.extend(jobs_ds)
         else:
             for dataset in dataset_levels[level]:
@@ -706,10 +701,10 @@ def _process_datasets(dataset_levels, cfg, dscfg, radar_list, master_voltime,
                     radar_list=radar_list, voltime=master_voltime,
                     trajectory=traj, runinfo=infostr)
 
-                result = _add_dataset(
+                _add_dataset(
                     new_dataset, radar_list, ind_rad,
                     make_global=dscfg[dataset]['MAKE_GLOBAL'])
-                if len(jobs_ds) > 0:
+                if jobs_ds:
                     jobs_prod.extend(jobs_ds)
 
     # wait until all the products on this time stamp are generated
@@ -771,7 +766,7 @@ def _postprocess_datasets(dataset_levels, cfg, dscfg, traj=None, infostr=None):
                 job.join()
         else:
             for dataset in dataset_levels[level]:
-                new_dataset, ind_rad, jobs_ds = _generate_dataset(
+                _generate_dataset(
                     dataset, cfg, dscfg[dataset], proc_status=2,
                     radar_list=None, voltime=None, trajectory=traj,
                     runinfo=infostr)
@@ -894,7 +889,7 @@ def _wait_for_files(nowtime, datacfg, datatype_list, last_processed=None):
             filelist = get_file_list(
                 masterdatatypedescr, starttime_loop, endtime_loop, datacfg,
                 scan=scan)
-            if len(filelist) == 0:
+            if not filelist:
                 filelist_vol = []
                 found_all = False
                 break
@@ -981,6 +976,7 @@ def _wait_for_rainbow_datatypes(rainbow_files, period=30):
     return found_all
 
 
+#@profile
 def _get_radars_data(master_voltime, datatypesdescr_list, datacfg,
                      num_radars=1):
     """
@@ -1043,6 +1039,7 @@ def _get_radars_data(master_voltime, datatypesdescr_list, datacfg,
     return radar_list
 
 
+#@profile
 def _generate_dataset(dsname, cfg, dscfg, proc_status=0, radar_list=None,
                       voltime=None, trajectory=None, runinfo=None):
     """
@@ -1082,7 +1079,8 @@ def _generate_dataset(dsname, cfg, dscfg, proc_status=0, radar_list=None,
         return _process_dataset(
             cfg, dscfg, proc_status=proc_status, radar_list=radar_list,
             voltime=voltime, trajectory=trajectory, runinfo=runinfo)
-    except Exception as ee:
+    except Exception as inst:
+        warn(str(inst))
         traceback.print_exc()
         return None, None, []
 
@@ -1133,7 +1131,8 @@ def _generate_dataset_mp(dsname, cfg, dscfg, out_queue, proc_status=0,
             voltime=voltime, trajectory=trajectory, runinfo=runinfo)
         out_queue.put((new_dataset, ind_rad, dscfg['MAKE_GLOBAL'], jobs))
         out_queue.close()
-    except Exception as ee:
+    except Exception as inst:
+        warn(str(inst))
         traceback.print_exc()
         out_queue.put((None, None, 0, []))
         out_queue.close()
@@ -1177,14 +1176,15 @@ def _process_dataset(cfg, dscfg, proc_status=0, radar_list=None, voltime=None,
     try:
         proc_ds_func, dsformat = get_process_func(dscfg['type'],
                                                   dscfg['dsname'])
-    except Exception as ee:
+    except Exception as inst:
+        warn(str(inst))
         raise
 
-    if (type(proc_ds_func) is str):
+    if isinstance(proc_ds_func, str):
         proc_ds_func = getattr(proc, proc_ds_func)
 
     # Create dataset
-    if ('trajectory' in inspect.getfullargspec(proc_ds_func).args):
+    if 'trajectory' in inspect.getfullargspec(proc_ds_func).args:
         new_dataset, ind_rad = proc_ds_func(proc_status, dscfg,
                                             radar_list=radar_list,
                                             trajectory=trajectory)
@@ -1198,7 +1198,8 @@ def _process_dataset(cfg, dscfg, proc_status=0, radar_list=None, voltime=None,
     try:
         prod_func = get_prodgen_func(dsformat, dscfg['dsname'],
                                      dscfg['type'])
-    except Exception as ee:
+    except Exception as inst:
+        warn(str(inst))
         raise
 
     # create the data set products
@@ -1219,11 +1220,12 @@ def _process_dataset(cfg, dscfg, proc_status=0, radar_list=None, voltime=None,
             #     job.join()
         else:
             for product in dscfg['products']:
-                err = _generate_prod(new_dataset, cfg, product, prod_func,
-                                     dscfg['dsname'], voltime, runinfo=runinfo)
+                _generate_prod(new_dataset, cfg, product, prod_func,
+                               dscfg['dsname'], voltime, runinfo=runinfo)
     return new_dataset, ind_rad, jobs
 
 
+#@profile
 def _generate_prod(dataset, cfg, prdname, prdfunc, dsname, voltime,
                    runinfo=None):
     """
@@ -1256,13 +1258,15 @@ def _generate_prod(dataset, cfg, prdname, prdfunc, dsname, voltime,
     prdcfg = _create_prdcfg_dict(cfg, dsname, prdname, voltime,
                                  runinfo=runinfo)
     try:
-        result = prdfunc(dataset, prdcfg)
+        prdfunc(dataset, prdcfg)
         return 0
-    except Exception as ee:
+    except Exception as inst:
+        warn(str(inst))
         traceback.print_exc()
         return 1
 
 
+#@profile
 def _create_cfg_dict(cfgfile):
     """
     creates a configuration dictionary
@@ -1286,8 +1290,8 @@ def _create_cfg_dict(cfgfile):
         cfg = read_config(cfg['locationConfigFile'], cfg=cfg)
         print("- Product config file : %s" % cfg['productConfigFile'])
         cfg = read_config(cfg['productConfigFile'], cfg=cfg)
-    except Exception as ee:
-        warn(str(ee))
+    except Exception as inst:
+        warn(str(inst))
         sys.exit(1)
 
     # check for mandatory config parameters
@@ -1379,19 +1383,20 @@ def _create_cfg_dict(cfgfile):
                    'loadname', 'RadarName', 'RadarRes', 'ScanList',
                    'imgformat']
     for param in strarr_list:
-        if (type(cfg[param]) is str):
+        if isinstance(cfg[param], str):
             cfg[param] = [cfg[param]]
 
     # if specified in config, convert coordinates to arrays
     if 'RadarPosition' in cfg:
         fltarr_list = ['latitude', 'longitude', 'altitude']
         for param in fltarr_list:
-            if (type(cfg['RadarPosition'][param]) is float):
+            if isinstance(cfg['RadarPosition'][param], float):
                 cfg['RadarPosition'][param] = [cfg['RadarPosition'][param]]
 
     return cfg
 
 
+#@profile
 def _create_datacfg_dict(cfg):
     """
     creates a data configuration dictionary from a config dictionary
@@ -1431,7 +1436,8 @@ def _create_datacfg_dict(cfg):
     return datacfg
 
 
-def _create_dscfg_dict(cfg, dataset, voltime=None):
+#@profile
+def _create_dscfg_dict(cfg, dataset):
     """
     creates a dataset configuration dictionary
 
@@ -1441,8 +1447,6 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
         config dictionary
     dataset : str
         name of the dataset
-    voltime : datetime object
-        time of the dataset
 
     Returns
     -------
@@ -1475,15 +1479,15 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
     dscfg.update({'procname': cfg['name']})
     dscfg.update({'dsname': dataset})
     dscfg.update({'timeinfo': None})
-    if ('par_azimuth_antenna' in cfg):
+    if 'par_azimuth_antenna' in cfg:
         dscfg.update({'par_azimuth_antenna': cfg['par_azimuth_antenna']})
-    if ('par_elevation_antenna' in cfg):
+    if 'par_elevation_antenna' in cfg:
         dscfg.update({'par_elevation_antenna': cfg['par_elevation_antenna']})
-    if ('asr_highbeam_antenna' in cfg):
+    if 'asr_highbeam_antenna' in cfg:
         dscfg.update({'asr_highbeam_antenna': cfg['asr_highbeam_antenna']})
-    if ('asr_lowbeam_antenna' in cfg):
+    if 'asr_lowbeam_antenna' in cfg:
         dscfg.update({'asr_lowbeam_antenna': cfg['asr_lowbeam_antenna']})
-    if ('target_radar_pos' in cfg):
+    if 'target_radar_pos' in cfg:
         dscfg.update({'target_radar_pos': cfg['target_radar_pos']})
 
     # indicates the dataset has been initialized and aux data is available
@@ -1497,12 +1501,13 @@ def _create_dscfg_dict(cfg, dataset, voltime=None):
     strarr_list = ['datatype']
     for param in strarr_list:
         if param in dscfg:
-            if (type(dscfg[param]) is str):
+            if isinstance(dscfg[param], str):
                 dscfg[param] = [dscfg[param]]
 
     return dscfg
 
 
+#@profile
 def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
     """
     creates a product configuration dictionary
@@ -1557,6 +1562,7 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
     return prdcfg
 
 
+#@profile
 def _get_datatype_list(cfg, radarnr='RADAR001'):
     """
     get list of unique input data types
@@ -1578,38 +1584,40 @@ def _get_datatype_list(cfg, radarnr='RADAR001'):
 
     for datasetdescr in cfg['dataSetList']:
         proclevel, dataset = get_dataset_fields(datasetdescr)
-        if 'datatype' in cfg[dataset]:
-            if isinstance(cfg[dataset]['datatype'], str):
+        if 'datatype' not in cfg[dataset]:
+            continue
+        if isinstance(cfg[dataset]['datatype'], str):
+            (radarnr_descr, datagroup, datatype_aux, dataset_save,
+             product_save) = (
+                 get_datatype_fields(cfg[dataset]['datatype']))
+            if datagroup != 'PROC' and radarnr_descr == radarnr:
+                if ((dataset_save is None) and (product_save is None)):
+                    datatypesdescr.add(
+                        radarnr_descr+":"+datagroup+":"+datatype_aux)
+                else:
+                    datatypesdescr.add(
+                        radarnr_descr+":"+datagroup+":"+datatype_aux+"," +
+                        dataset_save+","+product_save)
+        else:
+            for datatype in cfg[dataset]['datatype']:
                 (radarnr_descr, datagroup, datatype_aux, dataset_save,
                  product_save) = (
-                    get_datatype_fields(cfg[dataset]['datatype']))
+                     get_datatype_fields(datatype))
                 if datagroup != 'PROC' and radarnr_descr == radarnr:
                     if ((dataset_save is None) and (product_save is None)):
                         datatypesdescr.add(
                             radarnr_descr+":"+datagroup+":"+datatype_aux)
                     else:
                         datatypesdescr.add(
-                            radarnr_descr+":"+datagroup+":"+datatype_aux+"," +
-                            dataset_save+","+product_save)
-            else:
-                for datatype in cfg[dataset]['datatype']:
-                    (radarnr_descr, datagroup, datatype_aux, dataset_save,
-                     product_save) = (
-                        get_datatype_fields(datatype))
-                    if datagroup != 'PROC' and radarnr_descr == radarnr:
-                        if ((dataset_save is None) and (product_save is None)):
-                            datatypesdescr.add(
-                                radarnr_descr+":"+datagroup+":"+datatype_aux)
-                        else:
-                            datatypesdescr.add(
-                                radarnr_descr+":"+datagroup+":"+datatype_aux +
-                                ","+dataset_save+","+product_save)
+                            radarnr_descr+":"+datagroup+":"+datatype_aux +
+                            ","+dataset_save+","+product_save)
 
     datatypesdescr = list(datatypesdescr)
 
     return datatypesdescr
 
 
+#@profile
 def _get_datasets_list(cfg):
     """
     get list of dataset at each processing level
@@ -1636,6 +1644,7 @@ def _get_datasets_list(cfg):
     return dataset_levels
 
 
+#@profile
 def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
                          scan_list=None):
     """
@@ -1711,6 +1720,7 @@ def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
     return masterfilelist, masterdatatypedescr, masterscan
 
 
+#@profile
 def _add_dataset(new_dataset, radar_list, ind_rad, make_global=True):
     """
     adds a new field to an existing radar object

@@ -1240,11 +1240,12 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
                 field[ray, :].compressed(), bins=bins)
 
         radar_aux.add_field(field_name, field_dict)
+        start_time = pyart.graph.common.generate_radar_time_begin(radar_aux)
 
         # keep histogram in Memory or add to existing histogram
         if dscfg['initialized'] == 0:
             dscfg['global_data'] = {'hist_obj': radar_aux,
-                                    'timeinfo': dscfg['timeinfo']}
+                                    'timeinfo': start_time}
             dscfg['initialized'] = 1
         else:
             field_interp = interpol_field(
@@ -1253,12 +1254,12 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
             dscfg['global_data']['hist_obj'].fields[field_name]['data'] += (
                 field_interp['data'].filled(fill_value=0)).astype('int64')
 
-            dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
+        #    dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
 
         dataset = dict()
         dataset.update({'hist_obj': radar_aux})
         dataset.update({'hist_type': 'instant'})
-        dataset.update({'timeinfo': dscfg['timeinfo']})
+        dataset.update({'timeinfo': start_time})
 
         return dataset, ind_rad
 
@@ -1306,6 +1307,13 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
             Whether the radar has a Boolean grid or not. Default False
         val_min : Float. Dataset keyword
             Minimum value to consider that the gate has signal. Default None
+        filter_prec : str. Dataset keyword
+            Give which type of volume should be filtered. None, no filtering;
+            keep_wet, keep wet volumes; keep_dry, keep dry volumes.
+        rmax_prec : float. Dataset keyword
+            Maximum range to consider when looking for wet gates [m]
+        percent_prec_max : float. Dataset keyword
+            Maxim percentage of wet gates to consider the volume dry
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -1317,11 +1325,14 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
         radar index
 
     """
+    echoid_field = None
     for datatypedescr in dscfg['datatype']:
         radarnr, datagroup, datatype, dataset, product = (
             get_datatype_fields(datatypedescr))
-        field_name = get_fieldname_pyart(datatype)
-        break
+        if (datatype == 'echoID'):
+            echoid_field = get_fieldname_pyart(datatype)
+        else:
+            field_name = get_fieldname_pyart(datatype)
     ind_rad = int(radarnr[5:8])-1
 
     if procstatus == 0:
@@ -1350,11 +1361,70 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
         if radar_list[ind_rad] is None:
             warn('No valid radar')
             return None, None
-        radar = radar_list[ind_rad]
+        radar = deepcopy(radar_list[ind_rad])
 
         if field_name not in radar.fields:
             warn(field_name+' not available.')
             return None, None
+
+        # filter out low values
+        val_min = None
+        if 'val_min' in dscfg:
+            val_min = dscfg['val_min']
+
+        mask = np.ma.getmaskarray(radar.fields[field_name]['data'])
+        if val_min is not None:
+            mask = np.logical_or(
+                mask, radar.fields[field_name]['data'] < val_min)
+
+        field = deepcopy(radar.fields[field_name]['data'])
+        field[mask] = np.ma.masked
+
+        # filter wet or dry volumes
+        filter_prec = 'None'
+        if 'filter_prec' in dscfg:
+            filter_prec = dscfg['filter_prec']
+
+        if filter_prec == 'keep_wet' or filter_prec == 'keep_dry':
+            if echoid_field not in radar.fields:
+                warn('Unable to determine if there is precipitation ' +
+                     'close to the radar. Missing echoID field.')
+                return None, None
+
+            # Put invalid values to noise
+            echoid = deepcopy(radar.fields[echoid_field]['data'])
+            echoid[mask] = 1
+
+            rmax_prec = 0.
+            if 'rmax_prec' in dscfg:
+                rmax_prec = dscfg['rmax_prec']
+
+            percent_prec_max = 10.
+            if 'percent_prec_max' in dscfg:
+                percent_prec_max = dscfg['percent_prec_max']
+
+            ngates = radar.ngates
+            if rmax_prec > 0.:
+                ngates = len(
+                    radar.range['data'][radar.range['data'] < rmax_prec])
+            ngates_total = ngates*radar.nrays
+
+            prec_field = echoid[:, :ngates]
+            ngates_prec = np.size(prec_field[prec_field == 3])
+
+            percent_prec = ngates_prec/ngates_total*100.
+            warn('Percent gates with precipitation: '+str(percent_prec)+'\n')
+            if percent_prec > percent_prec_max:
+                if filter_prec == 'keep_dry':
+                    warn('Radar volume is precipitation contaminated.\n' +
+                         'Maximum percentage allowed: '+str(percent_prec_max))
+                    return None, None
+            else:
+                if filter_prec == 'keep_wet':
+                    warn('Radar volume has not enough precipitation.\n' +
+                         'Minimum percentage required: ' +
+                         str(percent_prec_max))
+                    return None, None
 
         step = None
         if 'step' in dscfg:
@@ -1372,7 +1442,6 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
 
         field_dict = pyart.config.get_metadata(field_name)
         field_dict['data'] = np.ma.zeros((1, nbins), dtype=int)
-        field = deepcopy(radar.fields[field_name]['data'])
 
         # rays are indexed to regular grid
         regular_grid = False
@@ -1382,7 +1451,7 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
         if 'regular_grid':
             ray_ind = dscfg['global_data']['ray_ind']
             rng_ind = dscfg['global_data']['rng_ind']
-            field = field[ray_ind, rng_ind]
+            field = field[ray_ind, rng_ind].compressed()
         else:
             azi_tol = 0.5
             ele_tol = 0.5
@@ -1417,45 +1486,33 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
                 rng_ind[i] = ind_rng_rad
             ray_ind = ray_ind.compressed()
             rng_ind = rng_ind.compressed()
-            field = field[ray_ind, rng_ind]
-
-        # filter out low values
-        val_min = None
-        if 'val_min' in dscfg:
-            val_min = dscfg['val_min']
-
-        if val_min is not None:
-            field = field[field > val_min]
+            field = field[ray_ind, rng_ind].compressed()
 
         # put gates with values off limits to limit
         # and compute histogram
-        mask = np.ma.getmaskarray(field)
-        ind = np.where(np.logical_and(mask == False, field < bins[0]))
-        field[ind] = bins[0]
+        field[field < bins[0]] = bins[0]
+        field[field > bins[-1]] = bins[-1]
 
-        ind = np.where(np.logical_and(mask == False, field > bins[-1]))
-        field[ind] = bins[-1]
-
-        field_dict['data'][0, :], bin_edges = np.histogram(
-            field.compressed(), bins=bins)
-
+        field_dict['data'][0, :], bin_edges = np.histogram(field, bins=bins)
         radar_aux.add_field(field_name, field_dict)
+        start_time = pyart.graph.common.generate_radar_time_begin(radar_aux)
 
         # Put histogram in Memory or add to existing histogram
         if dscfg['initialized'] == 0:
             dscfg['global_data'].update({
                 'hist_obj': radar_aux,
-                'timeinfo': dscfg['timeinfo']})
+                'timeinfo': start_time})
             dscfg['initialized'] = 1
         else:
             dscfg['global_data']['hist_obj'].fields[field_name]['data'] += (
                 field_dict['data'].filled(fill_value=0)).astype('int64')
-            dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
+
+        #    dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
 
         dataset = dict()
         dataset.update({'hist_obj': radar_aux})
         dataset.update({'hist_type': 'instant'})
-        dataset.update({'timeinfo': dscfg['timeinfo']})
+        dataset.update({'timeinfo': start_time})
 
         return dataset, ind_rad
 
@@ -1488,6 +1545,9 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
             The input data types
         regular_grid : Boolean. Dataset keyword
             Whether the radar has a Boolean grid or not. Default False
+        rmin, rmax : float. Dataset keyword
+            minimum and maximum ranges where the computation takes place. If
+            -1 the whole range is considered. Default is -1
         val_min : Float. Dataset keyword
             Minimum value to consider that the gate has signal. Default None
         filter_prec : str. Dataset keyword
@@ -1599,6 +1659,27 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
         occu_dict['data'] = np.ma.zeros(
             (radar.nrays, radar.ngates), dtype=int)
         occu_dict['data'][np.logical_not(mask)] = 1
+
+        # filter out out of range data
+        rmin = -1.
+        if 'rmin' in dscfg:
+            rmin = dscfg['rmin']
+
+        rmax = -1.
+        if 'rmax' in dscfg:
+            rmax = dscfg['rmax']
+
+        if rmin >= 0.:
+            ind_min = np.where(radar_aux.range['data'] < rmin)[0]
+            if len(ind_min) > 0:
+                ind_min = ind_min[-1]
+                occu_dict['data'][:, 0:ind_min+1] = 0
+        if rmax >= 0.:
+            ind_max = np.where(radar_aux.range['data'] > rmax)[0]
+            if len(ind_max) > 0:
+                ind_max = ind_max[0]
+                occu_dict['data'][:, ind_max:radar_aux.ngates] = 0
+
         radar_aux.add_field('occurrence', occu_dict)
 
         # first volume: initialize radar object
@@ -1693,6 +1774,9 @@ def process_occurrence_period(procstatus, dscfg, radar_list=None):
             The input data types
         regular_grid : Boolean. Dataset keyword
             Whether the radar has a Boolean grid or not. Default False
+        rmin, rmax : float. Dataset keyword
+            minimum and maximum ranges where the computation takes place. If
+            -1 the whole range is considered. Default is -1
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -1732,6 +1816,27 @@ def process_occurrence_period(procstatus, dscfg, radar_list=None):
         radar_aux.add_field('occurrence', radar.fields['occurrence'])
         radar_aux.add_field(
             'number_of_samples', radar.fields['number_of_samples'])
+
+        # filter out out of range data
+        rmin = -1.
+        if 'rmin' in dscfg:
+            rmin = dscfg['rmin']
+
+        rmax = -1.
+        if 'rmax' in dscfg:
+            rmax = dscfg['rmax']
+
+        if rmin >= 0.:
+            ind_min = np.where(radar_aux.range['data'] < rmin)[0]
+            if len(ind_min) > 0:
+                ind_min = ind_min[-1]
+                radar_aux.fields['occurrence']['data'][:, 0:ind_min+1] = 0
+        if rmax >= 0.:
+            ind_max = np.where(radar_aux.range['data'] > rmax)[0]
+            if len(ind_max) > 0:
+                ind_max = ind_max[0]
+                radar_aux.fields['occurrence']['data'][
+                    :, ind_max:radar_aux.ngates] = 0
 
         # first volume: initialize radar object
         if dscfg['initialized'] == 0:

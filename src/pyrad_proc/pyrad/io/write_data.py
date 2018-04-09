@@ -35,6 +35,9 @@ from warnings import warn
 import smtplib
 from email.message import EmailMessage
 import numpy as np
+import os
+import fcntl
+
 
 from pyart.config import get_fillvalue, get_metadata
 
@@ -603,7 +606,8 @@ def write_ts_cum(dataset, fname):
     return fname
 
 
-def write_monitoring_ts(start_time, np_t, values, quantiles, datatype, fname):
+def write_monitoring_ts(start_time, np_t, values, quantiles, datatype, fname,
+                        rewrite=False):
     """
     writes time series of data
 
@@ -619,6 +623,8 @@ def write_monitoring_ts(start_time, np_t, values, quantiles, datatype, fname):
         the quantiles computed
     fname : str
         file name where to store the data
+    rewrite : bool
+        if True a new file is created
 
     Returns
     -------
@@ -636,24 +642,39 @@ def write_monitoring_ts(start_time, np_t, values, quantiles, datatype, fname):
         values_aux = values.filled(fill_value=get_fillvalue())
         np_t_aux = np_t
 
-    filelist = glob.glob(fname)
-    if len(filelist) == 0:
+    if rewrite:
+        file_exists = False
+    else:
+        filelist = glob.glob(fname)
+        if len(filelist) == 0:
+            file_exists = False
+        else:
+            file_exists = True
+
+    if not file_exists:
         with open(fname, 'w', newline='') as csvfile:
-            csvfile.write('# Weather radar monitoring timeseries data file\n')
-            csvfile.write('# Comment lines are preceded by "#"\n')
-            csvfile.write('# Description: \n')
-            csvfile.write('# Time series of a monitoring of weather radar' +
-                          ' data.\n')
+            while True:
+                try:
+                    fcntl.flock(csvfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    break
+                except OSError as e:
+                    if e.errno != errno.EAGAIN:
+                        raise
+                    else:
+                        time.sleep(0.1)
+
             csvfile.write(
+                '# Weather radar monitoring timeseries data file\n' +
+                '# Comment lines are preceded by "#"\n' +
+                '# Description: \n' +
+                '# Time series of a monitoring of weather radar data.\n' +
                 '# Quantiles: '+str(quantiles[1])+', '+str(quantiles[0])+', ' +
-                str(quantiles[2])+' percent.\n')
-            csvfile.write(
-                '# Data: '+generate_field_name_str(datatype)+'\n')
-            csvfile.write('# Fill Value: '+str(get_fillvalue())+'\n')
-            csvfile.write(
-                '# Start: ' +
-                start_time_aux[0].strftime('%Y-%m-%d %H:%M:%S UTC')+'\n')
-            csvfile.write('#\n')
+                str(quantiles[2])+' percent.\n' +
+                '# Data: '+generate_field_name_str(datatype)+'\n' +
+                '# Fill Value: '+str(get_fillvalue())+'\n' +
+                '# Start: '+start_time_aux[0].strftime(
+                    '%Y-%m-%d %H:%M:%S UTC')+'\n' +
+                '#\n')
 
             fieldnames = ['date', 'NP', 'central_quantile', 'low_quantile',
                           'high_quantile']
@@ -666,9 +687,21 @@ def write_monitoring_ts(start_time, np_t, values, quantiles, datatype, fname):
                     'central_quantile': values_aux[i, 1],
                     'low_quantile': values_aux[i, 0],
                     'high_quantile': values_aux[i, 2]})
+
+            fcntl.flock(csvfile, fcntl.LOCK_UN)
             csvfile.close()
     else:
         with open(fname, 'a', newline='') as csvfile:
+            while True:
+                try:
+                    fcntl.flock(csvfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    break
+                except OSError as e:
+                    if e.errno != errno.EAGAIN:
+                        raise
+                    else:
+                        time.sleep(0.1)
+
             fieldnames = ['date', 'NP', 'central_quantile', 'low_quantile',
                           'high_quantile']
             writer = csv.DictWriter(csvfile, fieldnames)
@@ -679,8 +712,8 @@ def write_monitoring_ts(start_time, np_t, values, quantiles, datatype, fname):
                     'central_quantile': values_aux[i, 1],
                     'low_quantile': values_aux[i, 0],
                     'high_quantile': values_aux[i, 2]})
+            fcntl.flock(csvfile, fcntl.LOCK_UN)
             csvfile.close()
-
     return fname
 
 
@@ -738,7 +771,8 @@ def write_excess_gates(excess_dict, fname):
 
 
 def write_intercomp_scores_ts(start_time, stats, field_name, fname,
-                              rad1_name='RADAR001', rad2_name='RADAR002'):
+                              rad1_name='RADAR001', rad2_name='RADAR002',
+                              rewrite=False):
     """
     writes time series of radar intercomparison scores
 
@@ -754,6 +788,8 @@ def write_intercomp_scores_ts(start_time, stats, field_name, fname,
         file name where to store the data
     rad1_name, rad2_name : str
         Name of the radars intercompared
+    rewrite : bool
+        if True a new file is created
 
     Returns
     -------
@@ -790,22 +826,38 @@ def write_intercomp_scores_ts(start_time, stats, field_name, fname,
         start_time_aux = np.asarray(start_time)
         np_t = stats['npoints']
 
-    filelist = glob.glob(fname)
-    if len(filelist) == 0:
+    if rewrite:
+        file_exists = False
+    else:
+        filelist = glob.glob(fname)
+        if len(filelist) == 0:
+            file_exists = False
+        else:
+            file_exists = True
+            
+    if not file_exists:
         with open(fname, 'w', newline='') as csvfile:
-            csvfile.write('# Weather radar intercomparison scores ' +
-                          'timeseries file\n')
-            csvfile.write('# Comment lines are preceded by "#"\n')
-            csvfile.write('# Description: \n')
+            while True:
+                try:
+                    fcntl.flock(csvfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    break
+                except OSError as e:
+                    if e.errno != errno.EAGAIN:
+                        raise
+                    else:
+                        time.sleep(0.1)
+                        
             csvfile.write(
-                '# Time series of the intercomparison between two radars.\n')
-            csvfile.write('# Radar 1: '+rad1_name+'\n')
-            csvfile.write('# Radar 2: '+rad2_name+'\n')
-            csvfile.write('# Fill Value: '+str(get_fillvalue())+'\n')
-            csvfile.write(
-                '# Start: ' +
-                start_time_aux[0].strftime('%Y-%m-%d %H:%M:%S UTC')+'\n')
-            csvfile.write('#\n')
+                '# Weather radar intercomparison scores timeseries file\n' +
+                '# Comment lines are preceded by "#"\n' +
+                '# Description: \n' +            
+                '# Time series of the intercomparison between two radars.\n' +
+                '# Radar 1: '+rad1_name+'\n' +
+                '# Radar 2: '+rad2_name+'\n' +
+                '# Fill Value: '+str(get_fillvalue())+'\n' +            
+                '# Start: '+start_time_aux[0].strftime(
+                    '%Y-%m-%d %H:%M:%S UTC')+'\n' +
+                '#\n')
 
             fieldnames = ['date', 'NP', 'mean_bias', 'median_bias',
                           'quant25_bias', 'quant75_bias', 'mode_bias', 'corr',
@@ -830,9 +882,21 @@ def write_intercomp_scores_ts(start_time, stats, field_name, fname,
                     'intercep_of_linear_regression_of_slope_1': (
                         intercep_slope_1[i])
                     })
+                    
+            fcntl.flock(csvfile, fcntl.LOCK_UN)
             csvfile.close()
     else:
         with open(fname, 'a', newline='') as csvfile:
+            while True:
+                try:
+                    fcntl.flock(csvfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    break
+                except OSError as e:
+                    if e.errno != errno.EAGAIN:
+                        raise
+                    else:
+                        time.sleep(0.1)
+                        
             fieldnames = ['date', 'NP', 'mean_bias', 'median_bias',
                           'quant25_bias', 'quant75_bias', 'mode_bias', 'corr',
                           'slope_of_linear_regression',
@@ -854,6 +918,7 @@ def write_intercomp_scores_ts(start_time, stats, field_name, fname,
                     'intercep_of_linear_regression_of_slope_1': (
                         intercep_slope_1[i])
                     })
+            fcntl.flock(csvfile, fcntl.LOCK_UN)
             csvfile.close()
 
     return fname

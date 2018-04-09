@@ -115,16 +115,21 @@ def main():
     ndays = (proc_enddate - proc_startdate).days + 1
     print('Number of days to process: '+str(ndays)+'\n\n')
 
+    if args.infostr == 'None':
+        infostr = ''
+    else:
+        infostr = args.infostr
+
     for day in range(ndays):
         current_date = proc_startdate + datetime.timedelta(days=day)
         proc_startdatetime = current_date + proc_starttime
         proc_enddatetime = current_date + proc_endtime
         try:
             pyrad_main(cfgfile_proc, starttime=proc_startdatetime,
-                       endtime=proc_enddatetime, infostr=args.infostr)
+                       endtime=proc_enddatetime, infostr=infostr)
             if args.postproc_cfgfile is not None:
                 pyrad_main(cfgfile_postproc, starttime=proc_startdatetime,
-                           endtime=proc_enddatetime, infostr=args.infostr)
+                           endtime=proc_enddatetime, infostr=infostr)
         except ValueError:
             print(ValueError)
 
