@@ -21,15 +21,15 @@ def quantiles_weighted(values, weight_vector=None, quantiles=np.array([0.5]),
     quantile(s).
     """
 
-    if (weight_vector is not None):
-        if (weight_vector.size != values.shape[0]):
+    if weight_vector is not None:
+        if weight_vector.size != values.shape[0]:
             raise Exception(
                 "ERROR: Unexpected size of weight vector "
                 "(%d instead of %d)" % (weight_vector.size, values.shape[0]))
     else:
         weight_vector = np.ones(values.shape[0], dtype=float)
 
-    if (len(values.shape) > 1):
+    if len(values.shape) > 1:
         # repeat weight vec
         weight_vector = np.repeat(weight_vector, values.shape[1]) \
             .reshape(weight_vector.size, values.shape[1])
@@ -40,7 +40,7 @@ def quantiles_weighted(values, weight_vector=None, quantiles=np.array([0.5]),
     # there must be more than 3 valid values
     mask = np.ma.getmaskarray(values)
     nvalid = np.count_nonzero(np.logical_not(mask))
-    if (nvalid < 3):
+    if nvalid < 3:
         return (None, np.array([None] * quantiles.size), None)
 
     # mask weights in non-valid data
@@ -55,8 +55,8 @@ def quantiles_weighted(values, weight_vector=None, quantiles=np.array([0.5]),
     # Average
     avg = np.ma.sum(values*weight_vector) / total_weight
 
-    if (weight_threshold is not None):
-        if (total_weight < weight_threshold):
+    if weight_threshold is not None:
+        if total_weight < weight_threshold:
             if data_is_log:
                 # Convert lin to log
                 avg = 10. * np.log10(avg)

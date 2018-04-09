@@ -52,7 +52,7 @@ from ..graph.plots import plot_bscope, plot_timeseries, plot_timeseries_comp
 from ..graph.plots import plot_quantiles, get_colobar_label, plot_sun_hits
 from ..graph.plots import plot_sun_retrieval_ts, plot_histogram
 from ..graph.plots import plot_histogram2, plot_density, plot_monitoring_ts
-from ..graph.plots import get_field_name, get_colobar_label, plot_scatter
+from ..graph.plots import get_field_name, plot_scatter
 from ..graph.plots import plot_intercomp_scores_ts, plot_scatter_comp
 from ..graph.plots import plot_rhi_profile, plot_along_coord
 from ..graph.plots import plot_field_coverage, plot_surface
@@ -104,7 +104,7 @@ def generate_occurrence_products(dataset, prdcfg):
             return None
 
         dssavedir = prdcfg['dsname']
-        if ('dssavename' in prdcfg):
+        if 'dssavename' in prdcfg:
             dssavedir = prdcfg['dssavename']
 
         quant_min = 95.
@@ -115,7 +115,7 @@ def generate_occurrence_products(dataset, prdcfg):
         freq_occu = radar.fields['frequency_of_occurrence'][
             'data']
         ind_ray, ind_rng = np.where(freq_occu > quant_min)
-        if len(ind_ray) == 0:
+        if not ind_ray:
             warn('No data exceeds the frequency of occurrence ' +
                  str(quant_min)+' %')
             return None
@@ -230,7 +230,7 @@ def generate_sun_hits_products(dataset, prdcfg):
     """
 
     dssavedir = prdcfg['dsname']
-    if ('dssavename' in prdcfg):
+    if 'dssavename' in prdcfg:
         dssavedir = prdcfg['dssavename']
 
     prdcfg['timeinfo'] = dataset['timeinfo']
@@ -245,14 +245,13 @@ def generate_sun_hits_products(dataset, prdcfg):
 
         fname = make_filename(
             'info', prdcfg['dstype'], 'detected', ['csv'],
-            timeinfo=dataset['timeinfo'], timeformat='%Y%m%d')
+            timeinfo=dataset['timeinfo'], timeformat='%Y%m%d')[0]
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        fname = savedir+fname
 
-        write_sun_hits(dataset['sun_hits'], fname[0])
+        write_sun_hits(dataset['sun_hits'], fname)
 
-        print('saved sun hits file: '+fname[0])
+        print('saved sun hits file: '+fname)
 
         return fname[0]
 
@@ -273,13 +272,13 @@ def generate_sun_hits_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
-        fname = make_filename(
+        fname_list = make_filename(
             'detected', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], timeinfo=dataset['timeinfo'],
             timeformat='%Y%m%d')
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
         field = create_sun_hits_field(
             dataset['sun_hits_final']['rad_el'],
@@ -295,11 +294,11 @@ def generate_sun_hits_products(dataset, prdcfg):
                 ' Skipping product ' + prdcfg['type'])
             return None
 
-        plot_sun_hits(field, field_name, fname, prdcfg)
+        plot_sun_hits(field, field_name, fname_list, prdcfg)
 
-        print('----- save to '+' '.join(fname))
+        print('----- save to '+' '.join(fname_list))
 
-        return fname
+        return fname_list
 
     elif prdcfg['type'] == 'WRITE_SUN_RETRIEVAL':
         if 'sun_retrieval' not in dataset:
@@ -318,16 +317,15 @@ def generate_sun_hits_products(dataset, prdcfg):
 
         fname = make_filename(
             'info', prdcfg['dstype'], 'retrieval', ['csv'], timeinfo=timeinfo,
-            timeformat=timeformat, runinfo=prdcfg['runinfo'])
+            timeformat=timeformat, runinfo=prdcfg['runinfo'])[0]
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        fname = savedir+fname
 
-        write_sun_retrieval(dataset['sun_retrieval'], fname[0])
+        write_sun_retrieval(dataset['sun_retrieval'], fname)
 
-        print('saved sun retrieval file: '+fname[0])
+        print('saved sun retrieval file: '+fname)
 
-        return fname[0]
+        return fname
 
     elif prdcfg['type'] == 'PLOT_SUN_RETRIEVAL':
         if 'sun_retrieval' not in dataset:
@@ -352,13 +350,13 @@ def generate_sun_hits_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
-        fname = make_filename(
+        fname_list = make_filename(
             'retrieval', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], timeinfo=dataset['timeinfo'],
             timeformat='%Y%m%d')
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
         if dataset['sun_retrieval'][par] is None:
             warn(
@@ -372,11 +370,11 @@ def generate_sun_hits_products(dataset, prdcfg):
             lant=dataset['sun_retrieval']['lant'])
 
         if field is not None:
-            plot_sun_hits(field, field_name, fname, prdcfg)
+            plot_sun_hits(field, field_name, fname_list, prdcfg)
 
-        print('----- save to '+' '.join(fname))
+        print('----- save to '+' '.join(fname_list))
 
-        return fname
+        return fname_list
 
     elif prdcfg['type'] == 'PLOT_SUN_RETRIEVAL_TS':
         if 'sun_retrieval' not in dataset:
@@ -420,25 +418,25 @@ def generate_sun_hits_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=None)
 
-        fname = make_filename(
+        fname_list = make_filename(
             'retrieval_ts', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], timeinfo=timeinfo,
             timeformat=timeformat, runinfo=prdcfg['runinfo'])
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
         titl = (prdcfg['runinfo']+' Sun Retrieval ' +
                 sun_retrieval[1][0].strftime('%Y%m%d')+'-' +
                 sun_retrieval[1][-1].strftime('%Y%m%d'))
         figfname = plot_sun_retrieval_ts(
-            sun_retrieval, prdcfg['voltype'], fname, titl=titl, dpi=dpi)
+            sun_retrieval, prdcfg['voltype'], fname_list, titl=titl, dpi=dpi)
 
         if figfname is None:
             return None
 
-        print('----- save to '+' '.join(fname))
-        return fname
+        print('----- save to '+' '.join(fname_list))
+        return fname_list
 
     else:
         if 'radar' in dataset:
@@ -465,7 +463,7 @@ def generate_intercomp_products(dataset, prdcfg):
     """
 
     dssavedir = prdcfg['dsname']
-    if ('dssavename' in prdcfg):
+    if 'dssavename' in prdcfg:
         dssavedir = prdcfg['dssavename']
 
     if prdcfg['type'] == 'WRITE_INTERCOMP':
@@ -517,13 +515,13 @@ def generate_intercomp_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
-        fname = make_filename(
+        fname_list = make_filename(
             'scatter', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], timeinfo=dataset['timeinfo'],
             timeformat='%Y%m%d')
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
         step = None
         if 'step' in prdcfg:
@@ -548,15 +546,15 @@ def generate_intercomp_products(dataset, prdcfg):
             'intercep: '+'{:.2f}'.format(float(stats['intercep']))+'\n')
 
         plot_scatter(bins1, bins2, np.ma.asarray(hist_2d), field_name,
-                     field_name, fname, prdcfg, metadata=metadata,
+                     field_name, fname_list, prdcfg, metadata=metadata,
                      lin_regr=[stats['slope'], stats['intercep']],
                      lin_regr_slope1=stats['intercep_slope_1'],
                      rad1_name=dataset['intercomp_dict']['rad1_name'],
                      rad2_name=dataset['intercomp_dict']['rad2_name'])
 
-        print('----- save to '+' '.join(fname))
+        print('----- save to '+' '.join(fname_list))
 
-        return fname
+        return fname_list
     elif prdcfg['type'] == 'PLOT_AND_WRITE_INTERCOMP_TS':
         if not dataset['final']:
             return None
@@ -607,7 +605,7 @@ def generate_intercomp_products(dataset, prdcfg):
         (date_vec, np_vec, meanbias_vec, medianbias_vec, quant25bias_vec,
          quant75bias_vec, modebias_vec, corr_vec, slope_vec, intercep_vec,
          intercep_slope1_vec) = (
-            read_intercomp_scores_ts(csvfname, sort_by_date=sort_by_date))
+             read_intercomp_scores_ts(csvfname, sort_by_date=sort_by_date))
 
         if date_vec is None:
             warn(
@@ -621,17 +619,17 @@ def generate_intercomp_products(dataset, prdcfg):
 
         if rewrite:
             stats = {
-                    'npoints': np_vec,
-                    'meanbias': meanbias_vec,
-                    'medianbias': medianbias_vec,
-                    'quant25bias': quant25bias_vec,
-                    'quant75bias': quant75bias_vec,
-                    'modebias': modebias_vec,
-                    'corr': corr_vec,
-                    'slope': slope_vec,
-                    'intercep': intercep_vec,
-                    'intercep_slope_1': intercep_slope1_vec
-                }
+                'npoints': np_vec,
+                'meanbias': meanbias_vec,
+                'medianbias': medianbias_vec,
+                'quant25bias': quant25bias_vec,
+                'quant75bias': quant75bias_vec,
+                'modebias': modebias_vec,
+                'corr': corr_vec,
+                'slope': slope_vec,
+                'intercep': intercep_vec,
+                'intercep_slope_1': intercep_slope1_vec
+            }
             write_intercomp_scores_ts(
                 date_vec, stats, field_name, csvfname,
                 rad1_name=rad1_name, rad2_name=rad2_name)
@@ -644,13 +642,13 @@ def generate_intercomp_products(dataset, prdcfg):
                 figtimeinfo = date_vec[0]
                 timeformat = '%Y'
 
-        figfname = make_filename(
+        figfname_list = make_filename(
             'ts', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo=rad1_name+'-'+rad2_name,
             timeinfo=figtimeinfo, timeformat=timeformat)
 
-        for i in range(len(figfname)):
-            figfname[i] = savedir+figfname[i]
+        for i, figfname in enumerate(figfname_list):
+            figfname_list[i] = savedir+figfname
 
         np_min = 0
         if 'npoints_min' in prdcfg:
@@ -664,11 +662,11 @@ def generate_intercomp_products(dataset, prdcfg):
         plot_intercomp_scores_ts(
             date_vec, np_vec, meanbias_vec, medianbias_vec, quant25bias_vec,
             quant75bias_vec, modebias_vec, corr_vec, slope_vec, intercep_vec,
-            intercep_slope1_vec, figfname, ref_value=0., np_min=np_min,
+            intercep_slope1_vec, figfname_list, ref_value=0., np_min=np_min,
             corr_min=corr_min, labelx='Time UTC', titl=titl)
-        print('----- save to '+' '.join(figfname))
+        print('----- save to '+' '.join(figfname_list))
 
-        return figfname
+        return figfname_list
     else:
         warn(' Unsupported product type: ' + prdcfg['type'])
         return None
@@ -692,11 +690,6 @@ def generate_colocated_gates_products(dataset, prdcfg):
         the name of the file created. None otherwise
 
     """
-
-    dssavedir = prdcfg['dsname']
-    if ('dssavename' in prdcfg):
-        dssavedir = prdcfg['dssavename']
-
     if prdcfg['type'] == 'WRITE_COLOCATED_GATES':
         if prdcfg['radar'] not in dataset:
             return None
@@ -803,7 +796,7 @@ def generate_vol_products(dataset, prdcfg):
     """
 
     dssavedir = prdcfg['dsname']
-    if ('dssavename' in prdcfg):
+    if 'dssavename' in prdcfg:
         dssavedir = prdcfg['dssavename']
 
     if prdcfg['type'] == 'PPI_IMAGE':
@@ -823,13 +816,13 @@ def generate_vol_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
-        fname = make_filename(
+        fname_list = make_filename(
             'ppi', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
             timeinfo=prdcfg['timeinfo'])
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
         step = None
         quantiles = None
@@ -841,12 +834,12 @@ def generate_vol_products(dataset, prdcfg):
         if 'quantiles' in prdcfg:
             quantiles = prdcfg['quantiles']
 
-        plot_ppi(dataset, field_name, ind_el, prdcfg, fname,
+        plot_ppi(dataset, field_name, ind_el, prdcfg, fname_list,
                  plot_type=plot_type, step=step, quantiles=quantiles)
 
-        print('----- save to '+' '.join(fname))
+        print('----- save to '+' '.join(fname_list))
 
-        return fname
+        return fname_list
 
     if prdcfg['type'] == 'PPI_MAP':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -865,19 +858,19 @@ def generate_vol_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
-        fname = make_filename(
+        fname_list = make_filename(
             'ppi_map', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
             timeinfo=prdcfg['timeinfo'])
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
-        plot_ppi_map(dataset, field_name, ind_el, prdcfg, fname)
+        plot_ppi_map(dataset, field_name, ind_el, prdcfg, fname_list)
 
-        print('----- save to '+' '.join(fname))
+        print('----- save to '+' '.join(fname_list))
 
-        return fname
+        return fname_list
 
     elif prdcfg['type'] == 'RHI_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -896,13 +889,13 @@ def generate_vol_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
-        fname = make_filename(
+        fname_list = make_filename(
             'rhi', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='az'+'{:.1f}'.format(az),
             timeinfo=prdcfg['timeinfo'])
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
         step = None
         quantiles = None
@@ -914,12 +907,12 @@ def generate_vol_products(dataset, prdcfg):
         if 'quantiles' in prdcfg:
             quantiles = prdcfg['quantiles']
 
-        plot_rhi(dataset, field_name, ind_az, prdcfg, fname,
+        plot_rhi(dataset, field_name, ind_az, prdcfg, fname_list,
                  plot_type=plot_type, step=step, quantiles=quantiles)
 
-        print('----- save to '+' '.join(fname))
+        print('----- save to '+' '.join(fname_list))
 
-        return fname
+        return fname_list
 
     elif prdcfg['type'] == 'RHI_PROFILE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -966,9 +959,11 @@ def generate_vol_products(dataset, prdcfg):
         new_dataset.add_field(field_name, field)
 
         # compute quantities
-        minheight = (round(np.min(new_dataset.gate_altitude['data']) /
-                     heightResolution)*heightResolution-heightResolution)
-        maxheight = (round(hmax_user/heightResolution)*heightResolution +
+        minheight = (round(
+            np.min(new_dataset.gate_altitude['data']) /
+            heightResolution)*heightResolution-heightResolution)
+        maxheight = (round(
+            hmax_user/heightResolution)*heightResolution +
                      heightResolution)
 
         nlevels = int((maxheight-minheight)/heightResolution)
@@ -1023,20 +1018,20 @@ def generate_vol_products(dataset, prdcfg):
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         prdcfginfo = 'az'+'{:.1f}'.format(az)+'hres'+str(int(heightResolution))
-        fname = make_filename(
+        fname_list = make_filename(
             'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo=prdcfginfo,
             timeinfo=prdcfg['timeinfo'])
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
         plot_rhi_profile(
-            data, hvec, fname, labelx=labelx, labely='Height (m MSL)',
+            data, hvec, fname_list, labelx=labelx, labely='Height (m MSL)',
             labels=labels, title=titl, colors=colors,
             linestyles=linestyles, xmin=None, xmax=None)
 
-        print('----- save to '+' '.join(fname))
+        print('----- save to '+' '.join(fname_list))
 
         fname = make_filename(
             'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
@@ -1077,14 +1072,14 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfg['basepath'], prdcfg['procname'], dssavedir,
                 prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
-            fname = make_filename(
+            fname_list = make_filename(
                 'ppi', prdcfg['dstype'], prdcfg['voltype'],
                 prdcfg['imgformat'],
                 prdcfginfo='el'+'{:.1f}'.format(prdcfg['angle']),
                 timeinfo=prdcfg['timeinfo'])
 
-            for i in range(len(fname)):
-                fname[i] = savedir+fname[i]
+            for i, fname in enumerate(fname_list):
+                fname[i] = savedir+fname
 
             step = None
             quantiles = None
@@ -1096,12 +1091,12 @@ def generate_vol_products(dataset, prdcfg):
             if 'quantiles' in prdcfg:
                 quantiles = prdcfg['quantiles']
 
-            plot_ppi(xsect, field_name, 0, prdcfg, fname,
+            plot_ppi(xsect, field_name, 0, prdcfg, fname_list,
                      plot_type=plot_type, step=step, quantiles=quantiles)
 
-            print('----- save to '+' '.join(fname))
+            print('----- save to '+' '.join(fname_list))
 
-            return fname
+            return fname_list
         except EnvironmentError:
             warn(
                 'No data found at elevation ' + str(prdcfg['angle']) +
@@ -1126,20 +1121,20 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfg['basepath'], prdcfg['procname'], dssavedir,
                 prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
-            fname = make_filename(
+            fname_list = make_filename(
                 'ppi', prdcfg['dstype'], prdcfg['voltype'],
                 prdcfg['imgformat'],
                 prdcfginfo='el'+'{:.1f}'.format(prdcfg['angle']),
                 timeinfo=prdcfg['timeinfo'])
 
-            for i in range(len(fname)):
-                fname[i] = savedir+fname[i]
+            for i, fname in enumerate(fname_list):
+                fname_list[i] = savedir+fname
 
-            plot_ppi_map(xsect, field_name, 0, prdcfg, fname)
+            plot_ppi_map(xsect, field_name, 0, prdcfg, fname_list)
 
-            print('----- save to '+' '.join(fname))
+            print('----- save to '+' '.join(fname_list))
 
-            return fname
+            return fname_list
         except EnvironmentError:
             warn(
                 'No data found at elevation ' + str(prdcfg['angle']) +
@@ -1164,14 +1159,14 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfg['basepath'], prdcfg['procname'], dssavedir,
                 prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
-            fname = make_filename(
+            fname_list = make_filename(
                 'rhi', prdcfg['dstype'], prdcfg['voltype'],
                 prdcfg['imgformat'],
                 prdcfginfo='az'+'{:.1f}'.format(prdcfg['angle']),
                 timeinfo=prdcfg['timeinfo'])
 
-            for i in range(len(fname)):
-                fname[i] = savedir+fname[i]
+            for i, fname in enumerate(fname_list):
+                fname_list[i] = savedir+fname
 
             step = None
             quantiles = None
@@ -1183,12 +1178,12 @@ def generate_vol_products(dataset, prdcfg):
             if 'quantiles' in prdcfg:
                 quantiles = prdcfg['quantiles']
 
-            plot_rhi(xsect, field_name, 0, prdcfg, fname,
+            plot_rhi(xsect, field_name, 0, prdcfg, fname_list,
                      plot_type=plot_type, step=step, quantiles=quantiles)
 
-            print('----- save to '+' '.join(fname))
+            print('----- save to '+' '.join(fname_list))
 
-            return fname
+            return fname_list
         except EnvironmentError:
             warn(
                 ' No data found at azimuth ' +
@@ -1209,19 +1204,20 @@ def generate_vol_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
-        fname = make_filename(
+        fname_list = make_filename(
             'cappi', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
             prdcfginfo='alt'+'{:.1f}'.format(prdcfg['altitude']),
             timeinfo=prdcfg['timeinfo'])
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
-        plot_cappi(dataset, field_name, prdcfg['altitude'], prdcfg, fname)
-        print('----- save to '+' '.join(fname))
+        plot_cappi(
+            dataset, field_name, prdcfg['altitude'], prdcfg, fname_list)
+        print('----- save to '+' '.join(fname_list))
 
-        return fname
+        return fname_list
 
     elif prdcfg['type'] == 'PLOT_ALONG_COORD':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -1270,7 +1266,7 @@ def generate_vol_products(dataset, prdcfg):
                     new_dataset = dataset.extract_sweeps([ind_sweep])
 
                     try:
-                        dataset_lines = pyart.util.cross_section_ppi(
+                        dataset_line = pyart.util.cross_section_ppi(
                             new_dataset, [prdcfg['fix_azimuths'][i]],
                             az_tol=prdcfg['AngTol'])
                     except EnvironmentError:
@@ -1311,16 +1307,16 @@ def generate_vol_products(dataset, prdcfg):
                     valid_azi.append(dataset_line.azimuth['data'][0])
                     valid_ele.append(dataset_line.elevation['data'][0])
 
-            if len(yvals) == 0:
+            if not yvals:
                 warn('No data found')
                 return None
 
             labelx = 'Range (m)'
 
             labels = list()
-            for i in range(len(valid_azi)):
+            for i, azi in enumerate(valid_azi):
                 labels.append(
-                    'azi '+'{:.1f}'.format(valid_azi[i]) +
+                    'azi '+'{:.1f}'.format(azi) +
                     ' ele '+'{:.1f}'.format(valid_ele[i]))
 
         elif prdcfg['mode'] == 'ALONG_AZI':
@@ -1380,16 +1376,16 @@ def generate_vol_products(dataset, prdcfg):
                 valid_rng.append(new_dataset.range['data'][ind_rng])
                 valid_ele.append(new_dataset.elevation['data'][0])
 
-            if len(yvals) == 0:
+            if not yvals:
                 warn('No data found')
                 return None
 
             labelx = 'Azimuth Angle (deg)'
 
             labels = list()
-            for i in range(len(valid_rng)):
+            for i, rng in enumerate(valid_rng):
                 labels.append(
-                    'rng '+'{:.1f}'.format(valid_rng[i]) +
+                    'rng '+'{:.1f}'.format(rng) +
                     ' ele '+'{:.1f}'.format(valid_ele[i]))
 
         elif prdcfg['mode'] == 'ALONG_ELE':
@@ -1443,15 +1439,15 @@ def generate_vol_products(dataset, prdcfg):
                 xvals.append(new_dataset.elevation['data'][ele_mask])
                 valid_rng.append(new_dataset.range['data'][ind_rng])
                 valid_azi.append(new_dataset.elevation['data'][0])
-            if len(yvals) == 0:
+            if not yvals:
                 warn('No data found')
                 return None
             labelx = 'Elevation Angle (deg)'
 
             labels = list()
-            for i in range(len(valid_rng)):
+            for i, rng in enumerate(valid_rng):
                 labels.append(
-                    'rng '+'{:.1f}'.format(valid_rng[i]) +
+                    'rng '+'{:.1f}'.format(rng) +
                     ' azi '+'{:.1f}'.format(valid_azi[i]))
         else:
             warn('Unknown plotting mode '+prdcfg['mode'])
@@ -1467,19 +1463,20 @@ def generate_vol_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
-        fname = make_filename(
+        fname_list = make_filename(
             prdcfg['mode'], prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], timeinfo=prdcfg['timeinfo'])
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
-        plot_along_coord(xvals, yvals, fname, labelx=labelx, labely=labely,
-                         labels=labels, title=titl, colors=colors)
+        plot_along_coord(
+            xvals, yvals, fname_list, labelx=labelx, labely=labely,
+            labels=labels, title=titl, colors=colors)
 
-        print('----- save to '+' '.join(fname))
+        print('----- save to '+' '.join(fname_list))
 
-        return fname
+        return fname_list
 
     elif prdcfg['type'] == 'BSCOPE_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -1498,19 +1495,19 @@ def generate_vol_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
-        fname = make_filename(
+        fname_list = make_filename(
             'b-scope', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
             prdcfginfo='ang'+'{:.1f}'.format(ang),
             timeinfo=prdcfg['timeinfo'])
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
-        plot_bscope(dataset, field_name, ind_ang, prdcfg, fname)
-        print('----- save to '+' '.join(fname))
+        plot_bscope(dataset, field_name, ind_ang, prdcfg, fname_list)
+        print('----- save to '+' '.join(fname_list))
 
-        return fname
+        return fname_list
 
     elif prdcfg['type'] == 'TIME_RANGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -1529,19 +1526,19 @@ def generate_vol_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
-        fname = make_filename(
+        fname_list = make_filename(
             'time-range', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
             prdcfginfo='ang'+'{:.1f}'.format(ang),
             timeinfo=prdcfg['timeinfo'])
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
-        plot_time_range(dataset, field_name, ind_ang, prdcfg, fname)
-        print('----- save to '+' '.join(fname))
+        plot_time_range(dataset, field_name, ind_ang, prdcfg, fname_list)
+        print('----- save to '+' '.join(fname_list))
 
-        return fname
+        return fname_list
 
     elif prdcfg['type'] == 'HISTOGRAM':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -1560,13 +1557,13 @@ def generate_vol_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
-        fname = make_filename(
+        fname_list = make_filename(
             'histogram', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
             timeinfo=prdcfg['timeinfo'])
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
         bins, values = compute_histogram(
             dataset.fields[field_name]['data'], field_name, step=step)
@@ -1578,12 +1575,12 @@ def generate_vol_products(dataset, prdcfg):
 
         labelx = get_colobar_label(dataset.fields[field_name], field_name)
 
-        plot_histogram(bins, values, fname, labelx=labelx,
+        plot_histogram(bins, values, fname_list, labelx=labelx,
                        labely='Number of Samples', titl=titl)
 
-        print('----- save to '+' '.join(fname))
+        print('----- save to '+' '.join(fname_list))
 
-        return fname
+        return fname_list
 
     elif prdcfg['type'] == 'QUANTILES':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -1602,13 +1599,13 @@ def generate_vol_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
-        fname = make_filename(
+        fname_list = make_filename(
             'quantiles', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
             timeinfo=prdcfg['timeinfo'])
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
         quantiles, values = compute_quantiles(
             dataset.fields[field_name]['data'], quantiles=quantiles)
@@ -1620,12 +1617,12 @@ def generate_vol_products(dataset, prdcfg):
 
         labely = get_colobar_label(dataset.fields[field_name], field_name)
 
-        plot_quantiles(quantiles, values, fname, labelx='quantile',
+        plot_quantiles(quantiles, values, fname_list, labelx='quantile',
                        labely=labely, titl=titl)
 
-        print('----- save to '+' '.join(fname))
+        print('----- save to '+' '.join(fname_list))
 
-        return fname
+        return fname_list
 
     elif prdcfg['type'] == 'FIELD_COVERAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -1702,7 +1699,7 @@ def generate_vol_products(dataset, prdcfg):
                 ele_target = ele_steps_vec[i]+j*ele_res
                 d_ele = np.abs(dataset.elevation['data']-ele_target)
                 ind_ele = np.where(d_ele < prdcfg['AngTol'])[0]
-                if len(ind_ele) == 0:
+                if not ind_ele:
                     continue
                 yval_aux = np.ma.concatenate(
                     [yval_aux, field_coverage[ind_ele]])
@@ -1725,7 +1722,7 @@ def generate_vol_products(dataset, prdcfg):
             field_coverage_sector = field_coverage[ind_ele]
             azi_sector = dataset.azimuth['data'][ind_ele]
             nazi = int((np.max(dataset.azimuth['data']) -
-                       np.min(dataset.azimuth['data']))/azi_res+1)
+                        np.min(dataset.azimuth['data']))/azi_res+1)
 
             xmeanval = np.arange(nazi)*azi_res+np.min(dataset.azimuth['data'])
             ymeanval = np.ma.empty(nazi)
@@ -1733,7 +1730,7 @@ def generate_vol_products(dataset, prdcfg):
             for i in range(nazi):
                 d_azi = np.abs(azi_sector-xmeanval[i])
                 ind_azi = np.where(d_azi < prdcfg['AngTol'])[0]
-                if len(ind_azi) == 0:
+                if not ind_azi:
                     continue
                 ymeanval[i] = np.ma.mean(field_coverage_sector[ind_azi])
             labelmeanval = ('ele '+'{:.1f}'.format(ele_sect_start)+'-' +
@@ -1747,13 +1744,13 @@ def generate_vol_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
-        fname = make_filename(
+        fname_list = make_filename(
             'coverage', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
             timeinfo=prdcfg['timeinfo'])
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
         titl = (
             pyart.graph.common.generate_radar_time_begin(
@@ -1761,11 +1758,11 @@ def generate_vol_products(dataset, prdcfg):
             get_field_name(dataset.fields[field_name], field_name))
 
         plot_field_coverage(
-            xval, yval, fname, labels=labels, title=titl, ymin=0.,
+            xval, yval, fname_list, labels=labels, title=titl, ymin=0.,
             ymax=np.max(dataset.range['data'])+60000., xmeanval=xmeanval,
             ymeanval=ymeanval, labelmeanval=labelmeanval)
 
-        print('----- save to '+' '.join(fname))
+        print('----- save to '+' '.join(fname_list))
 
         fname = make_filename(
             'coverage', prdcfg['dstype'], prdcfg['voltype'],
@@ -1882,14 +1879,14 @@ def generate_vol_products(dataset, prdcfg):
 
         # filter according to precip type
         nprec_filter = -1
-        if len(filterprec) > 0:
+        if filterprec:
             hydro_field = get_fieldname_pyart('hydro')
             if hydro_field in dataset.fields:
                 hydro_ROI = dataset.fields[hydro_field]['data'][roi_flag == 1]
                 nprec_filter = 0
-                for i in range(len(filterprec)):
-                    nprec_filter += len(hydro_ROI[hydro_ROI == filterprec[i]])
-                    data[hydro_ROI == filterprec[i]] = np.ma.masked
+                for ind_hydro in filterprec:
+                    nprec_filter += len(hydro_ROI[hydro_ROI == ind_hydro])
+                    data[hydro_ROI == ind_hydro] = np.ma.masked
 
         if absolute:
             data = np.ma.abs(data)
@@ -1927,13 +1924,13 @@ def generate_vol_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
-        fname = make_filename(
+        fname_list = make_filename(
             'cdf', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
             timeinfo=prdcfg['timeinfo'])
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
         titl = (
             pyart.graph.common.generate_radar_time_begin(
@@ -1942,10 +1939,10 @@ def generate_vol_products(dataset, prdcfg):
 
         labelx = get_colobar_label(dataset.fields[field_name], field_name)
 
-        plot_quantiles(values, quantiles/100., fname, labelx=labelx,
+        plot_quantiles(values, quantiles/100., fname_list, labelx=labelx,
                        labely='Cumulative probability', titl=titl)
 
-        print('----- save to '+' '.join(fname))
+        print('----- save to '+' '.join(fname_list))
 
         # store cdf values
         fname = make_filename(
@@ -1983,15 +1980,14 @@ def generate_vol_products(dataset, prdcfg):
 
         fname = make_filename(
             'savevol', prdcfg['dstype'], prdcfg['voltype'], ['nc'],
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'])[0]
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        fname = savedir+fname
 
-        pyart.io.cfradial.write_cfradial(fname[0], new_dataset)
-        print('saved file: '+fname[0])
+        pyart.io.cfradial.write_cfradial(fname, new_dataset)
+        print('saved file: '+fname)
 
-        return fname[0]
+        return fname
 
     elif prdcfg['type'] == 'SAVEALL':
         savedir = get_save_dir(
@@ -2000,15 +1996,14 @@ def generate_vol_products(dataset, prdcfg):
 
         fname = make_filename(
             'savevol', prdcfg['dstype'], 'all_fields', ['nc'],
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'])[0]
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        fname = savedir+fname
 
-        pyart.io.cfradial.write_cfradial(fname[0], dataset)
-        print('saved file: '+fname[0])
+        pyart.io.cfradial.write_cfradial(fname, dataset)
+        print('saved file: '+fname)
 
-        return fname[0]
+        return fname
 
     elif prdcfg['type'] == 'SAVESTATE':
         if prdcfg['lastStateFile'] is None:
@@ -2057,7 +2052,7 @@ def generate_timeseries_products(dataset, prdcfg):
     """
 
     dssavedir = prdcfg['dsname']
-    if ('dssavename' in prdcfg):
+    if 'dssavename' in prdcfg:
         dssavedir = prdcfg['dssavename']
 
     if prdcfg['type'] == 'PLOT_AND_WRITE_POINT':
@@ -2080,28 +2075,27 @@ def generate_timeseries_products(dataset, prdcfg):
         csvfname = make_filename(
             'ts', prdcfg['dstype'], dataset['datatype'], ['csv'],
             prdcfginfo=gateinfo, timeinfo=prdcfg['timeinfo'],
-            timeformat='%Y%m%d')
+            timeformat='%Y%m%d')[0]
 
-        for i in range(len(csvfname)):
-            csvfname[i] = savedir+csvfname[i]
+        csvfname = savedir+csvfname
 
-        write_ts_polar_data(dataset, csvfname[0])
-        print('saved CSV file: '+csvfname[0])
+        write_ts_polar_data(dataset, csvfname)
+        print('saved CSV file: '+csvfname)
 
-        date, value = read_timeseries(csvfname[0])
+        date, value = read_timeseries(csvfname)
 
         if date is None:
             warn(
                 'Unable to plot time series. No valid data')
             return None
 
-        figfname = make_filename(
+        figfname_list = make_filename(
             'ts', prdcfg['dstype'], dataset['datatype'],
             prdcfg['imgformat'], prdcfginfo=gateinfo,
             timeinfo=date[0], timeformat='%Y%m%d')
 
-        for i in range(len(figfname)):
-            figfname[i] = savedir+figfname[i]
+        for i, figfname in enumerate(figfname_list):
+            figfname_list[i] = savedir+figfname
 
         label1 = 'Radar (az, el, r): ('+az+', '+el+', '+r+')'
         titl = ('Time Series '+date[0].strftime('%Y-%m-%d'))
@@ -2109,11 +2103,11 @@ def generate_timeseries_products(dataset, prdcfg):
         labely = generate_field_name_str(dataset['datatype'])
 
         plot_timeseries(
-            date, [value], figfname, labelx='Time UTC',
+            date, [value], figfname_list, labelx='Time UTC',
             labely=labely, labels=[label1], title=titl, dpi=dpi)
-        print('----- save to '+' '.join(figfname))
+        print('----- save to '+' '.join(figfname_list))
 
-        return figfname
+        return figfname_list
 
     elif prdcfg['type'] == 'PLOT_CUMULATIVE_POINT':
         if dataset['final']:
@@ -2135,25 +2129,24 @@ def generate_timeseries_products(dataset, prdcfg):
         csvfname = make_filename(
             'ts', prdcfg['dstype'], dataset['datatype'], ['csv'],
             prdcfginfo=gateinfo, timeinfo=prdcfg['timeinfo'],
-            timeformat='%Y%m%d')
+            timeformat='%Y%m%d')[0]
 
-        for i in range(len(csvfname)):
-            csvfname[i] = savedir+csvfname[i]
+        csvfname = savedir+csvfname
 
-        date, value = read_timeseries(csvfname[0])
+        date, value = read_timeseries(csvfname)
 
         if date is None:
             warn(
                 'Unable to plot accumulation time series. No valid data')
             return None
 
-        figfname = make_filename(
+        figfname_list = make_filename(
             'ts_cum', prdcfg['dstype'], dataset['datatype'],
             prdcfg['imgformat'], prdcfginfo=gateinfo,
             timeinfo=date[0], timeformat='%Y%m%d')
 
-        for i in range(len(figfname)):
-            figfname[i] = savedir+figfname[i]
+        for i, figfname in enumerate(figfname_list):
+            figfname_list[i] = savedir+figfname
 
         label1 = 'Radar (az, el, r): ('+az+', '+el+', '+r+')'
         titl = ('Time Series Acc. '+date[0].strftime('%Y-%m-%d'))
@@ -2161,12 +2154,12 @@ def generate_timeseries_products(dataset, prdcfg):
         labely = 'Radar estimated rainfall accumulation (mm)'
 
         plot_timeseries(
-            date, [value], figfname, labelx='Time UTC',
+            date, [value], figfname_list, labelx='Time UTC',
             labely=labely, labels=[label1], title=titl,
             period=prdcfg['ScanPeriod']*60., dpi=dpi)
-        print('----- save to '+' '.join(figfname))
+        print('----- save to '+' '.join(figfname_list))
 
-        return figfname
+        return figfname_list
 
     elif prdcfg['type'] == 'COMPARE_POINT':
         if dataset['final']:
@@ -2190,10 +2183,9 @@ def generate_timeseries_products(dataset, prdcfg):
             prdcfginfo=gateinfo, timeinfo=prdcfg['timeinfo'],
             timeformat='%Y%m%d')
 
-        for i in range(len(csvfname)):
-            csvfname[i] = savedir_ts+csvfname[i]
+        csvfname = savedir_ts+csvfname
 
-        radardate, radarvalue = read_timeseries(csvfname[0])
+        radardate, radarvalue = read_timeseries(csvfname)
         if radardate is None:
             warn(
                 'Unable to plot sensor comparison at point of interest. ' +
@@ -2212,13 +2204,13 @@ def generate_timeseries_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=radardate[0])
 
-        figfname = make_filename(
+        figfname_list = make_filename(
             'ts_comp', prdcfg['dstype'], dataset['datatype'],
             prdcfg['imgformat'], prdcfginfo=gateinfo,
             timeinfo=radardate[0], timeformat='%Y%m%d')
 
-        for i in range(len(figfname)):
-            figfname[i] = savedir+figfname[i]
+        for i, figfname in enumerate(figfname_list):
+            figfname_list[i] = savedir+figfname
 
         label1 = 'Radar (az, el, r): ('+az+', '+el+', '+r+')'
         label2 = sensortype+' '+prdcfg['sensorid']
@@ -2226,12 +2218,12 @@ def generate_timeseries_products(dataset, prdcfg):
         labely = generate_field_name_str(dataset['datatype'])
 
         plot_timeseries_comp(
-            radardate, radarvalue, sensordate, sensorvalue, figfname,
+            radardate, radarvalue, sensordate, sensorvalue, figfname_list,
             labelx='Time UTC', labely=labely, label1=label1, label2=label2,
             titl=titl, dpi=dpi)
-        print('----- save to '+' '.join(figfname))
+        print('----- save to '+' '.join(figfname_list))
 
-        return figfname
+        return figfname_list
 
     elif prdcfg['type'] == 'COMPARE_CUMULATIVE_POINT':
         if dataset['final']:
@@ -2253,12 +2245,11 @@ def generate_timeseries_products(dataset, prdcfg):
         csvfname = make_filename(
             'ts', prdcfg['dstype'], dataset['datatype'], ['csv'],
             prdcfginfo=gateinfo, timeinfo=prdcfg['timeinfo'],
-            timeformat='%Y%m%d')
+            timeformat='%Y%m%d')[0]
 
-        for i in range(len(csvfname)):
-            csvfname[i] = savedir_ts+csvfname[i]
+        csvfname = savedir_ts+csvfname
 
-        radardate, radarvalue = read_timeseries(csvfname[0])
+        radardate, radarvalue = read_timeseries(csvfname)
         if radardate is None:
             warn(
                 'Unable to plot sensor comparison at point of interest. ' +
@@ -2277,13 +2268,13 @@ def generate_timeseries_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=radardate[0])
 
-        figfname = make_filename(
+        figfname_list = make_filename(
             'ts_cumcomp', prdcfg['dstype'], dataset['datatype'],
             prdcfg['imgformat'], prdcfginfo=gateinfo,
             timeinfo=radardate[0], timeformat='%Y%m%d')
 
-        for i in range(len(figfname)):
-            figfname[i] = savedir+figfname[i]
+        for i, figfname in enumerate(figfname_list):
+            figfname_list[i] = savedir+figfname
 
         label1 = 'Radar (az, el, r): ('+az+', '+el+', '+r+')'
         label2 = sensortype+' '+prdcfg['sensorid']
@@ -2293,12 +2284,12 @@ def generate_timeseries_products(dataset, prdcfg):
 
         plot_timeseries_comp(
             radardate, radarvalue, sensordate, sensorvalue,
-            figfname, labelx='Time UTC', labely=labely,
+            figfname_list, labelx='Time UTC', labely=labely,
             label1=label1, label2=label2, titl=titl,
             period1=prdcfg['ScanPeriod']*60., period2=period2, dpi=dpi)
-        print('----- save to '+' '.join(figfname))
+        print('----- save to '+' '.join(figfname_list))
 
-        return figfname
+        return figfname_list
 
     elif prdcfg['type'] == 'COMPARE_TIME_AVG':
         if not dataset['final']:
@@ -2355,7 +2346,7 @@ def generate_timeseries_products(dataset, prdcfg):
 
         # find common time stamps
         ind = np.where(np.in1d(radardate_cum, sensordate_cum))[0]
-        if len(ind) == 0:
+        if not ind:
             warn('No sensor data for radar data time stamps')
         radardate_cum2 = radardate_cum[ind]
         radarvalue_cum2 = radarvalue_cum[ind]
@@ -2390,13 +2381,13 @@ def generate_timeseries_products(dataset, prdcfg):
 
         print('saved CSV file: '+fname)
 
-        figfname = make_filename(
+        figfname_list = make_filename(
             str(cum_time)+'s_acc_ts_comp', prdcfg['dstype'],
             dataset['datatype'], prdcfg['imgformat'], prdcfginfo=gateinfo,
             timeinfo=radardate[0], timeformat='%Y%m%d')
 
-        for i in range(len(figfname)):
-            figfname[i] = savedir+figfname[i]
+        for i, figfname in enumerate(figfname_list):
+            figfname_list[i] = savedir+figfname
 
         labelx = sensortype+' '+prdcfg['sensorid']+' (mm)'
         labely = 'Radar (az, el, r): ('+az+', '+el+', '+r+') (mm)'
@@ -2404,12 +2395,12 @@ def generate_timeseries_products(dataset, prdcfg):
                 radardate_cum[0].strftime('%Y-%m-%d'))
 
         plot_scatter_comp(
-            sensorvalue_cum2, radarvalue_cum2, figfname, labelx=labelx,
+            sensorvalue_cum2, radarvalue_cum2, figfname_list, labelx=labelx,
             labely=labely, titl=titl, axis='equal', dpi=dpi)
 
-        print('----- save to '+' '.join(figfname))
+        print('----- save to '+' '.join(figfname_list))
 
-        return figfname
+        return figfname_list
 
     # ================================================================
     elif prdcfg['type'] == 'PLOT_AND_WRITE':
@@ -2437,9 +2428,9 @@ def generate_timeseries_products(dataset, prdcfg):
 
         ymin = None
         ymax = None
-        if ('ymin' in prdcfg):
+        if 'ymin' in prdcfg:
             ymin = prdcfg['ymin']
-        if ('ymax' in prdcfg):
+        if 'ymax' in prdcfg:
             ymax = prdcfg['ymax']
 
         dataset.plot(savedir + fname[0], ymin=ymin, ymax=ymax)
@@ -2463,7 +2454,7 @@ def generate_timeseries_products(dataset, prdcfg):
                               runinfo=prdcfg['runinfo'])
 
         step = None
-        if ('step' in prdcfg):
+        if 'step' in prdcfg:
             step = prdcfg['step']
 
         dataset.plot_hist(savedir + fname[0], step=step)
@@ -2506,7 +2497,7 @@ def generate_monitoring_products(dataset, prdcfg):
     hist_obj = dataset['hist_obj']
 
     dssavedir = prdcfg['dsname']
-    if ('dssavename' in prdcfg):
+    if 'dssavename' in prdcfg:
         dssavedir = prdcfg['dssavename']
 
     if prdcfg['type'] == 'VOL_HISTOGRAM':
@@ -2520,9 +2511,9 @@ def generate_monitoring_products(dataset, prdcfg):
 
         timeformat = '%Y%m%d'
         titl = (
-                pyart.graph.common.generate_radar_time_begin(
-                    hist_obj).strftime('%Y-%m-%d') + '\n' +
-                get_field_name(hist_obj.fields[field_name], field_name))
+            pyart.graph.common.generate_radar_time_begin(
+                hist_obj).strftime('%Y-%m-%d') + '\n' +
+            get_field_name(hist_obj.fields[field_name], field_name))
         if hist_type == 'instant':
             timeformat = '%Y%m%d%H%M%S'
             titl = (
@@ -2534,25 +2525,25 @@ def generate_monitoring_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
-        fname = make_filename(
+        fname_list = make_filename(
             'histogram', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
             timeinfo=dataset['timeinfo'], timeformat=timeformat)
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
         labelx = get_colobar_label(hist_obj.fields[field_name], field_name)
 
         plot_histogram2(
             hist_obj.range['data'],
             np.sum(hist_obj.fields[field_name]['data'], axis=0),
-            fname, labelx=labelx, labely='Number of Samples',
+            fname_list, labelx=labelx, labely='Number of Samples',
             titl=titl)
 
-        print('----- save to '+' '.join(fname))
+        print('----- save to '+' '.join(fname_list))
 
-        return fname
+        return fname_list
 
     elif prdcfg['type'] == 'PPI_HISTOGRAM':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -2569,10 +2560,10 @@ def generate_monitoring_products(dataset, prdcfg):
 
         timeformat = '%Y%m%d'
         titl = (
-                '{:.1f}'.format(el)+' Deg. ' +
-                pyart.graph.common.generate_radar_time_begin(
-                    hist_obj).strftime('%Y-%m-%d') + '\n' +
-                get_field_name(hist_obj.fields[field_name], field_name))
+            '{:.1f}'.format(el)+' Deg. ' +
+            pyart.graph.common.generate_radar_time_begin(
+                hist_obj).strftime('%Y-%m-%d') + '\n' +
+            get_field_name(hist_obj.fields[field_name], field_name))
         if hist_type == 'instant':
             timeformat = '%Y%m%d%H%M%S'
             titl = (
@@ -2585,13 +2576,13 @@ def generate_monitoring_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
-        fname = make_filename(
+        fname_list = make_filename(
             'ppi', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
             timeinfo=dataset['timeinfo'], timeformat=timeformat)
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
         labelx = get_colobar_label(hist_obj.fields[field_name], field_name)
 
@@ -2600,12 +2591,12 @@ def generate_monitoring_products(dataset, prdcfg):
         values = hist_obj.fields[field_name]['data'][sweep_start:sweep_end, :]
         plot_histogram2(
             hist_obj.range['data'], np.sum(values, axis=0),
-            fname, labelx=labelx, labely='Number of Samples',
+            fname_list, labelx=labelx, labely='Number of Samples',
             titl=titl)
 
-        print('----- save to '+' '.join(fname))
+        print('----- save to '+' '.join(fname_list))
 
-        return fname
+        return fname_list
 
     elif prdcfg['type'] == 'ANGULAR_DENSITY':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -2628,13 +2619,13 @@ def generate_monitoring_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=dataset['timeinfo'])
 
-        fname = make_filename(
+        fname_list = make_filename(
             'ppi', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
             timeinfo=dataset['timeinfo'], timeformat=timeformat)
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
         quantiles = np.array([25., 50., 75.])
         ref_value = 0.
@@ -2644,12 +2635,12 @@ def generate_monitoring_products(dataset, prdcfg):
             ref_value = prdcfg['ref_value']
 
         plot_density(
-            hist_obj, hist_type, field_name, ind_el, prdcfg, fname,
+            hist_obj, hist_type, field_name, ind_el, prdcfg, fname_list,
             quantiles=quantiles, ref_value=ref_value)
 
-        print('----- save to '+' '.join(fname))
+        print('----- save to '+' '.join(fname_list))
 
-        return fname
+        return fname_list
 
     elif prdcfg['type'] == 'VOL_TS':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -2722,7 +2713,7 @@ def generate_monitoring_products(dataset, prdcfg):
 
         if rewrite:
             val_vec = np.ma.asarray(
-                    [lquant_vec, cquant_vec, hquant_vec]).T
+                [lquant_vec, cquant_vec, hquant_vec]).T
             write_monitoring_ts(
                 date, np_t_vec, val_vec, quantiles, prdcfg['voltype'],
                 csvfname, rewrite=True)
@@ -2740,14 +2731,14 @@ def generate_monitoring_products(dataset, prdcfg):
                     figtimeinfo = date[0]
                     timeformat = '%Y'
 
-        figfname = make_filename(
+        figfname_list = make_filename(
             'ts', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
             timeinfo=figtimeinfo, timeformat=timeformat,
             runinfo=prdcfg['runinfo'])
 
-        for i in range(len(figfname)):
-            figfname[i] = savedir+figfname[i]
+        for i, figfname in enumerate(figfname_list):
+            figfname_list[i] = savedir+figfname
 
         titl = (prdcfg['runinfo']+' Monitoring '+titldate)
 
@@ -2767,9 +2758,9 @@ def generate_monitoring_products(dataset, prdcfg):
 
         plot_monitoring_ts(
             date, np_t_vec, cquant_vec, lquant_vec, hquant_vec, field_name,
-            figfname, ref_value=ref_value, vmin=vmin, vmax=vmax,
+            figfname_list, ref_value=ref_value, vmin=vmin, vmax=vmax,
             np_min=np_min, labelx='Time UTC', labely=labely, titl=titl)
-        print('----- save to '+' '.join(figfname))
+        print('----- save to '+' '.join(figfname_list))
 
         # generate alarms if needed
         alarm = 0
@@ -2777,7 +2768,7 @@ def generate_monitoring_products(dataset, prdcfg):
             alarm = prdcfg['alarm']
 
         if not alarm:
-            return figfname
+            return figfname_list
 
         if 'tol_abs' not in prdcfg:
             warn('unable to send alarm. Missing tolerance on target')
@@ -2967,7 +2958,7 @@ def generate_monitoring_products(dataset, prdcfg):
 
         if rewrite:
             val_vec = np.ma.asarray(
-                    [lquant_vec, cquant_vec, hquant_vec]).T
+                [lquant_vec, cquant_vec, hquant_vec]).T
             write_monitoring_ts(
                 date, np_t_vec, val_vec, quantiles, prdcfg['voltype'],
                 csvfname, rewrite=True)
@@ -2981,14 +2972,14 @@ def generate_monitoring_products(dataset, prdcfg):
                 figtimeinfo = date[0]
                 timeformat = '%Y'
 
-        figfname = make_filename(
+        figfname_list = make_filename(
             'ts', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
             timeinfo=figtimeinfo, timeformat=timeformat,
             runinfo=prdcfg['runinfo'])
 
-        for i in range(len(figfname)):
-            figfname[i] = savedir+figfname[i]
+        for i, figfname in enumerate(figfname_list):
+            figfname_list[i] = savedir+figfname
 
         titl = (prdcfg['runinfo']+' Monitoring '+titldate)
 
@@ -3008,9 +2999,9 @@ def generate_monitoring_products(dataset, prdcfg):
 
         plot_monitoring_ts(
             date, np_t_vec, cquant_vec, lquant_vec, hquant_vec, field_name,
-            figfname, ref_value=ref_value, vmin=vmin, vmax=vmax,
+            figfname_list, ref_value=ref_value, vmin=vmin, vmax=vmax,
             np_min=np_min, labelx='Time UTC', labely=labely, titl=titl)
-        print('----- save to '+' '.join(figfname))
+        print('----- save to '+' '.join(figfname_list))
 
         # generate alarms if needed
         alarm = 0
@@ -3018,7 +3009,7 @@ def generate_monitoring_products(dataset, prdcfg):
             alarm = prdcfg['alarm']
 
         if not alarm:
-            return figfname
+            return figfname_list
 
         if 'tol_abs' not in prdcfg:
             warn('unable to send alarm. Missing tolerance on target')
@@ -3139,15 +3130,14 @@ def generate_monitoring_products(dataset, prdcfg):
 
         fname = make_filename(
             'savevol', prdcfg['dstype'], prdcfg['voltype'], ['nc'],
-            timeinfo=dataset['timeinfo'])
+            timeinfo=dataset['timeinfo'])[0]
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        fname = savedir+fname
 
-        pyart.io.cfradial.write_cfradial(fname[0], new_dataset)
-        print('saved file: '+fname[0])
+        pyart.io.cfradial.write_cfradial(fname, new_dataset)
+        print('saved file: '+fname)
 
-        return fname[0]
+        return fname
 
     else:
         warn(' Unsupported product type: ' + prdcfg['type'])
@@ -3173,7 +3163,7 @@ def generate_grid_products(dataset, prdcfg):
     """
 
     dssavedir = prdcfg['dsname']
-    if ('dssavename' in prdcfg):
+    if 'dssavename' in prdcfg:
         dssavedir = prdcfg['dssavename']
 
     if prdcfg['type'] == 'SURFACE_IMAGE':
@@ -3194,19 +3184,19 @@ def generate_grid_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
-        fname = make_filename(
+        fname_list = make_filename(
             'surface', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='l'+str(level),
             timeinfo=prdcfg['timeinfo'])
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
-        plot_surface(dataset, field_name, level, prdcfg, fname)
+        plot_surface(dataset, field_name, level, prdcfg, fname_list)
 
-        print('----- save to '+' '.join(fname))
+        print('----- save to '+' '.join(fname_list))
 
-        return fname
+        return fname_list
 
     elif prdcfg['type'] == 'LATITUDE_SLICE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -3229,19 +3219,19 @@ def generate_grid_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
-        fname = make_filename(
+        fname_list = make_filename(
             'lat_slice', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='lat'+'{:.2f}'.format(lat),
             timeinfo=prdcfg['timeinfo'])
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
-        plot_latitude_slice(dataset, field_name, lon, lat, prdcfg, fname)
+        plot_latitude_slice(dataset, field_name, lon, lat, prdcfg, fname_list)
 
-        print('----- save to '+' '.join(fname))
+        print('----- save to '+' '.join(fname_list))
 
-        return fname
+        return fname_list
 
     elif prdcfg['type'] == 'LONGITUDE_SLICE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -3264,19 +3254,20 @@ def generate_grid_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
-        fname = make_filename(
+        fname_list = make_filename(
             'lon_slice', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='lon'+'{:.2f}'.format(lon),
             timeinfo=prdcfg['timeinfo'])
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
-        plot_longitude_slice(dataset, field_name, lon, lat, prdcfg, fname)
+        plot_longitude_slice(
+            dataset, field_name, lon, lat, prdcfg, fname_list)
 
-        print('----- save to '+' '.join(fname))
+        print('----- save to '+' '.join(fname_list))
 
-        return fname
+        return fname_list
 
     elif prdcfg['type'] == 'CROSS_SECTION':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -3311,22 +3302,23 @@ def generate_grid_products(dataset, prdcfg):
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
-        fname = make_filename(
+        fname_list = make_filename(
             'lonlat', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
             prdcfginfo='lon-lat1_'+'{:.2f}'.format(lon1)+'-' +
-                       '{:.2f}'.format(lat1)+'_lon-lat2_' +
-                       '{:.2f}'.format(lon2)+'-'+'{:.2f}'.format(lat2),
+            '{:.2f}'.format(lat1)+'_lon-lat2_' +
+            '{:.2f}'.format(lon2)+'-'+'{:.2f}'.format(lat2),
             timeinfo=prdcfg['timeinfo'])
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
 
-        plot_latlon_slice(dataset, field_name, coord1, coord2, prdcfg, fname)
+        plot_latlon_slice(
+            dataset, field_name, coord1, coord2, prdcfg, fname_list)
 
-        print('----- save to '+' '.join(fname))
+        print('----- save to '+' '.join(fname_list))
 
-        return fname
+        return fname_list
 
     elif prdcfg['type'] == 'SAVEVOL':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -3343,16 +3335,15 @@ def generate_grid_products(dataset, prdcfg):
 
         fname = make_filename(
             'savevol', prdcfg['dstype'], prdcfg['voltype'], ['nc'],
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'])[0]
 
-        for i in range(len(fname)):
-            fname[i] = savedir+fname[i]
+        fname = savedir+fname
 
-        pyart.io.write_grid(fname[0], dataset, write_point_x_y_z=True,
+        pyart.io.write_grid(fname, dataset, write_point_x_y_z=True,
                             write_point_lon_lat_alt=True)
-        print('saved file: '+fname[0])
+        print('saved file: '+fname)
 
-        return fname[0]
+        return fname
 
     else:
         warn(' Unsupported product type: ' + prdcfg['type'])

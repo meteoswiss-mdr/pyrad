@@ -20,7 +20,6 @@ determined points or regions of interest.
 
 from copy import deepcopy
 from warnings import warn
-import datetime
 import numpy as np
 from netCDF4 import num2date
 
@@ -35,7 +34,7 @@ from ..util.radar_utils import find_rng_index
 def get_process_func(dataset_type, dsname):
     """
     Maps the dataset type into its processing function and data set format
-    associated. 
+    associated.
 
     Parameters
     ----------
@@ -471,9 +470,10 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
         {'point_coordinates_WGS84_lon_lat_alt': [lon, lat, alt]})
     new_dataset.update({'antenna_coordinates_az_el_r': [az, el, r]})
     new_dataset.update(
-        {'used_antenna_coordinates_az_el_r': [radar.azimuth['data'][ind_ray],
-         radar.elevation['data'][ind_ray],
-         radar.range['data'][ind_r]]})
+        {'used_antenna_coordinates_az_el_r': [
+            radar.azimuth['data'][ind_ray],
+            radar.elevation['data'][ind_ray],
+            radar.range['data'][ind_r]]})
     new_dataset.update({'final': False})
 
     return new_dataset, ind_rad
@@ -948,10 +948,10 @@ def process_time_height(procstatus, dscfg, radar_list=None):
                 radar_aux.gate_latitude['data'][:, :] > lat-latlon_tol),
             np.logical_and(
                 radar_aux.gate_longitude['data'][:, :] < lon+latlon_tol,
-                radar_aux.gate_longitude['data'][:, :] > lon-latlon_tol)))
+                radar_aux.gate_longitude['data'][:, :] > lon-latlon_tol)))[0]
 
         # find closest altitude
-        if len(inds[0]) > 0:
+        if inds:
             values = radar_aux.fields[field_name]['data'][inds]
             altitudes = radar_aux.gate_altitude['data'][inds]
             for ind_r, h in enumerate(th.range['data']):

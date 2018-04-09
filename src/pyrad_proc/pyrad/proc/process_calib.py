@@ -32,9 +32,8 @@ Functions for monitoring data quality and correct bias and noise effects
 from copy import deepcopy
 from warnings import warn
 import datetime
-from netCDF4 import num2date
-
 import numpy as np
+from netCDF4 import num2date
 
 import pyart
 
@@ -715,7 +714,7 @@ def process_rhohv_rain(procstatus, dscfg, radar_list=None):
         if datatype == 'TEMP':
             temp_field = 'temperature'
         if datatype == 'H_ISO0':
-                iso0_field = 'height_over_iso0'
+            iso0_field = 'height_over_iso0'
 
     ind_rad = int(radarnr[5:8])-1
     if radar_list[ind_rad] is None:
@@ -1329,7 +1328,7 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
     for datatypedescr in dscfg['datatype']:
         radarnr, datagroup, datatype, dataset, product = (
             get_datatype_fields(datatypedescr))
-        if (datatype == 'echoID'):
+        if datatype == 'echoID':
             echoid_field = get_fieldname_pyart(datatype)
         else:
             field_name = get_fieldname_pyart(datatype)
@@ -1448,7 +1447,7 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
         if 'regular_grid' in dscfg:
             regular_grid = dscfg['regular_grid']
 
-        if 'regular_grid':
+        if regular_grid:
             ray_ind = dscfg['global_data']['ray_ind']
             rng_ind = dscfg['global_data']['rng_ind']
             field = field[ray_ind, rng_ind].compressed()
@@ -1572,7 +1571,7 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
     for datatypedescr in dscfg['datatype']:
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
-        if (datatype == 'echoID'):
+        if datatype == 'echoID':
             echoid_field = get_fieldname_pyart(datatype)
         else:
             field_name = get_fieldname_pyart(datatype)
@@ -1671,12 +1670,12 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
 
         if rmin >= 0.:
             ind_min = np.where(radar_aux.range['data'] < rmin)[0]
-            if len(ind_min) > 0:
+            if ind_min:
                 ind_min = ind_min[-1]
                 occu_dict['data'][:, 0:ind_min+1] = 0
         if rmax >= 0.:
             ind_max = np.where(radar_aux.range['data'] > rmax)[0]
-            if len(ind_max) > 0:
+            if ind_max:
                 ind_max = ind_max[0]
                 occu_dict['data'][:, ind_max:radar_aux.ngates] = 0
 
@@ -1726,10 +1725,10 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
         dscfg['global_data']['endtime'] = dscfg['timeinfo']
 
         new_dataset = {
-                'radar_obj': dscfg['global_data']['radar_obj'],
-                'starttime': dscfg['global_data']['starttime'],
-                'endtime': dscfg['global_data']['endtime'],
-                'occu_final': False}
+            'radar_obj': dscfg['global_data']['radar_obj'],
+            'starttime': dscfg['global_data']['starttime'],
+            'endtime': dscfg['global_data']['endtime'],
+            'occu_final': False}
 
         return new_dataset, ind_rad
 
@@ -1749,10 +1748,10 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
         radar.add_field('frequency_of_occurrence', freq_occu_dict)
 
         new_dataset = {
-                'radar_obj': dscfg['global_data']['radar_obj'],
-                'starttime': dscfg['global_data']['starttime'],
-                'endtime': dscfg['global_data']['endtime'],
-                'occu_final': True}
+            'radar_obj': dscfg['global_data']['radar_obj'],
+            'starttime': dscfg['global_data']['starttime'],
+            'endtime': dscfg['global_data']['endtime'],
+            'occu_final': True}
 
         return new_dataset, ind_rad
 
@@ -1791,9 +1790,9 @@ def process_occurrence_period(procstatus, dscfg, radar_list=None):
     for datatypedescr in dscfg['datatype']:
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
-        if (datatype == 'occurrence'):
+        if datatype == 'occurrence':
             occu_field = get_fieldname_pyart(datatype)
-        elif (datatype == 'nsamples'):
+        elif datatype == 'nsamples':
             nsamples_field = get_fieldname_pyart(datatype)
     ind_rad = int(radarnr[5:8])-1
 
@@ -1828,12 +1827,12 @@ def process_occurrence_period(procstatus, dscfg, radar_list=None):
 
         if rmin >= 0.:
             ind_min = np.where(radar_aux.range['data'] < rmin)[0]
-            if len(ind_min) > 0:
+            if ind_min:
                 ind_min = ind_min[-1]
                 radar_aux.fields['occurrence']['data'][:, 0:ind_min+1] = 0
         if rmax >= 0.:
             ind_max = np.where(radar_aux.range['data'] > rmax)[0]
-            if len(ind_max) > 0:
+            if ind_max:
                 ind_max = ind_max[0]
                 radar_aux.fields['occurrence']['data'][
                     :, ind_max:radar_aux.ngates] = 0
@@ -1882,10 +1881,10 @@ def process_occurrence_period(procstatus, dscfg, radar_list=None):
         dscfg['global_data']['endtime'] = dscfg['timeinfo']
 
         new_dataset = {
-                'radar_obj': dscfg['global_data']['radar_obj'],
-                'starttime': dscfg['global_data']['starttime'],
-                'endtime': dscfg['global_data']['endtime'],
-                'occu_final': False}
+            'radar_obj': dscfg['global_data']['radar_obj'],
+            'starttime': dscfg['global_data']['starttime'],
+            'endtime': dscfg['global_data']['endtime'],
+            'occu_final': False}
 
         return new_dataset, ind_rad
 
@@ -1905,10 +1904,10 @@ def process_occurrence_period(procstatus, dscfg, radar_list=None):
         radar.add_field('frequency_of_occurrence', freq_occu_dict)
 
         new_dataset = {
-                'radar_obj': dscfg['global_data']['radar_obj'],
-                'starttime': dscfg['global_data']['starttime'],
-                'endtime': dscfg['global_data']['endtime'],
-                'occu_final': True}
+            'radar_obj': dscfg['global_data']['radar_obj'],
+            'starttime': dscfg['global_data']['starttime'],
+            'endtime': dscfg['global_data']['endtime'],
+            'occu_final': True}
 
         return new_dataset, ind_rad
 
@@ -2016,9 +2015,9 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
             # get start and stop times of new radar object
             (dscfg['global_data']['starttime'],
              dscfg['global_data']['endtime']) = (
-                time_avg_range(
-                    dscfg['timeinfo'], dscfg['global_data']['starttime'],
-                    dscfg['global_data']['endtime'], period))
+                 time_avg_range(
+                     dscfg['timeinfo'], dscfg['global_data']['starttime'],
+                     dscfg['global_data']['endtime'], period))
 
             # check if volume time older than starttime
             if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
@@ -2037,7 +2036,7 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
                 field_interp['data'].filled(fill_value=0))
             dscfg['global_data']['radar_obj'].fields[
                 'number_of_samples']['data'] += (
-                npoints_interp['data'].filled(fill_value=0)).astype('int')
+                    npoints_interp['data'].filled(fill_value=0)).astype('int')
 
             return None, None
 
@@ -2084,8 +2083,8 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
 
         (dscfg['global_data']['radar_obj'].fields[field_name][
             'data']) /= (
-            dscfg['global_data']['radar_obj'].fields[
-                'number_of_samples']['data'])
+                dscfg['global_data']['radar_obj'].fields[
+                    'number_of_samples']['data'])
         if lin_trans:
             dscfg['global_data']['radar_obj'].fields[field_name]['data'] = (
                 10.*np.ma.log10(
@@ -2201,9 +2200,9 @@ def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
             # get start and stop times of new radar object
             (dscfg['global_data']['starttime'],
              dscfg['global_data']['endtime']) = (
-                time_avg_range(
-                    dscfg['timeinfo'], dscfg['global_data']['starttime'],
-                    dscfg['global_data']['endtime'], period))
+                 time_avg_range(
+                     dscfg['timeinfo'], dscfg['global_data']['starttime'],
+                     dscfg['global_data']['endtime'], period))
 
             # check if volume time older than starttime
             if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
@@ -2444,9 +2443,9 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
             # get start and stop times of new radar object
             (dscfg['global_data']['starttime'],
              dscfg['global_data']['endtime']) = (
-                time_avg_range(
-                    dscfg['timeinfo'], dscfg['global_data']['starttime'],
-                    dscfg['global_data']['endtime'], period))
+                 time_avg_range(
+                     dscfg['timeinfo'], dscfg['global_data']['starttime'],
+                     dscfg['global_data']['endtime'], period))
 
             # check if volume time older than starttime
             if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
@@ -2658,7 +2657,7 @@ def process_colocated_gates(procstatus, dscfg, radar_list=None):
     if vismin is not None and visib_field is None:
         warn('Unable to filter data according to visibility. ' +
              'Visibility field for RADAR'+'{:03d}'.format(
-                ind_radar_list[0]+1)+' not available')
+                 ind_radar_list[0]+1)+' not available')
 
     gate_coloc_rad1_dict = pyart.util.intersection(
         radar1, radar2,
@@ -2675,7 +2674,7 @@ def process_colocated_gates(procstatus, dscfg, radar_list=None):
     if vismin is not None and visib_field is None:
         warn('Unable to filter data according to visibility. ' +
              'Visibility field for RADAR'+'{:03d}'.format(
-                ind_radar_list[1]+1)+' not available')
+                 ind_radar_list[1]+1)+' not available')
 
     gate_coloc_rad2_dict = pyart.util.intersection(
         radar2, radar1,
@@ -2768,7 +2767,7 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
 
         (rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,
          rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi, rad2_rng) = (
-            read_colocated_gates(savedir+fname))
+             read_colocated_gates(savedir+fname))
 
         if rad1_ele is None:
             raise ValueError('Unable to intercompare radars. ' +
@@ -3090,7 +3089,7 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
 
         (rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,
          rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi, rad2_rng) = (
-            read_colocated_gates(savedir+fname))
+             read_colocated_gates(savedir+fname))
 
         if rad1_ele is None:
             raise ValueError('Unable to intercompare radars. ' +
@@ -3439,7 +3438,7 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
         (rad1_time, rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,
          rad1_dBZ, rad1_phi, rad1_flag, rad2_time, rad2_ray_ind, rad2_rng_ind,
          rad2_ele, rad2_azi, rad2_rng, rad2_dBZ, rad2_phi, rad2_flag) = (
-            read_colocated_data_time_avg(fname))
+             read_colocated_data_time_avg(fname))
 
         rad1_excess_phi = (rad1_flag % 100).astype(int)
         rad2_excess_phi = (rad2_flag % 100).astype(int)

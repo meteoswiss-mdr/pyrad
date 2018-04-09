@@ -10,9 +10,6 @@ Auxiliary functions to generate products
     get_prodgen_func
 
 """
-
-import pyart
-
 from .process_product import generate_vol_products
 from .process_product import generate_timeseries_products
 from .process_product import generate_sun_hits_products

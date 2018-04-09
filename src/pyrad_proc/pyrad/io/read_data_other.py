@@ -43,6 +43,7 @@ import xml.etree.ElementTree as et
 from warnings import warn
 from copy import deepcopy
 import fcntl
+import time
 
 import numpy as np
 
@@ -72,7 +73,7 @@ def read_last_state(fname):
         with open(fname, 'r', newline='') as txtfile:
             line = txtfile.readline()
             txtfile.close()
-            if len(line) == 0:
+            if not line:
                 warn('File '+fname+' is empty.')
                 return None
             try:
@@ -121,7 +122,7 @@ def read_status(voltime, cfg, ind_rad=0):
     else:
         datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
     filename = glob.glob(datapath+basename+timeinfo+'*.xml')
-    if len(filename) == 0:
+    if not filename:
         warn('rad4alp status file '+datapath+basename+timeinfo +
              '*.xml not found')
         return None
@@ -594,7 +595,7 @@ def read_lightning(fname, filter_data=True):
 
     Returns
     -------
-    flashnr, time, time_in_flash, lat, lon, alt, dBm : tupple
+    flashnr, time_data, time_in_flash, lat, lon, alt, dBm : tupple
         A tupple containing the read values. None otherwise
 
     """
@@ -626,10 +627,10 @@ def read_lightning(fname, filter_data=True):
                                      'lat', 'lon', 'alt', 'dBm'],
                 delimiter=' ')
             i = 0
-            time = list()
+            time_data = list()
             for row in reader:
                 flashnr[i] = int(row['flashnr'])
-                time.append(fdatetime+datetime.timedelta(
+                time_data.append(fdatetime+datetime.timedelta(
                     seconds=float(row['time'])))
                 time_in_flash[i] = float(row['time_in_flash'])
                 lat[i] = float(row['lat'])
@@ -639,12 +640,12 @@ def read_lightning(fname, filter_data=True):
 
                 i += 1
 
-            time = np.array(time)
+            time_data = np.array(time_data)
 
             if filter_data:
                 flashnr_aux = deepcopy(flashnr)
                 flashnr = flashnr[flashnr_aux > 0]
-                time = time[flashnr_aux > 0]
+                time_data = time_data[flashnr_aux > 0]
                 time_in_flash = time_in_flash[flashnr_aux > 0]
                 lat = lat[flashnr_aux > 0]
                 lon = lon[flashnr_aux > 0]
@@ -653,7 +654,7 @@ def read_lightning(fname, filter_data=True):
 
             csvfile.close()
 
-            return flashnr, time, time_in_flash, lat, lon, alt, dBm
+            return flashnr, time_data, time_in_flash, lat, lon, alt, dBm
     except EnvironmentError as ee:
         warn(str(ee))
         warn('Unable to read file '+fname)
@@ -1582,7 +1583,7 @@ def get_sensor_data(date, datatype, cfg):
     if cfg['sensor'] == 'rgage':
         datapath = cfg['smnpath']+date.strftime('%Y%m')+'/'
         datafile = date.strftime('%Y%m%d')+'_' + cfg['sensorid']+'.csv'
-        (id, sensordate, pressure, temp,
+        (sensor_id, sensordate, pressure, temp,
          rh, sensorvalue, wspeed, wdir) = read_smn(datapath+datafile)
         if sensordate is None:
             return None, None, None, None
@@ -1595,7 +1596,7 @@ def get_sensor_data(date, datatype, cfg):
                     '_elev'+cfg['elev']+'.txt')
         (sensordate, prectype, lwc, rr, zh, zv, zdr, ldr, ah, av,
          adiff, kdp, detaco, rhohv) = read_disdro_scattering(
-            datapath+datafile)
+             datapath+datafile)
         if sensordate is None:
             return None, None, None, None
         label = 'Disdro'
@@ -1622,7 +1623,7 @@ def read_smn(fname):
 
     Returns
     -------
-    id, date , pressure, temp, rh, precip, wspeed, wdir : tupple
+    smn_id, date , pressure, temp, rh, precip, wspeed, wdir : tupple
         The read values
 
     """
@@ -1632,7 +1633,7 @@ def read_smn(fname):
             # first count the lines
             reader = csv.DictReader(csvfile)
             nrows = sum(1 for row in reader)
-            id = np.ma.empty(nrows, dtype='float32')
+            smn_id = np.ma.empty(nrows, dtype='float32')
             pressure = np.ma.empty(nrows, dtype='float32')
             temp = np.ma.empty(nrows, dtype='float32')
             rh = np.ma.empty(nrows, dtype='float32')
@@ -1646,7 +1647,7 @@ def read_smn(fname):
             i = 0
             date = list()
             for row in reader:
-                id[i] = float(row['StationID'])
+                smn_id[i] = float(row['StationID'])
                 date.append(datetime.datetime.strptime(
                     row['DateTime'], '%Y%m%d%H%M%S'))
                 pressure[i] = float(row['AirPressure'])
@@ -1669,7 +1670,7 @@ def read_smn(fname):
 
             csvfile.close()
 
-            return id, date, pressure, temp, rh, precip, wspeed, wdir
+            return smn_id, date, pressure, temp, rh, precip, wspeed, wdir
     except EnvironmentError as ee:
         warn(str(ee))
         warn('Unable to read file '+fname)
@@ -1688,7 +1689,7 @@ def read_smn2(fname):
 
     Returns
     -------
-    id, date , value : tupple
+    smn_id, date , value : tupple
         The read values
 
     """
@@ -1706,7 +1707,7 @@ def read_smn2(fname):
             if nrows == 0:
                 warn('Empty file '+fname)
                 return None, None, None
-            id = np.ma.empty(nrows, dtype=int)
+            smn_id = np.ma.empty(nrows, dtype=int)
             value = np.ma.empty(nrows, dtype=float)
 
             # now read the data
@@ -1721,7 +1722,7 @@ def read_smn2(fname):
             i = 0
             date = list()
             for row in reader:
-                id[i] = float(row['StationID'])
+                smn_id[i] = float(row['StationID'])
                 date.append(datetime.datetime.strptime(
                     row['DateTime'], '%Y%m%d%H%M%S'))
                 value[i] = float(row['Value'])
@@ -1729,7 +1730,7 @@ def read_smn2(fname):
 
             csvfile.close()
 
-            return id, date, value
+            return smn_id, date, value
     except EnvironmentError as ee:
         warn(str(ee))
         warn('Unable to read file '+fname)
@@ -1896,7 +1897,7 @@ def read_antenna_pattern(fname, linear=False, twoway=False):
     # Get array length
     linenum = 0
     for line in pfile:
-        if (line.startswith("# CRC:")):
+        if line.startswith("# CRC:"):
             break
         linenum += 1
 
@@ -1908,7 +1909,7 @@ def read_antenna_pattern(fname, linear=False, twoway=False):
     pfile.seek(0)
     cnt = 0
     for line in pfile:
-        if (line.startswith("# CRC:")):
+        if line.startswith("# CRC:"):
             break
         line = line.strip()
         fields = line.split(',')
@@ -1918,10 +1919,10 @@ def read_antenna_pattern(fname, linear=False, twoway=False):
 
     pfile.close()
 
-    if (twoway):
+    if twoway:
         pattern['attenuation'] = 2. * pattern['attenuation']
 
-    if (linear):
+    if linear:
         pattern['attenuation'] = 10.**(pattern['attenuation']/10.)
 
     return pattern

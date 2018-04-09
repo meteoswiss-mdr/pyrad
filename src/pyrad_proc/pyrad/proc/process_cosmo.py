@@ -22,19 +22,18 @@ import time
 import glob
 
 import numpy as np
+from netCDF4 import num2date
 
 import pyart
 
 from ..io.io_aux import get_datatype_fields, find_raw_cosmo_file
-from ..io.io_aux import find_hzt_file
+from ..io.io_aux import find_hzt_file, get_fieldname_pyart
 from ..io.read_data_cosmo import read_cosmo_data, read_cosmo_coord
 from ..io.read_data_cosmo import cosmo2radar_data, cosmo2radar_coord
 from ..io.read_data_cosmo import get_cosmo_fields
 from ..io.read_data_radar import interpol_field
 from ..io.read_data_hzt import read_hzt_data, hzt2radar_data, hzt2radar_coord
 from ..io.read_data_hzt import get_iso0_field
-
-from netCDF4 import num2date
 
 
 def process_cosmo(procstatus, dscfg, radar_list=None):
