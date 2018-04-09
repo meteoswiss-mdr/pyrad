@@ -29,7 +29,8 @@ from ..io.write_data import write_colocated_gates, write_colocated_data
 from ..io.write_data import write_colocated_data_time_avg
 from ..io.write_data import write_intercomp_scores_ts
 
-from ..graph.plots import plot_scatter, plot_intercomp_scores_ts
+from ..graph.plots import plot_scatter
+from ..graph.plots_timeseries import plot_intercomp_scores_ts
 
 from ..util.radar_utils import compute_2d_stats
 

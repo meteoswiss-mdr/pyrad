@@ -19,11 +19,12 @@ import numpy as np
 from ..io.io_aux import get_save_dir, make_filename
 from ..io.io_aux import generate_field_name_str
 
-from ..io.read_data_other import get_sensor_data, read_timeseries
+from ..io.read_data_sensor import get_sensor_data
+from ..io.read_data_other import read_timeseries
 
 from ..io.write_data import write_ts_polar_data, write_ts_cum
 
-from ..graph.plots import plot_timeseries, plot_timeseries_comp
+from ..graph.plots_timeseries import plot_timeseries, plot_timeseries_comp
 from ..graph.plots import plot_scatter_comp
 
 from ..util.radar_utils import rainfall_accumulation

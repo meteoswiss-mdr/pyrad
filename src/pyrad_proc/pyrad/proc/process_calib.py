@@ -23,7 +23,7 @@ import numpy as np
 import pyart
 
 from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
-from ..io.read_data_other import read_sun_hits_multiple_days, read_solar_flux
+from ..io.read_data_sun import read_sun_hits_multiple_days, read_solar_flux
 from ..io.read_data_other import read_excess_gates
 from ..io.read_data_radar import interpol_field
 

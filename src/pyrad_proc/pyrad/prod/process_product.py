@@ -26,12 +26,13 @@ from .process_vol_products import generate_vol_products
 from ..io.io_aux import get_fieldname_pyart
 from ..io.io_aux import get_save_dir, make_filename
 
-from ..io.read_data_other import read_sun_retrieval
+from ..io.read_data_sun import read_sun_retrieval
 
 from ..io.write_data import write_sun_hits, write_sun_retrieval
 from ..io.write_data import write_excess_gates
 
-from ..graph.plots import plot_sun_hits, plot_sun_retrieval_ts
+from ..graph.plots import plot_sun_hits
+from ..graph.plots_timeseries import plot_sun_retrieval_ts
 
 from ..util.radar_utils import create_sun_hits_field
 from ..util.radar_utils import create_sun_retrieval_field

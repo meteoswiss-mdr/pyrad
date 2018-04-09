@@ -24,7 +24,7 @@ import numpy as np
 
 import pyart
 
-from ..io.read_data_other import read_lightning
+from ..io.read_data_sensor import read_lightning
 
 
 class Trajectory(object):

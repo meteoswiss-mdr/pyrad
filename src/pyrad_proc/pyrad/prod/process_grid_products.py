@@ -18,9 +18,9 @@ import pyart
 from ..io.io_aux import get_fieldname_pyart
 from ..io.io_aux import get_save_dir, make_filename
 
-from ..graph.plots import plot_surface
-from ..graph.plots import plot_longitude_slice, plot_latitude_slice
-from ..graph.plots import plot_latlon_slice
+from ..graph.plots_grid import plot_surface
+from ..graph.plots_grid import plot_longitude_slice, plot_latitude_slice
+from ..graph.plots_grid import plot_latlon_slice
 
 
 def generate_grid_products(dataset, prdcfg):

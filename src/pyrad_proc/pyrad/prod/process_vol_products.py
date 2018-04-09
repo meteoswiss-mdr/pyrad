@@ -24,11 +24,11 @@ from ..io.io_aux import get_save_dir, make_filename, get_fieldname_pyart
 from ..io.write_data import write_cdf, write_rhi_profile, write_field_coverage
 from ..io.write_data import write_last_state
 
-from ..graph.plots import plot_ppi, plot_ppi_map, plot_rhi, plot_cappi
-from ..graph.plots import plot_bscope, plot_quantiles, plot_histogram
-from ..graph.plots import plot_rhi_profile, plot_along_coord
-from ..graph.plots import plot_field_coverage, plot_time_range
-from ..graph.plots import get_colobar_label, get_field_name
+from ..graph.plots_vol import plot_ppi, plot_ppi_map, plot_rhi, plot_cappi
+from ..graph.plots_vol import plot_bscope, plot_rhi_profile, plot_along_coord
+from ..graph.plots_vol import plot_field_coverage, plot_time_range
+from ..graph.plots import plot_quantiles, plot_histogram
+from ..graph.plots_aux import get_colobar_label, get_field_name
 
 from ..util.radar_utils import get_ROI
 from ..util.radar_utils import compute_histogram, compute_quantiles
