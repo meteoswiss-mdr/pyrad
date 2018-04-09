@@ -76,7 +76,7 @@ ALLOW_USER_BREAK = True
 def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
          flashnr=0, infostr=""):
     """
-    main flow control. Processes radar data off-line over a period of time
+    Main flow control. Processes radar data off-line over a period of time
     given either by the user, a trajectory file, or determined by the last
     volume processed and the current time. Multiple radars can be processed
     simultaneously
