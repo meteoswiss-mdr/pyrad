@@ -12,7 +12,6 @@ Functions for obtaining Pyrad products from gridded datasets
 """
 
 from warnings import warn
-import os
 
 import pyart
 
