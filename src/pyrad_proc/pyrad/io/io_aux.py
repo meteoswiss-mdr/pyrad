@@ -33,12 +33,8 @@ import os
 import glob
 import re
 import datetime
-import csv
-import xml.etree.ElementTree as et
 from warnings import warn
 from copy import deepcopy
-
-import numpy as np
 
 from pyart.config import get_metadata
 
@@ -116,7 +112,7 @@ def get_save_dir(basepath, procname, dsname, prdname, timeinfo=None,
     return savedir
 
 
-def make_filename(prdtype, dstype, dsname, ext, prdcfginfo=None,
+def make_filename(prdtype, dstype, dsname, ext_list, prdcfginfo=None,
                   timeinfo=None, timeformat='%Y%m%d%H%M%S',
                   runinfo=None):
     """
@@ -132,7 +128,7 @@ def make_filename(prdtype, dstype, dsname, ext, prdcfginfo=None,
         data set type, i.e. 'raw', etc.
     dsname : str
         data set name
-    ext : array of str
+    ext_list : list of str
         file name extensions, i.e. 'png'
     prdcfginfo : str
         Optional. string to add product configuration information, i.e. 'el0.4'
@@ -163,9 +159,9 @@ def make_filename(prdtype, dstype, dsname, ext, prdcfginfo=None,
         runstr = runinfo + '_'
 
     fname_list = list()
-    for i in range(len(ext)):
+    for ext in ext_list:
         fname_list.append(timeinfostr + runstr + prdtype + '_' +
-                          dstype + '_' + dsname + cfgstr + '.' + ext[i])
+                          dstype + '_' + dsname + cfgstr + '.' + ext)
 
     return fname_list
 
@@ -541,7 +537,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
                 starttime+datetime.timedelta(days=i)).strftime('%Y-%m-%d')
             dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%Y%m%d')
             datapath = cfg['datapath'][ind_rad] + scan + daydir + '/'
-            if (not os.path.isdir(datapath)):
+            if not os.path.isdir(datapath):
                 # warn("WARNING: Unknown datapath '%s'" % datapath)
                 continue
             dayfilelist = glob.glob(datapath+dayinfo+'*00'+datatype+'.*')
@@ -563,7 +559,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
 
                 # check that M files exist. if not search P files
                 dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
-                if len(dayfilelist) == 0:
+                if not dayfilelist:
                     subf = ('P' + cfg['RadarRes'][ind_rad] +
                             cfg['RadarName'][ind_rad] + yy + 'hdf' + dy)
                     datapath = cfg['datapath'][ind_rad] + subf + '/'
@@ -574,7 +570,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
 
                 # check that M files exist. if not search P files
                 dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
-                if len(dayfilelist) == 0:
+                if not dayfilelist:
                     basename = ('P'+cfg['RadarRes'][ind_rad] +
                                 cfg['RadarName'][ind_rad]+dayinfo)
                     datapath = (cfg['datapath'][ind_rad]+dayinfo+'/' +
@@ -586,14 +582,14 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
 
                 # check that M files exist. if not search P files
                 dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
-                if len(dayfilelist) == 0:
+                if not dayfilelist:
                     basename = ('P'+cfg['RadarRes'][ind_rad] +
                                 cfg['RadarName'][ind_rad]+dayinfo)
                     datapath = (
                         cfg['datapath'][ind_rad]+'P'+cfg['RadarRes'][ind_rad] +
                         cfg['RadarName'][ind_rad]+'/')
 
-            if (not os.path.isdir(datapath)):
+            if not os.path.isdir(datapath):
                 warn("WARNING: Unknown datapath '%s'" % datapath)
                 continue
             dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
@@ -606,7 +602,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
             datapath = (
                 cfg['loadbasepath'][ind_rad]+cfg['loadname'][ind_rad]+'/' +
                 daydir+'/'+dataset+'/'+product+'/')
-            if (not os.path.isdir(datapath)):
+            if not os.path.isdir(datapath):
                 warn("WARNING: Unknown datapath '%s'" % datapath)
                 continue
             dayfilelist = glob.glob(datapath+dayinfo+'*'+datatype+'.nc')
@@ -631,7 +627,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
                 dayinfo = (
                     starttime+datetime.timedelta(days=i)).strftime('%Y%m%d')
                 datapath = cfg['datapath'][ind_rad]+scan+'/'+daydir+'/'
-                if (not os.path.isdir(datapath)):
+                if not os.path.isdir(datapath):
                     warn("WARNING: Unknown datapath '%s'" % datapath)
                     continue
                 dayfilelist = glob.glob(
@@ -706,7 +702,7 @@ def get_new_rainbow_file_name(master_fname, master_datadescriptor, datatype):
 
     """
     radarnr, datagroup, master_datatype, dataset, product = (
-            get_datatype_fields(master_datadescriptor))
+        get_datatype_fields(master_datadescriptor))
     datapath = os.path.dirname(master_fname)
     voltime = get_datetime(master_fname, master_datatype)
     voltype = os.path.basename(master_fname).split('.')[1]
@@ -901,15 +897,15 @@ def find_cosmo_file(voltime, datatype, cfg, scanid, ind_rad=0):
             datapath+datatype+'_RUN'+runtimestr+'_DX50'+fdatetime+'.*')
         print('Looking for file: '+search_name)
         fname = glob.glob(search_name)
-        if len(fname) > 0:
+        if fname:
             found = True
             break
 
     if not found:
         warn('WARNING: Unable to get COSMO '+datatype+' information')
         return None
-    else:
-        return fname[0]
+
+    return fname[0]
 
 
 def find_raw_cosmo_file(voltime, datatype, cfg, ind_rad=0):
@@ -954,15 +950,15 @@ def find_raw_cosmo_file(voltime, datatype, cfg, ind_rad=0):
             warn('Unable to get COSMO '+datatype+'. Unknown variable')
         print('Looking for file: '+search_name)
         fname = glob.glob(search_name)
-        if len(fname) > 0:
+        if fname:
             found = True
             break
 
     if not found:
         warn('WARNING: Unable to get COSMO '+datatype+' information')
         return None
-    else:
-        return fname[0]
+
+    return fname[0]
 
 
 def find_hzt_file(voltime, cfg, ind_rad=0):
@@ -1006,15 +1002,15 @@ def find_hzt_file(voltime, cfg, ind_rad=0):
 
         print('Looking for file: '+search_name)
         fname = glob.glob(search_name)
-        if len(fname) > 0:
+        if fname:
             found = True
             break
 
     if not found:
         warn('WARNING: Unable to find HZT file')
         return None
-    else:
-        return fname[0]
+
+    return fname[0]
 
 
 def find_rad4alpcosmo_file(voltime, datatype, cfg, scanid, ind_rad=0):
@@ -1052,25 +1048,26 @@ def find_rad4alpcosmo_file(voltime, datatype, cfg, scanid, ind_rad=0):
     # look for cosmo file
     found = False
     nruns_to_check = int((cfg['CosmoForecasted']-1)/cfg['CosmoRunFreq'])
-    id = 'P'+cfg['RadarRes'][ind_rad]+cfg['RadarName'][ind_rad]
+    rad_id = 'P'+cfg['RadarRes'][ind_rad]+cfg['RadarName'][ind_rad]
     for i in range(nruns_to_check):
         runtime = runtime0-datetime.timedelta(hours=i * cfg['CosmoRunFreq'])
         runtimestr = runtime.strftime('%y%j%H')+'00'
 
         daydir = runtime.strftime('%y%j')
-        datapath = cfg['cosmopath'][ind_rad]+datatype+'/'+id+'/'+daydir+'/'
+        datapath = (
+            cfg['cosmopath'][ind_rad]+datatype+'/'+rad_id+'/'+daydir+'/')
 
         search_name = (
-            datapath+datatype+'_RUN'+runtimestr+'_'+id+fdatetime+'.'+scanid +
-            '.bin')
+            datapath+datatype+'_RUN'+runtimestr+'_'+rad_id+fdatetime+'.' +
+            scanid+'.bin')
         print('Looking for file: '+search_name)
         fname = glob.glob(search_name)
-        if len(fname) > 0:
+        if fname:
             found = True
             break
 
     if not found:
         warn('WARNING: Unable to get COSMO '+datatype+' information')
         return None
-    else:
-        return fname[0]
+
+    return fname[0]
