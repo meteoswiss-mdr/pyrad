@@ -337,7 +337,7 @@ def generate_vol_products(dataset, prdcfg):
                 timeinfo=prdcfg['timeinfo'])
 
             for i, fname in enumerate(fname_list):
-                fname[i] = savedir+fname
+                fname_list[i] = savedir+fname
 
             step = None
             quantiles = None
@@ -1100,7 +1100,7 @@ def generate_vol_products(dataset, prdcfg):
         if 'filterclt' in prdcfg:
             filterclt = prdcfg['filterclt']
 
-        filterprec = []
+        filterprec = np.array([], dtype=int)
         if 'filterprec' in prdcfg:
             filterprec = prdcfg['filterprec']
 
@@ -1137,7 +1137,7 @@ def generate_vol_products(dataset, prdcfg):
 
         # filter according to precip type
         nprec_filter = -1
-        if filterprec:
+        if filterprec.size > 0:
             hydro_field = get_fieldname_pyart('hydro')
             if hydro_field in dataset.fields:
                 hydro_ROI = dataset.fields[hydro_field]['data'][roi_flag == 1]
