@@ -257,25 +257,25 @@ def _prepare_for_interpolation(x_radar, y_radar, hzt_coord, slice_xy=True):
         ymax = np.max(y_radar)
 
         ind_xmin = np.where(hzt_coord['x']['data'] < xmin)[0]
-        if not ind_xmin:
+        if ind_xmin.size == 0:
             ind_xmin = 0
         else:
             ind_xmin = ind_xmin[-1]
 
         ind_xmax = np.where(hzt_coord['x']['data'] > xmax)[0]
-        if not ind_xmax:
+        if ind_xmax.size == 0:
             ind_xmax = nx_hzt-1
         else:
             ind_xmax = ind_xmax[0]
 
         ind_ymin = np.where(hzt_coord['y']['data'] < ymin)[0]
-        if not ind_ymin:
+        if ind_ymin.size == 0:
             ind_ymin = 0
         else:
             ind_ymin = ind_ymin[-1]
 
         ind_ymax = np.where(hzt_coord['y']['data'] > ymax)[0]
-        if not ind_ymax:
+        if ind_ymax.size == 0:
             ind_ymax = ny_hzt-1
         else:
             ind_ymax = ind_ymax[0]

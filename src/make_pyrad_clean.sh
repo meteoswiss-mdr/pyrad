@@ -10,7 +10,7 @@ pyvers=${py:7:3}
 echo 'Removing previous built...'
 cd $HOME/.local/lib/python${pyvers}/site-packages/
 rm -r pyrad
-rm mch_pyrad-*
+rm -r mch_pyrad-*
 
 # recompile
 echo 'icleaning build..'

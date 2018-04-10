@@ -131,7 +131,7 @@ class pyrad_MXPOL(pyart.core.Radar):
 
             for j, v in enumerate(varnames):
                 if v in data.keys():
-                    if not fields[v]['data']:
+                    if fields[v]['data'].size == 0:
                         fields[v]['data'] = data[v]
                     else:
                         fields[v]['data'] = row_stack(
@@ -284,7 +284,7 @@ class pyrad_IDL(pyart.core.Radar):
 
             for j, v in enumerate(varnames):
                 if v in data.keys():
-                    if not fields[v]['data']:
+                    if fields[v]['data'].size == 0:
                         fields[v]['data'] = data[v]
                     else:
                         fields[v]['data'] = row_stack(
@@ -440,7 +440,7 @@ class pyrad_MCH(pyart.core.Radar):
             time_lapse.extend(np.arange(
                 starttime+(0.5*interval), endtime, interval))
             for j, v in enumerate(varnames):
-                if not fields[v]['data']:
+                if fields[v]['data'].size == 0:
                     fields[v]['data'] = data[v].T
                 else:
                     fields[v]['data'] = row_stack(

@@ -957,7 +957,7 @@ def generate_vol_products(dataset, prdcfg):
                 ele_target = ele_steps_vec[i]+j*ele_res
                 d_ele = np.abs(dataset.elevation['data']-ele_target)
                 ind_ele = np.where(d_ele < prdcfg['AngTol'])[0]
-                if not ind_ele:
+                if ind_ele.size == 0:
                     continue
                 yval_aux = np.ma.concatenate(
                     [yval_aux, field_coverage[ind_ele]])
@@ -988,7 +988,7 @@ def generate_vol_products(dataset, prdcfg):
             for i in range(nazi):
                 d_azi = np.abs(azi_sector-xmeanval[i])
                 ind_azi = np.where(d_azi < prdcfg['AngTol'])[0]
-                if not ind_azi:
+                if ind_azi.size == 0:
                     continue
                 ymeanval[i] = np.ma.mean(field_coverage_sector[ind_azi])
             labelmeanval = ('ele '+'{:.1f}'.format(ele_sect_start)+'-' +

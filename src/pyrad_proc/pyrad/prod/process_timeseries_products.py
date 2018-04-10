@@ -178,7 +178,7 @@ def generate_timeseries_products(dataset, prdcfg):
         csvfname = make_filename(
             'ts', prdcfg['dstype'], dataset['datatype'], ['csv'],
             prdcfginfo=gateinfo, timeinfo=prdcfg['timeinfo'],
-            timeformat='%Y%m%d')
+            timeformat='%Y%m%d')[0]
 
         csvfname = savedir_ts+csvfname
 
@@ -343,7 +343,7 @@ def generate_timeseries_products(dataset, prdcfg):
 
         # find common time stamps
         ind = np.where(np.in1d(radardate_cum, sensordate_cum))[0]
-        if not ind:
+        if ind.size == 0:
             warn('No sensor data for radar data time stamps')
         radardate_cum2 = radardate_cum[ind]
         radarvalue_cum2 = radarvalue_cum[ind]

@@ -313,7 +313,7 @@ def merge_scans_rainbow(basepath, scan_list, voltime, scan_period,
             ind_sweeps = np.where(np.logical_and(
                 radar.fixed_angle['data'] > cfg['elmin'],
                 radar.fixed_angle['data'] < cfg['elmax']))[0]
-            if not ind_sweeps:
+            if ind_sweeps.size == 0:
                 warn('Elevation angles outside of specified angle range. ' +
                      'Min angle: '+str(cfg['elmin']) +
                      ' Max angle: '+str(cfg['elmax']))

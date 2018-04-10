@@ -406,25 +406,25 @@ def _prepare_for_interpolation(x_radar, y_radar, z_radar, cosmo_coord,
         ymax = np.max(y_radar)
 
         ind_xmin = np.where(cosmo_coord['x']['data'] < xmin)[0]
-        if not ind_xmin:
+        if ind_xmin.size == 0:
             ind_xmin = 0
         else:
             ind_xmin = ind_xmin[-1]
 
         ind_xmax = np.where(cosmo_coord['x']['data'] > xmax)[0]
-        if not ind_xmax:
+        if ind_xmax.size == 0:
             ind_xmax = nx_cosmo-1
         else:
             ind_xmax = ind_xmax[0]
 
         ind_ymin = np.where(cosmo_coord['y']['data'] < ymin)[0]
-        if not ind_ymin:
+        if ind_ymin.size == 0:
             ind_ymin = 0
         else:
             ind_ymin = ind_ymin[-1]
 
         ind_ymax = np.where(cosmo_coord['y']['data'] > ymax)[0]
-        if not ind_ymax:
+        if ind_ymax.size == 0:
             ind_ymax = ny_cosmo-1
         else:
             ind_ymax = ind_ymax[0]
@@ -439,12 +439,12 @@ def _prepare_for_interpolation(x_radar, y_radar, z_radar, cosmo_coord,
         zmax = np.max(z_radar)
 
         ind_z, ind_y, ind_x = np.where(cosmo_coord['hfl']['data'] < zmin)
-        if not ind_z:
+        if ind_z.size == 0:
             ind_zmin = 0
         else:
             ind_zmin = np.min(ind_z)
         ind_z, ind_y, ind_x = np.where(cosmo_coord['hfl']['data'] > zmax)
-        if not ind_z:
+        if ind_z.size == 0:
             ind_zmax = nz_cosmo-1
         else:
             ind_zmax = np.max(ind_z)

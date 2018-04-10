@@ -298,9 +298,9 @@ def find_ray_index(ele_vec, azi_vec, ele, azi, ele_tol=0., azi_tol=0.,
         np.logical_and(ele_vec <= ele+ele_tol, ele_vec >= ele-ele_tol),
         np.logical_and(azi_vec <= azi+azi_tol, azi_vec >= azi-azi_tol)))[0]
 
-    if not ind_ray:
+    if ind_ray.size == 0:
         return None
-    if len(ind_ray) == 1:
+    if ind_ray.size == 1:
         return ind_ray[0]
 
     if nearest == 'azi':
@@ -510,7 +510,7 @@ def create_sun_hits_field(rad_el, rad_az, sun_el, sun_az, data, imgcfg):
         the sun hit field
 
     """
-    if not data.compressed():
+    if data.compressed().size == 0:
         warn('No valid sun hits to plot.')
         return None
 
@@ -832,7 +832,7 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
         a dictionary with statistics
 
     """
-    if not field1 or not field2:
+    if field1.size == 0 or field2.size == 0:
         warn('Unable to compute 2D histogram. Empty field')
         stats = {
             'npoints': 0,
@@ -894,7 +894,7 @@ def compute_1d_stats(field1, field2):
         a dictionary with statistics
 
     """
-    if not field1 or not field2:
+    if field1.size == 0 or field2.size == 0:
         warn('Unable to compute statistics. Empty fields')
         stats = {
             'npoints': 0,
