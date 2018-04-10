@@ -113,7 +113,7 @@ for ((iday=0; iday<${nday}; iday++)); do
             fi
         done
     fi
-    chmod -R gu+rw ${data_destpath}}     
+    chmod -R gu+rw ${data_destpath}     
 
     # add file 00:00 UTC the next day
     if [ "${hour_run_vec}" = "all" ] || [ "$hour24" -eq 1 ];then
