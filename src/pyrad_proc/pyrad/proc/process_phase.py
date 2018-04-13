@@ -375,7 +375,7 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar_list=None):
         if datatype == 'TEMP':
             temp_field = 'temperature'
         if datatype == 'H_ISO0':
-                iso0_field = 'height_over_iso0'
+            iso0_field = 'height_over_iso0'
 
     ind_rad = int(radarnr[5:8])-1
     if radar_list[ind_rad] is None:
@@ -536,7 +536,7 @@ def process_phidp_kdp_lp(procstatus, dscfg, radar_list=None):
         if datatype == 'TEMP':
             temp_field = 'temperature'
         if datatype == 'H_ISO0':
-                iso0_field = 'height_over_iso0'
+            iso0_field = 'height_over_iso0'
 
     ind_rad = int(radarnr[5:8])-1
     if radar_list[ind_rad] is None:

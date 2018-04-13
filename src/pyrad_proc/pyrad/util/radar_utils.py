@@ -178,7 +178,7 @@ def time_series_statistics(t_in_vec, val_in_vec, avg_time=3600,
     df_in = pd.DataFrame(data=val_in_vec, index=pd.DatetimeIndex(t_in_vec))
     df_out = getattr(df_in.resample(
         str(avg_time)+'S', closed='right', label='right', base=base_time),
-        method)()
+                     method)()
     if dropnan is True:
         df_out = df_out.dropna(how='any')
     t_out_vec = df_out.index.to_pydatetime()
@@ -298,9 +298,9 @@ def find_ray_index(ele_vec, azi_vec, ele, azi, ele_tol=0., azi_tol=0.,
         np.logical_and(ele_vec <= ele+ele_tol, ele_vec >= ele-ele_tol),
         np.logical_and(azi_vec <= azi+azi_tol, azi_vec >= azi-azi_tol)))[0]
 
-    if len(ind_ray) == 0:
+    if ind_ray.size == 0:
         return None
-    if len(ind_ray) == 1:
+    if ind_ray.size == 1:
         return ind_ray[0]
 
     if nearest == 'azi':
@@ -472,13 +472,13 @@ def get_closest_solar_flux(hit_datetime_list, flux_datetime_list,
     flux_value_closest_list[:] = np.ma.masked
 
     i = 0
-    for datetime in hit_datetime_list:
+    for hit_dt in hit_datetime_list:
         flux_datetime_closest = min(
-            flux_datetime_list, key=lambda x: abs(x-datetime))
+            flux_datetime_list, key=lambda x: abs(x-hit_dt))
         flux_datetime_closest_list.append(flux_datetime_closest)
 
         # solar flux observation within 24h of sun hit
-        time_diff = abs(flux_datetime_closest-datetime).total_seconds()
+        time_diff = abs(flux_datetime_closest-hit_dt).total_seconds()
         if time_diff < 86400.:
             ind = flux_datetime_list.index(flux_datetime_closest)
             flux_value_closest_list[i] = flux_value_list[ind]
@@ -510,7 +510,7 @@ def create_sun_hits_field(rad_el, rad_az, sun_el, sun_az, data, imgcfg):
         the sun hit field
 
     """
-    if len(data.compressed()) == 0:
+    if data.compressed().size == 0:
         warn('No valid sun hits to plot.')
         return None
 
@@ -832,7 +832,7 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
         a dictionary with statistics
 
     """
-    if len(field1) == 0 or len(field2) == 0:
+    if field1.size == 0 or field2.size == 0:
         warn('Unable to compute 2D histogram. Empty field')
         stats = {
             'npoints': 0,
@@ -894,7 +894,7 @@ def compute_1d_stats(field1, field2):
         a dictionary with statistics
 
     """
-    if len(field1) == 0 or len(field2) == 0:
+    if field1.size == 0 or field2.size == 0:
         warn('Unable to compute statistics. Empty fields')
         stats = {
             'npoints': 0,

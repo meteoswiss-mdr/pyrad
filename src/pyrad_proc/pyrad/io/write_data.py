@@ -34,12 +34,12 @@ import csv
 from warnings import warn
 import smtplib
 from email.message import EmailMessage
-import numpy as np
-import os
 import fcntl
+import time
 
+import numpy as np
 
-from pyart.config import get_fillvalue, get_metadata
+from pyart.config import get_fillvalue
 
 from .io_aux import generate_field_name_str
 
@@ -332,9 +332,9 @@ def write_field_coverage(quantiles, values, ele_start, ele_stop, azi_start,
         fieldnames = ['Quantile [%]', 'Rain extension [m]']
         writer = csv.DictWriter(csvfile, fieldnames)
         writer.writeheader()
-        for i in range(len(quantiles)):
+        for i, quant in enumerate(quantiles):
             writer.writerow({
-                'Quantile [%]': quantiles[i],
+                'Quantile [%]': quant,
                 'Rain extension [m]': values[i]})
 
         csvfile.close()
@@ -459,8 +459,8 @@ def write_cdf(quantiles, values, ntot, nnan, nclut, nblocked, nprec_filter,
             txtfile.write('Filtered precipitation gates         : ' +
                           str(nprec_filter)+'\n')
             txtfile.write('  precipitation types filtered: ')
-            for i in range(len(filterprec)):
-                txtfile.write(hydrotype_list[filterprec[i]]+' ')
+            for ind_hydro in filterprec:
+                txtfile.write(hydrotype_list[ind_hydro]+' ')
             txtfile.write('\n')
         txtfile.write('Number of outliers                   : ' +
                       str(noutliers)+'\n')
@@ -496,7 +496,7 @@ def write_ts_polar_data(dataset, fname):
 
     """
     filelist = glob.glob(fname)
-    if len(filelist) == 0:
+    if not filelist:
         with open(fname, 'w', newline='') as csvfile:
             csvfile.write('# Weather radar timeseries data file\n')
             csvfile.write('# Comment lines are preceded by "#"\n')
@@ -646,7 +646,7 @@ def write_monitoring_ts(start_time, np_t, values, quantiles, datatype, fname,
         file_exists = False
     else:
         filelist = glob.glob(fname)
-        if len(filelist) == 0:
+        if not filelist:
             file_exists = False
         else:
             file_exists = True
@@ -830,11 +830,11 @@ def write_intercomp_scores_ts(start_time, stats, field_name, fname,
         file_exists = False
     else:
         filelist = glob.glob(fname)
-        if len(filelist) == 0:
+        if not filelist:
             file_exists = False
         else:
             file_exists = True
-            
+
     if not file_exists:
         with open(fname, 'w', newline='') as csvfile:
             while True:
@@ -846,15 +846,16 @@ def write_intercomp_scores_ts(start_time, stats, field_name, fname,
                         raise
                     else:
                         time.sleep(0.1)
-                        
+
             csvfile.write(
                 '# Weather radar intercomparison scores timeseries file\n' +
                 '# Comment lines are preceded by "#"\n' +
-                '# Description: \n' +            
+                '# Description: \n' +
                 '# Time series of the intercomparison between two radars.\n' +
                 '# Radar 1: '+rad1_name+'\n' +
                 '# Radar 2: '+rad2_name+'\n' +
-                '# Fill Value: '+str(get_fillvalue())+'\n' +            
+                '# Field name: '+field_name+'\n' +
+                '# Fill Value: '+str(get_fillvalue())+'\n' +
                 '# Start: '+start_time_aux[0].strftime(
                     '%Y-%m-%d %H:%M:%S UTC')+'\n' +
                 '#\n')
@@ -882,7 +883,7 @@ def write_intercomp_scores_ts(start_time, stats, field_name, fname,
                     'intercep_of_linear_regression_of_slope_1': (
                         intercep_slope_1[i])
                     })
-                    
+
             fcntl.flock(csvfile, fcntl.LOCK_UN)
             csvfile.close()
     else:
@@ -896,7 +897,7 @@ def write_intercomp_scores_ts(start_time, stats, field_name, fname,
                         raise
                     else:
                         time.sleep(0.1)
-                        
+
             fieldnames = ['date', 'NP', 'mean_bias', 'median_bias',
                           'quant25_bias', 'quant75_bias', 'mode_bias', 'corr',
                           'slope_of_linear_regression',
@@ -989,7 +990,7 @@ def write_colocated_data(coloc_data, fname):
     """
     filelist = glob.glob(fname)
     ngates = len(coloc_data['rad1_ele'])
-    if len(filelist) == 0:
+    if not filelist:
         with open(fname, 'w', newline='') as csvfile:
             csvfile.write('# Colocated radar gates data file\n')
             csvfile.write('# Comment lines are preceded by "#"\n')
@@ -1072,7 +1073,7 @@ def write_colocated_data_time_avg(coloc_data, fname):
     """
     filelist = glob.glob(fname)
     ngates = len(coloc_data['rad1_ele'])
-    if len(filelist) == 0:
+    if not filelist:
         with open(fname, 'w', newline='') as csvfile:
             csvfile.write('# Colocated radar gates data file\n')
             csvfile.write('# Comment lines are preceded by "#"\n')
@@ -1097,7 +1098,6 @@ def write_colocated_data_time_avg(coloc_data, fname):
                     'rad1_rng': coloc_data['rad1_rng'][i],
                     'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
                     'rad1_PhiDPavg': coloc_data['rad1_PhiDPavg'][i],
-                    'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
                     'rad1_Flagavg': coloc_data['rad1_Flagavg'][i],
                     'rad2_time': (
                         coloc_data['rad2_time'][i].strftime('%Y%m%d%H%M%S')),
@@ -1131,7 +1131,6 @@ def write_colocated_data_time_avg(coloc_data, fname):
                     'rad1_rng': coloc_data['rad1_rng'][i],
                     'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
                     'rad1_PhiDPavg': coloc_data['rad1_PhiDPavg'][i],
-                    'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
                     'rad1_Flagavg': coloc_data['rad1_Flagavg'][i],
                     'rad2_time': (
                         coloc_data['rad2_time'][i].strftime('%Y%m%d%H%M%S')),
@@ -1178,7 +1177,7 @@ def write_sun_hits(sun_hits, fname):
 
     filelist = glob.glob(fname)
     nhits = len(sun_hits['time'])
-    if len(filelist) == 0:
+    if not filelist:
         with open(fname, 'w', newline='') as csvfile:
             csvfile.write('# Weather radar sun hits data file\n')
             csvfile.write('# Comment lines are preceded by "#"\n')
@@ -1303,7 +1302,7 @@ def write_sun_retrieval(sun_retrieval, fname):
         ref_time = sun_retrieval['ref_time'].strftime('%Y%m%d%H%M%S')
 
     filelist = glob.glob(fname)
-    if len(filelist) == 0:
+    if not filelist:
         with open(fname, 'w', newline='') as csvfile:
             csvfile.write('# Weather radar sun retrievals data file\n')
             csvfile.write('# Comment lines are preceded by "#"\n')
