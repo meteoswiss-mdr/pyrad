@@ -15,7 +15,8 @@ from datetime import datetime
 
 import numpy as np
 
-from ..graph.plots import plot_timeseries, plot_histogram
+from ..graph.plots import plot_histogram
+from ..graph.plots_timeseries import plot_timeseries
 from ..util.radar_utils import compute_histogram
 from ..io.io_aux import get_fieldname_pyart
 

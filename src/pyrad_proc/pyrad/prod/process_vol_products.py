@@ -337,7 +337,7 @@ def generate_vol_products(dataset, prdcfg):
                 timeinfo=prdcfg['timeinfo'])
 
             for i, fname in enumerate(fname_list):
-                fname[i] = savedir+fname
+                fname_list[i] = savedir+fname
 
             step = None
             quantiles = None
@@ -957,7 +957,7 @@ def generate_vol_products(dataset, prdcfg):
                 ele_target = ele_steps_vec[i]+j*ele_res
                 d_ele = np.abs(dataset.elevation['data']-ele_target)
                 ind_ele = np.where(d_ele < prdcfg['AngTol'])[0]
-                if not ind_ele:
+                if ind_ele.size == 0:
                     continue
                 yval_aux = np.ma.concatenate(
                     [yval_aux, field_coverage[ind_ele]])
@@ -988,7 +988,7 @@ def generate_vol_products(dataset, prdcfg):
             for i in range(nazi):
                 d_azi = np.abs(azi_sector-xmeanval[i])
                 ind_azi = np.where(d_azi < prdcfg['AngTol'])[0]
-                if not ind_azi:
+                if ind_azi.size == 0:
                     continue
                 ymeanval[i] = np.ma.mean(field_coverage_sector[ind_azi])
             labelmeanval = ('ele '+'{:.1f}'.format(ele_sect_start)+'-' +
@@ -1100,7 +1100,7 @@ def generate_vol_products(dataset, prdcfg):
         if 'filterclt' in prdcfg:
             filterclt = prdcfg['filterclt']
 
-        filterprec = []
+        filterprec = np.array([], dtype=int)
         if 'filterprec' in prdcfg:
             filterprec = prdcfg['filterprec']
 
@@ -1137,7 +1137,7 @@ def generate_vol_products(dataset, prdcfg):
 
         # filter according to precip type
         nprec_filter = -1
-        if filterprec:
+        if filterprec.size > 0:
             hydro_field = get_fieldname_pyart('hydro')
             if hydro_field in dataset.fields:
                 hydro_ROI = dataset.fields[hydro_field]['data'][roi_flag == 1]

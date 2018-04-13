@@ -87,7 +87,7 @@ def generate_occurrence_products(dataset, prdcfg):
         freq_occu = radar.fields['frequency_of_occurrence'][
             'data']
         ind_ray, ind_rng = np.where(freq_occu > quant_min)
-        if not ind_ray:
+        if ind_ray.size == 0:
             warn('No data exceeds the frequency of occurrence ' +
                  str(quant_min)+' %')
             return None

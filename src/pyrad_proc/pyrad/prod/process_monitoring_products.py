@@ -27,7 +27,7 @@ from ..io.read_data_other import read_monitoring_ts
 
 from ..io.write_data import write_monitoring_ts, write_alarm_msg, send_msg
 
-from ..graph.plots import plot_histogram2, plot_density 
+from ..graph.plots import plot_histogram2, plot_density
 from ..graph.plots_timeseries import plot_monitoring_ts
 from ..graph.plots_aux import get_colobar_label, get_field_name
 
