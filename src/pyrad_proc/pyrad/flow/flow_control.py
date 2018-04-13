@@ -38,8 +38,6 @@ from ..io.write_data import write_last_state
 
 #from memory_profiler import profile
 
-MULTIPROCESSING_PROD = False
-MULTIPROCESSING_DSET = False
 ALLOW_USER_BREAK = False
 
 

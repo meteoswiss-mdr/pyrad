@@ -63,8 +63,6 @@ from ..prod.product_aux import get_prodgen_func
 
 MULTIPROCESSING_PROD = False
 MULTIPROCESSING_DSET = False
-ALLOW_USER_BREAK = False
-
 
 def _initialize_listener():
     """
