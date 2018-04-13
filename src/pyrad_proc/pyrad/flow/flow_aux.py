@@ -216,7 +216,8 @@ def _initialize_datasets(dataset_levels, cfg, traj=None, infostr=None):
         print('-- Process level: '+level)
         if MULTIPROCESSING_DSET:
             jobs = []
-            out_queue = mp.Queue()
+            manager = mp.Manager()
+            out_queue = manager.Queue()
             for dataset in dataset_levels[level]:
                 dscfg.update({dataset: _create_dscfg_dict(cfg, dataset)})
                 p = mp.Process(
@@ -284,7 +285,8 @@ def _process_datasets(dataset_levels, cfg, dscfg, radar_list, master_voltime,
         print('-- Process level: '+level)
         if MULTIPROCESSING_DSET:
             jobs = []
-            out_queue = mp.Queue()
+            manager = mp.Manager()
+            out_queue = manager.Queue()
             for dataset in dataset_levels[level]:
                 p = mp.Process(
                     name=dataset, target=_generate_dataset_mp,
@@ -364,7 +366,8 @@ def _postprocess_datasets(dataset_levels, cfg, dscfg, traj=None, infostr=None):
         print('-- Process level: '+level)
         if MULTIPROCESSING_DSET:
             jobs = []
-            out_queue = mp.Queue()
+            manager = mp.Manager()
+            out_queue = manager.Queue()
             for dataset in dataset_levels[level]:
                 p = mp.Process(
                     name=dataset, target=_generate_dataset_mp,
@@ -746,12 +749,10 @@ def _generate_dataset_mp(dsname, cfg, dscfg, out_queue, proc_status=0,
             cfg, dscfg, proc_status=proc_status, radar_list=radar_list,
             voltime=voltime, trajectory=trajectory, runinfo=runinfo)
         out_queue.put((new_dataset, ind_rad, dscfg['MAKE_GLOBAL'], jobs))
-        out_queue.close()
     except Exception as inst:
         warn(str(inst))
         traceback.print_exc()
         out_queue.put((None, None, 0, []))
-        out_queue.close()
 
 
 def _process_dataset(cfg, dscfg, proc_status=0, radar_list=None, voltime=None,

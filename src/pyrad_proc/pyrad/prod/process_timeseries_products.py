@@ -469,8 +469,18 @@ def generate_timeseries_products(dataset, prdcfg):
                                dssavedir, prdcfg['prdname'],
                                timeinfo=prdcfg['timeinfo'])
 
+        color_ref = prdcfg.get('color_ref', 'None')
+        if color_ref == 'altitude':
+            prdtype = 'cappi_alt'
+        elif color_ref == 'rel_altitude':
+            prdtype = 'cappi_rel_alt'
+        elif color_ref == 'time':
+            prdtype = 'cappi_time'
+        else:
+            prdtype = 'cappi'
+
         fname_list = make_filename(
-            'cappi', prdcfg['dstype'], prdcfg['voltype'],
+            prdtype, prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
             prdcfginfo='alt'+'{:.1f}'.format(prdcfg['altitude']),
             timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
