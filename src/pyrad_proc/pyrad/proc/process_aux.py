@@ -585,23 +585,15 @@ def process_grid(procstatus, dscfg, radar_list=None):
         if 'altorig' in dscfg['gridConfig']:
             alt = dscfg['gridConfig']['altorig']
 
-    wfunc = 'NEAREST_NEIGHBOUR'
-    if 'wfunc' in dscfg:
-        wfunc = dscfg['wfunc']
-
-    roi_func = 'dist_beam'
-    if 'roi_func' in dscfg:
-        roi_func = dscfg['roi_func']
+    wfunc = dscfg.get('wfunc', 'NEAREST_NEIGHBOUR')
+    roi_func = dscfg.get('roi_func', 'dist_beam')
 
     # number of grid points in cappi
     nz = int((zmax-zmin)/vres)+1
     ny = int((ymax-ymin)*1000./hres)+1
     nx = int((xmax-xmin)*1000./hres)+1
 
-    min_radius = np.max([vres, hres])/2.
-    if 'roi' in dscfg:
-        min_radius = dscfg['roi']
-
+    min_radius = dscfg.get('roi', np.max([vres, hres])/2.)
     # parameters to determine the gates to use for each grid point
     beamwidth = 1.
     beam_spacing = 1.
@@ -687,16 +679,9 @@ def process_qvp(procstatus, dscfg, radar_list=None):
             return None, None
 
         # default parameters
-        anglenr = 0
-        hmax = 10000.
-        hres = 50.
-
-        if 'anglenr' in dscfg:
-            anglenr = dscfg['anglenr']
-        if 'hmax' in dscfg:
-            hmax = dscfg['hmax']
-        if 'hres' in dscfg:
-            hres = dscfg['hres']
+        anglenr = dscfg.get('anglenr', 0)
+        hmax = dscfg.get('hmax', 10000.)
+        hres = dscfg.get('hres', 50.)
 
         radar_aux = deepcopy(radar)
         radar_aux = radar_aux.extract_sweeps([anglenr])
@@ -867,16 +852,9 @@ def process_time_height(procstatus, dscfg, radar_list=None):
         # default parameters
         lon = dscfg['lon']
         lat = dscfg['lat']
-        latlon_tol = 0.0005
-        if 'latlon_tol' in dscfg:
-            latlon_tol = dscfg['latlon_tol']
-
-        hmax = 10000.
-        hres = 50.
-        if 'hmax' in dscfg:
-            hmax = dscfg['hmax']
-        if 'hres' in dscfg:
-            hres = dscfg['hres']
+        latlon_tol = dscfg.get('latlon_tol', 0.0005)
+        hmax = dscfg.get('hmax', 10000.)
+        hres = dscfg.get('hres', 50.)
 
         radar_aux = deepcopy(radar)
 
