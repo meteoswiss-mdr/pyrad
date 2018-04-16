@@ -77,8 +77,8 @@ for ((iday=0; iday<${nday}; iday++)); do
     datedir=$(date --date "${date_vec[${iday}]}" +"%Y-%m-%d")
     data_destpath=${cosmobaseraw}${datedir}
     filebase=cosmo-1_MDR_3D_${date_vec[${iday}]}
-    mkdir -p ${datedir}
-    
+    mkdir -p ${data_destpath}    
+
     hour24=0
     if [ "${hour_run_vec}" = "all" ];then
         cp ${cosmopathcscs}${filebase}*.nc ${data_destpath}
@@ -113,7 +113,7 @@ for ((iday=0; iday<${nday}; iday++)); do
             fi
         done
     fi
-    chmod -R gu+rw ${data_destpath}     
+    chmod -R gu+rw ${data_destpath}}     
 
     # add file 00:00 UTC the next day
     if [ "${hour_run_vec}" = "all" ] || [ "$hour24" -eq 1 ];then

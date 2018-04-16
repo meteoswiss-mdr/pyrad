@@ -13,6 +13,7 @@ Functions to plot radar volume data
     plot_bscope
     plot_time_range
     plot_cappi
+    plot_traj
     plot_rhi_profile
     plot_along_coord
     plot_field_coverage
@@ -78,9 +79,7 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
 
     """
     if plot_type == 'PPI':
-        dpi = 72
-        if 'dpi' in prdcfg['ppiImageConfig']:
-            dpi = prdcfg['ppiImageConfig']['dpi']
+        dpi = prdcfg['ppiImageConfig'].get('dpi', 72)
 
         norm, ticks, ticklabs = get_norm(field_name)
 
@@ -174,9 +173,7 @@ def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
                      instead than on pyart
 
     """
-    dpi = 72
-    if 'dpi' in prdcfg['ppiImageConfig']:
-        dpi = prdcfg['ppiImageConfig']['dpi']
+    dpi = prdcfg['ppiImageConfig'].get('dpi', 72)
 
     norm, ticks, ticklabs = get_norm(field_name)
 
@@ -263,9 +260,7 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
 
     """
     if plot_type == 'RHI':
-        dpi = 72
-        if 'dpi' in prdcfg['rhiImageConfig']:
-            dpi = prdcfg['rhiImageConfig']['dpi']
+        dpi = prdcfg['ppiImageConfig'].get('dpi', 72)
 
         norm, ticks, ticklabs = get_norm(field_name)
 
@@ -372,9 +367,7 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
     titl = pyart.graph.common.generate_title(radar_aux, field_name, ind_sweep)
     label = get_colobar_label(radar_aux.fields[field_name], field_name)
 
-    dpi = 72
-    if 'dpi' in prdcfg['ppiImageConfig']:
-        dpi = prdcfg['ppiImageConfig']['dpi']
+    dpi = prdcfg['ppiImageConfig'].get('dpi', 72)
 
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                               prdcfg['ppiImageConfig']['ysize']],
@@ -453,9 +446,7 @@ def plot_time_range(radar, field_name, ind_sweep, prdcfg, fname_list):
     titl = pyart.graph.common.generate_title(radar_aux, field_name, ind_sweep)
     label = get_colobar_label(radar_aux.fields[field_name], field_name)
 
-    dpi = 72
-    if 'dpi' in prdcfg['ppiImageConfig']:
-        dpi = prdcfg['ppiImageConfig']['dpi']
+    dpi = prdcfg['ppiImageConfig'].get('dpi', 72)
 
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                               prdcfg['ppiImageConfig']['ysize']],
@@ -494,7 +485,7 @@ def plot_time_range(radar, field_name, ind_sweep, prdcfg, fname_list):
     return fname_list
 
 
-def plot_cappi(radar, field_name, altitude, prdcfg, fname_list):
+def plot_cappi(radar, field_name, altitude, prdcfg, fname_list, save_fig=True):
     """
     plots a Constant Altitude Plan Position Indicator CAPPI
 
@@ -510,11 +501,15 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname_list):
         dictionary containing the product configuration
     fname_list : list of str
         list of names of the files where to store the plot
+    save_fig : bool
+        if true save the figure if false it does not close the plot and returns the
+        handle to the figure
 
     Returns
     -------
-    fname_list : list of str
-        list of names of the created plots
+    fname_list : list of str or
+    fig, ax : tupple
+        list of names of the saved plots or handle of the figure an axes
 
     """
     norm, ticks, ticklabs = get_norm(field_name)
@@ -524,13 +519,8 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname_list):
     ymin = prdcfg['ppiImageConfig']['ymin']
     ymax = prdcfg['ppiImageConfig']['ymax']
 
-    wfunc = 'NEAREST_NEIGHBOUR'
-    if 'wfunc' in prdcfg:
-        wfunc = prdcfg['wfunc']
-
-    cappi_res = 500.
-    if 'res' in prdcfg:
-        cappi_res = prdcfg['res']
+    wfunc = prdcfg.get('wfunc', 'NEAREST_NEIGHBOUR')
+    cappi_res = prdcfg.get('res', 500.)
 
     # number of grid points in cappi
     ny = int((ymax-ymin)*1000./cappi_res)+1
@@ -562,9 +552,7 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname_list):
         fields=[field_name])
 
     # display data
-    dpi = 72
-    if 'dpi' in prdcfg['ppiImageConfig']:
-        dpi = prdcfg['ppiImageConfig']['dpi']
+    dpi = prdcfg['ppiImageConfig'].get('dpi', 72)
 
     fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
                               prdcfg['ppiImageConfig']['ysize']],
@@ -598,11 +586,139 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname_list):
     # Make a tight layout
     fig.tight_layout()
 
-    for fname in fname_list:
-        fig.savefig(fname, dpi=dpi)
-    plt.close()
+    if save_fig:
+        for fname in fname_list:
+            fig.savefig(fname, dpi=dpi)
+        plt.close()
 
-    return fname_list
+        return fname_list
+
+    return (fig, ax)
+
+
+def plot_traj(rng_traj, azi_traj, ele_traj, time_traj, prdcfg, fname_list,
+              rad_alt=None, rad_tstart=None, ax=None, fig=None,
+              save_fig=True):
+    """
+    plots a trajectory on a Cartesian surface
+
+    Parameters
+    ----------
+    rng_traj, azi_traj, ele_traj : float array
+        antenna coordinates of the trajectory [m and deg]
+    time_traj : datetime array
+        trajectory time
+    prdcfg : dict
+        dictionary containing the product configuration
+    fname_list : list of str
+        list of names of the files where to store the plot
+    rad_alt : float or None
+        radar altitude [m MSL]
+    rad_tstart : datetime object or None
+        start time of the radar scan
+    surface_alt : float
+        surface altitude [m MSL]
+    color_ref : str
+        What the color code represents. Can be 'None', 'rel_altitude',
+        'altitude' or 'time'
+    fig : Figure
+        Figure to add the colorbar to. If none a new figure will be created
+    ax : Axis
+        Axis to plot on. if fig is None a new axis will be created
+    save_fig : bool
+        if true save the figure if false it does not close the plot and
+        returns the handle to the figure
+
+    Returns
+    -------
+    fname_list : list of str or
+    fig, ax : tupple
+        list of names of the saved plots or handle of the figure an axes
+
+    """
+    color_ref = prdcfg.get('color_ref', 'None')
+    if 'altitude' not in prdcfg and color_ref == 'rel_altitude':
+        warn('Unable to plot trajectory relative to surface altitude. ' +
+             'Unknown surface altitude.')
+        color_ref = 'None'
+    if rad_tstart is None and color_ref == 'time':
+        warn('Unable to plot trajectory relative to radar scan start time. ' +
+             'Unknown radar scan start time.')
+        color_ref = 'None'
+    if (rad_alt is None and
+            (color_ref == 'rel_altitude' or color_ref == 'altitude')):
+        warn('Unable to plot trajectory altitude. ' +
+             'Unknown radar altitude.')
+        color_ref = 'None'
+
+    x, y, z = pyart.core.antenna_to_cartesian(
+        rng_traj/1000., azi_traj, ele_traj)
+
+    if color_ref == 'rel_altitude':
+        h = z+rad_alt
+        h_rel = h-prdcfg['altitude']
+
+        marker = 'x'
+        col = h_rel
+        cmap = 'coolwarm'
+        norm = plt.Normalize(-2000., 2000.)
+        cb_label = 'Altitude relative to CAPPI [m]'
+        plot_cb = True
+    elif color_ref == 'altitude':
+        h = z+rad_alt
+
+        marker = 'x'
+        col = h
+        cmap = 'Greys'
+        norm = plt.Normalize(h.min(), h.max())
+        cb_label = 'Altitude [m MSL]'
+        plot_cb = True
+    elif color_ref == 'time':
+        td_vec = time_traj-rad_tstart
+        tt_s = []
+        for td in td_vec:
+            tt_s.append(td.total_seconds())
+        tt_s = np.asarray(tt_s)
+
+        marker = 'x'
+        col = tt_s
+        cmap = 'Greys'
+        norm = plt.Normalize(tt_s.min(), tt_s.max())
+        cb_label = 'Time from start of radar scan [s]'
+        plot_cb = True
+    else:
+        col = 'k'
+        marker = 'x'
+        cmap = None
+        plot_cb = False
+
+    # display data
+    dpi = prdcfg['ppiImageConfig'].get('dpi', 72)
+    if fig is None:
+        fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
+                                  prdcfg['ppiImageConfig']['ysize']],
+                         dpi=dpi)
+        ax = fig.add_subplot(111, aspect='equal')
+    else:
+        ax.autoscale(False)
+
+    cax = ax.scatter(
+        x/1000., y/1000., c=col, marker=marker, alpha=0.5, cmap=cmap,
+        norm=norm)
+
+    # plot colorbar
+    if plot_cb:
+        cb = fig.colorbar(cax, orientation='horizontal')
+        cb.set_label(cb_label)
+
+    if save_fig:
+        for fname in fname_list:
+            fig.savefig(fname, dpi=dpi)
+        plt.close()
+
+        return fname_list
+
+    return (fig, ax)
 
 
 def plot_rhi_profile(data_list, hvec, fname_list, labelx='Value',

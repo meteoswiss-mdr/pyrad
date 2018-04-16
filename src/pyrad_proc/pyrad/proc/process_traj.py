@@ -121,7 +121,12 @@ def process_traj_lightning(procstatus, dscfg, radar_list=None,
             warn('ERROR: No trajectory dataset available!')
             return None, None
         trajdict = dscfg['traj_atplane_dict']
-        return trajdict['ts'], trajdict['ind_rad']
+
+        dataset = {
+            'ts': trajdict['ts'],
+            'final': 1
+        }
+        return dataset, trajdict['ind_rad']
 
     # Process
     radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
@@ -203,8 +208,15 @@ def process_traj_lightning(procstatus, dscfg, radar_list=None,
 
     if np.size(traj_ind) == 0:
         warn('No trajectory samples within current period')
+
+        trajdict['radar_old2'] = trajdict['radar_old']
+        trajdict['radar_old'] = radar
         return None, None
 
+    az_list = []
+    el_list = []
+    rr_list = []
+    tt_list = []
     for tind in np.nditer(traj_ind):
         az = rad_traj.azimuth_vec[tind]
         el = rad_traj.elevation_vec[tind]
@@ -263,13 +275,32 @@ def process_traj_lightning(procstatus, dscfg, radar_list=None,
             trajectory.time_vector[tind],
             (flashnr, dBm, val, val_mean, val_min, val_max, nvals_valid))
 
+        az_list.append(az)
+        el_list.append(el)
+        rr_list.append(rr)
+        tt_list.append(trajectory.time_vector[tind])
         # end loop over traj samples within period
 
+    # output radar volume and flash coordinates respect to radar
+    radar_sel = radar
+    if trajdict['radar_old'] is not None:
+        radar_sel = trajdict['radar_old']
+
+    dataset = {
+        'azi_traj': np.asarray(az_list),
+        'ele_traj': np.asarray(el_list),
+        'rng_traj': np.asarray(rr_list),
+        'time_traj': np.asarray(tt_list),
+        'radar': radar_sel,
+        'final': 0
+    }
+
+    # update trajectory dictionary
     trajdict['last_task_start_dt'] = dt_task_start
     trajdict['radar_old2'] = trajdict['radar_old']
     trajdict['radar_old'] = radar
 
-    return None, None
+    return dataset, ind_rad
 
 
 def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
@@ -309,7 +340,12 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
             warn('ERROR: No trajectory dataset available!')
             return None, None
         trajdict = dscfg['traj_atplane_dict']
-        return trajdict['ts'], trajdict['ind_rad']
+
+        dataset = {
+            'ts': trajdict['ts'],
+            'final': 1
+        }
+        return dataset, trajdict['ind_rad']
 
     # Process
     radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
@@ -388,8 +424,15 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
 
     if np.size(traj_ind) == 0:
         warn('No trajectory samples within current period')
+
+        trajdict['radar_old2'] = trajdict['radar_old']
+        trajdict['radar_old'] = radar
         return None, None
 
+    az_list = []
+    el_list = []
+    rr_list = []
+    tt_list = []
     for tind in np.nditer(traj_ind):
         az = rad_traj.azimuth_vec[tind]
         el = rad_traj.elevation_vec[tind]
@@ -445,13 +488,32 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
         ts.add_timesample(trajectory.time_vector[tind],
                           (val, val_mean, val_min, val_max, nvals_valid))
 
+        az_list.append(az)
+        el_list.append(el)
+        rr_list.append(rr)
+        tt_list.append(trajectory.time_vector[tind])
         # end loop over traj samples within period
 
+    # output radar volume and antenna coordinates respect to radar
+    radar_sel = radar
+    if trajdict['radar_old'] is not None:
+        radar_sel = trajdict['radar_old']
+
+    dataset = {
+        'azi_traj': np.asarray(az_list),
+        'ele_traj': np.asarray(el_list),
+        'rng_traj': np.asarray(rr_list),
+        'time_traj': np.asarray(tt_list),
+        'radar': radar_sel,
+        'final': 0
+    }
+
+    # update trajectory dictionary
     trajdict['last_task_start_dt'] = dt_task_start
     trajdict['radar_old2'] = trajdict['radar_old']
     trajdict['radar_old'] = radar
 
-    return None, None
+    return dataset, ind_rad
 
 
 def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
@@ -492,7 +554,11 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             warn('ERROR: No trajectory dataset available!')
             return None, None
         tadict = dscfg['traj_antenna_dict']
-        return tadict['ts'], tadict['ind_rad']
+        dataset = {
+            'ts': tadict['ts'],
+            'final': 1
+        }
+        return dataset, tadict['ind_rad']
 
     # Tolerance in azimuth to find traj for the reference radar, also in range
     az_traj_tol = 10
@@ -645,17 +711,13 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
                             " '%s'" % (dscfg['antennaType'], dscfg['dsname']))
 
         # Read dataset config parameters:
+        nan_value = dscfg.get('nan_value', 0.)
         use_nans = False
-        nan_value = 0.0
         if 'use_nans' in dscfg:
             if dscfg['use_nans'] != 0:
                 use_nans = True
-                if 'nan_value' in dscfg:
-                    nan_value = dscfg['nan_value']
 
-        weight_threshold = 0.0
-        if 'pattern_thres' in dscfg:
-            weight_threshold = dscfg['pattern_thres']
+        weight_threshold = dscfg.get('pattern_thres', 0.)
 
         do_all_ranges = False
         if 'range_all' in dscfg:
@@ -664,22 +726,10 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
 
         # Config parameters for processing when the weather radar and the
         # antenna are not at the same place:
-
-        max_altitude = 12000.0  # [m]
-        if 'max_altitude' in dscfg:
-            max_altitude = dscfg['max_altitude']
-
-        rhi_resolution = 0.5  # [deg]
-        if 'rhi_resolution' in dscfg:
-            rhi_resolution = dscfg['rhi_resolution']
-
-        latlon_tol = 0.04  # [deg]
-        if 'latlon_tol' in dscfg:
-            latlon_tol = dscfg['latlon_tol']
-
-        alt_tol = 1000  # [m]
-        if 'alt_tol' in dscfg:
-            alt_tol = dscfg['alt_tol']
+        max_altitude = dscfg.get('max_altitude', 12000.) # [m]
+        rhi_resolution = dscfg.get('rhi_resolution', 0.5)  # [deg]
+        latlon_tol = dscfg.get('latlon_tol', 0.04)  # [deg]
+        alt_tol = dscfg.get('alt_tol', 1000.)  # [m]
 
         data_is_log = False
         if 'data_is_log' in dscfg:
