@@ -61,8 +61,8 @@ from ..prod.product_aux import get_prodgen_func
 
 #from memory_profiler import profile
 
-MULTIPROCESSING_PROD = False
-MULTIPROCESSING_DSET = False
+MULTIPROCESSING_PROD = True
+MULTIPROCESSING_DSET = True
 
 def _initialize_listener():
     """
