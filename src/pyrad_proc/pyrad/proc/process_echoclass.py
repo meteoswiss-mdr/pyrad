@@ -229,10 +229,7 @@ def process_echo_filter(procstatus, dscfg, radar_list=None):
         warn('Unable to filter data. Missing echo ID field')
         return None, None
 
-    echo_type = 3
-    if 'echo_type' in dscfg:
-        echo_type = dscfg['echo_type']
-
+    echo_type = dscfg.get('echo_type', 3)
     mask = radar.fields[echoid_field]['data'] != echo_type
 
     new_dataset = deepcopy(radar)
@@ -576,21 +573,11 @@ def process_outlier_filter(procstatus, dscfg, radar_list=None):
         warn('Unable to perform outlier removal. No valid data')
         return None, None
 
-    threshold = 10.
-    if 'threshold' in dscfg:
-        threshold = dscfg['threshold']
-    nb = 2
-    if 'nb' in dscfg:
-        nb = dscfg['nb']
-    nb_min = 3
-    if 'nb_min' in dscfg:
-        nb_min = dscfg['nb_min']
-    percentile_min = 5.
-    if 'percentile_min' in dscfg:
-        percentile_min = dscfg['percentile_min']
-    percentile_max = 95.
-    if 'percentile_max' in dscfg:
-        percentile_max = dscfg['percentile_max']
+    threshold = dscfg.get('threshold', 10.)
+    nb = dscfg.get('nb', 2)
+    nb_min = dscfg.get('nb_min', 3)
+    percentile_min = dscfg.get('percentile_min', 5.)
+    percentile_max = dscfg.get('percentile_max', 95.)
 
     field = radar.fields[field_name]
     field_out = deepcopy(field)

@@ -1216,7 +1216,9 @@ def get_data_rainbow(filename, datatype):
     """
     radar = pyart.aux_io.read_rainbow_wrl(filename)
     if (datatype == 'Nh') or (datatype == 'Nv'):
-        rbf = wrl.io.read_Rainbow(filename, loaddata=False)
+        with open(filename, 'rb') as fid:
+            rbf = wrl.io.read_rainbow(fid, loaddata=True)
+            fid.close()
         # check the number of slices
         nslices = int(rbf['volume']['scan']['pargroup']['numele'])
         if nslices > 1:
