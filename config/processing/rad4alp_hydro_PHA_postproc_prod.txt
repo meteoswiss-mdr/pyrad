@@ -18,23 +18,23 @@ dataSetList STRARR 1
 # ==========================================================================================
 #               trajectory processing
 # ==========================================================================================
-traj STRUCT 3
-   type     STRING TRAJ
-   datatype STRARR 1
-       CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
-   products STRUCT 4
-      TS_RANGE STRUCT 2
-         type  STRING TRAJ_PLOT
-         datatype STRING RANGE
-      TS_EL STRUCT 2
-         type  STRING TRAJ_PLOT
-         datatype STRING EL
-      TS_AZ STRUCT 2
-         type  STRING TRAJ_PLOT
-         datatype STRING AZ
-      TS_TEXT STRUCT 1
-         type  STRING TRAJ_TEXT
-
+#traj STRUCT 3
+#   type     STRING TRAJ
+#   datatype STRARR 1
+#       CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
+#   products STRUCT 4
+#      TS_RANGE STRUCT 2
+#         type  STRING TRAJ_PLOT
+#         datatype STRING RANGE
+#      TS_EL STRUCT 2
+#         type  STRING TRAJ_PLOT
+#         datatype STRING EL
+#      TS_AZ STRUCT 2
+#         type  STRING TRAJ_PLOT
+#         datatype STRING AZ
+#      TS_TEXT STRUCT 1
+#         type  STRING TRAJ_TEXT
+#
 # ==========================================================================================
 #               COSMO data trajectory processing
 # ==========================================================================================

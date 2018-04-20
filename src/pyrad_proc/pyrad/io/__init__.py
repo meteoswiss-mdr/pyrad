@@ -55,10 +55,7 @@ Reading other data
     read_timeseries
     read_ts_cum
     read_monitoring_ts
-    read_monitoring_ts_old
     read_intercomp_scores_ts
-    read_intercomp_scores_ts_old
-    read_intercomp_scores_ts_old_v0
     get_sensor_data
     read_smn
     read_smn2
@@ -70,6 +67,7 @@ Reading other data
     read_selfconsistency
     read_antenna_pattern
     read_lightning
+    read_lightning_traj
 
 Writing data
 ==================
@@ -151,20 +149,18 @@ from .read_data_hzt import get_iso0_field
 
 from .read_data_other import read_status, read_rad4alp_cosmo, read_rad4alp_vis
 from .read_data_other import read_timeseries, read_monitoring_ts, read_ts_cum
-from .read_data_other import read_monitoring_ts_old
 from .read_data_other import read_intercomp_scores_ts
-from .read_data_other import read_intercomp_scores_ts_old
-from .read_data_other import read_intercomp_scores_ts_old_v0
 from .read_data_other import read_selfconsistency, read_colocated_gates
 from .read_data_other import read_colocated_data, read_antenna_pattern
 from .read_data_other import read_last_state
 from .read_data_other import read_excess_gates
 
+from .read_data_sensor import read_lightning, read_lightning_traj
+from .read_data_sensor import get_sensor_data, read_smn, read_smn2
+from .read_data_sensor import read_disdro_scattering
+
 from .read_data_sun import read_sun_hits_multiple_days, read_sun_hits
 from .read_data_sun import read_sun_retrieval, read_solar_flux
-
-from .read_data_sensor import read_lightning, get_sensor_data, read_smn
-from .read_data_sensor import read_smn2, read_disdro_scattering
 
 from .write_data import write_smn, write_ts_polar_data, write_ts_cum
 from .write_data import write_monitoring_ts, write_intercomp_scores_ts

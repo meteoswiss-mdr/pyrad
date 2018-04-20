@@ -8,6 +8,7 @@ Functions for reading data from other sensors
     :toctree: generated/
 
     read_lightning
+    read_lightning_traj
     get_sensor_data
     read_smn
     read_smn2
@@ -109,6 +110,92 @@ def read_lightning(fname, filter_data=True):
         warn(str(ee))
         warn('Unable to read file '+fname)
         return None, None, None, None, None, None, None
+        
+        
+def read_lightning_traj(fname):
+    """
+    Reads lightning trajectory data contained in a csv file. The file has the following
+    fields:
+        Date
+        UTC [seconds since midnight]
+        # Flash
+        Flash Power (dBm)
+        Value at flash
+        Mean value in a 3x3x3 polar box
+        Min value in a 3x3x3 polar box
+        Max value in a 3x3x3 polar box
+        # valid values in the polar box
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    time_flash, flashnr, dBm, val_at_flash, val_mean, val_min, val_max,
+    nval : tupple
+        A tupple containing the read values. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                csvfile, fieldnames=['Date', 'UTC', 'flashnr', 'dBm',
+                                     'at_flash', 'mean', 'min', 'max',
+                                     'nvalid'],
+                delimiter=', ')
+            nrows = sum(1 for row in reader)
+            
+            time_flash = np.empty(nrows, dtype=datetime.datetime)
+            flashnr = np.empty(nrows, dtype=int)            
+            dBm = np.empty(nrows, dtype=float)
+            val_at_flash = np.ma.empty(nrows, dtype=float)
+            val_mean = np.ma.empty(nrows, dtype=float)
+            val_min = np.ma.empty(nrows, dtype=float)
+            val_max = np.ma.empty(nrows, dtype=float)
+            nval = np.empty(nrows, dtype=int)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                csvfile, fieldnames=['Date', 'UTC', 'flashnr', 'dBm',
+                                     'at_flash', 'mean', 'min', 'max',
+                                     'nvalid'],
+                delimiter=', ')
+            i = 0            
+            for row in reader:
+                date_flash_aux = datetime.datetime.strptime(
+                    row['Date'], '%d-%b-%Y')
+                time_flash_aux = float(row['Date'])
+                time_flash[i] = date_flash_aux+datetime.timedelta(
+                    seconds=time_flash_aux)
+                
+                flashnr[i] = int(row['flashnr'])                
+                dBm[i] = float(row['dBm'])
+                val_at_flash[i] = float(row['at_flash'])
+                val_mean[i] = float(row['mean'])
+                val_min[i] = float(row['min'])
+                val_max[i] = float(row['max'])
+                nval[i] = int(row['nvalid'])
+
+                i += 1            
+
+            csvfile.close()
+            
+            val_at_flash = np.ma.masked_invalid(val_at_flash)
+            val_mean = np.ma.masked_invalid(val_mean)
+            val_min = np.ma.masked_invalid(val_min)
+            val_max = np.ma.masked_invalid(val_max)
+
+            return (time_flash, flashnr, dBm, val_at_flash, val_mean, val_min,
+                    val_max, nval)
+                    
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return None, None, None, None, None, None, None, None
 
 
 def get_sensor_data(date, datatype, cfg):

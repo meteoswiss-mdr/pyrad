@@ -22,6 +22,10 @@
 # -i --info: Info string to be added in the name of some output products
 #            If more than one config file is used separate with a comma.
 #            To be used there must be as many as config files
+# -t --trajfile: Trajectory file. There must be as many as days to process
+# --trajtype: Trajectory type. Either 'plane' or 'lightnint'. Default 'Plane'
+# --flashnr: If type of trajectory is 'lightning' flash number the data of which
+#            will be processed 0 means that all lightning data will be processed 
 # --get_data : if set, get radar data. Default 1
 # --ele : radar elevations to retrieve in format 001 to 020
 #         if "all" retrieve all the elevations
@@ -64,6 +68,9 @@ HZT_DESTBASE=/store/msrad/cosmo/cosmo1/HZT/
 
 info_vec='None'
 cfgpath_vec="$HOME/pyrad/config/processing/"
+trajfile_vec='None'
+TRAJTYPE='plane'
+FLASHNR=0
 
 ELE='all'
 HOUR='all'
@@ -103,6 +110,22 @@ do
         read -r -a cfgpath_vec <<< "$CFGPATH"
         IFS=$OIFS
         shift # past argument
+        ;;
+        -t|--trajfile)
+        TRAJFILE="$2"
+        OIFS=$IFS
+        IFS=','
+        read -r -a trajfile_vec <<< "$TRAJFILE"
+        IFS=$OIFS
+        shift # past argument
+        ;;
+        --trajtype)
+        TRAJTYPE="$2"
+        shift # past argument        
+        ;;
+        --flashnr)
+        FLASHNR="$2"
+        shift # past argument        
         ;;
         -r|--radar)
         RADAR="$2"
@@ -183,14 +206,15 @@ nrad=${#radar_vec[@]}
 nres=${#res_vec[@]}
 ninfo=${#info_vec[@]}
 ncfgpath=${#cfgpath_vec[@]}
+ntrajfile=${#trajfile_vec[@]}
 
 if [ "$ncfg" -ne "$nrad" ] || [ "$ncfg" -ne "$nres" ];then
-  echo "In order to retrieve radar data the number of radars and resolutions should be the same as the number of config files"
-  echo "nrad: "$nrad
-  echo "ncfg: "$ncfg
-  echo "nres: "$nres
-  GET_DATA=0
-  RM_DATA=0
+    echo "In order to retrieve radar data the number of radars and resolutions should be the same as the number of config files"
+    echo "nrad: "$nrad
+    echo "ncfg: "$ncfg
+    echo "nres: "$nres
+    GET_DATA=0
+    RM_DATA=0
 fi
 
 # get COSMO run time
@@ -278,7 +302,32 @@ for ((iday=0; iday<${nday}; iday++)); do
         
         LOGFILE=$HOME/log/${DAY}_${CFGFILE_BASE}.log
         cd ${pyradpath}
-        python -u main_process_data_period.py ${CFGFILE} ${DAY} ${DAY} --starttime ${START_TIME} --endtime ${END_TIME} -i ${INFO} --cfgpath ${CFGPATH} >$LOGFILE 2>&1
+                
+        if [ "${trajfile_vec}" = "None" ];then
+            # No trajectory file used
+        
+            # check start and end time
+            hour_end=$(echo ${END_TIME} | cut -c1-2)
+            if [ "$hour_end" -ge 24 ]; then            
+                day_end=$(date -d "$(date --date "${DAY}")+1 day" +"%Y%m%d")
+                hour_end=$[${hour_end}-24]
+                
+                hour_end=$(printf %02d ${hour_end})            
+                min_end=$(echo ${END_TIME} | cut -c3-4)
+                sec_end=$(echo ${END_TIME} | cut -c5-6)
+                            
+                time_end=${day_end}${hour_end}${min_end}${sec_end}
+            else
+                time_end=${DAY}${END_TIME}
+            fi
+            time_start=${DAY}${START_TIME}            
+            
+            python -u main_process_data.py ${CFGFILE} --starttime ${time_start} --endtime ${time_end} -i ${INFO} --cfgpath ${CFGPATH} >$LOGFILE 2>&1
+        else
+            for ((itraj=0; itraj<${ntrajfile}; itraj++)); do
+                python -u main_process_data.py ${CFGFILE} -i ${INFO} -t ${trajfile_vec[${itraj}]} --trajtype $TRAJTYPE --flashnr $FLASHNR --cfgpath ${CFGPATH} >$LOGFILE 2>&1
+            done
+        fi
         
         source deactivate
         
