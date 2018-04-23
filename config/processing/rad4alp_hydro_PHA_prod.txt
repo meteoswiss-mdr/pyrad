@@ -4,7 +4,7 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 16
+dataSetList STRARR 14
     l0:TEMP
     l0:ZH 
     l0:ZH_TIME_HEIGHT
@@ -15,11 +15,9 @@ dataSetList STRARR 16
     l3:SNRFilter
     l4:PhiDPc_smooth2w
     l5:KDPc_Vulpiani
-    l5:Att_ZPhi   
-    l6:ZH_grid   
+    l5:Att_ZPhi       
     l6:ZHc_TIME_HEIGHT
-    l6:hydroclass
-    l7:hydroclass_grid
+    l6:hydroclass    
     l7:hydroclass_TIME_HEIGHT
    
    
@@ -288,35 +286,35 @@ Att_ZPhi STRUCT 6
             type   STRING SAVEVOL
             voltype STRING ZDRc
             
-ZH_grid STRUCT 5
-   type     STRING GRID
-   datatype STRING PROC:dBZc
-   wfunc STRING NEAREST_NEIGHBOUR
-   gridConfig STRUCT 9
-      xmin FLOAT 0.
-      xmax FLOAT 100.
-      ymin FLOAT -50.
-      ymax FLOAT 60.
-      zmin FLOAT 0.
-      zmax FLOAT 12000.
-      hres FLOAT 500.
-      vres FLOAT 200.
-      altorig FLOAT 0.
-   products STRUCT 2      
-      LATLON STRUCT 4
-         type STRING CROSS_SECTION
-         voltype STRING dBZc
-         coord1 STRUCT 2
-            lat FLOAT 47.18
-            lon FLOAT 9.25
-         coord2 STRUCT 2
-            lat FLOAT 47.61
-            lon FLOAT 9.7            
-      SURFACE STRUCT 3
-         type  STRING SURFACE_IMAGE
-         voltype STRING dBZc
-         level INT 25  
-
+#ZH_grid STRUCT 5
+#   type     STRING GRID
+#   datatype STRING PROC:dBZc
+#   wfunc STRING NEAREST_NEIGHBOUR
+#   gridConfig STRUCT 9
+#      xmin FLOAT 0.
+#      xmax FLOAT 100.
+#      ymin FLOAT -50.
+#      ymax FLOAT 60.
+#      zmin FLOAT 0.
+#      zmax FLOAT 12000.
+#      hres FLOAT 500.
+#      vres FLOAT 200.
+#      altorig FLOAT 0.
+#   products STRUCT 2      
+#      LATLON STRUCT 4
+#         type STRING CROSS_SECTION
+#         voltype STRING dBZc
+#         coord1 STRUCT 2
+#            lat FLOAT 47.18
+#            lon FLOAT 9.25
+#         coord2 STRUCT 2
+#            lat FLOAT 47.61
+#            lon FLOAT 9.7            
+#      SURFACE STRUCT 3
+#         type  STRING SURFACE_IMAGE
+#         voltype STRING dBZc
+#         level INT 25  
+#
 ZHc_TIME_HEIGHT STRUCT 8
    type     STRING TIME_HEIGHT
    datatype STRING PROC:dBZc
@@ -364,35 +362,35 @@ hydroclass STRUCT 6
             type   STRING SAVEVOL
             voltype STRING hydro
          
-hydroclass_grid STRUCT 5
-   type     STRING GRID
-   datatype STRING PROC:hydro
-   wfunc STRING NEAREST_NEIGHBOUR   
-   gridConfig STRUCT 9
-      xmin FLOAT 0.
-      xmax FLOAT 100.
-      ymin FLOAT -50.
-      ymax FLOAT 60.
-      zmin FLOAT 0.
-      zmax FLOAT 12000.
-      hres FLOAT 500.
-      vres FLOAT 200.
-      altorig FLOAT 0.
-   products STRUCT 2
-      LATLON STRUCT 4
-         type STRING CROSS_SECTION
-         voltype STRING hydro
-         coord1 STRUCT 2
-            lat FLOAT 47.18
-            lon FLOAT 9.25
-         coord2 STRUCT 2
-            lat FLOAT 47.61
-            lon FLOAT 9.7            
-      SURFACE STRUCT 3
-         type  STRING SURFACE_IMAGE
-         voltype STRING hydro
-         level INT 25
-         
+#hydroclass_grid STRUCT 5
+#   type     STRING GRID
+#   datatype STRING PROC:hydro
+#   wfunc STRING NEAREST_NEIGHBOUR   
+#   gridConfig STRUCT 9
+#      xmin FLOAT 0.
+#      xmax FLOAT 100.
+#      ymin FLOAT -50.
+#      ymax FLOAT 60.
+#      zmin FLOAT 0.
+#      zmax FLOAT 12000.
+#      hres FLOAT 500.
+#      vres FLOAT 200.
+#      altorig FLOAT 0.
+#   products STRUCT 2
+#      LATLON STRUCT 4
+#         type STRING CROSS_SECTION
+#         voltype STRING hydro
+#         coord1 STRUCT 2
+#            lat FLOAT 47.18
+#            lon FLOAT 9.25
+#         coord2 STRUCT 2
+#            lat FLOAT 47.61
+#            lon FLOAT 9.7            
+#      SURFACE STRUCT 3
+#         type  STRING SURFACE_IMAGE
+#         voltype STRING hydro
+#         level INT 25
+#         
 hydroclass_TIME_HEIGHT STRUCT 8
    type     STRING TIME_HEIGHT
    datatype STRING PROC:hydro
