@@ -234,7 +234,7 @@ def process_raw(procstatus, dscfg, radar_list=None):
             datatypedescr)
         break
     ind_rad = int(radarnr[5:8])-1
-    if ((radar_list is None) or (radar_list[ind_rad] is None)):
+    if (radar_list is None) or (radar_list[ind_rad] is None):
         warn('ERROR: No valid radar')
         return None, None
     new_dataset = deepcopy(radar_list[ind_rad])
@@ -273,7 +273,7 @@ def process_save_radar(procstatus, dscfg, radar_list=None):
             datatypedescr)
         break
     ind_rad = int(radarnr[5:8])-1
-    if ((radar_list is None) or (radar_list[ind_rad] is None)):
+    if (radar_list is None) or (radar_list[ind_rad] is None):
         warn('ERROR: No valid radar')
         return None, None
     new_dataset = deepcopy(radar_list[ind_rad])
@@ -372,7 +372,7 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
 
         return new_dataset, ind_rad
 
-    if ((radar_list is None) or (radar_list[ind_rad] is None)):
+    if (radar_list is None) or (radar_list[ind_rad] is None):
         warn('ERROR: No valid radar')
         return None, None
     radar = radar_list[ind_rad]
@@ -538,7 +538,7 @@ def process_grid(procstatus, dscfg, radar_list=None):
     field_name = get_fieldname_pyart(datatype)
     ind_rad = int(radarnr[5:8])-1
 
-    if ((radar_list is None) or (radar_list[ind_rad] is None)):
+    if (radar_list is None) or (radar_list[ind_rad] is None):
         warn('ERROR: No valid radar')
         return None, None
 
@@ -668,7 +668,7 @@ def process_qvp(procstatus, dscfg, radar_list=None):
         field_name = get_fieldname_pyart(datatype)
         ind_rad = int(radarnr[5:8])-1
 
-        if ((radar_list is None) or (radar_list[ind_rad] is None)):
+        if (radar_list is None) or (radar_list[ind_rad] is None):
             warn('ERROR: No valid radar')
             return None, None
 
@@ -839,7 +839,7 @@ def process_time_height(procstatus, dscfg, radar_list=None):
         field_name = get_fieldname_pyart(datatype)
         ind_rad = int(radarnr[5:8])-1
 
-        if ((radar_list is None) or (radar_list[ind_rad] is None)):
+        if (radar_list is None) or (radar_list[ind_rad] is None):
             warn('ERROR: No valid radar')
             return None, None
 
@@ -881,6 +881,14 @@ def process_time_height(procstatus, dscfg, radar_list=None):
             th_aux.fixed_angle['data'] = np.array([90.], dtype='float64')
             th_aux.sweep_number['data'] = np.array([0], dtype='int32')
             th_aux.nsweeps = 1
+
+            if radar_aux.rays_are_indexed is not None:
+                th_aux.rays_are_indexed['data'] = np.array(
+                    [radar_aux.rays_are_indexed['data'][0]])
+
+            if radar_aux.ray_angle_res is not None:
+                th_aux.ray_angle_res['data'] = np.array(
+                    [radar_aux.ray_angle_res['data'][0]])
 
             # ray dependent radar objects parameters
             th_aux.sweep_end_ray_index['data'] = np.array([-1], dtype='int32')
@@ -926,12 +934,12 @@ def process_time_height(procstatus, dscfg, radar_list=None):
                 radar_aux.gate_latitude['data'][:, :] > lat-latlon_tol),
             np.logical_and(
                 radar_aux.gate_longitude['data'][:, :] < lon+latlon_tol,
-                radar_aux.gate_longitude['data'][:, :] > lon-latlon_tol)))[0]
+                radar_aux.gate_longitude['data'][:, :] > lon-latlon_tol)))
 
         # find closest altitude
-        if inds:
-            values = radar_aux.fields[field_name]['data'][inds]
-            altitudes = radar_aux.gate_altitude['data'][inds]
+        if inds[0].size > 0:
+            values = radar_aux.fields[field_name]['data'][inds].flatten()
+            altitudes = radar_aux.gate_altitude['data'][inds].flatten()
             for ind_r, h in enumerate(th.range['data']):
                 ind_h = find_rng_index(altitudes, h, rng_tol=hres/2.)
                 if ind_h is None:
