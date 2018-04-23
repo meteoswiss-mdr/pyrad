@@ -110,8 +110,8 @@ def read_lightning(fname, filter_data=True):
         warn(str(ee))
         warn('Unable to read file '+fname)
         return None, None, None, None, None, None, None
-        
-        
+
+
 def read_lightning_traj(fname):
     """
     Reads lightning trajectory data contained in a csv file. The file has the following
@@ -142,14 +142,14 @@ def read_lightning_traj(fname):
         with open(fname, 'r', newline='') as csvfile:
             # first count the lines
             reader = csv.DictReader(
-                csvfile, fieldnames=['Date', 'UTC', 'flashnr', 'dBm',
-                                     'at_flash', 'mean', 'min', 'max',
-                                     'nvalid'],
-                delimiter=', ')
+                (row for row in csvfile if not row.startswith('#')),
+                fieldnames=['Date', 'UTC', 'flashnr', 'dBm', 'at_flash',
+                            'mean', 'min', 'max', 'nvalid'],
+                delimiter=',')
             nrows = sum(1 for row in reader)
-            
+
             time_flash = np.empty(nrows, dtype=datetime.datetime)
-            flashnr = np.empty(nrows, dtype=int)            
+            flashnr = np.empty(nrows, dtype=int)
             dBm = np.empty(nrows, dtype=float)
             val_at_flash = np.ma.empty(nrows, dtype=float)
             val_mean = np.ma.empty(nrows, dtype=float)
@@ -160,30 +160,30 @@ def read_lightning_traj(fname):
             # now read the data
             csvfile.seek(0)
             reader = csv.DictReader(
-                csvfile, fieldnames=['Date', 'UTC', 'flashnr', 'dBm',
-                                     'at_flash', 'mean', 'min', 'max',
-                                     'nvalid'],
-                delimiter=', ')
-            i = 0            
+                (row for row in csvfile if not row.startswith('#')),
+                fieldnames=['Date', 'UTC', 'flashnr', 'dBm', 'at_flash',
+                            'mean', 'min', 'max', 'nvalid'],
+                delimiter=',')
+            i = 0
             for row in reader:
                 date_flash_aux = datetime.datetime.strptime(
                     row['Date'], '%d-%b-%Y')
-                time_flash_aux = float(row['Date'])
+                time_flash_aux = float(row['UTC'])
                 time_flash[i] = date_flash_aux+datetime.timedelta(
                     seconds=time_flash_aux)
-                
-                flashnr[i] = int(row['flashnr'])                
+
+                flashnr[i] = int(float(row['flashnr']))
                 dBm[i] = float(row['dBm'])
                 val_at_flash[i] = float(row['at_flash'])
                 val_mean[i] = float(row['mean'])
                 val_min[i] = float(row['min'])
                 val_max[i] = float(row['max'])
-                nval[i] = int(row['nvalid'])
+                nval[i] = int(float(row['nvalid']))
 
-                i += 1            
+                i += 1
 
             csvfile.close()
-            
+
             val_at_flash = np.ma.masked_invalid(val_at_flash)
             val_mean = np.ma.masked_invalid(val_mean)
             val_min = np.ma.masked_invalid(val_min)
@@ -191,7 +191,7 @@ def read_lightning_traj(fname):
 
             return (time_flash, flashnr, dBm, val_at_flash, val_mean, val_min,
                     val_max, nval)
-                    
+
     except EnvironmentError as ee:
         warn(str(ee))
         warn('Unable to read file '+fname)
