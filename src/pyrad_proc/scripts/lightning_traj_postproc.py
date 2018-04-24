@@ -36,7 +36,8 @@ print(__doc__)
 def main():
     """
     """
-    basepath = '/store/msrad/radar/pyrad_products/rad4alp_hydro_PHA/'
+    basepath = '/data/pyrad_products/rad4alp_hydro_PHA/'
+    # basepath = '/store/msrad/radar/pyrad_products/rad4alp_hydro_PHA/'
     day_vec = [
         datetime.datetime(2017, 6, 29),
         datetime.datetime(2017, 6, 30),
@@ -83,31 +84,48 @@ def main():
             fname = fname_list[0]
 
             basepath_out = os.path.dirname(fname)
-            fname2 = (
+            fname_first_source = (
                 basepath_out+'/'+day_str+'_firstsource_ts_trajlightning_' +
+                datatype+'.png')
+                
+            fname_all_sources = (
+                basepath_out+'/'+day_str+'_allsources_ts_trajlightning_' +
                 datatype+'.png')
 
             print('\nReading file '+fname)
             (time_flash, flashnr, dBm, val_at_flash, val_mean, val_min,
              val_max, nval) = read_lightning_traj(fname)
-
+             
+            field_name = get_fieldname_pyart(datatype)
+            field_dict = get_metadata(field_name)
+            
+            labelx = get_colobar_label(field_dict, field_name)
+            
+            # Plot all sources histogram
+            bins, values = compute_histogram(val_at_flash, field_name, step=step)            
+            
+            plot_histogram(
+                bins, values, [fname_all_sources], labelx=labelx,
+                titl=("Trajectory Histogram %s" %
+                      time_flash[0].strftime("%Y-%m-%d")))
+                      
+            print("----- plot to '%s'" % fname_first_source)
+            
+            
+            # Get and plot first sources histogram
             flashnr_first, unique_ind = np.unique(flashnr, return_index=True)
 
             val_first = val_at_flash[unique_ind]
             time_flash_first = time_flash[unique_ind]
 
-            field_name = get_fieldname_pyart(datatype)
-            field_dict = get_metadata(field_name)
-
             bins, values = compute_histogram(val_first, field_name, step=step)
-
-            labelx = get_colobar_label(field_dict, field_name)
+            
             plot_histogram(
-                bins, values, [fname2], labelx=labelx,
+                bins, values, [fname_first_source], labelx=labelx,
                 titl=("Trajectory Histogram First Source %s" %
                       time_flash_first[0].strftime("%Y-%m-%d")))
 
-            print("----- plot to '%s'" % fname2)
+            print("----- plot to '%s'" % fname_first_source)
 
 
 def _print_end_msg(text):
