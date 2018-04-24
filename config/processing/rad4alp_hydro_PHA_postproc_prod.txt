@@ -4,50 +4,49 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 1
-    reflectivity_traj
-#   l0:traj   
-#   l0:temperature_traj
-#   l0:reflectivity_traj  
-#   l0:ZDRc_traj   
-#   l0:RhoHVc_traj
-#   l0:KDPc_traj
-#   l0:hydroclass_traj
+dataSetList STRARR 7
+   l0:traj   
+   l0:temperature_traj
+   l0:reflectivity_traj  
+   l0:ZDRc_traj   
+   l0:RhoHVc_traj
+   l0:KDPc_traj
+   l0:hydroclass_traj
 
    
 # ==========================================================================================
 #               trajectory processing
 # ==========================================================================================
-#traj STRUCT 3
-#   type     STRING TRAJ
-#   datatype STRARR 1
-#       CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
-#   products STRUCT 4
-#      TS_RANGE STRUCT 2
-#         type  STRING TRAJ_PLOT
-#         datatype STRING RANGE
-#      TS_EL STRUCT 2
-#         type  STRING TRAJ_PLOT
-#         datatype STRING EL
-#      TS_AZ STRUCT 2
-#         type  STRING TRAJ_PLOT
-#         datatype STRING AZ
-#      TS_TEXT STRUCT 1
-#         type  STRING TRAJ_TEXT
-#
+traj STRUCT 3
+   type     STRING TRAJ
+   datatype STRARR 1
+       CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
+   products STRUCT 4
+      TS_RANGE STRUCT 2
+         type  STRING TRAJ_PLOT
+         datatype STRING RANGE
+      TS_EL STRUCT 2
+         type  STRING TRAJ_PLOT
+         datatype STRING EL
+      TS_AZ STRUCT 2
+         type  STRING TRAJ_PLOT
+         datatype STRING AZ
+      TS_TEXT STRUCT 1
+         type  STRING TRAJ_TEXT
+
 # ==========================================================================================
 #               COSMO data trajectory processing
 # ==========================================================================================
-#temperature_traj STRUCT 3
-#    type     STRING TRAJ_LIGHTNING
-#    datatype STRING CFRADIAL:TEMP,TEMP,SAVEVOL_TEMP
-#    products STRUCT 2
-#       AT_FLASH STRUCT 1
-#          type  STRING PLOT_AND_WRITE         
-#       HIST STRUCT 2
-#         type STRING PLOT_HIST
-#         step FLOAT 1
-#
+temperature_traj STRUCT 3
+    type     STRING TRAJ_LIGHTNING
+    datatype STRING CFRADIAL:TEMP,TEMP,SAVEVOL_TEMP
+    products STRUCT 2
+       AT_FLASH STRUCT 1
+          type  STRING PLOT_AND_WRITE         
+       HIST STRUCT 2
+         type STRING PLOT_HIST
+         step FLOAT 1
+
 # ==========================================================================================
 #               radar data trajectory processing
 # ==========================================================================================
@@ -55,7 +54,7 @@ reflectivity_traj STRUCT 4
    type          STRING TRAJ_LIGHTNING
    datatype      STRING CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
    data_is_log   INT   1
-   products      STRUCT 3
+   products      STRUCT 5
       ALT5000_flash_time STRUCT 4
          type   STRING TRAJ_CAPPI_IMAGE
          voltype STRING dBZc
@@ -77,7 +76,7 @@ reflectivity_traj STRUCT 4
          ymax  FLOAT    50.0
       HIST STRUCT 2
          type STRING PLOT_HIST
-         step FLOAT 1
+         step FLOAT 0.5
 
 ZDRc_traj STRUCT 3
     type     STRING TRAJ_LIGHTNING
@@ -107,7 +106,7 @@ KDPc_traj STRUCT 3
           type  STRING PLOT_AND_WRITE
        HIST STRUCT 2
           type STRING PLOT_HIST
-          step FLOAT 0.1
+          step FLOAT 0.05
 
 hydroclass_traj STRUCT 4
    type          STRING TRAJ_LIGHTNING

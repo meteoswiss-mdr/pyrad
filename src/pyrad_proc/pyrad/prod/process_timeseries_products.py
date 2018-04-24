@@ -15,7 +15,6 @@ from copy import deepcopy
 from warnings import warn
 
 import numpy as np
-import datetime
 from netCDF4 import num2date
 
 import matplotlib as mpl
@@ -24,8 +23,6 @@ mpl.use('Agg')
 # Increase a bit font size
 mpl.rcParams.update({'font.size': 16})
 mpl.rcParams.update({'font.family':  "sans-serif"})
-
-import matplotlib.pyplot as plt
 
 from ..io.io_aux import get_save_dir, make_filename, get_fieldname_pyart
 from ..io.io_aux import generate_field_name_str
@@ -401,22 +398,22 @@ def generate_timeseries_products(dataset, prdcfg):
         if not dataset['final']:
             return None
 
-        timeinfo = dataset.time_vector[0]
+        timeinfo = dataset['ts'].time_vector[0]
 
         savedir = get_save_dir(prdcfg['basepath'], prdcfg['procname'],
                                dssavedir, prdcfg['prdname'],
                                timeinfo=timeinfo)
 
         dstype_str = prdcfg['dstype'].lower().replace('_', '')
-        fname = make_filename('ts', dstype_str, dataset.datatype,
+        fname = make_filename('ts', dstype_str, dataset['ts'].datatype,
                               ['csv'],
                               prdcfginfo=None, timeinfo=timeinfo,
                               timeformat='%Y%m%d%H%M%S',
                               runinfo=prdcfg['runinfo'])
 
-        dataset.write(savedir + fname[0])
+        dataset['ts'].write(savedir + fname[0])
 
-        fname = make_filename('ts', dstype_str, dataset.datatype,
+        fname = make_filename('ts', dstype_str, dataset['ts'].datatype,
                               prdcfg['imgformat'],
                               prdcfginfo=None, timeinfo=timeinfo,
                               timeformat='%Y%m%d%H%M%S',
@@ -425,7 +422,7 @@ def generate_timeseries_products(dataset, prdcfg):
         ymin = prdcfg.get('ymin', None)
         ymax = prdcfg.get('ymax', None)
 
-        dataset.plot(savedir + fname[0], ymin=ymin, ymax=ymax)
+        dataset['ts'].plot(savedir + fname[0], ymin=ymin, ymax=ymax)
 
         return None
 
@@ -433,7 +430,7 @@ def generate_timeseries_products(dataset, prdcfg):
         if not dataset['final']:
             return None
 
-        timeinfo = dataset.time_vector[0]
+        timeinfo = dataset['ts'].time_vector[0]
 
         savedir = get_save_dir(prdcfg['basepath'], prdcfg['procname'],
                                dssavedir, prdcfg['prdname'],
@@ -441,7 +438,7 @@ def generate_timeseries_products(dataset, prdcfg):
 
         dstype_str = prdcfg['dstype'].lower().replace('_', '')
 
-        fname = make_filename('hist', dstype_str, dataset.datatype,
+        fname = make_filename('hist', dstype_str, dataset['ts'].datatype,
                               prdcfg['imgformat'],
                               prdcfginfo=None, timeinfo=timeinfo,
                               timeformat='%Y%m%d%H%M%S',
@@ -449,7 +446,7 @@ def generate_timeseries_products(dataset, prdcfg):
 
         step = prdcfg.get('step', None)
 
-        dataset.plot_hist(savedir + fname[0], step=step)
+        dataset['ts'].plot_hist(savedir + fname[0], step=step)
 
         return None
 

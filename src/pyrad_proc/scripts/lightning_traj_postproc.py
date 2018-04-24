@@ -36,7 +36,7 @@ print(__doc__)
 def main():
     """
     """
-    basepath = '/data/pyrad_products/rad4alp_hydro_PHA/'
+    basepath = '/store/msrad/radar/pyrad_products/rad4alp_hydro_PHA/'
     day_vec = [
         datetime.datetime(2017, 6, 29),
         datetime.datetime(2017, 6, 30),
@@ -54,8 +54,8 @@ def main():
 
     step_list = [
         None,
-        0.1,
-        1.,
+        0.05,
+        0.5,
         0.001,
         1.,
         0.1]
