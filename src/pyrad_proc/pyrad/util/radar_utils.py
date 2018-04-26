@@ -12,6 +12,7 @@ Miscellaneous functions dealing with radar data
     time_series_statistics
     join_time_series
     get_range_bins_to_avg
+    check_belongs_roi
     find_ray_index
     find_rng_index
     find_colocated_indexes
@@ -269,6 +270,50 @@ def get_range_bins_to_avg(rad1_rng, rad2_rng):
             avg_rad_lim = [-int((nbins-1)/2), int((nbins-1)/2)]
 
     return avg_rad1, avg_rad2, avg_rad_lim
+
+
+def check_belongs_roi(lat_list, lon_list, roi):
+    """
+    Check if a list of coordinates belong to region of interest
+
+    Parameters
+    ----------
+    lat_list, lon_list : float arrays
+        List of latitudes and longitudes to check
+    roi : dict
+        Dictionary describing the region of interest
+
+    Returns
+    -------
+    is_roi_lat_list, is_roi_lon_list : lists
+        lists of lat, lon belonging to ROI
+    is_roi : str
+        Whether the list of points is within the region of interest.
+        Can be 'All', 'None', 'Some'
+
+    """
+    is_roi_lat_list = []
+    is_roi_lon_list = []
+    for i, lat in enumerate(lat_list):
+        lon = lon_list[i]
+        if ((lat >= roi['lat_min']) and (lat <= roi['lat_max']) and
+                (lon >= roi['lon_min']) and (lon <= roi['lon_max'])):
+            is_roi_lat_list.append(lat)
+            is_roi_lon_list.append(lon)
+
+    ncoord = len(lat_list)
+    ncoord_roi = len(is_roi_lat_list)
+    if not is_roi_lat_list:
+        warn('No points in the region of interest')
+        is_roi = 'None'
+    elif ncoord != ncoord_roi:
+        warn('Only '+str(ncoord_roi)+' points out of '+str(ncoord)+' in the region of interest')
+        is_roi = 'Some'
+    else:
+        warn('All points in the region of interest')
+        is_roi = 'All'
+
+    return np.asarray(is_roi_lat_list), np.asarray(is_roi_lon_list), is_roi
 
 
 def find_ray_index(ele_vec, azi_vec, ele, azi, ele_tol=0., azi_tol=0.,
