@@ -25,7 +25,7 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 from pyrad.io import read_lightning
-from pyrad.graph import plot_histogram
+from pyrad.graph import plot_histogram, plot_pos
 
 print(__doc__)
 
@@ -55,6 +55,8 @@ def main():
     lon = np.asarray([], dtype=float)
     alt = np.asarray([], dtype=float)
     dBm = np.asarray([], dtype=float)
+
+    flash_cnt = 0
     for i, day in enumerate(day_vec):
         day_str = day.strftime('%y%m%d')
         fname = basepath+day_str+'.txt'
@@ -63,7 +65,8 @@ def main():
         (flashnr_aux, time_data_aux, time_in_flash_aux, lat_aux, lon_aux,
          alt_aux, dBm_aux) = read_lightning(fname)
 
-        # flashnr = np.append(flashnr, flashnr_aux)
+        flashnr = np.append(flashnr, flashnr_aux+flash_cnt)
+        flash_cnt += flashnr_aux.max()
         # time_data = np.append(time_data, time_data_aux)
         # time_in_flash = np.append(time_in_flash, time_in_flash_aux)
         lat = np.append(lat, lat_aux)
@@ -71,8 +74,12 @@ def main():
         alt = np.append(alt, alt_aux)
         dBm = np.append(dBm, dBm_aux)
 
-        # Get first sources indices
+        # Get first sources data
         flashnr_first, unique_ind = np.unique(flashnr_aux, return_index=True)
+        lat_first = lat_aux[unique_ind]
+        lon_first = lon_aux[unique_ind]
+        alt_first = alt_aux[unique_ind]
+        dBm_first = dBm_aux[unique_ind]
 
         # Get bins altitude
         alt_min = alt_aux.min()
@@ -81,15 +88,16 @@ def main():
         bins = np.linspace(alt_min, alt_max, num=int((alt_max-alt_min)/step))
 
         fname_hist = basepath+day_str+'_hist_alt.png'
-        plot_histogram(bins, alt_aux, [fname_hist], labelx='Altitude [m MSL]',
-                       titl=day_str+' Flash sources altitude')
-        print('Plotted '+fname_hist)
+        fname_hist = plot_histogram(
+            bins, alt_aux, [fname_hist], labelx='Altitude [m MSL]',
+            titl=day_str+' Flash sources altitude')
+        print('Plotted '+' '.join(fname_hist))
 
-        alt_first = alt_aux[unique_ind]
         fname_hist = basepath+day_str+'_hist_alt_first_source.png'
-        plot_histogram(bins, alt_first, [fname_hist], labelx='Altitude [m MSL]',
-                       titl=day_str+' Flash first source altitude')
-        print('Plotted '+fname_hist)
+        fname_hist = plot_histogram(
+            bins, alt_first, [fname_hist], labelx='Altitude [m MSL]',
+            titl=day_str+' Flash first source altitude')
+        print('Plotted '+' '.join(fname_hist))
 
         # Get bins dBm
         dBm_min = dBm_aux.min()
@@ -98,53 +106,92 @@ def main():
         bins = np.linspace(dBm_min, dBm_max, num=int((dBm_max-dBm_min)/step))
 
         fname_hist = basepath+day_str+'_hist_dBm.png'
-        plot_histogram(bins, dBm_aux, [fname_hist], labelx='Power [dBm]',
-                       titl=day_str+' Flash sources power')
-        print('Plotted '+fname_hist)
+        fname_hist = plot_histogram(
+            bins, dBm_aux, [fname_hist], labelx='Power [dBm]',
+            titl=day_str+' Flash sources power')
+        print('Plotted '+' '.join(fname_hist))
 
-        dBm_first = dBm_aux[unique_ind]
+
         fname_hist = basepath+day_str+'_hist_dBm_first_source.png'
-        plot_histogram(bins, dBm_first, [fname_hist], labelx='Power [dBm]',
-                       titl=day_str+' Flash first source power')
-        print('Plotted '+fname_hist)
+        fname_hist = plot_histogram(
+            bins, dBm_first, [fname_hist], labelx='Power [dBm]',
+            titl=day_str+' Flash first source power')
+        print('Plotted '+' '.join(fname_hist))
 
-    # plot position
-    figfname = basepath+'Santis_LMA_flashes_pos.png'
+        print('N sources: '+str(alt_aux.size))
 
-    # sort data by altitude
-    ind = np.argsort(alt)
-    # inverse indices
-    # ind = ind[::-1]
-    lat = lat[ind]
-    lon = lon[ind]
-    alt = alt[ind]
+        # plot position all sources
+        figfname = basepath+day_str+'_sources_pos_max_height_on_top.png'
+        figfname = plot_pos(
+            lat_aux, lon_aux, alt_aux, [figfname],
+            sort_altitude='Highest_on_top', cb_label='Source height [m MSL]',
+            titl=day_str+' flash sources position. Highest on top')
+        print('Plotted '+' '.join(figfname))
 
-    print('N flashes: '+str(alt.size))
+        figfname = basepath+day_str+'_sources_pos_min_height_on_top.png'
+        figfname = plot_pos(
+            lat_aux, lon_aux, alt_aux, [figfname],
+            sort_altitude='Lowest_on_top', cb_label='Source height [m MSL]',
+            titl=day_str+' flash sources position. Lowest on top')
+        print('Plotted '+' '.join(figfname))
 
-    marker = 'x'
-    col = alt
-    cmap = 'viridis'
-    norm = plt.Normalize(alt.min(), alt.max())
-    cb_label = 'Flash source height [m MSL]'
+        # plot position first source
+        print('N flashes: '+str(alt_first.size))
 
-    fig = plt.figure(figsize=[10, 8], dpi=72)
-    ax = fig.add_subplot(111, aspect='equal')
+        # plot position all sources
+        figfname = basepath+day_str+'_first_source_pos_max_height_on_top.png'
+        figfname = plot_pos(
+            lat_first, lon_first, alt_first, [figfname],
+            sort_altitude='Highest_on_top', cb_label='Source height [m MSL]',
+            titl=day_str+' first flash source position. Highest on top')
+        print('Plotted '+' '.join(figfname))
 
-    cax = ax.scatter(
-        lon, lat, c=col, marker=marker, alpha=1, cmap=cmap, norm=norm)
-    cb = fig.colorbar(cax, orientation='horizontal')
-    cb.set_label(cb_label)
+        figfname = basepath+day_str+'_first_source_pos_min_height_on_top.png'
+        figfname = plot_pos(
+            lat_first, lon_first, alt_first, [figfname],
+            sort_altitude='Lowest_on_top', cb_label='Source height [m MSL]',
+            titl=day_str+' first flash source position. Lowest on top')
+        print('Plotted '+' '.join(figfname))
 
-    plt.title('Flash sources position')
-    plt.xlabel('Lon [Deg]')
-    plt.ylabel('Lat [Deg]')
+    print('N sources total: '+str(alt.size))
 
-    # Turn on the grid
-    ax.grid()
+    # plot position all sources
+    figfname = basepath+'Santis_LMA_sources_pos_max_height_on_top.png'
+    figfname = plot_pos(
+        lat, lon, alt, [figfname], sort_altitude='Highest_on_top',
+        cb_label='Source height [m MSL]',
+        titl='Flash sources position. Highest on top')
+    print('Plotted '+' '.join(figfname))
 
-    fig.savefig(figfname, dpi=72)
-    plt.close()
-    print('Plotted '+figfname)
+    figfname = basepath+'Santis_LMA_sources_pos_min_height_on_top.png'
+    figfname = plot_pos(
+        lat, lon, alt, [figfname], sort_altitude='Lowest_on_top',
+        cb_label='Source height [m MSL]',
+        titl='Flash sources position. Lowest on top')
+    print('Plotted '+' '.join(figfname))
+
+    # plot position first source
+    flashnr_first, unique_ind = np.unique(flashnr, return_index=True)
+    lat_first = lat[unique_ind]
+    lon_first = lon[unique_ind]
+    alt_first = alt[unique_ind]
+
+    print('N flashes total: '+str(alt_first.size))
+
+    # plot position all sources
+    figfname = basepath+'Santis_LMA_first_source_pos_max_height_on_top.png'
+    figfname = plot_pos(
+        lat_first, lon_first, alt_first, [figfname],
+        sort_altitude='Highest_on_top', cb_label='Source height [m MSL]',
+        titl='First flash source position. Highest on top')
+    print('Plotted '+' '.join(figfname))
+
+    figfname = basepath+'Santis_LMA_first_source_pos_min_height_on_top.png'
+    figfname = plot_pos(
+        lat_first, lon_first, alt_first, [figfname],
+        sort_altitude='Lowest_on_top', cb_label='Source height [m MSL]',
+        titl='First flash source position. Lowest on top')
+    print('Plotted '+' '.join(figfname))
 
 
 def _print_end_msg(text):
