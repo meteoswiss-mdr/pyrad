@@ -11,6 +11,7 @@ Functions for writing pyrad output data
     write_alarm_msg
     write_last_state
     write_smn
+    write_trt_cell_data
     write_rhi_profile
     write_field_coverage
     write_cdf
@@ -203,6 +204,82 @@ def write_smn(datetime_vec, value_avg_vec, value_std_vec, fname):
                 'datetime': datetime_vec[i].strftime('%Y%m%d%H%M%S'),
                 'avg': value_avg_vec[i],
                 'std': value_std_vec[i]})
+
+        csvfile.close()
+
+    return fname
+
+
+def write_trt_cell_data(
+        traj_ID, yyyymmddHHMM, lon, lat, ell_L, ell_S, ell_or, area,
+        vel_x, vel_y, det, RANKr, CG_n, CG_p, CG, CG_percent_p, ET45,
+        ET45m, ET15, ET15m, VIL, maxH, maxHm, POH, RANK, Dvel_x,
+        Dvel_y, cell_contour, fname):
+    """
+    writes TRT cell data
+
+    Parameters
+    ----------
+
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    nvalues = traj_ID.size
+    with open(fname, 'w', newline='') as csvfile:
+        fieldnames = [
+            'traj_ID', 'yyyymmddHHMM', 'lon', 'lat', 'ell_L', 'ell_S',
+            'ell_or', 'area', 'vel_x', 'vel_y', 'det', 'RANKr', 'CG-',
+            'CG+', 'CG', '%CG+', 'ET45', 'ET45m', 'ET15', 'ET15m',
+            'VIL', 'maxH', 'maxHm', 'POH', 'RANK', 'Dvel_x', 'Dvel_y',
+            'cell_contour_lon-lat']
+        writer = csv.DictWriter(csvfile, fieldnames)
+        writer.writeheader()
+        for i in range(nvalues):
+            cell_contour_aux = cell_contour[i]
+            npoints_contour = len(cell_contour_aux['lon'])
+            cell_contour_arr = np.empty(2*npoints_contour, dtype=float)
+            cell_contour_arr[0:-1:2] = cell_contour_aux['lon']
+            cell_contour_arr[1::2] = cell_contour_aux['lat']
+            cell_contour_str = str(cell_contour_arr[0])
+            for j in range(1, 2*npoints_contour):
+                cell_contour_str += ' '+str(cell_contour_arr[j])
+
+            writer.writerow({
+                'traj_ID': traj_ID[i],
+                'yyyymmddHHMM': yyyymmddHHMM[i].strftime('%Y%m%d%H%M'),
+                'lon': lon[i],
+                'lat': lat[i],
+                'ell_L': ell_L[i],
+                'ell_S': ell_S[i],
+                'ell_or': ell_or[i],
+                'area': area[i],
+                'vel_x': vel_x[i],
+                'vel_y': vel_y[i],
+                'det': det[i],
+                'RANKr': RANKr[i],
+                'CG-': CG_n[i],
+                'CG+': CG_p[i],
+                'CG': CG[i],
+                '%CG+': CG_percent_p[i],
+                'ET45': ET45[i],
+                'ET45m': ET45m[i],
+                'ET15': ET15[i],
+                'ET15m': ET15m[i],
+                'VIL': VIL[i],
+                'maxH': maxH[i],
+                'maxHm': maxHm[i],
+                'POH': POH[i],
+                'RANK': RANK[i],
+                'Dvel_x': Dvel_x[i],
+                'Dvel_y': Dvel_y[i],
+                'cell_contour_lon-lat': cell_contour_str
+            })
 
         csvfile.close()
 

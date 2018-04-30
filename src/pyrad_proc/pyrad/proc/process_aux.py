@@ -13,6 +13,7 @@ determined points or regions of interest.
     process_raw
     process_save_radar
     process_point_measurement
+    process_roi
     process_grid
     process_qvp
     process_time_height
@@ -28,7 +29,7 @@ import pyart
 from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 from .process_traj import process_trajectory, process_traj_atplane
 from .process_traj import process_traj_antenna_pattern, process_traj_lightning
-from ..util.radar_utils import find_rng_index
+from ..util.radar_utils import find_rng_index, belongs_roi_indices
 
 
 def get_process_func(dataset_type, dsname):
@@ -184,6 +185,8 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'POINT_MEASUREMENT':
         func_name = process_point_measurement
         dsformat = 'TIMESERIES'
+    elif dataset_type == 'ROI':
+        func_name = process_roi
     elif dataset_type == 'TRAJ':
         func_name = process_trajectory
         dsformat = 'TRAJ_ONLY'
@@ -477,6 +480,86 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
     new_dataset.update({'final': False})
 
     return new_dataset, ind_rad
+
+
+def process_roi(procstatus, dscfg, radar_list=None):
+    """
+    Obtains the radar data at a region of interest.
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : string. Dataset keyword
+            The data type where we want to extract the point measurement
+
+    radar_list : list of Radar objects
+          Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the data and metadata at the point of interest
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    for datatypedescr in dscfg['datatype']:
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        break
+    field_name = get_fieldname_pyart(datatype)
+    ind_rad = int(radarnr[5:8])-1
+
+    if (radar_list is None) or (radar_list[ind_rad] is None):
+        warn('ERROR: No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if field_name not in radar.fields:
+        warn('Unable to extract ROI information. ' +
+             'Field not available')
+        return None, None
+
+    lon_roi = dscfg.get('lon_roi', None)
+    lat_roi = dscfg.get('lat_roi', None)
+    alt_min = dscfg.get('alt_min', None)
+    alt_max = dscfg.get('alt_max', None)
+
+    if lon_roi is None or lat_roi is None:
+        warn('Undefined ROI')
+        return None, None
+
+    roi_dict = {
+        'lon': lon_roi,
+        'lat': lat_roi,
+        'alt_min': alt_min,
+        'alt_max': alt_max}
+    print(roi_dict)
+
+    inds, is_roi = belongs_roi_indices(
+        radar.gate_latitude['data'], radar.gate_longitude['data'], roi_dict)
+    print(is_roi)
+    print(inds)
+
+    if is_roi == 'None':
+        return None, None
+    if alt_min is not None:
+        inds = inds[radar.gate_altitude['data'][inds] >= alt_min]
+    if alt_max is not None:
+        inds = inds[radar.gate_altitude['data'][inds] <= alt_max]
+
+    vals = radar.fields[field_name]['data'][inds]
+    print(vals)
+
+    return None, None
 
 
 def process_grid(procstatus, dscfg, radar_list=None):

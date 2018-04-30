@@ -68,6 +68,8 @@ Reading other data
     read_antenna_pattern
     read_lightning
     read_lightning_traj
+    read_trt_data
+    read_trt_traj_data
 
 Writing data
 ==================
@@ -107,6 +109,7 @@ Auxiliary functions
     get_datetime
     get_datasetfields
     get_file_list
+    get_trtfile_list
     get_datatype_fields
     get_field_unit
     get_fieldname_pyart
@@ -157,7 +160,8 @@ from .read_data_other import read_excess_gates
 
 from .read_data_sensor import read_lightning, read_lightning_traj
 from .read_data_sensor import get_sensor_data, read_smn, read_smn2
-from .read_data_sensor import read_disdro_scattering
+from .read_data_sensor import read_disdro_scattering, read_trt_data
+from .read_data_sensor import read_trt_traj_data
 
 from .read_data_sun import read_sun_hits_multiple_days, read_sun_hits
 from .read_data_sun import read_sun_retrieval, read_solar_flux
@@ -169,11 +173,11 @@ from .write_data import write_colocated_gates, write_colocated_data
 from .write_data import write_colocated_data_time_avg, write_cdf
 from .write_data import write_rhi_profile, write_field_coverage
 from .write_data import write_last_state, write_alarm_msg, send_msg
-from .write_data import write_excess_gates
+from .write_data import write_excess_gates, write_trt_cell_data
 
 from .io_aux import get_save_dir, make_filename, get_new_rainbow_file_name
 from .io_aux import get_datetime, get_dataset_fields, map_hydro
-from .io_aux import get_file_list, get_datatype_fields
+from .io_aux import get_file_list, get_trtfile_list, get_datatype_fields
 from .io_aux import get_fieldname_pyart, get_field_unit, get_fieldname_cosmo
 from .io_aux import generate_field_name_str, find_raw_cosmo_file
 from .io_aux import find_hzt_file

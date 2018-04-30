@@ -14,6 +14,7 @@ Functions to plot radar volume data
     plot_time_range
     plot_cappi
     plot_traj
+    plot_pos
     plot_rhi_profile
     plot_along_coord
     plot_field_coverage
@@ -710,6 +711,87 @@ def plot_traj(rng_traj, azi_traj, ele_traj, time_traj, prdcfg, fname_list,
     if plot_cb:
         cb = fig.colorbar(cax, orientation='horizontal')
         cb.set_label(cb_label)
+
+    if save_fig:
+        for fname in fname_list:
+            fig.savefig(fname, dpi=dpi)
+        plt.close()
+
+        return fname_list
+
+    return (fig, ax)
+
+
+def plot_pos(lat, lon, alt, fname_list, ax=None, fig=None, save_fig=True,
+             sort_altitude='No', dpi=72, alpha=1., cb_label='height [m MSL]',
+             titl='Position'):
+    """
+    plots a trajectory on a Cartesian surface
+
+    Parameters
+    ----------
+    lat, lon, alt : float array
+        Points coordinates
+    fname_list : list of str
+        list of names of the files where to store the plot
+    fig : Figure
+        Figure to add the colorbar to. If none a new figure will be created
+    ax : Axis
+        Axis to plot on. if fig is None a new axis will be created
+    save_fig : bool
+        if true save the figure if false it does not close the plot and
+        returns the handle to the figure
+    sort_altitude : str
+        String indicating whether to sort the altitude data. Can be 'No',
+        'Lowest_on_top' or 'Highest_on_top'
+    dpi : int
+        Pixel density
+    alpha : float
+        Transparency
+    cb_label : str
+        Color bar label
+    titl : str
+        Plot title
+
+    Returns
+    -------
+    fname_list : list of str or
+    fig, ax : tupple
+        list of names of the saved plots or handle of the figure an axes
+
+    """
+    if sort_altitude == 'Lowest_on_top' or sort_altitude == 'Highest_on_top':
+        ind = np.argsort(alt)
+        if sort_altitude == 'Lowest_on_top':
+            ind = ind[::-1]
+        lat = lat[ind]
+        lon = lon[ind]
+        alt = alt[ind]
+
+    marker = 'x'
+    col = alt
+    cmap = 'viridis'
+    norm = plt.Normalize(alt.min(), alt.max())
+
+    if fig is None:
+        fig = plt.figure(figsize=[10, 8], dpi=dpi)
+        ax = fig.add_subplot(111, aspect='equal')
+    else:
+        ax.autoscale(False)
+
+    cax = ax.scatter(
+        lon, lat, c=col, marker=marker, alpha=alpha, cmap=cmap, norm=norm)
+
+    # plot colorbar
+    cb = fig.colorbar(cax, orientation='horizontal')
+    cb.set_label(cb_label)
+
+    plt.title(titl)
+    plt.xlabel('Lon [Deg]')
+    plt.ylabel('Lat [Deg]')
+
+    # Turn on the grid
+    ax.grid()
 
     if save_fig:
         for fname in fname_list:

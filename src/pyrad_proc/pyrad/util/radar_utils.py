@@ -12,6 +12,7 @@ Miscellaneous functions dealing with radar data
     time_series_statistics
     join_time_series
     get_range_bins_to_avg
+    belongs_roi_indices
     find_ray_index
     find_rng_index
     find_colocated_indexes
@@ -38,6 +39,7 @@ import datetime
 import numpy as np
 import pandas as pd
 import scipy
+import shapely
 
 import pyart
 
@@ -269,6 +271,56 @@ def get_range_bins_to_avg(rad1_rng, rad2_rng):
             avg_rad_lim = [-int((nbins-1)/2), int((nbins-1)/2)]
 
     return avg_rad1, avg_rad2, avg_rad_lim
+
+    
+def belongs_roi_indices(lat, lon, roi):
+    """
+    Get the indices of points that belong to roi in a list of points
+
+    Parameters
+    ----------
+    lat, lon : float arrays
+        latitudes and longitudes to check
+    roi : dict
+        Dictionary describing the region of interest
+
+    Returns
+    -------    
+    inds : array of ints
+        list of indices of points belonging to ROI
+    is_roi : str
+        Whether the list of points is within the region of interest.
+        Can be 'All', 'None', 'Some'
+
+    """
+    lon_list = lon.flatten()
+    lat_list = lat.flatten()
+    
+    polygon = shapely.geometry.Polygon(list(zip(roi['lon'], roi['lat'])))    
+    points = shapely.geometry.MultiPoint(list(zip(lon_list, lat_list)))
+        
+    inds = []
+    if polygon.contains(points):
+        warn('All points in the region of interest')
+        is_roi = 'All'        
+        inds = np.indices(np.shape(lon))
+    elif polygon.disjoint(points):
+        warn('No points in the region of interest')
+        is_roi = 'None'        
+    else:        
+        points_roi = points.intersection(polygon)
+        if points_roi.geom_type == 'Point':            
+            inds.append(np.where(np.logical_and(lon == points_roi.x, lat == points_roi.y)))
+        else:            
+            points_roi_list = list(points_roi)        
+            for point in points_roi_list:                
+                inds.append(np.where(np.logical_and(lon == points_roi.x, lat == points_roi.y)))
+        nroi = len(lat[inds])
+        npoint = len(lat_list)
+        warn(str(nroi)+' points out of '+str(npoint)+' in the region of interest')
+        is_roi = 'Some'
+
+    return np.asarray(inds), is_roi
 
 
 def find_ray_index(ele_vec, azi_vec, ele, azi, ele_tol=0., azi_tol=0.,
