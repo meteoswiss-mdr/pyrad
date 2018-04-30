@@ -4,16 +4,71 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 7
-   l0:traj   
-   l0:temperature_traj
-   l0:reflectivity_traj  
-   l0:ZDRc_traj   
-   l0:RhoHVc_traj
-   l0:KDPc_traj
-   l0:hydroclass_traj
+dataSetList STRARR 1
+    reflectivity_roi
+#   l0:traj   
+#   l0:temperature_traj
+#   l0:reflectivity_traj  
+#   l0:ZDRc_traj   
+#   l0:RhoHVc_traj
+#   l0:KDPc_traj
+#   l0:hydroclass_traj
 
-   
+
+# ==========================================================================================
+#               Region of interest processing
+# ==========================================================================================
+reflectivity_roi STRUCT 6
+    type          STRING ROI
+    datatype      STRING CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
+    lon_roi FLTARR 20
+        9.1092        
+        9.0822        
+        9.0814        
+        9.0946        
+        9.1075        
+        9.1072        
+        9.1201        
+        9.1196        
+        9.1061        
+        9.1047        
+        9.1574        
+        9.1582        
+        9.1986        
+        9.1992        
+        9.1863        
+        9.1872        
+        9.1743        
+        9.1752        
+        9.1224        
+        9.1092        
+    lat_roi FLTARR 20
+        47.2313
+        47.2137
+        47.1867
+        47.1865
+        47.1773
+        47.1684
+        47.1592
+        47.1412
+        47.1324
+        47.0874
+        47.0866
+        47.1136
+        47.14
+        47.158
+        47.1672
+        47.1942
+        47.2034
+        47.2303
+        47.2311
+        47.2313
+    alt_min FLOAT 0.
+    alt_max FLOAT 100000.
+         
+         
+         
+         
 # ==========================================================================================
 #               trajectory processing
 # ==========================================================================================

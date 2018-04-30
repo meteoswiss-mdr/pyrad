@@ -17,6 +17,7 @@ Auxiliary functions
     process_raw
     process_save_radar
     process_point_measurement
+    process_roi
     process_grid
     process_qvp
     process_time_height
@@ -122,7 +123,7 @@ COSMO data
 
 from .process_aux import get_process_func, process_raw, process_save_radar
 from .process_aux import process_point_measurement, process_grid, process_qvp
-from .process_aux import process_time_height
+from .process_aux import process_time_height, process_roi
 from .process_traj import process_trajectory, process_traj_atplane
 from .process_traj import process_traj_antenna_pattern
 

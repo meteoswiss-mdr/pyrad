@@ -91,15 +91,25 @@ def read_trt_data(fname):
             reader = csv.DictReader(
                 (row for row in csvfile if (
                     not row.startswith('#') and
-                    not row.startswith('@') and row)),
+                    not row.startswith('@') and not row.startswith(" ")
+                    and row)),
                 fieldnames=[
                     'traj_ID', 'yyyymmddHHMM', 'lon', 'lat', 'ell_L', 'ell_S',
                     'ell_or', 'area', 'vel_x', 'vel_y', 'det', 'RANKr', 'CG-',
                     'CG+', 'CG', '%CG+', 'ET45', 'ET45m', 'ET15', 'ET15m',
-                    'VIL', 'maxH', 'maxHm', 'POH', 'RANK', 'Dvel_x', 'Dvel_y'],
+                    'VIL', 'maxH', 'maxHm', 'POH', 'RANK', 'Dvel_x',
+                    'Dvel_y'],
                 restkey='cell_contour_lon-lat',
                 delimiter=';')
             nrows = sum(1 for row in reader)
+
+            if nrows == 0:
+                warn('No data in file '+fname)
+                return (
+                    None, None, None, None, None, None, None, None, None,
+                    None, None, None, None, None, None, None, None, None,
+                    None, None, None, None, None, None, None, None, None,
+                    None)
 
             traj_ID = np.empty(nrows, dtype=int)
             yyyymmddHHMM = np.empty(nrows, dtype=datetime.datetime)
@@ -134,12 +144,14 @@ def read_trt_data(fname):
             reader = csv.DictReader(
                 (row for row in csvfile if (
                     not row.startswith('#') and
-                    not row.startswith('@') and row)),
+                    not row.startswith('@') and not row.startswith(" ")
+                    and row)),
                 fieldnames=[
                     'traj_ID', 'yyyymmddHHMM', 'lon', 'lat', 'ell_L', 'ell_S',
                     'ell_or', 'area', 'vel_x', 'vel_y', 'det', 'RANKr', 'CG-',
                     'CG+', 'CG', '%CG+', 'ET45', 'ET45m', 'ET15', 'ET15m',
-                    'VIL', 'maxH', 'maxHm', 'POH', 'RANK', 'Dvel_x', 'Dvel_y'],
+                    'VIL', 'maxH', 'maxHm', 'POH', 'RANK', 'Dvel_x',
+                    'Dvel_y'],
                 restkey='cell_contour_lon-lat',
                 delimiter=';')
             i = 0
@@ -178,7 +190,8 @@ def read_trt_data(fname):
                 nele = len(cell_contour_list_aux)-1
                 cell_contour_list = []
                 for j in range(nele):
-                    cell_contour_list.append(float(cell_contour_list_aux[j].strip()))
+                    cell_contour_list.append(
+                        float(cell_contour_list_aux[j].strip()))
                 cell_contour_dict = {
                     'lon': cell_contour_list[0::2],
                     'lat': cell_contour_list[1::2]
@@ -322,9 +335,9 @@ def read_trt_traj_data(fname):
                     not row.startswith('#') and
                     not row.startswith('@') and row)),
                 delimiter=',')
-            i = 0
+
             cell_contour = []
-            for row in reader:
+            for i, row in enumerate(reader):
                 traj_ID[i] = int(row['traj_ID'])
                 yyyymmddHHMM[i] = datetime.datetime.strptime(
                     row['yyyymmddHHMM'].strip(), '%Y%m%d%H%M')
@@ -354,18 +367,17 @@ def read_trt_traj_data(fname):
                 Dvel_x[i] = float(row['Dvel_x'].strip())
                 Dvel_y[i] = float(row['Dvel_y'].strip())
 
-            #    cell_contour_list_aux = row['cell_contour_lon-lat']
-            #    nele = len(cell_contour_list_aux)-1
-            #    cell_contour_list = []
-            #    for j in range(nele):
-            #        cell_contour_list.append(float(cell_contour_list_aux[j].strip()))
-            #    cell_contour_dict = {
-            #        'lon': cell_contour_list[0::2],
-            #        'lat': cell_contour_list[1::2]
-            #    }
-            #    cell_contour.append(cell_contour_dict)
+                cell_contour_str_arr = row['cell_contour_lon-lat'].split()
+                cell_contour_arr = np.empty(
+                    len(cell_contour_str_arr), dtype=float)
+                for j, cell_contour_el in enumerate(cell_contour_str_arr):
+                    cell_contour_arr[j] = float(cell_contour_el)
 
-                i += 1
+                cell_contour_dict = {
+                    'lon': cell_contour_arr[0::2],
+                    'lat': cell_contour_arr[1::2]
+                }
+                cell_contour.append(cell_contour_dict)
 
             csvfile.close()
 

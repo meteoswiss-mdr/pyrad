@@ -33,7 +33,7 @@ Radar Utilities
     compute_2d_stats
     compute_histogram
     compute_histogram_sweep
-    check_belongs_roi
+    belongs_roi_indices
 
     quantiles_weighted
 """
@@ -46,7 +46,7 @@ from .radar_utils import compute_quantiles_from_hist, get_range_bins_to_avg
 from .radar_utils import find_ray_index, find_rng_index, find_colocated_indexes
 from .radar_utils import compute_2d_hist, compute_1d_stats, compute_2d_stats
 from .radar_utils import time_series_statistics, join_time_series
-from .radar_utils import rainfall_accumulation, get_ROI, check_belongs_roi
+from .radar_utils import rainfall_accumulation, get_ROI, belongs_roi_indices
 
 from .stat_utils import quantiles_weighted
 

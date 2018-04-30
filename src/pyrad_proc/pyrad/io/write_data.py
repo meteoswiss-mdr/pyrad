@@ -236,10 +236,20 @@ def write_trt_cell_data(
             'traj_ID', 'yyyymmddHHMM', 'lon', 'lat', 'ell_L', 'ell_S',
             'ell_or', 'area', 'vel_x', 'vel_y', 'det', 'RANKr', 'CG-',
             'CG+', 'CG', '%CG+', 'ET45', 'ET45m', 'ET15', 'ET15m',
-            'VIL', 'maxH', 'maxHm', 'POH', 'RANK', 'Dvel_x', 'Dvel_y']
+            'VIL', 'maxH', 'maxHm', 'POH', 'RANK', 'Dvel_x', 'Dvel_y',
+            'cell_contour_lon-lat']
         writer = csv.DictWriter(csvfile, fieldnames)
         writer.writeheader()
         for i in range(nvalues):
+            cell_contour_aux = cell_contour[i]
+            npoints_contour = len(cell_contour_aux['lon'])
+            cell_contour_arr = np.empty(2*npoints_contour, dtype=float)
+            cell_contour_arr[0:-1:2] = cell_contour_aux['lon']
+            cell_contour_arr[1::2] = cell_contour_aux['lat']
+            cell_contour_str = str(cell_contour_arr[0])
+            for j in range(1, 2*npoints_contour):
+                cell_contour_str += ' '+str(cell_contour_arr[j])
+
             writer.writerow({
                 'traj_ID': traj_ID[i],
                 'yyyymmddHHMM': yyyymmddHHMM[i].strftime('%Y%m%d%H%M'),
@@ -267,7 +277,9 @@ def write_trt_cell_data(
                 'POH': POH[i],
                 'RANK': RANK[i],
                 'Dvel_x': Dvel_x[i],
-                'Dvel_y': Dvel_y[i]})
+                'Dvel_y': Dvel_y[i],
+                'cell_contour_lon-lat': cell_contour_str
+            })
 
         csvfile.close()
 

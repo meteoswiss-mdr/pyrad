@@ -32,7 +32,7 @@ def main():
     start_time_list = [
         '20170629000000', '20170630000000', '20170710000000', '20170718000000']
     end_time_list = [
-        '20170629235900', '20170630235900', '20170710235900', '20170718235900']
+        '20170629235900', '20170630235900', '20170710235900', '20170718235900']    
     nsteps_min = 3
 
     print("====== TRT cell processing started: %s" %
@@ -93,6 +93,9 @@ def main():
              ET45_aux, ET45m_aux, ET15_aux, ET15m_aux, VIL_aux, maxH_aux,
              maxHm_aux, POH_aux, RANK_aux, Dvel_x_aux, Dvel_y_aux,
              cell_contour_aux) = read_trt_data(fname)
+             
+            if traj_ID_aux is None:
+                continue
 
             traj_ID = np.append(traj_ID, traj_ID_aux)
             yyyymmddHHMM = np.append(yyyymmddHHMM, yyyymmddHHMM_aux)
@@ -121,7 +124,7 @@ def main():
             RANK = np.append(RANK, RANK_aux)
             Dvel_x = np.append(Dvel_x, Dvel_x_aux)
             Dvel_y = np.append(Dvel_y, Dvel_y_aux)
-            cell_contour.append(cell_contour_aux)
+            cell_contour.extend(cell_contour_aux)
 
         traj_ID_unique_list = np.unique(traj_ID)
 
@@ -130,7 +133,10 @@ def main():
         ncells = 0
         for traj_ID_unique in traj_ID_unique_list:
             ind = np.where(traj_ID == traj_ID_unique)[0]
-
+            
+            if ind.size < nsteps_min:
+                continue
+            
             traj_ID_cell = traj_ID[ind]
             yyyymmddHHMM_cell = yyyymmddHHMM[ind]
             lon_cell = lon[ind]
@@ -158,10 +164,10 @@ def main():
             RANK_cell = RANK[ind]
             Dvel_x_cell = Dvel_x[ind]
             Dvel_y_cell = Dvel_y[ind]
-            cell_contour_cell = None
-
-            if traj_ID_cell.size < nsteps_min:
-                continue
+            
+            cell_contour_cell = []            
+            for ind_el in ind:                
+                cell_contour_cell.append(cell_contour[ind_el])
 
             fname = data_output_path+str(traj_ID_unique)+'.trt'
             fname = write_trt_cell_data(

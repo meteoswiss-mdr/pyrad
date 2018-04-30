@@ -43,12 +43,9 @@ def main():
     data_input_path = '/home/lom/users/fvj/tmp/TRTC_cell/'
     data_output_path = '/home/lom/users/fvj/tmp/TRTC_cell_plots/'
     roi = {
-        'lat_min': 47.0000030,
-        'lat_max': 47.5999930,
-        'lon_min': 8.9000010,
-        'lon_max': 9.4999970
+        'lon': [8.9000010, 9.2000000, 9.4999970, 9.4999970, 8.9000010],
+        'lat': [47.0000030, 47.0000030, 47.0000030, 47.5999930, 47.5999930]
     }
-
 
     print("====== TRT cell processing started: %s" %
           datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
@@ -68,12 +65,13 @@ def main():
              ET45m, ET15, ET15m, VIL, maxH, maxHm, POH, RANK, Dvel_x,
              Dvel_y, cell_contour) = read_trt_traj_data(fname)
 
-            is_roi_lat_list, is_roi_lon_list, is_roi = check_belongs_roi(
-                lat, lon, roi)
+            inds, is_roi = check_belongs_roi(lat, lon, roi)
 
             if is_roi == 'None':
                 continue
-
+            elif is_roi == 'Some' and len(lat[inds]) < 3:
+                continue
+            
             data_output_path = data_output_base+is_roi+'/'
             if not os.path.isdir(data_output_path):
                 os.makedirs(data_output_path)
