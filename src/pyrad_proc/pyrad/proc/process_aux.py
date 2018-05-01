@@ -27,6 +27,7 @@ from netCDF4 import num2date
 import pyart
 
 from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
+from ..io.read_data_sensor import read_trt_traj_data
 from .process_traj import process_trajectory, process_traj_atplane
 from .process_traj import process_traj_antenna_pattern, process_traj_lightning
 from ..util.radar_utils import find_rng_index, belongs_roi_indices
@@ -528,38 +529,119 @@ def process_roi(procstatus, dscfg, radar_list=None):
              'Field not available')
         return None, None
 
-    lon_roi = dscfg.get('lon_roi', None)
-    lat_roi = dscfg.get('lat_roi', None)
+    if 'trtfile' in dscfg:
+        (traj_ID, yyyymmddHHMM, lon, lat, ell_L, ell_S, ell_or, area,
+         vel_x, vel_y, det, RANKr, CG_n, CG_p, CG, CG_percent_p, ET45,
+         ET45m, ET15, ET15m, VIL, maxH, maxHm, POH, RANK, Dvel_x,
+         Dvel_y, cell_contour) = read_trt_traj_data(dscfg['trtfile'])
+
+        time_tol = dscfg.get('TimeTol', 100.)
+        dt = np.empty(yyyymmddHHMM.size, dtype=float)
+        for i, time_traj in enumerate(yyyymmddHHMM):
+            dt[i] = np.abs((dscfg['timeinfo'] - time_traj).total_seconds())
+        if dt.min() > time_tol:
+            warn('No TRT data for radar volume time')
+            return None, None
+
+        ind = np.argmin(dt)
+        lon_roi = cell_contour[ind]['lon']
+        lat_roi = cell_contour[ind]['lat']
+    else:
+        lon_roi = dscfg.get('lon_roi', None)
+        lat_roi = dscfg.get('lat_roi', None)
+
+        if lon_roi is None or lat_roi is None:
+            warn('Undefined ROI')
+            return None, None
+
     alt_min = dscfg.get('alt_min', None)
     alt_max = dscfg.get('alt_max', None)
-
-    if lon_roi is None or lat_roi is None:
-        warn('Undefined ROI')
-        return None, None
 
     roi_dict = {
         'lon': lon_roi,
         'lat': lat_roi,
         'alt_min': alt_min,
         'alt_max': alt_max}
-    print(roi_dict)
 
-    inds, is_roi = belongs_roi_indices(
-        radar.gate_latitude['data'], radar.gate_longitude['data'], roi_dict)
-    print(is_roi)
-    print(inds)
+    # extract the data within the ROI boundaries
+    inds_ray, inds_rng = np.indices(np.shape(radar.gate_longitude['data']))
+
+    mask = np.logical_and(
+        np.logical_and(
+            radar.gate_latitude['data'] >= roi_dict['lat'].min(),
+            radar.gate_latitude['data'] <= roi_dict['lat'].max()),
+        np.logical_and(
+            radar.gate_longitude['data'] >= roi_dict['lon'].min(),
+            radar.gate_longitude['data'] <= roi_dict['lon'].max()))
+
+    if alt_min is not None:
+        mask[radar.gate_altitude['data'] < alt_min] = 0
+    if alt_max is not None:
+        mask[radar.gate_altitude['data'] > alt_max] = 0
+
+    if np.all(mask == 0):
+        warn('No values within ROI')
+        return None, None
+
+    inds_ray = inds_ray[mask]
+    inds_rng = inds_rng[mask]
+
+    # extract the data inside the ROI
+    lat = radar.gate_latitude['data'][mask]
+    lon = radar.gate_longitude['data'][mask]
+    inds, is_roi = belongs_roi_indices(lat, lon, roi_dict)
 
     if is_roi == 'None':
+        warn('No values within ROI')
         return None, None
-    if alt_min is not None:
-        inds = inds[radar.gate_altitude['data'][inds] >= alt_min]
-    if alt_max is not None:
-        inds = inds[radar.gate_altitude['data'][inds] <= alt_max]
 
-    vals = radar.fields[field_name]['data'][inds]
-    print(vals)
+    inds_ray = inds_ray[inds]
+    inds_rng = inds_rng[inds]
 
-    return None, None
+    lat = lat[inds].T
+    lon = lon[inds].T
+    alt = radar.gate_altitude['data'][inds_ray, inds_rng].T
+
+    # prepare new radar object output
+    radar_roi = deepcopy(radar)
+
+    radar_roi.range['data'] = radar.range['data'][inds_rng]
+    radar_roi.ngates = inds_rng.size
+    radar_roi.time['data'] = np.asarray([radar_roi.time['data'][0]])
+    radar_roi.scan_type = 'roi'
+    radar_roi.sweep_mode['data'] = np.array(['roi'])
+    radar_roi.sweep_start_ray_index['data'] = np.array([0], dtype='int32')
+    radar_roi.fixed_angle['data'] = np.array([], dtype='float64')
+    radar_roi.sweep_number['data'] = np.array([0], dtype='int32')
+    radar_roi.nsweeps = 1
+
+    if radar.rays_are_indexed is not None:
+        radar_roi.rays_are_indexed['data'] = np.array(
+            [radar.rays_are_indexed['data'][0]])
+    if radar.ray_angle_res is not None:
+        radar_roi.ray_angle_res['data'] = np.array(
+            [radar.ray_angle_res['data'][0]])
+
+    radar_roi.sweep_end_ray_index['data'] = np.array([1], dtype='int32')
+    radar_roi.rays_per_sweep = np.array([1], dtype='int32')
+    radar_roi.azimuth['data'] = np.array([], dtype='float64')
+    radar_roi.elevation['data'] = np.array([], dtype='float64')
+    radar_roi.nrays = 1
+
+    radar_roi.gate_longitude['data'] = lon
+    radar_roi.gate_latitude['data'] = lat
+    radar_roi.gate_altitude['data'] = alt
+
+    radar_roi.gate_x['data'] = radar.gate_x['data'][inds_ray, inds_rng].T
+    radar_roi.gate_y['data'] = radar.gate_y['data'][inds_ray, inds_rng].T
+    radar_roi.gate_z['data'] = radar.gate_z['data'][inds_ray, inds_rng].T
+
+    radar_roi.fields = dict()
+    field_dict = deepcopy(radar.fields[field_name])
+    field_dict['data'] = radar.fields[field_name]['data'][inds_ray, inds_rng].T
+    radar_roi.add_field(field_name, field_dict)
+
+    return radar_roi, ind_rad
 
 
 def process_grid(procstatus, dscfg, radar_list=None):

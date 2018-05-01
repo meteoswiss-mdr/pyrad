@@ -806,7 +806,7 @@ def plot_pos(lat, lon, alt, fname_list, ax=None, fig=None, save_fig=True,
 def plot_rhi_profile(data_list, hvec, fname_list, labelx='Value',
                      labely='Height (m MSL)', labels=['Mean'],
                      title='RHI profile', colors=None, linestyles=None,
-                     xmin=None, xmax=None, dpi=72):
+                     vmin=None, vmax=None, hmin=None, hmax=None, dpi=72):
     """
     plots an RHI profile
 
@@ -830,8 +830,10 @@ def plot_rhi_profile(data_list, hvec, fname_list, labelx='Value',
         Specifies the colors of each line
     linestyles : array of str
         Specifies the line style of each line
-    xmin, xmax: float
-        Lower/Upper limit of y axis
+    vmin, vmax: float
+        Lower/Upper limit of data values
+    hmin, hmax: float
+        Lower/Upper limit of altitude
     dpi : int
         dots per inch
 
@@ -853,13 +855,18 @@ def plot_rhi_profile(data_list, hvec, fname_list, labelx='Value',
             col = colors[i]
         if linestyles is not None:
             lstyle = linestyles[i]
-        ax.plot(data, hvec, label=lab, color=col, linestyle=lstyle)
+        ax.plot(
+            data, hvec, label=lab, color=col, linestyle=lstyle, marker='x')
 
     ax.set_title(title)
     ax.set_xlabel(labelx)
     ax.set_ylabel(labely)
-    ax.set_xlim(left=xmin, right=xmax)
+    ax.set_xlim(left=vmin, right=vmax)
+    ax.set_ylim(bottom=hmin, top=hmax)
     ax.legend(loc='best')
+
+    # Turn on the grid
+    ax.grid()
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)

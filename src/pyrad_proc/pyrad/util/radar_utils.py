@@ -30,6 +30,7 @@ Miscellaneous functions dealing with radar data
     compute_1d_stats
     compute_2d_hist
     quantize_field
+    compute_profile_stats
 
 """
 from warnings import warn
@@ -42,6 +43,8 @@ import scipy
 import shapely
 
 import pyart
+
+from .stat_utils import quantiles_weighted
 
 
 def get_ROI(radar, fieldname, sector):
@@ -272,7 +275,7 @@ def get_range_bins_to_avg(rad1_rng, rad2_rng):
 
     return avg_rad1, avg_rad2, avg_rad_lim
 
-    
+
 def belongs_roi_indices(lat, lon, roi):
     """
     Get the indices of points that belong to roi in a list of points
@@ -285,7 +288,7 @@ def belongs_roi_indices(lat, lon, roi):
         Dictionary describing the region of interest
 
     Returns
-    -------    
+    -------
     inds : array of ints
         list of indices of points belonging to ROI
     is_roi : str
@@ -295,26 +298,26 @@ def belongs_roi_indices(lat, lon, roi):
     """
     lon_list = lon.flatten()
     lat_list = lat.flatten()
-    
-    polygon = shapely.geometry.Polygon(list(zip(roi['lon'], roi['lat'])))    
+
+    polygon = shapely.geometry.Polygon(list(zip(roi['lon'], roi['lat'])))
     points = shapely.geometry.MultiPoint(list(zip(lon_list, lat_list)))
-        
+
     inds = []
     if polygon.contains(points):
         warn('All points in the region of interest')
-        is_roi = 'All'        
+        is_roi = 'All'
         inds = np.indices(np.shape(lon))
     elif polygon.disjoint(points):
         warn('No points in the region of interest')
-        is_roi = 'None'        
-    else:        
+        is_roi = 'None'
+    else:
         points_roi = points.intersection(polygon)
-        if points_roi.geom_type == 'Point':            
-            inds.append(np.where(np.logical_and(lon == points_roi.x, lat == points_roi.y)))
-        else:            
-            points_roi_list = list(points_roi)        
-            for point in points_roi_list:                
-                inds.append(np.where(np.logical_and(lon == points_roi.x, lat == points_roi.y)))
+        if points_roi.geom_type == 'Point':
+            inds.extend(np.where(np.logical_and(lon == points_roi.x, lat == points_roi.y)))
+        else:
+            points_roi_list = list(points_roi)
+            for point in points_roi_list:
+                inds.extend(np.where(np.logical_and(lon == point.x, lat == point.y)))
         nroi = len(lat[inds])
         npoint = len(lat_list)
         warn(str(nroi)+' points out of '+str(npoint)+' in the region of interest')
@@ -1042,3 +1045,68 @@ def quantize_field(field, field_name, step):
     fieldq = ((field+vmin)/step+1).astype(int)
 
     return fieldq.filled(fill_value=0)
+
+
+def compute_profile_stats(field, gate_altitude, h_vec, h_res,
+                          quantity='quantiles',
+                          quantiles=np.array([0.25, 0.50, 0.75]),
+                          nvalid_min=4):
+    """
+    Compute statistics of vertical profile
+
+    Parameters
+    ----------
+    field : ndarray
+        the radar field
+    gate_altitude: ndarray
+        the altitude at each radar gate [m MSL]
+    h_vec : 1D ndarray
+        height vector [m MSL]
+    h_res : float
+        heigh resolution [m]
+    quantity : str
+        The quantity to compute. Can be either 'quantiles' or 'mean'.
+        If 'mean', the min, max, and average is computed.
+    quantiles : 1D ndarray
+        the quantiles to compute
+    nvalid_min : int
+        the minimum number of points to consider the stats valid
+
+    Returns
+    -------
+    vals : ndarray 2D
+        The resultant statistics
+    val_valid : ndarray 1D
+        The number of points to compute the stats used at each height level
+
+    """
+    nh = h_vec.size
+
+    if quantity == 'mean':
+        vals = np.ma.empty((nh, 3), dtype=float)
+    else:
+        vals = np.ma.empty((nh, quantiles.size), dtype=float)
+    vals[:] = np.ma.masked
+
+    val_valid = np.zeros(nh, dtype=int)
+    for i, h in enumerate(h_vec):
+        data = field[np.logical_and(
+            gate_altitude >= h-h_res/2., gate_altitude < h+h_res/2.)]
+        if quantity == 'mean':
+            mask = np.ma.getmaskarray(data)
+            nvalid = np.count_nonzero(np.logical_not(mask))
+            if nvalid is not None:
+                if nvalid >= nvalid_min:
+                    vals[i, 0] = np.ma.mean(data)
+                    vals[i, 1] = np.ma.min(data)
+                    vals[i, 2] = np.ma.max(data)
+                    val_valid[i] = nvalid
+        else:
+            avg, quants, nvalid = quantiles_weighted(
+                data, quantiles=quantiles)
+            if nvalid is not None:
+                if nvalid >= nvalid_min:
+                    vals[i, :] = quants
+                    val_valid[i] = nvalid
+
+    return vals, val_valid
