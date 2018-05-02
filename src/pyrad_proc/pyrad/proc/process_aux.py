@@ -30,6 +30,7 @@ from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 from ..io.read_data_sensor import read_trt_traj_data
 from .process_traj import process_trajectory, process_traj_atplane
 from .process_traj import process_traj_antenna_pattern, process_traj_lightning
+from .process_traj import process_traj_trt
 from ..util.radar_utils import find_rng_index, belongs_roi_indices
 
 
@@ -200,6 +201,8 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'TRAJ_LIGHTNING':
         func_name = process_traj_lightning
         dsformat = 'TIMESERIES'
+    elif dataset_type == 'TRAJ_TRT':
+        func_name = process_traj_trt
     else:
         raise ValueError("ERROR: Unknown dataset type '%s' of dataset '%s'"
                          % (dataset_type, dsname))
