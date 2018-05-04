@@ -313,11 +313,17 @@ def belongs_roi_indices(lat, lon, roi):
     else:
         points_roi = points.intersection(polygon)
         if points_roi.geom_type == 'Point':
-            inds.extend(np.where(np.logical_and(lon == points_roi.x, lat == points_roi.y)))
+            ind = np.where(np.logical_and(lon == points_roi.x, lat == points_roi.y))
+            if len(ind) == 1:
+                ind = ind[0]
+            inds.extend(ind)
         else:
             points_roi_list = list(points_roi)
             for point in points_roi_list:
-                inds.extend(np.where(np.logical_and(lon == point.x, lat == point.y)))
+                ind = np.where(np.logical_and(lon == point.x, lat == point.y))
+                if len(ind) == 1:
+                    ind = ind[0]
+                inds.extend(ind)
         nroi = len(lat[inds])
         npoint = len(lat_list)
         warn(str(nroi)+' points out of '+str(npoint)+' in the region of interest')
@@ -1084,6 +1090,9 @@ def compute_profile_stats(field, gate_altitude, h_vec, h_res,
 
     if quantity == 'mean':
         vals = np.ma.empty((nh, 3), dtype=float)
+    elif quantity == 'mode':
+        vals = np.ma.empty((nh, 2), dtype=float)
+        vals[:, 1] = 0
     else:
         vals = np.ma.empty((nh, quantiles.size), dtype=float)
     vals[:] = np.ma.masked
@@ -1095,12 +1104,21 @@ def compute_profile_stats(field, gate_altitude, h_vec, h_res,
         if quantity == 'mean':
             mask = np.ma.getmaskarray(data)
             nvalid = np.count_nonzero(np.logical_not(mask))
-            if nvalid is not None:
-                if nvalid >= nvalid_min:
-                    vals[i, 0] = np.ma.mean(data)
-                    vals[i, 1] = np.ma.min(data)
-                    vals[i, 2] = np.ma.max(data)
-                    val_valid[i] = nvalid
+            if nvalid >= nvalid_min:
+                vals[i, 0] = np.ma.mean(data)
+                vals[i, 1] = np.ma.min(data)
+                vals[i, 2] = np.ma.max(data)
+                val_valid[i] = nvalid
+        elif quantity == 'mode':
+            mask = np.ma.getmaskarray(data)
+            nvalid = np.count_nonzero(np.logical_not(mask))
+            if nvalid >= nvalid_min:
+                mode, count = scipy.stats.mode(
+                    data.compressed(), axis=None, nan_policy='omit')
+                vals[i, 0] = mode
+                vals[i, 1] = count/nvalid*100.
+                val_valid[i] = nvalid
+
         else:
             avg, quants, nvalid = quantiles_weighted(
                 data, quantiles=quantiles)

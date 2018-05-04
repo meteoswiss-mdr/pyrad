@@ -403,9 +403,9 @@ def process_traj_trt(procstatus, dscfg, radar_list=None, trajectory=None):
     inds_ray = inds_ray[inds]
     inds_rng = inds_rng[inds]
 
-    lat = lat[inds].T
-    lon = lon[inds].T
-    alt = radar.gate_altitude['data'][inds_ray, inds_rng].T
+    lat = lat[inds]
+    lon = lon[inds]
+    alt = radar.gate_altitude['data'][inds_ray, inds_rng]
 
     # prepare new radar object output
     radar_roi = deepcopy(radar)
@@ -433,17 +433,26 @@ def process_traj_trt(procstatus, dscfg, radar_list=None, trajectory=None):
     radar_roi.elevation['data'] = np.array([], dtype='float64')
     radar_roi.nrays = 1
 
-    radar_roi.gate_longitude['data'] = lon
-    radar_roi.gate_latitude['data'] = lat
-    radar_roi.gate_altitude['data'] = alt
+    radar_roi.gate_longitude['data'] = np.empty((radar_roi.nrays, radar_roi.ngates), dtype=float)
+    radar_roi.gate_latitude['data'] = np.empty((radar_roi.nrays, radar_roi.ngates), dtype=float)
+    radar_roi.gate_altitude['data'] = np.empty((radar_roi.nrays, radar_roi.ngates), dtype=float)
 
-    radar_roi.gate_x['data'] = radar.gate_x['data'][inds_ray, inds_rng].T
-    radar_roi.gate_y['data'] = radar.gate_y['data'][inds_ray, inds_rng].T
-    radar_roi.gate_z['data'] = radar.gate_z['data'][inds_ray, inds_rng].T
+    radar_roi.gate_x['data'] = np.empty((radar_roi.nrays, radar_roi.ngates), dtype=float)
+    radar_roi.gate_y['data'] = np.empty((radar_roi.nrays, radar_roi.ngates), dtype=float)
+    radar_roi.gate_z['data'] = np.empty((radar_roi.nrays, radar_roi.ngates), dtype=float)
+
+    radar_roi.gate_longitude['data'][0, :] = lon
+    radar_roi.gate_latitude['data'][0, :] = lat
+    radar_roi.gate_altitude['data'][0, :] = alt
+
+    radar_roi.gate_x['data'][0, :] = radar.gate_x['data'][inds_ray, inds_rng]
+    radar_roi.gate_y['data'][0, :] = radar.gate_y['data'][inds_ray, inds_rng]
+    radar_roi.gate_z['data'][0, :] = radar.gate_z['data'][inds_ray, inds_rng]
 
     radar_roi.fields = dict()
     field_dict = deepcopy(radar.fields[field_name])
-    field_dict['data'] = radar.fields[field_name]['data'][inds_ray, inds_rng].T
+    field_dict['data'] = np.ma.empty((radar_roi.nrays, radar_roi.ngates), dtype=float)
+    field_dict['data'][0, :] = radar.fields[field_name]['data'][inds_ray, inds_rng]
     radar_roi.add_field(field_name, field_dict)
 
     return radar_roi, ind_rad

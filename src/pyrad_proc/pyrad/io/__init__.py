@@ -70,6 +70,7 @@ Reading other data
     read_lightning_traj
     read_trt_data
     read_trt_traj_data
+    read_rhi_profile
 
 Writing data
 ==================
@@ -155,7 +156,7 @@ from .read_data_other import read_timeseries, read_monitoring_ts, read_ts_cum
 from .read_data_other import read_intercomp_scores_ts
 from .read_data_other import read_selfconsistency, read_colocated_gates
 from .read_data_other import read_colocated_data, read_antenna_pattern
-from .read_data_other import read_last_state
+from .read_data_other import read_last_state, read_rhi_profile
 from .read_data_other import read_excess_gates
 
 from .read_data_sensor import read_lightning, read_lightning_traj

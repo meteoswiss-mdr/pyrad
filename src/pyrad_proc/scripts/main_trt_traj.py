@@ -17,6 +17,7 @@ import datetime
 import atexit
 import glob
 import os
+from shutil import copy
 
 import numpy as np
 
@@ -26,7 +27,7 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 from pyrad.io import read_trt_traj_data
-from pyrad.util import check_belongs_roi
+from pyrad.util import belongs_roi_indices
 from pyrad.graph import plot_timeseries
 
 print(__doc__)
@@ -40,8 +41,6 @@ def main():
     time_dir_list = [
         '2017-06-29', '2017-06-30', '2017-07-10', '2017-07-18']
 
-    data_input_path = '/home/lom/users/fvj/tmp/TRTC_cell/'
-    data_output_path = '/home/lom/users/fvj/tmp/TRTC_cell_plots/'
     roi = {
         'lon': [8.9000010, 9.2000000, 9.4999970, 9.4999970, 8.9000010],
         'lat': [47.0000030, 47.0000030, 47.0000030, 47.5999930, 47.5999930]
@@ -65,16 +64,19 @@ def main():
              ET45m, ET15, ET15m, VIL, maxH, maxHm, POH, RANK, Dvel_x,
              Dvel_y, cell_contour) = read_trt_traj_data(fname)
 
-            inds, is_roi = check_belongs_roi(lat, lon, roi)
+            inds, is_roi = belongs_roi_indices(lat, lon, roi)
 
             if is_roi == 'None':
                 continue
             elif is_roi == 'Some' and len(lat[inds]) < 3:
                 continue
-            
+
             data_output_path = data_output_base+is_roi+'/'
             if not os.path.isdir(data_output_path):
                 os.makedirs(data_output_path)
+
+            # copy file
+            copy(fname, data_output_path)
 
             figfname = data_output_path+str(traj_ID[0])+'_area.png'
             plot_timeseries(

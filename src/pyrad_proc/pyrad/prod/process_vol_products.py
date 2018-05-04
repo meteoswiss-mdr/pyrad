@@ -172,120 +172,6 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'RHI_PROFILE':
-        field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
-            warn(
-                ' Field type ' + field_name +
-                ' not available in data set. Skipping product ' +
-                prdcfg['type'])
-            return None
-
-        # user defined parameters
-        rangeStart = prdcfg.get('rangeStart', 0.)
-        rangeStop = prdcfg.get('rangeStop', 25000.)
-        heightResolution = prdcfg.get('heightResolution', 500.)
-        hmax_user = prdcfg.get('heightMax', 8000.)
-        quantity = prdcfg.get('quantity', 'quantiles')
-        quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.]))
-        nvalid_min = prdcfg.get('nvalid_min', 4)
-
-
-        # create new radar object with only data for the given rhi and range
-        az_vec = np.sort(dataset.fixed_angle['data'])
-        az = az_vec[prdcfg['anglenr']]
-        ind_az = np.where(dataset.fixed_angle['data'] == az)[0][0]
-
-        new_dataset = dataset.extract_sweeps([ind_az])
-        field = new_dataset.fields[field_name]
-        rng_mask = np.logical_and(new_dataset.range['data'] >= rangeStart,
-                                  new_dataset.range['data'] <= rangeStop)
-        field['data'] = field['data'][:, rng_mask]
-        new_dataset.range['data'] = new_dataset.range['data'][rng_mask]
-        new_dataset.ngates = len(new_dataset.range['data'])
-        new_dataset.init_gate_x_y_z()
-        new_dataset.init_gate_longitude_latitude()
-        new_dataset.init_gate_altitude()
-
-        new_dataset.fields = dict()
-        new_dataset.add_field(field_name, field)
-
-        # compute quantities
-        minheight = (round(
-            np.min(new_dataset.gate_altitude['data']) /
-            heightResolution)*heightResolution-heightResolution)
-        maxheight = (round(
-            hmax_user/heightResolution)*heightResolution +
-                     heightResolution)
-        nlevels = int((maxheight-minheight)/heightResolution)
-
-        hvec = minheight+np.arange(nlevels)*heightResolution+heightResolution/2.
-        vals, val_valid = compute_profile_stats(
-            field, gate_altitude, h_vec, h_res,
-            quantiles=quantiles/100., nvalid_min=nvalid_min)
-
-        # plot data
-        if quantity == 'mean':
-            data = [vals[:, 0], vals[:, 1], vals[:, 2]]
-            labels = ['Mean', 'Min', 'Max']
-            colors = ['b', 'k', 'k']
-            linestyles = ['-', '--', '--']
-        else:
-            data = [vals[:, 1], vals[:, 0], vals[:, 2]]
-            labels = [
-                str(quantiles[1])+'-percentile',
-                str(quantiles[0])+'-percentile',
-                str(quantiles[2])+'-percentile']
-            colors = ['b', 'k', 'k']
-            linestyles = ['-', '--', '--']
-
-        labelx = get_colobar_label(dataset.fields[field_name], field_name)
-        titl = (
-            pyart.graph.common.generate_radar_time_begin(
-                dataset).isoformat() + 'Z' + '\n' +
-            get_field_name(dataset.fields[field_name], field_name))
-
-        savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
-
-        prdcfginfo = 'az'+'{:.1f}'.format(az)+'hres'+str(int(heightResolution))
-        fname_list = make_filename(
-            'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'], prdcfginfo=prdcfginfo,
-            timeinfo=prdcfg['timeinfo'])
-
-        for i, fname in enumerate(fname_list):
-            fname_list[i] = savedir+fname
-
-        plot_rhi_profile(
-            data, hvec, fname_list, labelx=labelx, labely='Height (m MSL)',
-            labels=labels, title=titl, colors=colors,
-            linestyles=linestyles, xmin=None, xmax=None)
-
-        print('----- save to '+' '.join(fname_list))
-
-        fname = make_filename(
-            'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
-            ['csv'], prdcfginfo=prdcfginfo,
-            timeinfo=prdcfg['timeinfo'])[0]
-
-        fname = savedir+fname
-
-        sector = {
-            'rmin': rangeStart,
-            'rmax': rangeStop,
-            'az': az
-        }
-        write_rhi_profile(
-            hvec, data, val_valid, labels, fname, datatype=labelx,
-            timeinfo=prdcfg['timeinfo'], sector=sector)
-
-        print('----- save to '+fname)
-
-        # TODO: add Cartesian interpolation option
-
-        return fname
 
     elif prdcfg['type'] == 'PSEUDOPPI_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -355,7 +241,6 @@ def generate_vol_products(dataset, prdcfg):
         quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.]))
         nvalid_min = prdcfg.get('nvalid_min', 4)
 
-
         # create new radar object with only data for the given rhi and range
         az_vec = np.sort(dataset.fixed_angle['data'])
         az = az_vec[prdcfg['anglenr']]
@@ -392,8 +277,9 @@ def generate_vol_products(dataset, prdcfg):
 
         h_vec = minheight+np.arange(nlevels)*heightResolution+heightResolution/2.
         vals, val_valid = compute_profile_stats(
-            field, new_dataset.gate_altitude['data'], h_vec, h_res,
-            quantiles=quantiles/100., nvalid_min=nvalid_min)
+            field, new_dataset.gate_altitude['data'], h_vec, heightResolution,
+            quantity=quantity, quantiles=quantiles/100.,
+            nvalid_min=nvalid_min)
 
         # plot data
         if quantity == 'mean':
@@ -508,7 +394,8 @@ def generate_vol_products(dataset, prdcfg):
         h_vec = minheight+np.arange(nlevels)*heightResolution+heightResolution/2.
         vals, val_valid = compute_profile_stats(
             field, dataset.gate_altitude['data'], h_vec, heightResolution,
-            quantiles=quantiles/100., nvalid_min=nvalid_min)
+            quantity=quantity, quantiles=quantiles/100.,
+            nvalid_min=nvalid_min)
 
         # plot data
         if quantity == 'mean':
@@ -516,6 +403,11 @@ def generate_vol_products(dataset, prdcfg):
             labels = ['Mean', 'Min', 'Max']
             colors = ['b', 'k', 'k']
             linestyles = ['-', '--', '--']
+        elif quantity == 'mode':
+            data = [vals[:, 0]]
+            labels = ['Mode']
+            colors = ['b']
+            linestyles = ['-']
         else:
             data = [vals[:, 1], vals[:, 0], vals[:, 2]]
             labels = [
@@ -539,7 +431,7 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo=prdcfginfo,
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -555,9 +447,13 @@ def generate_vol_products(dataset, prdcfg):
         fname = make_filename(
             'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
             ['csv'], prdcfginfo=prdcfginfo,
-            timeinfo=prdcfg['timeinfo'])[0]
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])[0]
 
         fname = savedir+fname
+
+        if quantity == 'mode':
+            data.append(vals[:, 1])
+            labels.append('% points mode')
 
         write_rhi_profile(
             h_vec, data, val_valid, labels, fname, datatype=labelx,
@@ -1023,7 +919,7 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'histogram', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -1079,7 +975,7 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'quantiles', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -1456,7 +1352,7 @@ def generate_vol_products(dataset, prdcfg):
 
         fname = make_filename(
             'savevol', prdcfg['dstype'], prdcfg['voltype'], ['nc'],
-            timeinfo=prdcfg['timeinfo'])[0]
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])[0]
 
         fname = savedir+fname
 
@@ -1472,7 +1368,7 @@ def generate_vol_products(dataset, prdcfg):
 
         fname = make_filename(
             'savevol', prdcfg['dstype'], 'all_fields', ['nc'],
-            timeinfo=prdcfg['timeinfo'])[0]
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])[0]
 
         fname = savedir+fname
 
