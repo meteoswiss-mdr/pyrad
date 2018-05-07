@@ -269,7 +269,7 @@ def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
 
 
 def plot_quantiles(quant, value, fname_list, labelx='quantile', labely='value',
-                   titl='quantile', dpi=72):
+                   titl='quantile', vmin=None, vmax=None, dpi=72):
     """
     plots quantiles
 
@@ -287,6 +287,8 @@ def plot_quantiles(quant, value, fname_list, labelx='quantile', labely='value',
         The label of the Y axis
     titl : str
         The figure title
+    vmin, vmax: float
+        Lower/Upper limit of data values
     dpi : int
         dots per inch
 
@@ -296,11 +298,15 @@ def plot_quantiles(quant, value, fname_list, labelx='quantile', labely='value',
         list of names of the created plots
 
     """
-    fig = plt.figure(figsize=[10, 6], dpi=dpi)
-    plt.plot(quant, value, 'bx-')
-    plt.xlabel(labelx)
-    plt.ylabel(labely)
-    plt.title(titl)
+    fig, ax = plt.subplots(figsize=[10, 6], dpi=dpi)
+    ax.plot(quant, value, 'bx-')
+    ax.set_xlabel(labelx)
+    ax.set_ylabel(labely)
+    ax.set_ylim(bottom=vmin, top=vmax)
+    ax.set_title(titl)
+
+    # Turn on the grid
+    ax.grid()
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)

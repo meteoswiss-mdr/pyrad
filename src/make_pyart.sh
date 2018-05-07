@@ -10,9 +10,9 @@ pyvers=${py:7:3}
 
 # remove previous built
 echo 'Removing previous built...'
-cd $HOME/.local/lib/python${pyvers}/site-packages/
-rm -r pyart
-rm arm_pyart-*
+
+rm -r $HOME/.local/lib/python${pyvers}/site-packages/pyart
+rm $HOME/.local/lib/python${pyvers}/site-packages/arm_pyart-*
 
 # recompile
 echo 'compiling'

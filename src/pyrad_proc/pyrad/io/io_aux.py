@@ -17,6 +17,7 @@ Auxiliary functions for reading/writing files
     get_field_unit
     get_field_name
     get_file_list
+    get_trtfile_list
     get_scan_list
     get_new_rainbow_file_name
     get_datatype_fields
@@ -26,6 +27,7 @@ Auxiliary functions for reading/writing files
     find_cosmo_file
     find_hzt_file
     find_rad4alpcosmo_file
+    _get_datetime
 
 """
 
@@ -512,8 +514,8 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
 
     Returns
     -------
-    radar : Radar
-        radar object
+    filelist : list of strings
+        list of files within the time period
 
     """
     startdate = starttime.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -640,6 +642,43 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
         fdatetime = get_datetime(filenamestr, datadescriptor)
         if (fdatetime >= starttime) and (fdatetime <= endtime):
             filelist.append(filenamestr)
+
+    return sorted(filelist)
+
+
+def get_trtfile_list(datapath, starttime, endtime):
+    """
+    gets the list of TRT files with a time period
+
+    Parameters
+    ----------
+    datapath : str
+        directory where to look for data
+    startime : datetime object
+        start of time period
+    endtime : datetime object
+        end of time period
+
+    Returns
+    -------
+    filelist : list of strings
+        list of files within the time period
+
+    """
+    dayfilelist = glob.glob(datapath+'CZC*0T.trt')
+    if not dayfilelist:
+        warn('No TRT files in '+datapath)
+        return None
+
+    filelist = []
+    for filename in dayfilelist:
+        bfile = os.path.basename(filename)
+        datetimestr = bfile[3:12]
+        fdatetime = datetime.datetime.strptime(datetimestr, '%y%j%H%M')
+        if (fdatetime >= starttime) and (fdatetime <= endtime):
+            pass
+            # filelist.append(filename)
+        filelist.append(filename)
 
     return sorted(filelist)
 
@@ -817,12 +856,12 @@ def get_dataset_fields(datasetdescr):
 
 def get_datetime(fname, datadescriptor):
     """
-    gets date and time from file name
+    Given a data descriptor gets date and time from file name
 
     Parameters
     ----------
-    fname : file name
-
+    fname : str
+        file name
     datadescriptor : str
         radar field type. Format : [radar file type]:[datatype]
 
@@ -832,24 +871,10 @@ def get_datetime(fname, datadescriptor):
         date and time in file name
 
     """
-
-    bfile = os.path.basename(fname)
     radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
         datadescriptor)
-    if datagroup == 'RAINBOW' or datagroup == 'CFRADIAL':
-        datetimestr = bfile[0:14]
-        fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d%H%M%S')
-    elif datagroup == 'RAD4ALP':
-        datetimestr = bfile[3:12]
-        fdatetime = datetime.datetime.strptime(datetimestr, '%y%j%H%M')
-    elif datagroup == 'MXPOL':
-        datetimestr = re.findall(r"([0-9]{8}-[0-9]{6})", bfile)[0]
-        fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d-%H%M%S')
-    else:
-        warn('unknown data group')
-        return None
 
-    return fdatetime
+    return _get_datetime(fname, datagroup)
 
 
 def find_cosmo_file(voltime, datatype, cfg, scanid, ind_rad=0):
@@ -1071,3 +1096,37 @@ def find_rad4alpcosmo_file(voltime, datatype, cfg, scanid, ind_rad=0):
         return None
 
     return fname[0]
+
+
+def _get_datetime(fname, datagroup):
+    """
+    Given a data group gets date and time from file name
+
+    Parameters
+    ----------
+    fname : str
+        file name
+    datadescriptor : str
+        radar field type. Format : [radar file type]:[datatype]
+
+    Returns
+    -------
+    fdatetime : datetime object
+        date and time in file name
+
+    """
+    bfile = os.path.basename(fname)
+    if datagroup == 'RAINBOW' or datagroup == 'CFRADIAL':
+        datetimestr = bfile[0:14]
+        fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d%H%M%S')
+    elif datagroup == 'RAD4ALP':
+        datetimestr = bfile[3:12]
+        fdatetime = datetime.datetime.strptime(datetimestr, '%y%j%H%M')
+    elif datagroup == 'MXPOL':
+        datetimestr = re.findall(r"([0-9]{8}-[0-9]{6})", bfile)[0]
+        fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d-%H%M%S')
+    else:
+        warn('unknown data group')
+        return None
+
+    return fdatetime

@@ -14,9 +14,11 @@ Functions to plot radar volume data
     plot_time_range
     plot_cappi
     plot_traj
+    plot_pos
     plot_rhi_profile
     plot_along_coord
     plot_field_coverage
+    _plot_time_range
 
 """
 
@@ -435,54 +437,24 @@ def plot_time_range(radar, field_name, ind_sweep, prdcfg, fname_list):
         list of names of the created plots
 
     """
-    norm, ticks, ticklabs = get_norm(field_name)
-
     radar_aux = radar.extract_sweeps([ind_sweep])
     field = radar_aux.fields[field_name]['data']
-    time_min = radar_aux.time['data'][0]
-    time_max = radar_aux.time['data'][-1]
 
     # display data
     titl = pyart.graph.common.generate_title(radar_aux, field_name, ind_sweep)
-    label = get_colobar_label(radar_aux.fields[field_name], field_name)
-
     dpi = prdcfg['ppiImageConfig'].get('dpi', 72)
+    xsize = prdcfg['ppiImageConfig'].get('xsize', 10)
+    ysize = prdcfg['ppiImageConfig'].get('ysize', 8)
 
-    fig = plt.figure(figsize=[prdcfg['ppiImageConfig']['xsize'],
-                              prdcfg['ppiImageConfig']['ysize']],
-                     dpi=dpi)
-    ax = fig.add_subplot(111)
-    cmap = pyart.config.get_field_colormap(field_name)
+    rng_aux = radar_aux.range['data']/1000.
+    rng_res = rng_aux[1]-rng_aux[0]
+    rng_aux = np.append(rng_aux-rng_res/2., rng_aux[-1]+rng_res/2.)
 
-    vmin = vmax = None
-    if norm is None:  # if norm is set do not override with vmin/vmax
-        vmin, vmax = pyart.config.get_field_limits(field_name)
-
-    rmin = radar_aux.range['data'][0]/1000.
-    rmax = radar_aux.range['data'][-1]/1000.
-    cax = ax.imshow(
-        np.ma.transpose(field), origin='lower', cmap=cmap, vmin=vmin,
-        vmax=vmax, norm=norm, extent=(time_min, time_max, rmin, rmax),
-        aspect='auto', interpolation='none')
-    plt.xlabel('time (s from start time)')
-    plt.ylabel('range (Km)')
-    plt.title(titl)
-
-    cb = fig.colorbar(cax)
-    if ticks is not None:
-        cb.set_ticks(ticks)
-    if ticklabs:
-        cb.set_ticklabels(ticklabs)
-    cb.set_label(label)
-
-    # Make a tight layout
-    fig.tight_layout()
-
-    for fname in fname_list:
-        fig.savefig(fname, dpi=dpi)
-    plt.close()
-
-    return fname_list
+    time_res = np.mean(radar_aux.time['data'][1:]-radar_aux.time['data'][0:-1])
+    time_aux = np.append(radar_aux.time['data'], radar_aux.time['data'][-1]+time_res)
+    return _plot_time_range(
+        time_aux, rng_aux, field, field_name, fname_list, titl=titl,
+        figsize=[xsize, ysize], dpi=dpi)
 
 
 def plot_cappi(radar, field_name, altitude, prdcfg, fname_list, save_fig=True):
@@ -721,10 +693,91 @@ def plot_traj(rng_traj, azi_traj, ele_traj, time_traj, prdcfg, fname_list,
     return (fig, ax)
 
 
+def plot_pos(lat, lon, alt, fname_list, ax=None, fig=None, save_fig=True,
+             sort_altitude='No', dpi=72, alpha=1., cb_label='height [m MSL]',
+             titl='Position'):
+    """
+    plots a trajectory on a Cartesian surface
+
+    Parameters
+    ----------
+    lat, lon, alt : float array
+        Points coordinates
+    fname_list : list of str
+        list of names of the files where to store the plot
+    fig : Figure
+        Figure to add the colorbar to. If none a new figure will be created
+    ax : Axis
+        Axis to plot on. if fig is None a new axis will be created
+    save_fig : bool
+        if true save the figure if false it does not close the plot and
+        returns the handle to the figure
+    sort_altitude : str
+        String indicating whether to sort the altitude data. Can be 'No',
+        'Lowest_on_top' or 'Highest_on_top'
+    dpi : int
+        Pixel density
+    alpha : float
+        Transparency
+    cb_label : str
+        Color bar label
+    titl : str
+        Plot title
+
+    Returns
+    -------
+    fname_list : list of str or
+    fig, ax : tupple
+        list of names of the saved plots or handle of the figure an axes
+
+    """
+    if sort_altitude == 'Lowest_on_top' or sort_altitude == 'Highest_on_top':
+        ind = np.argsort(alt)
+        if sort_altitude == 'Lowest_on_top':
+            ind = ind[::-1]
+        lat = lat[ind]
+        lon = lon[ind]
+        alt = alt[ind]
+
+    marker = 'x'
+    col = alt
+    cmap = 'viridis'
+    norm = plt.Normalize(alt.min(), alt.max())
+
+    if fig is None:
+        fig = plt.figure(figsize=[10, 8], dpi=dpi)
+        ax = fig.add_subplot(111, aspect='equal')
+    else:
+        ax.autoscale(False)
+
+    cax = ax.scatter(
+        lon, lat, c=col, marker=marker, alpha=alpha, cmap=cmap, norm=norm)
+
+    # plot colorbar
+    cb = fig.colorbar(cax, orientation='horizontal')
+    cb.set_label(cb_label)
+
+    plt.title(titl)
+    plt.xlabel('Lon [Deg]')
+    plt.ylabel('Lat [Deg]')
+
+    # Turn on the grid
+    ax.grid()
+
+    if save_fig:
+        for fname in fname_list:
+            fig.savefig(fname, dpi=dpi)
+        plt.close()
+
+        return fname_list
+
+    return (fig, ax)
+
+
 def plot_rhi_profile(data_list, hvec, fname_list, labelx='Value',
                      labely='Height (m MSL)', labels=['Mean'],
                      title='RHI profile', colors=None, linestyles=None,
-                     xmin=None, xmax=None, dpi=72):
+                     vmin=None, vmax=None, hmin=None, hmax=None, dpi=72):
     """
     plots an RHI profile
 
@@ -748,8 +801,10 @@ def plot_rhi_profile(data_list, hvec, fname_list, labelx='Value',
         Specifies the colors of each line
     linestyles : array of str
         Specifies the line style of each line
-    xmin, xmax: float
-        Lower/Upper limit of y axis
+    vmin, vmax: float
+        Lower/Upper limit of data values
+    hmin, hmax: float
+        Lower/Upper limit of altitude
     dpi : int
         dots per inch
 
@@ -771,13 +826,18 @@ def plot_rhi_profile(data_list, hvec, fname_list, labelx='Value',
             col = colors[i]
         if linestyles is not None:
             lstyle = linestyles[i]
-        ax.plot(data, hvec, label=lab, color=col, linestyle=lstyle)
+        ax.plot(
+            data, hvec, label=lab, color=col, linestyle=lstyle, marker='x')
 
     ax.set_title(title)
     ax.set_xlabel(labelx)
     ax.set_ylabel(labely)
-    ax.set_xlim(left=xmin, right=xmax)
+    ax.set_xlim(left=vmin, right=vmax)
+    ax.set_ylim(bottom=hmin, top=hmax)
     ax.legend(loc='best')
+
+    # Turn on the grid
+    ax.grid()
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
@@ -913,6 +973,89 @@ def plot_field_coverage(xval_list, yval_list, fname_list,
     ax.set_ylim(bottom=ymin, top=ymax)
     if labels is not None:
         ax.legend(loc='best')
+
+    for fname in fname_list:
+        fig.savefig(fname, dpi=dpi)
+    plt.close()
+
+    return fname_list
+
+
+def _plot_time_range(rad_time, rad_range, rad_data, field_name, fname_list,
+                     titl='Time-Range plot', ylabel='range (Km)', vmin=None,
+                     vmax=None, figsize=[10, 8], dpi=72):
+    """
+    plots a time-range plot
+
+    Parameters
+    ----------
+    rad_time : Radar object
+        object containing the radar data to plot
+    rad_range : str
+        name of the radar field to plot
+    rad_data : int
+        sweep index to plot
+    field_name : dict
+        dictionary containing the product configuration
+    fname_list : list of str
+        list of names of the files where to store the plot
+    titl : str
+        Plot title
+    ylabel : str
+        y-axis label
+    vmin, vmax : float
+        min and max values of the color bar
+    Norm : array
+        norm
+    figsize : list
+        figure size [xsize, ysize]
+    dpi : int
+        dpi
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    """
+    time_min = rad_time[0]
+    time_max = rad_time[-1]
+
+    # display data
+    field_dict = pyart.config.get_metadata(field_name)
+    label = get_colobar_label(field_dict, field_name)
+
+    fig = plt.figure(figsize=figsize, dpi=dpi)
+    ax = fig.add_subplot(111)
+    cmap = pyart.config.get_field_colormap(field_name)
+
+    norm, ticks, ticklabs = get_norm(field_name)
+    if vmin is None or vmax is None:
+        vmin = vmax = None
+        if norm is None:  # if norm is set do not override with vmin/vmax
+            vmin, vmax = pyart.config.get_field_limits(field_name)
+    else:
+        norm = None
+
+    rmin = rad_range[0]
+    rmax = rad_range[-1]
+    cax = ax.imshow(
+        np.ma.transpose(rad_data), origin='lower', cmap=cmap, vmin=vmin,
+        vmax=vmax, norm=norm, extent=(time_min, time_max, rmin, rmax),
+        aspect='auto', interpolation='none')
+    plt.xlabel('time (s from start time)')
+    plt.ylabel(ylabel)
+    plt.title(titl)
+
+    cb = fig.colorbar(cax)
+    if ticks is not None:
+        cb.set_ticks(ticks)
+    if ticklabs:
+        cb.set_ticklabels(ticklabs)
+    cb.set_label(label)
+
+    # Make a tight layout
+    fig.tight_layout()
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
