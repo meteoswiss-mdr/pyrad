@@ -866,7 +866,8 @@ def get_histogram_bins(field_name, step=None):
         step = (vmax-vmin)/50.
         warn('No step has been defined. Default '+str(step)+' will be used')
 
-    return np.linspace(vmin, vmax, num=int((vmax-vmin)/step))
+    return np.linspace(
+        vmin-step/2., vmax+step/2., num=int((vmax-vmin)/step)+2)
 
 
 def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,

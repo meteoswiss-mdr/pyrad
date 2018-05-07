@@ -7,11 +7,16 @@ Functions for reading auxiliary data
 .. autosummary::
     :toctree: generated/
 
+    read_profile_ts
+    read_histogram_ts
+    read_quantiles_ts
     read_rhi_profile
     read_last_state
     read_status
     read_rad4alp_cosmo
     read_rad4alp_vis
+    read_histogram
+    read_quantiles
     read_excess_gates
     read_colocated_gates
     read_colocated_data
@@ -41,7 +46,147 @@ import numpy as np
 
 from pyart.config import get_fillvalue, get_metadata
 
-from .io_aux import get_fieldname_pyart
+from .io_aux import get_fieldname_pyart, _get_datetime
+
+
+def read_profile_ts(fname_list, labels, hres=None):
+    """
+    Reads a colection of profile data file and creates a time series
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+    labels : list of str
+        The data labels
+
+    Returns
+    -------
+    height, np_t, vals : tupple
+        The read data. None otherwise
+
+    """
+    data_ma = []
+    datetime_arr = np.ma.array([], dtype=datetime.datetime)
+    for fname in fname_list:
+        datetime_arr = np.append(datetime_arr, _get_datetime(fname, 'RAINBOW'))
+        height, np_t, vals = read_rhi_profile(fname, labels)
+        if hres is None:
+            hres = np.mean(height[1:]-height[:-1])
+        hbin_edges = np.append(height-hres/2, height[-1]+hres/2)
+        val = vals[:, 0]
+        data_ma.append(val)
+    data_ma = np.ma.asarray(data_ma)
+
+    # sort data as a function of time
+    ind = np.argsort(datetime_arr)
+    datetime_arr = datetime_arr[ind]
+    data_ma = data_ma[ind, :]
+
+    # put date time array as seconds from start of TRT cell
+    dt_s = np.empty(datetime_arr.size, dtype=float)
+    for j, dt in enumerate(datetime_arr):
+        dt_s[j] = (dt-datetime_arr[0]).total_seconds()
+
+    t_res = np.mean(dt_s[1:]-dt_s[:-1])
+    tbin_edges = np.append(dt_s-t_res, dt_s[-1])
+
+    return tbin_edges, hbin_edges, data_ma
+
+
+def read_histogram_ts(fname_list, datatype):
+    """
+    Reads a colection of profile data file and creates a time series
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+    datatype : str
+        The data type (dBZ, ZDR, etc.)
+
+    Returns
+    -------
+    height, np_t, vals : tupple
+        The read data. None otherwise
+
+    """
+    data_ma = []
+    datetime_arr = np.ma.array([], dtype=datetime.datetime)
+    for fname in fname_list:
+        datetime_arr = np.append(datetime_arr, _get_datetime(fname, 'RAINBOW'))
+        hist, bin_edges = read_histogram(fname)
+        if datatype == 'hydro':
+            hist[0] = 0
+        elif datatype == 'RhoHVc':
+            hist = hist[bin_edges[0:-1] > 0.95]
+            bin_edges = bin_edges[bin_edges > 0.95]
+        data_ma.append(hist/np.sum(hist)*100.)
+    data_ma = np.ma.asarray(data_ma)
+
+    # sort data as a function of time
+    ind = np.argsort(datetime_arr)
+    datetime_arr = datetime_arr[ind]
+    data_ma = data_ma[ind, :]
+
+    # put date time array as seconds from start of TRT cell
+    dt_s = np.empty(datetime_arr.size, dtype=float)
+    for j, dt in enumerate(datetime_arr):
+        dt_s[j] = (dt-datetime_arr[0]).total_seconds()
+
+    t_res = np.mean(dt_s[1:]-dt_s[:-1])
+    tbin_edges = np.append(dt_s-t_res, dt_s[-1])
+
+    return tbin_edges, bin_edges, data_ma
+
+
+def read_quantiles_ts(fname_list, step=5., qmin=0., qmax=100.):
+    """
+    Reads a colection of profile data file and creates a time series
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+    datatype : str
+        The data type (dBZ, ZDR, etc.)
+
+    Returns
+    -------
+    height, np_t, vals : tupple
+        The read data. None otherwise
+
+    """
+    data_ma = []
+    datetime_arr = np.ma.array([], dtype=datetime.datetime)
+    for fname in fname_list:
+        datetime_arr = np.append(datetime_arr, _get_datetime(fname, 'RAINBOW'))
+        quantiles, values = read_quantiles(fname)
+        qbin_edges = np.arange(qmin-step/2, qmax+step/2+step/2, step=step, dtype=float)
+        values_aux = np.ma.empty(qbin_edges.size-1, dtype=float)
+        values_aux[:] = np.ma.masked
+        qbin_centers = np.arange(qmin, qmax+step/2, step=step)
+        for i, qbin_center in enumerate(qbin_centers):
+            val_aux = values[quantiles == qbin_center]
+            if val_aux.size > 0:
+                values_aux[i] = val_aux
+        data_ma.append(values_aux)
+    data_ma = np.ma.asarray(data_ma)
+
+    # sort data as a function of time
+    ind = np.argsort(datetime_arr)
+    datetime_arr = datetime_arr[ind]
+    data_ma = data_ma[ind, :]
+
+    # put date time array as seconds from start of TRT cell
+    dt_s = np.empty(datetime_arr.size, dtype=float)
+    for j, dt in enumerate(datetime_arr):
+        dt_s[j] = (dt-datetime_arr[0]).total_seconds()
+
+    t_res = np.mean(dt_s[1:]-dt_s[:-1])
+    tbin_edges = np.append(dt_s-t_res, dt_s[-1])
+
+    return tbin_edges, qbin_edges, data_ma
 
 
 def read_rhi_profile(fname, labels=['50.0-percentile', '25.0-percentile',
@@ -291,6 +436,84 @@ def read_rad4alp_vis(fname, datatype):
         warn('Unable to read file '+fname)
         return None
 
+
+def read_histogram(fname):
+    """
+    Reads a histogram contained in a csv file
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    hist , bin_edges : tupple
+        The read data. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            nrows = sum(1 for row in reader)
+            bin_edges = np.zeros(nrows+1, dtype=float)
+            hist = np.zeros(nrows, dtype=int)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            for i, row in enumerate(reader):
+                bin_edges[i] = float(row['bin_edge_left'])
+                bin_edges[i+1] = float(row['bin_edge_right'])
+                hist[i] = int(row['value'])
+
+            return hist, bin_edges
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return None, None
+
+
+def read_quantiles(fname):
+    """
+    Reads quantiles contained in a csv file
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    quantiles, values : tupple
+        The read data. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            nrows = sum(1 for row in reader)
+            quantiles = np.zeros(nrows, dtype=float)
+            values = np.zeros(nrows, dtype=float)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            for i, row in enumerate(reader):
+                quantiles[i] = float(row['quantile'])
+                values[i] = float(row['value'])
+
+            return quantiles, values
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return None, None
 
 def read_excess_gates(fname):
     """

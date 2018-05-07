@@ -39,7 +39,7 @@ import os
 import glob
 from warnings import warn
 
-from pyrad.io import read_profile_ts, get_fieldname_pyart
+from pyrad.io import read_quantiles_ts, get_fieldname_pyart
 from pyrad.graph import _plot_time_range, get_field_name
 
 from pyart.config import get_metadata
@@ -53,54 +53,41 @@ def main():
     file_base = '/store/msrad/radar/pyrad_products/rad4alp_hydro_PHA/'
     time_dir_list = ['2017-06-29']
     trt_cell_id = '2017062913000174'
-    hres = 250
 
-    datatype_list = ['dBZc', 'ZDRc', 'RhoHVc', 'KDPc', 'TEMP', 'hydro']
-    dataset_list = ['reflectivity', 'ZDRc', 'RhoHVc', 'KDPc', 'temperature', 'hydroclass']
+    datatype_list = ['dBZc', 'ZDRc', 'RhoHVc', 'KDPc', 'TEMP']
+    dataset_list = ['reflectivity', 'ZDRc', 'RhoHVc', 'KDPc', 'temperature']
 
-    print("====== Plot time-height started: %s" %
+    print("====== Plot time-hist started: %s" %
           datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
     atexit.register(_print_end_msg,
-                    "====== Plot time-height finished: ")
+                    "====== Plot time-hist finished: ")
 
     for time_dir in time_dir_list:
         for i, datatype in enumerate(datatype_list):
-
-            labels = ['50.0-percentile', '25.0-percentile', '75.0-percentile']
-            if datatype == 'RhoHVc':
-                labels = ['80.0-percentile', '65.0-percentile', '95.0-percentile']
-            elif datatype == 'hydro':
-                labels = ['Mode', '% points mode']
-
             dataset = dataset_list[i]
-            file_path = file_base+time_dir+'/'+dataset+'_trt_traj/PROFILE/'
+            file_path = file_base+time_dir+'/'+dataset+'_trt_traj/QUANTILES/'
             flist = glob.glob(
-                file_path+'*_'+trt_cell_id+'_rhi_profile_*_'+datatype +
-                '_hres'+str(hres)+'.csv')
+                file_path+'*_'+trt_cell_id+'_quantiles_*_'+datatype+'.csv')
 
             if not flist:
-                warn('No profile files found in '+file_path+' for TRT cell ' +
-                     trt_cell_id+' with resolution '+str(hres))
+                warn('No quantiles files found in '+file_path +
+                     ' for TRT cell '+trt_cell_id)
                 continue
 
-            tbin_edges, hbin_edges, data_ma = read_profile_ts(
-                flist, labels, hres=hres)
+            tbin_edges, qbin_edges, data_ma = read_quantiles_ts(
+                flist, step=5., qmin=0., qmax=100.)
 
             basepath_out = os.path.dirname(flist[0])
             fname = (
-                basepath_out+'/'+trt_cell_id+'_trt_TIME_HEIGHT_'+datatype +
-                '_hres'+str(hres)+'.png')
+                basepath_out+'/'+trt_cell_id+'_trt_QUANTILES_'+datatype +
+                '.png')
             field_name = get_fieldname_pyart(datatype)
             field_dict = get_metadata(field_name)
             titl = 'TRT cell '+trt_cell_id+'\n'+get_field_name(field_dict, field_name)
 
-            vmin = vmax = None
-            if datatype == 'RhoHVc':
-                vmin = 0.95
-                vmax = 1.00
             _plot_time_range(
-                tbin_edges, hbin_edges, data_ma, field_name, [fname],
-                titl=titl, figsize=[10, 8], vmin=vmin, vmax=vmax, dpi=72)
+                tbin_edges, qbin_edges, data_ma, field_name, [fname],
+                titl=titl, ylabel='Quantile', figsize=[10, 8], dpi=72)
 
             print("----- plot to '%s'" % fname)
 

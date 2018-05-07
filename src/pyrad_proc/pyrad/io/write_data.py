@@ -15,6 +15,8 @@ Functions for writing pyrad output data
     write_rhi_profile
     write_field_coverage
     write_cdf
+    write_histogram
+    write_quantiles
     write_ts_polar_data
     write_ts_cum
     write_monitoring_ts
@@ -554,6 +556,96 @@ def write_cdf(quantiles, values, ntot, nnan, nclut, nblocked, nprec_filter,
     return fname
 
 
+def write_histogram(bins, values, fname, datatype='undefined',
+                    step=0):
+    """
+    writes a histogram
+
+    Parameters
+    ----------
+    bins : float array
+        array containing the histogram bins
+    values : int array
+        array containing the number of points in each bin
+    fname : str
+        file name
+    datatype :str
+        The data type
+    step : str
+        The bin step
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    with open(fname, 'w', newline='') as csvfile:
+        datatype_str = 'undefined'
+        if datatype != 'undefined':
+            datatype_str = generate_field_name_str(datatype)
+        csvfile.write(
+            '# Weather radar data histogram file\n' +
+            '# Comment lines are preceded by "#"\n' +
+            '# Description:\n' +
+            '# Histogram of weather radar data.\n' +
+            '# Data: '+datatype_str+'\n' +
+            '# Step: '+str(step)+'\n'
+            '#\n')
+        fieldnames = ['bin_edge_left', 'bin_edge_right', 'value']
+        writer = csv.DictWriter(csvfile, fieldnames)
+        writer.writeheader()
+        for i, val in enumerate(values):
+            writer.writerow({
+                'bin_edge_left': bins[i],
+                'bin_edge_right': bins[i+1],
+                'value': val})
+        csvfile.close()
+
+    return fname
+
+
+def write_quantiles(quantiles, values, fname, datatype='undefined'):
+    """
+    writes a histogram
+
+    Parameters
+    ----------
+    bins : float array
+        array containing the histogram bins
+    values : int array
+        array containing the number of points in each bin
+    fname : str
+        file name
+    datatype :str
+        The data type
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    with open(fname, 'w', newline='') as csvfile:
+        csvfile.write(
+            '# Weather radar data histogram file\n' +
+            '# Comment lines are preceded by "#"\n' +
+            '# Description:\n' +
+            '# Histogram of weather radar data.\n' +
+            '# Data: '+generate_field_name_str(datatype)+'\n' +
+            '#\n')
+        fieldnames = ['quantile', 'value']
+        writer = csv.DictWriter(csvfile, fieldnames)
+        writer.writeheader()
+        for i, quant in enumerate(quantiles):
+            writer.writerow({
+                'quantile': quant,
+                'value': values[i]})
+        csvfile.close()
+
+    return fname
+
+
 def write_ts_polar_data(dataset, fname):
     """
     writes time series of data
@@ -698,6 +790,8 @@ def write_monitoring_ts(start_time, np_t, values, quantiles, datatype, fname,
         the values at certain quantiles
     quantiles: float array with 3 elements
         the quantiles computed
+    datatype : str
+        The data type
     fname : str
         file name where to store the data
     rewrite : bool

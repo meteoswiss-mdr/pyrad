@@ -19,11 +19,6 @@ import atexit
 
 import numpy as np
 
-import matplotlib as mpl
-mpl.use('Agg')
-
-import matplotlib.pyplot as plt
-
 from pyrad.io import read_lightning
 from pyrad.graph import plot_histogram, plot_pos
 
@@ -85,7 +80,7 @@ def main():
         alt_min = alt_aux.min()
         alt_max = alt_aux.max()
         step = 100.
-        bins = np.linspace(alt_min, alt_max, num=int((alt_max-alt_min)/step))
+        bins = np.linspace(alt_min-step/2., alt_max+step/2., num=int((alt_max-alt_min)/step)+2)
 
         fname_hist = basepath+day_str+'_hist_alt.png'
         fname_hist = plot_histogram(
@@ -103,7 +98,7 @@ def main():
         dBm_min = dBm_aux.min()
         dBm_max = dBm_aux.max()
         step = 1.
-        bins = np.linspace(dBm_min, dBm_max, num=int((dBm_max-dBm_min)/step))
+        bins = np.linspace(dBm_min-step/2., dBm_max+step/2., num=int((dBm_max-dBm_min)/step)+2)
 
         fname_hist = basepath+day_str+'_hist_dBm.png'
         fname_hist = plot_histogram(
@@ -138,7 +133,7 @@ def main():
         # plot position first source
         print('N flashes: '+str(alt_first.size))
 
-        # plot position all sources
+        # plot position first source
         figfname = basepath+day_str+'_first_source_pos_max_height_on_top.png'
         figfname = plot_pos(
             lat_first, lon_first, alt_first, [figfname],

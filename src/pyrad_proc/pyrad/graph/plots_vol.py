@@ -446,9 +446,15 @@ def plot_time_range(radar, field_name, ind_sweep, prdcfg, fname_list):
     xsize = prdcfg['ppiImageConfig'].get('xsize', 10)
     ysize = prdcfg['ppiImageConfig'].get('ysize', 8)
 
+    rng_aux = radar_aux.range['data']/1000.
+    rng_res = rng_aux[1]-rng_aux[0]
+    rng_aux = np.append(rng_aux-rng_res/2., rng_aux[-1]+rng_res/2.)
+
+    time_res = np.mean(radar_aux.time['data'][1:]-radar_aux.time['data'][0:-1])
+    time_aux = np.append(radar_aux.time['data'], radar_aux.time['data'][-1]+time_res)
     return _plot_time_range(
-        radar_aux.time['data'], radar_aux.range['data'], field, field_name,
-        fname_list, titl=titl, figsize=[xsize, ysize], dpi=dpi)
+        time_aux, rng_aux, field, field_name, fname_list, titl=titl,
+        figsize=[xsize, ysize], dpi=dpi)
 
 
 def plot_cappi(radar, field_name, altitude, prdcfg, fname_list, save_fig=True):
@@ -976,7 +982,8 @@ def plot_field_coverage(xval_list, yval_list, fname_list,
 
 
 def _plot_time_range(rad_time, rad_range, rad_data, field_name, fname_list,
-                     titl='Time-Range plot', figsize=[10, 8], dpi=72):
+                     titl='Time-Range plot', ylabel='range (Km)', vmin=None,
+                     vmax=None, figsize=[10, 8], dpi=72):
     """
     plots a time-range plot
 
@@ -994,6 +1001,12 @@ def _plot_time_range(rad_time, rad_range, rad_data, field_name, fname_list,
         list of names of the files where to store the plot
     titl : str
         Plot title
+    ylabel : str
+        y-axis label
+    vmin, vmax : float
+        min and max values of the color bar
+    Norm : array
+        norm
     figsize : list
         figure size [xsize, ysize]
     dpi : int
@@ -1005,8 +1018,6 @@ def _plot_time_range(rad_time, rad_range, rad_data, field_name, fname_list,
         list of names of the created plots
 
     """
-    norm, ticks, ticklabs = get_norm(field_name)
-
     time_min = rad_time[0]
     time_max = rad_time[-1]
 
@@ -1018,18 +1029,22 @@ def _plot_time_range(rad_time, rad_range, rad_data, field_name, fname_list,
     ax = fig.add_subplot(111)
     cmap = pyart.config.get_field_colormap(field_name)
 
-    vmin = vmax = None
-    if norm is None:  # if norm is set do not override with vmin/vmax
-        vmin, vmax = pyart.config.get_field_limits(field_name)
+    norm, ticks, ticklabs = get_norm(field_name)
+    if vmin is None or vmax is None:
+        vmin = vmax = None
+        if norm is None:  # if norm is set do not override with vmin/vmax
+            vmin, vmax = pyart.config.get_field_limits(field_name)
+    else:
+        norm = None
 
-    rmin = rad_range[0]/1000.
-    rmax = rad_range[-1]/1000.
+    rmin = rad_range[0]
+    rmax = rad_range[-1]
     cax = ax.imshow(
         np.ma.transpose(rad_data), origin='lower', cmap=cmap, vmin=vmin,
         vmax=vmax, norm=norm, extent=(time_min, time_max, rmin, rmax),
         aspect='auto', interpolation='none')
     plt.xlabel('time (s from start time)')
-    plt.ylabel('range (Km)')
+    plt.ylabel(ylabel)
     plt.title(titl)
 
     cb = fig.colorbar(cax)

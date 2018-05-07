@@ -22,7 +22,7 @@ import pyart
 from ..io.io_aux import get_save_dir, make_filename, get_fieldname_pyart
 
 from ..io.write_data import write_cdf, write_rhi_profile, write_field_coverage
-from ..io.write_data import write_last_state
+from ..io.write_data import write_last_state, write_histogram, write_quantiles
 
 from ..graph.plots_vol import plot_ppi, plot_ppi_map, plot_rhi, plot_cappi
 from ..graph.plots_vol import plot_bscope, plot_rhi_profile, plot_along_coord
@@ -318,7 +318,7 @@ def generate_vol_products(dataset, prdcfg):
         plot_rhi_profile(
             data, h_vec, fname_list, labelx=labelx, labely='Height (m MSL)',
             labels=labels, title=titl, colors=colors,
-            linestyles=linestyles, xmin=None, xmax=None)
+            linestyles=linestyles)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -911,6 +911,7 @@ def generate_vol_products(dataset, prdcfg):
             return None
 
         step = prdcfg.get('step', None)
+        write_data = prdcfg.get('write_data', 0)
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -939,6 +940,19 @@ def generate_vol_products(dataset, prdcfg):
 
         print('----- save to '+' '.join(fname_list))
 
+        if write_data:
+            fname = savedir+make_filename(
+                'histogram', prdcfg['dstype'], prdcfg['voltype'],
+                ['csv'], timeinfo=prdcfg['timeinfo'],
+                runinfo=prdcfg['runinfo'])[0]
+
+            hist, bin_edges = np.histogram(values, bins=bins)
+            write_histogram(
+                bins, hist, fname, datatype=prdcfg['voltype'], step=step)
+            print('----- save to '+fname)
+
+            return fname
+
         return fname_list
 
     elif prdcfg['type'] == 'QUANTILES':
@@ -957,6 +971,7 @@ def generate_vol_products(dataset, prdcfg):
 
         # user defined variables
         quantiles = prdcfg.get('quantiles', None)
+        write_data = prdcfg.get('write_data', 0)
 
         fixed_span = prdcfg.get('fixed_span', 1)
         vmin = None
@@ -993,6 +1008,18 @@ def generate_vol_products(dataset, prdcfg):
                        labely=labely, titl=titl, vmin=vmin, vmax=vmax)
 
         print('----- save to '+' '.join(fname_list))
+
+        if write_data:
+            fname = savedir+make_filename(
+                'quantiles', prdcfg['dstype'], prdcfg['voltype'],
+                ['csv'], timeinfo=prdcfg['timeinfo'],
+                runinfo=prdcfg['runinfo'])[0]
+
+            write_quantiles(
+                quantiles, values, fname, datatype=prdcfg['voltype'])
+            print('----- save to '+fname)
+
+            return fname
 
         return fname_list
 
