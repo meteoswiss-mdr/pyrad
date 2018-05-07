@@ -21,8 +21,6 @@ Functions for retrieving new moments and products
 from copy import deepcopy
 from warnings import warn
 
-import numpy as np
-
 import pyart
 
 from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
@@ -395,7 +393,7 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
-    if ('RR_METHOD' not in dscfg):
+    if 'RR_METHOD' not in dscfg:
         raise Exception(
             "ERROR: Undefined parameter 'RR_METHOD' for dataset '%s'"
             % dscfg['dsname'])
@@ -613,7 +611,7 @@ def process_wind_vel(procstatus, dscfg, radar_list=None):
         return None, None
 
     radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            dscfg['datatype'][0])
+        dscfg['datatype'][0])
     vel_field = get_fieldname_pyart(datatype)
 
     ind_rad = int(radarnr[5:8])-1
@@ -679,7 +677,7 @@ def process_windshear(procstatus, dscfg, radar_list=None):
         return None, None
 
     radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            dscfg['datatype'][0])
+        dscfg['datatype'][0])
     wind_field = get_fieldname_pyart(datatype)
 
     ind_rad = int(radarnr[5:8])-1

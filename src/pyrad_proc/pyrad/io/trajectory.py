@@ -13,16 +13,18 @@ Converting to different coordinate systems.
 
 """
 
+import sys
 import re
 import datetime
 import locale
-import numpy as np
 from warnings import warn
 from copy import deepcopy
 
-from ..io.read_data_other import read_lightning
+import numpy as np
 
 import pyart
+
+from ..io.read_data_sensor import read_lightning, read_trt_traj_data
 
 
 class Trajectory(object):
@@ -126,12 +128,17 @@ class Trajectory(object):
             self.time_in_flash = np.array([], dtype=datetime.datetime)
             self.dBm = np.array([], dtype=float)
             self.flashnr_vec = np.array([], dtype=float)
+        elif self.trajtype == 'trt':
+            self.cell_contour = np.array([])
 
         try:
-            if trajtype == 'plane':
-                self._read_traj()
-            else:
+            if self.trajtype == 'lightning':
                 self._read_traj_lightning(flashnr)
+            elif self.trajtype == 'trt':
+                self._read_traj_trt()
+            else:
+                self._read_traj()
+
         except:
             raise Exception(
                 "ERROR: Could not load trajectory data from file '" +
@@ -188,7 +195,7 @@ class Trajectory(object):
 
         """
 
-        if (not radar.traj_assigned):
+        if not radar.traj_assigned:
             raise Exception("ERROR: No trajectory assigned to radar object")
 
         dt_secs = np.vectorize(self._get_total_seconds)
@@ -227,9 +234,9 @@ class Trajectory(object):
 
         if ((start is None) and (end is None)):
             raise Exception("ERROR: Either start or end must be defined")
-        elif (start is None):
+        elif start is None:
             return np.where(self.time_vector < end)
-        elif (end is None):
+        elif end is None:
             return np.where(self.time_vector >= start)
         else:
             return np.where((self.time_vector >= start) &
@@ -262,12 +269,12 @@ class Trajectory(object):
         Convert trajectory samples from WGS84 to Swiss CH1903 coordinates
         """
 
-        if (self._swiss_grid_done):
+        if self._swiss_grid_done:
             return
 
         (self.swiss_chy, self.swiss_chx, self.swiss_chh) = \
             pyart.core.wgs84_to_swissCH1903(
-            self.wgs84_lon_deg, self.wgs84_lat_deg, self.wgs84_alt_m)
+                self.wgs84_lon_deg, self.wgs84_lat_deg, self.wgs84_alt_m)
 
         self._swiss_grid_done = True
 
@@ -300,7 +307,7 @@ class Trajectory(object):
         try:
             loc_set = False
             loc = locale.getlocale()  # get current locale
-            if (loc[0] != 'en_US'):
+            if loc[0] != 'en_US':
                 try:
                     locale.setlocale(locale.LC_ALL, ('en_US', 'UTF-8'))
                 except Exception as ee:
@@ -309,16 +316,16 @@ class Trajectory(object):
                 loc_set = True
 
             recording_started = True
-            if (self.starttime is not None):
+            if self.starttime is not None:
                 recording_started = False
             recording_check_stop = False
-            if (self.endtime is not None):
+            if self.endtime is not None:
                 recording_check_stop = True
 
             for line in tfile:
                 line = line.strip()
 
-                if len(line) == 0:
+                if not line:
                     continue
 
                 # ignore comments
@@ -346,14 +353,14 @@ class Trajectory(object):
 
                 sday += datetime.timedelta(seconds=float(mm.group(2)))
 
-                if (not recording_started):
-                    if (sday < self.starttime):
+                if not recording_started:
+                    if sday < self.starttime:
                         continue
                     else:
                         recording_started = True
 
-                if (recording_check_stop):
-                    if (sday > self.endtime):
+                if recording_check_stop:
+                    if sday > self.endtime:
                         break
 
                 self.time_vector = np.append(self.time_vector, [sday])
@@ -402,10 +409,10 @@ class Trajectory(object):
                             self.filename+"'")
 
         recording_started = True
-        if (self.starttime is not None):
+        if self.starttime is not None:
             recording_started = False
         recording_check_stop = False
-        if (self.endtime is not None):
+        if self.endtime is not None:
             recording_check_stop = True
 
         if flashnr > 0:
@@ -418,16 +425,16 @@ class Trajectory(object):
             alt = alt[flashnr_vec_aux == flashnr]
             dBm = dBm[flashnr_vec_aux == flashnr]
 
-        for i in range(len(dBm)):
+        for i, dBm_val in enumerate(dBm):
 
-            if (not recording_started):
-                if (time[i] < self.starttime):
+            if not recording_started:
+                if time[i] < self.starttime:
                     continue
                 else:
                     recording_started = True
 
-            if (recording_check_stop):
-                if (time[i] > self.endtime):
+            if recording_check_stop:
+                if time[i] > self.endtime:
                     break
 
             self.flashnr_vec = np.append(self.flashnr_vec, [flashnr_vec[i]])
@@ -439,7 +446,84 @@ class Trajectory(object):
             self.wgs84_lon_deg = np.append(self.wgs84_lon_deg, [lon[i]])
             self.wgs84_alt_m = np.append(self.wgs84_alt_m, [alt[i]])
 
-            self.dBm = np.append(self.dBm, [dBm[i]])
+            self.dBm = np.append(self.dBm, [dBm_val])
+
+        self.nsamples = len(self.time_vector)
+
+    def _read_traj_trt(self):
+        """
+        Read trajectory from TRT file
+
+        File format
+        -----------
+        Columns:
+        1. traj_ID
+        2. yyyymmddHHMM (UTC)
+        2. lon (deg)
+        3. lat [deg]
+        4. ell_L
+        5. ell_S
+        6. ell_or
+        7. area
+        8. vel_x
+        9. vel_y
+        10. det
+        11. RANKr
+        12. CG_n
+        13. CG_p
+        14. CG
+        15. CG_percent_p
+        16. ET45
+        17. ET45m
+        18. ET15
+        19. ET15m
+        20. VIL
+        21. maxH
+        22. maxHm
+        23. POH
+        24. RANK
+        25. Dvel_x
+        26. Dvel_y
+        27. cell_contours
+
+        Parameters
+        ----------
+
+        """
+        (traj_ID, yyyymmddHHMM, lon, lat, ell_L, ell_S, ell_or, area,
+         vel_x, vel_y, det, RANKr, CG_n, CG_p, CG, CG_percent_p, ET45,
+         ET45m, ET15, ET15m, VIL, maxH, maxHm, POH, RANK, Dvel_x,
+         Dvel_y, cell_contours) = read_trt_traj_data(self.filename)
+
+        if traj_ID is None:
+            raise Exception("ERROR: Could not find|open trajectory file '" +
+                            self.filename+"'")
+
+        recording_started = True
+        if self.starttime is not None:
+            recording_started = False
+        recording_check_stop = False
+        if self.endtime is not None:
+            recording_check_stop = True
+
+        for i, cell_contour in enumerate(cell_contours):
+            if not recording_started:
+                if yyyymmddHHMM[i] < self.starttime:
+                    continue
+                else:
+                    recording_started = True
+
+            if recording_check_stop:
+                if yyyymmddHHMM[i] > self.endtime:
+                    break
+
+            self.time_vector = np.append(self.time_vector, [yyyymmddHHMM[i]])
+
+            self.wgs84_lat_deg = np.append(self.wgs84_lat_deg, [lat[i]])
+            self.wgs84_lon_deg = np.append(self.wgs84_lon_deg, [lon[i]])
+            self.wgs84_alt_m = np.append(self.wgs84_alt_m, 0.)
+
+            self.cell_contour = np.append(self.cell_contour, [cell_contour])
 
         self.nsamples = len(self.time_vector)
 
@@ -535,8 +619,8 @@ class _Radar_Trajectory:
                 (np.abs(self.longitude-lon) > lon_tol) or
                 (np.abs(self.altitude-alt) > alt_tol)):
             return False
-        else:
-            return True
+
+        return True
 
     def assign_trajectory(self, el, az, rr):
         """
@@ -549,7 +633,7 @@ class _Radar_Trajectory:
            elevation, azimuth and range vector
         """
 
-        if (self.traj_assigned):
+        if self.traj_assigned:
             warn("WARNING: Trajectory already assigned")
             return
 
@@ -565,7 +649,7 @@ class _Radar_Trajectory:
 
         """
 
-        if (self._swiss_coords_done):
+        if self._swiss_coords_done:
             return
 
         (self.ch_y, self.ch_x, self.ch_alt) = \
@@ -581,7 +665,7 @@ class _Radar_Trajectory:
 
         """
 
-        if (self._velocity_vecs_assigned):
+        if self._velocity_vecs_assigned:
             warn("WARNING: Trajectory velocity vectors already assigned")
             return
 

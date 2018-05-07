@@ -17,6 +17,7 @@ Auxiliary functions
     process_raw
     process_save_radar
     process_point_measurement
+    process_roi
     process_grid
     process_qvp
     process_time_height
@@ -122,7 +123,7 @@ COSMO data
 
 from .process_aux import get_process_func, process_raw, process_save_radar
 from .process_aux import process_point_measurement, process_grid, process_qvp
-from .process_aux import process_time_height
+from .process_aux import process_time_height, process_roi
 from .process_traj import process_trajectory, process_traj_atplane
 from .process_traj import process_traj_antenna_pattern
 
@@ -143,18 +144,19 @@ from .process_phase import process_phidp_kdp_Kalman
 from .process_phase import process_attenuation
 
 from .process_calib import process_correct_bias, process_correct_noise_rhohv
-from .process_calib import process_rhohv_rain, process_zdr_precip
-from .process_calib import process_estimate_phidp0, process_zdr_snow
-from .process_calib import process_selfconsistency_kdp_phidp
-from .process_calib import process_selfconsistency_bias
-from .process_calib import process_monitoring, process_occurrence
-from .process_calib import process_occurrence_period
-from .process_calib import process_gc_monitoring
-from .process_calib import process_time_avg, process_weighted_time_avg
-from .process_calib import process_time_avg_flag
-from .process_calib import process_colocated_gates, process_intercomp
-from .process_calib import process_intercomp_time_avg
-from .process_calib import process_sun_hits
+from .process_calib import process_occurrence, process_occurrence_period
+from .process_calib import process_gc_monitoring, process_sun_hits
+
+from .process_intercomp import process_time_avg, process_weighted_time_avg
+from .process_intercomp import process_time_avg_flag
+from .process_intercomp import process_colocated_gates
+from .process_intercomp import process_intercomp, process_intercomp_time_avg
+
+from .process_monitoring import process_zdr_snow, process_zdr_precip
+from .process_monitoring import process_estimate_phidp0, process_rhohv_rain
+from .process_monitoring import process_selfconsistency_kdp_phidp
+from .process_monitoring import process_selfconsistency_bias
+from .process_monitoring import process_monitoring
 
 from .process_retrieve import process_signal_power, process_snr
 from .process_retrieve import process_l, process_cdr

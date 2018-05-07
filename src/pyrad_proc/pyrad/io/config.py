@@ -57,11 +57,11 @@ def read_config(fname, cfg=None):
     while fileend == 0:
         # remove leading and trailing whitespace
         line = cfgfile.readline()
-        if len(line) > 0:
+        if line:
             line = line.strip()
 
             # ignore white lines
-            if len(line) == 0:
+            if not line:
                 continue
 
             # ignore comments
@@ -89,7 +89,7 @@ def read_config(fname, cfg=None):
             if nel > 0:
                 if isstruct:
                     pos = cfgfile.tell()
-                    fieldvalue, newpos = get_struct(cfgfile, pos, nel)
+                    fieldvalue, newpos = get_struct(cfgfile, pos, nel, fname)
                     cfgfile.seek(newpos)
                 else:
                     pos = cfgfile.tell()
@@ -106,13 +106,13 @@ def read_config(fname, cfg=None):
     return cfg
 
 
-def get_num_elements(type, nelstr):
+def get_num_elements(dtype, nelstr):
     """
     Checks if data type is an array or a structure.
 
     Parameters
     ----------
-    type : str
+    dtype : str
         data type specifier
 
     nelstr : str
@@ -128,7 +128,7 @@ def get_num_elements(type, nelstr):
 
     """
 
-    uptype = type.upper()
+    uptype = dtype.upper()
     isstruct = False
     nel = 0
     narr = uptype.count('ARR')
@@ -140,13 +140,13 @@ def get_num_elements(type, nelstr):
     return nel, isstruct
 
 
-def string_to_datatype(type, strval):
+def string_to_datatype(dtype, strval):
     """
     Converts a string containing a value into its Python value
 
     Parameters
     ----------
-    type : str
+    dtype : str
         data type specifier
 
     strval : str
@@ -159,7 +159,7 @@ def string_to_datatype(type, strval):
 
     """
 
-    uptype = type.upper()
+    uptype = dtype.upper()
 
     if uptype == 'BYTE':
         return int(strval[0])
@@ -246,20 +246,20 @@ def get_array(cfgfile, pos, nel, valtype):
     return arr, newpos
 
 
-def get_struct(cfgfile, pos, nels):
+def get_struct(cfgfile, pos, nels, fname):
     """
-    reads an array in a config file
+    reads an struct in a config file
 
     Parameters
     ----------
     cfgfile : file object
         config file
-
     pos : int
         position in file object
-
     nel : int
         number of elements of the ray
+    fname : str
+        config file name
 
     Returns
     -------
@@ -301,7 +301,7 @@ def get_struct(cfgfile, pos, nels):
         if nel > 0:
             if isstruct:
                 pos = cfgfile.tell()
-                sfieldvalue, newpos = get_struct(cfgfile, pos, nel)
+                sfieldvalue, newpos = get_struct(cfgfile, pos, nel, fname)
                 cfgfile.seek(newpos)
             else:
                 pos = cfgfile.tell()
@@ -316,13 +316,13 @@ def get_struct(cfgfile, pos, nels):
     return struct, newpos
 
 
-def get_array_type(type):
+def get_array_type(dtype):
     """
     Determines Python array type from the config file array type
 
     Parameters
     ----------
-    type : str
+    dtype : str
         config file data type
 
     Returns
@@ -332,7 +332,7 @@ def get_array_type(type):
 
     """
 
-    uptype = type.upper()
+    uptype = dtype.upper()
 
     if uptype == 'BYTARR':
         return 'BYTE'
@@ -354,7 +354,7 @@ def get_array_type(type):
         raise Exception("ERROR: Unexpected data type "+uptype)
 
 
-def init_array(nel, type):
+def init_array(nel, dtype):
     """
     Initializes a Python array
 
@@ -362,8 +362,7 @@ def init_array(nel, type):
     ----------
     nel : int
         number of elements in the array
-
-    type : str
+    dtype : str
         config file data type
 
     Returns
@@ -373,7 +372,7 @@ def init_array(nel, type):
 
     """
 
-    uptype = type.upper()
+    uptype = dtype.upper()
 
     if uptype == 'BYTE':
         return np.empty(nel, dtype='byte')

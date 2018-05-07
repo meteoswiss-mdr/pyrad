@@ -11,9 +11,12 @@ Functions for writing pyrad output data
     write_alarm_msg
     write_last_state
     write_smn
+    write_trt_cell_data
     write_rhi_profile
     write_field_coverage
     write_cdf
+    write_histogram
+    write_quantiles
     write_ts_polar_data
     write_ts_cum
     write_monitoring_ts
@@ -34,12 +37,12 @@ import csv
 from warnings import warn
 import smtplib
 from email.message import EmailMessage
-import numpy as np
-import os
 import fcntl
+import time
 
+import numpy as np
 
-from pyart.config import get_fillvalue, get_metadata
+from pyart.config import get_fillvalue
 
 from .io_aux import generate_field_name_str
 
@@ -209,6 +212,82 @@ def write_smn(datetime_vec, value_avg_vec, value_std_vec, fname):
     return fname
 
 
+def write_trt_cell_data(
+        traj_ID, yyyymmddHHMM, lon, lat, ell_L, ell_S, ell_or, area,
+        vel_x, vel_y, det, RANKr, CG_n, CG_p, CG, CG_percent_p, ET45,
+        ET45m, ET15, ET15m, VIL, maxH, maxHm, POH, RANK, Dvel_x,
+        Dvel_y, cell_contour, fname):
+    """
+    writes TRT cell data
+
+    Parameters
+    ----------
+
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    nvalues = traj_ID.size
+    with open(fname, 'w', newline='') as csvfile:
+        fieldnames = [
+            'traj_ID', 'yyyymmddHHMM', 'lon', 'lat', 'ell_L', 'ell_S',
+            'ell_or', 'area', 'vel_x', 'vel_y', 'det', 'RANKr', 'CG-',
+            'CG+', 'CG', '%CG+', 'ET45', 'ET45m', 'ET15', 'ET15m',
+            'VIL', 'maxH', 'maxHm', 'POH', 'RANK', 'Dvel_x', 'Dvel_y',
+            'cell_contour_lon-lat']
+        writer = csv.DictWriter(csvfile, fieldnames)
+        writer.writeheader()
+        for i in range(nvalues):
+            cell_contour_aux = cell_contour[i]
+            npoints_contour = len(cell_contour_aux['lon'])
+            cell_contour_arr = np.empty(2*npoints_contour, dtype=float)
+            cell_contour_arr[0:-1:2] = cell_contour_aux['lon']
+            cell_contour_arr[1::2] = cell_contour_aux['lat']
+            cell_contour_str = str(cell_contour_arr[0])
+            for j in range(1, 2*npoints_contour):
+                cell_contour_str += ' '+str(cell_contour_arr[j])
+
+            writer.writerow({
+                'traj_ID': traj_ID[i],
+                'yyyymmddHHMM': yyyymmddHHMM[i].strftime('%Y%m%d%H%M'),
+                'lon': lon[i],
+                'lat': lat[i],
+                'ell_L': ell_L[i],
+                'ell_S': ell_S[i],
+                'ell_or': ell_or[i],
+                'area': area[i],
+                'vel_x': vel_x[i],
+                'vel_y': vel_y[i],
+                'det': det[i],
+                'RANKr': RANKr[i],
+                'CG-': CG_n[i],
+                'CG+': CG_p[i],
+                'CG': CG[i],
+                '%CG+': CG_percent_p[i],
+                'ET45': ET45[i],
+                'ET45m': ET45m[i],
+                'ET15': ET15[i],
+                'ET15m': ET15m[i],
+                'VIL': VIL[i],
+                'maxH': maxH[i],
+                'maxHm': maxHm[i],
+                'POH': POH[i],
+                'RANK': RANK[i],
+                'Dvel_x': Dvel_x[i],
+                'Dvel_y': Dvel_y[i],
+                'cell_contour_lon-lat': cell_contour_str
+            })
+
+        csvfile.close()
+
+    return fname
+
+
 def write_rhi_profile(hvec, data, nvalid_vec, labels, fname, datatype=None,
                       timeinfo=None, sector=None):
     """
@@ -332,9 +411,9 @@ def write_field_coverage(quantiles, values, ele_start, ele_stop, azi_start,
         fieldnames = ['Quantile [%]', 'Rain extension [m]']
         writer = csv.DictWriter(csvfile, fieldnames)
         writer.writeheader()
-        for i in range(len(quantiles)):
+        for i, quant in enumerate(quantiles):
             writer.writerow({
-                'Quantile [%]': quantiles[i],
+                'Quantile [%]': quant,
                 'Rain extension [m]': values[i]})
 
         csvfile.close()
@@ -459,8 +538,8 @@ def write_cdf(quantiles, values, ntot, nnan, nclut, nblocked, nprec_filter,
             txtfile.write('Filtered precipitation gates         : ' +
                           str(nprec_filter)+'\n')
             txtfile.write('  precipitation types filtered: ')
-            for i in range(len(filterprec)):
-                txtfile.write(hydrotype_list[filterprec[i]]+' ')
+            for ind_hydro in filterprec:
+                txtfile.write(hydrotype_list[ind_hydro]+' ')
             txtfile.write('\n')
         txtfile.write('Number of outliers                   : ' +
                       str(noutliers)+'\n')
@@ -473,6 +552,96 @@ def write_cdf(quantiles, values, ntot, nnan, nclut, nblocked, nprec_filter,
                           '{:5.1f}'.format(values[i])+'\n')
 
         txtfile.close()
+
+    return fname
+
+
+def write_histogram(bins, values, fname, datatype='undefined',
+                    step=0):
+    """
+    writes a histogram
+
+    Parameters
+    ----------
+    bins : float array
+        array containing the histogram bins
+    values : int array
+        array containing the number of points in each bin
+    fname : str
+        file name
+    datatype :str
+        The data type
+    step : str
+        The bin step
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    with open(fname, 'w', newline='') as csvfile:
+        datatype_str = 'undefined'
+        if datatype != 'undefined':
+            datatype_str = generate_field_name_str(datatype)
+        csvfile.write(
+            '# Weather radar data histogram file\n' +
+            '# Comment lines are preceded by "#"\n' +
+            '# Description:\n' +
+            '# Histogram of weather radar data.\n' +
+            '# Data: '+datatype_str+'\n' +
+            '# Step: '+str(step)+'\n'
+            '#\n')
+        fieldnames = ['bin_edge_left', 'bin_edge_right', 'value']
+        writer = csv.DictWriter(csvfile, fieldnames)
+        writer.writeheader()
+        for i, val in enumerate(values):
+            writer.writerow({
+                'bin_edge_left': bins[i],
+                'bin_edge_right': bins[i+1],
+                'value': val})
+        csvfile.close()
+
+    return fname
+
+
+def write_quantiles(quantiles, values, fname, datatype='undefined'):
+    """
+    writes a histogram
+
+    Parameters
+    ----------
+    bins : float array
+        array containing the histogram bins
+    values : int array
+        array containing the number of points in each bin
+    fname : str
+        file name
+    datatype :str
+        The data type
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    with open(fname, 'w', newline='') as csvfile:
+        csvfile.write(
+            '# Weather radar data histogram file\n' +
+            '# Comment lines are preceded by "#"\n' +
+            '# Description:\n' +
+            '# Histogram of weather radar data.\n' +
+            '# Data: '+generate_field_name_str(datatype)+'\n' +
+            '#\n')
+        fieldnames = ['quantile', 'value']
+        writer = csv.DictWriter(csvfile, fieldnames)
+        writer.writeheader()
+        for i, quant in enumerate(quantiles):
+            writer.writerow({
+                'quantile': quant,
+                'value': values[i]})
+        csvfile.close()
 
     return fname
 
@@ -496,7 +665,7 @@ def write_ts_polar_data(dataset, fname):
 
     """
     filelist = glob.glob(fname)
-    if len(filelist) == 0:
+    if not filelist:
         with open(fname, 'w', newline='') as csvfile:
             csvfile.write('# Weather radar timeseries data file\n')
             csvfile.write('# Comment lines are preceded by "#"\n')
@@ -621,6 +790,8 @@ def write_monitoring_ts(start_time, np_t, values, quantiles, datatype, fname,
         the values at certain quantiles
     quantiles: float array with 3 elements
         the quantiles computed
+    datatype : str
+        The data type
     fname : str
         file name where to store the data
     rewrite : bool
@@ -646,7 +817,7 @@ def write_monitoring_ts(start_time, np_t, values, quantiles, datatype, fname,
         file_exists = False
     else:
         filelist = glob.glob(fname)
-        if len(filelist) == 0:
+        if not filelist:
             file_exists = False
         else:
             file_exists = True
@@ -830,11 +1001,11 @@ def write_intercomp_scores_ts(start_time, stats, field_name, fname,
         file_exists = False
     else:
         filelist = glob.glob(fname)
-        if len(filelist) == 0:
+        if not filelist:
             file_exists = False
         else:
             file_exists = True
-            
+
     if not file_exists:
         with open(fname, 'w', newline='') as csvfile:
             while True:
@@ -846,15 +1017,16 @@ def write_intercomp_scores_ts(start_time, stats, field_name, fname,
                         raise
                     else:
                         time.sleep(0.1)
-                        
+
             csvfile.write(
                 '# Weather radar intercomparison scores timeseries file\n' +
                 '# Comment lines are preceded by "#"\n' +
-                '# Description: \n' +            
+                '# Description: \n' +
                 '# Time series of the intercomparison between two radars.\n' +
                 '# Radar 1: '+rad1_name+'\n' +
                 '# Radar 2: '+rad2_name+'\n' +
-                '# Fill Value: '+str(get_fillvalue())+'\n' +            
+                '# Field name: '+field_name+'\n' +
+                '# Fill Value: '+str(get_fillvalue())+'\n' +
                 '# Start: '+start_time_aux[0].strftime(
                     '%Y-%m-%d %H:%M:%S UTC')+'\n' +
                 '#\n')
@@ -882,7 +1054,7 @@ def write_intercomp_scores_ts(start_time, stats, field_name, fname,
                     'intercep_of_linear_regression_of_slope_1': (
                         intercep_slope_1[i])
                     })
-                    
+
             fcntl.flock(csvfile, fcntl.LOCK_UN)
             csvfile.close()
     else:
@@ -896,7 +1068,7 @@ def write_intercomp_scores_ts(start_time, stats, field_name, fname,
                         raise
                     else:
                         time.sleep(0.1)
-                        
+
             fieldnames = ['date', 'NP', 'mean_bias', 'median_bias',
                           'quant25_bias', 'quant75_bias', 'mode_bias', 'corr',
                           'slope_of_linear_regression',
@@ -989,7 +1161,7 @@ def write_colocated_data(coloc_data, fname):
     """
     filelist = glob.glob(fname)
     ngates = len(coloc_data['rad1_ele'])
-    if len(filelist) == 0:
+    if not filelist:
         with open(fname, 'w', newline='') as csvfile:
             csvfile.write('# Colocated radar gates data file\n')
             csvfile.write('# Comment lines are preceded by "#"\n')
@@ -1072,7 +1244,7 @@ def write_colocated_data_time_avg(coloc_data, fname):
     """
     filelist = glob.glob(fname)
     ngates = len(coloc_data['rad1_ele'])
-    if len(filelist) == 0:
+    if not filelist:
         with open(fname, 'w', newline='') as csvfile:
             csvfile.write('# Colocated radar gates data file\n')
             csvfile.write('# Comment lines are preceded by "#"\n')
@@ -1097,7 +1269,6 @@ def write_colocated_data_time_avg(coloc_data, fname):
                     'rad1_rng': coloc_data['rad1_rng'][i],
                     'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
                     'rad1_PhiDPavg': coloc_data['rad1_PhiDPavg'][i],
-                    'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
                     'rad1_Flagavg': coloc_data['rad1_Flagavg'][i],
                     'rad2_time': (
                         coloc_data['rad2_time'][i].strftime('%Y%m%d%H%M%S')),
@@ -1131,7 +1302,6 @@ def write_colocated_data_time_avg(coloc_data, fname):
                     'rad1_rng': coloc_data['rad1_rng'][i],
                     'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
                     'rad1_PhiDPavg': coloc_data['rad1_PhiDPavg'][i],
-                    'rad1_dBZavg': coloc_data['rad1_dBZavg'][i],
                     'rad1_Flagavg': coloc_data['rad1_Flagavg'][i],
                     'rad2_time': (
                         coloc_data['rad2_time'][i].strftime('%Y%m%d%H%M%S')),
@@ -1178,7 +1348,7 @@ def write_sun_hits(sun_hits, fname):
 
     filelist = glob.glob(fname)
     nhits = len(sun_hits['time'])
-    if len(filelist) == 0:
+    if not filelist:
         with open(fname, 'w', newline='') as csvfile:
             csvfile.write('# Weather radar sun hits data file\n')
             csvfile.write('# Comment lines are preceded by "#"\n')
@@ -1303,7 +1473,7 @@ def write_sun_retrieval(sun_retrieval, fname):
         ref_time = sun_retrieval['ref_time'].strftime('%Y%m%d%H%M%S')
 
     filelist = glob.glob(fname)
-    if len(filelist) == 0:
+    if not filelist:
         with open(fname, 'w', newline='') as csvfile:
             csvfile.write('# Weather radar sun retrievals data file\n')
             csvfile.write('# Comment lines are preceded by "#"\n')

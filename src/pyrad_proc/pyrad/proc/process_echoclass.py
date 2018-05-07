@@ -88,7 +88,7 @@ def process_echo_id(procstatus, dscfg, radar_list=None):
         warn('Unable to create radar_echo_id dataset. Missing data')
         return None, None
 
-    id = np.zeros((radar.nrays, radar.ngates), dtype='int32')+3
+    echo_id = np.zeros((radar.nrays, radar.ngates), dtype='int32')+3
 
     # look for clutter
     gatefilter = pyart.filters.moment_and_texture_based_gate_filter(
@@ -99,15 +99,15 @@ def process_echo_id(procstatus, dscfg, radar_list=None):
         max_textrefl=8., min_rhv=0.6)
 
     is_clutter = gatefilter.gate_excluded == 1
-    id[is_clutter] = 2
+    echo_id[is_clutter] = 2
 
     # look for noise
     is_noise = radar.fields[refl_field]['data'].data == (
         pyart.config.get_fillvalue())
-    id[is_noise] = 1
+    echo_id[is_noise] = 1
 
     id_field = pyart.config.get_metadata('radar_echo_id')
-    id_field['data'] = id
+    id_field['data'] = echo_id
 
     # prepare for exit
     new_dataset = deepcopy(radar)
@@ -163,13 +163,13 @@ def process_clt_to_echo_id(procstatus, dscfg, radar_list=None):
         warn('rad4alp clutter exit code not present. Unable to obtain echoID')
         return None, None
 
-    id = np.zeros((radar.nrays, radar.ngates), dtype='int32')+3
+    echo_id = np.zeros((radar.nrays, radar.ngates), dtype='int32')+3
     clt = radar.fields[clt_field]['data']
-    id[clt == 1] = 1
-    id[clt >= 100] = 2
+    echo_id[clt == 1] = 1
+    echo_id[clt >= 100] = 2
 
     id_field = pyart.config.get_metadata('radar_echo_id')
-    id_field['data'] = id
+    id_field['data'] = echo_id
 
     # prepare for exit
     new_dataset = deepcopy(radar)
@@ -215,7 +215,7 @@ def process_echo_filter(procstatus, dscfg, radar_list=None):
     for datatypedescr in dscfg['datatype']:
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
-        if (datatype == 'echoID'):
+        if datatype == 'echoID':
             echoid_field = get_fieldname_pyart(datatype)
             break
 
@@ -229,10 +229,7 @@ def process_echo_filter(procstatus, dscfg, radar_list=None):
         warn('Unable to filter data. Missing echo ID field')
         return None, None
 
-    echo_type = 3
-    if 'echo_type' in dscfg:
-        echo_type = dscfg['echo_type']
-
+    echo_type = dscfg.get('echo_type', 3)
     mask = radar.fields[echoid_field]['data'] != echo_type
 
     new_dataset = deepcopy(radar)
@@ -302,11 +299,11 @@ def process_cdf(procstatus, dscfg, radar_list=None):
     for datatypedescr in dscfg['datatype']:
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
             datatypedescr)
-        if (datatype == 'echoID'):
+        if datatype == 'echoID':
             echoid_field = get_fieldname_pyart(datatype)
-        elif (datatype == 'hydro'):
+        elif datatype == 'hydro':
             hydro_field = get_fieldname_pyart(datatype)
-        elif (datatype == 'VIS'):
+        elif datatype == 'VIS':
             vis_field = get_fieldname_pyart(datatype)
         else:
             field_name = get_fieldname_pyart(datatype)
@@ -398,7 +395,7 @@ def process_filter_snr(procstatus, dscfg, radar_list=None):
 
     gatefilter = pyart.filters.snr_based_gate_filter(
         radar, snr_field=snr_field, min_snr=dscfg['SNRmin'])
-    is_lowSNR = gatefilter.gate_excluded == 1
+    is_low_snr = gatefilter.gate_excluded == 1
 
     for datatypedescr in dscfg['datatype']:
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
@@ -409,7 +406,7 @@ def process_filter_snr(procstatus, dscfg, radar_list=None):
             if field_name in radar.fields:
                 radar_field = deepcopy(radar.fields[field_name])
                 radar_field['data'] = np.ma.masked_where(
-                    is_lowSNR, radar_field['data'])
+                    is_low_snr, radar_field['data'])
 
                 if field_name.startswith('corrected_'):
                     new_field_name = field_name
@@ -576,21 +573,11 @@ def process_outlier_filter(procstatus, dscfg, radar_list=None):
         warn('Unable to perform outlier removal. No valid data')
         return None, None
 
-    threshold = 10.
-    if 'threshold' in dscfg:
-        threshold = dscfg['threshold']
-    nb = 2
-    if 'nb' in dscfg:
-        nb = dscfg['nb']
-    nb_min = 3
-    if 'nb_min' in dscfg:
-        nb_min = dscfg['nb_min']
-    percentile_min = 5.
-    if 'percentile_min' in dscfg:
-        percentile_min = dscfg['percentile_min']
-    percentile_max = 95.
-    if 'percentile_max' in dscfg:
-        percentile_max = dscfg['percentile_max']
+    threshold = dscfg.get('threshold', 10.)
+    nb = dscfg.get('nb', 2)
+    nb_min = dscfg.get('nb_min', 3)
+    percentile_min = dscfg.get('percentile_min', 5.)
+    percentile_max = dscfg.get('percentile_max', 95.)
 
     field = radar.fields[field_name]
     field_out = deepcopy(field)
@@ -635,8 +622,9 @@ def process_outlier_filter(procstatus, dscfg, radar_list=None):
             if len(data_cube) < nb_min:
                 field_out['data'][
                     sweep_start+ind_ray[gate], ind_rng[gate]] = np.ma.masked
-            elif abs(np.ma.median(data_cube)-data_sweep[ind_ray[gate],
-                     ind_rng[gate]]) > threshold:
+            elif (abs(
+                    np.ma.median(data_cube) -
+                    data_sweep[ind_ray[gate], ind_rng[gate]]) > threshold):
                 field_out['data'][
                     sweep_start+ind_ray[gate], ind_rng[gate]] = np.ma.masked
 
@@ -754,103 +742,103 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
         if dscfg['RADARCENTROIDS'] == 'A':
             #      Zh      ZDR     kdp   RhoHV   delta_Z
             mass_centers[0, :] = [
-                13.5829,  0.4063, 0.0497, 0.9868,  1330.3]  # DS
+                13.5829, 0.4063, 0.0497, 0.9868, 1330.3]  # DS
             mass_centers[1, :] = [
-                02.8453,  0.2457, 0.0000, 0.9798,  0653.8]  # CR
+                02.8453, 0.2457, 0.0000, 0.9798, 0653.8]  # CR
             mass_centers[2, :] = [
-                07.6597,  0.2180, 0.0019, 0.9799, -1426.5]  # LR
+                07.6597, 0.2180, 0.0019, 0.9799, -1426.5]  # LR
             mass_centers[3, :] = [
-                31.6815,  0.3926, 0.0828, 0.9978,  0535.3]  # GR
+                31.6815, 0.3926, 0.0828, 0.9978, 0535.3]  # GR
             mass_centers[4, :] = [
-                39.4703,  1.0734, 0.4919, 0.9876, -1036.3]  # RN
+                39.4703, 1.0734, 0.4919, 0.9876, -1036.3]  # RN
             mass_centers[5, :] = [
-                04.8267, -0.5690, 0.0000, 0.9691,  0869.8]  # VI
+                04.8267, -0.5690, 0.0000, 0.9691, 0869.8]  # VI
             mass_centers[6, :] = [
-                30.8613,  0.9819, 0.1998, 0.9845, -0066.1]  # WS
+                30.8613, 0.9819, 0.1998, 0.9845, -0066.1]  # WS
             mass_centers[7, :] = [
-                52.3969,  2.1094, 2.4675, 0.9730, -1550.2]  # MH
+                52.3969, 2.1094, 2.4675, 0.9730, -1550.2]  # MH
             mass_centers[8, :] = [
-                50.6186, -0.0649, 0.0946, 0.9904,  1179.9]  # IH/HDG
+                50.6186, -0.0649, 0.0946, 0.9904, 1179.9]  # IH/HDG
         elif dscfg['RADARCENTROIDS'] == 'L':
             #       Zh      ZDR     kdp   RhoHV   delta_Z
             mass_centers[0, :] = [
-                13.8231,  0.2514, 0.0644, 0.9861,  1380.6]  # DS
+                13.8231, 0.2514, 0.0644, 0.9861, 1380.6]  # DS
             mass_centers[1, :] = [
-                03.0239,  0.1971, 0.0000, 0.9661,  1464.1]  # CR
+                03.0239, 0.1971, 0.0000, 0.9661, 1464.1]  # CR
             mass_centers[2, :] = [
-                04.9447,  0.1142, 0.0000, 0.9787, -0974.7]  # LR
+                04.9447, 0.1142, 0.0000, 0.9787, -0974.7]  # LR
             mass_centers[3, :] = [
-                34.2450,  0.5540, 0.1459, 0.9937,  0945.3]  # GR
+                34.2450, 0.5540, 0.1459, 0.9937, 0945.3]  # GR
             mass_centers[4, :] = [
-                40.9432,  1.0110, 0.5141, 0.9928, -0993.5]  # RN
+                40.9432, 1.0110, 0.5141, 0.9928, -0993.5]  # RN
             mass_centers[5, :] = [
-                03.5202, -0.3498, 0.0000, 0.9746,  0843.2]  # VI
+                03.5202, -0.3498, 0.0000, 0.9746, 0843.2]  # VI
             mass_centers[6, :] = [
-                32.5287,  0.9751, 0.2640, 0.9804, -0055.5]  # WS
+                32.5287, 0.9751, 0.2640, 0.9804, -0055.5]  # WS
             mass_centers[7, :] = [
-                52.6547,  2.7054, 2.5101, 0.9765, -1114.6]  # MH
+                52.6547, 2.7054, 2.5101, 0.9765, -1114.6]  # MH
             mass_centers[8, :] = [
-                46.4998,  0.1978, 0.6431, 0.9845,  1010.1]  # IH/HDG
+                46.4998, 0.1978, 0.6431, 0.9845, 1010.1]  # IH/HDG
         elif dscfg['RADARCENTROIDS'] == 'P':
             #       Zh      ZDR     kdp   RhoHV   delta_Z
             mass_centers[0, :] = [
-                13.9882,  0.2470, 0.0690, 0.9939,  1418.1]  # DS
+                13.9882, 0.2470, 0.0690, 0.9939, 1418.1]  # DS
             mass_centers[1, :] = [
-                00.9834,  0.4830, 0.0043, 0.9834,  0950.6]  # CR
+                00.9834, 0.4830, 0.0043, 0.9834, 0950.6]  # CR
             mass_centers[2, :] = [
-                05.3962,  0.2689, 0.0000, 0.9831, -0479.5]  # LR
+                05.3962, 0.2689, 0.0000, 0.9831, -0479.5]  # LR
             mass_centers[3, :] = [
-                35.3411,  0.1502, 0.0940, 0.9974,  0920.9]  # GR
+                35.3411, 0.1502, 0.0940, 0.9974, 0920.9]  # GR
             mass_centers[4, :] = [
-                35.0114,  0.9681, 0.1106, 0.9785, -0374.0]  # RN
+                35.0114, 0.9681, 0.1106, 0.9785, -0374.0]  # RN
             mass_centers[5, :] = [
-                02.5897, -0.3879, 0.0282, 0.9876,  0985.5]  # VI
+                02.5897, -0.3879, 0.0282, 0.9876, 0985.5]  # VI
             mass_centers[6, :] = [
-                32.2914,  0.7789, 0.1443, 0.9075, -0153.5]  # WS
+                32.2914, 0.7789, 0.1443, 0.9075, -0153.5]  # WS
             mass_centers[7, :] = [
-                53.2413,  1.8723, 0.3857, 0.9454, -0470.8]  # MH
+                53.2413, 1.8723, 0.3857, 0.9454, -0470.8]  # MH
             mass_centers[8, :] = [
-                44.7896,  0.0015, 0.1349, 0.9968,  1116.7]  # IH/HDG
+                44.7896, 0.0015, 0.1349, 0.9968, 1116.7]  # IH/HDG
         elif dscfg['RADARCENTROIDS'] == 'W':
             #       Zh      ZDR     kdp   RhoHV   delta_Z
             mass_centers[0, :] = [
-                16.7650,  0.3754, 0.0442, 0.9866,  1409.0]  # DS
+                16.7650, 0.3754, 0.0442, 0.9866, 1409.0]  # DS
             mass_centers[1, :] = [
-                01.4418,  0.3786, 0.0000, 0.9490,  1415.8]  # CR
+                01.4418, 0.3786, 0.0000, 0.9490, 1415.8]  # CR
             mass_centers[2, :] = [
-                16.0987,  0.3238, 0.0000, 0.9871, -0818.7]  # LR
+                16.0987, 0.3238, 0.0000, 0.9871, -0818.7]  # LR
             mass_centers[3, :] = [
-                36.5465,  0.2041, 0.0731, 0.9952,  0745.4]  # GR
+                36.5465, 0.2041, 0.0731, 0.9952, 0745.4]  # GR
             mass_centers[4, :] = [
-                43.4011,  0.6658, 0.3241, 0.9894, -0778.5]  # RN
+                43.4011, 0.6658, 0.3241, 0.9894, -0778.5]  # RN
             mass_centers[5, :] = [
-                00.9077, -0.4793, 0.0000, 0.9502,  1488.6]  # VI
+                00.9077, -0.4793, 0.0000, 0.9502, 1488.6]  # VI
             mass_centers[6, :] = [
-                36.8091,  0.7266, 0.1284, 0.9924, -0071.1]  # WS
+                36.8091, 0.7266, 0.1284, 0.9924, -0071.1]  # WS
             mass_centers[7, :] = [
-                53.8402,  0.8922, 0.5306, 0.9890, -1017.6]  # MH
+                53.8402, 0.8922, 0.5306, 0.9890, -1017.6]  # MH
             mass_centers[8, :] = [
-                45.9686,  0.0845, 0.0963, 0.9940,  0867.4]  # IH/HDG
+                45.9686, 0.0845, 0.0963, 0.9940, 0867.4]  # IH/HDG
         elif dscfg['RADARCENTROIDS'] == 'DX50':
             #       Zh      ZDR     kdp   RhoHV   delta_Z
             mass_centers[0, :] = [
-                19.0770,  0.4139, 0.0099, 0.9841,  1061.7]  # DS
+                19.0770, 0.4139, 0.0099, 0.9841, 1061.7]  # DS
             mass_centers[1, :] = [
-                03.9877,  0.5040, 0.0000, 0.9642,  0856.6]  # CR
+                03.9877, 0.5040, 0.0000, 0.9642, 0856.6]  # CR
             mass_centers[2, :] = [
-                20.7982,  0.3177, 0.0004, 0.9858, -1375.1]  # LR
+                20.7982, 0.3177, 0.0004, 0.9858, -1375.1]  # LR
             mass_centers[3, :] = [
-                34.7124, -0.3748, 0.0988, 0.9828,  1224.2]  # GR
+                34.7124, -0.3748, 0.0988, 0.9828, 1224.2]  # GR
             mass_centers[4, :] = [
-                33.0134,  0.6614, 0.0819, 0.9802, -1169.8]  # RN
+                33.0134, 0.6614, 0.0819, 0.9802, -1169.8]  # RN
             mass_centers[5, :] = [
-                08.2610, -0.4681, 0.0000, 0.9722,  1100.7]  # VI
+                08.2610, -0.4681, 0.0000, 0.9722, 1100.7]  # VI
             mass_centers[6, :] = [
-                35.1801,  1.2830, 0.1322, 0.9162, -0159.8]  # WS
+                35.1801, 1.2830, 0.1322, 0.9162, -0159.8]  # WS
             mass_centers[7, :] = [
-                52.4539,  2.3714, 1.1120, 0.9382, -1618.5]  # MH
+                52.4539, 2.3714, 1.1120, 0.9382, -1618.5]  # MH
             mass_centers[8, :] = [
-                44.2216, -0.3419, 0.0687, 0.9683,  1272.7]  # IH/HDG
+                44.2216, -0.3419, 0.0687, 0.9683, 1272.7]  # IH/HDG
         else:
             warn(
                 ' Unknown radar. ' +

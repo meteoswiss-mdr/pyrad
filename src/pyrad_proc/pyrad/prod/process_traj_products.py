@@ -33,7 +33,7 @@ def generate_traj_product(traj, prdcfg):
     """
 
     dssavedir = prdcfg['dsname']
-    if ('dssavename' in prdcfg):
+    if 'dssavename' in prdcfg:
         dssavedir = prdcfg['dssavename']
 
     if prdcfg['type'] == 'TRAJ_PLOT':
@@ -47,7 +47,7 @@ def generate_traj_product(traj, prdcfg):
         ts = TimeSeries("", traj.time_vector,
                         timeformat="%Y-%m-%d %H:%M:%S.%f")
 
-        if (prdcfg['datatype'] == 'EL'):
+        if prdcfg['datatype'] == 'EL':
             fname = make_filename('ts', prdcfg['dstype'], 'TRAJ',
                                   prdcfg['imgformat'],
                                   prdcfginfo="EL", timeinfo=timeinfo,
@@ -58,7 +58,7 @@ def generate_traj_product(traj, prdcfg):
                               traj.radar_list[0].elevation_vec)
             ts.plot(savedir + fname[0])
 
-        elif (prdcfg['datatype'] == 'AZ'):
+        elif prdcfg['datatype'] == 'AZ':
             fname = make_filename('ts', prdcfg['dstype'], 'TRAJ',
                                   prdcfg['imgformat'],
                                   prdcfginfo="AZ", timeinfo=timeinfo,
@@ -68,7 +68,7 @@ def generate_traj_product(traj, prdcfg):
             ts.add_dataseries("Azimuth", "Azimuth", "deg", traj.radar_list[0].azimuth_vec)
             ts.plot(savedir + fname[0])
 
-        elif (prdcfg['datatype'] == 'RANGE'):
+        elif prdcfg['datatype'] == 'RANGE':
             fname = make_filename('ts', prdcfg['dstype'], 'TRAJ',
                                   prdcfg['imgformat'],
                                   prdcfginfo="RANGE", timeinfo=timeinfo,

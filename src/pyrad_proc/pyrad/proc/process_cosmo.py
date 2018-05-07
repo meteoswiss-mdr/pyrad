@@ -22,19 +22,18 @@ import time
 import glob
 
 import numpy as np
+from netCDF4 import num2date
 
 import pyart
 
 from ..io.io_aux import get_datatype_fields, find_raw_cosmo_file
-from ..io.io_aux import find_hzt_file
+from ..io.io_aux import find_hzt_file, get_fieldname_pyart
 from ..io.read_data_cosmo import read_cosmo_data, read_cosmo_coord
 from ..io.read_data_cosmo import cosmo2radar_data, cosmo2radar_coord
 from ..io.read_data_cosmo import get_cosmo_fields
 from ..io.read_data_radar import interpol_field
 from ..io.read_data_hzt import read_hzt_data, hzt2radar_data, hzt2radar_coord
 from ..io.read_data_hzt import get_iso0_field
-
-from netCDF4 import num2date
 
 
 def process_cosmo(procstatus, dscfg, radar_list=None):
@@ -90,18 +89,10 @@ def process_cosmo(procstatus, dscfg, radar_list=None):
         return None, None
     radar = radar_list[ind_rad]
 
-    keep_in_memory = 0
-    if 'keep_in_memory' in dscfg:
-        keep_in_memory = dscfg['keep_in_memory']
+    keep_in_memory = dscfg.get('keep_in_memory', 0)
+    regular_grid = dscfg.get('regular_grid', 0)
 
-    regular_grid = 0
-    if 'regular_grid' in dscfg:
-        regular_grid = dscfg['regular_grid']
-
-    cosmo_type = 'TEMP'
-    if 'cosmo_type' in dscfg:
-        cosmo_type = dscfg['cosmo_type']
-
+    cosmo_type = dscfg.get('cosmo_type', 'TEMP')
     if cosmo_type == 'TEMP':
         field_names = ['temperature']
         if 'cosmo_variables' in dscfg:
@@ -261,13 +252,8 @@ def process_hzt(procstatus, dscfg, radar_list=None):
         return None, None
     radar = radar_list[ind_rad]
 
-    keep_in_memory = 0
-    if 'keep_in_memory' in dscfg:
-        keep_in_memory = dscfg['keep_in_memory']
-
-    regular_grid = 0
-    if 'regular_grid' in dscfg:
-        regular_grid = dscfg['regular_grid']
+    keep_in_memory = dscfg.get('keep_in_memory', 0)
+    regular_grid = dscfg.get('regular_grid', 0)
 
     fname = find_hzt_file(dscfg['timeinfo'], dscfg, ind_rad=ind_rad)
 
@@ -402,18 +388,10 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
         return None, None
     radar = radar_list[ind_rad]
 
-    regular_grid = 0
-    if 'regular_grid' in dscfg:
-        regular_grid = dscfg['regular_grid']
+    regular_grid = dscfg.get('regular_grid', 0)
+    lookup_table = dscfg.get('lookup_table', 0)
 
-    lookup_table = 0
-    if 'lookup_table' in dscfg:
-        lookup_table = dscfg['lookup_table']
-
-    cosmo_type = 'TEMP'
-    if 'cosmo_type' in dscfg:
-        cosmo_type = dscfg['cosmo_type']
-
+    cosmo_type = dscfg.get('cosmo_type', 'TEMP')
     if cosmo_type == 'TEMP':
         field_names = ['temperature']
         if 'cosmo_variables' in dscfg:
@@ -588,13 +566,8 @@ def process_hzt_lookup_table(procstatus, dscfg, radar_list=None):
         return None, None
     radar = radar_list[ind_rad]
 
-    regular_grid = 0
-    if 'regular_grid' in dscfg:
-        regular_grid = dscfg['regular_grid']
-
-    lookup_table = 0
-    if 'lookup_table' in dscfg:
-        lookup_table = dscfg['lookup_table']
+    regular_grid = dscfg.get('regular_grid', 0)
+    lookup_table = dscfg.get('lookup_table', 0)
 
     fname = find_hzt_file(dscfg['timeinfo'], dscfg, ind_rad=ind_rad)
 

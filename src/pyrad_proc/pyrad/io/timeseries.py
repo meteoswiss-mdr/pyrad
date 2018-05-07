@@ -11,12 +11,12 @@ TimeSeries class implementation for holding timeseries data.
 
 """
 
+from datetime import datetime
 
 import numpy as np
-from datetime import datetime
-from copy import deepcopy
 
-from ..graph.plots import plot_timeseries, plot_histogram
+from ..graph.plots import plot_histogram
+from ..graph.plots_timeseries import plot_timeseries
 from ..util.radar_utils import compute_histogram
 from ..io.io_aux import get_fieldname_pyart
 
@@ -58,8 +58,8 @@ class TimeSeries(object):
         """
 
         self.description = desc
-        if (timevec is None):
-            if (maxlength is None):
+        if timevec is None:
+            if maxlength is None:
                 raise Exception("ERROR: Either 'timevec' or 'maxlength'"
                                 " must be defined")
             self.maxlength = maxlength
@@ -81,8 +81,8 @@ class TimeSeries(object):
         length of the time vector.
         """
 
-        if (dataseries is not None):
-            if (len(dataseries) != self.num_el):
+        if dataseries is not None:
+            if len(dataseries) != self.num_el:
                 raise Exception("ERROR: Number of data series sample do "
                                 "not correspond to time vector ('%s')" % label)
         else:
@@ -97,7 +97,7 @@ class TimeSeries(object):
         Add a new sample to the time series.
         """
 
-        if (self.num_el + 1 > self.maxlength):  # jgr changed from >=
+        if self.num_el + 1 > self.maxlength:  # jgr changed from >=
             raise Exception("ERROR: Cannot add time series sample. Max"
                             " length reached.")
 
@@ -131,7 +131,7 @@ class TimeSeries(object):
         print("#", file=tsfile)
 
         # Make raw header
-        if (self.timeformat is None):
+        if self.timeformat is None:
             print("# Date, UTC [seconds since midnight]", end="", file=tsfile)
         else:
             print("# Date [%s]" % self.timeformat, end="", file=tsfile)
@@ -141,21 +141,21 @@ class TimeSeries(object):
         print("", file=tsfile)
 
         # Store the data
-        for kk in range(self.num_el):
-            if (self.timeformat is None):
-                dt = self.time_vector[kk]
+        for i in range(self.num_el):
+            if self.timeformat is None:
+                dt = self.time_vector[i]
                 daystr = dt.strftime("%d-%b-%Y")
                 secs = dt.hour*3600. + dt.minute*60. + dt.second + \
                     dt.microsecond/1000000.
                 print("%s, %14.4f" % (daystr, secs), end="", file=tsfile)
             else:
-                print(self.time_vector[kk].strftime(self.timeformat), end="",
+                print(self.time_vector[i].strftime(self.timeformat), end="",
                       file=tsfile)
 
             for ds in self.dataseries:
                 print(
                     ", %14.4f"
-                    % (np.ma.filled(ds.data, fill_value=np.nan)[kk]),
+                    % (np.ma.filled(ds.data, fill_value=np.nan)[i]),
                     end="", file=tsfile)
 
             print("", file=tsfile)
@@ -173,16 +173,16 @@ class TimeSeries(object):
         color_list = []
         lstyle_list = []
         for ds in self.dataseries:
-            if (ds.plot):
+            if ds.plot:
                 found = True
                 ds_list.append(ds.data[:self.num_el])
                 color_list.append(ds.color)
                 lstyle_list.append(ds.linestyle)
-                if (labely is None):
+                if labely is None:
                     labely = "%s [%s]" % (ds.unit_name, ds.unit)
 
-        if (not found):
-            raise Exception("ERROR: Undefined time series '%s'" % label)
+        if not found:
+            raise Exception("ERROR: Undefined time series '%s'" % ds.label)
 
         print("----- plot to '%s'" % fname)
 
@@ -200,14 +200,8 @@ class TimeSeries(object):
         """
         Make histograms of time series
         """
-
-        found = False
-        labely = None
-        ds_list = []
-        color_list = []
-        lstyle_list = []
         for ds in self.dataseries:
-            if (ds.plot):
+            if ds.plot:
                 bins, values = compute_histogram(
                     ds.data[:self.num_el], get_fieldname_pyart(self.datatype),
                     step=step)
@@ -239,8 +233,8 @@ class _DataSeries(object):
         self.color = color
         self.linestyle = linestyle
 
-    def set_value(self, kk, val):
+    def set_value(self, i, val):
         """
         Append value to array
         """
-        self.data[kk] = val
+        self.data[i] = val

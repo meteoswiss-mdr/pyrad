@@ -2,11 +2,15 @@
 
 # script to clean pyrad
 
+# fetch python version in use
+py=$(python --version)
+pyvers=${py:7:3}
+
 # remove previous built
 echo 'Removing previous built...'
-cd $HOME/.local/lib/python3.5/site-packages/
-rm -r pyrad
-rm mch_pyrad-*
+
+rm -r $HOME/.local/lib/python${pyvers}/site-packages/pyrad
+rm -r $HOME/.local/lib/python${pyvers}/site-packages/mch_pyrad-*
 
 # recompile
 echo 'icleaning build..'
