@@ -302,13 +302,15 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
                     return None, None
 
         step = dscfg.get('step', None)
-        bins = get_histogram_bins(field_name, step=step)
-        nbins = len(bins)-1
+        bin_edges = get_histogram_bins(field_name, step=step)
+        nbins = len(bin_edges)-1
+        step = bin_edges[1]-bin_edges[0]
+        bin_centers = bin_edges[:-1]+step/2.
 
         # create histogram object from radar object
         radar_aux = deepcopy(radar)
         radar_aux.fields = dict()
-        radar_aux.range['data'] = bins[0:-1]
+        radar_aux.range['data'] = bin_centers
         radar_aux.ngates = nbins
         radar_aux.nrays = 1
 
@@ -354,10 +356,10 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
 
         # put gates with values off limits to limit
         # and compute histogram
-        field[field < bins[0]] = bins[0]
-        field[field > bins[-1]] = bins[-1]
+        field[field < bin_centers[0]] = bin_centers[0]
+        field[field > bin_centers[-1]] = bin_centers[-1]
 
-        field_dict['data'][0, :], bin_edges = np.histogram(field, bins=bins)
+        field_dict['data'][0, :], bin_edges = np.histogram(field, bins=bin_edges)
         radar_aux.add_field(field_name, field_dict)
         start_time = pyart.graph.common.generate_radar_time_begin(radar_aux)
 

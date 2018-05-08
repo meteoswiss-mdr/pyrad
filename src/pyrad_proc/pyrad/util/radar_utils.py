@@ -691,13 +691,13 @@ def compute_quantiles(field, quantiles=None):
     return quantiles, values
 
 
-def compute_quantiles_from_hist(bins, hist, quantiles=None):
+def compute_quantiles_from_hist(bin_centers, hist, quantiles=None):
     """
     computes quantiles from histograms
 
     Parameters
     ----------
-    bins : ndarray 1D
+    bin_centers : ndarray 1D
         the bins
     hist : ndarray 1D
         the histogram
@@ -734,7 +734,7 @@ def compute_quantiles_from_hist(bins, hist, quantiles=None):
 
     percentiles = quantiles/100.
     for i in range(nquantiles):
-        values[i] = bins[rel_freq >= percentiles[i]][0]
+        values[i] = bin_centers[rel_freq >= percentiles[i]][0]
 
     return quantiles, values
 
@@ -794,18 +794,20 @@ def compute_histogram(field, field_name, step=None):
 
     Returns
     -------
-    bins : float array
+    bin_edges : float array
         interval of each bin
     values : float array
         values at each bin
 
     """
-    bins = get_histogram_bins(field_name, step=step)
+    bin_edges = get_histogram_bins(field_name, step=step)
+    step_aux = bin_edges[1]-bin_edges[0]
+    bin_centers = bin_edges[:-1]+step_aux/2.
     values = field.compressed()
-    values[values < bins[0]] = bins[0]
-    values[values > bins[-1]] = bins[-1]
+    values[values < bin_centers[0]] = bin_centers[0]
+    values[values > bin_centers[-1]] = bin_centers[-1]
 
-    return bins, values
+    return bin_edges, values
 
 
 def compute_histogram_sweep(field, ray_start, ray_end, field_name, step=None):
@@ -825,18 +827,20 @@ def compute_histogram_sweep(field, ray_start, ray_end, field_name, step=None):
 
     Returns
     -------
-    bins : float array
+    bin_edges : float array
         interval of each bin
     values : float array
         values at each bin
 
     """
-    bins = get_histogram_bins(field_name, step=step)
+    bin_edges = get_histogram_bins(field_name, step=step)
+    step_aux = bin_edges[1]-bin_edges[0]
+    bin_centers = bin_edges[:-1]+step_aux/2.
     values = field[ray_start:ray_end+1, :].compressed()
-    values[values < bins[0]] = bins[0]
-    values[values > bins[-1]] = bins[-1]
+    values[values < bin_centers[0]] = bin_centers[0]
+    values[values > bin_centers[-1]] = bin_centers[-1]
 
-    return bins, values
+    return bin_edges, values
 
 
 def get_histogram_bins(field_name, step=None):
@@ -853,8 +857,8 @@ def get_histogram_bins(field_name, step=None):
 
     Returns
     -------
-    bins : float array
-        interval of each bin
+    bin_edges : float array
+        The bin edges
 
     """
     field_dict = pyart.config.get_metadata(field_name)
@@ -888,8 +892,8 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
     -------
     hist_2d : array
         the histogram
-    bins1, bins2 : float array
-        interval of each bin
+    bin_edges1, bin_edges2 : float array
+        The bin edges
     stats : dict
         a dictionary with statistics
 
@@ -910,8 +914,12 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
         }
         return None, None, None, stats
 
-    hist_2d, bins1, bins2 = compute_2d_hist(
+    hist_2d, bin_edges1, bin_edges2 = compute_2d_hist(
         field1, field2, field_name1, field_name2, step1=step1, step2=step2)
+    step_aux1 = bin_edges1[1]-bin_edges1[0]
+    bin_centers1 = bin_edges1[:-1]+step_aux1/2.
+    step_aux2 = bin_edges2[1]-bin_edges2[0]
+    bin_centers2 = bin_edges2[:-1]+step_aux2/2.
     npoints = len(field1)
     meanbias = 10.*np.ma.log10(
         np.ma.mean(np.ma.power(10., 0.1*field2)) /
@@ -920,7 +928,7 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
     quant25bias = np.percentile((field2-field1).compressed(), 25.)
     quant75bias = np.percentile((field2-field1).compressed(), 75.)
     ind_max_val1, ind_max_val2 = np.where(hist_2d == np.ma.amax(hist_2d))
-    modebias = bins2[ind_max_val2[0]]-bins1[ind_max_val1[0]]
+    modebias = bin_centers2[ind_max_val2[0]]-bin_centers1[ind_max_val1[0]]
     slope, intercep, corr, pval, stderr = scipy.stats.linregress(
         field1, y=field2)
     intercep_slope_1 = np.ma.mean(field2-field1)
@@ -938,7 +946,7 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
         'intercep_slope_1': np.ma.asarray(intercep_slope_1)
     }
 
-    return hist_2d, bins1, bins2, stats
+    return hist_2d, bin_edges1, bin_edges2, stats
 
 
 def compute_1d_stats(field1, field2):
@@ -991,38 +999,42 @@ def compute_1d_stats(field1, field2):
 def compute_2d_hist(field1, field2, field_name1, field_name2, step1=None,
                     step2=None):
     """
-    computes histogram of the data
+    computes a 2D histogram of the data
 
     Parameters
     ----------
-    field : ndarray 2D
-        the radar field
-    field_name: str
-        name of the field
-    step : float
-        size of bin
+    field1, field2 : ndarray 2D
+        the radar fields
+    field_name1, field_name2 : str
+        field names
+    step1, step2 : float
+        size of the bins
 
     Returns
     -------
-    bins : float array
-        interval of each bin
-    values : float array
-        values at each bin
+    H : float array 2D
+        The bi-dimensional histogram of samples x and y
+    xedges, yedges : float array
+        the bin edges along each dimension
 
     """
-    bins1 = get_histogram_bins(field_name1, step=step1)
-    bins2 = get_histogram_bins(field_name2, step=step2)
+    bin_edges1 = get_histogram_bins(field_name1, step=step1)
+    step_aux1 = bin_edges1[1]-bin_edges1[0]
+    bin_centers1 = bin_edges1[:-1]+step_aux1/2.
+    bin_edges2 = get_histogram_bins(field_name2, step=step2)
+    step_aux2 = bin_edges2[1]-bin_edges2[0]
+    bin_centers2 = bin_edges2[:-1]+step_aux2/2.
 
-    field1[field1 < bins1[0]] = bins1[0]
-    field1[field1 > bins1[-1]] = bins1[-1]
+    field1[field1 < bin_centers1[0]] = bin_centers1[0]
+    field1[field1 > bin_centers1[-1]] = bin_centers1[-1]
 
-    field2[field2 < bins2[0]] = bins2[0]
-    field2[field2 > bins2[-1]] = bins2[-1]
+    field2[field2 < bin_centers2[0]] = bin_centers2[0]
+    field2[field2 > bin_centers2[-1]] = bin_centers2[-1]
 
     fill_value = pyart.config.get_fillvalue()
     return np.histogram2d(
         field1.filled(fill_value=fill_value),
-        field2.filled(fill_value=fill_value), bins=[bins1, bins2])
+        field2.filled(fill_value=fill_value), bins=[bin_edges1, bin_edges2])
 
 
 def quantize_field(field, field_name, step):
