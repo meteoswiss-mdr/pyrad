@@ -315,15 +315,15 @@ def plot_quantiles(quant, value, fname_list, labelx='quantile', labely='value',
     return fname_list
 
 
-def plot_histogram(bins, values, fname_list, labelx='bins',
+def plot_histogram(bin_edges, values, fname_list, labelx='bins',
                    labely='Number of Samples', titl='histogram', dpi=72):
     """
     computes and plots histogram
 
     Parameters
     ----------
-    bins : array
-        histogram bins
+    bin_edges : array
+        histogram bin edges
     values : array
         data values
     fname_list : list of str
@@ -344,7 +344,7 @@ def plot_histogram(bins, values, fname_list, labelx='bins',
 
     """
     fig = plt.figure(figsize=[10, 6], dpi=dpi)
-    plt.hist(values, bins=bins)
+    plt.hist(values, bins=bin_edges)
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)
@@ -359,15 +359,15 @@ def plot_histogram(bins, values, fname_list, labelx='bins',
     return fname_list
 
 
-def plot_histogram2(bins, hist, fname_list, labelx='bins',
+def plot_histogram2(bin_centers, hist, fname_list, labelx='bins',
                     labely='Number of Samples', titl='histogram', dpi=72):
     """
     plots histogram
 
     Parameters
     ----------
-    quant : array
-        histogram bins
+    bin_centers : array
+        histogram bin centers
     hist : array
         values for each bin
     fname_list : list of str
@@ -388,7 +388,7 @@ def plot_histogram2(bins, hist, fname_list, labelx='bins',
 
     """
     fig = plt.figure(figsize=[10, 6], dpi=dpi)
-    plt.bar(bins, hist, width=bins[1]-bins[0])
+    plt.bar(bin_centers, hist, width=bin_centers[1]-bin_centers[0])
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)

@@ -194,12 +194,8 @@ def generate_monitoring_products(dataset, prdcfg):
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        quantiles = np.array([25., 50., 75.])
-        ref_value = 0.
-        if 'quantiles' in prdcfg:
-            quantiles = prdcfg['quantiles']
-        if 'ref_value' in prdcfg:
-            ref_value = prdcfg['ref_value']
+        quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.])
+        ref_value = prdcfg.get('ref_value', 0.)
 
         plot_density(
             hist_obj, hist_type, field_name, ind_el, prdcfg, fname_list,
@@ -231,18 +227,10 @@ def generate_monitoring_products(dataset, prdcfg):
                 csvtimeinfo_file = dataset['timeinfo']
                 timeformat = '%Y'
 
-        quantiles = np.array([25., 50., 75.])
-        ref_value = 0.
-        sort_by_date = False
-        rewrite = False
-        if 'quantiles' in prdcfg:
-            quantiles = prdcfg['quantiles']
-        if 'ref_value' in prdcfg:
-            ref_value = prdcfg['ref_value']
-        if 'sort_by_date' in prdcfg:
-            sort_by_date = prdcfg['sort_by_date']
-        if 'rewrite' in prdcfg:
-            rewrite = prdcfg['rewrite']
+        quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.])
+        ref_value = prdcfg.get('ref_value', 0.)
+        sort_by_date = prdcfg.get('sort_by_date', False)
+        rewrite = prdcfg.get('rewrite', False)
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -330,9 +318,7 @@ def generate_monitoring_products(dataset, prdcfg):
         print('----- save to '+' '.join(figfname_list))
 
         # generate alarms if needed
-        alarm = 0
-        if 'alarm' in prdcfg:
-            alarm = prdcfg['alarm']
+        alarm = prdcfg.get('alarm', 0)
 
         if not alarm:
             return figfname_list
@@ -451,18 +437,10 @@ def generate_monitoring_products(dataset, prdcfg):
         csvtimeinfo_file = dataset['timeinfo']
         timeformat = '%Y%m%d'
 
-        quantiles = np.array([25., 50., 75.])
-        ref_value = 0.
-        sort_by_date = False
-        rewrite = False
-        if 'quantiles' in prdcfg:
-            quantiles = prdcfg['quantiles']
-        if 'ref_value' in prdcfg:
-            ref_value = prdcfg['ref_value']
-        if 'sort_by_date' in prdcfg:
-            sort_by_date = prdcfg['sort_by_date']
-        if 'rewrite' in prdcfg:
-            rewrite = prdcfg['rewrite']
+        quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.])
+        ref_value = prdcfg.get('ref_value', 0.)
+        sort_by_date = prdcfg.get('sort_by_date', False)
+        rewrite = prdcfg.get('rewrite', False)
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -552,17 +530,9 @@ def generate_monitoring_products(dataset, prdcfg):
 
         labely = generate_field_name_str(prdcfg['voltype'])
 
-        np_min = 0
-        if 'npoints_min' in prdcfg:
-            np_min = prdcfg['npoints_min']
-
-        vmin = None
-        if 'vmin' in prdcfg:
-            vmin = prdcfg['vmin']
-
-        vmax = None
-        if 'vmax' in prdcfg:
-            vmax = prdcfg['vmax']
+        np_min = prdcfg.get('npoints_min', 0)
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
 
         plot_monitoring_ts(
             date, np_t_vec, cquant_vec, lquant_vec, hquant_vec, field_name,
@@ -571,10 +541,7 @@ def generate_monitoring_products(dataset, prdcfg):
         print('----- save to '+' '.join(figfname_list))
 
         # generate alarms if needed
-        alarm = 0
-        if 'alarm' in prdcfg:
-            alarm = prdcfg['alarm']
-
+        alarm = prdcfg.get('alarm', 0)
         if not alarm:
             return figfname_list
 
