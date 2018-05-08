@@ -37,11 +37,13 @@ import datetime
 import atexit
 import os
 import glob
+from warnings import warn
 
 import numpy as np
 
-from pyrad.io import read_rhi_profile, get_fieldname_pyart
+from pyrad.io import read_histogram_ts, get_fieldname_pyart
 from pyrad.graph import _plot_time_range, get_field_name
+from pyrad.graph import get_colobar_label
 
 from pyart.config import get_metadata
 
@@ -51,57 +53,48 @@ print(__doc__)
 def main():
     """
     """
-    file_path = '/data/pyrad_products/rad4alp_hydro_PHA/2017-06-29/reflectivity_trt_traj/PROFILE/'
-    trt_cell_id = '2017062913000182'
-    datatype = 'dBZc'
-    hres = 250
+    file_base = '/store/msrad/radar/pyrad_products/rad4alp_hydro_PHA/'
+    time_dir_list = ['2017-06-29']
+    trt_cell_id = '2017062913000174'
 
-    print("====== Plot time-height started: %s" %
+    datatype_list = ['dBZc', 'ZDRc', 'RhoHVc', 'KDPc', 'TEMP', 'hydro']
+    dataset_list = ['reflectivity', 'ZDRc', 'RhoHVc', 'KDPc', 'temperature', 'hydroclass']
+
+    print("====== Plot time-hist started: %s" %
           datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
     atexit.register(_print_end_msg,
-                    "====== Plot time-height finished: ")
+                    "====== Plot time-hist finished: ")
 
-    flist = glob.glob(
-        file_path+'*_'+trt_cell_id+'_rhi_profile_*_'+datatype +
-        '_hres'+str(hres)+'.csv')
+    for time_dir in time_dir_list:
+        for i, datatype in enumerate(datatype_list):
+            dataset = dataset_list[i]
+            file_path = file_base+time_dir+'/'+dataset+'_trt_traj/HISTOGRAM/'
+            flist = glob.glob(
+                file_path+'*_'+trt_cell_id+'_histogram_*_'+datatype+'.csv')
 
-    data_ma = []
-    datetime_arr = np.ma.array([], dtype=datetime.datetime)
-    for fname in flist:
-        bfile = os.path.basename(fname)
-        datetimestr = bfile[0:14]
-        fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d%H%M%S')
-        datetime_arr = np.append(datetime_arr, fdatetime)
+            if not flist:
+                warn('No histogram files found in '+file_path +
+                     ' for TRT cell '+trt_cell_id)
+                continue
 
-        print('\nReading file '+fname)
-        height, np_t, cquant, lquant, hquant = read_rhi_profile(fname)
-        print(np.shape(cquant))
-        data_ma.append(cquant)
-    data_ma = np.ma.asarray(data_ma)
+            tbin_edges, bin_edges, data_ma = read_histogram_ts(
+                flist, datatype)
 
-    # sort data as a function of time
-    ind = np.argsort(datetime_arr)
-    datetime_arr = datetime_arr[ind]
-    data_ma = data_ma[ind, :]
+            basepath_out = os.path.dirname(flist[0])
+            fname = (
+                basepath_out+'/'+trt_cell_id+'_trt_HISTOGRAM_'+datatype +
+                '.png')
+            field_name = get_fieldname_pyart(datatype)
+            field_dict = get_metadata(field_name)
+            titl = 'TRT cell '+trt_cell_id+'\n'+get_field_name(field_dict, field_name)
 
-    basepath_out = os.path.dirname(flist[0])
-    fname = (
-        basepath_out+'/'+trt_cell_id+'_trt_TIME_HEIGHT_'+datatype +
-        '_hres'+str(hres)+'.png')
-    field_name = get_fieldname_pyart(datatype)
-    field_dict = get_metadata(field_name)
-    titl = 'TRT cell '+trt_cell_id+'\n'+get_field_name(field_dict, field_name)
+            _plot_time_range(
+                tbin_edges, bin_edges, data_ma, 'frequency_of_occurrence',
+                [fname], titl=titl,
+                ylabel=get_colobar_label(field_dict, field_name),
+                vmin=0., vmax=np.max(data_ma), figsize=[10, 8], dpi=72)
 
-    # put date time array as seconds from start of TRT cell
-    dt_s = np.empty(datetime_arr.size, dtype=float)
-    for i, dt in enumerate(datetime_arr):
-        dt_s[i] = (dt-datetime_arr[0]).total_seconds()
-
-    _plot_time_range(
-        dt_s, height, data_ma, field_name, [fname], titl=titl,
-        figsize=[10, 8], dpi=72)
-
-    print("----- plot to '%s'" % fname)
+            print("----- plot to '%s'" % fname)
 
 
 def _print_end_msg(text):

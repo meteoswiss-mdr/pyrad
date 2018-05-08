@@ -4,169 +4,42 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 1
+dataSetList STRARR 6
+    temperature_trt_traj
     reflectivity_trt_traj
-
-#   l0:traj
-#   l0:temperature_traj
-#   l0:reflectivity_traj
-#   l0:ZDRc_traj
-#   l0:RhoHVc_traj
-#   l0:KDPc_traj
-#   l0:hydroclass_traj
+    ZDRc_trt_traj
+    RhoHVc_trt_traj
+    KDPc_trt_traj
+    hydroclass_trt_traj
 
 
 # ==========================================================================================
 #               Region of interest processing
 # ==========================================================================================
-#temperature_roi STRUCT 4
-#    type STRING ROI
-#    datatype STRING CFRADIAL:TEMP,TEMP,SAVEVOL_TEMP
-#    trtfile STRING /users/jfigui/2017062913000174.trt
-#    products STRUCT 4
-#        SAVEVOL STRUCT 2
-#            type STRING SAVEVOL
-#            voltype STRING TEMP
-#        HISTOGRAM STRUCT 3
-#            type STRING HISTOGRAM
-#            voltype STRING TEMP
-#            step FLOAT 1.
-#        QUANTILES STRUCT 2
-#            type STRING QUANTILES
-#            voltype STRING TEMP
-#        PROFILE STRUCT 7
-#            type STRING PROFILE_STATS
-#            voltype STRING TEMP
-#            heightMin FLOAT 0.
-#            heightMax FLOAT 10000.
-#            heightResolution FLOAT 250.
-#            vmin FLOAT -50.
-#            vmax FLOAT 20.
-#
-#reflectivity_roi STRUCT 4
-#    type STRING ROI
-#    datatype STRING CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
-#    trtfile STRING /users/jfigui/2017062913000174.trt
-#    products STRUCT 4
-#        SAVEVOL STRUCT 2
-#            type STRING SAVEVOL
-#            voltype STRING dBZc
-#        HISTOGRAM STRUCT 3
-#            type STRING HISTOGRAM
-#            voltype STRING dBZc
-#            step FLOAT 0.5
-#        QUANTILES STRUCT 2
-#            type STRING QUANTILES
-#            voltype STRING dBZc
-#        PROFILE STRUCT 7
-#            type STRING PROFILE_STATS
-#            voltype STRING dBZc
-#            heightMin FLOAT 0.
-#            heightMax FLOAT 10000.
-#            heightResolution FLOAT 250.
-#            vmin FLOAT -10.
-#            vmax FLOAT 50.
-#
-#
-#ZDRc_roi STRUCT 4
-#    type STRING ROI
-#    datatype STRING CFRADIAL:ZDRc,Att_ZPhi,SAVEVOL_ZDRc
-#    trtfile STRING /users/jfigui/2017062913000174.trt
-#    products STRUCT 4
-#        SAVEVOL STRUCT 2
-#            type STRING SAVEVOL
-#            voltype STRING ZDRc
-#        HISTOGRAM STRUCT 3
-#            type STRING HISTOGRAM
-#            voltype STRING ZDRc
-#            step FLOAT 0.1
-#        QUANTILES STRUCT 2
-#            type STRING QUANTILES
-#            voltype STRING ZDRc
-#        PROFILE STRUCT 7
-#            type STRING PROFILE_STATS
-#            voltype STRING ZDRc
-#            heightMin FLOAT 0.
-#            heightMax FLOAT 10000.
-#            heightResolution FLOAT 250.
-#            vmin FLOAT -1.
-#            vmax FLOAT 3.
-#
-#RhoHVc_roi STRUCT 4
-#    type STRING ROI
-#    datatype STRING CFRADIAL:RhoHVc,echoFilter,SAVEVOL_RhoHVc
-#    trtfile STRING /users/jfigui/2017062913000174.trt
-#    products STRUCT 4
-#        SAVEVOL STRUCT 2
-#            type STRING SAVEVOL
-#            voltype STRING RhoHVc
-#        HISTOGRAM STRUCT 3
-#            type STRING HISTOGRAM
-#            voltype STRING RhoHVc
-#            step FLOAT 0.001
-#        QUANTILES STRUCT 2
-#            type STRING QUANTILES
-#            voltype STRING RhoHVc
-#        PROFILE STRUCT 8
-#            type STRING PROFILE_STATS
-#            voltype STRING RhoHVc
-#            heightMin FLOAT 0.
-#            heightMax FLOAT 10000.
-#            heightResolution FLOAT 250.
-#            quantiles FLTARR 3
-#                65.
-#                80.
-#                95.
-#            vmin FLOAT 0.95
-#            vmax FLOAT 1.01
-#
-#KDPc_roi STRUCT 4
-#    type STRING ROI
-#    datatype STRING CFRADIAL:KDPc,KDPc_Vulpiani,SAVEVOL_KDPc
-#    trtfile STRING /users/jfigui/2017062913000174.trt
-#    products STRUCT 4
-#        SAVEVOL STRUCT 2
-#            type STRING SAVEVOL
-#            voltype STRING KDPc
-#        HISTOGRAM STRUCT 3
-#            type STRING HISTOGRAM
-#            voltype STRING KDPc
-#            step FLOAT 0.05
-#        QUANTILES STRUCT 2
-#            type STRING QUANTILES
-#            voltype STRING KDPc
-#        PROFILE STRUCT 7
-#            type STRING PROFILE_STATS
-#            voltype STRING KDPc
-#            heightMin FLOAT 0.
-#            heightMax FLOAT 10000.
-#            heightResolution FLOAT 250.
-#            vmin FLOAT -1.
-#            vmax FLOAT 2.
-#
-#hydroclass_roi STRUCT 4
-#    type STRING ROI
-#    datatype STRING CFRADIAL:hydro,hydroclass,SAVEVOL_hydro
-#    trtfile STRING /users/jfigui/2017062913000174.trt
-#    products STRUCT 4
-#        SAVEVOL STRUCT 2
-#            type STRING SAVEVOL
-#            voltype STRING hydro
-#        HISTOGRAM STRUCT 3
-#            type STRING HISTOGRAM
-#            voltype STRING hydro
-#            step FLOAT 1.
-#        QUANTILES STRUCT 2
-#            type STRING QUANTILES
-#            voltype STRING hydro
-#        PROFILE STRUCT 7
-#            type STRING PROFILE_STATS
-#            voltype STRING hydro
-#            heightMin FLOAT 0.
-#            heightMax FLOAT 10000.
-#            heightResolution FLOAT 250.
-#            vmin FLOAT 0.
-#            vmax FLOAT 9.
+temperature_trt_traj STRUCT 3
+    type STRING TRAJ_TRT
+    datatype STRING CFRADIAL:TEMP,TEMP,SAVEVOL_TEMP
+    products STRUCT 4
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING TEMP
+        HISTOGRAM STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING TEMP
+            step FLOAT 1.
+            write_data FLOAT 1
+        QUANTILES STRUCT 3
+            type STRING QUANTILES
+            voltype STRING TEMP
+            write_data FLOAT 1
+        PROFILE STRUCT 7
+            type STRING PROFILE_STATS
+            voltype STRING TEMP
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            vmin FLOAT -50.
+            vmax FLOAT 20.
 
 reflectivity_trt_traj STRUCT 3
     type STRING TRAJ_TRT
@@ -175,22 +48,125 @@ reflectivity_trt_traj STRUCT 3
         SAVEVOL STRUCT 2
             type STRING SAVEVOL
             voltype STRING dBZc
-        HISTOGRAM STRUCT 3
+        HISTOGRAM STRUCT 4
             type STRING HISTOGRAM
             voltype STRING dBZc
             step FLOAT 0.5
-        QUANTILES STRUCT 2
+            write_data FLOAT 1
+        QUANTILES STRUCT 3
             type STRING QUANTILES
             voltype STRING dBZc
+            write_data FLOAT 1
         PROFILE STRUCT 7
             type STRING PROFILE_STATS
             voltype STRING dBZc
             heightMin FLOAT 0.
-            heightMax FLOAT 10000.
+            heightMax FLOAT 15000.
             heightResolution FLOAT 250.
             vmin FLOAT -10.
             vmax FLOAT 50.
 
+
+ZDRc_trt_traj STRUCT 3
+    type STRING TRAJ_TRT
+    datatype STRING CFRADIAL:ZDRc,Att_ZPhi,SAVEVOL_ZDRc
+    products STRUCT 4
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING ZDRc
+        HISTOGRAM STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING ZDRc
+            step FLOAT 0.1
+            write_data FLOAT 1
+        QUANTILES STRUCT 3
+            type STRING QUANTILES
+            voltype STRING ZDRc
+            write_data FLOAT 1
+        PROFILE STRUCT 7
+            type STRING PROFILE_STATS
+            voltype STRING ZDRc
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            vmin FLOAT -1.
+            vmax FLOAT 3.
+
+RhoHVc_trt_traj STRUCT 3
+    type STRING TRAJ_TRT
+    datatype STRING CFRADIAL:RhoHVc,echoFilter,SAVEVOL_RhoHVc
+    products STRUCT 4
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING RhoHVc
+        HISTOGRAM STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING RhoHVc
+            step FLOAT 0.001
+            write_data FLOAT 1
+        QUANTILES STRUCT 3
+            type STRING QUANTILES
+            voltype STRING RhoHVc
+            write_data FLOAT 1
+        PROFILE STRUCT 8
+            type STRING PROFILE_STATS
+            voltype STRING RhoHVc
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            quantiles FLTARR 3
+                65.
+                80.
+                95.
+            vmin FLOAT 0.95
+            vmax FLOAT 1.01
+
+KDPc_trt_traj STRUCT 3
+    type STRING TRAJ_TRT
+    datatype STRING CFRADIAL:KDPc,KDPc_Vulpiani,SAVEVOL_KDPc
+    products STRUCT 4
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING KDPc
+        HISTOGRAM STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING KDPc
+            step FLOAT 0.05
+            write_data FLOAT 1
+        QUANTILES STRUCT 3
+            type STRING QUANTILES
+            voltype STRING KDPc
+            write_data FLOAT 1
+        PROFILE STRUCT 7
+            type STRING PROFILE_STATS
+            voltype STRING KDPc
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            vmin FLOAT -1.
+            vmax FLOAT 2.
+
+hydroclass_trt_traj STRUCT 3
+    type STRING TRAJ_TRT
+    datatype STRING CFRADIAL:hydro,hydroclass,SAVEVOL_hydro
+    products STRUCT 3
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING hydro
+        HISTOGRAM STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING hydro
+            step FLOAT 1.
+            write_data FLOAT 1
+        PROFILE STRUCT 8
+            type STRING PROFILE_STATS
+            voltype STRING hydro
+            quantity STRING mode
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            vmin FLOAT 0.
+            vmax FLOAT 9.
 
 
 # ==========================================================================================
