@@ -3,10 +3,10 @@
 
 """
 ================================================
-lightning_traj_postproc
+main_lightning_trt
 ================================================
 
-This program post-processes lightning trajectories
+This program processess lightning information on TRT cells
 
 """
 
@@ -44,15 +44,15 @@ def main():
     # keyword arguments
     parser.add_argument(
         '--flashpath', type=str,
-        default='/store/msrad/LMA/Santis/',
+        default='/store/msrad/lightning/LMA/Santis/',
         help='name of the folder containing the Santis LMA data')
 
     args = parser.parse_args()
 
-    print("====== Lightning post-processing started: %s" %
+    print("====== Lightning TRT cells started: %s" %
           datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
     atexit.register(_print_end_msg,
-                    "====== Lightning post-processing finished: ")
+                    "====== Lightning TRT cells finished: ")
 
     print('trt path: '+args.trtpath)
 
