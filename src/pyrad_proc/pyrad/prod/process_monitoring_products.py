@@ -194,7 +194,7 @@ def generate_monitoring_products(dataset, prdcfg):
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.])
+        quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.]))
         ref_value = prdcfg.get('ref_value', 0.)
 
         plot_density(
@@ -227,7 +227,7 @@ def generate_monitoring_products(dataset, prdcfg):
                 csvtimeinfo_file = dataset['timeinfo']
                 timeformat = '%Y'
 
-        quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.])
+        quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.]))
         ref_value = prdcfg.get('ref_value', 0.)
         sort_by_date = prdcfg.get('sort_by_date', False)
         rewrite = prdcfg.get('rewrite', False)
@@ -437,7 +437,7 @@ def generate_monitoring_products(dataset, prdcfg):
         csvtimeinfo_file = dataset['timeinfo']
         timeformat = '%Y%m%d'
 
-        quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.])
+        quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.]))
         ref_value = prdcfg.get('ref_value', 0.)
         sort_by_date = prdcfg.get('sort_by_date', False)
         rewrite = prdcfg.get('rewrite', False)
