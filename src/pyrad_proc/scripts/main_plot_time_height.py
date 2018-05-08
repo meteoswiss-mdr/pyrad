@@ -70,7 +70,10 @@ def main():
             if datatype == 'RhoHVc':
                 labels = ['80.0-percentile', '65.0-percentile', '95.0-percentile']
             elif datatype == 'hydro':
-                labels = ['Mode', '% points mode']
+                labels = [
+                    'Mode', '2nd most common', '3rd most common',
+                    '% points mode', '% points 2nd most common',
+                    '% points 3nd most common']
 
             dataset = dataset_list[i]
             file_path = file_base+time_dir+'/'+dataset+'_trt_traj/PROFILE/'

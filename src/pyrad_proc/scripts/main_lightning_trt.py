@@ -56,6 +56,13 @@ def main():
 
     print('trt path: '+args.trtpath)
 
+    # Get bins altitude
+    alt_min = 0.
+    alt_max = 20000.
+    step = 100.
+    bin_edges = np.linspace(
+        alt_min-step/2., alt_max+step/2, num=int((alt_max-alt_min)/step)+2)
+
     trt_list = glob.glob(args.trtpath+'*.trt')
     for trt_fname in trt_list:
         print('processing TRT cell file '+trt_fname)
@@ -99,6 +106,14 @@ def main():
             inds = np.where(np.logical_and(
                 time_first > tstart_cell_step, time_first <= cell_time))[0]
             if inds.size == 0:
+                warn('No flashes within time step')
+                fname_hist = (
+                    args.trtpath+cell_time_str+'_'+infostr +
+                    '_hist_alt_first_source.csv')
+                fname_hist = write_histogram(
+                    bin_edges, np.zeros(bin_edges.size-1, dtype=int),
+                    fname_hist, step=step)
+                print('----- save to '+fname_hist)
                 continue
 
             lat_cell = lat_first[inds]
@@ -110,6 +125,13 @@ def main():
                 lat_cell, lon_cell, cell_contour[i])
             if is_roi == 'None':
                 warn('No flashes within cell contour')
+                fname_hist = (
+                    args.trtpath+cell_time_str+'_'+infostr +
+                    '_hist_alt_first_source.csv')
+                fname_hist = write_histogram(
+                    bin_edges, np.zeros(bin_edges.size-1, dtype=int),
+                    fname_hist, step=step)
+                print('----- save to '+fname_hist)
                 continue
             elif is_roi == 'All':
                 inds = inds[0]
@@ -122,14 +144,6 @@ def main():
             nflashes[i] = lat_cell.size
 
             # Plot altitude histogram
-            # Get bins altitude
-            alt_min = 0.
-            alt_max = 20000.
-            step = 100.
-            bin_edges = np.linspace(
-                alt_min-step/2., alt_max+step/2,
-                num=int((alt_max-alt_min)/step)+2)
-
             fname_hist = (
                 args.trtpath+cell_time_str+'_'+infostr +
                 '_hist_alt_first_source.png')
@@ -184,16 +198,20 @@ def main():
             tbin_edges, bin_edges, data_ma = read_histogram_ts(
                 flist, 'flash_altitude')
 
-            fname_hist = (
-                args.trtpath+infostr+'_trt_HISTOGRAM_alt_first_source.png')
-            titl = 'TRT cell '+infostr+'\n'+'Altitude of first flash source'
-            _plot_time_range(
-                tbin_edges, bin_edges, data_ma, 'frequency_of_occurrence',
-                [fname_hist], titl=titl,
-                ylabel='Altitude [m MSL]',
-                vmin=0., vmax=np.max(data_ma), figsize=[10, 8], dpi=72)
+            vmax = np.max(data_ma)
+            if vmax == 0.:
+                warn('Unable to plot histogram. No valid data')
+            else:
+                fname_hist = (
+                    args.trtpath+infostr+'_trt_HISTOGRAM_alt_first_source.png')
+                titl = 'TRT cell '+infostr+'\n'+'Altitude of first flash source'
+                _plot_time_range(
+                    tbin_edges, bin_edges, data_ma, 'frequency_of_occurrence',
+                    [fname_hist], titl=titl,
+                    ylabel='Altitude [m MSL]',
+                    vmin=0., vmax=vmax, figsize=[10, 8], dpi=72)
 
-            print("----- plot to '%s'" % fname_hist)
+                print("----- plot to '%s'" % fname_hist)
 
         # analyze all flashes
         print('\n\n--- Processing all sources ----')
@@ -206,6 +224,14 @@ def main():
             inds = np.where(np.logical_and(
                 time_data > tstart_cell_step, time_data <= cell_time))[0]
             if inds.size == 0:
+                warn('No flashes within time step')
+                fname_hist = (
+                    args.trtpath+cell_time_str+'_'+infostr +
+                    '_hist_alt_all_sources.csv')
+                fname_hist = write_histogram(
+                    bin_edges, np.zeros(bin_edges.size-1, dtype=int),
+                    fname_hist, step=step)
+                print('----- save to '+fname_hist)
                 continue
 
             lat_cell = lat[inds]
@@ -217,6 +243,13 @@ def main():
                 lat_cell, lon_cell, cell_contour[i])
             if is_roi == 'None':
                 warn('No flashes within cell contour')
+                fname_hist = (
+                    args.trtpath+cell_time_str+'_'+infostr +
+                    '_hist_alt_all_sources.csv')
+                fname_hist = write_histogram(
+                    bin_edges, np.zeros(bin_edges.size-1, dtype=int),
+                    fname_hist, step=step)
+                print('----- save to '+fname_hist)
                 continue
             elif is_roi == 'All':
                 inds = inds[0]
@@ -229,14 +262,6 @@ def main():
             nflashes[i] = lat_cell.size
 
             # Plot altitude histogram
-            # Get bins altitude
-            alt_min = 0.
-            alt_max = 20000.
-            step = 100.
-            bin_edges = np.linspace(
-                alt_min-step/2., alt_max+step/2,
-                num=int((alt_max-alt_min)/step)+2)
-
             fname_hist = (
                 args.trtpath+cell_time_str+'_'+infostr +
                 '_hist_alt_all_sources.png')
@@ -250,7 +275,7 @@ def main():
 
             fname_hist = (
                 args.trtpath+cell_time_str+'_'+infostr +
-                '_hist_alt_first_source.csv')
+                '_hist_alt_all_sources.csv')
             hist, bin_edges = np.histogram(alt_cell, bins=bin_edges)
             fname_hist = write_histogram(
                 bin_edges, hist, fname_hist, step=step)
@@ -282,7 +307,7 @@ def main():
 
         # plot time-hist_height
         flist = glob.glob(
-            args.trtpath+'*_'+infostr+'_hist_alt_first_source.csv')
+            args.trtpath+'*_'+infostr+'_hist_alt_all_sources.csv')
 
         if not flist:
             warn('No histogram files found in '+args.trtpath +
@@ -291,16 +316,20 @@ def main():
             tbin_edges, bin_edges, data_ma = read_histogram_ts(
                 flist, 'flash_altitude')
 
-            fname_hist = (
-                args.trtpath+'/'+infostr+'_trt_HISTOGRAM_alt_all_source.png')
-            titl = 'TRT cell '+infostr+'\n'+'Altitude of all flash sources'
-            _plot_time_range(
-                tbin_edges, bin_edges, data_ma, 'frequency_of_occurrence',
-                [fname_hist], titl=titl,
-                ylabel='Altitude [m MSL]',
-                vmin=0., vmax=np.max(data_ma), figsize=[10, 8], dpi=72)
+            vmax = np.max(data_ma)
+            if vmax == 0.:
+                warn('Unable to plot histogram. No valid data')
+            else:
+                fname_hist = (
+                    args.trtpath+'/'+infostr+'_trt_HISTOGRAM_alt_all_source.png')
+                titl = 'TRT cell '+infostr+'\n'+'Altitude of all flash sources'
+                _plot_time_range(
+                    tbin_edges, bin_edges, data_ma, 'frequency_of_occurrence',
+                    [fname_hist], titl=titl,
+                    ylabel='Altitude [m MSL]',
+                    vmin=0., vmax=np.max(data_ma), figsize=[10, 8], dpi=72)
 
-            print("----- plot to '%s'" % fname_hist)
+                print("----- plot to '%s'" % fname_hist)
 
 
 def _print_end_msg(text):

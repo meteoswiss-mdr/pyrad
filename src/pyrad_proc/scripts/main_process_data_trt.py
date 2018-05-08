@@ -138,7 +138,10 @@ def main():
                         '80.0-percentile', '65.0-percentile',
                         '95.0-percentile']
                 elif datatype == 'hydro':
-                    labels = ['Mode', '% points mode']
+                    labels = [
+                        'Mode', '2nd most common', '3rd most common',
+                        '% points mode', '% points 2nd most common',
+                        '% points 3nd most common']
                 tbin_edges, hbin_edges, data_ma = read_profile_ts(
                     flist, labels, hres=hres)
 

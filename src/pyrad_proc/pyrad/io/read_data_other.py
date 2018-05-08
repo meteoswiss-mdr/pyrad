@@ -121,7 +121,11 @@ def read_histogram_ts(fname_list, datatype):
         elif datatype == 'RhoHVc':
             hist = hist[bin_edges[0:-1] > 0.95]
             bin_edges = bin_edges[bin_edges > 0.95]
-        data_ma.append(hist/np.sum(hist)*100.)
+        npoints = np.sum(hist)
+        if npoints > 0:
+            data_ma.append(hist/np.sum(hist)*100.)
+        else:
+            data_ma.append(hist)
     data_ma = np.ma.asarray(data_ma)
 
     # sort data as a function of time

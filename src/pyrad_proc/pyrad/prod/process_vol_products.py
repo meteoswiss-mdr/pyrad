@@ -404,10 +404,10 @@ def generate_vol_products(dataset, prdcfg):
             colors = ['b', 'k', 'k']
             linestyles = ['-', '--', '--']
         elif quantity == 'mode':
-            data = [vals[:, 0]]
-            labels = ['Mode']
-            colors = ['b']
-            linestyles = ['-']
+            data = [vals[:, 0], vals[:, 2], vals[:, 4]]
+            labels = ['Mode', '2nd most common', '3rd most common']
+            colors = ['b', 'k', 'r']
+            linestyles = ['-', '--', '--']
         else:
             data = [vals[:, 1], vals[:, 0], vals[:, 2]]
             labels = [
@@ -454,6 +454,10 @@ def generate_vol_products(dataset, prdcfg):
         if quantity == 'mode':
             data.append(vals[:, 1])
             labels.append('% points mode')
+            data.append(vals[:, 3])
+            labels.append('% points 2nd most common')
+            data.append(vals[:, 5])
+            labels.append('% points 3rd most common')
 
         write_rhi_profile(
             h_vec, data, val_valid, labels, fname, datatype=labelx,

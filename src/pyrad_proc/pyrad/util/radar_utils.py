@@ -802,7 +802,7 @@ def compute_histogram(field, field_name, step=None):
     """
     bin_edges = get_histogram_bins(field_name, step=step)
     step_aux = bin_edges[1]-bin_edges[0]
-    bin_centers = bin_edges[:-1]+step_aux/2.
+    bin_centers = bin_edges[0:-1]+step_aux/2.
     values = field.compressed()
     values[values < bin_centers[0]] = bin_centers[0]
     values[values > bin_centers[-1]] = bin_centers[-1]
@@ -863,7 +863,7 @@ def get_histogram_bins(field_name, step=None):
     """
     field_dict = pyart.config.get_metadata(field_name)
     if 'boundaries' in field_dict:
-        return field_dict['boundaries']
+        return np.array(field_dict['boundaries'])
 
     vmin, vmax = pyart.config.get_field_limits(field_name)
     if step is None:
@@ -1103,12 +1103,18 @@ def compute_profile_stats(field, gate_altitude, h_vec, h_res,
 
     if quantity == 'mean':
         vals = np.ma.empty((nh, 3), dtype=float)
+        vals[:] = np.ma.masked
     elif quantity == 'mode':
-        vals = np.ma.empty((nh, 2), dtype=float)
+        vals = np.ma.empty((nh, 6), dtype=float)
+        vals[:, 0] = np.ma.masked
+        vals[:, 2] = np.ma.masked
+        vals[:, 4] = np.ma.masked
         vals[:, 1] = 0
+        vals[:, 3] = 0
+        vals[:, 5] = 0
     else:
         vals = np.ma.empty((nh, quantiles.size), dtype=float)
-    vals[:] = np.ma.masked
+        vals[:] = np.ma.masked
 
     val_valid = np.zeros(nh, dtype=int)
     for i, h in enumerate(h_vec):
@@ -1126,12 +1132,34 @@ def compute_profile_stats(field, gate_altitude, h_vec, h_res,
             mask = np.ma.getmaskarray(data)
             nvalid = np.count_nonzero(np.logical_not(mask))
             if nvalid >= nvalid_min:
-                mode, count = scipy.stats.mode(
-                    data.compressed(), axis=None, nan_policy='omit')
-                vals[i, 0] = mode
-                vals[i, 1] = count/nvalid*100.
                 val_valid[i] = nvalid
 
+                # get mode
+                data = data.compressed()
+                if data.size == 0:
+                    continue
+                mode, count = scipy.stats.mode(
+                    data, axis=None, nan_policy='omit')
+                vals[i, 0] = mode
+                vals[i, 1] = count/nvalid*100.
+
+                # get second most common
+                data = np.ma.masked_where(data == mode, data).compressed()
+                if data.size == 0:
+                    continue
+                mode, count = scipy.stats.mode(
+                    data, axis=None, nan_policy='omit')
+                vals[i, 2] = mode
+                vals[i, 3] = count/nvalid*100.
+
+                # get third most common
+                data = np.ma.masked_where(data == mode, data).compressed()
+                if data.size == 0:
+                    continue
+                mode, count = scipy.stats.mode(
+                    data, axis=None, nan_policy='omit')
+                vals[i, 4] = mode
+                vals[i, 5] = count/nvalid*100.
         else:
             avg, quants, nvalid = quantiles_weighted(
                 data, quantiles=quantiles)
