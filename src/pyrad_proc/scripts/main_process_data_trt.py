@@ -95,9 +95,9 @@ def main():
         print('processing TRT cell file '+fname)
         try:
             infostr = os.path.basename(fname).split('.')[0]
-            pyrad_main(
-                cfgfile_proc, trajfile=fname, infostr=infostr,
-                trajtype=trajtype)
+        #    pyrad_main(
+        #        cfgfile_proc, trajfile=fname, infostr=infostr,
+        #        trajtype=trajtype)
             trt_cell_id_list.append(infostr)
         except ValueError:
             print(ValueError)
@@ -110,6 +110,7 @@ def main():
     hres = 250
 
     for i, trt_cell_id in enumerate(trt_cell_id_list):
+        print('\n\nPost-processing cell: '+trt_cell_id)
         dt_str = trt_cell_id[0:12]
         dt = datetime.datetime.strptime(dt_str, "%Y%m%d%H%M")
         time_dir = dt.strftime("%Y-%m-%d")
@@ -141,7 +142,7 @@ def main():
                     labels = [
                         'Mode', '2nd most common', '3rd most common',
                         '% points mode', '% points 2nd most common',
-                        '% points 3nd most common']
+                        '% points 3rd most common']
                 tbin_edges, hbin_edges, data_ma = read_profile_ts(
                     flist, labels, hres=hres)
 
