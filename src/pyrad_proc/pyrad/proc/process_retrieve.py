@@ -569,6 +569,10 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
             warn('Unable to compute rainfall rate using hydrometeor ' +
                  'classification. Missing data.')
             return None, None
+    else:
+        raise Exception(
+            "ERROR: Unknown rainfall rate retrieval method " +
+            dscfg['RR_METHOD'])
 
     # prepare for exit
     new_dataset = deepcopy(radar)
