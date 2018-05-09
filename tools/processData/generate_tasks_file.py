@@ -126,6 +126,10 @@ def main():
     res = 'H'
     info = 'W'
     cfgpath = os.path.expanduser('~')+'/pyrad/config/processing/'
+    
+    trajfile = ['None']
+    trajtype = 'lightning'
+    flashnr = 0
 
     # ele: elevations to get from archive format 001 to 020
     # if more than one separate by a comma
