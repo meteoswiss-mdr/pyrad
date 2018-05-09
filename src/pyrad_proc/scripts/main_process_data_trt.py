@@ -95,9 +95,9 @@ def main():
         print('processing TRT cell file '+fname)
         try:
             infostr = os.path.basename(fname).split('.')[0]
-        #    pyrad_main(
-        #        cfgfile_proc, trajfile=fname, infostr=infostr,
-        #        trajtype=trajtype)
+            pyrad_main(
+                cfgfile_proc, trajfile=fname, infostr=infostr,
+                trajtype=trajtype)
             trt_cell_id_list.append(infostr)
         except ValueError:
             print(ValueError)
@@ -112,8 +112,8 @@ def main():
     for i, trt_cell_id in enumerate(trt_cell_id_list):
         print('\n\nPost-processing cell: '+trt_cell_id)
         dt_str = trt_cell_id[0:12]
-        dt = datetime.datetime.strptime(dt_str, "%Y%m%d%H%M")
-        time_dir = dt.strftime("%Y-%m-%d")
+        dt_cell = datetime.datetime.strptime(dt_str, "%Y%m%d%H%M")
+        time_dir = dt_cell.strftime("%Y-%m-%d")
         for j, datatype in enumerate(datatype_list):
             dataset = dataset_list[j]
             file_base2 = file_base+time_dir+'/'+dataset+'_trt_traj/'
