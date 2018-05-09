@@ -32,15 +32,15 @@ def main():
     """
     """
     param_vec = ['RR_Z', 'RR_hydro']
-    smn_station_vec = ['BRZ', 'MER']
-    tstart = '20170901'
-    tend = '20170930'
+    smn_station_vec = ['CIM', 'MAG', 'OTL']
+    tstart = '20180401'
+    tend = '20180430'
 
     np_radar_min = 6
     np_sensor_min = 6
     min_val = 0.2
 
-    fbase = '/data/pyrad_products/mals_mei_dataquality/'
+    fbase = '/data/pyrad_products/mals_loc_dataquality/'
     img_ext = 'png'
     avg_time = 3600
 
