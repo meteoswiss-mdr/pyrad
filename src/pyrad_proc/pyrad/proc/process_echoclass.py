@@ -229,10 +229,7 @@ def process_echo_filter(procstatus, dscfg, radar_list=None):
         warn('Unable to filter data. Missing echo ID field')
         return None, None
 
-    echo_type = 3
-    if 'echo_type' in dscfg:
-        echo_type = dscfg['echo_type']
-
+    echo_type = dscfg.get('echo_type', 3)
     mask = radar.fields[echoid_field]['data'] != echo_type
 
     new_dataset = deepcopy(radar)
@@ -576,21 +573,11 @@ def process_outlier_filter(procstatus, dscfg, radar_list=None):
         warn('Unable to perform outlier removal. No valid data')
         return None, None
 
-    threshold = 10.
-    if 'threshold' in dscfg:
-        threshold = dscfg['threshold']
-    nb = 2
-    if 'nb' in dscfg:
-        nb = dscfg['nb']
-    nb_min = 3
-    if 'nb_min' in dscfg:
-        nb_min = dscfg['nb_min']
-    percentile_min = 5.
-    if 'percentile_min' in dscfg:
-        percentile_min = dscfg['percentile_min']
-    percentile_max = 95.
-    if 'percentile_max' in dscfg:
-        percentile_max = dscfg['percentile_max']
+    threshold = dscfg.get('threshold', 10.)
+    nb = dscfg.get('nb', 2)
+    nb_min = dscfg.get('nb_min', 3)
+    percentile_min = dscfg.get('percentile_min', 5.)
+    percentile_max = dscfg.get('percentile_max', 95.)
 
     field = radar.fields[field_name]
     field_out = deepcopy(field)
@@ -690,6 +677,11 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
     """
     if procstatus != 1:
         return None, None
+
+    if 'HYDRO_METHOD' not in dscfg:
+        raise Exception(
+            "ERROR: Undefined parameter 'HYDRO_METHOD' for dataset '%s'"
+            % dscfg['dsname'])
 
     if dscfg['HYDRO_METHOD'] == 'SEMISUPERVISED':
         temp_field = None
@@ -864,13 +856,17 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
             zdr_field=zdr_field, rhv_field=rhv_field, kdp_field=kdp_field,
             temp_field=temp_field, iso0_field=iso0_field, hydro_field=None,
             temp_ref=temp_ref)
+    else:
+        raise Exception(
+            "ERROR: Unknown hydrometeor classification method " +
+            dscfg['HYDRO_METHOD'])
 
-        # prepare for exit
-        new_dataset = deepcopy(radar)
-        new_dataset.fields = dict()
-        new_dataset.add_field('radar_echo_classification', hydro)
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.add_field('radar_echo_classification', hydro)
 
-        return new_dataset, ind_rad
+    return new_dataset, ind_rad
 
 
 def process_melting_layer(procstatus, dscfg, radar_list=None):
@@ -900,6 +896,11 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
     """
     if procstatus != 1:
         return None, None
+
+    if 'ML_METHOD' not in dscfg:
+        raise Exception(
+            "ERROR: Undefined parameter 'ML_METHOD' for dataset '%s'"
+            % dscfg['dsname'])
 
     if dscfg['ML_METHOD'] == 'GIANGRANDE':
         temp_field = None
@@ -972,9 +973,56 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
 
         dscfg['global_data'] = ml_stack
 
-        # prepare for exit
-        new_dataset = deepcopy(radar)
-        new_dataset.fields = dict()
-        new_dataset.add_field('melting_layer', ml)
+    elif dscfg['ML_METHOD'] == 'WOLFENSBERGER':
+        for datatypedescr in dscfg['datatype']:
+            radarnr, datagroup, datatype, dataset, product = (
+                get_datatype_fields(datatypedescr))
+            if datatype == 'dBZ':
+                refl_field = 'reflectivity'
+            if datatype == 'dBZc':
+                refl_field = 'corrected_reflectivity'
+            if datatype == 'RhoHV':
+                rhohv_field = 'cross_correlation_ratio'
+            if datatype == 'RhoHVc':
+                rhohv_field = 'corrected_cross_correlation_ratio'
 
-        return new_dataset, ind_rad
+        ind_rad = int(radarnr[5:8])-1
+        if radar_list[ind_rad] is None:
+            warn('No valid radar')
+            return None, None
+        radar = radar_list[ind_rad]
+
+        if ((refl_field not in radar.fields) or
+                (rhohv_field not in radar.fields)):
+            warn('Unable to detect melting layer. Missing data')
+            return None, None
+
+        # User defined parameters
+        max_range = dscfg.get('max_range', 20000.)
+        detect_threshold = dscfg.get('detect_threshold', 0.02)
+        interp_holes = dscfg.get('interp_holes', False)
+        max_length_holes = dscfg.get('max_length_holes', 250)
+        check_min_length = dscfg.get('check_min_length', True)
+
+        ml_dict = pyart.retrieve.detect_ml(
+            radar, refl_field=refl_field, rhohv_field=rhohv_field,
+            max_range=max_range, detect_threshold=detect_threshold,
+            interp_holes=interp_holes, max_length_holes=max_length_holes,
+            check_min_length=check_min_length)
+
+        if ml_dict['ml_exists']:
+            print('bottom_ml', ml_dict['ml_pol']['bottom_ml'])
+            print('top_ml', ml_dict['ml_pol']['top_ml'])
+        else:
+            warn('No melting layer detected')
+    else:
+        raise Exception(
+            "ERROR: Unknown melting layer retrieval method " +
+            dscfg['ML_METHOD'])
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    # new_dataset.add_field('melting_layer', ml)
+
+    return new_dataset, ind_rad

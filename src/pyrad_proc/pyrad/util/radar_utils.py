@@ -12,6 +12,7 @@ Miscellaneous functions dealing with radar data
     time_series_statistics
     join_time_series
     get_range_bins_to_avg
+    belongs_roi_indices
     find_ray_index
     find_rng_index
     find_colocated_indexes
@@ -29,6 +30,7 @@ Miscellaneous functions dealing with radar data
     compute_1d_stats
     compute_2d_hist
     quantize_field
+    compute_profile_stats
 
 """
 from warnings import warn
@@ -38,8 +40,11 @@ import datetime
 import numpy as np
 import pandas as pd
 import scipy
+import shapely
 
 import pyart
+
+from .stat_utils import quantiles_weighted
 
 
 def get_ROI(radar, fieldname, sector):
@@ -269,6 +274,62 @@ def get_range_bins_to_avg(rad1_rng, rad2_rng):
             avg_rad_lim = [-int((nbins-1)/2), int((nbins-1)/2)]
 
     return avg_rad1, avg_rad2, avg_rad_lim
+
+
+def belongs_roi_indices(lat, lon, roi):
+    """
+    Get the indices of points that belong to roi in a list of points
+
+    Parameters
+    ----------
+    lat, lon : float arrays
+        latitudes and longitudes to check
+    roi : dict
+        Dictionary describing the region of interest
+
+    Returns
+    -------
+    inds : array of ints
+        list of indices of points belonging to ROI
+    is_roi : str
+        Whether the list of points is within the region of interest.
+        Can be 'All', 'None', 'Some'
+
+    """
+    lon_list = lon.flatten()
+    lat_list = lat.flatten()
+
+    polygon = shapely.geometry.Polygon(list(zip(roi['lon'], roi['lat'])))
+    points = shapely.geometry.MultiPoint(list(zip(lon_list, lat_list)))
+
+    inds = []
+    if polygon.contains(points):
+        warn('All points in the region of interest')
+        is_roi = 'All'
+        inds = np.indices(np.shape(lon))
+    elif polygon.disjoint(points):
+        warn('No points in the region of interest')
+        is_roi = 'None'
+    else:
+        points_roi = points.intersection(polygon)
+        if points_roi.geom_type == 'Point':
+            ind = np.where(np.logical_and(lon == points_roi.x, lat == points_roi.y))
+            if len(ind) == 1:
+                ind = ind[0]
+            inds.extend(ind)
+        else:
+            points_roi_list = list(points_roi)
+            for point in points_roi_list:
+                ind = np.where(np.logical_and(lon == point.x, lat == point.y))
+                if len(ind) == 1:
+                    ind = ind[0]
+                inds.extend(ind)
+        nroi = len(lat[inds])
+        npoint = len(lat_list)
+        warn(str(nroi)+' points out of '+str(npoint)+' in the region of interest')
+        is_roi = 'Some'
+
+    return np.asarray(inds), is_roi
 
 
 def find_ray_index(ele_vec, azi_vec, ele, azi, ele_tol=0., azi_tol=0.,
@@ -630,13 +691,13 @@ def compute_quantiles(field, quantiles=None):
     return quantiles, values
 
 
-def compute_quantiles_from_hist(bins, hist, quantiles=None):
+def compute_quantiles_from_hist(bin_centers, hist, quantiles=None):
     """
     computes quantiles from histograms
 
     Parameters
     ----------
-    bins : ndarray 1D
+    bin_centers : ndarray 1D
         the bins
     hist : ndarray 1D
         the histogram
@@ -673,7 +734,7 @@ def compute_quantiles_from_hist(bins, hist, quantiles=None):
 
     percentiles = quantiles/100.
     for i in range(nquantiles):
-        values[i] = bins[rel_freq >= percentiles[i]][0]
+        values[i] = bin_centers[rel_freq >= percentiles[i]][0]
 
     return quantiles, values
 
@@ -733,18 +794,20 @@ def compute_histogram(field, field_name, step=None):
 
     Returns
     -------
-    bins : float array
+    bin_edges : float array
         interval of each bin
     values : float array
         values at each bin
 
     """
-    bins = get_histogram_bins(field_name, step=step)
+    bin_edges = get_histogram_bins(field_name, step=step)
+    step_aux = bin_edges[1]-bin_edges[0]
+    bin_centers = bin_edges[0:-1]+step_aux/2.
     values = field.compressed()
-    values[values < bins[0]] = bins[0]
-    values[values > bins[-1]] = bins[-1]
+    values[values < bin_centers[0]] = bin_centers[0]
+    values[values > bin_centers[-1]] = bin_centers[-1]
 
-    return bins, values
+    return bin_edges, values
 
 
 def compute_histogram_sweep(field, ray_start, ray_end, field_name, step=None):
@@ -764,18 +827,20 @@ def compute_histogram_sweep(field, ray_start, ray_end, field_name, step=None):
 
     Returns
     -------
-    bins : float array
+    bin_edges : float array
         interval of each bin
     values : float array
         values at each bin
 
     """
-    bins = get_histogram_bins(field_name, step=step)
+    bin_edges = get_histogram_bins(field_name, step=step)
+    step_aux = bin_edges[1]-bin_edges[0]
+    bin_centers = bin_edges[:-1]+step_aux/2.
     values = field[ray_start:ray_end+1, :].compressed()
-    values[values < bins[0]] = bins[0]
-    values[values > bins[-1]] = bins[-1]
+    values[values < bin_centers[0]] = bin_centers[0]
+    values[values > bin_centers[-1]] = bin_centers[-1]
 
-    return bins, values
+    return bin_edges, values
 
 
 def get_histogram_bins(field_name, step=None):
@@ -792,20 +857,21 @@ def get_histogram_bins(field_name, step=None):
 
     Returns
     -------
-    bins : float array
-        interval of each bin
+    bin_edges : float array
+        The bin edges
 
     """
     field_dict = pyart.config.get_metadata(field_name)
     if 'boundaries' in field_dict:
-        return field_dict['boundaries']
+        return np.array(field_dict['boundaries'])
 
     vmin, vmax = pyart.config.get_field_limits(field_name)
     if step is None:
         step = (vmax-vmin)/50.
         warn('No step has been defined. Default '+str(step)+' will be used')
 
-    return np.linspace(vmin, vmax, num=int((vmax-vmin)/step))
+    return np.linspace(
+        vmin-step/2., vmax+step/2., num=int((vmax-vmin)/step)+2)
 
 
 def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
@@ -826,8 +892,8 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
     -------
     hist_2d : array
         the histogram
-    bins1, bins2 : float array
-        interval of each bin
+    bin_edges1, bin_edges2 : float array
+        The bin edges
     stats : dict
         a dictionary with statistics
 
@@ -848,8 +914,12 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
         }
         return None, None, None, stats
 
-    hist_2d, bins1, bins2 = compute_2d_hist(
+    hist_2d, bin_edges1, bin_edges2 = compute_2d_hist(
         field1, field2, field_name1, field_name2, step1=step1, step2=step2)
+    step_aux1 = bin_edges1[1]-bin_edges1[0]
+    bin_centers1 = bin_edges1[:-1]+step_aux1/2.
+    step_aux2 = bin_edges2[1]-bin_edges2[0]
+    bin_centers2 = bin_edges2[:-1]+step_aux2/2.
     npoints = len(field1)
     meanbias = 10.*np.ma.log10(
         np.ma.mean(np.ma.power(10., 0.1*field2)) /
@@ -858,7 +928,7 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
     quant25bias = np.percentile((field2-field1).compressed(), 25.)
     quant75bias = np.percentile((field2-field1).compressed(), 75.)
     ind_max_val1, ind_max_val2 = np.where(hist_2d == np.ma.amax(hist_2d))
-    modebias = bins2[ind_max_val2[0]]-bins1[ind_max_val1[0]]
+    modebias = bin_centers2[ind_max_val2[0]]-bin_centers1[ind_max_val1[0]]
     slope, intercep, corr, pval, stderr = scipy.stats.linregress(
         field1, y=field2)
     intercep_slope_1 = np.ma.mean(field2-field1)
@@ -876,7 +946,7 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
         'intercep_slope_1': np.ma.asarray(intercep_slope_1)
     }
 
-    return hist_2d, bins1, bins2, stats
+    return hist_2d, bin_edges1, bin_edges2, stats
 
 
 def compute_1d_stats(field1, field2):
@@ -929,38 +999,42 @@ def compute_1d_stats(field1, field2):
 def compute_2d_hist(field1, field2, field_name1, field_name2, step1=None,
                     step2=None):
     """
-    computes histogram of the data
+    computes a 2D histogram of the data
 
     Parameters
     ----------
-    field : ndarray 2D
-        the radar field
-    field_name: str
-        name of the field
-    step : float
-        size of bin
+    field1, field2 : ndarray 2D
+        the radar fields
+    field_name1, field_name2 : str
+        field names
+    step1, step2 : float
+        size of the bins
 
     Returns
     -------
-    bins : float array
-        interval of each bin
-    values : float array
-        values at each bin
+    H : float array 2D
+        The bi-dimensional histogram of samples x and y
+    xedges, yedges : float array
+        the bin edges along each dimension
 
     """
-    bins1 = get_histogram_bins(field_name1, step=step1)
-    bins2 = get_histogram_bins(field_name2, step=step2)
+    bin_edges1 = get_histogram_bins(field_name1, step=step1)
+    step_aux1 = bin_edges1[1]-bin_edges1[0]
+    bin_centers1 = bin_edges1[:-1]+step_aux1/2.
+    bin_edges2 = get_histogram_bins(field_name2, step=step2)
+    step_aux2 = bin_edges2[1]-bin_edges2[0]
+    bin_centers2 = bin_edges2[:-1]+step_aux2/2.
 
-    field1[field1 < bins1[0]] = bins1[0]
-    field1[field1 > bins1[-1]] = bins1[-1]
+    field1[field1 < bin_centers1[0]] = bin_centers1[0]
+    field1[field1 > bin_centers1[-1]] = bin_centers1[-1]
 
-    field2[field2 < bins2[0]] = bins2[0]
-    field2[field2 > bins2[-1]] = bins2[-1]
+    field2[field2 < bin_centers2[0]] = bin_centers2[0]
+    field2[field2 > bin_centers2[-1]] = bin_centers2[-1]
 
     fill_value = pyart.config.get_fillvalue()
     return np.histogram2d(
         field1.filled(fill_value=fill_value),
-        field2.filled(fill_value=fill_value), bins=[bins1, bins2])
+        field2.filled(fill_value=fill_value), bins=[bin_edges1, bin_edges2])
 
 
 def quantize_field(field, field_name, step):
@@ -990,3 +1064,108 @@ def quantize_field(field, field_name, step):
     fieldq = ((field+vmin)/step+1).astype(int)
 
     return fieldq.filled(fill_value=0)
+
+
+def compute_profile_stats(field, gate_altitude, h_vec, h_res,
+                          quantity='quantiles',
+                          quantiles=np.array([0.25, 0.50, 0.75]),
+                          nvalid_min=4):
+    """
+    Compute statistics of vertical profile
+
+    Parameters
+    ----------
+    field : ndarray
+        the radar field
+    gate_altitude: ndarray
+        the altitude at each radar gate [m MSL]
+    h_vec : 1D ndarray
+        height vector [m MSL]
+    h_res : float
+        heigh resolution [m]
+    quantity : str
+        The quantity to compute. Can be either 'quantiles' or 'mean'.
+        If 'mean', the min, max, and average is computed.
+    quantiles : 1D ndarray
+        the quantiles to compute
+    nvalid_min : int
+        the minimum number of points to consider the stats valid
+
+    Returns
+    -------
+    vals : ndarray 2D
+        The resultant statistics
+    val_valid : ndarray 1D
+        The number of points to compute the stats used at each height level
+
+    """
+    nh = h_vec.size
+
+    if quantity == 'mean':
+        vals = np.ma.empty((nh, 3), dtype=float)
+        vals[:] = np.ma.masked
+    elif quantity == 'mode':
+        vals = np.ma.empty((nh, 6), dtype=float)
+        vals[:, 0] = np.ma.masked
+        vals[:, 2] = np.ma.masked
+        vals[:, 4] = np.ma.masked
+        vals[:, 1] = 0
+        vals[:, 3] = 0
+        vals[:, 5] = 0
+    else:
+        vals = np.ma.empty((nh, quantiles.size), dtype=float)
+        vals[:] = np.ma.masked
+
+    val_valid = np.zeros(nh, dtype=int)
+    for i, h in enumerate(h_vec):
+        data = field[np.logical_and(
+            gate_altitude >= h-h_res/2., gate_altitude < h+h_res/2.)]
+        if quantity == 'mean':
+            mask = np.ma.getmaskarray(data)
+            nvalid = np.count_nonzero(np.logical_not(mask))
+            if nvalid >= nvalid_min:
+                vals[i, 0] = np.ma.mean(data)
+                vals[i, 1] = np.ma.min(data)
+                vals[i, 2] = np.ma.max(data)
+                val_valid[i] = nvalid
+        elif quantity == 'mode':
+            mask = np.ma.getmaskarray(data)
+            nvalid = np.count_nonzero(np.logical_not(mask))
+            if nvalid >= nvalid_min:
+                val_valid[i] = nvalid
+
+                # get mode
+                data = data.compressed()
+                if data.size == 0:
+                    continue
+                mode, count = scipy.stats.mode(
+                    data, axis=None, nan_policy='omit')
+                vals[i, 0] = mode
+                vals[i, 1] = count/nvalid*100.
+
+                # get second most common
+                data = np.ma.masked_where(data == mode, data).compressed()
+                if data.size == 0:
+                    continue
+                mode, count = scipy.stats.mode(
+                    data, axis=None, nan_policy='omit')
+                vals[i, 2] = mode
+                vals[i, 3] = count/nvalid*100.
+
+                # get third most common
+                data = np.ma.masked_where(data == mode, data).compressed()
+                if data.size == 0:
+                    continue
+                mode, count = scipy.stats.mode(
+                    data, axis=None, nan_policy='omit')
+                vals[i, 4] = mode
+                vals[i, 5] = count/nvalid*100.
+        else:
+            avg, quants, nvalid = quantiles_weighted(
+                data, quantiles=quantiles)
+            if nvalid is not None:
+                if nvalid >= nvalid_min:
+                    vals[i, :] = quants
+                    val_valid[i] = nvalid
+
+    return vals, val_valid

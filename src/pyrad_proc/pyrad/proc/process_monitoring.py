@@ -1047,16 +1047,16 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
             warn(field_name+' not available.')
             return None, None
 
-        step = None
-        if 'step' in dscfg:
-            step = dscfg['step']
+        step = dscfg.get('step', None)
 
-        bins = get_histogram_bins(field_name, step=step)
-        nbins = len(bins)-1
+        bin_edges = get_histogram_bins(field_name, step=step)
+        nbins = len(bin_edges)-1
+        step = bin_edges[1]-bin_edges[0]
+        bin_centers = bin_edges[:-1]+step/2.
 
         radar_aux = deepcopy(radar)
         radar_aux.fields = dict()
-        radar_aux.range['data'] = bins[0:-1]
+        radar_aux.range['data'] = bin_centers
         radar_aux.ngates = nbins
 
         field_dict = pyart.config.get_metadata(field_name)
@@ -1066,15 +1066,15 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
 
         # put gates with values off limits to limit
         mask = np.ma.getmaskarray(field)
-        ind = np.where(np.logical_and(mask == False, field < bins[0]))
-        field[ind] = bins[0]
+        ind = np.where(np.logical_and(mask == False, field < bin_centers[0]))
+        field[ind] = bin_centers[0]
 
-        ind = np.where(np.logical_and(mask == False, field > bins[-1]))
-        field[ind] = bins[-1]
+        ind = np.where(np.logical_and(mask == False, field > bin_centers[-1]))
+        field[ind] = bin_centers[-1]
 
         for ray in range(radar.nrays):
             field_dict['data'][ray, :], bin_edges = np.histogram(
-                field[ray, :].compressed(), bins=bins)
+                field[ray, :].compressed(), bins=bin_edges)
 
         radar_aux.add_field(field_name, field_dict)
         start_time = pyart.graph.common.generate_radar_time_begin(radar_aux)

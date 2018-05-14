@@ -1105,10 +1105,7 @@ def process_attenuation(procstatus, dscfg, radar_list=None):
             warn('Freezing level height not defined. Using default ' +
                  str(fzl)+' m')
 
-    att_method = 'ZPhi'
-    if 'ATT_METHOD' in dscfg:
-        att_method = dscfg['ATT_METHOD']
-
+    att_method = dscfg.get('ATT_METHOD', 'ZPhi')
     if (att_method != 'ZPhi') and (att_method != 'Philin'):
         raise ValueError(
             'Unknown attenuation correction method. ' +

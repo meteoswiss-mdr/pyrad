@@ -72,9 +72,7 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
         break
     ind_rad = int(radarnr[5:8])-1
 
-    lin_trans = 0
-    if 'lin_trans' in dscfg:
-        lin_trans = dscfg['lin_trans']
+    lin_trans = dscfg.get('lin_trans', 0)
 
     if procstatus == 0:
         return None, None
@@ -89,9 +87,7 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
             warn(field_name+' not available.')
             return None, None
 
-        period = 3600.
-        if 'period' in dscfg:
-            period = dscfg['period']
+        period = dscfg.get('period', 3600.)
 
         field = deepcopy(radar.fields[field_name])
         if lin_trans:
@@ -273,9 +269,7 @@ def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
             warn('Unable to compute weighted average. Missing data')
             return None, None
 
-        period = 3600.
-        if 'period' in dscfg:
-            period = dscfg['period']
+        period = dscfg.get('period', 3600.)
 
         field = deepcopy(radar.fields[field_name])
         field['data'] = field['data'].filled(fill_value=0.)
@@ -452,13 +446,8 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
             return None, None
         radar = radar_list[ind_rad]
 
-        phidpmax = 60.
-        if 'phidpmax' in dscfg:
-            phidpmax = dscfg['phidpmax']
-
-        period = 3600.
-        if 'period' in dscfg:
-            period = dscfg['period']
+        phidpmax = dscfg.get('phidpmax', 60.)
+        period = dscfg.get('period', 3600.)
 
         time_avg_flag = pyart.config.get_metadata('time_avg_flag')
         time_avg_flag['data'] = np.ma.zeros(
@@ -716,61 +705,20 @@ def process_colocated_gates(procstatus, dscfg, radar_list=None):
 
     coloc_gates_field = 'colocated_gates'
 
-    h_tol = 100.
-    if 'h_tol' in dscfg:
-        h_tol = dscfg['h_tol']
-
-    latlon_tol = 0.0005
-    if 'latlon_tol' in dscfg:
-        latlon_tol = dscfg['latlon_tol']
-
-    vol_d_tol = 100.
-    if 'vol_d_tol' in dscfg:
-        vol_d_tol = dscfg['vol_d_tol']
-
-    vismin = None
-    if 'vismin' in dscfg:
-        vismin = dscfg['vismin']
-
-    hmin = None
-    if 'hmin' in dscfg:
-        hmin = dscfg['hmin']
-
-    hmax = None
-    if 'hmax' in dscfg:
-        hmax = dscfg['hmax']
-
-    rmin = None
-    if 'rmin' in dscfg:
-        rmin = dscfg['rmin']
-
-    rmax = None
-    if 'rmax' in dscfg:
-        rmax = dscfg['rmax']
-
-    elmin = None
-    if 'elmin' in dscfg:
-        elmin = dscfg['elmin']
-
-    elmax = None
-    if 'elmax' in dscfg:
-        elmax = dscfg['elmax']
-
-    azrad1min = None
-    if 'azrad1min' in dscfg:
-        azrad1min = dscfg['azrad1min']
-
-    azrad1max = None
-    if 'azrad1max' in dscfg:
-        azrad1max = dscfg['azrad1max']
-
-    azrad2min = None
-    if 'azrad2min' in dscfg:
-        azrad2min = dscfg['azrad2min']
-
-    azrad2max = None
-    if 'azrad2max' in dscfg:
-        azrad2max = dscfg['azrad2max']
+    h_tol = dscfg.get('h_tol', 100.)
+    latlon_tol = dscfg.get('latlon_tol', 0.0005)
+    vol_d_tol = dscfg.get('vol_d_tol', 100.)
+    vismin = dscfg.get('vismin', None)
+    hmin = dscfg.get('hmin', None)
+    hmax = dscfg.get('hmax', None)
+    rmin = dscfg.get('rmin', None)
+    rmax = dscfg.get('rmax', None)
+    elmin = dscfg.get('elmin', None)
+    elmax = dscfg.get('elmax', None)
+    azrad1min = dscfg.get('azrad1min', None)
+    azrad1max = dscfg.get('azrad1max', None)
+    azrad2min = dscfg.get('azrad2min', None)
+    azrad2max = dscfg.get('azrad2max', None)
 
     visib_field = None
     if 'visibility' in radarnr_dict['RADAR'+'{:03d}'.format(
@@ -977,21 +925,11 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
             radar1.range['data'], radar2.range['data'])
 
         # rays are indexed to regular grid
-        rays_are_indexed = False
-        if 'rays_are_indexed' in dscfg:
-            rays_are_indexed = dscfg['rays_are_indexed']
-
+        rays_are_indexed = dscfg.get('rays_are_indexed', False)
         if not rays_are_indexed:
-            azi_tol = 0.5
-            ele_tol = 0.5
-            rng_tol = 50.
-
-            if 'azi_tol' in dscfg:
-                azi_tol = dscfg['azi_tol']
-            if 'ele_tol' in dscfg:
-                ele_tol = dscfg['ele_tol']
-            if 'rng_tol' in dscfg:
-                rng_tol = dscfg['rng_tol']
+            azi_tol = dscfg.get('azi_tol', 0.5)
+            ele_tol = dscfg.get('ele_tol', 0.5)
+            rng_tol = dscfg.get('rng_tol', 50.)
 
             rad1_ray_ind, rad1_rng_ind, rad2_ray_ind, rad2_rng_ind = (
                 find_colocated_indexes(
@@ -1329,22 +1267,12 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
             radar1.range['data'], radar2.range['data'])
 
         # rays are indexed to regular grid
-        rays_are_indexed = False
-        if 'rays_are_indexed' in dscfg:
-            rays_are_indexed = dscfg['rays_are_indexed']
-
+        rays_are_indexed = dscfg.get('rays_are_indexed', False)
         # get current radars gates indices
         if not rays_are_indexed:
-            azi_tol = 0.5
-            ele_tol = 0.5
-            rng_tol = 50.
-
-            if 'azi_tol' in dscfg:
-                azi_tol = dscfg['azi_tol']
-            if 'ele_tol' in dscfg:
-                ele_tol = dscfg['ele_tol']
-            if 'rng_tol' in dscfg:
-                rng_tol = dscfg['rng_tol']
+            azi_tol = dscfg.get('azi_tol', 0.5)
+            ele_tol = dscfg.get('ele_tol', 0.5)
+            rng_tol = dscfg.get('rng_tol', 50.)
 
             rad1_ray_ind, rad1_rng_ind, rad2_ray_ind, rad2_rng_ind = (
                 find_colocated_indexes(
@@ -1575,19 +1503,10 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
             ((rad2_flag-rad2_clt*100-rad2_excess_phi) % 1000000) /
             10000).astype(int)
 
-        clt_max = 100
-        phi_excess_max = 100
-        non_rain_max = 100
-        phi_avg_max = 600.
-
-        if 'clt_max' in dscfg:
-            clt_max = dscfg['clt_max']
-        if 'phi_excess_max' in dscfg:
-            phi_excess_max = dscfg['phi_excess_max']
-        if 'non_rain_max' in dscfg:
-            non_rain_max = dscfg['non_rain_max']
-        if 'phi_avg_max' in dscfg:
-            phi_avg_max = dscfg['phi_avg_max']
+        clt_max = dscfg.get('clt_max', 100)
+        phi_excess_max = dscfg.get('phi_excess_max', 100)
+        non_rain_max = dscfg.get('non_rain_max', 100)
+        phi_avg_max = dscfg.get('phi_avg_max', 600.)
 
         # filter out invalid data
         ind_val = np.where(

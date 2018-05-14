@@ -22,7 +22,7 @@ import pyart
 from ..io.io_aux import get_save_dir, make_filename, get_fieldname_pyart
 
 from ..io.write_data import write_cdf, write_rhi_profile, write_field_coverage
-from ..io.write_data import write_last_state
+from ..io.write_data import write_last_state, write_histogram, write_quantiles
 
 from ..graph.plots_vol import plot_ppi, plot_ppi_map, plot_rhi, plot_cappi
 from ..graph.plots_vol import plot_bscope, plot_rhi_profile, plot_along_coord
@@ -30,7 +30,7 @@ from ..graph.plots_vol import plot_field_coverage, plot_time_range
 from ..graph.plots import plot_quantiles, plot_histogram
 from ..graph.plots_aux import get_colobar_label, get_field_name
 
-from ..util.radar_utils import get_ROI
+from ..util.radar_utils import get_ROI, compute_profile_stats
 from ..util.radar_utils import compute_histogram, compute_quantiles
 from ..util.stat_utils import quantiles_weighted
 
@@ -172,146 +172,6 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'RHI_PROFILE':
-        field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
-            warn(
-                ' Field type ' + field_name +
-                ' not available in data set. Skipping product ' +
-                prdcfg['type'])
-            return None
-
-        az_vec = np.sort(dataset.fixed_angle['data'])
-        az = az_vec[prdcfg['anglenr']]
-        ind_az = np.where(dataset.fixed_angle['data'] == az)[0][0]
-
-        rangeStart = 0.
-        if 'rangeStart' in prdcfg:
-            rangeStart = prdcfg['rangeStart']
-        rangeStop = 25000.
-        if 'rangeStop' in prdcfg:
-            rangeStop = prdcfg['rangeStop']
-        heightResolution = 500.
-        if 'heightResolution' in prdcfg:
-            heightResolution = prdcfg['heightResolution']
-        hmax_user = 8000.
-        if 'heightMax' in prdcfg:
-            hmax_user = prdcfg['heightMax']
-        quantity = 'median'
-        if 'quantity' in prdcfg:
-            quantity = prdcfg['quantity']
-
-        # create new radar object with only data for the given rhi and range
-        new_dataset = dataset.extract_sweeps([ind_az])
-        field = new_dataset.fields[field_name]
-        rng_mask = np.logical_and(new_dataset.range['data'] >= rangeStart,
-                                  new_dataset.range['data'] <= rangeStop)
-        field['data'] = field['data'][:, rng_mask]
-        new_dataset.range['data'] = new_dataset.range['data'][rng_mask]
-        new_dataset.ngates = len(new_dataset.range['data'])
-        new_dataset.init_gate_x_y_z()
-        new_dataset.init_gate_longitude_latitude()
-        new_dataset.init_gate_altitude()
-
-        new_dataset.fields = dict()
-        new_dataset.add_field(field_name, field)
-
-        # compute quantities
-        minheight = (round(
-            np.min(new_dataset.gate_altitude['data']) /
-            heightResolution)*heightResolution-heightResolution)
-        maxheight = (round(
-            hmax_user/heightResolution)*heightResolution +
-                     heightResolution)
-
-        nlevels = int((maxheight-minheight)/heightResolution)
-
-        hmin_vec = minheight+np.arange(nlevels)*heightResolution
-        hmax_vec = hmin_vec+heightResolution
-        hvec = hmin_vec+heightResolution/2.
-        val_median = np.ma.empty(nlevels)
-        val_median[:] = np.ma.masked
-        val_mean = np.ma.empty(nlevels)
-        val_mean[:] = np.ma.masked
-        val_quant25 = np.ma.empty(nlevels)
-        val_quant25[:] = np.ma.masked
-        val_quant75 = np.ma.empty(nlevels)
-        val_quant75[:] = np.ma.masked
-        val_valid = np.zeros(nlevels, dtype=int)
-
-        gate_altitude = new_dataset.gate_altitude['data']
-        for i in range(nlevels):
-            data = field['data'][np.logical_and(
-                gate_altitude >= hmin_vec[i], gate_altitude <= hmax_vec[i])]
-            avg, quants, nvalid = quantiles_weighted(
-                data, quantiles=np.array([0.25, 0.50, 0.75]))
-            if nvalid is not None:
-                if nvalid >= 4:
-                    val_median[i] = quants[1]
-                    val_quant25[i] = quants[0]
-                    val_quant75[i] = quants[2]
-                    val_mean[i] = avg
-                    val_valid[i] = nvalid
-
-        # plot data
-        if quantity == 'mean':
-            data = [val_mean]
-            labels = ['Mean']
-            colors = ['b']
-            linestyles = ['-']
-        else:
-            data = [val_median, val_quant25, val_quant75]
-            labels = ['median', '25-percentile', '75-percentile']
-            colors = ['b', 'k', 'k']
-            linestyles = ['-', '--', '--']
-
-        labelx = get_colobar_label(dataset.fields[field_name], field_name)
-        titl = (
-            pyart.graph.common.generate_radar_time_begin(
-                dataset).isoformat() + 'Z' + '\n' +
-            get_field_name(dataset.fields[field_name], field_name))
-
-        savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
-
-        prdcfginfo = 'az'+'{:.1f}'.format(az)+'hres'+str(int(heightResolution))
-        fname_list = make_filename(
-            'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'], prdcfginfo=prdcfginfo,
-            timeinfo=prdcfg['timeinfo'])
-
-        for i, fname in enumerate(fname_list):
-            fname_list[i] = savedir+fname
-
-        plot_rhi_profile(
-            data, hvec, fname_list, labelx=labelx, labely='Height (m MSL)',
-            labels=labels, title=titl, colors=colors,
-            linestyles=linestyles, xmin=None, xmax=None)
-
-        print('----- save to '+' '.join(fname_list))
-
-        fname = make_filename(
-            'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
-            ['csv'], prdcfginfo=prdcfginfo,
-            timeinfo=prdcfg['timeinfo'])[0]
-
-        fname = savedir+fname
-
-        sector = {
-            'rmin': rangeStart,
-            'rmax': rangeStop,
-            'az': az
-        }
-        write_rhi_profile(
-            hvec, data, val_valid, labels, fname, datatype=labelx,
-            timeinfo=prdcfg['timeinfo'], sector=sector)
-
-        print('----- save to '+fname)
-
-        # TODO: add Cartesian interpolation option
-
-        return fname
 
     elif prdcfg['type'] == 'PSEUDOPPI_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -361,6 +221,276 @@ def generate_vol_products(dataset, prdcfg):
                 '. Skipping product ' + prdcfg['type'])
 
             return None
+
+    elif prdcfg['type'] == 'RHI_PROFILE':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # user defined parameters
+        rangeStart = prdcfg.get('rangeStart', 0.)
+        rangeStop = prdcfg.get('rangeStop', 25000.)
+        heightResolution = prdcfg.get('heightResolution', 500.)
+        hmin_user = prdcfg.get('heightMin', None)
+        hmax_user = prdcfg.get('heightMax', None)
+        quantity = prdcfg.get('quantity', 'quantiles')
+        quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.]))
+        nvalid_min = prdcfg.get('nvalid_min', 4)
+
+        fixed_span = prdcfg.get('fixed_span', 1)
+        vmin = None
+        vmax = None
+        if fixed_span:
+            vmin, vmax = pyart.config.get_field_limits(field_name)
+            if 'vmin' in prdcfg:
+                vmin = prdcfg['vmin']
+            if 'vmax' in prdcfg:
+                vmax = prdcfg['vmax']
+
+        # create new radar object with only data for the given rhi and range
+        az_vec = np.sort(dataset.fixed_angle['data'])
+        az = az_vec[prdcfg['anglenr']]
+        ind_az = np.where(dataset.fixed_angle['data'] == az)[0][0]
+
+        new_dataset = dataset.extract_sweeps([ind_az])
+        field = new_dataset.fields[field_name]
+        rng_mask = np.logical_and(new_dataset.range['data'] >= rangeStart,
+                                  new_dataset.range['data'] <= rangeStop)
+        field['data'] = field['data'][:, rng_mask]
+        new_dataset.range['data'] = new_dataset.range['data'][rng_mask]
+        new_dataset.ngates = len(new_dataset.range['data'])
+        new_dataset.init_gate_x_y_z()
+        new_dataset.init_gate_longitude_latitude()
+        new_dataset.init_gate_altitude()
+
+        new_dataset.fields = dict()
+        new_dataset.add_field(field_name, field)
+
+        # compute quantities
+        if hmin_user is None:
+            minheight = (
+                round(np.min(dataset.gate_altitude['data']) /
+                      heightResolution)*heightResolution-heightResolution)
+        else:
+            minheight = hmin_user
+        if hmax_user is None:
+            maxheight = (
+                round(np.max(dataset.gate_altitude['data']) /
+                      heightResolution)*heightResolution+heightResolution)
+        else:
+            maxheight = hmax_user
+        nlevels = int((maxheight-minheight)/heightResolution)
+
+        h_vec = minheight+np.arange(nlevels)*heightResolution+heightResolution/2.
+        vals, val_valid = compute_profile_stats(
+            field['data'], new_dataset.gate_altitude['data'], h_vec,
+            heightResolution, quantity=quantity, quantiles=quantiles/100.,
+            nvalid_min=nvalid_min)
+
+        # plot data
+        if quantity == 'mean':
+            data = [vals[:, 0], vals[:, 1], vals[:, 2]]
+            labels = ['Mean', 'Min', 'Max']
+            colors = ['b', 'k', 'k']
+            linestyles = ['-', '--', '--']
+        elif quantity == 'mode':
+            data = [vals[:, 0], vals[:, 2], vals[:, 4]]
+            labels = ['Mode', '2nd most common', '3rd most common']
+            colors = ['b', 'k', 'r']
+            linestyles = ['-', '--', '--']
+        else:
+            data = [vals[:, 1], vals[:, 0], vals[:, 2]]
+            labels = [
+                str(quantiles[1])+'-percentile',
+                str(quantiles[0])+'-percentile',
+                str(quantiles[2])+'-percentile']
+            colors = ['b', 'k', 'k']
+            linestyles = ['-', '--', '--']
+
+        labelx = get_colobar_label(dataset.fields[field_name], field_name)
+        titl = (
+            pyart.graph.common.generate_radar_time_begin(
+                dataset).isoformat() + 'Z' + '\n' +
+            get_field_name(dataset.fields[field_name], field_name))
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        prdcfginfo = 'az'+'{:.1f}'.format(az)+'hres'+str(int(heightResolution))
+        fname_list = make_filename(
+            'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo=prdcfginfo,
+            timeinfo=prdcfg['timeinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        plot_rhi_profile(
+            data, h_vec, fname_list, labelx=labelx, labely='Height (m MSL)',
+            labels=labels, title=titl, colors=colors,
+            linestyles=linestyles)
+
+        print('----- save to '+' '.join(fname_list))
+
+        fname = make_filename(
+            'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
+            ['csv'], prdcfginfo=prdcfginfo,
+            timeinfo=prdcfg['timeinfo'])[0]
+
+        fname = savedir+fname
+
+        if quantity == 'mode':
+            data.append(vals[:, 1])
+            labels.append('% points mode')
+            data.append(vals[:, 3])
+            labels.append('% points 2nd most common')
+            data.append(vals[:, 5])
+            labels.append('% points 3rd most common')
+
+        sector = {
+            'rmin': rangeStart,
+            'rmax': rangeStop,
+            'az': az
+        }
+        write_rhi_profile(
+            h_vec, data, val_valid, labels, fname, datatype=labelx,
+            timeinfo=prdcfg['timeinfo'], sector=sector)
+
+        print('----- save to '+fname)
+
+        # TODO: add Cartesian interpolation option
+
+        return fname
+
+    elif prdcfg['type'] == 'PROFILE_STATS':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # mask unclassified data
+        field = deepcopy(dataset.fields[field_name]['data'])
+        if prdcfg['voltype'] == 'hydro':
+            field = np.ma.masked_equal(field, 0)
+
+        # user defined parameters
+        heightResolution = prdcfg.get('heightResolution', 100.)
+        hmin_user = prdcfg.get('heightMin', None)
+        hmax_user = prdcfg.get('heightMax', None)
+        quantity = prdcfg.get('quantity', 'quantiles')
+        quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.]))
+        nvalid_min = prdcfg.get('nvalid_min', 4)
+
+        fixed_span = prdcfg.get('fixed_span', 1)
+        vmin = None
+        vmax = None
+        if fixed_span:
+            vmin, vmax = pyart.config.get_field_limits(field_name)
+            if 'vmin' in prdcfg:
+                vmin = prdcfg['vmin']
+            if 'vmax' in prdcfg:
+                vmax = prdcfg['vmax']
+
+        # compute quantities
+        if hmin_user is None:
+            minheight = (round(
+                np.min(dataset.gate_altitude['data']) /
+                heightResolution)*heightResolution-heightResolution)
+        else:
+            minheight = hmin_user
+        if hmax_user is None:
+            maxheight = (round(
+                np.max(dataset.gate_altitude['data']) /
+                heightResolution)*heightResolution+heightResolution)
+        else:
+            maxheight = hmax_user
+        nlevels = int((maxheight-minheight)/heightResolution)
+
+        h_vec = minheight+np.arange(nlevels)*heightResolution+heightResolution/2.
+        vals, val_valid = compute_profile_stats(
+            field, dataset.gate_altitude['data'], h_vec, heightResolution,
+            quantity=quantity, quantiles=quantiles/100.,
+            nvalid_min=nvalid_min)
+
+        # plot data
+        if quantity == 'mean':
+            data = [vals[:, 0], vals[:, 1], vals[:, 2]]
+            labels = ['Mean', 'Min', 'Max']
+            colors = ['b', 'k', 'k']
+            linestyles = ['-', '--', '--']
+        elif quantity == 'mode':
+            data = [vals[:, 0], vals[:, 2], vals[:, 4]]
+            labels = ['Mode', '2nd most common', '3rd most common']
+            colors = ['b', 'k', 'r']
+            linestyles = ['-', '--', '--']
+        else:
+            data = [vals[:, 1], vals[:, 0], vals[:, 2]]
+            labels = [
+                str(quantiles[1])+'-percentile',
+                str(quantiles[0])+'-percentile',
+                str(quantiles[2])+'-percentile']
+            colors = ['b', 'k', 'k']
+            linestyles = ['-', '--', '--']
+
+        labelx = get_colobar_label(dataset.fields[field_name], field_name)
+        titl = (
+            pyart.graph.common.generate_radar_time_begin(
+                dataset).isoformat() + 'Z' + '\n' +
+            get_field_name(dataset.fields[field_name], field_name))
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        prdcfginfo = 'hres'+str(int(heightResolution))
+        fname_list = make_filename(
+            'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo=prdcfginfo,
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        plot_rhi_profile(
+            data, h_vec, fname_list, labelx=labelx, labely='Height (m MSL)',
+            labels=labels, title=titl, colors=colors,
+            linestyles=linestyles, vmin=vmin, vmax=vmax,
+            hmin=minheight, hmax=maxheight)
+
+        print('----- save to '+' '.join(fname_list))
+
+        fname = make_filename(
+            'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
+            ['csv'], prdcfginfo=prdcfginfo,
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])[0]
+
+        fname = savedir+fname
+
+        if quantity == 'mode':
+            data.append(vals[:, 1])
+            labels.append('% points mode')
+            data.append(vals[:, 3])
+            labels.append('% points 2nd most common')
+            data.append(vals[:, 5])
+            labels.append('% points 3rd most common')
+
+        write_rhi_profile(
+            h_vec, data, val_valid, labels, fname, datatype=labelx,
+            timeinfo=prdcfg['timeinfo'])
+
+        print('----- save to '+fname)
+
+        # TODO: add Cartesian interpolation option
+
+        return fname
 
     elif prdcfg['type'] == 'PSEUDOPPI_MAP':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -807,9 +937,8 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfg['type'])
             return None
 
-        step = None
-        if 'step' in prdcfg:
-            step = prdcfg['step']
+        step = prdcfg.get('step', None)
+        write_data = prdcfg.get('write_data', 0)
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -818,7 +947,7 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'histogram', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -838,6 +967,19 @@ def generate_vol_products(dataset, prdcfg):
 
         print('----- save to '+' '.join(fname_list))
 
+        if write_data:
+            fname = savedir+make_filename(
+                'histogram', prdcfg['dstype'], prdcfg['voltype'],
+                ['csv'], timeinfo=prdcfg['timeinfo'],
+                runinfo=prdcfg['runinfo'])[0]
+
+            hist, bin_edges = np.histogram(values, bins=bins)
+            write_histogram(
+                bins, hist, fname, datatype=prdcfg['voltype'], step=step)
+            print('----- save to '+fname)
+
+            return fname
+
         return fname_list
 
     elif prdcfg['type'] == 'QUANTILES':
@@ -849,9 +991,24 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfg['type'])
             return None
 
-        quantiles = None
-        if 'quantiles' in prdcfg:
-            quantiles = prdcfg['quantiles']
+        # mask unclassified data
+        field = deepcopy(dataset.fields[field_name]['data'])
+        if prdcfg['voltype'] == 'hydro':
+            field = np.ma.masked_equal(field, 0)
+
+        # user defined variables
+        quantiles = prdcfg.get('quantiles', None)
+        write_data = prdcfg.get('write_data', 0)
+
+        fixed_span = prdcfg.get('fixed_span', 1)
+        vmin = None
+        vmax = None
+        if fixed_span:
+            vmin, vmax = pyart.config.get_field_limits(field_name)
+            if 'vmin' in prdcfg:
+                vmin = prdcfg['vmin']
+            if 'vmax' in prdcfg:
+                vmax = prdcfg['vmax']
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -860,13 +1017,12 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'quantiles', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        quantiles, values = compute_quantiles(
-            dataset.fields[field_name]['data'], quantiles=quantiles)
+        quantiles, values = compute_quantiles(field, quantiles=quantiles)
 
         titl = (
             pyart.graph.common.generate_radar_time_begin(
@@ -876,9 +1032,21 @@ def generate_vol_products(dataset, prdcfg):
         labely = get_colobar_label(dataset.fields[field_name], field_name)
 
         plot_quantiles(quantiles, values, fname_list, labelx='quantile',
-                       labely=labely, titl=titl)
+                       labely=labely, titl=titl, vmin=vmin, vmax=vmax)
 
         print('----- save to '+' '.join(fname_list))
+
+        if write_data:
+            fname = savedir+make_filename(
+                'quantiles', prdcfg['dstype'], prdcfg['voltype'],
+                ['csv'], timeinfo=prdcfg['timeinfo'],
+                runinfo=prdcfg['runinfo'])[0]
+
+            write_quantiles(
+                quantiles, values, fname, datatype=prdcfg['voltype'])
+            print('----- save to '+fname)
+
+            return fname
 
         return fname_list
 
@@ -1238,7 +1406,7 @@ def generate_vol_products(dataset, prdcfg):
 
         fname = make_filename(
             'savevol', prdcfg['dstype'], prdcfg['voltype'], ['nc'],
-            timeinfo=prdcfg['timeinfo'])[0]
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])[0]
 
         fname = savedir+fname
 
@@ -1254,7 +1422,7 @@ def generate_vol_products(dataset, prdcfg):
 
         fname = make_filename(
             'savevol', prdcfg['dstype'], 'all_fields', ['nc'],
-            timeinfo=prdcfg['timeinfo'])[0]
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])[0]
 
         fname = savedir+fname
 

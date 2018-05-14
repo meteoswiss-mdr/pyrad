@@ -177,7 +177,7 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
     return fname_list
 
 
-def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
+def plot_scatter(bin_edges1, bin_edges2, hist_2d, field_name1, field_name2, fname_list,
                  prdcfg, metadata=None, lin_regr=None, lin_regr_slope1=None,
                  rad1_name='RADAR001', rad2_name='RADAR002'):
     """
@@ -185,7 +185,7 @@ def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
 
     Parameters
     ----------
-    bins1, bins2 : float array2
+    bin_edges1, bin_edges2 : float array2
         the bins of each field
     hist_2d : ndarray 2D
         the 2D histogram
@@ -233,17 +233,23 @@ def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
     cax = ax.imshow(
         np.ma.transpose(hist_2d), origin='lower', cmap=cmap, vmin=0.,
         vmax=np.max(hist_2d),
-        extent=(bins1[0], bins1[-1], bins2[0], bins2[-1]),
+        extent=(bin_edges1[0], bin_edges1[-1], bin_edges2[0], bin_edges2[-1]),
         aspect='auto', interpolation='none')
 
     # plot reference
-    plt.plot(bins1, bins2, 'k--')
+    step1 = bin_edges1[1]-bin_edges1[0]
+    bin_centers1 = bin_edges1[0:-1]+step1/2.
+
+    step2 = bin_edges2[1]-bin_edges2[0]
+    bin_centers2 = bin_edges2[0:-1]+step2/2.
+
+    plt.plot(bin_centers1, bin_centers2, 'k--')
 
     # plot linear regression
     if lin_regr is not None:
-        plt.plot(bins1, lin_regr[0]*bins1+lin_regr[1], 'r')
+        plt.plot(bin_centers1, lin_regr[0]*bin_centers1+lin_regr[1], 'r')
     if lin_regr_slope1 is not None:
-        plt.plot(bins1, bins1+lin_regr_slope1, 'g')
+        plt.plot(bin_centers1, bin_centers1+lin_regr_slope1, 'g')
 
     plt.autoscale(enable=True, axis='both', tight=True)
 
@@ -269,7 +275,7 @@ def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
 
 
 def plot_quantiles(quant, value, fname_list, labelx='quantile', labely='value',
-                   titl='quantile', dpi=72):
+                   titl='quantile', vmin=None, vmax=None, dpi=72):
     """
     plots quantiles
 
@@ -287,6 +293,8 @@ def plot_quantiles(quant, value, fname_list, labelx='quantile', labely='value',
         The label of the Y axis
     titl : str
         The figure title
+    vmin, vmax: float
+        Lower/Upper limit of data values
     dpi : int
         dots per inch
 
@@ -296,11 +304,15 @@ def plot_quantiles(quant, value, fname_list, labelx='quantile', labely='value',
         list of names of the created plots
 
     """
-    fig = plt.figure(figsize=[10, 6], dpi=dpi)
-    plt.plot(quant, value, 'bx-')
-    plt.xlabel(labelx)
-    plt.ylabel(labely)
-    plt.title(titl)
+    fig, ax = plt.subplots(figsize=[10, 6], dpi=dpi)
+    ax.plot(quant, value, 'bx-')
+    ax.set_xlabel(labelx)
+    ax.set_ylabel(labely)
+    ax.set_ylim(bottom=vmin, top=vmax)
+    ax.set_title(titl)
+
+    # Turn on the grid
+    ax.grid()
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
@@ -309,15 +321,15 @@ def plot_quantiles(quant, value, fname_list, labelx='quantile', labely='value',
     return fname_list
 
 
-def plot_histogram(bins, values, fname_list, labelx='bins',
+def plot_histogram(bin_edges, values, fname_list, labelx='bins',
                    labely='Number of Samples', titl='histogram', dpi=72):
     """
     computes and plots histogram
 
     Parameters
     ----------
-    bins : array
-        histogram bins
+    bin_edges : array
+        histogram bin edges
     values : array
         data values
     fname_list : list of str
@@ -338,7 +350,7 @@ def plot_histogram(bins, values, fname_list, labelx='bins',
 
     """
     fig = plt.figure(figsize=[10, 6], dpi=dpi)
-    plt.hist(values, bins=bins)
+    plt.hist(values, bins=bin_edges)
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)
@@ -353,15 +365,15 @@ def plot_histogram(bins, values, fname_list, labelx='bins',
     return fname_list
 
 
-def plot_histogram2(bins, hist, fname_list, labelx='bins',
+def plot_histogram2(bin_centers, hist, fname_list, labelx='bins',
                     labely='Number of Samples', titl='histogram', dpi=72):
     """
     plots histogram
 
     Parameters
     ----------
-    quant : array
-        histogram bins
+    bin_centers : array
+        histogram bin centers
     hist : array
         values for each bin
     fname_list : list of str
@@ -382,7 +394,7 @@ def plot_histogram2(bins, hist, fname_list, labelx='bins',
 
     """
     fig = plt.figure(figsize=[10, 6], dpi=dpi)
-    plt.bar(bins, hist, width=bins[1]-bins[0])
+    plt.bar(bin_centers, hist, width=bin_centers[1]-bin_centers[0])
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)
