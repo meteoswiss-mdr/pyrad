@@ -241,6 +241,16 @@ def generate_vol_products(dataset, prdcfg):
         quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.]))
         nvalid_min = prdcfg.get('nvalid_min', 4)
 
+        fixed_span = prdcfg.get('fixed_span', 1)
+        vmin = None
+        vmax = None
+        if fixed_span:
+            vmin, vmax = pyart.config.get_field_limits(field_name)
+            if 'vmin' in prdcfg:
+                vmin = prdcfg['vmin']
+            if 'vmax' in prdcfg:
+                vmax = prdcfg['vmax']
+
         # create new radar object with only data for the given rhi and range
         az_vec = np.sort(dataset.fixed_angle['data'])
         az = az_vec[prdcfg['anglenr']]
@@ -277,8 +287,8 @@ def generate_vol_products(dataset, prdcfg):
 
         h_vec = minheight+np.arange(nlevels)*heightResolution+heightResolution/2.
         vals, val_valid = compute_profile_stats(
-            field, new_dataset.gate_altitude['data'], h_vec, heightResolution,
-            quantity=quantity, quantiles=quantiles/100.,
+            field['data'], new_dataset.gate_altitude['data'], h_vec,
+            heightResolution, quantity=quantity, quantiles=quantiles/100.,
             nvalid_min=nvalid_min)
 
         # plot data
@@ -286,6 +296,11 @@ def generate_vol_products(dataset, prdcfg):
             data = [vals[:, 0], vals[:, 1], vals[:, 2]]
             labels = ['Mean', 'Min', 'Max']
             colors = ['b', 'k', 'k']
+            linestyles = ['-', '--', '--']
+        elif quantity == 'mode':
+            data = [vals[:, 0], vals[:, 2], vals[:, 4]]
+            labels = ['Mode', '2nd most common', '3rd most common']
+            colors = ['b', 'k', 'r']
             linestyles = ['-', '--', '--']
         else:
             data = [vals[:, 1], vals[:, 0], vals[:, 2]]
@@ -328,6 +343,14 @@ def generate_vol_products(dataset, prdcfg):
             timeinfo=prdcfg['timeinfo'])[0]
 
         fname = savedir+fname
+
+        if quantity == 'mode':
+            data.append(vals[:, 1])
+            labels.append('% points mode')
+            data.append(vals[:, 3])
+            labels.append('% points 2nd most common')
+            data.append(vals[:, 5])
+            labels.append('% points 3rd most common')
 
         sector = {
             'rmin': rangeStart,

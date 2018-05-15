@@ -110,9 +110,10 @@ def main():
     hres = 250
 
     for i, trt_cell_id in enumerate(trt_cell_id_list):
+        print('\n\nPost-processing cell: '+trt_cell_id)
         dt_str = trt_cell_id[0:12]
-        dt = datetime.datetime.strptime(dt_str, "%Y%m%d%H%M")
-        time_dir = dt.strftime("%Y-%m-%d")
+        dt_cell = datetime.datetime.strptime(dt_str, "%Y%m%d%H%M")
+        time_dir = dt_cell.strftime("%Y-%m-%d")
         for j, datatype in enumerate(datatype_list):
             dataset = dataset_list[j]
             file_base2 = file_base+time_dir+'/'+dataset+'_trt_traj/'
@@ -141,7 +142,7 @@ def main():
                     labels = [
                         'Mode', '2nd most common', '3rd most common',
                         '% points mode', '% points 2nd most common',
-                        '% points 3nd most common']
+                        '% points 3rd most common']
                 tbin_edges, hbin_edges, data_ma = read_profile_ts(
                     flist, labels, hres=hres)
 

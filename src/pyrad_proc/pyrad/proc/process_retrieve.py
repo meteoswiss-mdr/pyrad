@@ -527,7 +527,7 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
         rain = pyart.retrieve.est_rain_rate_za(
             radar, alphaz=0.0376, betaz=0.6112, alphaa=None, betaa=None,
             refl_field=refl_field, a_field=a_field, rr_field=None,
-            master_field=refl_field, thresh=0.04, thresh_max=False)
+            master_field=refl_field, thresh=5., thresh_max=True)
 
     elif dscfg['RR_METHOD'] == 'hydro':
         for datatypedescr in dscfg['datatype']:
@@ -557,7 +557,7 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
                 radar, alphazr=0.0376, betazr=0.6112, alphazs=0.1, betazs=0.5,
                 alphaa=None, betaa=None, mp_factor=0.6, refl_field=refl_field,
                 a_field=a_field, hydro_field=hydro_field, rr_field=None,
-                master_field=refl_field, thresh=0.04, thresh_max=True)
+                master_field=refl_field, thresh=5., thresh_max=True)
         elif refl_field in radar.fields:
             warn('Unable to compute rainfall rate using hydrometeor ' +
                  'classification. Missing data. ' +
@@ -569,6 +569,10 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
             warn('Unable to compute rainfall rate using hydrometeor ' +
                  'classification. Missing data.')
             return None, None
+    else:
+        raise Exception(
+            "ERROR: Unknown rainfall rate retrieval method " +
+            dscfg['RR_METHOD'])
 
     # prepare for exit
     new_dataset = deepcopy(radar)

@@ -69,7 +69,8 @@ def read_profile_ts(fname_list, labels, hres=None):
     data_ma = []
     datetime_arr = np.ma.array([], dtype=datetime.datetime)
     for fname in fname_list:
-        datetime_arr = np.append(datetime_arr, _get_datetime(fname, 'RAINBOW'))
+        datetime_arr = np.append(
+            datetime_arr, _get_datetime(fname, 'RAINBOW'))
         height, np_t, vals = read_rhi_profile(fname, labels)
         if hres is None:
             hres = np.mean(height[1:]-height[:-1])
@@ -88,7 +89,9 @@ def read_profile_ts(fname_list, labels, hres=None):
     for j, dt in enumerate(datetime_arr):
         dt_s[j] = (dt-datetime_arr[0]).total_seconds()
 
-    t_res = np.mean(dt_s[1:]-dt_s[:-1])
+    t_res = 300.
+    if dt_s.size > 1:
+        t_res = np.mean(dt_s[1:]-dt_s[:-1])
     tbin_edges = np.append(dt_s-t_res, dt_s[-1])
 
     return tbin_edges, hbin_edges, data_ma
@@ -114,7 +117,8 @@ def read_histogram_ts(fname_list, datatype):
     data_ma = []
     datetime_arr = np.ma.array([], dtype=datetime.datetime)
     for fname in fname_list:
-        datetime_arr = np.append(datetime_arr, _get_datetime(fname, 'RAINBOW'))
+        datetime_arr = np.append(
+            datetime_arr, _get_datetime(fname, 'RAINBOW'))
         hist, bin_edges = read_histogram(fname)
         if datatype == 'hydro':
             hist[0] = 0
@@ -138,7 +142,9 @@ def read_histogram_ts(fname_list, datatype):
     for j, dt in enumerate(datetime_arr):
         dt_s[j] = (dt-datetime_arr[0]).total_seconds()
 
-    t_res = np.mean(dt_s[1:]-dt_s[:-1])
+    t_res = 300.
+    if dt_s.size > 1:
+        t_res = np.mean(dt_s[1:]-dt_s[:-1])
     tbin_edges = np.append(dt_s-t_res, dt_s[-1])
 
     return tbin_edges, bin_edges, data_ma
@@ -164,9 +170,11 @@ def read_quantiles_ts(fname_list, step=5., qmin=0., qmax=100.):
     data_ma = []
     datetime_arr = np.ma.array([], dtype=datetime.datetime)
     for fname in fname_list:
-        datetime_arr = np.append(datetime_arr, _get_datetime(fname, 'RAINBOW'))
+        datetime_arr = np.append(
+            datetime_arr, _get_datetime(fname, 'RAINBOW'))
         quantiles, values = read_quantiles(fname)
-        qbin_edges = np.arange(qmin-step/2, qmax+step/2+step/2, step=step, dtype=float)
+        qbin_edges = np.arange(
+            qmin-step/2, qmax+step/2+step/2, step=step, dtype=float)
         values_aux = np.ma.empty(qbin_edges.size-1, dtype=float)
         values_aux[:] = np.ma.masked
         qbin_centers = np.arange(qmin, qmax+step/2, step=step)
@@ -187,7 +195,9 @@ def read_quantiles_ts(fname_list, step=5., qmin=0., qmax=100.):
     for j, dt in enumerate(datetime_arr):
         dt_s[j] = (dt-datetime_arr[0]).total_seconds()
 
-    t_res = np.mean(dt_s[1:]-dt_s[:-1])
+    t_res = 300.
+    if dt_s.size > 1:
+        t_res = np.mean(dt_s[1:]-dt_s[:-1])
     tbin_edges = np.append(dt_s-t_res, dt_s[-1])
 
     return tbin_edges, qbin_edges, data_ma
