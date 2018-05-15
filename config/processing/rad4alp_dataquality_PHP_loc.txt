@@ -83,12 +83,12 @@ RadarBeamwidth FLOAT 1.0
 AntennaGain FLOAT 44.6
 
 # receiver losses from antenna feed to reference point [dB]
-lrxh FLOAT 0.
-lrxv FLOAT 0.
+lrxh FLOAT 2.06
+lrxv FLOAT 2.29
 
 # dry radome losses [dB]
-lradomeh FLOAT 0.
-lradomev FLOAT 0.
+lradomeh FLOAT 0.2
+lradomev FLOAT 0.2
   
 ## Image config
 ppiImageConfig STRUCT 7

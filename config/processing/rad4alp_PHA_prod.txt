@@ -4,19 +4,19 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 12
+dataSetList STRARR 2
     l0:dBZ
     l0:ZDR
-    l0:uPhiDP
-    l0:uRhoHV
-    l0:SNRh
-    l1:RhoHV
-    l0:TEMP
-    l2:echoID
-    l3:echoFilter
-    l4:SNRFilter    
-    l5:KDPc_Vulpiani
-    l6:Att_ZPhi_Vulpiani
+#    l0:uPhiDP
+#    l0:uRhoHV
+#    l0:SNRh
+#    l1:RhoHV
+#    l0:TEMP
+#    l2:echoID
+#    l3:echoFilter
+#    l4:SNRFilter    
+#    l5:KDPc_Vulpiani
+#    l6:Att_ZPhi_Vulpiani
     
 
 # ==========================================================================================

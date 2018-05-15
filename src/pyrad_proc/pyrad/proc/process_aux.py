@@ -13,6 +13,7 @@ determined points or regions of interest.
     process_raw
     process_save_radar
     process_point_measurement
+    process_roi
     process_grid
     process_qvp
     process_time_height
@@ -20,21 +21,23 @@ determined points or regions of interest.
 
 from copy import deepcopy
 from warnings import warn
-import datetime
 import numpy as np
 from netCDF4 import num2date
 
 import pyart
 
 from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
+from ..io.read_data_sensor import read_trt_traj_data
 from .process_traj import process_trajectory, process_traj_atplane
 from .process_traj import process_traj_antenna_pattern, process_traj_lightning
-from ..util.radar_utils import find_rng_index
+from .process_traj import process_traj_trt
+from ..util.radar_utils import find_rng_index, belongs_roi_indices
 
 
 def get_process_func(dataset_type, dsname):
     """
-    maps the dataset type into its processing function and data set format
+    Maps the dataset type into its processing function and data set format
+    associated.
 
     Parameters
     ----------
@@ -45,7 +48,7 @@ def get_process_func(dataset_type, dsname):
 
     Returns
     -------
-    func_name : str or function
+    func_name : str or processing function
         pyrad function used to process the data set type
     dsformat : str
         data set format, i.e.: 'VOL', etc.
@@ -82,6 +85,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_cdr'
     elif dataset_type == 'SAN':
         func_name = 'process_echo_id'
+    elif dataset_type == 'CLT_TO_SAN':
+        func_name = 'process_clt_to_echo_id'
     elif dataset_type == 'ECHO_FILTER':
         func_name = 'process_echo_filter'
     elif dataset_type == 'SNR_FILTER':
@@ -167,12 +172,23 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'MONITORING':
         func_name = 'process_monitoring'
         dsformat = 'MONITORING'
+    elif dataset_type == 'GC_MONITORING':
+        func_name = 'process_gc_monitoring'
+        dsformat = 'MONITORING'
+    elif dataset_type == 'OCCURRENCE':
+        func_name = 'process_occurrence'
+        dsformat = 'OCCURRENCE'
+    elif dataset_type == 'OCCURRENCE_PERIOD':
+        func_name = 'process_occurrence_period'
+        dsformat = 'OCCURRENCE'
     elif dataset_type == 'SUN_HITS':
         func_name = 'process_sun_hits'
         dsformat = 'SUN_HITS'
     elif dataset_type == 'POINT_MEASUREMENT':
         func_name = process_point_measurement
         dsformat = 'TIMESERIES'
+    elif dataset_type == 'ROI':
+        func_name = process_roi
     elif dataset_type == 'TRAJ':
         func_name = process_trajectory
         dsformat = 'TRAJ_ONLY'
@@ -185,6 +201,8 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'TRAJ_LIGHTNING':
         func_name = process_traj_lightning
         dsformat = 'TIMESERIES'
+    elif dataset_type == 'TRAJ_TRT':
+        func_name = process_traj_trt
     else:
         raise ValueError("ERROR: Unknown dataset type '%s' of dataset '%s'"
                          % (dataset_type, dsname))
@@ -194,7 +212,7 @@ def get_process_func(dataset_type, dsname):
 
 def process_raw(procstatus, dscfg, radar_list=None):
     """
-    dummy function that returns the initial input data set
+    Dummy function that returns the initial input data set
 
     Parameters
     ----------
@@ -223,7 +241,7 @@ def process_raw(procstatus, dscfg, radar_list=None):
             datatypedescr)
         break
     ind_rad = int(radarnr[5:8])-1
-    if ((radar_list is None) or (radar_list[ind_rad] is None)):
+    if (radar_list is None) or (radar_list[ind_rad] is None):
         warn('ERROR: No valid radar')
         return None, None
     new_dataset = deepcopy(radar_list[ind_rad])
@@ -233,7 +251,7 @@ def process_raw(procstatus, dscfg, radar_list=None):
 
 def process_save_radar(procstatus, dscfg, radar_list=None):
     """
-    dummy function that allows to save the entire radar object
+    Dummy function that allows to save the entire radar object
 
     Parameters
     ----------
@@ -262,7 +280,7 @@ def process_save_radar(procstatus, dscfg, radar_list=None):
             datatypedescr)
         break
     ind_rad = int(radarnr[5:8])-1
-    if ((radar_list is None) or (radar_list[ind_rad] is None)):
+    if (radar_list is None) or (radar_list[ind_rad] is None):
         warn('ERROR: No valid radar')
         return None, None
     new_dataset = deepcopy(radar_list[ind_rad])
@@ -272,7 +290,7 @@ def process_save_radar(procstatus, dscfg, radar_list=None):
 
 def process_point_measurement(procstatus, dscfg, radar_list=None):
     """
-    Obtains the radar data at a point measurement
+    Obtains the radar data at a point location.
 
     Parameters
     ----------
@@ -284,41 +302,53 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
 
         datatype : string. Dataset keyword
             The data type where we want to extract the point measurement
+
         latlon : boolean. Dataset keyword
             if True position is obtained from latitude, longitude information,
             otherwise position is obtained from antenna coordinates
             (range, azimuth, elevation).
+
         truealt : boolean. Dataset keyword
             if True the user input altitude is used to determine the point of
             interest.
             if False use the altitude at a given radar elevation ele over the
             point of interest.
+
         lon : float. Dataset keyword
             the longitude [deg]. Use when latlon is True.
+
         lat : float. Dataset keyword
             the latitude [deg]. Use when latlon is True.
+
         alt : float. Dataset keyword
             altitude [m MSL]. Use when latlon is True.
+
         ele : float. Dataset keyword
             radar elevation [deg]. Use when latlon is False or when latlon is
             True and truealt is False
+
         azi : float. Dataset keyword
             radar azimuth [deg]. Use when latlon is False
+
         rng : float. Dataset keyword
             range from radar [m]. Use when latlon is False
+
         AziTol : float. Dataset keyword
             azimuthal tolerance to determine which radar azimuth to use [deg]
+
         EleTol : float. Dataset keyword
             elevation tolerance to determine which radar elevation to use [deg]
+
         RngTol : float. Dataset keyword
             range tolerance to determine which radar bin to use [m]
+
     radar_list : list of Radar objects
-        Optional. list of radar objects
+          Optional. list of radar objects
 
     Returns
     -------
     new_dataset : dict
-        dictionary containing the data and metadata of the point of interest
+        dictionary containing the data and metadata at the point of interest
     ind_rad : int
         radar index
 
@@ -349,7 +379,7 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
 
         return new_dataset, ind_rad
 
-    if ((radar_list is None) or (radar_list[ind_rad] is None)):
+    if (radar_list is None) or (radar_list[ind_rad] is None):
         warn('ERROR: No valid radar')
         return None, None
     radar = radar_list[ind_rad]
@@ -447,12 +477,174 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
         {'point_coordinates_WGS84_lon_lat_alt': [lon, lat, alt]})
     new_dataset.update({'antenna_coordinates_az_el_r': [az, el, r]})
     new_dataset.update(
-        {'used_antenna_coordinates_az_el_r': [radar.azimuth['data'][ind_ray],
-         radar.elevation['data'][ind_ray],
-         radar.range['data'][ind_r]]})
+        {'used_antenna_coordinates_az_el_r': [
+            radar.azimuth['data'][ind_ray],
+            radar.elevation['data'][ind_ray],
+            radar.range['data'][ind_r]]})
     new_dataset.update({'final': False})
 
     return new_dataset, ind_rad
+
+
+def process_roi(procstatus, dscfg, radar_list=None):
+    """
+    Obtains the radar data at a region of interest.
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : string. Dataset keyword
+            The data type where we want to extract the point measurement
+
+    radar_list : list of Radar objects
+          Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the data and metadata at the point of interest
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    for datatypedescr in dscfg['datatype']:
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        break
+    field_name = get_fieldname_pyart(datatype)
+    ind_rad = int(radarnr[5:8])-1
+
+    if (radar_list is None) or (radar_list[ind_rad] is None):
+        warn('ERROR: No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if field_name not in radar.fields:
+        warn('Unable to extract ROI information. ' +
+             'Field not available')
+        return None, None
+
+    if 'trtfile' in dscfg:
+        (traj_ID, yyyymmddHHMM, lon, lat, ell_L, ell_S, ell_or, area,
+         vel_x, vel_y, det, RANKr, CG_n, CG_p, CG, CG_percent_p, ET45,
+         ET45m, ET15, ET15m, VIL, maxH, maxHm, POH, RANK, Dvel_x,
+         Dvel_y, cell_contour) = read_trt_traj_data(dscfg['trtfile'])
+
+        time_tol = dscfg.get('TimeTol', 100.)
+        dt = np.empty(yyyymmddHHMM.size, dtype=float)
+        for i, time_traj in enumerate(yyyymmddHHMM):
+            dt[i] = np.abs((dscfg['timeinfo'] - time_traj).total_seconds())
+        if dt.min() > time_tol:
+            warn('No TRT data for radar volume time')
+            return None, None
+
+        ind = np.argmin(dt)
+        lon_roi = cell_contour[ind]['lon']
+        lat_roi = cell_contour[ind]['lat']
+    else:
+        lon_roi = dscfg.get('lon_roi', None)
+        lat_roi = dscfg.get('lat_roi', None)
+
+        if lon_roi is None or lat_roi is None:
+            warn('Undefined ROI')
+            return None, None
+
+    alt_min = dscfg.get('alt_min', None)
+    alt_max = dscfg.get('alt_max', None)
+
+    roi_dict = {
+        'lon': lon_roi,
+        'lat': lat_roi,
+        'alt_min': alt_min,
+        'alt_max': alt_max}
+
+    # extract the data within the ROI boundaries
+    inds_ray, inds_rng = np.indices(np.shape(radar.gate_longitude['data']))
+
+    mask = np.logical_and(
+        np.logical_and(
+            radar.gate_latitude['data'] >= roi_dict['lat'].min(),
+            radar.gate_latitude['data'] <= roi_dict['lat'].max()),
+        np.logical_and(
+            radar.gate_longitude['data'] >= roi_dict['lon'].min(),
+            radar.gate_longitude['data'] <= roi_dict['lon'].max()))
+
+    if alt_min is not None:
+        mask[radar.gate_altitude['data'] < alt_min] = 0
+    if alt_max is not None:
+        mask[radar.gate_altitude['data'] > alt_max] = 0
+
+    if np.all(mask == 0):
+        warn('No values within ROI')
+        return None, None
+
+    inds_ray = inds_ray[mask]
+    inds_rng = inds_rng[mask]
+
+    # extract the data inside the ROI
+    lat = radar.gate_latitude['data'][mask]
+    lon = radar.gate_longitude['data'][mask]
+    inds, is_roi = belongs_roi_indices(lat, lon, roi_dict)
+
+    if is_roi == 'None':
+        warn('No values within ROI')
+        return None, None
+
+    inds_ray = inds_ray[inds]
+    inds_rng = inds_rng[inds]
+
+    lat = lat[inds].T
+    lon = lon[inds].T
+    alt = radar.gate_altitude['data'][inds_ray, inds_rng].T
+
+    # prepare new radar object output
+    radar_roi = deepcopy(radar)
+
+    radar_roi.range['data'] = radar.range['data'][inds_rng]
+    radar_roi.ngates = inds_rng.size
+    radar_roi.time['data'] = np.asarray([radar_roi.time['data'][0]])
+    radar_roi.scan_type = 'roi'
+    radar_roi.sweep_mode['data'] = np.array(['roi'])
+    radar_roi.sweep_start_ray_index['data'] = np.array([0], dtype='int32')
+    radar_roi.fixed_angle['data'] = np.array([], dtype='float64')
+    radar_roi.sweep_number['data'] = np.array([0], dtype='int32')
+    radar_roi.nsweeps = 1
+
+    if radar.rays_are_indexed is not None:
+        radar_roi.rays_are_indexed['data'] = np.array(
+            [radar.rays_are_indexed['data'][0]])
+    if radar.ray_angle_res is not None:
+        radar_roi.ray_angle_res['data'] = np.array(
+            [radar.ray_angle_res['data'][0]])
+
+    radar_roi.sweep_end_ray_index['data'] = np.array([1], dtype='int32')
+    radar_roi.rays_per_sweep = np.array([1], dtype='int32')
+    radar_roi.azimuth['data'] = np.array([], dtype='float64')
+    radar_roi.elevation['data'] = np.array([], dtype='float64')
+    radar_roi.nrays = 1
+
+    radar_roi.gate_longitude['data'] = lon
+    radar_roi.gate_latitude['data'] = lat
+    radar_roi.gate_altitude['data'] = alt
+
+    radar_roi.gate_x['data'] = radar.gate_x['data'][inds_ray, inds_rng].T
+    radar_roi.gate_y['data'] = radar.gate_y['data'][inds_ray, inds_rng].T
+    radar_roi.gate_z['data'] = radar.gate_z['data'][inds_ray, inds_rng].T
+
+    radar_roi.fields = dict()
+    field_dict = deepcopy(radar.fields[field_name])
+    field_dict['data'] = radar.fields[field_name]['data'][inds_ray, inds_rng].T
+    radar_roi.add_field(field_name, field_dict)
+
+    return radar_roi, ind_rad
 
 
 def process_grid(procstatus, dscfg, radar_list=None):
@@ -514,7 +706,7 @@ def process_grid(procstatus, dscfg, radar_list=None):
     field_name = get_fieldname_pyart(datatype)
     ind_rad = int(radarnr[5:8])-1
 
-    if ((radar_list is None) or (radar_list[ind_rad] is None)):
+    if (radar_list is None) or (radar_list[ind_rad] is None):
         warn('ERROR: No valid radar')
         return None, None
 
@@ -561,23 +753,15 @@ def process_grid(procstatus, dscfg, radar_list=None):
         if 'altorig' in dscfg['gridConfig']:
             alt = dscfg['gridConfig']['altorig']
 
-    wfunc = 'NEAREST_NEIGHBOUR'
-    if 'wfunc' in dscfg:
-        wfunc = dscfg['wfunc']
-
-    roi_func = 'dist_beam'
-    if 'roi_func' in dscfg:
-        roi_func = dscfg['roi_func']
+    wfunc = dscfg.get('wfunc', 'NEAREST_NEIGHBOUR')
+    roi_func = dscfg.get('roi_func', 'dist_beam')
 
     # number of grid points in cappi
     nz = int((zmax-zmin)/vres)+1
     ny = int((ymax-ymin)*1000./hres)+1
     nx = int((xmax-xmin)*1000./hres)+1
 
-    min_radius = np.max([vres, hres])/2.
-    if 'roi' in dscfg:
-        min_radius = dscfg['roi']
-
+    min_radius = dscfg.get('roi', np.max([vres, hres])/2.)
     # parameters to determine the gates to use for each grid point
     beamwidth = 1.
     beam_spacing = 1.
@@ -605,7 +789,8 @@ def process_grid(procstatus, dscfg, radar_list=None):
 
 def process_qvp(procstatus, dscfg, radar_list=None):
     """
-    Computes quasi vertical profiles
+    Computes quasi vertical profiles, by averaging over height levels
+    PPI or RHI data.
 
     Parameters
     ----------
@@ -617,11 +802,14 @@ def process_qvp(procstatus, dscfg, radar_list=None):
 
         datatype : string. Dataset keyword
             The data type where we want to extract the point measurement
+
         anglenr : int
             The sweep number to use. It assumes the radar volume consists on
             PPI scans
+
         hmax : float
             The maximum height to plot [m]. Default 10000.
+
         hres : float
             The height resolution [m]. Default 50
 
@@ -648,7 +836,7 @@ def process_qvp(procstatus, dscfg, radar_list=None):
         field_name = get_fieldname_pyart(datatype)
         ind_rad = int(radarnr[5:8])-1
 
-        if ((radar_list is None) or (radar_list[ind_rad] is None)):
+        if (radar_list is None) or (radar_list[ind_rad] is None):
             warn('ERROR: No valid radar')
             return None, None
 
@@ -659,16 +847,9 @@ def process_qvp(procstatus, dscfg, radar_list=None):
             return None, None
 
         # default parameters
-        anglenr = 0
-        hmax = 10000.
-        hres = 50.
-
-        if 'anglenr' in dscfg:
-            anglenr = dscfg['anglenr']
-        if 'hmax' in dscfg:
-            hmax = dscfg['hmax']
-        if 'hres' in dscfg:
-            hres = dscfg['hres']
+        anglenr = dscfg.get('anglenr', 0)
+        hmax = dscfg.get('hmax', 10000.)
+        hres = dscfg.get('hres', 50.)
 
         radar_aux = deepcopy(radar)
         radar_aux = radar_aux.extract_sweeps([anglenr])
@@ -780,7 +961,9 @@ def process_qvp(procstatus, dscfg, radar_list=None):
 def process_time_height(procstatus, dscfg, radar_list=None):
     """
     Produces time height radar objects at a point of interest defined by
-    latitude and longitude
+    latitude and longitude. A time-height contains the evolution
+    of the vertical structure of radar measurements above the location
+    of interest.
 
     Parameters
     ----------
@@ -824,7 +1007,7 @@ def process_time_height(procstatus, dscfg, radar_list=None):
         field_name = get_fieldname_pyart(datatype)
         ind_rad = int(radarnr[5:8])-1
 
-        if ((radar_list is None) or (radar_list[ind_rad] is None)):
+        if (radar_list is None) or (radar_list[ind_rad] is None):
             warn('ERROR: No valid radar')
             return None, None
 
@@ -837,16 +1020,9 @@ def process_time_height(procstatus, dscfg, radar_list=None):
         # default parameters
         lon = dscfg['lon']
         lat = dscfg['lat']
-        latlon_tol = 0.0005
-        if 'latlon_tol' in dscfg:
-            latlon_tol = dscfg['latlon_tol']
-
-        hmax = 10000.
-        hres = 50.
-        if 'hmax' in dscfg:
-            hmax = dscfg['hmax']
-        if 'hres' in dscfg:
-            hres = dscfg['hres']
+        latlon_tol = dscfg.get('latlon_tol', 0.0005)
+        hmax = dscfg.get('hmax', 10000.)
+        hres = dscfg.get('hres', 50.)
 
         radar_aux = deepcopy(radar)
 
@@ -873,6 +1049,14 @@ def process_time_height(procstatus, dscfg, radar_list=None):
             th_aux.fixed_angle['data'] = np.array([90.], dtype='float64')
             th_aux.sweep_number['data'] = np.array([0], dtype='int32')
             th_aux.nsweeps = 1
+
+            if radar_aux.rays_are_indexed is not None:
+                th_aux.rays_are_indexed['data'] = np.array(
+                    [radar_aux.rays_are_indexed['data'][0]])
+
+            if radar_aux.ray_angle_res is not None:
+                th_aux.ray_angle_res['data'] = np.array(
+                    [radar_aux.ray_angle_res['data'][0]])
 
             # ray dependent radar objects parameters
             th_aux.sweep_end_ray_index['data'] = np.array([-1], dtype='int32')
@@ -921,9 +1105,9 @@ def process_time_height(procstatus, dscfg, radar_list=None):
                 radar_aux.gate_longitude['data'][:, :] > lon-latlon_tol)))
 
         # find closest altitude
-        if len(inds[0]) > 0:
-            values = radar_aux.fields[field_name]['data'][inds]
-            altitudes = radar_aux.gate_altitude['data'][inds]
+        if inds[0].size > 0:
+            values = radar_aux.fields[field_name]['data'][inds].flatten()
+            altitudes = radar_aux.gate_altitude['data'][inds].flatten()
             for ind_r, h in enumerate(th.range['data']):
                 ind_h = find_rng_index(altitudes, h, rng_tol=hres/2.)
                 if ind_h is None:

@@ -16,19 +16,13 @@ Functions for reading HZT data
 """
 from warnings import warn
 import datetime
-import netCDF4
 import numpy as np
 from scipy.interpolate import NearestNDInterpolator
 from scipy.spatial import cKDTree
 
-from ..io.io_aux import get_fieldname_cosmo
-from pyart.core import wgs84_to_swissCH1903
 from pyart.config import get_metadata, get_field_name
-from pyart.exceptions import MissingOptionalDependency
 from pyart.aux_io import read_product
 from ..io.read_data_cosmo import _put_radar_in_swiss_coord
-
-import time
 
 
 def hzt2radar_data(radar, hzt_coord, hzt_data, slice_xy=True,
@@ -118,10 +112,8 @@ def hzt2radar_coord(radar, hzt_coord, slice_xy=True, field_name=None):
 
     # put the index in the original cosmo coordinates
     nx_hzt = len(hzt_coord['x']['data'])
-    ny_hzt = len(hzt_coord['y']['data'])
 
     nx = ind_xmax-ind_xmin+1
-    ny = ind_ymax-ind_ymin+1
 
     ind_y = (ind_vec/nx).astype(int)+ind_ymin
     ind_x = (ind_vec % nx).astype(int)+ind_xmin
@@ -191,7 +183,7 @@ def read_hzt_data(fname, chy0=255., chx0=-160.):
         'long_name': 'height_over_iso0'
     }
     run_time = datetime.datetime.strptime(ret.header['time'], '%y%j%H%M0')
-    time = {
+    time_data = {
         'standard_name': 'time',
         'long_name': 'time',
         'units': 'seconds since '+run_time.strftime('%Y-%m-%d %H:%M:%S'),
@@ -205,8 +197,8 @@ def read_hzt_data(fname, chy0=255., chx0=-160.):
         'standard_name': "projection_x_coordinate",
         'units': "m",
         'data': ((np.arange(int(ret.header['column'])) *
-                 float(ret.header['rect_xres'])+chy0 +
-                 float(ret.header['rect_xres'])/2.)*1000.)
+                  float(ret.header['rect_xres'])+chy0 +
+                  float(ret.header['rect_xres'])/2.)*1000.)
     }
     y_1 = {
         'axis': "Y",
@@ -214,14 +206,14 @@ def read_hzt_data(fname, chy0=255., chx0=-160.):
         'standard_name': "projection_y_coordinate",
         'units': "m",
         'data': ((np.arange(int(ret.header['row'])) *
-                 float(ret.header['rect_yres'])+chx0 +
-                 float(ret.header['rect_yres'])/2.)*1000.)
+                  float(ret.header['rect_yres'])+chx0 +
+                  float(ret.header['rect_yres'])/2.)*1000.)
     }
 
     hzt_data = {
         'HZT': var_data,
         'metadata': ret.header,
-        'time': time,
+        'time': time_data,
         'x': x_1,
         'y': y_1
     }
@@ -265,25 +257,25 @@ def _prepare_for_interpolation(x_radar, y_radar, hzt_coord, slice_xy=True):
         ymax = np.max(y_radar)
 
         ind_xmin = np.where(hzt_coord['x']['data'] < xmin)[0]
-        if len(ind_xmin) == 0:
+        if ind_xmin.size == 0:
             ind_xmin = 0
         else:
             ind_xmin = ind_xmin[-1]
 
         ind_xmax = np.where(hzt_coord['x']['data'] > xmax)[0]
-        if len(ind_xmax) == 0:
+        if ind_xmax.size == 0:
             ind_xmax = nx_hzt-1
         else:
             ind_xmax = ind_xmax[0]
 
         ind_ymin = np.where(hzt_coord['y']['data'] < ymin)[0]
-        if len(ind_ymin) == 0:
+        if ind_ymin.size == 0:
             ind_ymin = 0
         else:
             ind_ymin = ind_ymin[-1]
 
         ind_ymax = np.where(hzt_coord['y']['data'] > ymax)[0]
-        if len(ind_ymax) == 0:
+        if ind_ymax.size == 0:
             ind_ymax = ny_hzt-1
         else:
             ind_ymax = ind_ymax[0]

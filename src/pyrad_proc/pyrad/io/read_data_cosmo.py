@@ -21,16 +21,17 @@ Functions for reading COSMO data
 """
 
 from warnings import warn
-import netCDF4
 import numpy as np
 from scipy.interpolate import NearestNDInterpolator
 from scipy.spatial import cKDTree
+import netCDF4
 
-from ..io.io_aux import get_fieldname_cosmo
 from pyart.core import wgs84_to_swissCH1903
 from pyart.config import get_metadata, get_field_name
 
-import time
+from ..io.io_aux import get_fieldname_cosmo
+
+# import time
 
 
 def cosmo2radar_data(radar, cosmo_coord, cosmo_data, time_index=0,
@@ -73,8 +74,8 @@ def cosmo2radar_data(radar, cosmo_coord, cosmo_data, time_index=0,
 
     (x_cosmo, y_cosmo, z_cosmo, ind_xmin, ind_ymin, ind_zmin, ind_xmax,
      ind_ymax, ind_zmax) = _prepare_for_interpolation(
-        x_radar, y_radar, z_radar, cosmo_coord, slice_xy=slice_xy,
-        slice_z=slice_z)
+         x_radar, y_radar, z_radar, cosmo_coord, slice_xy=slice_xy,
+         slice_z=slice_z)
 
     cosmo_fields = []
     for field in field_names:
@@ -141,8 +142,8 @@ def cosmo2radar_coord(radar, cosmo_coord, slice_xy=True, slice_z=False,
 
     (x_cosmo, y_cosmo, z_cosmo, ind_xmin, ind_ymin, ind_zmin, ind_xmax,
      ind_ymax, ind_zmax) = _prepare_for_interpolation(
-        x_radar, y_radar, z_radar, cosmo_coord, slice_xy=slice_xy,
-        slice_z=slice_z)
+         x_radar, y_radar, z_radar, cosmo_coord, slice_xy=slice_xy,
+         slice_z=slice_z)
 
     tree = cKDTree(np.transpose((z_cosmo, y_cosmo, x_cosmo)))
     dd_vec, ind_vec = tree.query(np.transpose(
@@ -151,11 +152,9 @@ def cosmo2radar_coord(radar, cosmo_coord, slice_xy=True, slice_z=False,
     # put the index in the original cosmo coordinates
     nx_cosmo = len(cosmo_coord['x']['data'])
     ny_cosmo = len(cosmo_coord['y']['data'])
-    nz_cosmo = len(cosmo_coord['z']['data'])
 
     nx = ind_xmax-ind_xmin+1
     ny = ind_ymax-ind_ymin+1
-    nz = ind_zmax-ind_zmin+1
 
     ind_z = (ind_vec/(nx*ny)).astype(int)+ind_zmin
     ind_y = ((ind_vec-nx*ny*ind_z)/nx).astype(int)+ind_ymin
@@ -272,14 +271,14 @@ def read_cosmo_data(fname, field_names=['temperature'], celsius=True):
     lat_1 = _ncvar_to_dict(ncvars['lat_1'])
     z_1 = _ncvar_to_dict(ncvars['z_1'])
     z_bnds_1 = _ncvar_to_dict(ncvars['z_bnds_1'])
-    time = _ncvar_to_dict(ncvars['time'])
+    time_data = _ncvar_to_dict(ncvars['time'])
 
     # close object
     ncobj.close()
 
     cosmo_data.update({
         'metadata': metadata,
-        'time': time,
+        'time': time_data,
         'x': x_1,
         'y': y_1,
         'z': z_1,
@@ -407,25 +406,25 @@ def _prepare_for_interpolation(x_radar, y_radar, z_radar, cosmo_coord,
         ymax = np.max(y_radar)
 
         ind_xmin = np.where(cosmo_coord['x']['data'] < xmin)[0]
-        if len(ind_xmin) == 0:
+        if ind_xmin.size == 0:
             ind_xmin = 0
         else:
             ind_xmin = ind_xmin[-1]
 
         ind_xmax = np.where(cosmo_coord['x']['data'] > xmax)[0]
-        if len(ind_xmax) == 0:
+        if ind_xmax.size == 0:
             ind_xmax = nx_cosmo-1
         else:
             ind_xmax = ind_xmax[0]
 
         ind_ymin = np.where(cosmo_coord['y']['data'] < ymin)[0]
-        if len(ind_ymin) == 0:
+        if ind_ymin.size == 0:
             ind_ymin = 0
         else:
             ind_ymin = ind_ymin[-1]
 
         ind_ymax = np.where(cosmo_coord['y']['data'] > ymax)[0]
-        if len(ind_ymax) == 0:
+        if ind_ymax.size == 0:
             ind_ymax = ny_cosmo-1
         else:
             ind_ymax = ind_ymax[0]
@@ -440,12 +439,12 @@ def _prepare_for_interpolation(x_radar, y_radar, z_radar, cosmo_coord,
         zmax = np.max(z_radar)
 
         ind_z, ind_y, ind_x = np.where(cosmo_coord['hfl']['data'] < zmin)
-        if len(ind_z) == 0:
+        if ind_z.size == 0:
             ind_zmin = 0
         else:
             ind_zmin = np.min(ind_z)
         ind_z, ind_y, ind_x = np.where(cosmo_coord['hfl']['data'] > zmax)
-        if len(ind_z) == 0:
+        if ind_z.size == 0:
             ind_zmax = nz_cosmo-1
         else:
             ind_zmax = np.max(ind_z)

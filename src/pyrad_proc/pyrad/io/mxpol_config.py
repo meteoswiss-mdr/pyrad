@@ -75,27 +75,26 @@ RADAR_INFO = {
     }
 
 MY_METADATA = {
+    'nyq_vel': NYQUIST_VEL,
 
-        'nyq_vel': NYQUIST_VEL,
+    # Metadata for instrument tables
 
-        # Metadata for instrument tables
+    'Radar_info': {
+        'searchkey': None,
+        'coordinates': None,
+        'altitude': None,
+        'dbbeam': None,
+        'radarID': None},
 
-        'Radar_info': {
-            'searchkey': None,
-            'coordinates': None,
-            'altitude': None,
-            'dbbeam': None,
-            'radarID': None},
-
-        'Polvar': {
-            'units': None,
-            'standard_name': None,
-            'short_name': None,
-            'long_name': None,
-            'valid_min': None,
-            'valid_max': None,
-            'plot_interval': None},
-            }
+    'Polvar': {
+        'units': None,
+        'standard_name': None,
+        'short_name': None,
+        'long_name': None,
+        'valid_min': None,
+        'valid_max': None,
+        'plot_interval': None},
+    }
 
 # Metadata for polarimetric short and long names
 MY_POLARNAMES = {

@@ -375,7 +375,7 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar_list=None):
         if datatype == 'TEMP':
             temp_field = 'temperature'
         if datatype == 'H_ISO0':
-                iso0_field = 'height_over_iso0'
+            iso0_field = 'height_over_iso0'
 
     ind_rad = int(radarnr[5:8])-1
     if radar_list[ind_rad] is None:
@@ -536,7 +536,7 @@ def process_phidp_kdp_lp(procstatus, dscfg, radar_list=None):
         if datatype == 'TEMP':
             temp_field = 'temperature'
         if datatype == 'H_ISO0':
-                iso0_field = 'height_over_iso0'
+            iso0_field = 'height_over_iso0'
 
     ind_rad = int(radarnr[5:8])-1
     if radar_list[ind_rad] is None:
@@ -1105,10 +1105,7 @@ def process_attenuation(procstatus, dscfg, radar_list=None):
             warn('Freezing level height not defined. Using default ' +
                  str(fzl)+' m')
 
-    att_method = 'ZPhi'
-    if 'ATT_METHOD' in dscfg:
-        att_method = dscfg['ATT_METHOD']
-
+    att_method = dscfg.get('ATT_METHOD', 'ZPhi')
     if (att_method != 'ZPhi') and (att_method != 'Philin'):
         raise ValueError(
             'Unknown attenuation correction method. ' +

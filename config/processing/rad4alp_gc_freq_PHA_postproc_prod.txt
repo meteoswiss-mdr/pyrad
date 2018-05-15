@@ -1,0 +1,66 @@
+#
+# Product generation configuration
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 1
+    clt_freq_period
+            
+# ==========================================================================================
+#                 Frequency of occurrence
+# ==========================================================================================
+clt_freq_period STRUCT 5
+    type STRING OCCURRENCE_PERIOD
+    datatype STRARR 2
+        CFRADIAL:occurrence,clt_freq,SAVEVOL_occurrence
+        CFRADIAL:nsamples,clt_freq,SAVEVOL_nsamples    
+    regular_grid INT 1
+    MAKE_GLOBAL INT 0
+    products STRUCT 12                
+        ELN00_2_occu STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING occurrence
+        EL000_4_occu STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 1
+            voltype STRING occurrence
+        EL001_0_occu STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING occurrence
+        ELN00_2_freq_occu STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING freq_occu
+        EL000_4_freq_occu STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 1
+            voltype STRING freq_occu
+        EL001_0_freq_occu STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING freq_occu
+        ELN00_2_nsamples STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING nsamples
+        EL000_4_nsamples STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 1
+            voltype STRING nsamples
+        EL001_0_nsamples STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING nsamples
+        EXCESS_GATES STRUCT 2
+            type STRING WRITE_EXCESS_GATES
+            quant_min FLOAT 95.        
+        SAVEVOL_nsamples STRUCT 2
+            type  STRING SAVEVOL
+            voltype STRING nsamples
+        SAVEVOL_occurrence STRUCT 2
+            type  STRING SAVEVOL
+            voltype STRING occurrence
+            

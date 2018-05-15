@@ -21,8 +21,6 @@ Functions for retrieving new moments and products
 from copy import deepcopy
 from warnings import warn
 
-import numpy as np
-
 import pyart
 
 from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
@@ -395,7 +393,7 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
-    if ('RR_METHOD' not in dscfg):
+    if 'RR_METHOD' not in dscfg:
         raise Exception(
             "ERROR: Undefined parameter 'RR_METHOD' for dataset '%s'"
             % dscfg['dsname'])
@@ -529,7 +527,7 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
         rain = pyart.retrieve.est_rain_rate_za(
             radar, alphaz=0.0376, betaz=0.6112, alphaa=None, betaa=None,
             refl_field=refl_field, a_field=a_field, rr_field=None,
-            master_field=refl_field, thresh=0.04, thresh_max=False)
+            master_field=refl_field, thresh=5., thresh_max=True)
 
     elif dscfg['RR_METHOD'] == 'hydro':
         for datatypedescr in dscfg['datatype']:
@@ -559,7 +557,7 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
                 radar, alphazr=0.0376, betazr=0.6112, alphazs=0.1, betazs=0.5,
                 alphaa=None, betaa=None, mp_factor=0.6, refl_field=refl_field,
                 a_field=a_field, hydro_field=hydro_field, rr_field=None,
-                master_field=refl_field, thresh=0.04, thresh_max=False)
+                master_field=refl_field, thresh=5., thresh_max=True)
         elif refl_field in radar.fields:
             warn('Unable to compute rainfall rate using hydrometeor ' +
                  'classification. Missing data. ' +
@@ -571,6 +569,10 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
             warn('Unable to compute rainfall rate using hydrometeor ' +
                  'classification. Missing data.')
             return None, None
+    else:
+        raise Exception(
+            "ERROR: Unknown rainfall rate retrieval method " +
+            dscfg['RR_METHOD'])
 
     # prepare for exit
     new_dataset = deepcopy(radar)
@@ -613,7 +615,7 @@ def process_wind_vel(procstatus, dscfg, radar_list=None):
         return None, None
 
     radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            dscfg['datatype'][0])
+        dscfg['datatype'][0])
     vel_field = get_fieldname_pyart(datatype)
 
     ind_rad = int(radarnr[5:8])-1
@@ -679,7 +681,7 @@ def process_windshear(procstatus, dscfg, radar_list=None):
         return None, None
 
     radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            dscfg['datatype'][0])
+        dscfg['datatype'][0])
     wind_field = get_fieldname_pyart(datatype)
 
     ind_rad = int(radarnr[5:8])-1
