@@ -117,6 +117,95 @@ def process_echo_id(procstatus, dscfg, radar_list=None):
     return new_dataset, ind_rad
 
 
+def process_birds_id(procstatus, dscfg, radar_list=None):
+    """
+    identifies echoes as 0: No data, 1: Noise, 2: Clutter,
+    3: Birds
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+    ind_rad : int
+        radar index
+
+    """
+
+    if procstatus != 1:
+        return None, None
+
+    for datatypedescr in dscfg['datatype']:
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        if datatype == 'dBZ':
+            refl_field = 'reflectivity'
+        if datatype == 'dBuZ':
+            refl_field = 'unfiltered_reflectivity'
+        if datatype == 'ZDR':
+            zdr_field = 'differential_reflectivity'
+        if datatype == 'ZDRu':
+            zdr_field = 'unfiltered_differential_reflectivity'
+        if datatype == 'RhoHV':
+            rhv_field = 'cross_correlation_ratio'
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if ((refl_field not in radar.fields) or
+            (zdr_field not in radar.fields) or
+            (rhv_field not in radar.fields)):
+        warn('Unable to create radar_echo_id dataset. Missing data')
+        return None, None
+
+    # user defined parameters
+    max_zdr = dscfg.get('max_zdr', 3.)
+    max_rhv = dscfg.get('max_rhv', 0.9)
+    max_refl = dscfg.get('max_refl', 20.)
+    rmin = dscfg.get('rmin', 5000.)
+    rmax = dscfg.get('rmax', 25000.)
+    echo_id = np.zeros((radar.nrays, radar.ngates), dtype='int32')+3
+
+    # look for clutter
+    gatefilter = pyart.filters.birds_gate_filter(
+        radar, zdr_field=zdr_field, rhv_field=rhv_field,
+        refl_field=refl_field, max_zdr=max_zdr, max_rhv=max_rhv,
+        max_refl=max_refl, rmin=rmin, rmax=rmax)
+
+    is_clutter = gatefilter.gate_excluded == 1
+    echo_id[is_clutter] = 2
+
+    # look for noise
+    is_noise = radar.fields[refl_field]['data'].data == (
+        pyart.config.get_fillvalue())
+    echo_id[is_noise] = 1
+
+    id_field = pyart.config.get_metadata('radar_echo_id')
+    id_field['data'] = echo_id
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.add_field('radar_echo_id', id_field)
+
+    return new_dataset, ind_rad
+
+
 def process_clt_to_echo_id(procstatus, dscfg, radar_list=None):
     """
     Converts clutter exit code from rad4alp into pyrad echo ID
