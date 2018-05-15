@@ -1099,7 +1099,8 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             ##r_radar.fields['colocated_gates']['data'][r_ind_invalid] = 0
 
             # Find minimum and maximum azimuth in trajectory in this
-            # time step.
+            # time step.TODO: how to input them in the next function?
+            # If given like this the function misbehaves
             azmin = az-az_traj_tol
             azmax = az+az_traj_tol
             rmin = rr-rg_traj_tol
@@ -1113,8 +1114,8 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             gate_coloc_radar_sel = intersection(
                 radar_sel, r_radar, h_tol=alt_tol, latlon_tol=latlon_tol,
                 vol_d_tol=None, vismin=None, hmin=None, hmax=max_altitude,
-                rmin=rmin, rmax=rmax, elmin=None, elmax=None, azmin=azmin,
-                azmax=azmax, visib_field=None,
+                rmin=None, rmax=None, elmin=None, elmax=None, azmin=None,
+                azmax=None, visib_field=None,
                 intersec_field='colocated_gates')
             radar_sel.add_field('colocated_gates', gate_coloc_radar_sel,
                                 replace_existing=True)
