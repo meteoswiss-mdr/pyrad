@@ -85,6 +85,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_cdr'
     elif dataset_type == 'SAN':
         func_name = 'process_echo_id'
+    elif dataset_type == 'BIRDS_ID':
+        func_name = 'process_birds_id'
     elif dataset_type == 'CLT_TO_SAN':
         func_name = 'process_clt_to_echo_id'
     elif dataset_type == 'ECHO_FILTER':
