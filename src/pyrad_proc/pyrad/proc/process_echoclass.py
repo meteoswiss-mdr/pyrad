@@ -836,8 +836,9 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
     """
     if procstatus != 1:
         return None, None
-
-    if dscfg['ML_METHOD'] == 'GIANGRANDE':
+    
+    ml_method = dscfg.get('ML_METHOD','GIANGRANDE')
+    if ml_method == 'GIANGRANDE':
         temp_field = None
         iso0_field = None
         for datatypedescr in dscfg['datatype']:
@@ -889,26 +890,36 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
             warn('Unable to detect melting layer. Missing data')
             return None, None
 
-        # User defined variables here. See line 516
-        
-        # initialize dataset
-        if dscfg['initialized'] == 0:
-            ml_vol, ml_stack = pyart.retrieve.melting_layer_giangrande(
-                radar, refl_field=refl_field, zdr_field=zdr_field,
+        # User defined variables (more parameters are currently hard coded into the detection algorithm)
+        rhomin = dscfg.get('rhomin',0.75)                       # min rhohv to consider pixel potential melting layer pixel
+        rhomax = dscfg.get('rhomax',0.94)                       # max rhohv to consider pixel potential melting layer pixel
+        nml_points_min = dscfg.get('nml_points_min',1500)       # minimum number of melting layer points to consider valid melting layer detection
+        percentile_bottom = dscfg.get('percentile_bottom',0.3)  # percentile of ml points above which is considered that the bottom of the melting layer starts
+
+        if not dscfg['initialized']:
+            # initialize dataset
+            ml_vol = pyart.retrieve.melting_layer_giangrande(
+                radar,
+                rhomin=rhomin, rhomax=rhomax, nml_points_min=nml_points_min, percentile_bottom=percentile_bottom,
+                refl_field=refl_field, zdr_field=zdr_field,
                 rhv_field=rhv_field, temp_field=temp_field, iso0_field=iso0_field,
-                ml_field=None, temp_ref=temp_ref, ml_stack=None)                        
-            dscfg['initialized'] = 1            
+                ml_field=None, temp_ref=temp_ref, ml_globdata=None)
+            dscfg['initialized'] = True
         else:
-            ml_vol, ml_stack = pyart.retrieve.melting_layer_giangrande(
-                radar, refl_field=refl_field, zdr_field=zdr_field,
+            # use previous detection
+            ml_vol = pyart.retrieve.melting_layer_giangrande(
+                radar,
+                rhomin=rhomin, rhomax=rhomax, nml_points_min=nml_points_min, percentile_bottom=percentile_bottom,
+                refl_field=refl_field, zdr_field=zdr_field,
                 rhv_field=rhv_field, temp_field=temp_field, iso0_field=iso0_field,
-                ml_field=None, temp_ref=temp_ref, ml_stack=dscfg['global_data'])        
-            
-        dscfg['global_data'] = ml_stack    
+                ml_field=None, temp_ref=temp_ref, ml_globdata=dscfg['ml_globdata'])
+
+        # update global stack
+        dscfg['ml_globdata'] = ml_globdata
 
         # prepare for exit
         new_dataset = deepcopy(radar)
         new_dataset.fields = dict()
-        new_dataset.add_field('melting_layer', ml)
+        new_dataset.add_field('melting_layer', ml_vol)
 
         return new_dataset, ind_rad
