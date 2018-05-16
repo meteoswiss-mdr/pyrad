@@ -63,6 +63,8 @@ sun_est_power_h = 'sun_est_power_h'
 sun_est_power_v = 'sun_est_power_v'
 sun_est_differential_reflectivity = 'sun_est_differential_reflectivity'
 
+volumetric_reflectivity = 'volumetric_reflectivity'
+volumetric_reflectivity_vv = 'volumetric_reflectivity_vv'
 
 # Mean Doppler velocity fields, VEL
 velocity = 'velocity'
@@ -261,6 +263,8 @@ DEFAULT_FIELD_NAMES = {
     'reflectivity_bias': reflectivity_bias,
     'signal_power_hh': signal_power_hh,
     'signal_power_vv': signal_power_vv,
+    'volumetric_reflectivity': volumetric_reflectivity,
+    'volumetric_reflectivity_vv': volumetric_reflectivity_vv,
     'sun_hit_power_h': sun_hit_power_h,
     'sun_hit_power_v': sun_hit_power_v,
     'sun_hit_differential_reflectivity': sun_hit_differential_reflectivity,
@@ -683,6 +687,18 @@ DEFAULT_METADATA = {
         'units': 'dBZ',
         'standard_name': 'vertical_reflectivity',
         'long_name': 'Corrected Vertical Reflectivity',
+        'coordinates': 'elevation azimuth range'},
+
+    volumetric_reflectivity: {
+        'units': '10log10(cm2/km3)',
+        'standard_name': 'volumetric_reflectivity',
+        'long_name': 'Volumetric Reflectivity',
+        'coordinates': 'elevation azimuth range'},
+
+    volumetric_reflectivity_vv: {
+        'units': '10log10(cm2/km3)',
+        'standard_name': 'volumetric_reflectivity_vv',
+        'long_name': 'Vertical Volumetric Reflectivity',
         'coordinates': 'elevation azimuth range'},
 
     total_power: {
@@ -1917,6 +1933,8 @@ DEFAULT_FIELD_COLORMAP = {
     reflectivity_bias: 'pyart_NWSRef',
     signal_power_hh: 'pyart_NWSRef',
     signal_power_vv: 'pyart_NWSRef',
+    volumetric_reflectivity: 'pyart_NWSRef',
+    volumetric_reflectivity_vv: 'pyart_NWSRef',
 
     signal_to_noise_ratio: 'pyart_Carbone17',
     signal_to_noise_ratio_hh: 'pyart_Carbone17',
@@ -2053,6 +2071,8 @@ DEFAULT_FIELD_LIMITS = {
     noisedBZ_hh: (-40., 10.),
     noisedBZ_vv: (-40., 10.),
     reflectivity_bias: (-30., 30.),
+    volumetric_reflectivity: (20., 60.),
+    volumetric_reflectivity_vv: (20., 60.),
 
     signal_power_hh: (-130., 0.),
     signal_power_vv: (-130., 0.),

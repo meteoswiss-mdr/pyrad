@@ -8,6 +8,7 @@ Functions for echo classification and filtering
     :toctree: generated/
 
     process_echo_id
+    process_birds_id
     process_clt_to_echo_id
     process_echo_filter
     process_cdf
@@ -160,6 +161,8 @@ def process_birds_id(procstatus, dscfg, radar_list=None):
             zdr_field = 'unfiltered_differential_reflectivity'
         if datatype == 'RhoHV':
             rhv_field = 'cross_correlation_ratio'
+        if datatype == 'V':
+            vel_field = 'velocity'
 
     ind_rad = int(radarnr[5:8])-1
     if radar_list[ind_rad] is None:
@@ -169,14 +172,17 @@ def process_birds_id(procstatus, dscfg, radar_list=None):
 
     if ((refl_field not in radar.fields) or
             (zdr_field not in radar.fields) or
-            (rhv_field not in radar.fields)):
+            (rhv_field not in radar.fields) or
+            (vel_field not in radar.fields)):
         warn('Unable to create radar_echo_id dataset. Missing data')
         return None, None
 
     # user defined parameters
     max_zdr = dscfg.get('max_zdr', 3.)
     max_rhv = dscfg.get('max_rhv', 0.9)
+    min_refl = dscfg.get('min_refl', 0.)
     max_refl = dscfg.get('max_refl', 20.)
+    vel_lim = dscfg.get('vel_lim', 1.)
     rmin = dscfg.get('rmin', 5000.)
     rmax = dscfg.get('rmax', 25000.)
     echo_id = np.zeros((radar.nrays, radar.ngates), dtype='int32')+3
@@ -184,8 +190,9 @@ def process_birds_id(procstatus, dscfg, radar_list=None):
     # look for clutter
     gatefilter = pyart.filters.birds_gate_filter(
         radar, zdr_field=zdr_field, rhv_field=rhv_field,
-        refl_field=refl_field, max_zdr=max_zdr, max_rhv=max_rhv,
-        max_refl=max_refl, rmin=rmin, rmax=rmax)
+        refl_field=refl_field, vel_field=vel_field, max_zdr=max_zdr,
+        max_rhv=max_rhv, min_refl=min_refl, max_refl=max_refl,
+        vel_lim=vel_lim, rmin=rmin, rmax=rmax)
 
     is_clutter = gatefilter.gate_excluded == 1
     echo_id[is_clutter] = 2

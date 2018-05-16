@@ -318,6 +318,10 @@ def get_fieldname_pyart(datatype):
         field_name = 'corrected_unfiltered_reflectivity_vv'
     elif datatype == 'dBZ_bias':
         field_name = 'reflectivity_bias'
+    elif datatype == 'eta_h':
+        field_name = 'volumetric_reflectivity'
+    elif datatype == 'eta_v':
+        field_name = 'volumetric_reflectivity_vv'
 
     elif datatype == 'ZDR':
         field_name = 'differential_reflectivity'
