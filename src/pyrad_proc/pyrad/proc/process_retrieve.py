@@ -205,7 +205,7 @@ def process_vol_refl(procstatus, dscfg, radar_list=None):
     if refl_field.endswith('_vv'):
         vol_refl_field = 'volumetric_reflectivity_vv'
     else:
-        vol_refl_field = 'volumetric_reflectivity_hh'
+        vol_refl_field = 'volumetric_reflectivity'
 
     freq = dscfg.get('freq', None)
     kw = dscfg.get('kw', None)
@@ -761,7 +761,7 @@ def process_windshear(procstatus, dscfg, radar_list=None):
     new_dataset.add_field(windshear_field, windshear)
 
     return new_dataset, ind_rad
-    
+
 
 def process_bird_density(procstatus, dscfg, radar_list=None):
     """

@@ -978,7 +978,7 @@ DEFAULT_METADATA = {
         'standard_name': 'rain_rate',
         'long_name': 'Rain rate',
         'coordinates': 'elevation azimuth range'},
-    
+
     bird_density: {
         'units': 'birds/km3',
         'standard_name': 'bird_density',
