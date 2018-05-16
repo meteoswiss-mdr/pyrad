@@ -154,6 +154,8 @@ radar_echo_id = 'radar_echo_id'
 clutter_exit_code = 'clutter_exit_code'
 melting_layer = 'melting_layer'
 
+bird_density = 'bird_density'
+
 # attenuation
 specific_attenuation = 'specific_attenuation'
 corrected_specific_attenuation = 'corrected_specific_attenuation'
@@ -323,6 +325,7 @@ DEFAULT_FIELD_NAMES = {
     'noisedBZ_hh': noisedBZ_hh,
     'noisedBZ_vv': noisedBZ_vv,
     'rain_rate': rain_rate,
+    'bird_density': bird_density,
     'sun_hit_h': sun_hit_h,
     'sun_hit_v': sun_hit_v,
     'sun_hit_zdr': sun_hit_zdr,
@@ -974,6 +977,12 @@ DEFAULT_METADATA = {
         'units': 'mm/h',
         'standard_name': 'rain_rate',
         'long_name': 'Rain rate',
+        'coordinates': 'elevation azimuth range'},
+    
+    bird_density: {
+        'units': 'birds/km3',
+        'standard_name': 'bird_density',
+        'long_name': 'Birds Density',
         'coordinates': 'elevation azimuth range'},
 
     radar_estimated_rain_rate: {
@@ -1935,6 +1944,7 @@ DEFAULT_FIELD_COLORMAP = {
     signal_power_vv: 'pyart_NWSRef',
     volumetric_reflectivity: 'pyart_NWSRef',
     volumetric_reflectivity_vv: 'pyart_NWSRef',
+    bird_density: 'pyart_NWSRef',
 
     signal_to_noise_ratio: 'pyart_Carbone17',
     signal_to_noise_ratio_hh: 'pyart_Carbone17',
@@ -2073,6 +2083,7 @@ DEFAULT_FIELD_LIMITS = {
     reflectivity_bias: (-30., 30.),
     volumetric_reflectivity: (20., 60.),
     volumetric_reflectivity_vv: (20., 60.),
+    bird_density: (0., 400.),
 
     signal_power_hh: (-130., 0.),
     signal_power_vv: (-130., 0.),

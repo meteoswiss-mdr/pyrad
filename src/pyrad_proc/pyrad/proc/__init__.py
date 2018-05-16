@@ -96,6 +96,7 @@ Retrievals
     process_wind_vel
     process_windshear
     process_vol_refl
+    process_bird_density
 
 Trajectory functions
 ====================
@@ -161,7 +162,7 @@ from .process_monitoring import process_selfconsistency_bias
 from .process_monitoring import process_monitoring
 
 from .process_retrieve import process_signal_power, process_snr
-from .process_retrieve import process_l, process_cdr
+from .process_retrieve import process_l, process_cdr, process_bird_density
 from .process_retrieve import process_rainrate, process_wind_vel
 from .process_retrieve import process_windshear, process_vol_refl
 

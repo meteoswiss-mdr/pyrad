@@ -15,6 +15,7 @@ Functions for retrieving new moments and products
     process_rainrate
     process_wind_vel
     process_windshear
+    process_bird_density
 
 
 """
@@ -758,5 +759,66 @@ def process_windshear(procstatus, dscfg, radar_list=None):
     new_dataset = deepcopy(radar)
     new_dataset.fields = dict()
     new_dataset.add_field(windshear_field, windshear)
+
+    return new_dataset, ind_rad
+    
+
+def process_bird_density(procstatus, dscfg, radar_list=None):
+    """
+    Computes the volumetric reflectivity in cm^2 km^-3
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        sigma_bird : float. Dataset keyword
+            The bird radar cross section
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    for datatypedescr in dscfg['datatype']:
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        if datatype == 'eta_h':
+            vol_refl_field = 'volumetric_reflectivity'
+        if datatype == 'eta_v':
+            vol_refl_field = 'volumetric_reflectivity_vv'
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if vol_refl_field not in radar.fields:
+        warn('Unable to obtain bird density. Missing field '+vol_refl_field)
+        return None, None
+
+    sigma_bird = dscfg.get('sigma_bird', 11.)
+    bird_density_dict = pyart.retrieve.compute_bird_density(
+        radar, sigma_bird=sigma_bird, vol_refl_field=vol_refl_field,
+        bird_density_field='bird_density')
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.add_field('bird_density', bird_density_dict)
 
     return new_dataset, ind_rad

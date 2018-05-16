@@ -77,6 +77,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_snr'
     elif dataset_type == 'VOL_REFL':
         func_name = 'process_vol_refl'
+    elif dataset_type == 'BIRD_DENSITY':
+        func_name = 'process_bird_density'
     elif dataset_type == 'RHOHV_CORRECTION':
         func_name = 'process_correct_noise_rhohv'
     elif dataset_type == 'BIAS_CORRECTION':

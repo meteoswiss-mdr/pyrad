@@ -464,6 +464,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'colocated_gates'
     elif datatype == 'nsamples':
         field_name = 'number_of_samples'
+    elif datatype == 'bird_density':
+        field_name = 'bird_density'
     else:
         raise ValueError('ERROR: Unknown data type '+datatype)
 
