@@ -123,6 +123,12 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_attenuation'
     elif dataset_type == 'RAINRATE':
         func_name = 'process_rainrate'
+    elif dataset_type == 'DEALIAS_FOURDD':
+        func_name = 'process_dealias_fourdd'
+    elif dataset_type == 'DEALIAS_REGION':
+        func_name = 'process_dealias_region_based'
+    elif dataset_type == 'DEALIAS_UNWRAP':
+        func_name = 'process_dealias_unwrap_phase'
     elif dataset_type == 'WIND_VEL':
         func_name = 'process_wind_vel'
     elif dataset_type == 'WINDSHEAR':

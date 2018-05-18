@@ -93,10 +93,20 @@ Retrievals
     process_l
     process_cdr
     process_rainrate
-    process_wind_vel
-    process_windshear
     process_vol_refl
     process_bird_density
+
+Doppler processing
+==================
+
+.. autosummary::
+    :toctree: generated/
+
+    process_dealias_fourdd
+    process_dealias_region_based
+    process_dealias_unwrap_phase
+    process_wind_vel
+    process_windshear
 
 Trajectory functions
 ====================
@@ -163,8 +173,12 @@ from .process_monitoring import process_monitoring
 
 from .process_retrieve import process_signal_power, process_snr
 from .process_retrieve import process_l, process_cdr, process_bird_density
-from .process_retrieve import process_rainrate, process_wind_vel
-from .process_retrieve import process_windshear, process_vol_refl
+from .process_retrieve import process_rainrate, process_vol_refl
+
+from .process_Doppler import process_wind_vel, process_windshear
+from .process_Doppler import process_dealias_fourdd
+from .process_Doppler import process_dealias_region_based
+from .process_Doppler import process_dealias_unwrap_phase
 
 from .process_cosmo import process_cosmo, process_cosmo_lookup_table
 from .process_cosmo import process_cosmo_coord, process_hzt

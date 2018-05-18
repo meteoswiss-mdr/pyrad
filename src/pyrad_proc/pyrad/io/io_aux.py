@@ -8,6 +8,7 @@ Auxiliary functions for reading/writing files
     :toctree: generated/
 
     map_hydro
+    map_Doppler
     get_save_dir
     make_filename
     generate_field_name_str
@@ -68,6 +69,26 @@ def map_hydro(hydro_data_op):
     hydro_data_py[hydro_data_op == 200] = 8  # melting hail
 
     return hydro_data_py
+
+
+def map_Doppler(Doppler_data_bin, Nyquist_vel):
+    """
+    maps the binary METRANET Doppler data to actual Doppler velocity
+
+    Parameters
+    ----------
+    Doppler_data_bin : numpy array
+        The binary METRANET data
+
+    Returns
+    -------
+    Doppler_data : numpy array
+        The Doppler veloctiy in [m/s]
+
+    """
+    Doppler_data = (Doppler_data_bin-128.)/127.*Nyquist_vel
+
+    return Doppler_data
 
 
 def get_save_dir(basepath, procname, dsname, prdname, timeinfo=None,
@@ -398,8 +419,12 @@ def get_fieldname_pyart(datatype):
 
     elif datatype == 'V':
         field_name = 'velocity'
+    elif datatype == 'dealV':
+        field_name = 'dealiased_velocity'
     elif datatype == 'Vc':
         field_name = 'corrected_velocity'
+    elif datatype == 'dealVc':
+        field_name = 'dealiased_corrected_velocity'
     elif datatype == 'W':
         field_name = 'spectrum_width'
     elif datatype == 'Wc':

@@ -74,6 +74,9 @@ unfiltered_velocity = 'unfiltered_velocity'
 velocity_vv = 'velocity_vv'
 unfiltered_velocity_vv = 'unfiltered_velocity_vv'
 
+dealiased_corrected_velocity = 'dealiased_corrected_velocity'
+dealiased_velocity = 'dealiased_velocity'
+
 # Spectral width fields, SW
 spectrum_width = 'spectrum_width'
 corrected_spectrum_width = 'corrected_spectrum_width'
@@ -278,6 +281,8 @@ DEFAULT_FIELD_NAMES = {
     'unfiltered_velocity': unfiltered_velocity,
     'velocity_vv': velocity_vv,
     'unfiltered_velocity_vv': unfiltered_velocity_vv,
+    'dealiased_corrected_velocity': dealiased_corrected_velocity,
+    'dealiased_velocity': dealiased_velocity,
     'spectrum_width': spectrum_width,
     'corrected_spectrum_width': corrected_spectrum_width,
     'unfiltered_spectrum_width': unfiltered_spectrum_width,
@@ -775,6 +780,18 @@ DEFAULT_METADATA = {
         'units': 'm/s',
         'standard_name': 'mean_Doppler_velocity',
         'long_name': 'Corrected mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    dealiased_velocity: {
+        'units': 'm/s',
+        'standard_name': 'mean_Doppler_velocity',
+        'long_name': 'Dealiased mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    dealiased_corrected_velocity: {
+        'units': 'm/s',
+        'standard_name': 'mean_Doppler_velocity',
+        'long_name': 'Dealiased corrected mean Doppler velocity',
         'coordinates': 'elevation azimuth range'},
 
     # Spectrum width fields
@@ -1970,6 +1987,8 @@ DEFAULT_FIELD_COLORMAP = {
     velocity: 'pyart_BuDRd18',
     corrected_velocity: 'pyart_BuDRd18',
     unfiltered_velocity: 'pyart_BuDRd18',
+    dealiased_corrected_velocity: 'pyart_BuDRd18',
+    dealiased_velocity: 'pyart_BuDRd18',
     velocity_vv: 'pyart_BuDRd18',
     unfiltered_velocity_vv: 'pyart_BuDRd18',
     eastward_wind_component: 'pyart_BuDRd18',
@@ -2101,6 +2120,8 @@ DEFAULT_FIELD_LIMITS = {
     unfiltered_velocity: velocity_limit,
     velocity_vv: velocity_limit,
     unfiltered_velocity_vv: velocity_limit,
+    dealiased_corrected_velocity: velocity_limit,
+    dealiased_velocity: velocity_limit,
     eastward_wind_component: velocity_limit,
     northward_wind_component: velocity_limit,
     vertical_wind_component: velocity_limit,
