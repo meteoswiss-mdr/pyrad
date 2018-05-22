@@ -1293,7 +1293,8 @@ def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
             datatypedescr)
         if ((datagroup != 'COSMO') and (datagroup != 'RAD4ALPCOSMO') and
                 (datagroup != 'DEM') and (datagroup != 'RAD4ALPDEM') and
-                (datagroup != 'RAD4ALPHYDRO')):
+                (datagroup != 'RAD4ALPHYDRO') and
+                (datagroup != 'RAD4ALPDOPPLER')):
             masterdatatypedescr = datatypedescr
             if scan_list is not None:
                 masterscan = scan_list[int(radarnr[5:8])-1][0]
@@ -1325,6 +1326,11 @@ def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
                     masterscan = scan_list[int(radarnr[5:8])-1][0]
                 break
             elif datagroup == 'RAD4ALPHYDRO':
+                masterdatatypedescr = radarnr+':RAD4ALP:dBZ'
+                if scan_list is not None:
+                    masterscan = scan_list[int(radarnr[5:8])-1][0]
+                break
+            elif datagroup == 'RAD4ALPDOPPLER':
                 masterdatatypedescr = radarnr+':RAD4ALP:dBZ'
                 if scan_list is not None:
                     masterscan = scan_list[int(radarnr[5:8])-1][0]

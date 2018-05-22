@@ -63,6 +63,8 @@ sun_est_power_h = 'sun_est_power_h'
 sun_est_power_v = 'sun_est_power_v'
 sun_est_differential_reflectivity = 'sun_est_differential_reflectivity'
 
+volumetric_reflectivity = 'volumetric_reflectivity'
+volumetric_reflectivity_vv = 'volumetric_reflectivity_vv'
 
 # Mean Doppler velocity fields, VEL
 velocity = 'velocity'
@@ -71,6 +73,9 @@ corrected_velocity = 'corrected_velocity'
 unfiltered_velocity = 'unfiltered_velocity'
 velocity_vv = 'velocity_vv'
 unfiltered_velocity_vv = 'unfiltered_velocity_vv'
+
+dealiased_corrected_velocity = 'dealiased_corrected_velocity'
+dealiased_velocity = 'dealiased_velocity'
 
 # Spectral width fields, SW
 spectrum_width = 'spectrum_width'
@@ -151,6 +156,8 @@ radar_echo_classification = 'radar_echo_classification'
 radar_echo_id = 'radar_echo_id'
 clutter_exit_code = 'clutter_exit_code'
 melting_layer = 'melting_layer'
+
+bird_density = 'bird_density'
 
 # attenuation
 specific_attenuation = 'specific_attenuation'
@@ -261,6 +268,8 @@ DEFAULT_FIELD_NAMES = {
     'reflectivity_bias': reflectivity_bias,
     'signal_power_hh': signal_power_hh,
     'signal_power_vv': signal_power_vv,
+    'volumetric_reflectivity': volumetric_reflectivity,
+    'volumetric_reflectivity_vv': volumetric_reflectivity_vv,
     'sun_hit_power_h': sun_hit_power_h,
     'sun_hit_power_v': sun_hit_power_v,
     'sun_hit_differential_reflectivity': sun_hit_differential_reflectivity,
@@ -272,6 +281,8 @@ DEFAULT_FIELD_NAMES = {
     'unfiltered_velocity': unfiltered_velocity,
     'velocity_vv': velocity_vv,
     'unfiltered_velocity_vv': unfiltered_velocity_vv,
+    'dealiased_corrected_velocity': dealiased_corrected_velocity,
+    'dealiased_velocity': dealiased_velocity,
     'spectrum_width': spectrum_width,
     'corrected_spectrum_width': corrected_spectrum_width,
     'unfiltered_spectrum_width': unfiltered_spectrum_width,
@@ -319,6 +330,7 @@ DEFAULT_FIELD_NAMES = {
     'noisedBZ_hh': noisedBZ_hh,
     'noisedBZ_vv': noisedBZ_vv,
     'rain_rate': rain_rate,
+    'bird_density': bird_density,
     'sun_hit_h': sun_hit_h,
     'sun_hit_v': sun_hit_v,
     'sun_hit_zdr': sun_hit_zdr,
@@ -685,6 +697,18 @@ DEFAULT_METADATA = {
         'long_name': 'Corrected Vertical Reflectivity',
         'coordinates': 'elevation azimuth range'},
 
+    volumetric_reflectivity: {
+        'units': '10log10(cm2/km3)',
+        'standard_name': 'volumetric_reflectivity',
+        'long_name': 'Volumetric Reflectivity',
+        'coordinates': 'elevation azimuth range'},
+
+    volumetric_reflectivity_vv: {
+        'units': '10log10(cm2/km3)',
+        'standard_name': 'volumetric_reflectivity_vv',
+        'long_name': 'Vertical Volumetric Reflectivity',
+        'coordinates': 'elevation azimuth range'},
+
     total_power: {
         'units': 'dBZ',
         'standard_name': 'equivalent_reflectivity_factor',
@@ -756,6 +780,18 @@ DEFAULT_METADATA = {
         'units': 'm/s',
         'standard_name': 'mean_Doppler_velocity',
         'long_name': 'Corrected mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    dealiased_velocity: {
+        'units': 'm/s',
+        'standard_name': 'mean_Doppler_velocity',
+        'long_name': 'Dealiased mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    dealiased_corrected_velocity: {
+        'units': 'm/s',
+        'standard_name': 'mean_Doppler_velocity',
+        'long_name': 'Dealiased corrected mean Doppler velocity',
         'coordinates': 'elevation azimuth range'},
 
     # Spectrum width fields
@@ -958,6 +994,12 @@ DEFAULT_METADATA = {
         'units': 'mm/h',
         'standard_name': 'rain_rate',
         'long_name': 'Rain rate',
+        'coordinates': 'elevation azimuth range'},
+
+    bird_density: {
+        'units': 'birds/km3',
+        'standard_name': 'bird_density',
+        'long_name': 'Birds Density',
         'coordinates': 'elevation azimuth range'},
 
     radar_estimated_rain_rate: {
@@ -1917,6 +1959,9 @@ DEFAULT_FIELD_COLORMAP = {
     reflectivity_bias: 'pyart_NWSRef',
     signal_power_hh: 'pyart_NWSRef',
     signal_power_vv: 'pyart_NWSRef',
+    volumetric_reflectivity: 'pyart_NWSRef',
+    volumetric_reflectivity_vv: 'pyart_NWSRef',
+    bird_density: 'pyart_NWSRef',
 
     signal_to_noise_ratio: 'pyart_Carbone17',
     signal_to_noise_ratio_hh: 'pyart_Carbone17',
@@ -1942,6 +1987,8 @@ DEFAULT_FIELD_COLORMAP = {
     velocity: 'pyart_BuDRd18',
     corrected_velocity: 'pyart_BuDRd18',
     unfiltered_velocity: 'pyart_BuDRd18',
+    dealiased_corrected_velocity: 'pyart_BuDRd18',
+    dealiased_velocity: 'pyart_BuDRd18',
     velocity_vv: 'pyart_BuDRd18',
     unfiltered_velocity_vv: 'pyart_BuDRd18',
     eastward_wind_component: 'pyart_BuDRd18',
@@ -2053,6 +2100,9 @@ DEFAULT_FIELD_LIMITS = {
     noisedBZ_hh: (-40., 10.),
     noisedBZ_vv: (-40., 10.),
     reflectivity_bias: (-30., 30.),
+    volumetric_reflectivity: (20., 60.),
+    volumetric_reflectivity_vv: (20., 60.),
+    bird_density: (0., 400.),
 
     signal_power_hh: (-130., 0.),
     signal_power_vv: (-130., 0.),
@@ -2070,6 +2120,8 @@ DEFAULT_FIELD_LIMITS = {
     unfiltered_velocity: velocity_limit,
     velocity_vv: velocity_limit,
     unfiltered_velocity_vv: velocity_limit,
+    dealiased_corrected_velocity: velocity_limit,
+    dealiased_velocity: velocity_limit,
     eastward_wind_component: velocity_limit,
     northward_wind_component: velocity_limit,
     vertical_wind_component: velocity_limit,

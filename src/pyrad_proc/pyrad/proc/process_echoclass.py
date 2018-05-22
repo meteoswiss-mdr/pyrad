@@ -8,6 +8,7 @@ Functions for echo classification and filtering
     :toctree: generated/
 
     process_echo_id
+    process_birds_id
     process_clt_to_echo_id
     process_echo_filter
     process_cdf
@@ -97,6 +98,101 @@ def process_echo_id(procstatus, dscfg, radar_list=None):
         textphi_field=None, textrefl_field=None, wind_size=7,
         max_textphi=20., max_textrhv=0.3, max_textzdr=2.85,
         max_textrefl=8., min_rhv=0.6)
+
+    is_clutter = gatefilter.gate_excluded == 1
+    echo_id[is_clutter] = 2
+
+    # look for noise
+    is_noise = radar.fields[refl_field]['data'].data == (
+        pyart.config.get_fillvalue())
+    echo_id[is_noise] = 1
+
+    id_field = pyart.config.get_metadata('radar_echo_id')
+    id_field['data'] = echo_id
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.add_field('radar_echo_id', id_field)
+
+    return new_dataset, ind_rad
+
+
+def process_birds_id(procstatus, dscfg, radar_list=None):
+    """
+    identifies echoes as 0: No data, 1: Noise, 2: Clutter,
+    3: Birds
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+    ind_rad : int
+        radar index
+
+    """
+
+    if procstatus != 1:
+        return None, None
+
+    for datatypedescr in dscfg['datatype']:
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        if datatype == 'dBZ':
+            refl_field = 'reflectivity'
+        if datatype == 'dBuZ':
+            refl_field = 'unfiltered_reflectivity'
+        if datatype == 'ZDR':
+            zdr_field = 'differential_reflectivity'
+        if datatype == 'ZDRu':
+            zdr_field = 'unfiltered_differential_reflectivity'
+        if datatype == 'RhoHV':
+            rhv_field = 'cross_correlation_ratio'
+        if datatype == 'V':
+            vel_field = 'velocity'
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if ((refl_field not in radar.fields) or
+            (zdr_field not in radar.fields) or
+            (rhv_field not in radar.fields) or
+            (vel_field not in radar.fields)):
+        warn('Unable to create radar_echo_id dataset. Missing data')
+        return None, None
+
+    # user defined parameters
+    max_zdr = dscfg.get('max_zdr', 3.)
+    max_rhv = dscfg.get('max_rhv', 0.9)
+    min_refl = dscfg.get('min_refl', 0.)
+    max_refl = dscfg.get('max_refl', 20.)
+    vel_lim = dscfg.get('vel_lim', 1.)
+    rmin = dscfg.get('rmin', 5000.)
+    rmax = dscfg.get('rmax', 25000.)
+    echo_id = np.zeros((radar.nrays, radar.ngates), dtype='int32')+3
+
+    # look for clutter
+    gatefilter = pyart.filters.birds_gate_filter(
+        radar, zdr_field=zdr_field, rhv_field=rhv_field,
+        refl_field=refl_field, vel_field=vel_field, max_zdr=max_zdr,
+        max_rhv=max_rhv, min_refl=min_refl, max_refl=max_refl,
+        vel_lim=vel_lim, rmin=rmin, rmax=rmax)
 
     is_clutter = gatefilter.gate_excluded == 1
     echo_id[is_clutter] = 2
@@ -678,6 +774,11 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
+    if 'HYDRO_METHOD' not in dscfg:
+        raise Exception(
+            "ERROR: Undefined parameter 'HYDRO_METHOD' for dataset '%s'"
+            % dscfg['dsname'])
+
     if dscfg['HYDRO_METHOD'] == 'SEMISUPERVISED':
         temp_field = None
         iso0_field = None
@@ -851,13 +952,17 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
             zdr_field=zdr_field, rhv_field=rhv_field, kdp_field=kdp_field,
             temp_field=temp_field, iso0_field=iso0_field, hydro_field=None,
             temp_ref=temp_ref)
+    else:
+        raise Exception(
+            "ERROR: Unknown hydrometeor classification method " +
+            dscfg['HYDRO_METHOD'])
 
-        # prepare for exit
-        new_dataset = deepcopy(radar)
-        new_dataset.fields = dict()
-        new_dataset.add_field('radar_echo_classification', hydro)
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.add_field('radar_echo_classification', hydro)
 
-        return new_dataset, ind_rad
+    return new_dataset, ind_rad
 
 
 def process_melting_layer(procstatus, dscfg, radar_list=None):
@@ -887,6 +992,11 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
     """
     if procstatus != 1:
         return None, None
+
+    if 'ML_METHOD' not in dscfg:
+        raise Exception(
+            "ERROR: Undefined parameter 'ML_METHOD' for dataset '%s'"
+            % dscfg['dsname'])
 
     if dscfg['ML_METHOD'] == 'GIANGRANDE':
         temp_field = None
@@ -959,9 +1069,56 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
 
         dscfg['global_data'] = ml_stack
 
-        # prepare for exit
-        new_dataset = deepcopy(radar)
-        new_dataset.fields = dict()
-        new_dataset.add_field('melting_layer', ml)
+    elif dscfg['ML_METHOD'] == 'WOLFENSBERGER':
+        for datatypedescr in dscfg['datatype']:
+            radarnr, datagroup, datatype, dataset, product = (
+                get_datatype_fields(datatypedescr))
+            if datatype == 'dBZ':
+                refl_field = 'reflectivity'
+            if datatype == 'dBZc':
+                refl_field = 'corrected_reflectivity'
+            if datatype == 'RhoHV':
+                rhohv_field = 'cross_correlation_ratio'
+            if datatype == 'RhoHVc':
+                rhohv_field = 'corrected_cross_correlation_ratio'
 
-        return new_dataset, ind_rad
+        ind_rad = int(radarnr[5:8])-1
+        if radar_list[ind_rad] is None:
+            warn('No valid radar')
+            return None, None
+        radar = radar_list[ind_rad]
+
+        if ((refl_field not in radar.fields) or
+                (rhohv_field not in radar.fields)):
+            warn('Unable to detect melting layer. Missing data')
+            return None, None
+
+        # User defined parameters
+        max_range = dscfg.get('max_range', 20000.)
+        detect_threshold = dscfg.get('detect_threshold', 0.02)
+        interp_holes = dscfg.get('interp_holes', False)
+        max_length_holes = dscfg.get('max_length_holes', 250)
+        check_min_length = dscfg.get('check_min_length', True)
+
+        ml_dict = pyart.retrieve.detect_ml(
+            radar, refl_field=refl_field, rhohv_field=rhohv_field,
+            max_range=max_range, detect_threshold=detect_threshold,
+            interp_holes=interp_holes, max_length_holes=max_length_holes,
+            check_min_length=check_min_length)
+
+        if ml_dict['ml_exists']:
+            print('bottom_ml', ml_dict['ml_pol']['bottom_ml'])
+            print('top_ml', ml_dict['ml_pol']['top_ml'])
+        else:
+            warn('No melting layer detected')
+    else:
+        raise Exception(
+            "ERROR: Unknown melting layer retrieval method " +
+            dscfg['ML_METHOD'])
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    # new_dataset.add_field('melting_layer', ml)
+
+    return new_dataset, ind_rad
