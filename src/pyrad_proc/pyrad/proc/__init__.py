@@ -29,6 +29,7 @@ Echo classification and filtering
     :toctree: generated/
 
     process_echo_id
+    process_birds_id
     process_clt_to_echo_id
     process_echo_filter
     process_cdf
@@ -92,6 +93,18 @@ Retrievals
     process_l
     process_cdr
     process_rainrate
+    process_vol_refl
+    process_bird_density
+
+Doppler processing
+==================
+
+.. autosummary::
+    :toctree: generated/
+
+    process_dealias_fourdd
+    process_dealias_region_based
+    process_dealias_unwrap_phase
     process_wind_vel
     process_windshear
 
@@ -127,8 +140,8 @@ from .process_aux import process_time_height, process_roi
 from .process_traj import process_trajectory, process_traj_atplane
 from .process_traj import process_traj_antenna_pattern
 
-from .process_echoclass import process_echo_id, process_echo_filter
-from .process_echoclass import process_clt_to_echo_id
+from .process_echoclass import process_echo_id, process_birds_id
+from .process_echoclass import process_echo_filter, process_clt_to_echo_id
 from .process_echoclass import process_filter_snr, process_filter_visibility
 from .process_echoclass import process_outlier_filter, process_hydroclass
 from .process_echoclass import process_cdf, process_melting_layer
@@ -159,9 +172,13 @@ from .process_monitoring import process_selfconsistency_bias
 from .process_monitoring import process_monitoring
 
 from .process_retrieve import process_signal_power, process_snr
-from .process_retrieve import process_l, process_cdr
-from .process_retrieve import process_rainrate, process_wind_vel
-from .process_retrieve import process_windshear
+from .process_retrieve import process_l, process_cdr, process_bird_density
+from .process_retrieve import process_rainrate, process_vol_refl
+
+from .process_Doppler import process_wind_vel, process_windshear
+from .process_Doppler import process_dealias_fourdd
+from .process_Doppler import process_dealias_region_based
+from .process_Doppler import process_dealias_unwrap_phase
 
 from .process_cosmo import process_cosmo, process_cosmo_lookup_table
 from .process_cosmo import process_cosmo_coord, process_hzt

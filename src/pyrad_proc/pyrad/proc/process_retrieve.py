@@ -8,12 +8,12 @@ Functions for retrieving new moments and products
     :toctree: generated/
 
     process_signal_power
+    process_vol_refl
     process_snr
     process_l
     process_cdr
     process_rainrate
-    process_wind_vel
-    process_windshear
+    process_bird_density
 
 
 """
@@ -114,42 +114,19 @@ def process_signal_power(procstatus, dscfg, radar_list=None):
     if refl_field.endswith('_vv'):
         pwr_field = 'signal_power_vv'
 
-        lmf = None
-        if 'mflossv' in dscfg:
-            lmf = dscfg['mflossv']
-
-        radconst = None
-        if 'radconstv' in dscfg:
-            radconst = dscfg['radconstv']
-
-        lrx = 0.
-        if 'lrxv' in dscfg:
-            lrx = dscfg['lrxv']
-
-        lradome = 0.
-        if 'lradomev' in dscfg:
-            lradome = dscfg['lradomev']
+        lmf = dscfg.get('mflossv', None)
+        radconst = dscfg.get('radconstv', None)
+        lrx = dscfg.get('lrxv', 0.)
+        lradome = dscfg.get('lradomev', 0.)
     else:
         pwr_field = 'signal_power_hh'
 
-        lmf = None
-        if 'mflossh' in dscfg:
-            lmf = dscfg['mflossh']
+        lmf = dscfg.get('mflossh', None)
+        radconst = dscfg.get('radconsth', None)
+        lrx = dscfg.get('lrxh', 0.)
+        lradome = dscfg.get('lradomeh', 0.)
 
-        radconst = None
-        if 'radconsth' in dscfg:
-            radconst = dscfg['radconsth']
-
-        lrx = 0.
-        if 'lrxh' in dscfg:
-            lrx = dscfg['lrxh']
-
-        if 'lradomeh' in dscfg:
-            lradome = dscfg['lradomeh']
-
-    attg = None
-    if 'attg' in dscfg:
-        attg = dscfg['attg']
+    attg = dscfg.get('attg', None)
 
     s_pwr = pyart.retrieve.compute_signal_power(
         radar, lmf=lmf, attg=attg, radconst=radconst, lrx=lrx,
@@ -159,6 +136,86 @@ def process_signal_power(procstatus, dscfg, radar_list=None):
     new_dataset = deepcopy(radar)
     new_dataset.fields = dict()
     new_dataset.add_field(pwr_field, s_pwr)
+
+    return new_dataset, ind_rad
+
+
+def process_vol_refl(procstatus, dscfg, radar_list=None):
+    """
+    Computes the volumetric reflectivity in cm^2 km^-3
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        freq : float. Dataset keyword
+            The radar frequency
+        kw : float. Dataset keyword
+            The water constant
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    for datatypedescr in dscfg['datatype']:
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        if datatype == 'dBZ':
+            refl_field = 'reflectivity'
+        if datatype == 'dBuZ':
+            refl_field = 'unfiltered_reflectivity'
+        if datatype == 'dBZc':
+            refl_field = 'corrected_reflectivity'
+        if datatype == 'dBuZc':
+            refl_field = 'corrected_unfiltered_reflectivity'
+        if datatype == 'dBZv':
+            refl_field = 'reflectivity_vv'
+        if datatype == 'dBuZv':
+            refl_field = 'unfiltered_reflectivity_vv'
+        if datatype == 'dBuZvc':
+            refl_field = 'corrected_unfiltered_reflectivity_vv'
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if refl_field not in radar.fields:
+        warn('Unable to obtain signal power. Missing field '+refl_field)
+        return None, None
+
+    if refl_field.endswith('_vv'):
+        vol_refl_field = 'volumetric_reflectivity_vv'
+    else:
+        vol_refl_field = 'volumetric_reflectivity'
+
+    freq = dscfg.get('freq', None)
+    kw = dscfg.get('kw', None)
+
+    vol_refl_dict = pyart.retrieve.compute_vol_refl(
+        radar, kw=kw, freq=freq, refl_field=refl_field,
+        vol_refl_field=vol_refl_field)
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.add_field(vol_refl_field, vol_refl_dict)
 
     return new_dataset, ind_rad
 
@@ -220,13 +277,11 @@ def process_snr(procstatus, dscfg, radar_list=None):
         warn('Unable to compute SNR. Missing data')
         return None, None
 
-    if 'output_type' in dscfg:
-        if dscfg['output_type'] == 'SNRh':
-            snr_field = 'signal_to_noise_ratio_hh'
-        elif dscfg['output_type'] == 'SNRv':
-            snr_field = 'signal_to_noise_ratio_vv'
-    else:
+    output_type = dscfg.get('output_type', 'SNRh')
+    if output_type == 'SNRh':
         snr_field = 'signal_to_noise_ratio_hh'
+    else:
+        snr_field = 'signal_to_noise_ratio_vv'
 
     snr = pyart.retrieve.compute_snr(
         radar, refl_field=refl, noise_field=noise,
@@ -582,10 +637,9 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
     return new_dataset, ind_rad
 
 
-def process_wind_vel(procstatus, dscfg, radar_list=None):
+def process_bird_density(procstatus, dscfg, radar_list=None):
     """
-    Estimates the horizontal or vertical component of the wind from the
-    radial velocity
+    Computes the bird density from the volumetric reflectivity
 
     Parameters
     ----------
@@ -595,11 +649,10 @@ def process_wind_vel(procstatus, dscfg, radar_list=None):
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
-        datatype : string. Dataset keyword
-            The input data type
-        vert_proj : Boolean
-            If true the vertical projection is computed. Otherwise the
-            horizontal projection is computed
+        datatype : list of string. Dataset keyword
+            The input data types
+        sigma_bird : float. Dataset keyword
+            The bird radar cross section
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -614,9 +667,13 @@ def process_wind_vel(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        dscfg['datatype'][0])
-    vel_field = get_fieldname_pyart(datatype)
+    for datatypedescr in dscfg['datatype']:
+        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+            datatypedescr)
+        if datatype == 'eta_h':
+            vol_refl_field = 'volumetric_reflectivity'
+        if datatype == 'eta_v':
+            vol_refl_field = 'volumetric_reflectivity_vv'
 
     ind_rad = int(radarnr[5:8])-1
     if radar_list[ind_rad] is None:
@@ -624,89 +681,18 @@ def process_wind_vel(procstatus, dscfg, radar_list=None):
         return None, None
     radar = radar_list[ind_rad]
 
-    if vel_field not in radar.fields:
-        warn('Unable to retrieve wind speed. Missing data')
+    if vol_refl_field not in radar.fields:
+        warn('Unable to obtain bird density. Missing field '+vol_refl_field)
         return None, None
 
-    vert_proj = False
-    if 'vert_proj' in dscfg:
-        vert_proj = dscfg['vert_proj']
-
-    wind_field = 'azimuthal_horizontal_wind_component'
-    if vert_proj:
-        wind_field = 'vertical_wind_component'
-
-    wind = pyart.retrieve.est_wind_vel(
-        radar, vert_proj=vert_proj, vel_field=vel_field,
-        wind_field=wind_field)
+    sigma_bird = dscfg.get('sigma_bird', 11.)
+    bird_density_dict = pyart.retrieve.compute_bird_density(
+        radar, sigma_bird=sigma_bird, vol_refl_field=vol_refl_field,
+        bird_density_field='bird_density')
 
     # prepare for exit
     new_dataset = deepcopy(radar)
     new_dataset.fields = dict()
-    new_dataset.add_field(wind_field, wind)
-
-    return new_dataset, ind_rad
-
-
-def process_windshear(procstatus, dscfg, radar_list=None):
-    """
-    Estimates the wind shear from the wind velocity
-
-    Parameters
-    ----------
-    procstatus : int
-        Processing status: 0 initializing, 1 processing volume,
-        2 post-processing
-    dscfg : dictionary of dictionaries
-        data set configuration. Accepted Configuration Keywords::
-
-        datatype : string. Dataset keyword
-            The input data type
-        az_tol : float
-            The tolerance in azimuth when looking for gates on top
-            of the gate when computation is performed
-
-    radar_list : list of Radar objects
-        Optional. list of radar objects
-
-    Returns
-    -------
-    new_dataset : Radar
-        radar object
-    ind_rad : int
-        radar index
-
-    """
-    if procstatus != 1:
-        return None, None
-
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        dscfg['datatype'][0])
-    wind_field = get_fieldname_pyart(datatype)
-
-    ind_rad = int(radarnr[5:8])-1
-    if radar_list[ind_rad] is None:
-        warn('No valid radar')
-        return None, None
-    radar = radar_list[ind_rad]
-
-    if wind_field not in radar.fields:
-        warn('Unable to retrieve wind shear. Missing data')
-        return None, None
-
-    az_tol = 0.5
-    if 'az_tol' in dscfg:
-        az_tol = dscfg['az_tol']
-
-    windshear_field = 'vertical_wind_shear'
-
-    windshear = pyart.retrieve.est_vertical_windshear(
-        radar, az_tol=az_tol, wind_field=wind_field,
-        windshear_field=windshear_field)
-
-    # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field(windshear_field, windshear)
+    new_dataset.add_field('bird_density', bird_density_dict)
 
     return new_dataset, ind_rad
