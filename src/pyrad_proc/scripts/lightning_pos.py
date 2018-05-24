@@ -28,14 +28,12 @@ print(__doc__)
 def main():
     """
     """
-    basepath = '/data/lightning/Santis/'
-    # basepath = '/store/msrad/radar/pyrad_products/rad4alp_hydro_PHA/'
+    # basepath = '/data/lightning/Santis/'
+    basepath = '/store/msrad/lightning/LMA/Santis/'
     day_vec = [
-        datetime.datetime(2017, 6, 29),
-        datetime.datetime(2017, 6, 30),
-        datetime.datetime(2017, 7, 10),
-        datetime.datetime(2017, 7, 14),
-        datetime.datetime(2017, 7, 18)]
+        datetime.datetime(2017, 7, 19),
+        datetime.datetime(2017, 7, 30),
+        datetime.datetime(2017, 8, 1)]
 
 
     print("====== Lightning Position plotting started: %s" %
