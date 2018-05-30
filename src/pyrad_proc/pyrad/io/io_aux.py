@@ -425,6 +425,12 @@ def get_fieldname_pyart(datatype):
         field_name = 'corrected_velocity'
     elif datatype == 'dealVc':
         field_name = 'dealiased_corrected_velocity'
+    elif datatype == 'estV':
+        field_name = 'retrieved_velocity'
+    elif datatype == 'stdV':
+        field_name = 'retrieved_velocity_std'
+    elif datatype == 'diffV':
+        field_name = 'velocity_difference'
     elif datatype == 'W':
         field_name = 'spectrum_width'
     elif datatype == 'Wc':
@@ -433,6 +439,10 @@ def get_fieldname_pyart(datatype):
         field_name = 'azimuthal_horizontal_wind_component'
     elif datatype == 'wind_vel_v':
         field_name = 'vertical_wind_component'
+    elif datatype == 'wind_vel_h_u':
+        field_name = 'eastward_wind_component'
+    elif datatype == 'wind_vel_h_v':
+        field_name = 'northward_wind_component'
     elif datatype == 'windshear_v':
         field_name = 'vertical_wind_shear'
     elif datatype == 'WIND_SPEED':

@@ -49,7 +49,7 @@ from pyart.config import get_fillvalue, get_metadata
 from .io_aux import get_fieldname_pyart, _get_datetime
 
 
-def read_profile_ts(fname_list, labels, hres=None):
+def read_profile_ts(fname_list, labels, hres=None, label_nr=0):
     """
     Reads a colection of profile data file and creates a time series
 
@@ -59,6 +59,7 @@ def read_profile_ts(fname_list, labels, hres=None):
         path of time series file
     labels : list of str
         The data labels
+    label_nr : the label nr of the data that will be used in the time series
 
     Returns
     -------
@@ -75,7 +76,7 @@ def read_profile_ts(fname_list, labels, hres=None):
         if hres is None:
             hres = np.mean(height[1:]-height[:-1])
         hbin_edges = np.append(height-hres/2, height[-1]+hres/2)
-        val = vals[:, 0]
+        val = vals[:, label_nr]
         data_ma.append(val)
     data_ma = np.ma.asarray(data_ma)
 

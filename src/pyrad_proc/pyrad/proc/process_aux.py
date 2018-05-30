@@ -97,6 +97,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_echo_filter'
     elif dataset_type == 'SNR_FILTER':
         func_name = 'process_filter_snr'
+    elif dataset_type == 'VEL_FILTER':
+        func_name = 'process_filter_vel_diff'
     elif dataset_type == 'VIS_FILTER':
         func_name = 'process_filter_visibility'
     elif dataset_type == 'OUTLIER_FILTER':
@@ -131,6 +133,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_dealias_unwrap_phase'
     elif dataset_type == 'WIND_VEL':
         func_name = 'process_wind_vel'
+    elif dataset_type == 'VAD':
+        func_name = 'process_vad'
     elif dataset_type == 'WINDSHEAR':
         func_name = 'process_windshear'
     elif dataset_type == 'HYDROCLASS':

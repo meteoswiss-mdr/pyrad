@@ -1069,7 +1069,7 @@ def quantize_field(field, field_name, step):
 def compute_profile_stats(field, gate_altitude, h_vec, h_res,
                           quantity='quantiles',
                           quantiles=np.array([0.25, 0.50, 0.75]),
-                          nvalid_min=4):
+                          nvalid_min=4, std_field=None, np_field=None):
     """
     Compute statistics of vertical profile
 
@@ -1084,12 +1084,17 @@ def compute_profile_stats(field, gate_altitude, h_vec, h_res,
     h_res : float
         heigh resolution [m]
     quantity : str
-        The quantity to compute. Can be either 'quantiles' or 'mean'.
+        The quantity to compute. Can be
+        ['quantiles', 'mode', 'regression_mean', 'mean'].
         If 'mean', the min, max, and average is computed.
     quantiles : 1D ndarray
         the quantiles to compute
     nvalid_min : int
         the minimum number of points to consider the stats valid
+    std_field : ndarray
+        the standard deviation of the regression at each range gate
+    np_field : ndarray
+        the number of points used to compute the regression at each range gate
 
     Returns
     -------
@@ -1112,6 +1117,9 @@ def compute_profile_stats(field, gate_altitude, h_vec, h_res,
         vals[:, 1] = 0
         vals[:, 3] = 0
         vals[:, 5] = 0
+    elif quantity == 'regression_mean':
+        vals = np.ma.empty((nh, 2), dtype=float)
+        vals[:] = np.ma.masked
     else:
         vals = np.ma.empty((nh, quantiles.size), dtype=float)
         vals[:] = np.ma.masked
@@ -1160,6 +1168,24 @@ def compute_profile_stats(field, gate_altitude, h_vec, h_res,
                     data, axis=None, nan_policy='omit')
                 vals[i, 4] = mode
                 vals[i, 5] = count/nvalid*100.
+        elif quantity == 'regression_mean':
+            if std_field is None or np_field is None:
+                warn('Unable to compute regression mean')
+                return None, None
+            data_std = std_field[np.logical_and(
+                gate_altitude >= h-h_res/2., gate_altitude < h+h_res/2.)]
+            data_np = np_field[np.logical_and(
+                gate_altitude >= h-h_res/2., gate_altitude < h+h_res/2.)]
+
+            val_valid[i] = np.sum(data_np)
+            if val_valid[i] == 0.:
+                continue
+
+            data_var = np.ma.power(data_std, 2.)
+            weights = (data_np-1)/data_var
+            vals[i, 0] = np.ma.sum(weights*data)/np.ma.sum(weights)
+            vals[i, 1] = np.ma.sqrt(
+                np.ma.sum((data_np-1)*data_var)/np.ma.sum(data_np-1))
         else:
             avg, quants, nvalid = quantiles_weighted(
                 data, quantiles=quantiles)

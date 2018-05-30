@@ -12,11 +12,14 @@ Functions for processing Doppler related parameters
     process_dealias_unwrap_phase
     process_wind_vel
     process_windshear
+    process_vad
 
 """
 
 from copy import deepcopy
 from warnings import warn
+
+import numpy as np
 
 import pyart
 
@@ -100,6 +103,7 @@ def process_dealias_fourdd(procstatus, dscfg, radar_list=None):
         # get user parameters
         filt = dscfg.get('filt', 1)
         sign = dscfg.get('sign', 1)
+        keep_mask = dscfg.get('keep_mask', True)
 
         last_radar = dscfg['global_data']
 
@@ -109,6 +113,11 @@ def process_dealias_fourdd(procstatus, dscfg, radar_list=None):
             keep_original=False, set_limits=False, vel_field=vel_field,
             corr_vel_field=corr_vel_field, last_vel_field=corr_vel_field,
             debug=False, sign=sign)
+
+        if keep_mask:
+            mask = np.ma.getmaskarray(radar.fields[vel_field]['data'])
+            corr_vel_dict['data'] = np.ma.masked_where(
+                mask, corr_vel_dict['data'])
 
     # prepare for exit
     new_dataset = deepcopy(radar)
@@ -395,5 +404,77 @@ def process_windshear(procstatus, dscfg, radar_list=None):
     new_dataset = deepcopy(radar)
     new_dataset.fields = dict()
     new_dataset.add_field(windshear_field, windshear)
+
+    return new_dataset, ind_rad
+
+
+def process_vad(procstatus, dscfg, radar_list=None):
+    """
+    Estimates vertical wind profile using the VAD (velocity Azimuth Display)
+    technique
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : string. Dataset keyword
+            The input data type
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : Radar
+        radar object
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+        dscfg['datatype'][0])
+    vel_field = get_fieldname_pyart(datatype)
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if vel_field not in radar.fields:
+        warn('Unable to retrieve wind speed. Missing data')
+        return None, None
+
+    # User defined parameters
+    npoints_min = dscfg.get('npoints_min', 6)
+    azi_spacing_max = dscfg.get('azi_spacing_max', 45.)
+    vel_diff_max = dscfg.get('vel_diff_max', 10.)
+
+    (u_vel_dict, v_vel_dict, w_vel_dict, vel_est_dict, vel_std_dict,
+     vel_diff_dict) = pyart.retrieve.est_wind_profile(
+         radar, npoints_min=npoints_min, azi_spacing_max=azi_spacing_max,
+         vel_diff_max=vel_diff_max, rad_vel_field=vel_field,
+         u_vel_field='eastward_wind_component',
+         v_vel_field='northward_wind_component',
+         w_vel_field='vertical_wind_component',
+         vel_est_field='retrieved_velocity',
+         vel_std_field='retrieved_velocity_std',
+         vel_diff_field='velocity_difference')
+
+    # prepare for exit
+    new_dataset = deepcopy(radar)
+    new_dataset.fields = dict()
+    new_dataset.add_field('eastward_wind_component', u_vel_dict)
+    new_dataset.add_field('northward_wind_component', v_vel_dict)
+    new_dataset.add_field('vertical_wind_component', w_vel_dict)
+    new_dataset.add_field('retrieved_velocity', vel_est_dict)
+    new_dataset.add_field('retrieved_velocity_std', vel_std_dict)
+    new_dataset.add_field('velocity_difference', vel_diff_dict)
 
     return new_dataset, ind_rad
