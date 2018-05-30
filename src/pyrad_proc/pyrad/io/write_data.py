@@ -556,15 +556,15 @@ def write_cdf(quantiles, values, ntot, nnan, nclut, nblocked, nprec_filter,
     return fname
 
 
-def write_histogram(bins, values, fname, datatype='undefined',
+def write_histogram(bin_edges, values, fname, datatype='undefined',
                     step=0):
     """
     writes a histogram
 
     Parameters
     ----------
-    bins : float array
-        array containing the histogram bins
+    bin_edges : float array
+        array containing the histogram bin edges
     values : int array
         array containing the number of points in each bin
     fname : str
@@ -597,8 +597,8 @@ def write_histogram(bins, values, fname, datatype='undefined',
         writer.writeheader()
         for i, val in enumerate(values):
             writer.writerow({
-                'bin_edge_left': bins[i],
-                'bin_edge_right': bins[i+1],
+                'bin_edge_left': bin_edges[i],
+                'bin_edge_right': bin_edges[i+1],
                 'value': val})
         csvfile.close()
 
@@ -607,14 +607,14 @@ def write_histogram(bins, values, fname, datatype='undefined',
 
 def write_quantiles(quantiles, values, fname, datatype='undefined'):
     """
-    writes a histogram
+    writes quantiles
 
     Parameters
     ----------
-    bins : float array
-        array containing the histogram bins
-    values : int array
-        array containing the number of points in each bin
+    quantiles : float array
+        array containing the quantiles to write
+    values : float array
+        array containing the value of each quantile
     fname : str
         file name
     datatype :str

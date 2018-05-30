@@ -77,6 +77,11 @@ unfiltered_velocity_vv = 'unfiltered_velocity_vv'
 dealiased_corrected_velocity = 'dealiased_corrected_velocity'
 dealiased_velocity = 'dealiased_velocity'
 
+# retrieved Doppler velocity (for VAD)
+retrieved_velocity = 'retrieved_velocity'
+retrieved_velocity_std = 'retrieved_velocity_std'
+velocity_difference = 'velocity_difference'
+
 # Spectral width fields, SW
 spectrum_width = 'spectrum_width'
 corrected_spectrum_width = 'corrected_spectrum_width'
@@ -283,6 +288,9 @@ DEFAULT_FIELD_NAMES = {
     'unfiltered_velocity_vv': unfiltered_velocity_vv,
     'dealiased_corrected_velocity': dealiased_corrected_velocity,
     'dealiased_velocity': dealiased_velocity,
+    'retrieved_velocity': retrieved_velocity,
+    'retrieved_velocity_std': retrieved_velocity_std,
+    'velocity_difference': velocity_difference,
     'spectrum_width': spectrum_width,
     'corrected_spectrum_width': corrected_spectrum_width,
     'unfiltered_spectrum_width': unfiltered_spectrum_width,
@@ -792,6 +800,24 @@ DEFAULT_METADATA = {
         'units': 'm/s',
         'standard_name': 'mean_Doppler_velocity',
         'long_name': 'Dealiased corrected mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    retrieved_velocity: {
+        'units': 'm/s',
+        'standard_name': 'retrieved_mean_Doppler_velocity',
+        'long_name': 'Retrieved mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    retrieved_velocity_std: {
+        'units': 'm/s',
+        'standard_name': 'retrieved_mean_Doppler_velocity_std',
+        'long_name': 'Retrieved mean Doppler velocity standard deviation',
+        'coordinates': 'elevation azimuth range'},
+
+    velocity_difference:{
+        'units': 'm/s',
+        'standard_name': 'retrieved_mean_Doppler_velocity_difference',
+        'long_name': 'Difference between retrieved and measured Doppler velocity',
         'coordinates': 'elevation azimuth range'},
 
     # Spectrum width fields
@@ -1996,6 +2022,9 @@ DEFAULT_FIELD_COLORMAP = {
     vertical_wind_component: 'pyart_BuDRd18',
     azimuthal_horizontal_wind_component: 'pyart_BuDRd18',
     vertical_wind_shear: 'pyart_BuDRd18',
+    retrieved_velocity: 'pyart_BuDRd18',
+    retrieved_velocity_std: 'pyart_NWSRef',
+    velocity_difference: 'pyart_BuDRd18',
     wind_speed: 'pyart_NWSRef',
     wind_direction: 'pyart_Wild25',
 
@@ -2127,6 +2156,9 @@ DEFAULT_FIELD_LIMITS = {
     vertical_wind_component: velocity_limit,
     azimuthal_horizontal_wind_component: velocity_limit,
     vertical_wind_shear: velocity_limit,
+    retrieved_velocity: velocity_limit,
+    retrieved_velocity_std: (0., 15.),
+    velocity_difference: (-15., 15.),
     wind_speed: (0., 50.),
     wind_direction: (0., 360.),
 
