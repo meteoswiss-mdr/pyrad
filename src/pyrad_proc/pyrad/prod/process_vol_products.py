@@ -1259,7 +1259,7 @@ def generate_vol_products(dataset, prdcfg):
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        bins, values = compute_histogram(
+        bin_edges, values = compute_histogram(
             dataset.fields[field_name]['data'], field_name, step=step)
 
         titl = (
@@ -1269,7 +1269,7 @@ def generate_vol_products(dataset, prdcfg):
 
         labelx = get_colobar_label(dataset.fields[field_name], field_name)
 
-        plot_histogram(bins, values, fname_list, labelx=labelx,
+        plot_histogram(bin_edges, values, fname_list, labelx=labelx,
                        labely='Number of Samples', titl=titl)
 
         print('----- save to '+' '.join(fname_list))
@@ -1280,9 +1280,9 @@ def generate_vol_products(dataset, prdcfg):
                 ['csv'], timeinfo=prdcfg['timeinfo'],
                 runinfo=prdcfg['runinfo'])[0]
 
-            hist, bin_edges = np.histogram(values, bins=bins)
+            hist, bin_edges_aux = np.histogram(values, bins=bin_edges)
             write_histogram(
-                bins, hist, fname, datatype=prdcfg['voltype'], step=step)
+                bin_edges, hist, fname, datatype=prdcfg['voltype'], step=step)
             print('----- save to '+fname)
 
             return fname
