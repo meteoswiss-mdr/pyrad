@@ -38,6 +38,7 @@ Echo classification and filtering
     process_outlier_filter
     process_hydroclass
     process_melting_layer
+    process_filter_vel_diff
 
 Phase processing and attenuation correction
 ===========================================
@@ -107,6 +108,7 @@ Doppler processing
     process_dealias_unwrap_phase
     process_wind_vel
     process_windshear
+    process_vad
 
 Trajectory functions
 ====================
@@ -145,6 +147,7 @@ from .process_echoclass import process_echo_filter, process_clt_to_echo_id
 from .process_echoclass import process_filter_snr, process_filter_visibility
 from .process_echoclass import process_outlier_filter, process_hydroclass
 from .process_echoclass import process_cdf, process_melting_layer
+from .process_echoclass import process_filter_vel_diff
 
 from .process_phase import process_correct_phidp0
 from .process_phase import process_smooth_phidp_single_window
@@ -179,6 +182,7 @@ from .process_Doppler import process_wind_vel, process_windshear
 from .process_Doppler import process_dealias_fourdd
 from .process_Doppler import process_dealias_region_based
 from .process_Doppler import process_dealias_unwrap_phase
+from .process_Doppler import process_vad
 
 from .process_cosmo import process_cosmo, process_cosmo_lookup_table
 from .process_cosmo import process_cosmo_coord, process_hzt

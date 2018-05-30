@@ -142,7 +142,7 @@ def process_signal_power(procstatus, dscfg, radar_list=None):
 
 def process_vol_refl(procstatus, dscfg, radar_list=None):
     """
-    Computes the volumetric reflectivity in cm^2 km^-3
+    Computes the volumetric reflectivity in 10log10(cm^2 km^-3)
 
     Parameters
     ----------
