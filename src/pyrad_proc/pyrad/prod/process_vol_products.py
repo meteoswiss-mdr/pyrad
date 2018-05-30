@@ -498,7 +498,7 @@ def generate_vol_products(dataset, prdcfg):
         hmin_user = prdcfg.get('heightMin', None)
         hmax_user = prdcfg.get('heightMax', None)
         min_ele = prdcfg.get('min_ele', 5.)
-        max_ele = prdcfg.get('max_ele', 5.)
+        max_ele = prdcfg.get('max_ele', 85.)
 
         fixed_span = prdcfg.get('fixed_span', 1)
         vmin = None
