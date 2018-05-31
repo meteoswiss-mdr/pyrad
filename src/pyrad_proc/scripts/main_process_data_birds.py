@@ -76,6 +76,14 @@ def main():
         '--cfgpath', type=str,
         default=os.path.expanduser('~')+'/pyrad/config/processing/',
         help='configuration file path')
+        
+    parser.add_argument(
+        '--storepath', type=str,
+        default='/store/msrad/radar/pyrad_products/rad4alp_birds_PHA/',
+        help='Base data storing path')
+        
+    parser.add_argument(
+        '--hres', type=float, default=200., help='Height resolution [m]')
 
     args = parser.parse_args()
 
@@ -98,13 +106,12 @@ def main():
     pyrad_main(cfgfile_proc, starttime=proc_starttime, endtime=proc_endtime)
 
     # Plot time-height
-    file_base = '/store/msrad/radar/pyrad_products/rad4alp_birds_PHA/'
-    hres = 200
+    file_base = args.storepath
+    hres = args.hres
 
     datatype_list = [
         'eta_h', 'bird_density', 'WIND_SPEED', 'WIND_DIRECTION',
         'wind_vel_h_u', 'wind_vel_h_v', 'wind_vel_v']
-
 
     startdate = proc_starttime.replace(hour=0, minute=0, second=0, microsecond=0)
     enddate = proc_endtime.replace(hour=0, minute=0, second=0, microsecond=0)

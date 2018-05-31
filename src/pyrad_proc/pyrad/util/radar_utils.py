@@ -1182,7 +1182,7 @@ def compute_profile_stats(field, gate_altitude, h_vec, h_res,
                 continue
 
             data_var = np.ma.power(data_std, 2.)
-            weights = (data_np-1)/data_var
+            weights = (data_np-1)/(data_var+0.01)
             vals[i, 0] = np.ma.sum(weights*data)/np.ma.sum(weights)
             vals[i, 1] = np.ma.sqrt(
                 np.ma.sum((data_np-1)*data_var)/np.ma.sum(data_np-1))
