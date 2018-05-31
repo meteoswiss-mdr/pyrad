@@ -492,6 +492,313 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname
 
+    elif prdcfg['type'] == 'WIND_PROFILE':
+        # user defined parameters
+        heightResolution = prdcfg.get('heightResolution', 100.)
+        hmin_user = prdcfg.get('heightMin', None)
+        hmax_user = prdcfg.get('heightMax', None)
+        min_ele = prdcfg.get('min_ele', 5.)
+        max_ele = prdcfg.get('max_ele', 85.)
+
+        fixed_span = prdcfg.get('fixed_span', 1)
+        vmin = None
+        vmax = None
+        if fixed_span:
+            vmin, vmax = pyart.config.get_field_limits('eastward_wind_component')
+            if 'vmin' in prdcfg:
+                vmin = prdcfg['vmin']
+            if 'vmax' in prdcfg:
+                vmax = prdcfg['vmax']
+
+        u_vel = deepcopy(dataset.fields['eastward_wind_component']['data'])
+        v_vel = deepcopy(dataset.fields['northward_wind_component']['data'])
+        w_vel = deepcopy(dataset.fields['vertical_wind_component']['data'])
+        std_vel = deepcopy(dataset.fields['retrieved_velocity_std']['data'])
+        diff_vel = deepcopy(dataset.fields['velocity_difference']['data'])
+
+        # remove azimuth information
+        u_vel_aux = np.ma.empty((dataset.nsweeps, dataset.ngates), dtype=float)
+        u_vel_aux[:] = np.ma.masked
+        v_vel_aux = np.ma.empty((dataset.nsweeps, dataset.ngates), dtype=float)
+        v_vel_aux[:] = np.ma.masked
+        w_vel_aux = np.ma.empty((dataset.nsweeps, dataset.ngates), dtype=float)
+        w_vel_aux[:] = np.ma.masked
+        std_vel_aux = np.ma.empty((dataset.nsweeps, dataset.ngates), dtype=float)
+        std_vel_aux[:] = np.ma.masked
+        ngates_aux = np.zeros((dataset.nsweeps, dataset.ngates), dtype=int)
+        gate_altitude_aux = np.empty((dataset.nsweeps, dataset.ngates), dtype=float)
+        for ind_sweep in range(dataset.nsweeps):
+            ind_start = dataset.sweep_start_ray_index['data'][ind_sweep]
+            ind_end = dataset.sweep_end_ray_index['data'][ind_sweep]
+            for ind_rng in range(dataset.ngates):
+                u_vel_aux[ind_sweep, ind_rng] = u_vel[ind_start, ind_rng]
+                v_vel_aux[ind_sweep, ind_rng] = v_vel[ind_start, ind_rng]
+                w_vel_aux[ind_sweep, ind_rng] = w_vel[ind_start, ind_rng]
+                std_vel_aux[ind_sweep, ind_rng] = std_vel[ind_start, ind_rng]
+                gate_altitude_aux[ind_sweep, ind_rng] = (
+                    dataset.gate_altitude['data'][ind_start, ind_rng])
+                ngates_aux[ind_sweep, ind_rng] = (
+                    diff_vel[ind_start:ind_end, ind_rng].compressed().size)
+
+        # exclude low elevations in the computation of vertical velocities
+        std_w_vel_aux = deepcopy(std_vel_aux)
+        ngates_w_aux = deepcopy(ngates_aux)
+        ind = np.where(dataset.fixed_angle['data'] < min_ele)[0]
+        if ind.size > 0:
+            w_vel_aux[ind, :] = np.ma.masked
+            std_w_vel_aux[ind, :] = np.ma.masked
+            ngates_w_aux[ind, :] = 0
+
+        # exclude hig elevations in the computation of horizontal velocities
+        ind = np.where(dataset.fixed_angle['data'] > max_ele)[0]
+        if ind.size > 0:
+            u_vel_aux[ind, :] = np.ma.masked
+            v_vel_aux[ind, :] = np.ma.masked
+            std_vel_aux[ind, :] = np.ma.masked
+            ngates_aux[ind, :] = 0
+
+        # compute quantities
+        if hmin_user is None:
+            minheight = (round(
+                np.min(dataset.gate_altitude['data']) /
+                heightResolution)*heightResolution-heightResolution)
+        else:
+            minheight = hmin_user
+        if hmax_user is None:
+            maxheight = (round(
+                np.max(dataset.gate_altitude['data']) /
+                heightResolution)*heightResolution+heightResolution)
+        else:
+            maxheight = hmax_user
+        nlevels = int((maxheight-minheight)/heightResolution)
+
+        h_vec = minheight+np.arange(nlevels)*heightResolution+heightResolution/2.
+
+        u_vals, val_valid = compute_profile_stats(
+            u_vel_aux, gate_altitude_aux, h_vec, heightResolution,
+            quantity='regression_mean', std_field=std_vel_aux,
+            np_field=ngates_aux)
+        v_vals, val_valid = compute_profile_stats(
+            v_vel_aux, gate_altitude_aux, h_vec, heightResolution,
+            quantity='regression_mean', std_field=std_vel_aux,
+            np_field=ngates_aux)
+        w_vals, w_val_valid = compute_profile_stats(
+            w_vel_aux, gate_altitude_aux, h_vec, heightResolution,
+            quantity='regression_mean', std_field=std_w_vel_aux,
+            np_field=ngates_w_aux)
+
+        # plot u wind data
+        u_data = [u_vals[:, 0], u_vals[:, 0]+u_vals[:, 1],
+                  u_vals[:, 0]-u_vals[:, 1]]
+        labels = ['Regression mean', '+std', '-std']
+        colors = ['b', 'k', 'k']
+        linestyles = ['-', '--', '--']
+
+        labelx = get_colobar_label(
+            dataset.fields['eastward_wind_component'],
+            'eastward_wind_component')
+        titl = (
+            pyart.graph.common.generate_radar_time_begin(
+                dataset).isoformat() + 'Z' + '\n' +
+            get_field_name(
+                dataset.fields['eastward_wind_component'],
+                'eastward_wind_component'))
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        prdcfginfo = 'hres'+str(int(heightResolution))
+        fname_list = make_filename(
+            'wind_profile', prdcfg['dstype'], 'wind_vel_h_u',
+            prdcfg['imgformat'], prdcfginfo=prdcfginfo,
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        plot_rhi_profile(
+            u_data, h_vec, fname_list, labelx=labelx, labely='Height (m MSL)',
+            labels=labels, title=titl, colors=colors,
+            linestyles=linestyles, vmin=vmin, vmax=vmax,
+            hmin=minheight, hmax=maxheight)
+
+        print('----- save to '+' '.join(fname_list))
+
+        # plot v wind data
+        v_data = [v_vals[:, 0], v_vals[:, 0]+v_vals[:, 1],
+                  v_vals[:, 0]-v_vals[:, 1]]
+        labels = ['Regression mean', '+std', '-std']
+        colors = ['b', 'k', 'k']
+        linestyles = ['-', '--', '--']
+
+        labelx = get_colobar_label(
+            dataset.fields['northward_wind_component'],
+            'northward_wind_component')
+        titl = (
+            pyart.graph.common.generate_radar_time_begin(
+                dataset).isoformat() + 'Z' + '\n' +
+            get_field_name(
+                dataset.fields['northward_wind_component'],
+                'northward_wind_component'))
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        prdcfginfo = 'hres'+str(int(heightResolution))
+        fname_list = make_filename(
+            'wind_profile', prdcfg['dstype'], 'wind_vel_h_v',
+            prdcfg['imgformat'], prdcfginfo=prdcfginfo,
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        plot_rhi_profile(
+            v_data, h_vec, fname_list, labelx=labelx, labely='Height (m MSL)',
+            labels=labels, title=titl, colors=colors,
+            linestyles=linestyles, vmin=vmin, vmax=vmax,
+            hmin=minheight, hmax=maxheight)
+
+        print('----- save to '+' '.join(fname_list))
+
+        # plot vertical wind data
+        w_data = [w_vals[:, 0], w_vals[:, 0]+w_vals[:, 1],
+                  w_vals[:, 0]-w_vals[:, 1]]
+        labels = ['Regression mean', '+std', '-std']
+        colors = ['b', 'k', 'k']
+        linestyles = ['-', '--', '--']
+
+        labelx = get_colobar_label(
+            dataset.fields['vertical_wind_component'],
+            'vertical_wind_component')
+        titl = (
+            pyart.graph.common.generate_radar_time_begin(
+                dataset).isoformat() + 'Z' + '\n' +
+            get_field_name(
+                dataset.fields['vertical_wind_component'],
+                'vertical_wind_component'))
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        prdcfginfo = 'hres'+str(int(heightResolution))
+        fname_list = make_filename(
+            'wind_profile', prdcfg['dstype'], 'wind_vel_v',
+            prdcfg['imgformat'], prdcfginfo=prdcfginfo,
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        plot_rhi_profile(
+            w_data, h_vec, fname_list, labelx=labelx, labely='Height (m MSL)',
+            labels=labels, title=titl, colors=colors,
+            linestyles=linestyles, vmin=vmin, vmax=vmax,
+            hmin=minheight, hmax=maxheight)
+
+        print('----- save to '+' '.join(fname_list))
+
+        # plot horizontal wind magnitude
+        mag = np.ma.sqrt(
+            np.ma.power(u_vals[:, 0], 2.)+np.ma.power(v_vals[:, 0], 2.))
+        mag_data = [mag]
+        labels = ['Regression mean']
+        colors = ['b']
+        linestyles = ['-']
+
+        field_dict = pyart.config.get_metadata('wind_speed')
+        labelx = get_colobar_label(field_dict, 'wind_speed')
+        titl = (
+            pyart.graph.common.generate_radar_time_begin(
+                dataset).isoformat() + 'Z' + '\n' +
+            get_field_name(field_dict, 'wind_speed'))
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        prdcfginfo = 'hres'+str(int(heightResolution))
+        fname_list = make_filename(
+            'wind_profile', prdcfg['dstype'], 'WIND_SPEED',
+            prdcfg['imgformat'], prdcfginfo=prdcfginfo,
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        plot_rhi_profile(
+            mag_data, h_vec, fname_list, labelx=labelx, labely='Height (m MSL)',
+            labels=labels, title=titl, colors=colors,
+            linestyles=linestyles, vmin=vmin, vmax=vmax,
+            hmin=minheight, hmax=maxheight)
+
+        print('----- save to '+' '.join(fname_list))
+
+        # plot horizontal wind direction
+        wind_dir = 90.-np.ma.arctan2(u_vals[:, 0]/mag, v_vals[:, 0]/mag)*180./np.pi+180.
+        wind_dir[wind_dir >= 360.] = wind_dir[wind_dir >= 360.]-360.
+        dir_data = [wind_dir]
+        labels = ['Regression mean']
+        colors = ['b']
+        linestyles = ['-']
+
+        field_dict = pyart.config.get_metadata('wind_direction')
+        labelx = get_colobar_label(field_dict, 'wind_direction')
+        titl = (
+            pyart.graph.common.generate_radar_time_begin(
+                dataset).isoformat() + 'Z' + '\n' +
+            get_field_name(field_dict, 'wind_direction'))
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        prdcfginfo = 'hres'+str(int(heightResolution))
+        fname_list = make_filename(
+            'wind_profile', prdcfg['dstype'], 'WIND_DIRECTION',
+            prdcfg['imgformat'], prdcfginfo=prdcfginfo,
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        plot_rhi_profile(
+            dir_data, h_vec, fname_list, labelx=labelx, labely='Height (m MSL)',
+            labels=labels, title=titl, colors=colors,
+            linestyles=linestyles, vmin=0., vmax=360.,
+            hmin=minheight, hmax=maxheight)
+
+        print('----- save to '+' '.join(fname_list))
+
+        fname = make_filename(
+            'wind_profile', prdcfg['dstype'], 'WIND',
+            ['csv'], prdcfginfo=prdcfginfo,
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])[0]
+
+        fname = savedir+fname
+
+        data = [
+            u_vals[:, 0], u_vals[:, 1], np.ma.asarray(val_valid),
+            v_vals[:, 0], v_vals[:, 1], np.ma.asarray(val_valid),
+            w_vals[:, 0], w_vals[:, 1], np.ma.asarray(w_val_valid),
+            mag, wind_dir]
+        labels = [
+            'u_wind', 'std_u_wind', 'np_u_wind',
+            'v_wind', 'std_v_wind', 'np_v_wind',
+            'w_wind', 'std_w_wind', 'np_w_wind',
+            'mag_h_wind', 'dir_h_wind']
+
+        write_rhi_profile(
+            h_vec, data, val_valid, labels, fname, datatype=None,
+            timeinfo=prdcfg['timeinfo'])
+
+        print('----- save to '+fname)
+
+        return fname
+
     elif prdcfg['type'] == 'PSEUDOPPI_MAP':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset.fields:
@@ -952,7 +1259,7 @@ def generate_vol_products(dataset, prdcfg):
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        bins, values = compute_histogram(
+        bin_edges, values = compute_histogram(
             dataset.fields[field_name]['data'], field_name, step=step)
 
         titl = (
@@ -962,7 +1269,7 @@ def generate_vol_products(dataset, prdcfg):
 
         labelx = get_colobar_label(dataset.fields[field_name], field_name)
 
-        plot_histogram(bins, values, fname_list, labelx=labelx,
+        plot_histogram(bin_edges, values, fname_list, labelx=labelx,
                        labely='Number of Samples', titl=titl)
 
         print('----- save to '+' '.join(fname_list))
@@ -973,9 +1280,9 @@ def generate_vol_products(dataset, prdcfg):
                 ['csv'], timeinfo=prdcfg['timeinfo'],
                 runinfo=prdcfg['runinfo'])[0]
 
-            hist, bin_edges = np.histogram(values, bins=bins)
+            hist, bin_edges_aux = np.histogram(values, bins=bin_edges)
             write_histogram(
-                bins, hist, fname, datatype=prdcfg['voltype'], step=step)
+                bin_edges, hist, fname, datatype=prdcfg['voltype'], step=step)
             print('----- save to '+fname)
 
             return fname

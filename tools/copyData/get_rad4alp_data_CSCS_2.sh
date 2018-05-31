@@ -46,15 +46,15 @@ do
         ;;
         --start_time)
         START_TIME="$2"
-        shift # past argument        
+        shift # past argument
         ;;
         --end_time)
         END_TIME="$2"
-        shift # past argument        
+        shift # past argument
         ;;
         -e|--res)
         res="$2"
-        shift # past argument        
+        shift # past argument
         ;;
         --ele)
         ELE="$2"
@@ -63,11 +63,11 @@ do
         read -r -a ele_vec <<< "$ELE"
         IFS=$OIFS
         shift # past argument
-        ;; 
+        ;;
         -p|--dest_base)
         data_destbase="$2"
-        shift # past argument        
-        ;;    
+        shift # past argument
+        ;;
     esac
     shift # past argument or value
 done
@@ -127,8 +127,8 @@ if [ $dt_st -lt 0 ] || [ $dt_et -gt 0 ]; then
     time_sample=$(date --date $st +%H:%M)
     time_vec[0]=$(date --date $time_sample +%H%M)
     time_sample_end=$(date --date $et +%H:%M)
-    while [ $time_sample != $time_sample_end ]; do        
-        time_sample=$(date -d "$(date --date "$time_sample")+5 min" +"%H:%M")        
+    while [ $time_sample != $time_sample_end ]; do
+        time_sample=$(date -d "$(date --date "$time_sample")+5 min" +"%H:%M")
         let i+=1
         time_vec[i]=$(date --date $time_sample +%H%M)
     done
@@ -142,17 +142,17 @@ ntime=${#time_vec[@]}
 for ((irad=0; irad<${nrad}; irad++)); do
     radar=${radar_vec[${irad}]}
     echo "Processing radar "${radar}
-    
+
     for ((iday=0; iday<${nday}; iday++)); do
         yearl=$(date --date "${day_vec[${iday}]}" +"%Y")
         years=$(date --date "${day_vec[${iday}]}" +"%y")
         julday=$(date --date "${day_vec[${iday}]}" +"%j")
-        
+
         yearl_end=$(date -d "$(date --date "${day_vec[${iday}]}")+1 day" +"%Y")
         years_end=$(date -d "$(date --date "${day_vec[${iday}]}")+1 day" +"%y")
         julday_end=$(date -d "$(date --date "${day_vec[${iday}]}")+1 day" +"%j")
-    
-        echo "Processing day "${years}${julday}        
+
+        echo "Processing day "${years}${julday}
         # transfer polar data from CSCS to destination folder, unzip it and remove zip file
         if [ "${res}" == "H" ]
         then
@@ -167,10 +167,10 @@ for ((irad=0; irad<${nrad}; irad++)); do
             else
                 echo "No file found in repository"
                 continue
-            fi      
-            data_destpath=${data_destbase}${years}${julday}/${file_type}${res}${radar}${years}${julday}/            
+            fi
+            data_destpath=${data_destbase}${years}${julday}/${file_type}${res}${radar}${years}${julday}/
             filebase=${file_type}${res}${radar}${years}${julday}
-            
+
             # create destination path for polar data and unzip files there
             mkdir -p ${data_destpath}
             if [ "${ele_vec}" = "all" ] && [ "${time_vec}" = "all" ];then
@@ -185,15 +185,15 @@ for ((irad=0; irad<${nrad}; irad++)); do
                     if [ "${ele_vec}" = "all" ]; then
                         unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.* -d ${data_destpath}
                     else
-                        for ((iele=0; iele<${nele}; iele++)); do                        
+                        for ((iele=0; iele<${nele}; iele++)); do
                             ele=${ele_vec[${iele}]}
                             unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.${ele} -d ${data_destpath}
-                        done                        
-                    fi                    
+                        done
+                    fi
                 done
             fi
             chmod -R gu+rw ${data_destpath}
-            
+
             # add file 00:00 UTC the next day
             if [ "${time_vec}" = "all" ] || [ "$hour24" -eq 1 ];then
                 data_origpath=${phdata_origbase}${yearl_end}/${years_end}${julday_end}/
@@ -207,10 +207,10 @@ for ((irad=0; irad<${nrad}; irad++)); do
                 else
                     echo "No file found in repository"
                     continue
-                fi            
-                data_destpath=${data_destbase}${years_end}${julday_end}/${file_type}${res}${radar}${years_end}${julday_end}/            
+                fi
+                data_destpath=${data_destbase}${years_end}${julday_end}/${file_type}${res}${radar}${years_end}${julday_end}/
                 filebase=${file_type}${res}${radar}${years_end}${julday_end}
-                
+
                 # create destination path for polar data and unzip files there
                 mkdir -p ${data_destpath}
                 if [ "${ele_vec}" = "all" ];then
@@ -236,9 +236,9 @@ for ((irad=0; irad<${nrad}; irad++)); do
                 echo "No file found in repository"
                 continue
             fi
-            data_destpath=${data_destbase}${years}${julday}/${file_type}${res}${radar}${years}${julday}/            
+            data_destpath=${data_destbase}${years}${julday}/${file_type}${res}${radar}${years}${julday}/
             filebase=${file_type}${res}${radar}${years}${julday}
-            
+
             # create destination path for polar data
             mkdir -p ${data_destpath}
             if [ "${ele_vec}" = "all" ] && [ "${time_vec}" = "all" ];then
@@ -251,18 +251,18 @@ for ((irad=0; irad<${nrad}; irad++)); do
                         time_rad=${time_vec[${itime}]}
                     fi
                     if [ "${ele_vec}" = "all" ]; then
-                        unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.* -d ${data_destpath}                        
+                        unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.* -d ${data_destpath}
                     else
-                        for ((iele=0; iele<${nele}; iele++)); do                        
+                        for ((iele=0; iele<${nele}; iele++)); do
                             ele=${ele_vec[${iele}]}
-                            unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.${ele} -d ${data_destpath}                        
-                        done                        
+                            unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.${ele} -d ${data_destpath}
+                        done
                     fi
-                    
+
                 done
             fi
             chmod -R gu+rw ${data_destpath}
-            
+
             # create destination path for hydrometeor classification data
             data_destpath=${data_destbase}${years}${julday}/YM${radar}${years}${julday}/
             filebase=YM${radar}${years}${julday}
@@ -278,16 +278,41 @@ for ((irad=0; irad<${nrad}; irad++)); do
                     fi
                     if [ "${ele_vec}" = "all" ]; then
                         unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.* -d ${data_destpath}
-                    else                        
-                        for ((iele=0; iele<${nele}; iele++)); do                        
+                    else
+                        for ((iele=0; iele<${nele}; iele++)); do
                             ele="$((${ele_vec[${iele}]} + 800))"
                             unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.${ele} -d ${data_destpath}
                         done
-                    fi                    
+                    fi
                 done
             fi
             chmod -R gu+rw ${data_destpath}
-            
+
+            # create destination path for dealised Doppler velocity data
+            data_destpath=${data_destbase}${years}${julday}/DV${radar}${years}${julday}/
+            filebase=DV${radar}${years}${julday}
+            mkdir -p ${data_destpath}
+            if [ "${ele_vec}" = "all" ] && [ "${time_vec}" = "all" ];then
+                unzip -o ${data_origpath}${filebase}.zip -d ${data_destpath}
+            else
+                for ((itime=0; itime<${ntime}; itime++)); do
+                    if [ "${time_vec[${itime}]}" = "all" ]; then
+                        time_rad=*
+                    else
+                        time_rad=${time_vec[${itime}]}
+                    fi
+                    if [ "${ele_vec}" = "all" ]; then
+                        unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.* -d ${data_destpath}
+                    else
+                        for ((iele=0; iele<${nele}; iele++)); do
+                            ele="$((${ele_vec[${iele}]} + 800))"
+                            unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.${ele} -d ${data_destpath}
+                        done
+                    fi
+                done
+            fi
+            chmod -R gu+rw ${data_destpath}
+
             # add file 00:00 UTC the next day
             if [ "${time_vec}" = "all" ] || [ "$hour24" -eq 1 ];then
                 data_origpath=${rawdata_origbase}${yearl_end}/${years_end}${julday_end}/
@@ -302,9 +327,9 @@ for ((irad=0; irad<${nrad}; irad++)); do
                     echo "No file found in repository"
                     continue
                 fi
-                data_destpath=${data_destbase}${years_end}${julday_end}/${file_type}${res}${radar}${years_end}${julday_end}/            
+                data_destpath=${data_destbase}${years_end}${julday_end}/${file_type}${res}${radar}${years_end}${julday_end}/
                 filebase=${file_type}${res}${radar}${years_end}${julday_end}
-                
+
                 # create destination path for polar data
                 mkdir -p ${data_destpath}
                 if [ "${ele_vec}" = "all" ];then
@@ -316,7 +341,7 @@ for ((irad=0; irad<${nrad}; irad++)); do
                     done
                 fi
                 chmod -R gu+rw ${data_destpath}
-                
+
                 # create destination path for hydrometeor classification data
                 data_destpath=${data_destbase}${years_end}${julday_end}/YM${radar}${years_end}${julday_end}/
                 filebase=YM${radar}${years_end}${julday_end}
@@ -324,7 +349,21 @@ for ((irad=0; irad<${nrad}; irad++)); do
                 if [ "${ele_vec}" = "all" ];then
                     unzip -o ${data_origpath}${filebase}.zip ${filebase}0000*.* -d ${data_destpath}
                 else
-                    for ((iele=0; iele<${nele}; iele++)); do                    
+                    for ((iele=0; iele<${nele}; iele++)); do
+                        ele="$((${ele_vec[${iele}]} + 800))"
+                        unzip -o ${data_origpath}${filebase}.zip ${filebase}0000*.${ele} -d ${data_destpath}
+                    done
+                fi
+                chmod -R gu+rw ${data_destpath}
+
+                # create destination path for dealised Doppler velocity data
+                data_destpath=${data_destbase}${years_end}${julday_end}/DV${radar}${years_end}${julday_end}/
+                filebase=DV${radar}${years_end}${julday_end}
+                mkdir -p ${data_destpath}
+                if [ "${ele_vec}" = "all" ];then
+                    unzip -o ${data_origpath}${filebase}.zip ${filebase}0000*.* -d ${data_destpath}
+                else
+                    for ((iele=0; iele<${nele}; iele++)); do
                         ele="$((${ele_vec[${iele}]} + 800))"
                         unzip -o ${data_origpath}${filebase}.zip ${filebase}0000*.${ele} -d ${data_destpath}
                     done
@@ -332,7 +371,7 @@ for ((irad=0; irad<${nrad}; irad++)); do
                 chmod -R gu+rw ${data_destpath}
             fi
         fi
-    
+
         # create destination path for status data
         data_origpath=${rawdata_origbase}${yearl}/${years}${julday}/
         data_destpath=${data_destbase}${years}${julday}/ST${radar}${years}${julday}/
@@ -340,16 +379,16 @@ for ((irad=0; irad<${nrad}; irad++)); do
         mkdir -p ${data_destpath}
         if [ "${time_vec}" = "all" ];then
             unzip -o ${data_origpath}${filebase}.zip ${filebase}*.xml -d ${data_destpath}
-        else 
+        else
             for ((itime=0; itime<${ntime}; itime++)); do
                 time_rad=${time_vec[${itime}]}
-                for ((iele=0; iele<${nele}; iele++)); do                    
+                for ((iele=0; iele<${nele}; iele++)); do
                     unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.xml -d ${data_destpath}
                 done
             done
-        fi            
+        fi
         chmod -R gu+rw ${data_destpath}
-        
+
         # add file 00:00 UTC the next day
         if [ "${time_vec}" = "all" ] || [ "$hour24" -eq 1 ];then
             data_origpath=${rawdata_origbase}${yearl_end}/${years_end}${julday_end}/

@@ -75,6 +75,10 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_signal_power'
     elif dataset_type == 'SNR':
         func_name = 'process_snr'
+    elif dataset_type == 'VOL_REFL':
+        func_name = 'process_vol_refl'
+    elif dataset_type == 'BIRD_DENSITY':
+        func_name = 'process_bird_density'
     elif dataset_type == 'RHOHV_CORRECTION':
         func_name = 'process_correct_noise_rhohv'
     elif dataset_type == 'BIAS_CORRECTION':
@@ -93,6 +97,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_echo_filter'
     elif dataset_type == 'SNR_FILTER':
         func_name = 'process_filter_snr'
+    elif dataset_type == 'VEL_FILTER':
+        func_name = 'process_filter_vel_diff'
     elif dataset_type == 'VIS_FILTER':
         func_name = 'process_filter_visibility'
     elif dataset_type == 'OUTLIER_FILTER':
@@ -119,8 +125,16 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_attenuation'
     elif dataset_type == 'RAINRATE':
         func_name = 'process_rainrate'
+    elif dataset_type == 'DEALIAS_FOURDD':
+        func_name = 'process_dealias_fourdd'
+    elif dataset_type == 'DEALIAS_REGION':
+        func_name = 'process_dealias_region_based'
+    elif dataset_type == 'DEALIAS_UNWRAP':
+        func_name = 'process_dealias_unwrap_phase'
     elif dataset_type == 'WIND_VEL':
         func_name = 'process_wind_vel'
+    elif dataset_type == 'VAD':
+        func_name = 'process_vad'
     elif dataset_type == 'WINDSHEAR':
         func_name = 'process_windshear'
     elif dataset_type == 'HYDROCLASS':
