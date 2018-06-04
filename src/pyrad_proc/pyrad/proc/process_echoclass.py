@@ -51,8 +51,8 @@ def process_echo_id(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -112,9 +112,9 @@ def process_echo_id(procstatus, dscfg, radar_list=None):
     id_field['data'] = echo_id
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field('radar_echo_id', id_field)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field('radar_echo_id', id_field)
 
     return new_dataset, ind_rad
 
@@ -139,8 +139,8 @@ def process_birds_id(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -203,9 +203,9 @@ def process_birds_id(procstatus, dscfg, radar_list=None):
     id_field['data'] = echo_id
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field('radar_echo_id', id_field)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field('radar_echo_id', id_field)
 
     return new_dataset, ind_rad
 
@@ -229,8 +229,8 @@ def process_clt_to_echo_id(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -265,9 +265,9 @@ def process_clt_to_echo_id(procstatus, dscfg, radar_list=None):
     id_field['data'] = echo_id
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field('radar_echo_id', id_field)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field('radar_echo_id', id_field)
 
     return new_dataset, ind_rad
 
@@ -295,8 +295,8 @@ def process_echo_filter(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -325,8 +325,8 @@ def process_echo_filter(procstatus, dscfg, radar_list=None):
     echo_type = dscfg.get('echo_type', 3)
     mask = radar.fields[echoid_field]['data'] != echo_type
 
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
 
     for datatypedescr in dscfg['datatype']:
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
@@ -350,9 +350,9 @@ def process_echo_filter(procstatus, dscfg, radar_list=None):
                 'uncorrected_', 'corrected_', 1)
         else:
             new_field_name = 'corrected_'+field_name
-        new_dataset.add_field(new_field_name, radar_field)
+        new_dataset['radar_out'].add_field(new_field_name, radar_field)
 
-    if not new_dataset.fields:
+    if not new_dataset['radar_out'].fields:
         return None, None
 
     return new_dataset, ind_rad
@@ -378,8 +378,8 @@ def process_cdf(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -413,26 +413,29 @@ def process_cdf(procstatus, dscfg, radar_list=None):
         warn('Unable to compute CDF. Missing field')
         return None, None
 
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
 
-    new_dataset.add_field(field_name, radar.fields[field_name])
+    new_dataset['radar_out'].add_field(field_name, radar.fields[field_name])
     if echoid_field is not None:
         if echoid_field not in radar.fields:
             warn('Missing echo ID field. Clutter can not be filtered')
         else:
-            new_dataset.add_field(echoid_field, radar.fields[echoid_field])
+            new_dataset['radar_out'].add_field(
+                echoid_field, radar.fields[echoid_field])
     if hydro_field is not None:
         if hydro_field not in radar.fields:
             warn('Missing hydrometeor type field. ' +
                  'Filtration according to hydrometeor type not possible')
         else:
-            new_dataset.add_field(hydro_field, radar.fields[hydro_field])
+            new_dataset['radar_out'].add_field(
+                hydro_field, radar.fields[hydro_field])
     if vis_field is not None:
         if vis_field not in radar.fields:
             warn('Missing visibility field. Blocked gates can not be filtered')
         else:
-            new_dataset.add_field(vis_field, radar.fields[vis_field])
+            new_dataset['radar_out'].add_field(
+                vis_field, radar.fields[vis_field])
 
     return new_dataset, ind_rad
 
@@ -458,8 +461,8 @@ def process_filter_snr(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -481,8 +484,8 @@ def process_filter_snr(procstatus, dscfg, radar_list=None):
         return None, None
     radar = radar_list[ind_rad]
 
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
 
     if snr_field not in radar.fields:
         warn('Unable to filter dataset according to SNR. Missing SNR field')
@@ -516,10 +519,10 @@ def process_filter_snr(procstatus, dscfg, radar_list=None):
                 'uncorrected_', 'corrected_', 1)
         else:
             new_field_name = 'corrected_'+field_name
-        new_dataset.add_field(new_field_name, radar_field)
+        new_dataset['radar_out'].add_field(new_field_name, radar_field)
 
 
-    if not new_dataset.fields:
+    if not new_dataset['radar_out'].fields:
         return None, None
 
     return new_dataset, ind_rad
@@ -547,8 +550,8 @@ def process_filter_vel_diff(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -570,8 +573,8 @@ def process_filter_vel_diff(procstatus, dscfg, radar_list=None):
         return None, None
     radar = radar_list[ind_rad]
 
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
 
     if vel_diff_field not in radar.fields:
         warn('Unable to filter dataset according to valid velocity. ' +
@@ -603,9 +606,9 @@ def process_filter_vel_diff(procstatus, dscfg, radar_list=None):
                 'uncorrected_', 'corrected_', 1)
         else:
             new_field_name = 'corrected_'+field_name
-        new_dataset.add_field(new_field_name, radar_field)
+        new_dataset['radar_out'].add_field(new_field_name, radar_field)
 
-    if not new_dataset.fields:
+    if not new_dataset['radar_out'].fields:
         return None, None
 
     return new_dataset, ind_rad
@@ -632,8 +635,8 @@ def process_filter_visibility(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -655,8 +658,8 @@ def process_filter_visibility(procstatus, dscfg, radar_list=None):
         return None, None
     radar = radar_list[ind_rad]
 
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
 
     if vis_field not in radar.fields:
         warn('Unable to filter dataset according to visibility. ' +
@@ -698,9 +701,9 @@ def process_filter_visibility(procstatus, dscfg, radar_list=None):
                 'uncorrected_', 'corrected_', 1)
         else:
             new_field_name = 'corrected_'+field_name
-        new_dataset.add_field(new_field_name, radar_field)
+        new_dataset['radar_out'].add_field(new_field_name, radar_field)
 
-    if not new_dataset.fields:
+    if not new_dataset['radar_out'].fields:
         return None, None
 
     return new_dataset, ind_rad
@@ -737,8 +740,8 @@ def process_outlier_filter(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -820,9 +823,9 @@ def process_outlier_filter(procstatus, dscfg, radar_list=None):
     else:
         new_field_name = 'corrected_'+field_name
 
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field(new_field_name, field_out)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field(new_field_name, field_out)
 
     return new_dataset, ind_rad
 
@@ -853,8 +856,8 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -1046,9 +1049,9 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
             dscfg['HYDRO_METHOD'])
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field('radar_echo_classification', hydro)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field('radar_echo_classification', hydro)
 
     return new_dataset, ind_rad
 
@@ -1072,8 +1075,8 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -1206,14 +1209,58 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
         ml_data = np.ma.masked_where(mask, ml_data)
         ml = pyart.config.get_metadata('melting_layer')
         ml['data'] = ml_data
+
+    elif dscfg['ML_METHOD'] == 'FROM_HYDROCLASS':
+        for datatypedescr in dscfg['datatype']:
+            radarnr, datagroup, datatype, dataset, product = (
+                get_datatype_fields(datatypedescr))
+            if datatype == 'hydro':
+                hydro_field = get_fieldname_pyart(datatype)
+
+        ind_rad = int(radarnr[5:8])-1
+        if radar_list[ind_rad] is None:
+            warn('No valid radar')
+            return None, None
+        radar = radar_list[ind_rad]
+
+        if hydro_field not in radar.fields:
+            warn('Unable to detect melting layer. Missing data')
+            return None, None
+
+        ml_data = np.ma.empty((radar.nrays, radar.ngates), dtype=int)
+        ml_data[:] = np.ma.masked
+        hydro_data = radar.fields[hydro_field]['data']
+
+        # get the location of each hydrometeor class
+        is_ds = hydro_data == 1
+        is_cr = hydro_data == 2
+        is_lr = hydro_data == 3
+        is_gr = hydro_data == 4
+        is_rn = hydro_data == 5
+        is_vi = hydro_data == 6
+        is_ws = hydro_data == 7
+        is_mh = hydro_data == 8
+        is_ih = hydro_data == 9
+
+        ml_data[is_ds] = 5
+        ml_data[is_cr] = 5
+        ml_data[is_lr] = 1
+        ml_data[is_gr] = 5
+        ml_data[is_rn] = 1
+        ml_data[is_vi] = 5
+        ml_data[is_ws] = 3
+        ml_data[is_ih] = 5
+
+        ml = pyart.config.get_metadata('melting_layer')
+        ml['data'] = ml_data
     else:
         raise Exception(
             "ERROR: Unknown melting layer retrieval method " +
             dscfg['ML_METHOD'])
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field('melting_layer', ml)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field('melting_layer', ml)
 
     return new_dataset, ind_rad

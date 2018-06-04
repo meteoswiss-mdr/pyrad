@@ -56,8 +56,8 @@ def process_dealias_fourdd(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -120,12 +120,13 @@ def process_dealias_fourdd(procstatus, dscfg, radar_list=None):
                 mask, corr_vel_dict['data'])
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field(corr_vel_field, corr_vel_dict)
+    radar_out = deepcopy(radar)
+    radar_out.fields = dict()
+    radar_out.add_field(corr_vel_field, corr_vel_dict)
+    new_dataset = {'radar_out': radar_out}
 
     # keep current corrected Doppler velocity field in memory
-    dscfg['global_data'] = new_dataset
+    dscfg['global_data'] = radar_out
 
     return new_dataset, ind_rad
 
@@ -167,8 +168,8 @@ def process_dealias_region_based(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -207,9 +208,9 @@ def process_dealias_region_based(procstatus, dscfg, radar_list=None):
         vel_field=vel_field, corr_vel_field=corr_vel_field)
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field(corr_vel_field, corr_vel_dict)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field(corr_vel_field, corr_vel_dict)
 
     return new_dataset, ind_rad
 
@@ -242,8 +243,8 @@ def process_dealias_unwrap_phase(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -277,9 +278,9 @@ def process_dealias_unwrap_phase(procstatus, dscfg, radar_list=None):
         vel_field=vel_field, corr_vel_field=corr_vel_field, skip_checks=False)
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field(corr_vel_field, corr_vel_dict)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field(corr_vel_field, corr_vel_dict)
 
     return new_dataset, ind_rad
 
@@ -307,8 +308,8 @@ def process_wind_vel(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -340,9 +341,9 @@ def process_wind_vel(procstatus, dscfg, radar_list=None):
         wind_field=wind_field)
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field(wind_field, wind)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field(wind_field, wind)
 
     return new_dataset, ind_rad
 
@@ -370,8 +371,8 @@ def process_windshear(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -401,9 +402,9 @@ def process_windshear(procstatus, dscfg, radar_list=None):
         windshear_field=windshear_field)
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field(windshear_field, windshear)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field(windshear_field, windshear)
 
     return new_dataset, ind_rad
 
@@ -428,8 +429,8 @@ def process_vad(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -468,13 +469,13 @@ def process_vad(procstatus, dscfg, radar_list=None):
          vel_diff_field='velocity_difference')
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field('eastward_wind_component', u_vel_dict)
-    new_dataset.add_field('northward_wind_component', v_vel_dict)
-    new_dataset.add_field('vertical_wind_component', w_vel_dict)
-    new_dataset.add_field('retrieved_velocity', vel_est_dict)
-    new_dataset.add_field('retrieved_velocity_std', vel_std_dict)
-    new_dataset.add_field('velocity_difference', vel_diff_dict)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field('eastward_wind_component', u_vel_dict)
+    new_dataset['radar_out'].add_field('northward_wind_component', v_vel_dict)
+    new_dataset['radar_out'].add_field('vertical_wind_component', w_vel_dict)
+    new_dataset['radar_out'].add_field('retrieved_velocity', vel_est_dict)
+    new_dataset['radar_out'].add_field('retrieved_velocity_std', vel_std_dict)
+    new_dataset['radar_out'].add_field('velocity_difference', vel_diff_dict)
 
     return new_dataset, ind_rad

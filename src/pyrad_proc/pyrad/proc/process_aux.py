@@ -242,8 +242,8 @@ def process_raw(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -260,7 +260,7 @@ def process_raw(procstatus, dscfg, radar_list=None):
     if (radar_list is None) or (radar_list[ind_rad] is None):
         warn('ERROR: No valid radar')
         return None, None
-    new_dataset = deepcopy(radar_list[ind_rad])
+    new_dataset = {'radar_out': deepcopy(radar_list[ind_rad])}
 
     return new_dataset, ind_rad
 
@@ -281,8 +281,8 @@ def process_save_radar(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -299,7 +299,7 @@ def process_save_radar(procstatus, dscfg, radar_list=None):
     if (radar_list is None) or (radar_list[ind_rad] is None):
         warn('ERROR: No valid radar')
         return None, None
-    new_dataset = deepcopy(radar_list[ind_rad])
+    new_dataset = {'radar_out': deepcopy(radar_list[ind_rad])}
 
     return new_dataset, ind_rad
 
@@ -622,45 +622,53 @@ def process_roi(procstatus, dscfg, radar_list=None):
     alt = radar.gate_altitude['data'][inds_ray, inds_rng].T
 
     # prepare new radar object output
-    radar_roi = deepcopy(radar)
+    new_dataset = {'radar_out': deepcopy(radar)}
 
-    radar_roi.range['data'] = radar.range['data'][inds_rng]
-    radar_roi.ngates = inds_rng.size
-    radar_roi.time['data'] = np.asarray([radar_roi.time['data'][0]])
-    radar_roi.scan_type = 'roi'
-    radar_roi.sweep_mode['data'] = np.array(['roi'])
-    radar_roi.sweep_start_ray_index['data'] = np.array([0], dtype='int32')
-    radar_roi.fixed_angle['data'] = np.array([], dtype='float64')
-    radar_roi.sweep_number['data'] = np.array([0], dtype='int32')
-    radar_roi.nsweeps = 1
+    new_dataset['radar_out'].range['data'] = radar.range['data'][inds_rng]
+    new_dataset['radar_out'].ngates = inds_rng.size
+    new_dataset['radar_out'].time['data'] = np.asarray(
+        [new_dataset['radar_out'].time['data'][0]])
+    new_dataset['radar_out'].scan_type = 'roi'
+    new_dataset['radar_out'].sweep_mode['data'] = np.array(['roi'])
+    new_dataset['radar_out'].sweep_start_ray_index['data'] = np.array(
+        [0], dtype='int32')
+    new_dataset['radar_out'].fixed_angle['data'] = np.array(
+        [], dtype='float64')
+    new_dataset['radar_out'].sweep_number['data'] = np.array(
+        [0], dtype='int32')
+    new_dataset['radar_out'].nsweeps = 1
 
     if radar.rays_are_indexed is not None:
-        radar_roi.rays_are_indexed['data'] = np.array(
+        new_dataset['radar_out'].rays_are_indexed['data'] = np.array(
             [radar.rays_are_indexed['data'][0]])
     if radar.ray_angle_res is not None:
-        radar_roi.ray_angle_res['data'] = np.array(
+        new_dataset['radar_out'].ray_angle_res['data'] = np.array(
             [radar.ray_angle_res['data'][0]])
 
-    radar_roi.sweep_end_ray_index['data'] = np.array([1], dtype='int32')
-    radar_roi.rays_per_sweep = np.array([1], dtype='int32')
-    radar_roi.azimuth['data'] = np.array([], dtype='float64')
-    radar_roi.elevation['data'] = np.array([], dtype='float64')
-    radar_roi.nrays = 1
+    new_dataset['radar_out'].sweep_end_ray_index['data'] = np.array(
+        [1], dtype='int32')
+    new_dataset['radar_out'].rays_per_sweep = np.array([1], dtype='int32')
+    new_dataset['radar_out'].azimuth['data'] = np.array([], dtype='float64')
+    new_dataset['radar_out'].elevation['data'] = np.array([], dtype='float64')
+    new_dataset['radar_out'].nrays = 1
 
-    radar_roi.gate_longitude['data'] = lon
-    radar_roi.gate_latitude['data'] = lat
-    radar_roi.gate_altitude['data'] = alt
+    new_dataset['radar_out'].gate_longitude['data'] = lon
+    new_dataset['radar_out'].gate_latitude['data'] = lat
+    new_dataset['radar_out'].gate_altitude['data'] = alt
 
-    radar_roi.gate_x['data'] = radar.gate_x['data'][inds_ray, inds_rng].T
-    radar_roi.gate_y['data'] = radar.gate_y['data'][inds_ray, inds_rng].T
-    radar_roi.gate_z['data'] = radar.gate_z['data'][inds_ray, inds_rng].T
+    new_dataset['radar_out'].gate_x['data'] = (
+        radar.gate_x['data'][inds_ray, inds_rng].T)
+    new_dataset['radar_out'].gate_y['data'] = (
+        radar.gate_y['data'][inds_ray, inds_rng].T)
+    new_dataset['radar_out'].gate_z['data'] = (
+        radar.gate_z['data'][inds_ray, inds_rng].T)
 
-    radar_roi.fields = dict()
+    new_dataset['radar_out'].fields = dict()
     field_dict = deepcopy(radar.fields[field_name])
     field_dict['data'] = radar.fields[field_name]['data'][inds_ray, inds_rng].T
-    radar_roi.add_field(field_name, field_dict)
+    new_dataset['radar_out'].add_field(field_name, field_dict)
 
-    return radar_roi, ind_rad
+    return new_dataset['radar_out'], ind_rad
 
 
 def process_grid(procstatus, dscfg, radar_list=None):
@@ -900,12 +908,12 @@ def process_qvp(procstatus, dscfg, radar_list=None):
 
             global_dict = dict()
             global_dict.update({'start_time': dscfg['timeinfo']})
-            global_dict.update({'radar_obj': qvp_aux})
+            global_dict.update({'radar_out': qvp_aux})
             dscfg['global_data'] = global_dict
             dscfg['initialized'] = 1
 
         # modify metadata
-        qvp = dscfg['global_data']['radar_obj']
+        qvp = dscfg['global_data']['radar_out']
 
         start_time = num2date(0, qvp.time['units'], qvp.time['calendar'])
         qvp.time['data'] = np.append(
@@ -947,10 +955,10 @@ def process_qvp(procstatus, dscfg, radar_list=None):
                 (qvp.fields[field_name]['data'],
                  qvp_data.reshape(1, qvp.ngates)))
 
-        dscfg['global_data']['radar_obj'] = qvp
+        dscfg['global_data']['radar_out'] = qvp
 
         new_dataset = dict()
-        new_dataset.update({'radar_obj': qvp})
+        new_dataset.update({'radar_out': qvp})
         new_dataset.update({'radar_type': 'temporal'})
         new_dataset.update({'start_time': dscfg['global_data']['start_time']})
 
@@ -964,10 +972,10 @@ def process_qvp(procstatus, dscfg, radar_list=None):
 
         ind_rad = int(radarnr[5:8])-1
 
-        qvp = dscfg['global_data']['radar_obj']
+        qvp = dscfg['global_data']['radar_out']
 
         new_dataset = dict()
-        new_dataset.update({'radar_obj': qvp})
+        new_dataset.update({'radar_out': qvp})
         new_dataset.update({'radar_type': 'final'})
         new_dataset.update({'start_time': dscfg['global_data']['start_time']})
 
@@ -1083,12 +1091,12 @@ def process_time_height(procstatus, dscfg, radar_list=None):
 
             global_dict = dict()
             global_dict.update({'start_time': dscfg['timeinfo']})
-            global_dict.update({'radar_obj': th_aux})
+            global_dict.update({'radar_out': th_aux})
             dscfg['global_data'] = global_dict
             dscfg['initialized'] = 1
 
         # modify metadata
-        th = dscfg['global_data']['radar_obj']
+        th = dscfg['global_data']['radar_out']
 
         start_time = num2date(0, th.time['units'], th.time['calendar'])
         th.time['data'] = np.append(
@@ -1141,10 +1149,10 @@ def process_time_height(procstatus, dscfg, radar_list=None):
                 (th.fields[field_name]['data'],
                  th_data.reshape(1, th.ngates)))
 
-        dscfg['global_data']['radar_obj'] = th
+        dscfg['global_data']['radar_out'] = th
 
         new_dataset = dict()
-        new_dataset.update({'radar_obj': th})
+        new_dataset.update({'radar_out': th})
         new_dataset.update({'radar_type': 'temporal'})
         new_dataset.update({'start_time': dscfg['global_data']['start_time']})
 
@@ -1158,10 +1166,10 @@ def process_time_height(procstatus, dscfg, radar_list=None):
 
         ind_rad = int(radarnr[5:8])-1
 
-        th = dscfg['global_data']['radar_obj']
+        th = dscfg['global_data']['radar_out']
 
         new_dataset = dict()
-        new_dataset.update({'radar_obj': th})
+        new_dataset.update({'radar_out': th})
         new_dataset.update({'radar_type': 'final'})
         new_dataset.update({'start_time': dscfg['global_data']['start_time']})
 

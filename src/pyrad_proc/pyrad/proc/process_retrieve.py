@@ -73,8 +73,8 @@ def process_signal_power(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -133,9 +133,9 @@ def process_signal_power(procstatus, dscfg, radar_list=None):
         lradome=lradome, refl_field=refl_field, pwr_field=pwr_field)
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field(pwr_field, s_pwr)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field(pwr_field, s_pwr)
 
     return new_dataset, ind_rad
 
@@ -163,8 +163,8 @@ def process_vol_refl(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -213,9 +213,9 @@ def process_vol_refl(procstatus, dscfg, radar_list=None):
         vol_refl_field=vol_refl_field)
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field(vol_refl_field, vol_refl_dict)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field(vol_refl_field, vol_refl_dict)
 
     return new_dataset, ind_rad
 
@@ -241,8 +241,8 @@ def process_snr(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -288,9 +288,9 @@ def process_snr(procstatus, dscfg, radar_list=None):
         snr_field=snr_field)
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field(snr_field, snr)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field(snr_field, snr)
 
     return new_dataset, ind_rad
 
@@ -314,8 +314,8 @@ def process_l(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -343,9 +343,10 @@ def process_l(procstatus, dscfg, radar_list=None):
         l_field='logarithmic_cross_correlation_ratio')
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field('logarithmic_cross_correlation_ratio', l)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field(
+        'logarithmic_cross_correlation_ratio', l)
 
     return new_dataset, ind_rad
 
@@ -369,8 +370,8 @@ def process_cdr(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -409,9 +410,9 @@ def process_cdr(procstatus, dscfg, radar_list=None):
         cdr_field='circular_depolarization_ratio')
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field('circular_depolarization_ratio', cdr)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field('circular_depolarization_ratio', cdr)
 
     return new_dataset, ind_rad
 
@@ -438,8 +439,8 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -630,9 +631,9 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
             dscfg['RR_METHOD'])
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field('radar_estimated_rain_rate', rain)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field('radar_estimated_rain_rate', rain)
 
     return new_dataset, ind_rad
 
@@ -658,8 +659,8 @@ def process_bird_density(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -691,8 +692,8 @@ def process_bird_density(procstatus, dscfg, radar_list=None):
         bird_density_field='bird_density')
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field('bird_density', bird_density_dict)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field('bird_density', bird_density_dict)
 
     return new_dataset, ind_rad

@@ -132,7 +132,7 @@ def generate_occurrence_products(dataset, prdcfg):
         if dataset['occu_final']:
             prdcfg['timeinfo'] = dataset['endtime']
 
-        return generate_vol_products(dataset['radar_obj'], prdcfg)
+        return generate_vol_products(dataset, prdcfg)
 
 
 def generate_cosmo_coord_products(dataset, prdcfg):
@@ -412,7 +412,7 @@ def generate_sun_hits_products(dataset, prdcfg):
 
     else:
         if 'radar' in dataset:
-            generate_vol_products(dataset['radar'], prdcfg)
+            generate_vol_products(dataset, prdcfg)
 
 
 def generate_qvp_products(dataset, prdcfg):
@@ -442,5 +442,5 @@ def generate_qvp_products(dataset, prdcfg):
     if qvp_type == 'final' and dataset['radar_type'] != 'final':
         return None
 
-    prdcfg['timeinfo'] = dataset['start_time']
-    return generate_vol_products(dataset['radar_obj'], prdcfg)
+    prdcfg['timeinfo'] = dataset['start_time']    
+    return generate_vol_products(dataset, prdcfg)
