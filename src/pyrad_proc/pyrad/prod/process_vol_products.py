@@ -27,6 +27,7 @@ from ..io.write_data import write_last_state, write_histogram, write_quantiles
 from ..graph.plots_vol import plot_ppi, plot_ppi_map, plot_rhi, plot_cappi
 from ..graph.plots_vol import plot_bscope, plot_rhi_profile, plot_along_coord
 from ..graph.plots_vol import plot_field_coverage, plot_time_range
+from ..graph.plots_vol import plot_rhi_contour, plot_ppi_contour
 from ..graph.plots import plot_quantiles, plot_histogram
 from ..graph.plots_aux import get_colobar_label, get_field_name
 
@@ -82,15 +83,9 @@ def generate_vol_products(dataset, prdcfg):
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        step = None
-        quantiles = None
-        plot_type = 'PPI'
-        if 'plot_type' in prdcfg:
-            plot_type = prdcfg['plot_type']
-        if 'step' in prdcfg:
-            step = prdcfg['step']
-        if 'quantiles' in prdcfg:
-            quantiles = prdcfg['quantiles']
+        step = prdcfg.get('step', None)
+        quantiles = prdcfg.get('quantiles', None)
+        plot_type = prdcfg.get('plot_type', 'RHI')
 
         plot_ppi(dataset, field_name, ind_el, prdcfg, fname_list,
                  plot_type=plot_type, step=step, quantiles=quantiles)
@@ -98,80 +93,6 @@ def generate_vol_products(dataset, prdcfg):
         print('----- save to '+' '.join(fname_list))
 
         return fname_list
-
-    if prdcfg['type'] == 'PPI_MAP':
-        field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
-            warn(
-                ' Field type ' + field_name +
-                ' not available in data set. Skipping product ' +
-                prdcfg['type'])
-            return None
-
-        el_vec = np.sort(dataset.fixed_angle['data'])
-        el = el_vec[prdcfg['anglenr']]
-        ind_el = np.where(dataset.fixed_angle['data'] == el)[0][0]
-
-        savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
-
-        fname_list = make_filename(
-            'ppi_map', prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
-            timeinfo=prdcfg['timeinfo'])
-
-        for i, fname in enumerate(fname_list):
-            fname_list[i] = savedir+fname
-
-        plot_ppi_map(dataset, field_name, ind_el, prdcfg, fname_list)
-
-        print('----- save to '+' '.join(fname_list))
-
-        return fname_list
-
-    elif prdcfg['type'] == 'RHI_IMAGE':
-        field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
-            warn(
-                ' Field type ' + field_name +
-                ' not available in data set. Skipping product ' +
-                prdcfg['type'])
-            return None
-
-        az_vec = np.sort(dataset.fixed_angle['data'])
-        az = az_vec[prdcfg['anglenr']]
-        ind_az = np.where(dataset.fixed_angle['data'] == az)[0][0]
-
-        savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
-
-        fname_list = make_filename(
-            'rhi', prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'], prdcfginfo='az'+'{:.1f}'.format(az),
-            timeinfo=prdcfg['timeinfo'])
-
-        for i, fname in enumerate(fname_list):
-            fname_list[i] = savedir+fname
-
-        step = None
-        quantiles = None
-        plot_type = 'RHI'
-        if 'plot_type' in prdcfg:
-            plot_type = prdcfg['plot_type']
-        if 'step' in prdcfg:
-            step = prdcfg['step']
-        if 'quantiles' in prdcfg:
-            quantiles = prdcfg['quantiles']
-
-        plot_rhi(dataset, field_name, ind_az, prdcfg, fname_list,
-                 plot_type=plot_type, step=step, quantiles=quantiles)
-
-        print('----- save to '+' '.join(fname_list))
-
-        return fname_list
-
 
     elif prdcfg['type'] == 'PSEUDOPPI_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -220,6 +141,493 @@ def generate_vol_products(dataset, prdcfg):
                 'No data found at elevation ' + str(prdcfg['angle']) +
                 '. Skipping product ' + prdcfg['type'])
 
+            return None
+
+    if prdcfg['type'] == 'PPI_MAP':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        el_vec = np.sort(dataset.fixed_angle['data'])
+        el = el_vec[prdcfg['anglenr']]
+        ind_el = np.where(dataset.fixed_angle['data'] == el)[0][0]
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            'ppi_map', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        plot_ppi_map(dataset, field_name, ind_el, prdcfg, fname_list)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+
+    if prdcfg['type'] == 'PPI_CONTOUR_OVERPLOT':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_name = get_fieldname_pyart(prdcfg['contourtype'])
+        if contour_name not in dataset.fields:
+            warn(
+                'Contour type ' + contour_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_values = prdcfg.get('contour_values', None)
+
+        el_vec = np.sort(dataset.fixed_angle['data'])
+        el = el_vec[prdcfg['anglenr']]
+        ind_el = np.where(dataset.fixed_angle['data'] == el)[0][0]
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            'ppi', prdcfg['dstype'],
+            prdcfg['voltype']+'-'+prdcfg['contourtype'],
+            prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        titl = (
+            pyart.graph.common.generate_title(dataset, field_name, ind_el) +
+            ' - ' +
+            pyart.graph.common.generate_field_name(dataset, contour_name))
+
+        fig, ax = plot_ppi(dataset, field_name, ind_el, prdcfg, fname_list,
+                           titl=titl, save_fig=False)
+
+        fname_list = plot_ppi_contour(
+            dataset, contour_name, ind_el, prdcfg, fname_list,
+            contour_values=contour_values, ax=ax, fig=fig, save_fig=True)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+    elif prdcfg['type'] == 'PSEUDOPPI_CONTOUR_OVERPLOT':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_name = get_fieldname_pyart(prdcfg['contourtype'])
+        if contour_name not in dataset.fields:
+            warn(
+                'Contour type ' + contour_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_values = prdcfg.get('contour_values', None)
+
+        try:
+            xsect = pyart.util.cross_section_rhi(
+                dataset, [prdcfg['angle']], el_tol=prdcfg['EleTol'])
+
+            savedir = get_save_dir(
+                prdcfg['basepath'], prdcfg['procname'], dssavedir,
+                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+            fname_list = make_filename(
+                'ppi', prdcfg['dstype'],
+                prdcfg['voltype']+'-'+prdcfg['contourtype'],
+                prdcfg['imgformat'],
+                prdcfginfo='el'+'{:.1f}'.format(prdcfg['angle']),
+                timeinfo=prdcfg['timeinfo'])
+
+            for i, fname in enumerate(fname_list):
+                fname_list[i] = savedir+fname
+
+            titl = (
+                pyart.graph.common.generate_title(xsect, field_name, 0) +
+                ' - ' +
+                pyart.graph.common.generate_field_name(xsect, contour_name))
+
+            fig, ax = plot_ppi(xsect, field_name, 0, prdcfg, fname_list,
+                               titl=titl, save_fig=False)
+
+            fname_list = plot_ppi_contour(
+                xsect, contour_name, 0, prdcfg, fname_list,
+                contour_values=contour_values, ax=ax, fig=fig, save_fig=True)
+
+            print('----- save to '+' '.join(fname_list))
+
+            return fname_list
+        except EnvironmentError:
+            warn(
+                'No data found at elevation ' + str(prdcfg['angle']) +
+                '. Skipping product ' + prdcfg['type'])
+
+            return None
+
+    if prdcfg['type'] == 'PPI_CONTOUR':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_values = prdcfg.get('contour_values', None)
+
+        el_vec = np.sort(dataset.fixed_angle['data'])
+        el = el_vec[prdcfg['anglenr']]
+        ind_el = np.where(dataset.fixed_angle['data'] == el)[0][0]
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            'ppi', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        fname_list = plot_ppi_contour(
+            dataset, field_name, ind_el, prdcfg, fname_list,
+            contour_values=contour_values)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+    elif prdcfg['type'] == 'PSEUDOPPI_CONTOUR':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_values = prdcfg.get('contour_values', None)
+
+        try:
+            xsect = pyart.util.cross_section_rhi(
+                dataset, [prdcfg['angle']], el_tol=prdcfg['EleTol'])
+
+            savedir = get_save_dir(
+                prdcfg['basepath'], prdcfg['procname'], dssavedir,
+                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+            fname_list = make_filename(
+                'ppi', prdcfg['dstype'], prdcfg['voltype'],
+                prdcfg['imgformat'],
+                prdcfginfo='el'+'{:.1f}'.format(prdcfg['angle']),
+                timeinfo=prdcfg['timeinfo'])
+
+            for i, fname in enumerate(fname_list):
+                fname_list[i] = savedir+fname
+
+            fname_list = plot_ppi_contour(
+                xsect, field_name, 0, prdcfg, fname_list,
+                contour_values=contour_values)
+
+            print('----- save to '+' '.join(fname_list))
+
+            return fname_list
+        except EnvironmentError:
+            warn(
+                'No data found at elevation ' + str(prdcfg['angle']) +
+                '. Skipping product ' + prdcfg['type'])
+
+            return None
+
+    elif prdcfg['type'] == 'RHI_IMAGE':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        az_vec = np.sort(dataset.fixed_angle['data'])
+        az = az_vec[prdcfg['anglenr']]
+        ind_az = np.where(dataset.fixed_angle['data'] == az)[0][0]
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            'rhi', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo='az'+'{:.1f}'.format(az),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        step = prdcfg.get('step', None)
+        quantiles = prdcfg.get('quantiles', None)
+        plot_type = prdcfg.get('plot_type', 'RHI')
+
+        plot_rhi(dataset, field_name, ind_az, prdcfg, fname_list,
+                 plot_type=plot_type, step=step, quantiles=quantiles)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+    elif prdcfg['type'] == 'PSEUDORHI_IMAGE':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        try:
+            xsect = pyart.util.cross_section_ppi(
+                dataset, [prdcfg['angle']], az_tol=prdcfg['AziTol'])
+
+            savedir = get_save_dir(
+                prdcfg['basepath'], prdcfg['procname'], dssavedir,
+                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+            fname_list = make_filename(
+                'rhi', prdcfg['dstype'], prdcfg['voltype'],
+                prdcfg['imgformat'],
+                prdcfginfo='az'+'{:.1f}'.format(prdcfg['angle']),
+                timeinfo=prdcfg['timeinfo'])
+
+            for i, fname in enumerate(fname_list):
+                fname_list[i] = savedir+fname
+
+            step = prdcfg.get('step', None)
+            quantiles = prdcfg.get('quantiles', None)
+            plot_type = prdcfg.get('plot_type', 'RHI')
+
+            plot_rhi(xsect, field_name, 0, prdcfg, fname_list,
+                     plot_type=plot_type, step=step, quantiles=quantiles)
+
+            print('----- save to '+' '.join(fname_list))
+
+            return fname_list
+        except EnvironmentError:
+            warn(
+                ' No data found at azimuth ' +
+                str(prdcfg['angle'])+'. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+    elif prdcfg['type'] == 'RHI_CONTOUR_OVERPLOT':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_name = get_fieldname_pyart(prdcfg['contourtype'])
+        if contour_name not in dataset.fields:
+            warn(
+                'Contour type ' + contour_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_values = prdcfg.get('contour_values', None)
+
+        az_vec = np.sort(dataset.fixed_angle['data'])
+        az = az_vec[prdcfg['anglenr']]
+        ind_az = np.where(dataset.fixed_angle['data'] == az)[0][0]
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            'rhi', prdcfg['dstype'],
+            prdcfg['voltype']+'-'+prdcfg['contourtype'],
+            prdcfg['imgformat'], prdcfginfo='az'+'{:.1f}'.format(az),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        titl = (
+            pyart.graph.common.generate_title(dataset, field_name, ind_az) +
+            ' - ' +
+            pyart.graph.common.generate_field_name(dataset, contour_name))
+
+        fig, ax = plot_rhi(dataset, field_name, ind_az, prdcfg, fname_list,
+                           titl=titl, save_fig=False)
+
+        fname_list = plot_rhi_contour(
+            dataset, contour_name, ind_az, prdcfg, fname_list,
+            contour_values=contour_values, ax=ax, fig=fig, save_fig=True)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+    elif prdcfg['type'] == 'PSEUDORHI_CONTOUR_OVERPLOT':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_name = get_fieldname_pyart(prdcfg['contourtype'])
+        if contour_name not in dataset.fields:
+            warn(
+                'Contour type ' + contour_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_values = prdcfg.get('contour_values', None)
+
+        try:
+            xsect = pyart.util.cross_section_ppi(
+                dataset, [prdcfg['angle']], az_tol=prdcfg['AziTol'])
+
+            savedir = get_save_dir(
+                prdcfg['basepath'], prdcfg['procname'], dssavedir,
+                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+            fname_list = make_filename(
+                'rhi', prdcfg['dstype'],
+                prdcfg['voltype']+'-'+prdcfg['contourtype'],
+                prdcfg['imgformat'],
+                prdcfginfo='az'+'{:.1f}'.format(prdcfg['angle']),
+                timeinfo=prdcfg['timeinfo'])
+
+            for i, fname in enumerate(fname_list):
+                fname_list[i] = savedir+fname
+
+            titl = (
+                pyart.graph.common.generate_title(xsect, field_name, 0) +
+                ' - ' +
+                pyart.graph.common.generate_field_name(xsect, contour_name))
+
+            fig, ax = plot_rhi(xsect, field_name, 0, prdcfg, fname_list,
+                               titl=titl, save_fig=False)
+
+            fname_list = plot_rhi_contour(
+                xsect, contour_name, 0, prdcfg, fname_list,
+                contour_values=contour_values, ax=ax, fig=fig, save_fig=True)
+
+            print('----- save to '+' '.join(fname_list))
+
+            return fname_list
+        except EnvironmentError:
+            warn(
+                ' No data found at azimuth ' +
+                str(prdcfg['angle'])+'. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+    elif prdcfg['type'] == 'RHI_CONTOUR':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_values = prdcfg.get('contour_values', None)
+
+        az_vec = np.sort(dataset.fixed_angle['data'])
+        az = az_vec[prdcfg['anglenr']]
+        ind_az = np.where(dataset.fixed_angle['data'] == az)[0][0]
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            'rhi', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo='az'+'{:.1f}'.format(az),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        fname_list = plot_rhi_contour(
+            dataset, field_name, ind_az, prdcfg, fname_list,
+            contour_values=contour_values)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+    elif prdcfg['type'] == 'PSEUDORHI_CONTOUR':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_values = prdcfg.get('contour_values', None)
+
+        try:
+            xsect = pyart.util.cross_section_ppi(
+                dataset, [prdcfg['angle']], az_tol=prdcfg['AziTol'])
+
+            savedir = get_save_dir(
+                prdcfg['basepath'], prdcfg['procname'], dssavedir,
+                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+            fname_list = make_filename(
+                'rhi', prdcfg['dstype'], prdcfg['voltype'],
+                prdcfg['imgformat'],
+                prdcfginfo='az'+'{:.1f}'.format(prdcfg['angle']),
+                timeinfo=prdcfg['timeinfo'])
+
+            for i, fname in enumerate(fname_list):
+                fname_list[i] = savedir+fname
+
+            fname_list = plot_rhi_contour(
+                xsect, field_name, 0, prdcfg, fname_list,
+                contour_values=contour_values)
+
+            print('----- save to '+' '.join(fname_list))
+
+            return fname_list
+        except EnvironmentError:
+            warn(
+                ' No data found at azimuth ' +
+                str(prdcfg['angle'])+'. Skipping product ' +
+                prdcfg['type'])
             return None
 
     elif prdcfg['type'] == 'RHI_PROFILE':
@@ -835,55 +1243,6 @@ def generate_vol_products(dataset, prdcfg):
                 'No data found at elevation ' + str(prdcfg['angle']) +
                 '. Skipping product ' + prdcfg['type'])
 
-            return None
-
-    elif prdcfg['type'] == 'PSEUDORHI_IMAGE':
-        field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
-            warn(
-                ' Field type ' + field_name +
-                ' not available in data set. Skipping product ' +
-                prdcfg['type'])
-            return None
-
-        try:
-            xsect = pyart.util.cross_section_ppi(
-                dataset, [prdcfg['angle']], az_tol=prdcfg['AziTol'])
-
-            savedir = get_save_dir(
-                prdcfg['basepath'], prdcfg['procname'], dssavedir,
-                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
-
-            fname_list = make_filename(
-                'rhi', prdcfg['dstype'], prdcfg['voltype'],
-                prdcfg['imgformat'],
-                prdcfginfo='az'+'{:.1f}'.format(prdcfg['angle']),
-                timeinfo=prdcfg['timeinfo'])
-
-            for i, fname in enumerate(fname_list):
-                fname_list[i] = savedir+fname
-
-            step = None
-            quantiles = None
-            plot_type = 'RHI'
-            if 'plot_type' in prdcfg:
-                plot_type = prdcfg['plot_type']
-            if 'step' in prdcfg:
-                step = prdcfg['step']
-            if 'quantiles' in prdcfg:
-                quantiles = prdcfg['quantiles']
-
-            plot_rhi(xsect, field_name, 0, prdcfg, fname_list,
-                     plot_type=plot_type, step=step, quantiles=quantiles)
-
-            print('----- save to '+' '.join(fname_list))
-
-            return fname_list
-        except EnvironmentError:
-            warn(
-                ' No data found at azimuth ' +
-                str(prdcfg['angle'])+'. Skipping product ' +
-                prdcfg['type'])
             return None
 
     elif prdcfg['type'] == 'CAPPI_IMAGE':

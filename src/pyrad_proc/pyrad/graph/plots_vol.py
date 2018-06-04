@@ -14,6 +14,8 @@ Functions to plot radar volume data
     plot_time_range
     plot_cappi
     plot_traj
+    plot_rhi_contour
+    plot_ppi_contour
     plot_pos
     plot_rhi_profile
     plot_along_coord
@@ -21,6 +23,7 @@ Functions to plot radar volume data
     _plot_time_range
 
 """
+from warnings import warn
 
 import numpy as np
 
@@ -45,7 +48,7 @@ from ..util.radar_utils import compute_histogram_sweep
 
 
 def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
-             step=None, quantiles=None):
+             titl=None, step=None, quantiles=None, save_fig=True):
     """
     plots a PPI
 
@@ -63,6 +66,8 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
         list of names of the files where to store the plot
     plot_type : str
         type of plot (PPI, QUANTILES or HISTOGRAM)
+    titl : str
+        Plot title
     step : float
         step for histogram plotting
     quantiles : float array
@@ -93,7 +98,7 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
 
         display = pyart.graph.RadarDisplay(radar)
         display.plot_ppi(
-            field_name, sweep=ind_el, norm=norm, ticks=ticks,
+            field_name, title=titl, sweep=ind_el, norm=norm, ticks=ticks,
             ticklabs=ticklabs, fig=fig)
 
         display.set_limits(
@@ -114,9 +119,14 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
         # Make a tight layout
         fig.tight_layout()
 
-        for fname in fname_list:
-            fig.savefig(fname, dpi=dpi)
-        plt.close()
+        if save_fig:
+            for fname in fname_list:
+                fig.savefig(fname, dpi=dpi)
+            plt.close()
+
+            return fname_list
+
+        return (fig, ax)
 
     elif plot_type == 'QUANTILES':
         quantiles, values = compute_quantiles_sweep(
@@ -226,7 +236,7 @@ def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
 
 
 def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
-             step=None, quantiles=None):
+             titl=None, step=None, quantiles=None, save_fig=True):
     """
     plots an RHI
 
@@ -244,15 +254,22 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
         list of names of the files where to store the plot
     plot_type : str
         type of plot (PPI, QUANTILES or HISTOGRAM)
+    titl : str
+        Plot title
     step : float
         step for histogram plotting
     quantiles : float array
         quantiles to plot
+    save_fig : bool
+        if true save the figure. If false it does not close the plot and
+        returns the handle to the figure
 
     Returns
     -------
     fname_list : list of str
         list of names of the created plots
+    fig, ax : tupple
+        list of names of the saved plots or handle of the figure an axes
 
      History
     --------
@@ -272,7 +289,7 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
         ax = fig.add_subplot(111, aspect='equal')
         display = pyart.graph.RadarDisplay(radar)
         display.plot_rhi(
-            field_name, sweep=ind_az, norm=norm, ticks=ticks,
+            field_name, title=titl, sweep=ind_az, norm=norm, ticks=ticks,
             ticklabs=ticklabs, colorbar_orient='horizontal',
             reverse_xaxis=False)
         display.set_limits(
@@ -288,16 +305,24 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
         # Make a tight layout
         fig.tight_layout()
 
-        for fname in fname_list:
-            fig.savefig(fname, dpi=dpi)
-        plt.close()
+        if save_fig:
+            for fname in fname_list:
+                fig.savefig(fname, dpi=dpi)
+            plt.close()
+
+            return fname_list
+
+        return (fig, ax)
+
     elif plot_type == 'QUANTILES':
         quantiles, values = compute_quantiles_sweep(
             radar.fields[field_name]['data'],
             radar.sweep_start_ray_index['data'][ind_az],
             radar.sweep_end_ray_index['data'][ind_az], quantiles=quantiles)
 
-        titl = pyart.graph.common.generate_title(radar, field_name, ind_az)
+        if titl is None:
+            titl = pyart.graph.common.generate_title(
+                radar, field_name, ind_az)
         labely = get_colobar_label(radar.fields[field_name], field_name)
 
         plot_quantiles(quantiles, values, fname_list, labelx='quantile',
@@ -309,7 +334,9 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
             radar.sweep_start_ray_index['data'][ind_az],
             radar.sweep_end_ray_index['data'][ind_az], field_name, step=step)
 
-        titl = pyart.graph.common.generate_title(radar, field_name, ind_az)
+        if titl is None:
+            titl = pyart.graph.common.generate_title(
+                radar, field_name, ind_az)
         labelx = get_colobar_label(radar.fields[field_name], field_name)
 
         plot_histogram(bins, values, fname_list, labelx=labelx,
@@ -457,7 +484,8 @@ def plot_time_range(radar, field_name, ind_sweep, prdcfg, fname_list):
         figsize=[xsize, ysize], dpi=dpi)
 
 
-def plot_cappi(radar, field_name, altitude, prdcfg, fname_list, save_fig=True):
+def plot_cappi(radar, field_name, altitude, prdcfg, fname_list,
+               save_fig=True):
     """
     plots a Constant Altitude Plan Position Indicator CAPPI
 
@@ -474,8 +502,8 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname_list, save_fig=True):
     fname_list : list of str
         list of names of the files where to store the plot
     save_fig : bool
-        if true save the figure if false it does not close the plot and returns the
-        handle to the figure
+        if true save the figure. If false it does not close the plot and
+        returns the handle to the figure
 
     Returns
     -------
@@ -682,6 +710,218 @@ def plot_traj(rng_traj, azi_traj, ele_traj, time_traj, prdcfg, fname_list,
     if plot_cb:
         cb = fig.colorbar(cax, orientation='horizontal')
         cb.set_label(cb_label)
+
+    if save_fig:
+        for fname in fname_list:
+            fig.savefig(fname, dpi=dpi)
+        plt.close()
+
+        return fname_list
+
+    return (fig, ax)
+
+
+def plot_rhi_contour(radar, field_name, ind_az, prdcfg, fname_list,
+                     contour_values=None, linewidths=1.5, ax=None, fig=None,
+                     save_fig=True):
+    """
+    plots contour data on an RHI
+
+    Parameters
+    ----------
+    radar : Radar object
+        object containing the radar data to plot
+    field_name : str
+        name of the radar field to plot
+    ind_az : int
+        sweep index to plot
+    prdcfg : dict
+        dictionary containing the product configuration
+    fname_list : list of str
+        list of names of the files where to store the plot
+    contour_values : float array
+        list of contours to plot
+    linewidths : float
+        width of the contour lines
+    fig : Figure
+        Figure to add the colorbar to. If none a new figure will be created
+    ax : Axis
+        Axis to plot on. if fig is None a new axis will be created
+    save_fig : bool
+        if true save the figure if false it does not close the plot and
+        returns the handle to the figure
+
+    Returns
+    -------
+    fname_list : list of str or
+    fig, ax : tupple
+        list of names of the saved plots or handle of the figure an axes
+
+    """
+    dpi = prdcfg['ppiImageConfig'].get('dpi', 72)
+
+    # get contour intervals
+    if contour_values is None:
+        field_dict = pyart.config.get_metadata(field_name)
+        if 'boundaries' in field_dict:
+            vmin = field_dict['boundaries'][0]
+            vmax = field_dict['boundaries'][-1]
+            num = len(field_dict['boundaries'])
+        else:
+            vmin, vmax = pyart.config.get_field_limits(field_name)
+            num = 10
+
+        contour_values = np.linspace(vmin, vmax, num=num)
+
+    # get data and position
+    display = pyart.graph.RadarDisplay(radar)
+    data = display._get_data(field_name, ind_az, None, True, None)
+
+    x_edges, y_edges, z_edges = display._get_x_y_z(ind_az, True, True)
+    delta_x = x_edges[1:, 1:]-x_edges[:-1, :-1]
+    delta_y = y_edges[1:, 1:]-y_edges[:-1, :-1]
+    delta_z = z_edges[1:, 1:]-z_edges[:-1, :-1]
+
+    x = x_edges[:-1, :-1]+delta_x/2.
+    y = y_edges[:-1, :-1]+delta_y/2.
+    z = z_edges[:-1, :-1]+delta_z/2.
+
+    R = np.sqrt(x ** 2 + y ** 2) * np.sign(x)
+
+    # display data
+    if fig is None:
+        xsize = prdcfg['rhiImageConfig']['xsize']
+        ysize = prdcfg['rhiImageConfig']['ysize']
+        fig = plt.figure(figsize=[xsize, ysize], dpi=dpi)
+        ax = fig.add_subplot(111, aspect='equal')
+
+        ax.contour(R, z, data, contour_values, colors='k',
+                   linewidths=linewidths)
+
+        display._set_title(field_name, ind_az, None, ax)
+        display._label_axes_rhi((None, None), ax)
+
+        display.set_limits(
+            ylim=[prdcfg['rhiImageConfig']['ymin'],
+                  prdcfg['rhiImageConfig']['ymax']],
+            xlim=[prdcfg['rhiImageConfig']['xmin'],
+                  prdcfg['rhiImageConfig']['xmax']])
+        display.plot_cross_hair(5.)
+
+        # Turn on the grid
+        ax.grid()
+
+        # Make a tight layout
+        fig.tight_layout()
+    else:
+        ax.autoscale(False)
+        ax.contour(R, z, data, contour_values, colors='k',
+                   linewidths=linewidths)
+
+
+
+    if save_fig:
+        for fname in fname_list:
+            fig.savefig(fname, dpi=dpi)
+        plt.close()
+
+        return fname_list
+
+    return (fig, ax)
+
+
+def plot_ppi_contour(radar, field_name, ind_el, prdcfg, fname_list,
+                     contour_values=None, linewidths=1.5, ax=None, fig=None,
+                     save_fig=True):
+    """
+    plots contour data on a PPI
+
+    Parameters
+    ----------
+    radar : Radar object
+        object containing the radar data to plot
+    field_name : str
+        name of the radar field to plot
+    ind_el : int
+        sweep index to plot
+    prdcfg : dict
+        dictionary containing the product configuration
+    fname_list : list of str
+        list of names of the files where to store the plot
+    contour_values : float array
+        list of contours to plot
+    linewidths : float
+        width of the contour lines
+    fig : Figure
+        Figure to add the colorbar to. If none a new figure will be created
+    ax : Axis
+        Axis to plot on. if fig is None a new axis will be created
+    save_fig : bool
+        if true save the figure if false it does not close the plot and
+        returns the handle to the figure
+
+    Returns
+    -------
+    fname_list : list of str or
+    fig, ax : tupple
+        list of names of the saved plots or handle of the figure an axes
+
+    """
+    dpi = prdcfg['ppiImageConfig'].get('dpi', 72)
+
+    # get contour intervals
+    if contour_values is None:
+        field_dict = pyart.config.get_metadata(field_name)
+        if 'boundaries' in field_dict:
+            vmin = field_dict['boundaries'][0]
+            vmax = field_dict['boundaries'][-1]
+            num = len(field_dict['boundaries'])
+        else:
+            vmin, vmax = pyart.config.get_field_limits(field_name)
+            num = 10
+
+        contour_values = np.linspace(vmin, vmax, num=num)
+
+    # get data and position
+    display = pyart.graph.RadarDisplay(radar)
+    data = display._get_data(field_name, ind_el, None, True, None)
+
+    x_edges, y_edges = display._get_x_y(ind_el, True, True)
+    delta_x = x_edges[1:, 1:]-x_edges[:-1, :-1]
+    delta_y = y_edges[1:, 1:]-y_edges[:-1, :-1]
+
+    x = x_edges[:-1, :-1]+delta_x/2.
+    y = y_edges[:-1, :-1]+delta_y/2.
+
+    # display data
+    if fig is None:
+        xsize = prdcfg['ppiImageConfig']['xsize']
+        ysize = prdcfg['ppiImageConfig']['ysize']
+        fig = plt.figure(figsize=[xsize, ysize], dpi=dpi)
+        ax = fig.add_subplot(111, aspect='equal')
+
+        ax.contour(x, y, data, contour_values, colors='k',
+                   linewidths=linewidths)
+
+        display._set_title(field_name, ind_el, None, ax)
+        display._label_axes_ppi((None, None), ax)
+
+        display.set_limits(
+            ylim=[prdcfg['ppiImageConfig']['ymin'],
+                  prdcfg['ppiImageConfig']['ymax']],
+            xlim=[prdcfg['ppiImageConfig']['xmin'],
+                  prdcfg['ppiImageConfig']['xmax']])
+        display.plot_cross_hair(5.)
+
+        # Turn on the grid
+        ax.grid()
+
+        # Make a tight layout
+        fig.tight_layout()
+    else:
+        ax.autoscale(False)
+        ax.contour(x, y, data, contour_values, colors='k',
+                   linewidths=linewidths)
 
     if save_fig:
         for fname in fname_list:

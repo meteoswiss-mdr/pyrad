@@ -1188,17 +1188,24 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
         max_length_holes = dscfg.get('max_length_holes', 250)
         check_min_length = dscfg.get('check_min_length', True)
 
-        ml_dict = pyart.retrieve.detect_ml(
+        ml_list = pyart.retrieve.detect_ml(
             radar, refl_field=refl_field, rhohv_field=rhohv_field,
             max_range=max_range, detect_threshold=detect_threshold,
             interp_holes=interp_holes, max_length_holes=max_length_holes,
             check_min_length=check_min_length)
 
-        if ml_dict['ml_exists']:
-            print('bottom_ml', ml_dict['ml_pol']['bottom_ml'])
-            print('top_ml', ml_dict['ml_pol']['top_ml'])
-        else:
-            warn('No melting layer detected')
+        ml_data = np.ma.empty((radar.nrays, radar.ngates), dtype=int)
+        ml_data[:] = np.ma.masked
+        for ind_sweep, ml_dict in enumerate(ml_list):
+            ind_start = radar.sweep_start_ray_index['data'][ind_sweep]
+            ind_end = radar.sweep_end_ray_index['data'][ind_sweep]
+            ml_data[ind_start:ind_end+1] = ml_dict['ml_pol']['data']+2
+        mask = np.logical_or(
+            np.ma.getmaskarray(radar.fields[refl_field]['data']),
+            np.ma.getmaskarray(radar.fields[rhohv_field]['data']))
+        ml_data = np.ma.masked_where(mask, ml_data)
+        ml = pyart.config.get_metadata('melting_layer')
+        ml['data'] = ml_data
     else:
         raise Exception(
             "ERROR: Unknown melting layer retrieval method " +
@@ -1207,6 +1214,6 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
     # prepare for exit
     new_dataset = deepcopy(radar)
     new_dataset.fields = dict()
-    # new_dataset.add_field('melting_layer', ml)
+    new_dataset.add_field('melting_layer', ml)
 
     return new_dataset, ind_rad

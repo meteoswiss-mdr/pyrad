@@ -477,6 +477,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'cosmo_index'
     elif datatype == 'hzt_index':
         field_name = 'hzt_index'
+    elif datatype == 'ml':
+        field_name = 'melting_layer'
 
     elif datatype == 'VIS':
         field_name = 'visibility'
