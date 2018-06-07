@@ -1262,12 +1262,67 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
         ml_data[is_ws] = 3
         ml_data[is_ih] = 5
 
+        mask = deepcopy(np.ma.getmaskarray(ml_data))
+
+        # User defined parameters
+        force_continuity = dscfg.get('force_continuity', True)
+        dist_max = dscfg.get('dist_max', 350.)
+
+        ml_top = np.ma.empty(radar.nrays, dtype=float)
+        ml_top[:] = np.ma.masked
+        ml_bottom = np.ma.empty(radar.nrays, dtype=float)
+        ml_bottom[:] = np.ma.masked
+        for ind_ray in range(radar.nrays):
+            inds_rng_ml = np.ma.where(ml_data[ind_ray, :] == 3)[0]
+
+            # No melting layer identified. Do nothing
+            if inds_rng_ml.size == 0:
+                if force_continuity:
+                    ml_data[ind_ray, :] = np.ma.masked
+                continue
+
+            # Remove holes in melting layer
+            if force_continuity:
+                # There is just one gate. Do nothing
+                if inds_rng_ml.size == 1:
+                    continue
+
+                # identify continuos regions
+                rng_ml = radar.range['data'][inds_rng_ml]
+                dist_ml = np.append(
+                    rng_ml[1:]-rng_ml[0:-1], rng_ml[-1]-rng_ml[-2])
+                ind_valid = np.where(dist_ml < dist_max)[0]
+                inds_rng_ml = inds_rng_ml[ind_valid]
+
+                # melting layer discontinuous. Remove ray
+                if inds_rng_ml.size == 0:
+                    ml_data[ind_ray, :] = np.ma.masked
+                    continue
+
+                # Fill in gaps
+                ml_data[ind_ray, :] = 3
+                if inds_rng_ml[0] > 0:
+                    ml_data[ind_ray, 0:inds_rng_ml[0]] = 1
+                if inds_rng_ml[-1] < radar.ngates-1:
+                    ml_data[ind_ray, inds_rng_ml[-1]+1:] = 5
+
+            # get top and bottom
+            ml_bottom[ind_ray] = (
+                radar.gate_altitude['data'][ind_ray, inds_rng_ml[0]])
+            ml_top[ind_ray] = (
+                radar.gate_altitude['data'][ind_ray, inds_rng_ml[-1]])
+
+        if force_continuity:
+            ml_data = np.ma.masked_where(mask, ml_data)
+
         ml = pyart.config.get_metadata('melting_layer')
         ml['data'] = ml_data
     else:
         raise Exception(
             "ERROR: Unknown melting layer retrieval method " +
             dscfg['ML_METHOD'])
+
+    get_iso0 = dscfg.get('get_iso0', False)
 
     # Create melting layer object containing top and bottom and metadata
     ml_obj = deepcopy(radar)
@@ -1303,5 +1358,14 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
         'ml_obj': ml_obj}
     new_dataset['radar_out'].fields = dict()
     new_dataset['radar_out'].add_field('melting_layer', ml)
+
+    if get_iso0:
+        iso0_data = np.ma.empty((radar.nrays, radar.ngates), dtype=float)
+        iso0_data[:] = np.ma.masked
+        for ind_ray in range(radar.nrays):
+            iso0_data[ind_ray, :] = radar.gate_altitude['data'][ind_ray, :]-ml_top[ind_ray]
+        iso0_dict = pyart.config.get_metadata('height_over_iso0')
+        iso0_dict['data'] = iso0_data
+        new_dataset['radar_out'].add_field('height_over_iso0', iso0_dict)
 
     return new_dataset, ind_rad
