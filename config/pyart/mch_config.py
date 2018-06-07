@@ -161,6 +161,7 @@ radar_echo_classification = 'radar_echo_classification'
 radar_echo_id = 'radar_echo_id'
 clutter_exit_code = 'clutter_exit_code'
 melting_layer = 'melting_layer'
+melting_layer_height = 'melting_layer_height'
 
 bird_density = 'bird_density'
 
@@ -347,6 +348,7 @@ DEFAULT_FIELD_NAMES = {
     'radar_echo_id': radar_echo_id,
     'clutter_exit_code': clutter_exit_code,
     'melting_layer': melting_layer,
+    'melting_layer_height': melting_layer_height,
     'specific_attenuation': specific_attenuation,
     'path_integrated_attenuation': path_integrated_attenuation,
     'specific_differential_attenuation': specific_differential_attenuation,
@@ -1097,6 +1099,12 @@ DEFAULT_METADATA = {
         'ticks': [1, 2, 3, 4, 5],
         'boundaries': [0.5, 1.5, 2.5, 3.5, 4.5, 5.5],
         'coordinates': 'elevation azimuth range'},
+
+    melting_layer_height: {
+        'units': 'm MSL',
+        'standard_name': 'melting_layer_height',
+        'long_name': 'Top and bottom melting layer height',
+        'coordinates': 'elevation azimuth'},
 
     specific_attenuation: {
         'units': 'dB/km',

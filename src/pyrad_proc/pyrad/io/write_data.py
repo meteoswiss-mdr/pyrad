@@ -18,6 +18,7 @@ Functions for writing pyrad output data
     write_histogram
     write_quantiles
     write_ts_polar_data
+    write_ts_ml
     write_ts_cum
     write_monitoring_ts
     write_excess_gates
@@ -706,6 +707,78 @@ def write_ts_polar_data(dataset, fname):
                  'el': dataset['used_antenna_coordinates_az_el_r'][1],
                  'r': dataset['used_antenna_coordinates_az_el_r'][2],
                  'value': dataset['value']})
+            csvfile.close()
+
+    return fname
+
+
+def write_ts_ml(dt_ml, ml_top_avg, ml_top_std, thick_avg, thick_std,
+                nrays_valid, nrays_total, fname):
+    """
+    writes time series of melting layer data
+
+    Parameters
+    ----------
+    dt_ml : date time array
+        array of time steps
+    ml_top_avg, ml_top_std: float arrays
+        the average and the standard deviation of the melting layer top height
+    thick_avg, thick_std: float arrays
+        the average and the standard deviation of the metling layer thickness
+    nrays_valid, nrays_total: int arrays
+        the number of rays where melting layer has been identified and the
+        total number of arrays in the scan
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    filelist = glob.glob(fname)
+    if not filelist:
+        with open(fname, 'w', newline='') as csvfile:
+            csvfile.write(
+                '# Weather radar detected melting layer data file\n' +
+                '# Comment lines are preceded by "#"\n' +
+                '# Description: \n' +
+                '# Time series of melting layer data detected by weather radar.\n' +
+                '# Fill Value: '+str(get_fillvalue())+'\n' +
+                '# Start: '+dt_ml.strftime('%Y-%m-%d %H:%M:%S UTC')+'\n' +
+                '#\n')
+
+            fieldnames = [
+                'date-time [UTC]', 'mean ml top height [m MSL]',
+                'std ml top height [m MSL]', 'mean ml thickness [m]',
+                'std ml thickness [m]', 'N valid rays', 'rays total']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writeheader()
+            writer.writerow(
+                {'date-time [UTC]': dt_ml.strftime('%Y-%m-%d %H:%M:%S'),
+                 'mean ml top height [m MSL]': ml_top_avg,
+                 'std ml top height [m MSL]': ml_top_std,
+                 'mean ml thickness [m]': thick_avg,
+                 'std ml thickness [m]': thick_std,
+                 'N valid rays': nrays_valid,
+                 'rays total': nrays_total})
+            csvfile.close()
+    else:
+        with open(fname, 'a', newline='') as csvfile:
+            fieldnames = [
+                'date-time [UTC]', 'mean ml top height [m MSL]',
+                'std ml top height [m MSL]', 'mean ml thickness [m]',
+                'std ml thickness [m]', 'N valid rays', 'rays total']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writerow(
+                {'date-time [UTC]': dt_ml.strftime('%Y-%m-%d %H:%M:%S'),
+                 'mean ml top height [m MSL]': ml_top_avg,
+                 'std ml top height [m MSL]': ml_top_std,
+                 'mean ml thickness [m]': thick_avg,
+                 'std ml thickness [m]': thick_std,
+                 'N valid rays': nrays_valid,
+                 'rays total': nrays_total})
             csvfile.close()
 
     return fname

@@ -23,6 +23,7 @@ Functions for reading auxiliary data
     read_colocated_data_time_avg
     read_timeseries
     read_ts_cum
+    read_ml_ts
     read_monitoring_ts
     read_monitoring_ts_old
     read_intercomp_scores_ts
@@ -904,6 +905,65 @@ def read_ts_cum(fname):
         warn(str(ee))
         warn('Unable to read file '+fname)
         return None, None, None, None, None
+
+
+def read_ml_ts(fname):
+    """
+    Reads a melting layer time series contained in a csv file
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    dt_ml, ml_top_avg, ml_top_std, thick_avg, thick_std, nrays_valid,
+    nrays_total : tupple
+        The read data. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            nrows = sum(1 for row in reader)
+
+            dt_ml = np.empty(nrows, dtype=datetime.datetime)
+            ml_top_avg = np.ma.empty(nrows, dtype=float)
+            ml_top_std = np.ma.empty(nrows, dtype=float)
+            thick_avg = np.ma.empty(nrows, dtype=float)
+            thick_std = np.ma.empty(nrows, dtype=float)
+            nrays_valid = np.zeros(nrows, dtype=int)
+            nrays_total = np.zeros(nrows, dtype=int)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+
+            for i, row in enumerate(reader):
+                dt_ml[i] = datetime.datetime.strptime(
+                    row['date-time [UTC]'], '%Y-%m-%d %H:%M:%S')
+                ml_top_avg[i] = float(row['mean ml top height [m MSL]'])
+                ml_top_std[i] = float(row['std ml top height [m MSL]'])
+                thick_avg[i] = float(row['mean ml thickness [m]'])
+                thick_std[i] = float(row['std ml thickness [m]'])
+                nrays_valid[i] = int(row['N valid rays'])
+                nrays_total[i] = int(row['rays total'])
+
+            ml_top_avg = np.ma.masked_values(ml_top_avg, get_fillvalue())
+            ml_top_std = np.ma.masked_values(ml_top_std, get_fillvalue())
+            thick_avg = np.ma.masked_values(thick_avg, get_fillvalue())
+            thick_std = np.ma.masked_values(thick_std, get_fillvalue())
+
+            return (dt_ml, ml_top_avg, ml_top_std, thick_avg, thick_std,
+                    nrays_valid, nrays_total)
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return None, None, None, None, None, None, None
 
 
 def read_monitoring_ts(fname, sort_by_date=False):

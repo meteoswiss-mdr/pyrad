@@ -1199,16 +1199,27 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
 
         ml_data = np.ma.empty((radar.nrays, radar.ngates), dtype=int)
         ml_data[:] = np.ma.masked
+
+        ml_top = np.ma.empty(radar.nrays, dtype=float)
+        ml_top[:] = np.ma.masked
+        ml_bottom = np.ma.empty(radar.nrays, dtype=float)
+        ml_bottom[:] = np.ma.masked
         for ind_sweep, ml_dict in enumerate(ml_list):
             ind_start = radar.sweep_start_ray_index['data'][ind_sweep]
             ind_end = radar.sweep_end_ray_index['data'][ind_sweep]
-            ml_data[ind_start:ind_end+1] = ml_dict['ml_pol']['data']+2
+            ml_data[ind_start:ind_end+1, :] = ml_dict['ml_pol']['data']+2
+            ml_top[ind_start:ind_end+1] = ml_dict['ml_pol']['top_ml']
+            ml_bottom[ind_start:ind_end+1] = ml_dict['ml_pol']['bottom_ml']
+
         mask = np.logical_or(
             np.ma.getmaskarray(radar.fields[refl_field]['data']),
             np.ma.getmaskarray(radar.fields[rhohv_field]['data']))
         ml_data = np.ma.masked_where(mask, ml_data)
         ml = pyart.config.get_metadata('melting_layer')
         ml['data'] = ml_data
+
+        ml_top = np.ma.masked_invalid(ml_top)
+        ml_bottom = np.ma.masked_invalid(ml_bottom)
 
     elif dscfg['ML_METHOD'] == 'FROM_HYDROCLASS':
         for datatypedescr in dscfg['datatype']:
@@ -1258,8 +1269,38 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
             "ERROR: Unknown melting layer retrieval method " +
             dscfg['ML_METHOD'])
 
+    # Create melting layer object containing top and bottom and metadata
+    ml_obj = deepcopy(radar)
+
+    # modify original metadata
+    ml_obj.range['data'] = np.array([0, 1], dtype='float64')
+    ml_obj.ngates = 2
+
+    ml_obj.gate_x = np.zeros((ml_obj.nrays, ml_obj.ngates), dtype=float)
+    ml_obj.gate_y = np.zeros((ml_obj.nrays, ml_obj.ngates), dtype=float)
+    ml_obj.gate_z = np.zeros((ml_obj.nrays, ml_obj.ngates), dtype=float)
+
+    ml_obj.gate_longitude = np.zeros(
+        (ml_obj.nrays, ml_obj.ngates), dtype=float)
+    ml_obj.gate_latitude = np.zeros(
+        (ml_obj.nrays, ml_obj.ngates), dtype=float)
+    ml_obj.gate_altitude = np.zeros(
+        (ml_obj.nrays, ml_obj.ngates), dtype=float)
+
+    # input field
+    ml_pos = pyart.config.get_metadata('melting_layer_height')
+    ml_aux = np.ma.empty((ml_obj.nrays, ml_obj.ngates), dtype='float64')
+    ml_aux[:, 0] = ml_bottom
+    ml_aux[:, 1] = ml_top
+    ml_pos['data'] = ml_aux
+
+    ml_obj.fields = dict()
+    ml_obj.add_field('melting_layer_height', ml_pos)
+
     # prepare for exit
-    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset = {
+        'radar_out': deepcopy(radar),
+        'ml_obj': ml_obj}
     new_dataset['radar_out'].fields = dict()
     new_dataset['radar_out'].add_field('melting_layer', ml)
 

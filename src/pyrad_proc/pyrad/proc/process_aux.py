@@ -141,6 +141,7 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_hydroclass'
     elif dataset_type == 'ML_DETECTION':
         func_name = 'process_melting_layer'
+        dsformat = 'ML'
     elif dataset_type == 'PHIDP0_ESTIMATE':
         func_name = 'process_estimate_phidp0'
     elif dataset_type == 'RHOHV_RAIN':
