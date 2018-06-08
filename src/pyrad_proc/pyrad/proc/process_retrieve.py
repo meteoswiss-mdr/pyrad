@@ -469,8 +469,12 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
             warn('ERROR: Unable to compute rainfall rate. Missing data')
             return None, None
 
+        # user defined parameters
+        alpha = dscfg.get('alpha', 0.0376)
+        beta = dscfg.get('beta', 0.6112)
+
         rain = pyart.retrieve.est_rain_rate_z(
-            radar, alpha=0.0376, beta=0.6112, refl_field=refl_field,
+            radar, alpha=alpha, beta=beta, refl_field=refl_field,
             rr_field=None)
 
     elif dscfg['RR_METHOD'] == 'ZPoly':
@@ -506,8 +510,12 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
             warn('Unable to compute rainfall rate. Missing data')
             return None, None
 
+        # user defined parameters
+        alpha = dscfg.get('alpha', None)
+        beta = dscfg.get('beta', None)
+
         rain = pyart.retrieve.est_rain_rate_kdp(
-            radar, alpha=None, beta=None, kdp_field=kdp_field, rr_field=None)
+            radar, alpha=alpha, beta=beta, kdp_field=kdp_field, rr_field=None)
 
     elif dscfg['RR_METHOD'] == 'A':
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
@@ -524,8 +532,12 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
             warn('Unable to compute rainfall rate. Missing data')
             return None, None
 
+        # user defined parameters
+        alpha = dscfg.get('alpha', None)
+        beta = dscfg.get('beta', None)
+
         rain = pyart.retrieve.est_rain_rate_a(
-            radar, alpha=None, beta=None, a_field=a_field, rr_field=None)
+            radar, alpha=alpha, beta=beta, a_field=a_field, rr_field=None)
 
     elif dscfg['RR_METHOD'] == 'ZKDP':
         for datatypedescr in dscfg['datatype']:
@@ -551,10 +563,18 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
             warn('Unable to compute rainfall rate. Missing data')
             return None, None
 
+        # user defined parameters
+        alphaz = dscfg.get('alphaz', 0.0376)
+        betaz = dscfg.get('betaz', 0.6112)
+        alphakdp = dscfg.get('alphakdp', None)
+        betakdp = dscfg.get('betakdp', None)
+        thresh = dscfg.get('thresh', 10.)
+
         rain = pyart.retrieve.est_rain_rate_zkdp(
-            radar, alphaz=0.0376, betaz=0.6112, alphakdp=None, betakdp=None,
-            refl_field=refl_field, kdp_field=kdp_field, rr_field=None,
-            master_field=refl_field, thresh=10., thresh_max=True)
+            radar, alphaz=alphaz, betaz=betaz, alphakdp=alphakdp,
+            betakdp=betakdp, refl_field=refl_field, kdp_field=kdp_field,
+            rr_field=None, master_field=refl_field, thresh=thresh,
+            thresh_max=True)
 
     elif dscfg['RR_METHOD'] == 'ZA':
         for datatypedescr in dscfg['datatype']:
@@ -580,10 +600,17 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
             warn('Unable to compute rainfall rate. Missing data')
             return None, None
 
+        # user defined parameters
+        alphaz = dscfg.get('alphaz', 0.0376)
+        betaz = dscfg.get('betaz', 0.6112)
+        alphaa = dscfg.get('alphaa', None)
+        betaa = dscfg.get('betaa', None)
+        thresh = dscfg.get('thresh', 5.)
+
         rain = pyart.retrieve.est_rain_rate_za(
-            radar, alphaz=0.0376, betaz=0.6112, alphaa=None, betaa=None,
+            radar, alphaz=alphaz, betaz=betaz, alphaa=alphaa, betaa=betaa,
             refl_field=refl_field, a_field=a_field, rr_field=None,
-            master_field=refl_field, thresh=5., thresh_max=True)
+            master_field=refl_field, thresh=thresh, thresh_max=True)
 
     elif dscfg['RR_METHOD'] == 'hydro':
         for datatypedescr in dscfg['datatype']:
@@ -606,20 +633,31 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
             return None, None
         radar = radar_list[ind_rad]
 
+        # user defined parameters
+        alphazr = dscfg.get('alphaz', 0.0376)
+        betazr = dscfg.get('betaz', 0.6112)
+        alphazs = dscfg.get('alphaz', 0.1)
+        betazs = dscfg.get('betaz', 0.5)
+        alphaa = dscfg.get('alphaa', None)
+        betaa = dscfg.get('betaa', None)
+        thresh = dscfg.get('thresh', 5.)
+        mp_factor = dscfg.get('mp_factor', 0.6)
+
         if ((refl_field in radar.fields) and
                 (a_field in radar.fields) and
                 (hydro_field in radar.fields)):
             rain = pyart.retrieve.est_rain_rate_hydro(
-                radar, alphazr=0.0376, betazr=0.6112, alphazs=0.1, betazs=0.5,
-                alphaa=None, betaa=None, mp_factor=0.6, refl_field=refl_field,
-                a_field=a_field, hydro_field=hydro_field, rr_field=None,
-                master_field=refl_field, thresh=5., thresh_max=True)
+                radar, alphazr=alphazr, betazr=betazr, alphazs=alphazs,
+                betazs=betazs, alphaa=alphaa, betaa=betaa,
+                mp_factor=mp_factor, refl_field=refl_field, a_field=a_field,
+                hydro_field=hydro_field, rr_field=None,
+                master_field=refl_field, thresh=thresh, thresh_max=True)
         elif refl_field in radar.fields:
             warn('Unable to compute rainfall rate using hydrometeor ' +
                  'classification. Missing data. ' +
                  'A simple Z-R relation will be used instead')
             rain = pyart.retrieve.est_rain_rate_z(
-                radar, alpha=0.0376, beta=0.6112, refl_field=refl_field,
+                radar, alpha=alphazr, beta=betazr, refl_field=refl_field,
                 rr_field=None)
         else:
             warn('Unable to compute rainfall rate using hydrometeor ' +
