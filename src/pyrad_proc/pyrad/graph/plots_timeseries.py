@@ -11,6 +11,7 @@ Functions to plot Pyrad datasets
     plot_timeseries_comp
     plot_monitoring_ts
     plot_intercomp_scores_ts
+    plot_ml_ts
     plot_sun_retrieval_ts
 
 """
@@ -362,8 +363,6 @@ def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
     -------
     fname_list : list of str
         list of names of the created plots
-    dpi : int
-        dots per inch
 
     """
     # plot only valid data (but keep first and last date)
@@ -472,6 +471,103 @@ def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
 
     # tight x axis
     plt.autoscale(enable=True, axis='x', tight=True)
+
+    # rotates and right aligns the x labels, and moves the bottom of the
+    # axes up to make room for them
+    fig.autofmt_xdate()
+
+    for fname in fname_list:
+        fig.savefig(fname, dpi=dpi)
+    plt.close()
+
+    return fname_list
+
+
+def plot_ml_ts(dt_ml_arr, ml_top_avg_arr, ml_top_std_arr, thick_avg_arr,
+               thick_std_arr, nrays_valid_arr, nrays_total_arr, fname_list,
+               labelx='Time UTC', titl='Melting layer time series', dpi=72):
+    """
+    plots a time series of melting layer data
+
+    Parameters
+    ----------
+    dt_ml_arr : datetime object
+        time of the time series
+    np_vec : int array
+        number of points
+    meanbias_vec, medianbias_vec, modebias_vec : float array
+        mean, median and mode bias
+    quant25bias_vec, quant75bias_vec: 25th and 75th percentile of the bias
+    corr_vec : float array
+        correlation
+    slope_vec, intercep_vec : float array
+        slope and intercep of a linear regression
+    intercep_slope1_vec : float
+        the intercep point of a inear regression of slope 1
+    ref_value : float
+        the reference value
+    np_min : int
+        The minimum number of points to consider the result valid
+    corr_min : float
+        The minimum correlation to consider the results valid
+    labelx : str
+        The label of the X axis
+    titl : str
+        The figure title
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    """
+    fig = plt.figure(figsize=[10, 15], dpi=dpi)
+
+    ax = fig.add_subplot(3, 1, 1)
+    plt.plot(dt_ml_arr, ml_top_avg_arr, 'bx-', label='avg')
+    plt.plot(dt_ml_arr, ml_top_avg_arr+ml_top_std_arr, 'rx-', label='avg+std')
+    plt.plot(dt_ml_arr, ml_top_avg_arr-ml_top_std_arr, 'rx-', label='avg-std')
+    # plt.legend(loc='best')
+    plt.ylabel('Top height [m MSL]')
+    plt.title(titl)
+
+    axes = plt.gca()
+    axes.set_ylim([0., 6000.])
+    axes.set_xlim([dt_ml_arr[0], dt_ml_arr[-1]])
+
+    # tight x axis
+    plt.autoscale(enable=True, axis='x', tight=True)
+    plt.grid(True)
+
+    ax = fig.add_subplot(3, 1, 2)
+    plt.plot(dt_ml_arr, thick_avg_arr, 'bx-', label='avg')
+    plt.plot(dt_ml_arr, thick_avg_arr+thick_std_arr, 'rx-', label='avg+std')
+    plt.plot(dt_ml_arr, thick_avg_arr-thick_std_arr, 'rx-', label='avg-std')
+    # plt.legend(loc='best')
+    plt.ylabel('Thickness [m]')
+
+    axes = plt.gca()
+    axes.set_ylim([0., 3000.])
+    axes.set_xlim([dt_ml_arr[0], dt_ml_arr[-1]])
+
+    # tight x axis
+    plt.autoscale(enable=True, axis='x', tight=True)
+    plt.grid(True)
+
+    ax = fig.add_subplot(3, 1, 3)
+    plt.plot(dt_ml_arr, nrays_valid_arr, 'bx-', label='N valid rays')
+    plt.plot(dt_ml_arr, nrays_total_arr, 'rx-', label='rays total')
+    # plt.legend(loc='best')
+    plt.ylabel('Rays')
+    plt.xlabel(labelx)
+
+    axes = plt.gca()
+    axes.set_ylim([0, np.max(nrays_total_arr)+5])
+    axes.set_xlim([dt_ml_arr[0], dt_ml_arr[-1]])
+
+    # tight x axis
+    plt.autoscale(enable=True, axis='x', tight=True)
+    plt.grid(True)
 
     # rotates and right aligns the x labels, and moves the bottom of the
     # axes up to make room for them
@@ -665,6 +761,7 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list, labelx='Date',
 
     axes = plt.gca()
     axes.set_ylim([vmin, vmax])
+    axes.set_xlim([date_plt[0], date_plt[-1]])
     # tight x axis
     plt.autoscale(enable=True, axis='x', tight=True)
     plt.grid(True)

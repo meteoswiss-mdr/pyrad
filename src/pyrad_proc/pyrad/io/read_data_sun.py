@@ -171,10 +171,9 @@ def read_sun_hits(fname):
             # now read the data
             csvfile.seek(0)
             reader = csv.DictReader(
-                row for row in csvfile if not row.startswith('#'))
-            i = 0
+                row for row in csvfile if not row.startswith('#'))           
             date = list()
-            for row in reader:
+            for i, row in enumerate(reader):
                 date.append(datetime.datetime.strptime(
                     row['time'], '%Y-%m-%d %H:%M:%S.%f'))
                 ray[i] = int(row['ray'])
@@ -195,8 +194,6 @@ def read_sun_hits(fname):
                 zdr_std[i] = float(row['std(ZDR_sun_hit)'])
                 nzdr[i] = int(row['NPzdr'])
                 nvalzdr[i] = int(row['NPzdrval'])
-
-                i += 1
 
             ph = np.ma.masked_values(ph, get_fillvalue())
             ph_std = np.ma.masked_values(ph_std, get_fillvalue())
@@ -274,12 +271,11 @@ def read_sun_retrieval(fname):
             csvfile.seek(0)
             reader = csv.DictReader(
                 row for row in csvfile if not row.startswith('#'))
-
-            i = 0
+            
             first_hit_time = list()
             last_hit_time = list()
             ref_time = list()
-            for row in reader:
+            for i, row in enumerate(reader):
                 first_hit_time.append(datetime.datetime.strptime(
                     row['first_hit_time'], '%Y%m%d%H%M%S'))
                 last_hit_time.append(datetime.datetime.strptime(
@@ -313,8 +309,6 @@ def read_sun_retrieval(fname):
                 else:
                     ref_time.append(datetime.datetime.strptime(
                         row['ref_time'], '%Y%m%d%H%M%S'))
-
-                i += 1
 
             el_width_h = np.ma.masked_values(el_width_h, get_fillvalue())
             az_width_h = np.ma.masked_values(az_width_h, get_fillvalue())
@@ -400,15 +394,12 @@ def read_solar_flux(fname):
                 txtfile, delimiter=' ', skipinitialspace=True, fieldnames=[
                     'fluxdate', 'fluxtime', 'fluxjulian', 'fluxcarrington',
                     'fluxobsflux', 'fluxadjflux', 'fluxursi'])
-
-            i = 0
+                    
             flux_datetime = list()
-            for row in reader:
+            for i, row in enumerate(reader):
                 flux_datetime.append(datetime.datetime.strptime(
                     row['fluxdate']+row['fluxtime'], '%Y%m%d%H%M%S'))
                 flux_value[i] = float(row['fluxobsflux'])
-
-                i += 1
 
             txtfile.close()
 

@@ -18,6 +18,7 @@ Functions for writing pyrad output data
     write_histogram
     write_quantiles
     write_ts_polar_data
+    write_ts_ml
     write_ts_cum
     write_monitoring_ts
     write_excess_gates
@@ -196,15 +197,14 @@ def write_smn(datetime_vec, value_avg_vec, value_std_vec, fname):
         the name of the file where data has written
 
     """
-    nvalues = len(value_avg_vec)
     with open(fname, 'w', newline='') as csvfile:
         fieldnames = ['datetime', 'avg', 'std']
         writer = csv.DictWriter(csvfile, fieldnames)
         writer.writeheader()
-        for i in range(nvalues):
+        for i, value_avg in enumerate(value_avg_vec):
             writer.writerow({
                 'datetime': datetime_vec[i].strftime('%Y%m%d%H%M%S'),
-                'avg': value_avg_vec[i],
+                'avg': value_avg,
                 'std': value_std_vec[i]})
 
         csvfile.close()
@@ -232,7 +232,6 @@ def write_trt_cell_data(
         the name of the file where data has written
 
     """
-    nvalues = traj_ID.size
     with open(fname, 'w', newline='') as csvfile:
         fieldnames = [
             'traj_ID', 'yyyymmddHHMM', 'lon', 'lat', 'ell_L', 'ell_S',
@@ -242,7 +241,7 @@ def write_trt_cell_data(
             'cell_contour_lon-lat']
         writer = csv.DictWriter(csvfile, fieldnames)
         writer.writeheader()
-        for i in range(nvalues):
+        for i, traj_ID_el in enumerate(traj_ID):
             cell_contour_aux = cell_contour[i]
             npoints_contour = len(cell_contour_aux['lon'])
             cell_contour_arr = np.empty(2*npoints_contour, dtype=float)
@@ -253,7 +252,7 @@ def write_trt_cell_data(
                 cell_contour_str += ' '+str(cell_contour_arr[j])
 
             writer.writerow({
-                'traj_ID': traj_ID[i],
+                'traj_ID': traj_ID_el,
                 'yyyymmddHHMM': yyyymmddHHMM[i].strftime('%Y%m%d%H%M'),
                 'lon': lon[i],
                 'lat': lat[i],
@@ -318,10 +317,9 @@ def write_rhi_profile(hvec, data, nvalid_vec, labels, fname, datatype=None,
         the name of the file where data has been written
 
     """
-    nvalues = len(hvec)
     data_aux = list()
-    for i in range(len(labels)):
-        data_aux.append(data[i].filled(fill_value=get_fillvalue()))
+    for data_points in data:
+        data_aux.append(data_points.filled(fill_value=get_fillvalue()))
     with open(fname, 'w', newline='') as csvfile:
         csvfile.write('# Height Profile\n')
         csvfile.write('# ==============\n')
@@ -352,8 +350,8 @@ def write_rhi_profile(hvec, data, nvalid_vec, labels, fname, datatype=None,
         fieldnames.append('N valid')
         writer = csv.DictWriter(csvfile, fieldnames)
         writer.writeheader()
-        for j in range(nvalues):
-            data_dict = {fieldnames[0]: hvec[j]}
+        for j, height in enumerate(hvec):
+            data_dict = {fieldnames[0]: height}
             for i in range(len(labels)):
                 data_dict.update({fieldnames[i+1]: data_aux[i][j]})
             data_dict.update({fieldnames[-1]: nvalid_vec[j]})
@@ -447,7 +445,6 @@ def write_cdf(quantiles, values, ntot, nnan, nclut, nblocked, nprec_filter,
     """
     hydrotype_list = ['NC', 'DS', 'CR', 'LR', 'GR', 'RN', 'VI', 'WS', 'MH',
                       'IH/HDG']
-    nvalues = len(values)
     with open(fname, 'w', newline='') as txtfile:
         txtfile.write('Statistical analysis\n')
         txtfile.write('====================\n\n')
@@ -547,24 +544,24 @@ def write_cdf(quantiles, values, ntot, nnan, nclut, nblocked, nprec_filter,
                       ' ('+str(int(ncdf*100./ntot))+'%)\n\n')
         txtfile.write('Quantiles\n')
         txtfile.write('=========\n')
-        for i in range(nvalues):
+        for i, value in enumerate(values):
             txtfile.write('  Quantile_'+str(int(quantiles[i]))+' = ' +
-                          '{:5.1f}'.format(values[i])+'\n')
+                          '{:5.1f}'.format(value)+'\n')
 
         txtfile.close()
 
     return fname
 
 
-def write_histogram(bins, values, fname, datatype='undefined',
+def write_histogram(bin_edges, values, fname, datatype='undefined',
                     step=0):
     """
     writes a histogram
 
     Parameters
     ----------
-    bins : float array
-        array containing the histogram bins
+    bin_edges : float array
+        array containing the histogram bin edges
     values : int array
         array containing the number of points in each bin
     fname : str
@@ -597,8 +594,8 @@ def write_histogram(bins, values, fname, datatype='undefined',
         writer.writeheader()
         for i, val in enumerate(values):
             writer.writerow({
-                'bin_edge_left': bins[i],
-                'bin_edge_right': bins[i+1],
+                'bin_edge_left': bin_edges[i],
+                'bin_edge_right': bin_edges[i+1],
                 'value': val})
         csvfile.close()
 
@@ -607,14 +604,14 @@ def write_histogram(bins, values, fname, datatype='undefined',
 
 def write_quantiles(quantiles, values, fname, datatype='undefined'):
     """
-    writes a histogram
+    writes quantiles
 
     Parameters
     ----------
-    bins : float array
-        array containing the histogram bins
-    values : int array
-        array containing the number of points in each bin
+    quantiles : float array
+        array containing the quantiles to write
+    values : float array
+        array containing the value of each quantile
     fname : str
         file name
     datatype :str
@@ -711,6 +708,78 @@ def write_ts_polar_data(dataset, fname):
     return fname
 
 
+def write_ts_ml(dt_ml, ml_top_avg, ml_top_std, thick_avg, thick_std,
+                nrays_valid, nrays_total, fname):
+    """
+    writes time series of melting layer data
+
+    Parameters
+    ----------
+    dt_ml : date time array
+        array of time steps
+    ml_top_avg, ml_top_std: float arrays
+        the average and the standard deviation of the melting layer top height
+    thick_avg, thick_std: float arrays
+        the average and the standard deviation of the metling layer thickness
+    nrays_valid, nrays_total: int arrays
+        the number of rays where melting layer has been identified and the
+        total number of arrays in the scan
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    filelist = glob.glob(fname)
+    if not filelist:
+        with open(fname, 'w', newline='') as csvfile:
+            csvfile.write(
+                '# Weather radar detected melting layer data file\n' +
+                '# Comment lines are preceded by "#"\n' +
+                '# Description: \n' +
+                '# Time series of melting layer data detected by weather radar.\n' +
+                '# Fill Value: '+str(get_fillvalue())+'\n' +
+                '# Start: '+dt_ml.strftime('%Y-%m-%d %H:%M:%S UTC')+'\n' +
+                '#\n')
+
+            fieldnames = [
+                'date-time [UTC]', 'mean ml top height [m MSL]',
+                'std ml top height [m MSL]', 'mean ml thickness [m]',
+                'std ml thickness [m]', 'N valid rays', 'rays total']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writeheader()
+            writer.writerow(
+                {'date-time [UTC]': dt_ml.strftime('%Y-%m-%d %H:%M:%S'),
+                 'mean ml top height [m MSL]': ml_top_avg,
+                 'std ml top height [m MSL]': ml_top_std,
+                 'mean ml thickness [m]': thick_avg,
+                 'std ml thickness [m]': thick_std,
+                 'N valid rays': nrays_valid,
+                 'rays total': nrays_total})
+            csvfile.close()
+    else:
+        with open(fname, 'a', newline='') as csvfile:
+            fieldnames = [
+                'date-time [UTC]', 'mean ml top height [m MSL]',
+                'std ml top height [m MSL]', 'mean ml thickness [m]',
+                'std ml thickness [m]', 'N valid rays', 'rays total']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writerow(
+                {'date-time [UTC]': dt_ml.strftime('%Y-%m-%d %H:%M:%S'),
+                 'mean ml top height [m MSL]': ml_top_avg,
+                 'std ml top height [m MSL]': ml_top_std,
+                 'mean ml thickness [m]': thick_avg,
+                 'std ml thickness [m]': thick_std,
+                 'N valid rays': nrays_valid,
+                 'rays total': nrays_total})
+            csvfile.close()
+
+    return fname
+
+
 def write_ts_cum(dataset, fname):
     """
     writes time series accumulation of data
@@ -729,7 +798,6 @@ def write_ts_cum(dataset, fname):
         the name of the file where data has written
 
     """
-    nvalues = len(dataset['time'])
     radar_value = dataset['radar_value'].filled(fill_value=get_fillvalue())
     sensor_value = dataset['sensor_value'].filled(fill_value=get_fillvalue())
     np_radar = dataset['np_radar']
@@ -762,11 +830,11 @@ def write_ts_cum(dataset, fname):
                       'sensor_value']
         writer = csv.DictWriter(csvfile, fieldnames)
         writer.writeheader()
-        for i in range(nvalues):
+        for i, rad_val in enumerate(radar_value):
             writer.writerow({
                 'date': dataset['time'][i],
                 'np_radar': np_radar[i],
-                'radar_value': radar_value[i],
+                'radar_value': rad_val,
                 'np_sensor': np_sensor[i],
                 'sensor_value': sensor_value[i]})
 
@@ -851,10 +919,10 @@ def write_monitoring_ts(start_time, np_t, values, quantiles, datatype, fname,
                           'high_quantile']
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
-            for i in range(nvalues):
+            for i, np_t_el in enumerate(np_t_aux):
                 writer.writerow({
                     'date': start_time_aux[i].strftime('%Y%m%d%H%M%S'),
-                    'NP': np_t_aux[i],
+                    'NP': np_t_el,
                     'central_quantile': values_aux[i, 1],
                     'low_quantile': values_aux[i, 0],
                     'high_quantile': values_aux[i, 2]})
@@ -876,10 +944,10 @@ def write_monitoring_ts(start_time, np_t, values, quantiles, datatype, fname,
             fieldnames = ['date', 'NP', 'central_quantile', 'low_quantile',
                           'high_quantile']
             writer = csv.DictWriter(csvfile, fieldnames)
-            for i in range(nvalues):
+            for i, np_t_el in enumerate(np_t_aux):
                 writer.writerow({
                     'date': start_time_aux[i].strftime('%Y%m%d%H%M%S'),
-                    'NP': np_t_aux[i],
+                    'NP': np_t_el,
                     'central_quantile': values_aux[i, 1],
                     'low_quantile': values_aux[i, 0],
                     'high_quantile': values_aux[i, 2]})
@@ -925,9 +993,9 @@ def write_excess_gates(excess_dict, fname):
             'occurrence', 'freq_occu']
         writer = csv.DictWriter(csvfile, fieldnames)
         writer.writeheader()
-        for i in range(ngates):
+        for i, ray_ind in enumerate(excess_dict['ray_ind']):
             writer.writerow({
-                'ray_ind': excess_dict['ray_ind'][i],
+                'ray_ind': ray_ind,
                 'rng_ind': excess_dict['rng_ind'][i],
                 'ele': excess_dict['ele'][i],
                 'azi': excess_dict['azi'][i],
@@ -1039,9 +1107,9 @@ def write_intercomp_scores_ts(start_time, stats, field_name, fname,
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
 
-            for i in range(nvalues):
+            for i, dt in enumerate(start_time_aux):
                 writer.writerow({
-                    'date': start_time_aux[i].strftime('%Y%m%d%H%M%S'),
+                    'date': dt.strftime('%Y%m%d%H%M%S'),
                     'NP': np_t[i],
                     'mean_bias': meanbias[i],
                     'median_bias': medianbias[i],
@@ -1075,9 +1143,9 @@ def write_intercomp_scores_ts(start_time, stats, field_name, fname,
                           'intercep_of_linear_regression',
                           'intercep_of_linear_regression_of_slope_1']
             writer = csv.DictWriter(csvfile, fieldnames)
-            for i in range(nvalues):
+           for i, dt in enumerate(start_time_aux):
                 writer.writerow({
-                    'date': start_time_aux[i].strftime('%Y%m%d%H%M%S'),
+                    'date': dt.strftime('%Y%m%d%H%M%S'),
                     'NP': np_t[i],
                     'mean_bias': meanbias[i],
                     'median_bias': medianbias[i],
@@ -1113,7 +1181,6 @@ def write_colocated_gates(coloc_gates, fname):
         the name of the file where data has written
 
     """
-    ngates = len(coloc_gates['rad1_ele'])
     with open(fname, 'w', newline='') as csvfile:
         csvfile.write('# Colocated radar gates data file\n')
         csvfile.write('# Comment lines are preceded by "#"\n')
@@ -1124,9 +1191,9 @@ def write_colocated_gates(coloc_gates, fname):
             'rad2_ray_ind', 'rad2_rng_ind', 'rad2_ele', 'rad2_azi', 'rad2_rng']
         writer = csv.DictWriter(csvfile, fieldnames)
         writer.writeheader()
-        for i in range(ngates):
+        for i, rad1_ray_ind in enumerate(coloc_gates['rad1_ray_ind']):
             writer.writerow({
-                'rad1_ray_ind': coloc_gates['rad1_ray_ind'][i],
+                'rad1_ray_ind': rad1_ray_ind,
                 'rad1_rng_ind': coloc_gates['rad1_rng_ind'][i],
                 'rad1_ele': coloc_gates['rad1_ele'][i],
                 'rad1_azi': coloc_gates['rad1_azi'][i],
@@ -1160,7 +1227,6 @@ def write_colocated_data(coloc_data, fname):
 
     """
     filelist = glob.glob(fname)
-    ngates = len(coloc_data['rad1_ele'])
     if not filelist:
         with open(fname, 'w', newline='') as csvfile:
             csvfile.write('# Colocated radar gates data file\n')
@@ -1174,10 +1240,9 @@ def write_colocated_data(coloc_data, fname):
                 'rad2_rng', 'rad2_val']
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
-            for i in range(ngates):
+            for i, rad1_time in enumerate(coloc_data['rad1_time']):
                 writer.writerow({
-                    'rad1_time': (
-                        coloc_data['rad1_time'][i].strftime('%Y%m%d%H%M%S')),
+                    'rad1_time': rad1_time.strftime('%Y%m%d%H%M%S'),
                     'rad1_ray_ind': coloc_data['rad1_ray_ind'][i],
                     'rad1_rng_ind': coloc_data['rad1_rng_ind'][i],
                     'rad1_ele': coloc_data['rad1_ele'][i],
@@ -1202,10 +1267,9 @@ def write_colocated_data(coloc_data, fname):
                 'rad2_ray_ind', 'rad2_rng_ind', 'rad2_ele', 'rad2_azi',
                 'rad2_rng', 'rad2_val']
             writer = csv.DictWriter(csvfile, fieldnames)
-            for i in range(ngates):
+            for i, rad1_time in enumerate(coloc_data['rad1_time']):
                 writer.writerow({
-                    'rad1_time': (
-                        coloc_data['rad1_time'][i].strftime('%Y%m%d%H%M%S')),
+                    'rad1_time': rad1_time.strftime('%Y%m%d%H%M%S'),
                     'rad1_ray_ind': coloc_data['rad1_ray_ind'][i],
                     'rad1_rng_ind': coloc_data['rad1_rng_ind'][i],
                     'rad1_ele': coloc_data['rad1_ele'][i],
@@ -1243,7 +1307,6 @@ def write_colocated_data_time_avg(coloc_data, fname):
 
     """
     filelist = glob.glob(fname)
-    ngates = len(coloc_data['rad1_ele'])
     if not filelist:
         with open(fname, 'w', newline='') as csvfile:
             csvfile.write('# Colocated radar gates data file\n')
@@ -1258,10 +1321,9 @@ def write_colocated_data_time_avg(coloc_data, fname):
                 'rad2_PhiDPavg', 'rad2_Flagavg']
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
-            for i in range(ngates):
+            for i, rad1_time in enumerate(coloc_data['rad1_time']):
                 writer.writerow({
-                    'rad1_time': (
-                        coloc_data['rad1_time'][i].strftime('%Y%m%d%H%M%S')),
+                    'rad1_time': rad1_time.strftime('%Y%m%d%H%M%S'),
                     'rad1_ray_ind': coloc_data['rad1_ray_ind'][i],
                     'rad1_rng_ind': coloc_data['rad1_rng_ind'][i],
                     'rad1_ele': coloc_data['rad1_ele'][i],
@@ -1291,10 +1353,9 @@ def write_colocated_data_time_avg(coloc_data, fname):
                 'rad2_ele', 'rad2_azi', 'rad2_rng', 'rad2_dBZavg',
                 'rad2_PhiDPavg', 'rad2_Flagavg']
             writer = csv.DictWriter(csvfile, fieldnames)
-            for i in range(ngates):
+            for i, rad1_time in enumerate(coloc_data['rad1_time']):
                 writer.writerow({
-                    'rad1_time': (
-                        coloc_data['rad1_time'][i].strftime('%Y%m%d%H%M%S')),
+                    'rad1_time': rad1_time.strftime('%Y%m%d%H%M%S'),
                     'rad1_ray_ind': coloc_data['rad1_ray_ind'][i],
                     'rad1_rng_ind': coloc_data['rad1_rng_ind'][i],
                     'rad1_ele': coloc_data['rad1_ele'][i],
@@ -1347,7 +1408,6 @@ def write_sun_hits(sun_hits, fname):
         fill_value=get_fillvalue())
 
     filelist = glob.glob(fname)
-    nhits = len(sun_hits['time'])
     if not filelist:
         with open(fname, 'w', newline='') as csvfile:
             csvfile.write('# Weather radar sun hits data file\n')
@@ -1363,10 +1423,9 @@ def write_sun_hits(sun_hits, fname):
                 'ZDR_sun_hit', 'std(ZDR_sun_hit)', 'NPzdr', 'NPzdrval']
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
-            for i in range(nhits):
+            for i, sh_time in enumerate(sun_hits['time']):
                 writer.writerow({
-                    'time': sun_hits['time'][i].strftime(
-                        '%Y-%m-%d %H:%M:%S.%f'),
+                    'time': sh_time.strftime('%Y-%m-%d %H:%M:%S.%f'),
                     'ray': sun_hits['ray'][i],
                     'NPrng': sun_hits['NPrng'][i],
                     'rad_el': sun_hits['rad_el'][i],
@@ -1395,10 +1454,9 @@ def write_sun_hits(sun_hits, fname):
                 'dBmv_sun_hit', 'std(dBmv_sun_hit)', 'NPv', 'NPvval',
                 'ZDR_sun_hit', 'std(ZDR_sun_hit)', 'NPzdr', 'NPzdrval']
             writer = csv.DictWriter(csvfile, fieldnames)
-            for i in range(nhits):
+            for i, sh_time in enumerate(sun_hits['time']):
                 writer.writerow({
-                    'time': sun_hits['time'][i].strftime(
-                        '%Y-%m-%d %H:%M:%S.%f'),
+                    'time': sh_time.strftime('%Y-%m-%d %H:%M:%S.%f'),
                     'ray': sun_hits['ray'][i],
                     'NPrng': sun_hits['NPrng'][i],
                     'rad_el': sun_hits['rad_el'][i],

@@ -154,9 +154,8 @@ def read_trt_data(fname):
                     'Dvel_y'],
                 restkey='cell_contour_lon-lat',
                 delimiter=';')
-            i = 0
             cell_contour = []
-            for row in reader:
+            for i, row in enumerate(reader):
                 traj_ID[i] = int(row['traj_ID'])
                 yyyymmddHHMM[i] = datetime.datetime.strptime(
                     row['yyyymmddHHMM'].strip(), '%Y%m%d%H%M')
@@ -197,8 +196,6 @@ def read_trt_data(fname):
                     'lat': cell_contour_list[1::2]
                 }
                 cell_contour.append(cell_contour_dict)
-
-                i += 1
 
             csvfile.close()
 
@@ -470,9 +467,9 @@ def read_lightning(fname, filter_data=True):
                 csvfile, fieldnames=['flashnr', 'time', 'time_in_flash',
                                      'lat', 'lon', 'alt', 'dBm'],
                 delimiter=' ')
-            i = 0
+
             time_data = list()
-            for row in reader:
+            for i, row in enumerate(reader):
                 flashnr[i] = int(row['flashnr'])
                 time_data.append(fdatetime+datetime.timedelta(
                     seconds=float(row['time'])))
@@ -481,8 +478,6 @@ def read_lightning(fname, filter_data=True):
                 lon[i] = float(row['lon'])
                 alt[i] = float(row['alt'])
                 dBm[i] = float(row['dBm'])
-
-                i += 1
 
             time_data = np.array(time_data)
 
@@ -557,8 +552,8 @@ def read_lightning_traj(fname):
                 fieldnames=['Date', 'UTC', 'flashnr', 'dBm', 'at_flash',
                             'mean', 'min', 'max', 'nvalid'],
                 delimiter=',')
-            i = 0
-            for row in reader:
+
+            for i, row in enumerate(reader):
                 date_flash_aux = datetime.datetime.strptime(
                     row['Date'], '%d-%b-%Y')
                 time_flash_aux = float(row['UTC'])
@@ -572,8 +567,6 @@ def read_lightning_traj(fname):
                 val_min[i] = float(row['min'])
                 val_max[i] = float(row['max'])
                 nval[i] = int(float(row['nvalid']))
-
-                i += 1
 
             csvfile.close()
 
@@ -676,9 +669,8 @@ def read_smn(fname):
             # now read the data
             csvfile.seek(0)
             reader = csv.DictReader(csvfile)
-            i = 0
             date = list()
-            for row in reader:
+            for i, row in enumerate(reader):
                 smn_id[i] = float(row['StationID'])
                 date.append(datetime.datetime.strptime(
                     row['DateTime'], '%Y%m%d%H%M%S'))
@@ -688,7 +680,6 @@ def read_smn(fname):
                 precip[i] = float(row['Precipitation'])
                 wspeed[i] = float(row['Windspeed'])
                 wdir[i] = float(row['Winddirection'])
-                i += 1
 
             pressure = np.ma.masked_values(pressure, fill_value)
             temp = np.ma.masked_values(temp, fill_value)
@@ -751,14 +742,12 @@ def read_smn2(fname):
 
             reader = csv.DictReader(
                 csvfile, fieldnames=['StationID', 'DateTime', 'Value'])
-            i = 0
             date = list()
-            for row in reader:
+            for i, row in enumerate(reader):
                 smn_id[i] = float(row['StationID'])
                 date.append(datetime.datetime.strptime(
                     row['DateTime'], '%Y%m%d%H%M%S'))
                 value[i] = float(row['Value'])
-                i += 1
 
             csvfile.close()
 
@@ -823,9 +812,8 @@ def read_disdro_scattering(fname):
                                      'zv', 'zdr', 'ldr', 'ah', 'av', 'adiff',
                                      'kdp', 'deltaco', 'rhohv'],
                 dialect='excel-tab')
-            i = 0
             date = list()
-            for row in reader:
+            for i, row in enumerate(reader):
                 date.append(datetime.datetime.strptime(
                     row['date'], '%Y-%m-%d %H:%M:%S'))
                 preciptype[i] = float(row['preciptype'])
@@ -841,7 +829,6 @@ def read_disdro_scattering(fname):
                 kdp[i] = float(row['kdp'])
                 deltaco[i] = float(row['deltaco'])
                 rhohv[i] = float(row['rhohv'])
-                i += 1
 
             csvfile.close()
 

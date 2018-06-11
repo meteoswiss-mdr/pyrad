@@ -62,8 +62,8 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -202,11 +202,11 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
             phidpsim_field=phidpsim_field, temp_ref=temp_ref)
 
         # prepare for exit
-        new_dataset = deepcopy(radar)
-        new_dataset.fields = dict()
+        new_dataset = {'radar_out': deepcopy(radar)}
+        new_dataset['radar_out'].fields = dict()
 
-        new_dataset.add_field(kdpsim_field, kdpsim)
-        new_dataset.add_field(phidpsim_field, phidpsim)
+        new_dataset['radar_out'].add_field(kdpsim_field, kdpsim)
+        new_dataset['radar_out'].add_field(phidpsim_field, phidpsim)
 
         return new_dataset, ind_rad
 
@@ -248,8 +248,8 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -398,10 +398,10 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
             iso0_field=iso0, rhohv_field=rhohv, temp_ref=temp_ref)
 
         # prepare for exit
-        new_dataset = deepcopy(radar)
-        new_dataset.fields = dict()
+        new_dataset = {'radar_out': deepcopy(radar)}
+        new_dataset['radar_out'].fields = dict()
 
-        new_dataset.add_field('reflectivity_bias', refl_bias)
+        new_dataset['radar_out'].add_field('reflectivity_bias', refl_bias)
 
         return new_dataset, ind_rad
 
@@ -435,8 +435,8 @@ def process_estimate_phidp0(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -480,11 +480,12 @@ def process_estimate_phidp0(procstatus, dscfg, radar_list=None):
         refl_field=refl_field)
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
 
-    new_dataset.add_field('system_differential_phase', phidp0)
-    new_dataset.add_field('first_gate_differential_phase', first_gates)
+    new_dataset['radar_out'].add_field('system_differential_phase', phidp0)
+    new_dataset['radar_out'].add_field(
+        'first_gate_differential_phase', first_gates)
 
     return new_dataset, ind_rad
 
@@ -524,8 +525,8 @@ def process_rhohv_rain(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -623,10 +624,10 @@ def process_rhohv_rain(procstatus, dscfg, radar_list=None):
         refl_field=refl_field, temp_ref=temp_ref)
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-
-    new_dataset.add_field('cross_correlation_ratio_in_rain', rhohv_rain)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field(
+        'cross_correlation_ratio_in_rain', rhohv_rain)
 
     return new_dataset, ind_rad
 
@@ -679,8 +680,8 @@ def process_zdr_precip(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -808,10 +809,10 @@ def process_zdr_precip(procstatus, dscfg, radar_list=None):
         temp_ref=temp_ref)
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
 
-    new_dataset.add_field(
+    new_dataset['radar_out'].add_field(
         'differential_reflectivity_in_precipitation', zdr_precip)
 
     return new_dataset, ind_rad
@@ -874,8 +875,8 @@ def process_zdr_snow(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
     """
@@ -990,10 +991,10 @@ def process_zdr_snow(procstatus, dscfg, radar_list=None):
         kdp_field=kdp_field, refl_field=refl_field)
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
 
-    new_dataset.add_field(
+    new_dataset['radar_out'].add_field(
         'differential_reflectivity_in_snow', zdr_snow)
 
     return new_dataset, ind_rad

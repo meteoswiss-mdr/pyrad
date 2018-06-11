@@ -81,6 +81,9 @@ def main():
         flashnr, time_data, time_in_flash, lat, lon, alt, dBm = (
             read_lightning(args.flashpath+dt.strftime("%y%m%d")+'.txt'))
 
+        if flashnr is None:
+            continue
+
         # Get first sources data
         flashnr_first, unique_ind = np.unique(flashnr, return_index=True)
         lat_first = lat[unique_ind]

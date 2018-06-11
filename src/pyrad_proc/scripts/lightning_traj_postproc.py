@@ -36,14 +36,12 @@ print(__doc__)
 def main():
     """
     """
-    basepath = '/data/pyrad_products/rad4alp_hydro_PHA/'
-    # basepath = '/store/msrad/radar/pyrad_products/rad4alp_hydro_PHA/'
+    # basepath = '/data/pyrad_products/rad4alp_hydro_PHA/'
+    basepath = '/store/msrad/radar/pyrad_products/rad4alp_hydro_PHA/'
     day_vec = [
-        datetime.datetime(2017, 6, 29),
-        datetime.datetime(2017, 6, 30),
-        datetime.datetime(2017, 7, 10),
-        datetime.datetime(2017, 7, 14),
-        datetime.datetime(2017, 7, 18)]
+        datetime.datetime(2017, 7, 19),
+        datetime.datetime(2017, 7, 30),
+        datetime.datetime(2017, 8, 1)]
 
     datatype_vec = [
         'hydro',
@@ -109,7 +107,7 @@ def main():
                 titl=("Trajectory Histogram %s" %
                       time_flash[0].strftime("%Y-%m-%d")))
                       
-            print("----- plot to '%s'" % fname_first_source)
+            print("----- plot to '%s'" % fname_all_sources)
             
             
             # Get and plot first sources histogram
