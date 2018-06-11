@@ -903,7 +903,8 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
             % dscfg['dsname'])
 
     if dscfg['ML_METHOD'] == 'GIANGRANDE':
-
+        
+        temp_ref = 'temperature'
         temp_field = None
         iso0_field = None
         for datatypedescr in dscfg['datatype']:
@@ -945,7 +946,6 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
                  'Missing height over iso0 field')
             return None, None
 
-        temp_ref = 'temperature'
         if iso0_field is not None:
             temp_ref = 'height_over_iso0'
 
@@ -963,7 +963,7 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
 
         if not dscfg['initialized']:
             # initialize dataset
-            ml_vol = pyart.retrieve.melting_layer_giangrande(
+            ml_globdata = pyart.retrieve.melting_layer_giangrande(
                 radar,
                 rhomin=rhomin, rhomax=rhomax, nml_points_min=nml_points_min, percentile_bottom=percentile_bottom,
                 refl_field=refl_field, zdr_field=zdr_field,
@@ -972,7 +972,7 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
             dscfg['initialized'] = True
         else:
             # use previous detection
-            ml_vol = pyart.retrieve.melting_layer_giangrande(
+            ml_globdata = pyart.retrieve.melting_layer_giangrande(
                 radar,
                 rhomin=rhomin, rhomax=rhomax, nml_points_min=nml_points_min, percentile_bottom=percentile_bottom,
                 refl_field=refl_field, zdr_field=zdr_field,
@@ -986,25 +986,6 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
         new_dataset = deepcopy(radar)
         new_dataset.fields = dict()
         new_dataset.add_field('melting_layer', ml_vol)
-
-        # User defined variables here. See line 516
-
-        # initialize dataset
-        if dscfg['initialized'] == 0:
-            ml_vol, ml_stack = pyart.retrieve.melting_layer_giangrande(
-                radar, refl_field=refl_field, zdr_field=zdr_field,
-                rhv_field=rhv_field, temp_field=temp_field,
-                iso0_field=iso0_field, ml_field=None, temp_ref=temp_ref,
-                ml_stack=None)
-            dscfg['initialized'] = 1
-        else:
-            ml_vol, ml_stack = pyart.retrieve.melting_layer_giangrande(
-                radar, refl_field=refl_field, zdr_field=zdr_field,
-                rhv_field=rhv_field, temp_field=temp_field,
-                iso0_field=iso0_field, ml_field=None, temp_ref=temp_ref,
-                ml_stack=dscfg['global_data'])
-
-        dscfg['global_data'] = ml_stack
 
     elif dscfg['ML_METHOD'] == 'WOLFENSBERGER':
         for datatypedescr in dscfg['datatype']:
