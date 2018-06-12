@@ -1350,8 +1350,8 @@ def _add_dataset(new_dataset, radar_list, ind_rad, make_global=True):
 
     Parameters
     ----------
-    new_dataset : radar object
-        the radar object containing the new fields
+    new_dataset : dict
+        dictionary with key radar_out containing the new fields
     radar : radar object
         the radar object containing the global data
     make_global : boolean
@@ -1371,10 +1371,13 @@ def _add_dataset(new_dataset, radar_list, ind_rad, make_global=True):
     if new_dataset is None:
         return None
 
-    for field in new_dataset.fields:
+    if 'radar_out' not in new_dataset:
+        return None
+
+    for field in new_dataset['radar_out'].fields:
         print('Adding field: '+field)
         radar_list[ind_rad].add_field(
-            field, new_dataset.fields[field],
+            field, new_dataset['radar_out'].fields[field],
             replace_existing=True)
     return 0
 

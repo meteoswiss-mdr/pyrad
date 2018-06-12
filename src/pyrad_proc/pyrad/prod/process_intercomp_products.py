@@ -304,7 +304,7 @@ def generate_colocated_gates_products(dataset, prdcfg):
             return None
 
         prdcfg['timeinfo'] = None
-        generate_vol_products(dataset[prdcfg['radar']]['radar'], prdcfg)
+        generate_vol_products(dataset[prdcfg['radar']], prdcfg)
 
 
 def generate_time_avg_products(dataset, prdcfg):
@@ -327,4 +327,4 @@ def generate_time_avg_products(dataset, prdcfg):
     """
     prdcfg['timeinfo'] = dataset['timeinfo']
 
-    return generate_vol_products(dataset['radar_obj'], prdcfg)
+    return generate_vol_products(dataset, prdcfg)

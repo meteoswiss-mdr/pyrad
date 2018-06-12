@@ -23,6 +23,7 @@ Functions for reading auxiliary data
     read_colocated_data_time_avg
     read_timeseries
     read_ts_cum
+    read_ml_ts
     read_monitoring_ts
     read_monitoring_ts_old
     read_intercomp_scores_ts
@@ -418,8 +419,8 @@ def read_rad4alp_vis(fname, datatype):
     header_size = 64
     nel = 20
     naz = 360
-    nr = [492, 420, 492, 324, 366, 324, 292, 324, 280, 242,
-          222, 200, 174, 150, 124, 100, 82, 68, 60, 54]
+    nrngs = [492, 420, 492, 324, 366, 324, 292, 324, 280, 242,
+             222, 200, 174, 150, 124, 100, 82, 68, 60, 54]
 
     try:
         with open(fname, 'rb') as visfile:
@@ -430,11 +431,11 @@ def read_rad4alp_vis(fname, datatype):
             bindata = np.fromfile(visfile, dtype='uint8', count=-1)
 
             sweep_start_index = 0
-            for i in range(nel):
-                sweep_end_index = sweep_start_index+naz*nr[i]-1
+            for nrng in nrngs:
+                sweep_end_index = sweep_start_index+naz*nrng-1
                 field_data = np.reshape(
                     bindata[sweep_start_index:sweep_end_index+1],
-                    (naz, nr[i])).astype(float)
+                    (naz, nrng)).astype(float)
                 sweep_start_index = sweep_end_index+1
 
                 field_name = get_fieldname_pyart(datatype)
@@ -566,8 +567,7 @@ def read_excess_gates(fname):
             csvfile.seek(0)
             reader = csv.DictReader(
                 row for row in csvfile if not row.startswith('#'))
-            i = 0
-            for row in reader:
+            for i, row in enumerate(reader):
                 ray_ind[i] = int(row['ray_ind'])
                 rng_ind[i] = int(row['rng_ind'])
                 ele[i] = float(row['ele'])
@@ -576,7 +576,6 @@ def read_excess_gates(fname):
                 nsamples[i] = int(row['nsamples'])
                 occurrence[i] = int(row['occurrence'])
                 freq_occu[i] = float(row['freq_occu'])
-                i += 1
 
             csvfile.close()
 
@@ -625,8 +624,7 @@ def read_colocated_gates(fname):
             csvfile.seek(0)
             reader = csv.DictReader(
                 row for row in csvfile if not row.startswith('#'))
-            i = 0
-            for row in reader:
+            for i, row in enumerate(reader):
                 rad1_ray_ind[i] = int(row['rad1_ray_ind'])
                 rad1_rng_ind[i] = int(row['rad1_rng_ind'])
                 rad1_ele[i] = float(row['rad1_ele'])
@@ -637,7 +635,6 @@ def read_colocated_gates(fname):
                 rad2_ele[i] = float(row['rad2_ele'])
                 rad2_azi[i] = float(row['rad2_azi'])
                 rad2_rng[i] = float(row['rad2_rng'])
-                i += 1
 
             csvfile.close()
 
@@ -691,8 +688,7 @@ def read_colocated_data(fname):
             csvfile.seek(0)
             reader = csv.DictReader(
                 row for row in csvfile if not row.startswith('#'))
-            i = 0
-            for row in reader:
+            for i, row in enumerate(reader):
                 rad1_time[i] = datetime.datetime.strptime(
                     row['rad1_time'], '%Y%m%d%H%M%S')
                 rad1_ray_ind[i] = int(row['rad1_ray_ind'])
@@ -709,7 +705,6 @@ def read_colocated_data(fname):
                 rad2_azi[i] = float(row['rad2_azi'])
                 rad2_rng[i] = float(row['rad2_rng'])
                 rad2_val[i] = float(row['rad2_val'])
-                i += 1
 
             csvfile.close()
 
@@ -769,8 +764,7 @@ def read_colocated_data_time_avg(fname):
             csvfile.seek(0)
             reader = csv.DictReader(
                 row for row in csvfile if not row.startswith('#'))
-            i = 0
-            for row in reader:
+            for i, row in enumerate(reader):
                 rad1_time[i] = datetime.datetime.strptime(
                     row['rad1_time'], '%Y%m%d%H%M%S')
                 rad1_ray_ind[i] = int(row['rad1_ray_ind'])
@@ -791,7 +785,6 @@ def read_colocated_data_time_avg(fname):
                 rad2_dBZavg[i] = float(row['rad2_dBZavg'])
                 rad2_PhiDPavg[i] = float(row['rad2_PhiDPavg'])
                 rad2_Flagavg[i] = float(row['rad2_Flagavg'])
-                i += 1
 
             csvfile.close()
 
@@ -834,13 +827,11 @@ def read_timeseries(fname):
             csvfile.seek(0)
             reader = csv.DictReader(
                 row for row in csvfile if not row.startswith('#'))
-            i = 0
             date = list()
-            for row in reader:
+            for i, row in enumerate(reader):
                 date.append(datetime.datetime.strptime(
                     row['date'], '%Y-%m-%d %H:%M:%S.%f'))
                 value[i] = float(row['value'])
-                i += 1
 
             value = np.ma.masked_values(value, get_fillvalue())
 
@@ -883,16 +874,14 @@ def read_ts_cum(fname):
             csvfile.seek(0)
             reader = csv.DictReader(
                 row for row in csvfile if not row.startswith('#'))
-            i = 0
             date = list()
-            for row in reader:
+            for i, row in enumerate(reader):
                 date.append(datetime.datetime.strptime(
                     row['date'], '%Y-%m-%d %H:%M:%S'))
                 np_radar[i] = int(row['np_radar'])
                 radar_value[i] = float(row['radar_value'])
                 np_sensor[i] = int(row['np_sensor'])
                 sensor_value[i] = float(row['sensor_value'])
-                i += 1
 
             radar_value = np.ma.masked_values(radar_value, get_fillvalue())
             sensor_value = np.ma.masked_values(sensor_value, get_fillvalue())
@@ -904,6 +893,65 @@ def read_ts_cum(fname):
         warn(str(ee))
         warn('Unable to read file '+fname)
         return None, None, None, None, None
+
+
+def read_ml_ts(fname):
+    """
+    Reads a melting layer time series contained in a csv file
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    dt_ml, ml_top_avg, ml_top_std, thick_avg, thick_std, nrays_valid,
+    nrays_total : tupple
+        The read data. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            nrows = sum(1 for row in reader)
+
+            dt_ml = np.empty(nrows, dtype=datetime.datetime)
+            ml_top_avg = np.ma.empty(nrows, dtype=float)
+            ml_top_std = np.ma.empty(nrows, dtype=float)
+            thick_avg = np.ma.empty(nrows, dtype=float)
+            thick_std = np.ma.empty(nrows, dtype=float)
+            nrays_valid = np.zeros(nrows, dtype=int)
+            nrays_total = np.zeros(nrows, dtype=int)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+
+            for i, row in enumerate(reader):
+                dt_ml[i] = datetime.datetime.strptime(
+                    row['date-time [UTC]'], '%Y-%m-%d %H:%M:%S')
+                ml_top_avg[i] = float(row['mean ml top height [m MSL]'])
+                ml_top_std[i] = float(row['std ml top height [m MSL]'])
+                thick_avg[i] = float(row['mean ml thickness [m]'])
+                thick_std[i] = float(row['std ml thickness [m]'])
+                nrays_valid[i] = int(row['N valid rays'])
+                nrays_total[i] = int(row['rays total'])
+
+            ml_top_avg = np.ma.masked_values(ml_top_avg, get_fillvalue())
+            ml_top_std = np.ma.masked_values(ml_top_std, get_fillvalue())
+            thick_avg = np.ma.masked_values(thick_avg, get_fillvalue())
+            thick_std = np.ma.masked_values(thick_std, get_fillvalue())
+
+            return (dt_ml, ml_top_avg, ml_top_std, thick_avg, thick_std,
+                    nrays_valid, nrays_total)
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return None, None, None, None, None, None, None
 
 
 def read_monitoring_ts(fname, sort_by_date=False):
@@ -948,17 +996,14 @@ def read_monitoring_ts(fname, sort_by_date=False):
             # now read the data
             csvfile.seek(0)
             reader = csv.DictReader(
-                row for row in csvfile if not row.startswith('#')
-                )
-            i = 0
-            for row in reader:
+                row for row in csvfile if not row.startswith('#'))
+            for i, row in enumerate(reader):
                 date[i] = datetime.datetime.strptime(
                     row['date'], '%Y%m%d%H%M%S')
                 np_t[i] = int(row['NP'])
                 central_quantile[i] = float(row['central_quantile'])
                 low_quantile[i] = float(row['low_quantile'])
                 high_quantile[i] = float(row['high_quantile'])
-                i += 1
 
             fcntl.flock(csvfile, fcntl.LOCK_UN)
             csvfile.close()
@@ -1018,16 +1063,14 @@ def read_monitoring_ts_old(fname):
             csvfile.seek(0)
             reader = csv.DictReader(
                 (row for row in csvfile if not row.startswith('#')),
-                fieldnames=['Date [YYJJJ]', 'Npoints', 'Value']
-                )
-            i = 0
+                fieldnames=['Date [YYJJJ]', 'Npoints', 'Value'])
+
             date = list()
-            for row in reader:
+            for i, row in enumerate(reader):
                 date.append(datetime.datetime.strptime(
                     row['Date [YYJJJ]'], '%y%j'))
                 np_t[i] = int(row['Npoints'])
                 central_quantile[i] = float(row['Value'])
-                i += 1
 
             central_quantile = np.ma.masked_invalid(central_quantile)
 
@@ -1090,10 +1133,8 @@ def read_intercomp_scores_ts(fname, sort_by_date=False):
             # now read the data
             csvfile.seek(0)
             reader = csv.DictReader(
-                row for row in csvfile if not row.startswith('#')
-                )
-            i = 0
-            for row in reader:
+                row for row in csvfile if not row.startswith('#'))
+            for i, row in enumerate(reader):
                 date_vec[i] = datetime.datetime.strptime(
                     row['date'], '%Y%m%d%H%M%S')
                 np_vec[i] = int(row['NP'])
@@ -1107,7 +1148,6 @@ def read_intercomp_scores_ts(fname, sort_by_date=False):
                 intercep_vec[i] = float(row['intercep_of_linear_regression'])
                 intercep_slope1_vec[i] = float(
                     row['intercep_of_linear_regression_of_slope_1'])
-                i += 1
 
             fcntl.flock(csvfile, fcntl.LOCK_UN)
             csvfile.close()
@@ -1205,9 +1245,8 @@ def read_intercomp_scores_ts_old(fname):
                             'mean_bias', 'corr', 'slope_of_linear_regression',
                             'intercep_of_linear_regression'],
                 dialect='excel-tab')
-            i = 0
             date_vec = list()
-            for row in reader:
+            for i, row in enumerate(reader):
                 date_vec.append(datetime.datetime.strptime(
                     row['date'], '%y%j'))
                 np_vec[i] = int(row['NP'])
@@ -1217,7 +1256,6 @@ def read_intercomp_scores_ts_old(fname):
                 corr_vec[i] = float(row['corr'])
                 slope_vec[i] = float(row['slope_of_linear_regression'])
                 intercep_vec[i] = float(row['intercep_of_linear_regression'])
-                i += 1
 
             meanbias_vec = np.ma.masked_invalid(meanbias_vec)
             medianbias_vec = np.ma.masked_invalid(medianbias_vec)
@@ -1274,15 +1312,13 @@ def read_intercomp_scores_ts_old_v0(fname, corr_min=0.6, np_min=9):
                 (row for row in csvfile if not row.startswith('#')),
                 fieldnames=['date', 'ele', 'NP', 'mean_bias', 'corr'],
                 dialect='excel-tab')
-            i = 0
             date_aux_vec = list()
-            for row in reader:
+            for i, row in enumerate(reader):
                 date_aux_vec.append(datetime.datetime.strptime(
                     row['date'], '%y%j'))
                 np_aux_vec[i] = int(row['NP'])
                 meanbias_aux_vec[i] = float(row['mean_bias'])
                 corr_aux_vec[i] = float(row['corr'])
-                i += 1
 
             meanbias_aux_vec = np.ma.masked_invalid(meanbias_aux_vec)
             corr_aux_vec = np.ma.masked_invalid(corr_aux_vec)
@@ -1384,12 +1420,9 @@ def read_selfconsistency(fname):
 
             reader = csv.DictReader(
                 csvfile, fieldnames=['zdr', 'kdpzh'], dialect='excel-tab')
-            i = 0
-
-            for row in reader:
+            for i, row in enumerate(reader):
                 zdr_kdpzh_table[0, i] = float(row['zdr'])
                 zdr_kdpzh_table[1, i] = float(row['kdpzh'])
-                i += 1
 
             csvfile.close()
 

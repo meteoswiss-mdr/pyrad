@@ -17,13 +17,6 @@ from warnings import warn
 import numpy as np
 from netCDF4 import num2date
 
-import matplotlib as mpl
-mpl.use('Agg')
-
-# Increase a bit font size
-mpl.rcParams.update({'font.size': 16})
-mpl.rcParams.update({'font.family':  "sans-serif"})
-
 from ..io.io_aux import get_save_dir, make_filename, get_fieldname_pyart
 from ..io.io_aux import generate_field_name_str
 

@@ -52,8 +52,8 @@ def process_correct_bias(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -89,9 +89,9 @@ def process_correct_bias(procstatus, dscfg, radar_list=None):
         new_field_name = 'corrected_'+field_name
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field(new_field_name, corrected_field)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field(new_field_name, corrected_field)
 
     return new_dataset, ind_rad
 
@@ -116,8 +116,8 @@ def process_correct_noise_rhohv(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -161,9 +161,9 @@ def process_correct_noise_rhohv(procstatus, dscfg, radar_list=None):
         nh_field=nh, nv_field=nv, rhohv_field='cross_correlation_ratio')
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field('cross_correlation_ratio', rhohv)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field('cross_correlation_ratio', rhohv)
 
     return new_dataset, ind_rad
 
@@ -428,8 +428,8 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -534,7 +534,7 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
         # first volume: initialize radar object
         if dscfg['initialized'] == 0:
             new_dataset = {
-                'radar_obj': radar_aux,
+                'radar_out': radar_aux,
                 'starttime': dscfg['timeinfo'],
                 'endtime': dscfg['timeinfo'],
                 'occu_final': False}
@@ -551,31 +551,31 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
 
         if not regular_grid:
             occu_interp = interpol_field(
-                dscfg['global_data']['radar_obj'], radar_aux, 'occurrence')
+                dscfg['global_data']['radar_out'], radar_aux, 'occurrence')
             npoints_interp = interpol_field(
-                dscfg['global_data']['radar_obj'], radar_aux,
+                dscfg['global_data']['radar_out'], radar_aux,
                 'number_of_samples')
         else:
-            if radar_aux.nrays != dscfg['global_data']['radar_obj'].nrays:
+            if radar_aux.nrays != dscfg['global_data']['radar_out'].nrays:
                 warn('Unable to accumulate radar object. ' +
                      'Number of rays of current radar different from ' +
                      'reference. nrays current: '+str(radar_aux.nrays) +
                      ' nrays ref: ' +
-                     str(dscfg['global_data']['radar_obj'].nrays))
+                     str(dscfg['global_data']['radar_out'].nrays))
                 return None, None
             occu_interp = radar_aux.fields['occurrence']
             npoints_interp = radar_aux.fields['number_of_samples']
 
-        dscfg['global_data']['radar_obj'].fields['occurrence']['data'] += (
+        dscfg['global_data']['radar_out'].fields['occurrence']['data'] += (
             np.ma.asarray(
                 occu_interp['data'].filled(fill_value=0)).astype('int'))
-        dscfg['global_data']['radar_obj'].fields['number_of_samples'][
+        dscfg['global_data']['radar_out'].fields['number_of_samples'][
             'data'] += (np.ma.asarray(
                 npoints_interp['data'].filled(fill_value=0)).astype('int'))
         dscfg['global_data']['endtime'] = dscfg['timeinfo']
 
         new_dataset = {
-            'radar_obj': dscfg['global_data']['radar_obj'],
+            'radar_out': dscfg['global_data']['radar_out'],
             'starttime': dscfg['global_data']['starttime'],
             'endtime': dscfg['global_data']['endtime'],
             'occu_final': False}
@@ -586,10 +586,10 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
     if procstatus == 2:
         if dscfg['initialized'] == 0:
             return None, None
-        if 'radar_obj' not in dscfg['global_data']:
+        if 'radar_out' not in dscfg['global_data']:
             return None, None
 
-        radar = dscfg['global_data']['radar_obj']
+        radar = dscfg['global_data']['radar_out']
 
         freq_occu_dict = pyart.config.get_metadata('frequency_of_occurrence')
         freq_occu_dict['data'] = (100.*radar.fields['occurrence']['data'] /
@@ -598,7 +598,7 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
         radar.add_field('frequency_of_occurrence', freq_occu_dict)
 
         new_dataset = {
-            'radar_obj': dscfg['global_data']['radar_obj'],
+            'radar_out': dscfg['global_data']['radar_out'],
             'starttime': dscfg['global_data']['starttime'],
             'endtime': dscfg['global_data']['endtime'],
             'occu_final': True}
@@ -631,8 +631,8 @@ def process_occurrence_period(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -684,7 +684,7 @@ def process_occurrence_period(procstatus, dscfg, radar_list=None):
         # first volume: initialize radar object
         if dscfg['initialized'] == 0:
             new_dataset = {
-                'radar_obj': radar_aux,
+                'radar_out': radar_aux,
                 'starttime': dscfg['timeinfo'],
                 'endtime': dscfg['timeinfo'],
                 'occu_final': False}
@@ -701,31 +701,31 @@ def process_occurrence_period(procstatus, dscfg, radar_list=None):
 
         if not regular_grid:
             occu_interp = interpol_field(
-                dscfg['global_data']['radar_obj'], radar_aux, 'occurrence')
+                dscfg['global_data']['radar_out'], radar_aux, 'occurrence')
             npoints_interp = interpol_field(
-                dscfg['global_data']['radar_obj'], radar_aux,
+                dscfg['global_data']['radar_out'], radar_aux,
                 'number_of_samples')
         else:
-            if radar_aux.nrays != dscfg['global_data']['radar_obj'].nrays:
+            if radar_aux.nrays != dscfg['global_data']['radar_out'].nrays:
                 warn('Unable to accumulate radar object. ' +
                      'Number of rays of current radar different from ' +
                      'reference. nrays current: '+str(radar_aux.nrays) +
                      ' nrays ref: ' +
-                     str(dscfg['global_data']['radar_obj'].nrays))
+                     str(dscfg['global_data']['radar_out'].nrays))
                 return None, None
             occu_interp = radar_aux.fields['occurrence']
             npoints_interp = radar_aux.fields['number_of_samples']
 
-        dscfg['global_data']['radar_obj'].fields['occurrence']['data'] += (
+        dscfg['global_data']['radar_out'].fields['occurrence']['data'] += (
             np.ma.asarray(
                 occu_interp['data'].filled(fill_value=0)).astype('int'))
-        dscfg['global_data']['radar_obj'].fields['number_of_samples'][
+        dscfg['global_data']['radar_out'].fields['number_of_samples'][
             'data'] += np.ma.asarray(
                 npoints_interp['data'].filled(fill_value=0)).astype('int')
         dscfg['global_data']['endtime'] = dscfg['timeinfo']
 
         new_dataset = {
-            'radar_obj': dscfg['global_data']['radar_obj'],
+            'radar_out': dscfg['global_data']['radar_out'],
             'starttime': dscfg['global_data']['starttime'],
             'endtime': dscfg['global_data']['endtime'],
             'occu_final': False}
@@ -736,10 +736,10 @@ def process_occurrence_period(procstatus, dscfg, radar_list=None):
     if procstatus == 2:
         if dscfg['initialized'] == 0:
             return None, None
-        if 'radar_obj' not in dscfg['global_data']:
+        if 'radar_out' not in dscfg['global_data']:
             return None, None
 
-        radar = dscfg['global_data']['radar_obj']
+        radar = dscfg['global_data']['radar_out']
 
         freq_occu_dict = pyart.config.get_metadata('frequency_of_occurrence')
         freq_occu_dict['data'] = (100.*radar.fields['occurrence']['data'] /
@@ -748,7 +748,7 @@ def process_occurrence_period(procstatus, dscfg, radar_list=None):
         radar.add_field('frequency_of_occurrence', freq_occu_dict)
 
         new_dataset = {
-            'radar_obj': dscfg['global_data']['radar_obj'],
+            'radar_out': dscfg['global_data']['radar_out'],
             'starttime': dscfg['global_data']['starttime'],
             'endtime': dscfg['global_data']['endtime'],
             'occu_final': True}
@@ -924,7 +924,7 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
 
         sun_hits_dataset = dict()
         sun_hits_dataset.update({'sun_hits': sun_hits})
-        sun_hits_dataset.update({'radar': new_radar})
+        sun_hits_dataset.update({'radar_out': new_radar})
         sun_hits_dataset.update({'timeinfo': dscfg['timeinfo']})
 
         return sun_hits_dataset, ind_rad

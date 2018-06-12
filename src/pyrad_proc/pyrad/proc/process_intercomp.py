@@ -59,8 +59,8 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -129,7 +129,7 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
 
         dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
         # no radar object in global data: create it
-        if 'radar_obj' not in dscfg['global_data']:
+        if 'radar_out' not in dscfg['global_data']:
             # get start and stop times of new radar object
             (dscfg['global_data']['starttime'],
              dscfg['global_data']['endtime']) = (
@@ -139,20 +139,20 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
 
             # check if volume time older than starttime
             if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
-                dscfg['global_data'].update({'radar_obj': radar_aux})
+                dscfg['global_data'].update({'radar_out': radar_aux})
 
             return None, None
 
         # still accumulating: add field to global field
         if dscfg['timeinfo'] < dscfg['global_data']['endtime']:
             field_interp = interpol_field(
-                dscfg['global_data']['radar_obj'], radar_aux, field_name)
+                dscfg['global_data']['radar_out'], radar_aux, field_name)
             npoints_interp = interpol_field(
-                dscfg['global_data']['radar_obj'], radar_aux,
+                dscfg['global_data']['radar_out'], radar_aux,
                 'number_of_samples')
-            dscfg['global_data']['radar_obj'].fields[field_name]['data'] += (
+            dscfg['global_data']['radar_out'].fields[field_name]['data'] += (
                 field_interp['data'].filled(fill_value=0))
-            dscfg['global_data']['radar_obj'].fields[
+            dscfg['global_data']['radar_out'].fields[
                 'number_of_samples']['data'] += (
                     npoints_interp['data'].filled(fill_value=0)).astype('int')
 
@@ -160,17 +160,17 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
 
         # we have reached the end of the accumulation period: do the averaging
         # and start a new object
-        dscfg['global_data']['radar_obj'].fields[field_name]['data'] /= (
-            dscfg['global_data']['radar_obj'].fields[
+        dscfg['global_data']['radar_out'].fields[field_name]['data'] /= (
+            dscfg['global_data']['radar_out'].fields[
                 'number_of_samples']['data'])
         if lin_trans:
-            dscfg['global_data']['radar_obj'].fields[field_name]['data'] = (
+            dscfg['global_data']['radar_out'].fields[field_name]['data'] = (
                 10.*np.ma.log10(
-                    dscfg['global_data']['radar_obj'].fields[
+                    dscfg['global_data']['radar_out'].fields[
                         field_name]['data']))
 
         new_dataset = {
-            'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
+            'radar_out': deepcopy(dscfg['global_data']['radar_out']),
             'timeinfo': dscfg['global_data']['endtime']}
 
         dscfg['global_data']['starttime'] += datetime.timedelta(
@@ -178,7 +178,7 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
         dscfg['global_data']['endtime'] += datetime.timedelta(seconds=period)
 
         # remove old radar object from global_data dictionary
-        dscfg['global_data'].pop('radar_obj', None)
+        dscfg['global_data'].pop('radar_out', None)
 
         # get start and stop times of new radar object
         dscfg['global_data']['starttime'], dscfg['global_data']['endtime'] = (
@@ -188,7 +188,7 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
 
         # check if volume time older than starttime
         if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
-            dscfg['global_data'].update({'radar_obj': radar_aux})
+            dscfg['global_data'].update({'radar_out': radar_aux})
 
         return new_dataset, ind_rad
 
@@ -196,21 +196,21 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
     if procstatus == 2:
         if dscfg['initialized'] == 0:
             return None, None
-        if 'radar_obj' not in dscfg['global_data']:
+        if 'radar_out' not in dscfg['global_data']:
             return None, None
 
-        (dscfg['global_data']['radar_obj'].fields[field_name][
+        (dscfg['global_data']['radar_out'].fields[field_name][
             'data']) /= (
-                dscfg['global_data']['radar_obj'].fields[
+                dscfg['global_data']['radar_out'].fields[
                     'number_of_samples']['data'])
         if lin_trans:
-            dscfg['global_data']['radar_obj'].fields[field_name]['data'] = (
+            dscfg['global_data']['radar_out'].fields[field_name]['data'] = (
                 10.*np.ma.log10(
-                    dscfg['global_data']['radar_obj'].fields[
+                    dscfg['global_data']['radar_out'].fields[
                         field_name]['data']))
 
         new_dataset = {
-            'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
+            'radar_out': deepcopy(dscfg['global_data']['radar_out']),
             'timeinfo': dscfg['global_data']['endtime']}
 
         return new_dataset, ind_rad
@@ -312,7 +312,7 @@ def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
 
         dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
         # no radar object in global data: create it
-        if 'radar_obj' not in dscfg['global_data']:
+        if 'radar_out' not in dscfg['global_data']:
             # get start and stop times of new radar object
             (dscfg['global_data']['starttime'],
              dscfg['global_data']['endtime']) = (
@@ -322,31 +322,31 @@ def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
 
             # check if volume time older than starttime
             if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
-                dscfg['global_data'].update({'radar_obj': radar_aux})
+                dscfg['global_data'].update({'radar_out': radar_aux})
 
             return None, None
 
         # still accumulating: add field to global field
         if dscfg['timeinfo'] < dscfg['global_data']['endtime']:
             field_interp = interpol_field(
-                dscfg['global_data']['radar_obj'], radar_aux, field_name)
-            dscfg['global_data']['radar_obj'].fields[field_name]['data'] += (
+                dscfg['global_data']['radar_out'], radar_aux, field_name)
+            dscfg['global_data']['radar_out'].fields[field_name]['data'] += (
                 field_interp['data'].filled(fill_value=0))
 
             refl_interp = interpol_field(
-                dscfg['global_data']['radar_obj'], radar_aux, refl_name)
-            dscfg['global_data']['radar_obj'].fields[refl_name]['data'] += (
+                dscfg['global_data']['radar_out'], radar_aux, refl_name)
+            dscfg['global_data']['radar_out'].fields[refl_name]['data'] += (
                 refl_interp['data'].filled(fill_value=0))
 
             return None, None
 
         # we have reached the end of the accumulation period: do the averaging
         # and start a new object
-        dscfg['global_data']['radar_obj'].fields[field_name]['data'] /= (
-            dscfg['global_data']['radar_obj'].fields[refl_name]['data'])
+        dscfg['global_data']['radar_out'].fields[field_name]['data'] /= (
+            dscfg['global_data']['radar_out'].fields[refl_name]['data'])
 
         new_dataset = {
-            'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
+            'radar_out': deepcopy(dscfg['global_data']['radar_out']),
             'timeinfo': dscfg['global_data']['endtime']}
 
         dscfg['global_data']['starttime'] += datetime.timedelta(
@@ -354,7 +354,7 @@ def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
         dscfg['global_data']['endtime'] += datetime.timedelta(seconds=period)
 
         # remove old radar object from global_data dictionary
-        dscfg['global_data'].pop('radar_obj', None)
+        dscfg['global_data'].pop('radar_out', None)
 
         # get start and stop times of new radar object
         dscfg['global_data']['starttime'], dscfg['global_data']['endtime'] = (
@@ -364,7 +364,7 @@ def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
 
         # check if volume time older than starttime
         if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
-            dscfg['global_data'].update({'radar_obj': radar_aux})
+            dscfg['global_data'].update({'radar_out': radar_aux})
 
         return new_dataset, ind_rad
 
@@ -372,14 +372,14 @@ def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
     if procstatus == 2:
         if dscfg['initialized'] == 0:
             return None, None
-        if 'radar_obj' not in dscfg['global_data']:
+        if 'radar_out' not in dscfg['global_data']:
             return None, None
 
-        dscfg['global_data']['radar_obj'].fields[field_name]['data'] /= (
-            dscfg['global_data']['radar_obj'].fields[refl_name]['data'])
+        dscfg['global_data']['radar_out'].fields[field_name]['data'] /= (
+            dscfg['global_data']['radar_out'].fields[refl_name]['data'])
 
         new_dataset = {
-            'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
+            'radar_out': deepcopy(dscfg['global_data']['radar_out']),
             'timeinfo': dscfg['global_data']['endtime']}
 
         return new_dataset, ind_rad
@@ -550,7 +550,7 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
 
         dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
         # no radar object in global data: create it
-        if 'radar_obj' not in dscfg['global_data']:
+        if 'radar_out' not in dscfg['global_data']:
             # get start and stop times of new radar object
             (dscfg['global_data']['starttime'],
              dscfg['global_data']['endtime']) = (
@@ -560,15 +560,15 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
 
             # check if volume time older than starttime
             if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
-                dscfg['global_data'].update({'radar_obj': radar_aux})
+                dscfg['global_data'].update({'radar_out': radar_aux})
 
             return None, None
 
         # still accumulating: add field to global field
         if dscfg['timeinfo'] < dscfg['global_data']['endtime']:
             flag_interp = interpol_field(
-                dscfg['global_data']['radar_obj'], radar_aux, 'time_avg_flag')
-            dscfg['global_data']['radar_obj'].fields[
+                dscfg['global_data']['radar_out'], radar_aux, 'time_avg_flag')
+            dscfg['global_data']['radar_out'].fields[
                 'time_avg_flag']['data'] += (
                     flag_interp['data'].filled(fill_value=0)).astype(int)
 
@@ -576,7 +576,7 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
 
         # we have reached the end of the accumulation: start a new object
         new_dataset = {
-            'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
+            'radar_out': deepcopy(dscfg['global_data']['radar_out']),
             'timeinfo': dscfg['global_data']['endtime']}
 
         dscfg['global_data']['starttime'] += datetime.timedelta(
@@ -584,7 +584,7 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
         dscfg['global_data']['endtime'] += datetime.timedelta(seconds=period)
 
         # remove old radar object from global_data dictionary
-        dscfg['global_data'].pop('radar_obj', None)
+        dscfg['global_data'].pop('radar_out', None)
 
         # get start and stop times of new radar object
         dscfg['global_data']['starttime'], dscfg['global_data']['endtime'] = (
@@ -594,7 +594,7 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
 
         # check if volume time older than starttime
         if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
-            dscfg['global_data'].update({'radar_obj': radar_aux})
+            dscfg['global_data'].update({'radar_out': radar_aux})
 
         return new_dataset, ind_rad
 
@@ -602,11 +602,11 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
     if procstatus == 2:
         if dscfg['initialized'] == 0:
             return None, None
-        if 'radar_obj' not in dscfg['global_data']:
+        if 'radar_out' not in dscfg['global_data']:
             return None, None
 
         new_dataset = {
-            'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
+            'radar_out': deepcopy(dscfg['global_data']['radar_out']),
             'timeinfo': dscfg['global_data']['endtime']}
 
         return new_dataset, ind_rad
@@ -774,11 +774,11 @@ def process_colocated_gates(procstatus, dscfg, radar_list=None):
     # prepare output
     rad1_dict = {
         'coloc_dict': coloc_rad1_dict,
-        'radar': new_rad1}
+        'radar_out': new_rad1}
 
     rad2_dict = {
         'coloc_dict': coloc_rad2_dict,
-        'radar': new_rad2}
+        'radar_out': new_rad2}
 
     new_dataset = {
         'RADAR'+'{:03d}'.format(ind_radar_list[0]+1): rad1_dict,

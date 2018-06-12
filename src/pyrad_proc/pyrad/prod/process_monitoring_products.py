@@ -55,9 +55,7 @@ def generate_monitoring_products(dataset, prdcfg):
     """
 
     # check the type of dataset required
-    hist_type = 'cumulative'
-    if 'hist_type' in prdcfg:
-        hist_type = prdcfg['hist_type']
+    hist_type = prdcfg.get('hist_type', 'cumulative')
 
     if dataset['hist_type'] != hist_type:
         return None
