@@ -1150,29 +1150,24 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
 
         if not dscfg['initialized']:
             # initialize dataset
-            ml_globdata = pyart.retrieve.melting_layer_giangrande(
+            new_dataset = pyart.retrieve.melting_layer_giangrande(
                 radar,
                 rhomin=rhomin, rhomax=rhomax, nml_points_min=nml_points_min, percentile_bottom=percentile_bottom,
                 refl_field=refl_field, zdr_field=zdr_field,
                 rhv_field=rhv_field, temp_field=temp_field, iso0_field=iso0_field,
-                ml_field=None, temp_ref=temp_ref, ml_globdata=None)
+                ml_field=None, temp_ref=temp_ref, get_iso0=True, new_dataset=None)
             dscfg['initialized'] = True
         else:
             # use previous detection
-            ml_globdata = pyart.retrieve.melting_layer_giangrande(
+            new_dataset  = pyart.retrieve.melting_layer_giangrande(
                 radar,
                 rhomin=rhomin, rhomax=rhomax, nml_points_min=nml_points_min, percentile_bottom=percentile_bottom,
                 refl_field=refl_field, zdr_field=zdr_field,
                 rhv_field=rhv_field, temp_field=temp_field, iso0_field=iso0_field,
-                ml_field=None, temp_ref=temp_ref, ml_globdata=dscfg['ml_globdata'])
+                ml_field=None, temp_ref=temp_ref, get_iso0=True, new_dataset=dscfg['ml_globdata'])
 
         # update global stack
-        dscfg['ml_globdata'] = ml_globdata
-
-        # prepare for exit
-        new_dataset = deepcopy(radar)
-        new_dataset.fields = dict()
-        new_dataset.add_field('melting_layer', ml_vol)
+        dscfg['ml_globdata'] = new_dataset
 
     elif dscfg['ML_METHOD'] == 'WOLFENSBERGER':
         for datatypedescr in dscfg['datatype']:
@@ -1331,55 +1326,56 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
 
         ml = pyart.config.get_metadata('melting_layer')
         ml['data'] = ml_data
+        
+        get_iso0 = dscfg.get('get_iso0', False)
+
+        # Create melting layer object containing top and bottom and metadata
+        ml_obj = deepcopy(radar)
+
+        # modify original metadata
+        ml_obj.range['data'] = np.array([0, 1], dtype='float64')
+        ml_obj.ngates = 2
+
+        ml_obj.gate_x = np.zeros((ml_obj.nrays, ml_obj.ngates), dtype=float)
+        ml_obj.gate_y = np.zeros((ml_obj.nrays, ml_obj.ngates), dtype=float)
+        ml_obj.gate_z = np.zeros((ml_obj.nrays, ml_obj.ngates), dtype=float)
+
+        ml_obj.gate_longitude = np.zeros(
+            (ml_obj.nrays, ml_obj.ngates), dtype=float)
+        ml_obj.gate_latitude = np.zeros(
+            (ml_obj.nrays, ml_obj.ngates), dtype=float)
+        ml_obj.gate_altitude = np.zeros(
+            (ml_obj.nrays, ml_obj.ngates), dtype=float)
+
+        # input field
+        ml_pos = pyart.config.get_metadata('melting_layer_height')
+        ml_aux = np.ma.empty((ml_obj.nrays, ml_obj.ngates), dtype='float64')
+        ml_aux[:, 0] = ml_bottom
+        ml_aux[:, 1] = ml_top
+        ml_pos['data'] = ml_aux
+
+        ml_obj.fields = dict()
+        ml_obj.add_field('melting_layer_height', ml_pos)
+
+        # prepare for exit
+        new_dataset = {
+            'radar_out': deepcopy(radar),
+            'ml_obj': ml_obj}
+        new_dataset['radar_out'].fields = dict()
+        new_dataset['radar_out'].add_field('melting_layer', ml)
+
+        if get_iso0:
+            iso0_data = np.ma.empty((radar.nrays, radar.ngates), dtype=float)
+            iso0_data[:] = np.ma.masked
+            for ind_ray in range(radar.nrays):
+                iso0_data[ind_ray, :] = radar.gate_altitude['data'][ind_ray, :]-ml_top[ind_ray]
+            iso0_dict = pyart.config.get_metadata('height_over_iso0')
+            iso0_dict['data'] = iso0_data
+            new_dataset['radar_out'].add_field('height_over_iso0', iso0_dict)
+        
     else:
         raise Exception(
             "ERROR: Unknown melting layer retrieval method " +
             dscfg['ML_METHOD'])
-
-    get_iso0 = dscfg.get('get_iso0', False)
-
-    # Create melting layer object containing top and bottom and metadata
-    ml_obj = deepcopy(radar)
-
-    # modify original metadata
-    ml_obj.range['data'] = np.array([0, 1], dtype='float64')
-    ml_obj.ngates = 2
-
-    ml_obj.gate_x = np.zeros((ml_obj.nrays, ml_obj.ngates), dtype=float)
-    ml_obj.gate_y = np.zeros((ml_obj.nrays, ml_obj.ngates), dtype=float)
-    ml_obj.gate_z = np.zeros((ml_obj.nrays, ml_obj.ngates), dtype=float)
-
-    ml_obj.gate_longitude = np.zeros(
-        (ml_obj.nrays, ml_obj.ngates), dtype=float)
-    ml_obj.gate_latitude = np.zeros(
-        (ml_obj.nrays, ml_obj.ngates), dtype=float)
-    ml_obj.gate_altitude = np.zeros(
-        (ml_obj.nrays, ml_obj.ngates), dtype=float)
-
-    # input field
-    ml_pos = pyart.config.get_metadata('melting_layer_height')
-    ml_aux = np.ma.empty((ml_obj.nrays, ml_obj.ngates), dtype='float64')
-    ml_aux[:, 0] = ml_bottom
-    ml_aux[:, 1] = ml_top
-    ml_pos['data'] = ml_aux
-
-    ml_obj.fields = dict()
-    ml_obj.add_field('melting_layer_height', ml_pos)
-
-    # prepare for exit
-    new_dataset = {
-        'radar_out': deepcopy(radar),
-        'ml_obj': ml_obj}
-    new_dataset['radar_out'].fields = dict()
-    new_dataset['radar_out'].add_field('melting_layer', ml)
-
-    if get_iso0:
-        iso0_data = np.ma.empty((radar.nrays, radar.ngates), dtype=float)
-        iso0_data[:] = np.ma.masked
-        for ind_ray in range(radar.nrays):
-            iso0_data[ind_ray, :] = radar.gate_altitude['data'][ind_ray, :]-ml_top[ind_ray]
-        iso0_dict = pyart.config.get_metadata('height_over_iso0')
-        iso0_dict['data'] = iso0_data
-        new_dataset['radar_out'].add_field('height_over_iso0', iso0_dict)
 
     return new_dataset, ind_rad
