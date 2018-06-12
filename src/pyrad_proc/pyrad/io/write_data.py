@@ -1143,7 +1143,7 @@ def write_intercomp_scores_ts(start_time, stats, field_name, fname,
                           'intercep_of_linear_regression',
                           'intercep_of_linear_regression_of_slope_1']
             writer = csv.DictWriter(csvfile, fieldnames)
-           for i, dt in enumerate(start_time_aux):
+            for i, dt in enumerate(start_time_aux):
                 writer.writerow({
                     'date': dt.strftime('%Y%m%d%H%M%S'),
                     'NP': np_t[i],

@@ -1198,16 +1198,16 @@ def merge_fields_rainbow(basepath, scan_name, voltime, datatype_list):
 
     # add other fields in the same scan
     for datatype in datatype_list[1:]:
-        if (datatype_list[i] != 'Nh') and (datatype_list[i] != 'Nv'):
-            filename = glob.glob(datapath+fdatetime+datatype_list[i]+'.*')
-        elif datatype_list[i] == 'Nh':
+        if (datatype != 'Nh') and (datatype != 'Nv'):
+            filename = glob.glob(datapath+fdatetime+datatype+'.*')
+        elif datatype == 'Nh':
             filename = glob.glob(datapath+fdatetime+'dBZ.*')
         else:
             filename = glob.glob(datapath+fdatetime+'dBZv.*')
         if not filename:
-            warn('No file found in '+datapath+fdatetime+datatype_list[i]+'.*')
+            warn('No file found in '+datapath+fdatetime+datatype+'.*')
         else:
-            radar_aux = get_data_rainbow(filename[0], datatype_list[i])
+            radar_aux = get_data_rainbow(filename[0], datatype)
             if radar is None:
                 radar = radar_aux
             else:
