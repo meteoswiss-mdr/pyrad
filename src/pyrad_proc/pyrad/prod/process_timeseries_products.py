@@ -185,7 +185,7 @@ def generate_timeseries_products(dataset, prdcfg):
                 'No valid radar data')
             return None
 
-        sensordate, sensorvalue, sensortype, period = get_sensor_data(
+        sensordate, sensorvalue, sensortype, _ = get_sensor_data(
             radardate[0], dataset['datatype'], prdcfg)
         if sensordate is None:
             warn(

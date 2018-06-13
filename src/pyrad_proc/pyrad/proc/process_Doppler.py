@@ -65,8 +65,7 @@ def process_dealias_fourdd(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        dscfg['datatype'][0])
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
     vel_field = get_fieldname_pyart(datatype)
 
     ind_rad = int(radarnr[5:8])-1
@@ -177,8 +176,7 @@ def process_dealias_region_based(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        dscfg['datatype'][0])
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
     vel_field = get_fieldname_pyart(datatype)
 
     ind_rad = int(radarnr[5:8])-1
@@ -252,8 +250,7 @@ def process_dealias_unwrap_phase(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        dscfg['datatype'][0])
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
     vel_field = get_fieldname_pyart(datatype)
 
     ind_rad = int(radarnr[5:8])-1
@@ -317,8 +314,7 @@ def process_wind_vel(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        dscfg['datatype'][0])
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
     vel_field = get_fieldname_pyart(datatype)
 
     ind_rad = int(radarnr[5:8])-1
@@ -380,8 +376,7 @@ def process_windshear(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        dscfg['datatype'][0])
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
     wind_field = get_fieldname_pyart(datatype)
 
     ind_rad = int(radarnr[5:8])-1
@@ -438,8 +433,7 @@ def process_vad(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        dscfg['datatype'][0])
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
     vel_field = get_fieldname_pyart(datatype)
 
     ind_rad = int(radarnr[5:8])-1

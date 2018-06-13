@@ -929,7 +929,7 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
     quant75bias = np.percentile((field2-field1).compressed(), 75.)
     ind_max_val1, ind_max_val2 = np.where(hist_2d == np.ma.amax(hist_2d))
     modebias = bin_centers2[ind_max_val2[0]]-bin_centers1[ind_max_val1[0]]
-    slope, intercep, corr, pval, stderr = scipy.stats.linregress(
+    slope, intercep, corr, _, _ = scipy.stats.linregress(
         field1, y=field2)
     intercep_slope_1 = np.ma.mean(field2-field1)
 
@@ -979,8 +979,7 @@ def compute_1d_stats(field1, field2):
     mean1 = np.ma.mean(field1)
     mean2 = np.ma.mean(field2)
     nb = mean2/mean1-1
-    slope, intercep, corr, pval, stderr = scipy.stats.linregress(
-        field1, y=field2)
+    _, _, corr, _, _ = scipy.stats.linregress(field1, y=field2)
     rms = np.ma.sqrt(np.ma.sum(np.ma.power(field2-field1, 2.))/npoints)
     nash = (1.-np.ma.sum(np.ma.power(field2-field1, 2.)) /
             np.ma.sum(np.ma.power(field1-mean1, 2.)))
@@ -1187,7 +1186,7 @@ def compute_profile_stats(field, gate_altitude, h_vec, h_res,
             vals[i, 1] = np.ma.sqrt(
                 np.ma.sum((data_np-1)*data_var)/np.ma.sum(data_np-1))
         else:
-            avg, quants, nvalid = quantiles_weighted(
+            _, quants, nvalid = quantiles_weighted(
                 data, quantiles=quantiles)
             if nvalid is not None:
                 if nvalid >= nvalid_min:

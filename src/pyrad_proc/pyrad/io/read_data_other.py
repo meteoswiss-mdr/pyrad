@@ -42,6 +42,7 @@ import xml.etree.ElementTree as et
 from warnings import warn
 import fcntl
 import time
+import errno
 
 import numpy as np
 
@@ -56,15 +57,18 @@ def read_profile_ts(fname_list, labels, hres=None, label_nr=0):
 
     Parameters
     ----------
-    fname : str
+    fname_list : str
         path of time series file
     labels : list of str
         The data labels
-    label_nr : the label nr of the data that will be used in the time series
+    hres : float
+        Height resolution
+    label_nr : int
+        the label nr of the data that will be used in the time series
 
     Returns
     -------
-    height, np_t, vals : tupple
+    tbin_edges, hbin_edges, data_ma : tupple
         The read data. None otherwise
 
     """
@@ -73,7 +77,7 @@ def read_profile_ts(fname_list, labels, hres=None, label_nr=0):
     for fname in fname_list:
         datetime_arr = np.append(
             datetime_arr, _get_datetime(fname, 'RAINBOW'))
-        height, np_t, vals = read_rhi_profile(fname, labels)
+        height, _, vals = read_rhi_profile(fname, labels)
         if hres is None:
             hres = np.mean(height[1:]-height[:-1])
         hbin_edges = np.append(height-hres/2, height[-1]+hres/2)
@@ -101,18 +105,18 @@ def read_profile_ts(fname_list, labels, hres=None, label_nr=0):
 
 def read_histogram_ts(fname_list, datatype):
     """
-    Reads a colection of profile data file and creates a time series
+    Reads a colection of histogram data file and creates a time series
 
     Parameters
     ----------
-    fname : str
+    fname_list : str
         path of time series file
     datatype : str
         The data type (dBZ, ZDR, etc.)
 
     Returns
     -------
-    height, np_t, vals : tupple
+    tbin_edges, bin_edges, data_ma : tupple
         The read data. None otherwise
 
     """
@@ -165,7 +169,7 @@ def read_quantiles_ts(fname_list, step=5., qmin=0., qmax=100.):
 
     Returns
     -------
-    height, np_t, vals : tupple
+    tbin_edges, qbin_edges, data_ma : tupple
         The read data. None otherwise
 
     """
@@ -417,7 +421,6 @@ def read_rad4alp_vis(fname, datatype):
         return None
 
     header_size = 64
-    nel = 20
     naz = 360
     nrngs = [492, 420, 492, 324, 366, 324, 292, 324, 280, 242,
              222, 200, 174, 150, 124, 100, 82, 68, 60, 54]

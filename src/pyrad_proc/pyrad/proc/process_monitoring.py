@@ -75,8 +75,7 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
     temp = None
     iso0 = None
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'dBZc':
             refl = 'corrected_reflectivity'
         if datatype == 'dBZ':
@@ -261,8 +260,7 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
     temp = None
     iso0 = None
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'dBZc':
             refl = 'corrected_reflectivity'
         if datatype == 'dBZ':
@@ -446,8 +444,7 @@ def process_estimate_phidp0(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'dBZ':
             refl_field = 'reflectivity'
         if datatype == 'dBZc':
@@ -538,8 +535,7 @@ def process_rhohv_rain(procstatus, dscfg, radar_list=None):
     temp_field = None
     iso0_field = None
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'RhoHV':
             rhohv_field = 'cross_correlation_ratio'
         if datatype == 'RhoHVc':
@@ -693,8 +689,7 @@ def process_zdr_precip(procstatus, dscfg, radar_list=None):
     temp_field = None
     iso0_field = None
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'ZDR':
             zdr_field = 'differential_reflectivity'
         if datatype == 'ZDRc':
@@ -887,8 +882,7 @@ def process_zdr_snow(procstatus, dscfg, radar_list=None):
     temp_field = None
     kdp_field = None
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'ZDR':
             zdr_field = 'differential_reflectivity'
         if datatype == 'ZDRc':
@@ -1034,8 +1028,7 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
 
     if procstatus == 1:
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             field_name = get_fieldname_pyart(datatype)
             break
         ind_rad = int(radarnr[5:8])-1
@@ -1106,8 +1099,7 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
             return None, None
 
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             field_name = get_fieldname_pyart(datatype)
             break
         ind_rad = int(radarnr[5:8])-1

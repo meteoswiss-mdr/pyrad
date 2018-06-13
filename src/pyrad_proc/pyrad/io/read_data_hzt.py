@@ -100,14 +100,14 @@ def hzt2radar_coord(radar, hzt_coord, slice_xy=True, field_name=None):
     if field_name is None:
         field_name = get_field_name('hzt_index')
 
-    x_radar, y_radar, z_radar = _put_radar_in_swiss_coord(radar)
+    x_radar, y_radar, _ = _put_radar_in_swiss_coord(radar)
 
-    x_hzt, y_hzt, ind_xmin, ind_ymin, ind_xmax, ind_ymax = (
+    x_hzt, y_hzt, ind_xmin, ind_ymin, ind_xmax, _ = (
         _prepare_for_interpolation(
             x_radar, y_radar, hzt_coord, slice_xy=slice_xy))
 
     tree = cKDTree(np.transpose((y_hzt, x_hzt)))
-    dd_vec, ind_vec = tree.query(
+    _, ind_vec = tree.query(
         np.transpose((y_radar.flatten(), x_radar.flatten())), k=1)
 
     # put the index in the original cosmo coordinates

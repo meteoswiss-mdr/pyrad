@@ -283,7 +283,7 @@ def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name,
 
     fig = plt.figure(figsize=[15, 13], dpi=dpi)
 
-    ax = fig.add_subplot(2, 1, 1)
+    fig.add_subplot(2, 1, 1)
     plt.plot(date_plt, cquant_plt, 'x-')
     plt.plot(date_plt, lquant_plt, 'rx-')
     plt.plot(date_plt, hquant_plt, 'rx-')
@@ -299,7 +299,7 @@ def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name,
     plt.autoscale(enable=True, axis='x', tight=True)
     plt.grid(True)
 
-    ax = fig.add_subplot(2, 1, 2)
+    fig.add_subplot(2, 1, 2)
     plt.plot(date, np_t, 'x-')
 
     if np_min is not None:
@@ -411,7 +411,7 @@ def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
 
     fig = plt.figure(figsize=[10, 20], dpi=dpi)
 
-    ax = fig.add_subplot(4, 1, 1)
+    fig.add_subplot(4, 1, 1)
     plt.plot(date_plt, medianbias_plt, 'bx-', label='median')
     plt.plot(date_plt, meanbias_plt, 'rx-', label='mean')
     plt.plot(date_plt, modebias_plt, 'gx-', label='mode')
@@ -430,7 +430,7 @@ def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
     plt.autoscale(enable=True, axis='x', tight=True)
     plt.grid(True)
 
-    ax = fig.add_subplot(4, 1, 2)
+    fig.add_subplot(4, 1, 2)
     plt.plot(date_plt, medianbias_plt, 'bx-', label='median')
     plt.plot(date_plt, quant25bias_plt, 'rx-', label='25-percentile')
     plt.plot(date_plt, quant75bias_plt, 'rx-', label='75-percentile')
@@ -446,7 +446,7 @@ def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
     plt.autoscale(enable=True, axis='x', tight=True)
     plt.grid(True)
 
-    ax = fig.add_subplot(4, 1, 3)
+    fig.add_subplot(4, 1, 3)
     plt.plot(date_corr, corr_plt, 'bx-')
 
     if corr_min > 0:
@@ -460,7 +460,7 @@ def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
     plt.autoscale(enable=True, axis='x', tight=True)
     plt.grid(True)
 
-    ax = fig.add_subplot(4, 1, 4)
+    fig.add_subplot(4, 1, 4)
     plt.plot(date2, np_vec, 'bx-')
 
     if np_min > 0:
@@ -523,7 +523,7 @@ def plot_ml_ts(dt_ml_arr, ml_top_avg_arr, ml_top_std_arr, thick_avg_arr,
     """
     fig = plt.figure(figsize=[10, 15], dpi=dpi)
 
-    ax = fig.add_subplot(3, 1, 1)
+    fig.add_subplot(3, 1, 1)
     plt.plot(dt_ml_arr, ml_top_avg_arr, 'bx-', label='avg')
     plt.plot(dt_ml_arr, ml_top_avg_arr+ml_top_std_arr, 'rx-', label='avg+std')
     plt.plot(dt_ml_arr, ml_top_avg_arr-ml_top_std_arr, 'rx-', label='avg-std')
@@ -539,7 +539,7 @@ def plot_ml_ts(dt_ml_arr, ml_top_avg_arr, ml_top_std_arr, thick_avg_arr,
     plt.autoscale(enable=True, axis='x', tight=True)
     plt.grid(True)
 
-    ax = fig.add_subplot(3, 1, 2)
+    fig.add_subplot(3, 1, 2)
     plt.plot(dt_ml_arr, thick_avg_arr, 'bx-', label='avg')
     plt.plot(dt_ml_arr, thick_avg_arr+thick_std_arr, 'rx-', label='avg+std')
     plt.plot(dt_ml_arr, thick_avg_arr-thick_std_arr, 'rx-', label='avg-std')
@@ -554,7 +554,7 @@ def plot_ml_ts(dt_ml_arr, ml_top_avg_arr, ml_top_std_arr, thick_avg_arr,
     plt.autoscale(enable=True, axis='x', tight=True)
     plt.grid(True)
 
-    ax = fig.add_subplot(3, 1, 3)
+    fig.add_subplot(3, 1, 3)
     plt.plot(dt_ml_arr, nrays_valid_arr, 'bx-', label='N valid rays')
     plt.plot(dt_ml_arr, nrays_total_arr, 'rx-', label='rays total')
     # plt.legend(loc='best')

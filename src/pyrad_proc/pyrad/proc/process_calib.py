@@ -63,8 +63,7 @@ def process_correct_bias(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         break
     field_name = get_fieldname_pyart(datatype)
 
@@ -127,8 +126,7 @@ def process_correct_noise_rhohv(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'uRhoHV':
             urhohv = 'uncorrected_cross_correlation_ratio'
         if datatype == 'SNRh':
@@ -213,8 +211,7 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
     """
     echoid_field = None
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = (
-            get_datatype_fields(datatypedescr))
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'echoID':
             echoid_field = get_fieldname_pyart(datatype)
         else:
@@ -436,8 +433,7 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
     """
     echoid_field = None
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'echoID':
             echoid_field = get_fieldname_pyart(datatype)
         else:
@@ -638,8 +634,7 @@ def process_occurrence_period(procstatus, dscfg, radar_list=None):
 
     """
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'occurrence':
             occu_field = get_fieldname_pyart(datatype)
         elif datatype == 'nsamples':
@@ -833,8 +828,7 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
 
     if procstatus == 1:
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             if datatype == 'dBm':
                 pwrh_field = 'signal_power_hh'
             if datatype == 'dBmv':
@@ -910,8 +904,6 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
         max_std_pwr = dscfg.get('max_std_pwr', 2.)
         max_std_zdr = dscfg.get('max_std_zdr', 2.)
 
-        ind_rmin = np.where(radar.range['data'] > rmin)[0][0]
-
         sun_hits, new_radar = pyart.correct.get_sun_hits(
             radar, delev_max=delev_max, dazim_max=dazim_max, elmin=elmin,
             rmin=rmin, hmin=hmin, nbins_min=nbins_min,
@@ -931,8 +923,7 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
 
     if procstatus == 2:
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             break
 
         ind_rad = int(radarnr[5:8])-1
@@ -943,7 +934,6 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
         az_width_cross = dscfg.get('az_width_cross', None)
         el_width_cross = dscfg.get('el_width_cross', None)
         nfiles = dscfg.get('ndays', 1)
-        coeff_band = dscfg.get('coeff_band', 1.2)
 
         sun_hits = read_sun_hits_multiple_days(
             dscfg, dscfg['global_data']['timeinfo'], nfiles=nfiles)

@@ -444,10 +444,9 @@ def _wait_for_files(nowtime, datacfg, datatype_list, last_processed=None):
         # process from last processed scan
         starttime_loop = last_processed + timedelta(seconds=10)
 
-    masterfilelist, masterdatatypedescr, masterscan = (
-        _get_masterfile_list(
-            datatype_list, starttime_loop, endtime_loop,
-            datacfg, scan_list=datacfg['ScanList']))
+    masterfilelist, masterdatatypedescr, _ = _get_masterfile_list(
+        datatype_list, starttime_loop, endtime_loop, datacfg,
+        scan_list=datacfg['ScanList'])
 
     nvolumes = len(masterfilelist)
     if nvolumes == 0:
@@ -457,8 +456,7 @@ def _wait_for_files(nowtime, datacfg, datatype_list, last_processed=None):
     nrainbow = 0
     datatype_rainbow = []
     for datatype_descr in datatype_list:
-        radarnr, datagroup, datatype, dataset, product = (
-            get_datatype_fields(datatype_descr))
+        _, datagroup, datatype, _, _ = get_datatype_fields(datatype_descr)
         if datagroup == 'RAINBOW':
             datatype_rainbow.append(datatype)
             nrainbow += 1
@@ -626,12 +624,11 @@ def _get_radars_data(master_voltime, datatypesdescr_list, datacfg,
 
     # get data of rest of radars
     for i in range(1, num_radars):
-        filelist_ref, datatypedescr_ref, scan_ref = (
-            _get_masterfile_list(
-                datatypesdescr_list[i],
-                master_voltime-timedelta(seconds=datacfg['TimeTol']),
-                master_voltime+timedelta(seconds=datacfg['TimeTol']),
-                datacfg, scan_list=datacfg['ScanList']))
+        filelist_ref, datatypedescr_ref, _ = _get_masterfile_list(
+            datatypesdescr_list[i],
+            master_voltime-timedelta(seconds=datacfg['TimeTol']),
+            master_voltime+timedelta(seconds=datacfg['TimeTol']),
+            datacfg, scan_list=datacfg['ScanList'])
 
         nfiles_ref = len(filelist_ref)
         if nfiles_ref == 0:
@@ -1200,7 +1197,7 @@ def _get_datatype_list(cfg, radarnr='RADAR001'):
     datatypesdescr = set()
 
     for datasetdescr in cfg['dataSetList']:
-        proclevel, dataset = get_dataset_fields(datasetdescr)
+        _, dataset = get_dataset_fields(datasetdescr)
         if 'datatype' not in cfg[dataset]:
             continue
         if isinstance(cfg[dataset]['datatype'], str):
@@ -1289,8 +1286,7 @@ def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
     masterdatatypedescr = None
     masterscan = None
     for datatypedescr in datatypesdescr:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, datagroup, _, _, _ = get_datatype_fields(datatypedescr)
         if ((datagroup != 'COSMO') and (datagroup != 'RAD4ALPCOSMO') and
                 (datagroup != 'DEM') and (datagroup != 'RAD4ALPDEM') and
                 (datagroup != 'RAD4ALPHYDRO') and
@@ -1303,8 +1299,7 @@ def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
     # if data type is not radar use dBZ as reference
     if masterdatatypedescr is None:
         for datatypedescr in datatypesdescr:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, datagroup, _, _, _ = get_datatype_fields(datatypedescr)
             if datagroup == 'COSMO':
                 masterdatatypedescr = radarnr+':RAINBOW:dBZ'
                 if scan_list is not None:

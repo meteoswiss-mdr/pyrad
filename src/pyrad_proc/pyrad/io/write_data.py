@@ -39,6 +39,7 @@ from warnings import warn
 import smtplib
 from email.message import EmailMessage
 import fcntl
+import errno
 import time
 
 import numpy as np

@@ -608,8 +608,8 @@ def get_sensor_data(date, datatype, cfg):
     if cfg['sensor'] == 'rgage':
         datapath = cfg['smnpath']+date.strftime('%Y%m')+'/'
         datafile = date.strftime('%Y%m%d')+'_' + cfg['sensorid']+'.csv'
-        (sensor_id, sensordate, pressure, temp,
-         rh, sensorvalue, wspeed, wdir) = read_smn(datapath+datafile)
+        _, sensordate, _, _, _, sensorvalue, _, _ = read_smn(
+            datapath+datafile)
         if sensordate is None:
             return None, None, None, None
         label = 'RG'
@@ -619,8 +619,8 @@ def get_sensor_data(date, datatype, cfg):
         datafile = ('DSDfiltpolvar-'+cfg['sensorid']+'_' +
                     date.strftime('%Y%m%d')+'_Xband_temp' + cfg['temp'] +
                     '_elev'+cfg['elev']+'.txt')
-        (sensordate, prectype, lwc, rr, zh, zv, zdr, ldr, ah, av,
-         adiff, kdp, detaco, rhohv) = read_disdro_scattering(
+        (sensordate, prectype, lwc, rr, zh, zv, zdr, _, ah, av,
+         adiff, kdp, _, rhohv) = read_disdro_scattering(
              datapath+datafile)
         if sensordate is None:
             return None, None, None, None

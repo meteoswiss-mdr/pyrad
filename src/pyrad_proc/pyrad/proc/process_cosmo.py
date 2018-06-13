@@ -18,7 +18,6 @@ Functions to manage COSMO data
 
 from copy import deepcopy
 from warnings import warn
-import time
 import glob
 
 import numpy as np
@@ -79,8 +78,7 @@ def process_cosmo(procstatus, dscfg, radar_list=None):
     # start_time = time.time()
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, _, _, _ = get_datatype_fields(datatypedescr)
         break
 
     ind_rad = int(radarnr[5:8])-1
@@ -242,8 +240,7 @@ def process_hzt(procstatus, dscfg, radar_list=None):
     # start_time = time.time()
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, _, _, _ = get_datatype_fields(datatypedescr)
         break
 
     ind_rad = int(radarnr[5:8])-1
@@ -378,8 +375,7 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
     # start_time = time.time()
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, _, _, _ = get_datatype_fields(datatypedescr)
         break
 
     ind_rad = int(radarnr[5:8])-1
@@ -558,8 +554,7 @@ def process_hzt_lookup_table(procstatus, dscfg, radar_list=None):
     # start_time = time.time()
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, _, _, _ = get_datatype_fields(datatypedescr)
         break
 
     ind_rad = int(radarnr[5:8])-1
@@ -700,14 +695,11 @@ def process_cosmo_coord(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
-    start_time = time.time()
-
     if dscfg['initialized'] == 1:
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, _, _, _ = get_datatype_fields(datatypedescr)
         break
 
     ind_rad = int(radarnr[5:8])-1
@@ -770,14 +762,11 @@ def process_hzt_coord(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
-    start_time = time.time()
-
     if dscfg['initialized'] == 1:
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, _, _, _ = get_datatype_fields(datatypedescr)
         break
 
     ind_rad = int(radarnr[5:8])-1

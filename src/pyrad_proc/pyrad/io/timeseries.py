@@ -108,6 +108,7 @@ class TimeSeries(object):
 
     def write(self, fname):
         """
+        Write time series output
         """
 
         print("----- write to '%s'" % fname)
