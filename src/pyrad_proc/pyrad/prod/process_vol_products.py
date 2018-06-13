@@ -85,10 +85,11 @@ def generate_vol_products(dataset, prdcfg):
 
         step = prdcfg.get('step', None)
         quantiles = prdcfg.get('quantiles', None)
-        plot_type = prdcfg.get('plot_type', 'RHI')
+        plot_type = prdcfg.get('plot_type', 'PPI')
 
-        plot_ppi(dataset['radar_out'], field_name, ind_el, prdcfg, fname_list,
-                 plot_type=plot_type, step=step, quantiles=quantiles)
+        fname_list = plot_ppi(
+            dataset['radar_out'], field_name, ind_el, prdcfg, fname_list,
+            plot_type=plot_type, step=step, quantiles=quantiles)
 
         print('----- save to '+' '.join(fname_list))
 

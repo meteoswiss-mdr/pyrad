@@ -1090,7 +1090,7 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
             % dscfg['dsname'])
 
     if dscfg['ML_METHOD'] == 'GIANGRANDE':
-        
+
         temp_ref = 'temperature'
         temp_field = None
         iso0_field = None
@@ -1326,7 +1326,7 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
 
         ml = pyart.config.get_metadata('melting_layer')
         ml['data'] = ml_data
-        
+
         get_iso0 = dscfg.get('get_iso0', False)
 
         # Create melting layer object containing top and bottom and metadata
@@ -1372,7 +1372,7 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
             iso0_dict = pyart.config.get_metadata('height_over_iso0')
             iso0_dict['data'] = iso0_data
             new_dataset['radar_out'].add_field('height_over_iso0', iso0_dict)
-        
+
     else:
         raise Exception(
             "ERROR: Unknown melting layer retrieval method " +
