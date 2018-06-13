@@ -171,7 +171,7 @@ def read_sun_hits(fname):
             # now read the data
             csvfile.seek(0)
             reader = csv.DictReader(
-                row for row in csvfile if not row.startswith('#'))           
+                row for row in csvfile if not row.startswith('#'))
             date = list()
             for i, row in enumerate(reader):
                 date.append(datetime.datetime.strptime(
@@ -271,7 +271,7 @@ def read_sun_retrieval(fname):
             csvfile.seek(0)
             reader = csv.DictReader(
                 row for row in csvfile if not row.startswith('#'))
-            
+
             first_hit_time = list()
             last_hit_time = list()
             ref_time = list()
@@ -394,7 +394,7 @@ def read_solar_flux(fname):
                 txtfile, delimiter=' ', skipinitialspace=True, fieldnames=[
                     'fluxdate', 'fluxtime', 'fluxjulian', 'fluxcarrington',
                     'fluxobsflux', 'fluxadjflux', 'fluxursi'])
-                    
+
             flux_datetime = list()
             for i, row in enumerate(reader):
                 flux_datetime.append(datetime.datetime.strptime(

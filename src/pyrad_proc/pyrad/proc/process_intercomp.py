@@ -66,8 +66,7 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
 
     """
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         field_name = get_fieldname_pyart(datatype)
         break
     ind_rad = int(radarnr[5:8])-1
@@ -246,8 +245,7 @@ def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
 
     """
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if ((datatype == 'dBZ') or (datatype == 'dBZc') or
                 (datatype == 'dBuZ') or (datatype == 'dBZv') or
                 (datatype == 'dBZvc') or (datatype == 'dBuZv')):
@@ -422,8 +420,7 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
     iso0_name = None
     echo_name = None
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if ((datatype == 'PhiDP') or (datatype == 'PhiDPc')):
             phidp_name = get_fieldname_pyart(datatype)
         elif datatype == 'echoID':
@@ -495,7 +492,7 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
                     warn('Unknown radar antenna beamwidth.')
                     beamwidth = None
 
-                mask_fzl, end_gate_arr = pyart.correct.get_mask_fzl(
+                mask_fzl, _ = pyart.correct.get_mask_fzl(
                     radar, fzl=None, doc=None, min_temp=0., max_h_iso0=0.,
                     thickness=700., beamwidth=beamwidth,
                     temp_field=temp_name, iso0_field=iso0_name,
@@ -514,7 +511,7 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
                     warn('Unknown radar antenna beamwidth.')
                     beamwidth = None
 
-                mask_fzl, end_gate_arr = pyart.correct.get_mask_fzl(
+                mask_fzl, _ = pyart.correct.get_mask_fzl(
                     radar, fzl=None, doc=None, min_temp=0., max_h_iso0=0.,
                     thickness=700., beamwidth=beamwidth,
                     temp_field=temp_name, iso0_field=iso0_name,
@@ -687,8 +684,7 @@ def process_colocated_gates(procstatus, dscfg, radar_list=None):
 
     # create the list of data types for each radar
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if radarnr in radarnr_dict:
             radarnr_dict[radarnr].append(get_fieldname_pyart(datatype))
 
@@ -874,8 +870,7 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
 
         # create the list of data types for each radar
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             field_name = get_fieldname_pyart(datatype)
             break
 
@@ -1187,8 +1182,7 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
 
         # get field names
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             if radarnr == radarnr_list[0]:
                 if ((datatype == 'dBZ') or (datatype == 'dBZc') or
                         (datatype == 'dBuZ') or (datatype == 'dBZv') or
@@ -1462,8 +1456,7 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
         # get field name
         refl_type = None
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             if ((datatype == 'dBZ') or (datatype == 'dBZc') or
                     (datatype == 'dBuZ') or (datatype == 'dBZv') or
                     (datatype == 'dBZvc') or (datatype == 'dBuZv')):

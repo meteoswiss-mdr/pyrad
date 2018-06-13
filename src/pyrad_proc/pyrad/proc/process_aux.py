@@ -254,8 +254,7 @@ def process_raw(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, _, _, _ = get_datatype_fields(datatypedescr)
         break
     ind_rad = int(radarnr[5:8])-1
     if (radar_list is None) or (radar_list[ind_rad] is None):
@@ -293,8 +292,7 @@ def process_save_radar(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, _, _, _ = get_datatype_fields(datatypedescr)
         break
     ind_rad = int(radarnr[5:8])-1
     if (radar_list is None) or (radar_list[ind_rad] is None):
@@ -374,8 +372,7 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         break
     field_name = get_fieldname_pyart(datatype)
     ind_rad = int(radarnr[5:8])-1
@@ -533,7 +530,7 @@ def process_roi(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+        radarnr, _, datatype, _, _ = get_datatype_fields(
             datatypedescr)
         break
     field_name = get_fieldname_pyart(datatype)
@@ -550,10 +547,9 @@ def process_roi(procstatus, dscfg, radar_list=None):
         return None, None
 
     if 'trtfile' in dscfg:
-        (traj_ID, yyyymmddHHMM, lon, lat, ell_L, ell_S, ell_or, area,
-         vel_x, vel_y, det, RANKr, CG_n, CG_p, CG, CG_percent_p, ET45,
-         ET45m, ET15, ET15m, VIL, maxH, maxHm, POH, RANK, Dvel_x,
-         Dvel_y, cell_contour) = read_trt_traj_data(dscfg['trtfile'])
+        (_, yyyymmddHHMM, lon, lat, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
+         _, _, _, _, _, _, _, _, _, cell_contour) = read_trt_traj_data(
+             dscfg['trtfile'])
 
         time_tol = dscfg.get('TimeTol', 100.)
         dt = np.empty(yyyymmddHHMM.size, dtype=float)
@@ -725,8 +721,7 @@ def process_grid(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         break
     field_name = get_fieldname_pyart(datatype)
     ind_rad = int(radarnr[5:8])-1
@@ -855,8 +850,7 @@ def process_qvp(procstatus, dscfg, radar_list=None):
 
     if procstatus == 1:
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             break
         field_name = get_fieldname_pyart(datatype)
         ind_rad = int(radarnr[5:8])-1
@@ -967,8 +961,7 @@ def process_qvp(procstatus, dscfg, radar_list=None):
 
     if procstatus == 2:
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             break
 
         ind_rad = int(radarnr[5:8])-1
@@ -1026,8 +1019,7 @@ def process_time_height(procstatus, dscfg, radar_list=None):
 
     if procstatus == 1:
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             break
         field_name = get_fieldname_pyart(datatype)
         ind_rad = int(radarnr[5:8])-1
@@ -1161,8 +1153,7 @@ def process_time_height(procstatus, dscfg, radar_list=None):
 
     if procstatus == 2:
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             break
 
         ind_rad = int(radarnr[5:8])-1

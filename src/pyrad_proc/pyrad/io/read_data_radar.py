@@ -956,7 +956,7 @@ def merge_scans_hydro_rad4alp(voltime, datatype, cfg, ind_rad=0):
             datapath+basename+timeinfo+'*.'+scan+'*')
         if not filename:
             warn('No file found in '+datapath+basename+timeinfo+'*.' +
-                 scan_list[i])
+                 scan)
             continue
 
         radar_aux = get_data_rad4alp(

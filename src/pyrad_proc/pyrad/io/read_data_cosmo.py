@@ -141,12 +141,12 @@ def cosmo2radar_coord(radar, cosmo_coord, slice_xy=True, slice_z=False,
     x_radar, y_radar, z_radar = _put_radar_in_swiss_coord(radar)
 
     (x_cosmo, y_cosmo, z_cosmo, ind_xmin, ind_ymin, ind_zmin, ind_xmax,
-     ind_ymax, ind_zmax) = _prepare_for_interpolation(
+     ind_ymax, _) = _prepare_for_interpolation(
          x_radar, y_radar, z_radar, cosmo_coord, slice_xy=slice_xy,
          slice_z=slice_z)
 
     tree = cKDTree(np.transpose((z_cosmo, y_cosmo, x_cosmo)))
-    dd_vec, ind_vec = tree.query(np.transpose(
+    _, ind_vec = tree.query(np.transpose(
         (z_radar.flatten(), y_radar.flatten(), x_radar.flatten())), k=1)
 
     # put the index in the original cosmo coordinates
@@ -438,12 +438,12 @@ def _prepare_for_interpolation(x_radar, y_radar, z_radar, cosmo_coord,
         zmin = np.min(z_radar)
         zmax = np.max(z_radar)
 
-        ind_z, ind_y, ind_x = np.where(cosmo_coord['hfl']['data'] < zmin)
+        ind_z, _, _ = np.where(cosmo_coord['hfl']['data'] < zmin)
         if ind_z.size == 0:
             ind_zmin = 0
         else:
             ind_zmin = np.min(ind_z)
-        ind_z, ind_y, ind_x = np.where(cosmo_coord['hfl']['data'] > zmax)
+        ind_z, _, _ = np.where(cosmo_coord['hfl']['data'] > zmax)
         if ind_z.size == 0:
             ind_zmax = nz_cosmo-1
         else:
@@ -487,7 +487,7 @@ def _put_radar_in_swiss_coord(radar):
         arrays containing swiss coordinates of the radar [in m]
 
     """
-    x0, y0, z0 = wgs84_to_swissCH1903(
+    x0, y0, _ = wgs84_to_swissCH1903(
         radar.longitude['data'][0], radar.latitude['data'][0],
         radar.altitude['data'][0], no_altitude_transform=True)
 

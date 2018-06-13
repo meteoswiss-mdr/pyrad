@@ -783,8 +783,7 @@ def get_new_rainbow_file_name(master_fname, master_datadescriptor, datatype):
         the new file name
 
     """
-    radarnr, datagroup, master_datatype, dataset, product = (
-        get_datatype_fields(master_datadescriptor))
+    _, _, master_datatype, _, _ = get_datatype_fields(master_datadescriptor)
     datapath = os.path.dirname(master_fname)
     voltime = get_datetime(master_fname, master_datatype)
     voltype = os.path.basename(master_fname).split('.')[1]
@@ -914,8 +913,7 @@ def get_datetime(fname, datadescriptor):
         date and time in file name
 
     """
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        datadescriptor)
+    _, datagroup, _, _, _ = get_datatype_fields(datadescriptor)
 
     return _get_datetime(fname, datagroup)
 

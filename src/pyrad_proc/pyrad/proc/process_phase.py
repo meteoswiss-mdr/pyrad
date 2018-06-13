@@ -72,8 +72,7 @@ def process_correct_phidp0(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'dBZ':
             refl_field = 'reflectivity'
         if datatype == 'dBZc':
@@ -162,8 +161,7 @@ def process_smooth_phidp_single_window(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'dBZ':
             refl_field = 'reflectivity'
         if datatype == 'dBZc':
@@ -259,8 +257,7 @@ def process_smooth_phidp_double_window(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'dBZ':
             refl_field = 'reflectivity'
         if datatype == 'dBZc':
@@ -360,8 +357,7 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar_list=None):
     temp_field = None
     iso0_field = None
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'PhiDP':
             psidp_field = 'differential_phase'
         if datatype == 'PhiDPc':
@@ -447,7 +443,7 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar_list=None):
         warn('Unknown radar antenna beamwidth.')
         beamwidth = None
 
-    mask_fzl, end_gate_arr = pyart.correct.get_mask_fzl(
+    mask_fzl, _ = pyart.correct.get_mask_fzl(
         radar_aux, fzl=fzl, doc=15, min_temp=0., max_h_iso0=0.,
         thickness=thickness, beamwidth=beamwidth, temp_field=temp_field,
         iso0_field=iso0_field, temp_ref=temp_ref)
@@ -462,7 +458,7 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar_list=None):
     radar_aux.add_field(phidp_field, phidp, replace_existing=True)
 
     # the return data is not a masked array
-    kdp, phidpf, phidpr = pyart.retrieve.kdp_proc.kdp_maesaka(
+    kdp, phidpf, _ = pyart.retrieve.kdp_proc.kdp_maesaka(
         radar_aux, gatefilter=None, method='cg', backscatter=None, Clpf=1.,
         length_scale=None, first_guess=0.01, finite_order='low',
         fill_value=fill_value, psidp_field=phidp_field, kdp_field=kdp_field,
@@ -515,8 +511,7 @@ def process_phidp_kdp_lp(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'PhiDP':
             psidp_field = 'differential_phase'
         if datatype == 'PhiDPc':
@@ -596,7 +591,7 @@ def process_phidp_kdp_lp(procstatus, dscfg, radar_list=None):
         warn('Unknown radar antenna beamwidth.')
         beamwidth = None
 
-    mask_fzl, end_gate_arr = pyart.correct.get_mask_fzl(
+    mask_fzl, _ = pyart.correct.get_mask_fzl(
         radar_aux, fzl=fzl, doc=15, min_temp=0., max_h_iso0=0.,
         thickness=thickness, beamwidth=beamwidth, temp_field=temp_field,
         iso0_field=iso0_field, temp_ref=temp_ref)
@@ -664,8 +659,7 @@ def process_kdp_leastsquare_single_window(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'PhiDP':
             phidp_field = 'differential_phase'
         if datatype == 'PhiDPc':
@@ -736,8 +730,7 @@ def process_kdp_leastsquare_double_window(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'PhiDP':
             phidp_field = 'differential_phase'
         if datatype == 'PhiDPc':
@@ -824,8 +817,7 @@ def process_phidp_kdp_Vulpiani(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'PhiDP':
             phidp_field = 'differential_phase'
         if datatype == 'PhiDPc':
@@ -941,8 +933,7 @@ def process_phidp_kdp_Kalman(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'PhiDP':
             phidp_field = 'differential_phase'
         if datatype == 'PhiDPc':
@@ -990,7 +981,7 @@ def process_phidp_kdp_Kalman(procstatus, dscfg, radar_list=None):
     kdp_field = 'corrected_specific_differential_phase'
     phidpr_field = 'corrected_differential_phase'
 
-    kdp_dict, kdp_stdev_dict, phidpr_dict = pyart.retrieve.kdp_schneebeli(
+    kdp_dict, _, phidpr_dict = pyart.retrieve.kdp_schneebeli(
         radar, gatefilter=None, fill_value=None, psidp_field=phidp_field,
         kdp_field=kdp_field, phidp_field=phidpr_field, band=band, rcov=0,
         pcov=0, prefilter_psidp=False, filter_opt=None, parallel=parallel)
@@ -1045,8 +1036,7 @@ def process_attenuation(procstatus, dscfg, radar_list=None):
     temp = None
     iso0 = None
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'dBZc':
             refl = 'corrected_reflectivity'
         if datatype == 'PhiDPc':
@@ -1141,7 +1131,7 @@ def process_attenuation(procstatus, dscfg, radar_list=None):
         new_dataset['radar_out'].add_field(
             'specific_differential_attenuation', spec_diff_at)
         new_dataset['radar_out'].add_field(
-            'path_integrated_differential_attenuation', pia)
+            'path_integrated_differential_attenuation', pida)
         new_dataset['radar_out'].add_field(
             'corrected_differential_reflectivity', cor_zdr)
     else:

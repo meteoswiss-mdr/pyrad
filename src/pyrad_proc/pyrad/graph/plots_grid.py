@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 
 import pyart
 
-from .plots_aux import get_colobar_label, get_field_name, get_norm
+from .plots_aux import get_norm
 
 
 def plot_surface(grid, field_name, level, prdcfg, fname_list):
@@ -67,7 +67,7 @@ def plot_surface(grid, field_name, level, prdcfg, fname_list):
     xsize = prdcfg['ppiImageConfig']['xsize']
     ysize = prdcfg['ppiImageConfig']['ysize']
     fig = plt.figure(figsize=[xsize, ysize], dpi=dpi)
-    ax = fig.add_subplot(111, aspect='equal')
+    fig.add_subplot(111, aspect='equal')
     lon_lines = np.arange(np.floor(prdcfg['ppiMapImageConfig']['lonmin']),
                           np.ceil(prdcfg['ppiMapImageConfig']['lonmax'])+1,
                           0.5)

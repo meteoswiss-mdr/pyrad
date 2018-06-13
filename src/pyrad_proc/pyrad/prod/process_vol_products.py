@@ -913,32 +913,52 @@ def generate_vol_products(dataset, prdcfg):
         vmin = None
         vmax = None
         if fixed_span:
-            vmin, vmax = pyart.config.get_field_limits('eastward_wind_component')
+            vmin, vmax = pyart.config.get_field_limits(
+                'eastward_wind_component')
             if 'vmin' in prdcfg:
                 vmin = prdcfg['vmin']
             if 'vmax' in prdcfg:
                 vmax = prdcfg['vmax']
 
-        u_vel = deepcopy(dataset['radar_out'].fields['eastward_wind_component']['data'])
-        v_vel = deepcopy(dataset['radar_out'].fields['northward_wind_component']['data'])
-        w_vel = deepcopy(dataset['radar_out'].fields['vertical_wind_component']['data'])
-        std_vel = deepcopy(dataset['radar_out'].fields['retrieved_velocity_std']['data'])
-        diff_vel = deepcopy(dataset['radar_out'].fields['velocity_difference']['data'])
+        u_vel = deepcopy(
+            dataset['radar_out'].fields['eastward_wind_component']['data'])
+        v_vel = deepcopy(
+            dataset['radar_out'].fields['northward_wind_component']['data'])
+        w_vel = deepcopy(
+            dataset['radar_out'].fields['vertical_wind_component']['data'])
+        std_vel = deepcopy(
+            dataset['radar_out'].fields['retrieved_velocity_std']['data'])
+        diff_vel = deepcopy(
+            dataset['radar_out'].fields['velocity_difference']['data'])
 
         # remove azimuth information
-        u_vel_aux = np.ma.empty((dataset['radar_out'].nsweeps, dataset['radar_out'].ngates), dtype=float)
+        u_vel_aux = np.ma.empty(
+            (dataset['radar_out'].nsweeps, dataset['radar_out'].ngates),
+            dtype=float)
         u_vel_aux[:] = np.ma.masked
-        v_vel_aux = np.ma.empty((dataset['radar_out'].nsweeps, dataset['radar_out'].ngates), dtype=float)
+        v_vel_aux = np.ma.empty(
+            (dataset['radar_out'].nsweeps, dataset['radar_out'].ngates),
+            dtype=float)
         v_vel_aux[:] = np.ma.masked
-        w_vel_aux = np.ma.empty((dataset['radar_out'].nsweeps, dataset['radar_out'].ngates), dtype=float)
+        w_vel_aux = np.ma.empty(
+            (dataset['radar_out'].nsweeps, dataset['radar_out'].ngates),
+            dtype=float)
         w_vel_aux[:] = np.ma.masked
-        std_vel_aux = np.ma.empty((dataset['radar_out'].nsweeps, dataset['radar_out'].ngates), dtype=float)
+        std_vel_aux = np.ma.empty(
+            (dataset['radar_out'].nsweeps, dataset['radar_out'].ngates),
+            dtype=float)
         std_vel_aux[:] = np.ma.masked
-        ngates_aux = np.zeros((dataset['radar_out'].nsweeps, dataset['radar_out'].ngates), dtype=int)
-        gate_altitude_aux = np.empty((dataset['radar_out'].nsweeps, dataset['radar_out'].ngates), dtype=float)
+        ngates_aux = np.zeros(
+            (dataset['radar_out'].nsweeps, dataset['radar_out'].ngates),
+            dtype=int)
+        gate_altitude_aux = np.empty(
+            (dataset['radar_out'].nsweeps, dataset['radar_out'].ngates),
+            dtype=float)
         for ind_sweep in range(dataset['radar_out'].nsweeps):
-            ind_start = dataset['radar_out'].sweep_start_ray_index['data'][ind_sweep]
-            ind_end = dataset['radar_out'].sweep_end_ray_index['data'][ind_sweep]
+            ind_start = (
+                dataset['radar_out'].sweep_start_ray_index['data'][ind_sweep])
+            ind_end = (
+                dataset['radar_out'].sweep_end_ray_index['data'][ind_sweep])
             for ind_rng in range(dataset['radar_out'].ngates):
                 u_vel_aux[ind_sweep, ind_rng] = u_vel[ind_start, ind_rng]
                 v_vel_aux[ind_sweep, ind_rng] = v_vel[ind_start, ind_rng]
@@ -1147,7 +1167,9 @@ def generate_vol_products(dataset, prdcfg):
         print('----- save to '+' '.join(fname_list))
 
         # plot horizontal wind direction
-        wind_dir = 90.-np.ma.arctan2(u_vals[:, 0]/mag, v_vals[:, 0]/mag)*180./np.pi+180.
+        wind_dir = (
+            90.-np.ma.arctan2(u_vals[:, 0]/mag, v_vals[:, 0]/mag)*180. /
+            np.pi+180.)
         wind_dir[wind_dir >= 360.] = wind_dir[wind_dir >= 360.]-360.
         dir_data = [wind_dir]
         labels = ['Regression mean']
@@ -1175,8 +1197,8 @@ def generate_vol_products(dataset, prdcfg):
             fname_list[i] = savedir+fname
 
         plot_rhi_profile(
-            dir_data, h_vec, fname_list, labelx=labelx, labely='Height (m MSL)',
-            labels=labels, title=titl, colors=colors,
+            dir_data, h_vec, fname_list, labelx=labelx,
+            labely='Height (m MSL)', labels=labels, title=titl, colors=colors,
             linestyles=linestyles, vmin=0., vmax=360.,
             hmin=minheight, hmax=maxheight)
 
@@ -1219,7 +1241,8 @@ def generate_vol_products(dataset, prdcfg):
 
         try:
             xsect = pyart.util.cross_section_rhi(
-                dataset['radar_out'], [prdcfg['angle']], el_tol=prdcfg['EleTol'])
+                dataset['radar_out'], [prdcfg['angle']],
+                el_tol=prdcfg['EleTol'])
 
             savedir = get_save_dir(
                 prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -1269,7 +1292,8 @@ def generate_vol_products(dataset, prdcfg):
             fname_list[i] = savedir+fname
 
         plot_cappi(
-            dataset['radar_out'], field_name, prdcfg['altitude'], prdcfg, fname_list)
+            dataset['radar_out'], field_name, prdcfg['altitude'], prdcfg,
+            fname_list)
         print('----- save to '+' '.join(fname_list))
 
         return fname_list
@@ -1283,7 +1307,8 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfg['type'])
             return None
 
-        if dataset['radar_out'].scan_type != 'ppi' and dataset['radar_out'].scan_type != 'rhi':
+        if ((dataset['radar_out'].scan_type != 'ppi') and
+                (dataset['radar_out'].scan_type != 'rhi')):
             warn('This product is only available for PPI or RHI volumes')
             return None
 
@@ -1299,8 +1324,9 @@ def generate_vol_products(dataset, prdcfg):
             if 'value_stop' in prdcfg:
                 value_stop = prdcfg['value_stop']
 
-            rng_mask = np.logical_and(dataset['radar_out'].range['data'] >= value_start,
-                                      dataset['radar_out'].range['data'] <= value_stop)
+            rng_mask = np.logical_and(
+                dataset['radar_out'].range['data'] >= value_start,
+                dataset['radar_out'].range['data'] <= value_stop)
 
             x = dataset['radar_out'].range['data'][rng_mask]
 
@@ -1318,7 +1344,8 @@ def generate_vol_products(dataset, prdcfg):
                              str(prdcfg['fix_elevations'][i]))
                         continue
                     ind_sweep = np.argmin(d_el)
-                    new_dataset = dataset['radar_out'].extract_sweeps([ind_sweep])
+                    new_dataset = dataset['radar_out'].extract_sweeps(
+                        [ind_sweep])
 
                     try:
                         dataset_line = pyart.util.cross_section_ppi(
@@ -1344,7 +1371,8 @@ def generate_vol_products(dataset, prdcfg):
                              str(prdcfg['fix_azimuths'][i]))
                         continue
                     ind_sweep = np.argmin(d_az)
-                    new_dataset = dataset['radar_out'].extract_sweeps([ind_sweep])
+                    new_dataset = dataset['radar_out'].extract_sweeps(
+                        [ind_sweep])
 
                     try:
                         dataset_line = pyart.util.cross_section_rhi(
@@ -1405,11 +1433,13 @@ def generate_vol_products(dataset, prdcfg):
                              str(prdcfg['fix_elevations'][i]))
                         continue
                     ind_sweep = np.argmin(d_el)
-                    new_dataset = dataset['radar_out'].extract_sweeps([ind_sweep])
+                    new_dataset = dataset['radar_out'].extract_sweeps(
+                        [ind_sweep])
                 else:
                     try:
                         new_dataset = pyart.util.cross_section_rhi(
-                            dataset['radar_out'], [prdcfg['fix_elevations'][i]],
+                            dataset['radar_out'],
+                            [prdcfg['fix_elevations'][i]],
                             el_tol=prdcfg['AngTol'])
                     except EnvironmentError:
                         warn(
@@ -1485,7 +1515,8 @@ def generate_vol_products(dataset, prdcfg):
                              str(prdcfg['fix_azimuths'][i]))
                         continue
                     ind_sweep = np.argmin(d_az)
-                    new_dataset = dataset['radar_out'].extract_sweeps([ind_sweep])
+                    new_dataset = dataset['radar_out'].extract_sweeps(
+                        [ind_sweep])
                 ele_mask = np.logical_and(
                     new_dataset.elevation['data'] >= value_start,
                     new_dataset.elevation['data'] <= value_stop)
@@ -1508,11 +1539,13 @@ def generate_vol_products(dataset, prdcfg):
             warn('Unknown plotting mode '+prdcfg['mode'])
             return None
 
-        labely = get_colobar_label(dataset['radar_out'].fields[field_name], field_name)
+        labely = get_colobar_label(
+            dataset['radar_out'].fields[field_name], field_name)
         titl = (
             pyart.graph.common.generate_radar_time_begin(
                 dataset['radar_out']).isoformat() + 'Z' + '\n' +
-            get_field_name(dataset['radar_out'].fields[field_name], field_name))
+            get_field_name(
+                dataset['radar_out'].fields[field_name], field_name))
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -1544,7 +1577,8 @@ def generate_vol_products(dataset, prdcfg):
 
         ang_vec = np.sort(dataset['radar_out'].fixed_angle['data'])
         ang = ang_vec[prdcfg['anglenr']]
-        ind_ang = np.where(dataset['radar_out'].fixed_angle['data'] == ang)[0][0]
+        ind_ang = np.where(
+            dataset['radar_out'].fixed_angle['data'] == ang)[0][0]
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -1559,7 +1593,8 @@ def generate_vol_products(dataset, prdcfg):
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        plot_bscope(dataset['radar_out'], field_name, ind_ang, prdcfg, fname_list)
+        plot_bscope(
+            dataset['radar_out'], field_name, ind_ang, prdcfg, fname_list)
         print('----- save to '+' '.join(fname_list))
 
         return fname_list
@@ -1575,7 +1610,8 @@ def generate_vol_products(dataset, prdcfg):
 
         ang_vec = np.sort(dataset['radar_out'].fixed_angle['data'])
         ang = ang_vec[prdcfg['anglenr']]
-        ind_ang = np.where(dataset['radar_out'].fixed_angle['data'] == ang)[0][0]
+        ind_ang = np.where(
+            dataset['radar_out'].fixed_angle['data'] == ang)[0][0]
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -1590,7 +1626,8 @@ def generate_vol_products(dataset, prdcfg):
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        plot_time_range(dataset['radar_out'], field_name, ind_ang, prdcfg, fname_list)
+        plot_time_range(
+            dataset['radar_out'], field_name, ind_ang, prdcfg, fname_list)
         print('----- save to '+' '.join(fname_list))
 
         return fname_list
@@ -1620,14 +1657,17 @@ def generate_vol_products(dataset, prdcfg):
             fname_list[i] = savedir+fname
 
         bin_edges, values = compute_histogram(
-            dataset['radar_out'].fields[field_name]['data'], field_name, step=step)
+            dataset['radar_out'].fields[field_name]['data'], field_name,
+            step=step)
 
         titl = (
             pyart.graph.common.generate_radar_time_begin(
                 dataset['radar_out']).isoformat() + 'Z' + '\n' +
-            get_field_name(dataset['radar_out'].fields[field_name], field_name))
+            get_field_name(
+                dataset['radar_out'].fields[field_name], field_name))
 
-        labelx = get_colobar_label(dataset['radar_out'].fields[field_name], field_name)
+        labelx = get_colobar_label(
+            dataset['radar_out'].fields[field_name], field_name)
 
         plot_histogram(bin_edges, values, fname_list, labelx=labelx,
                        labely='Number of Samples', titl=titl)
@@ -1640,7 +1680,7 @@ def generate_vol_products(dataset, prdcfg):
                 ['csv'], timeinfo=prdcfg['timeinfo'],
                 runinfo=prdcfg['runinfo'])[0]
 
-            hist, bin_edges_aux = np.histogram(values, bins=bin_edges)
+            hist, _ = np.histogram(values, bins=bin_edges)
             write_histogram(
                 bin_edges, hist, fname, datatype=prdcfg['voltype'], step=step)
             print('----- save to '+fname)
@@ -1694,9 +1734,11 @@ def generate_vol_products(dataset, prdcfg):
         titl = (
             pyart.graph.common.generate_radar_time_begin(
                 dataset['radar_out']).isoformat() + 'Z' + '\n' +
-            get_field_name(dataset['radar_out'].fields[field_name], field_name))
+            get_field_name(
+                dataset['radar_out'].fields[field_name], field_name))
 
-        labely = get_colobar_label(dataset['radar_out'].fields[field_name], field_name)
+        labely = get_colobar_label(
+            dataset['radar_out'].fields[field_name], field_name)
 
         plot_quantiles(quantiles, values, fname_list, labelx='quantile',
                        labely=labely, titl=titl, vmin=vmin, vmax=vmax)
@@ -1774,8 +1816,9 @@ def generate_vol_products(dataset, prdcfg):
             else:
                 ind = np.where(~mask)[0]
             if len(ind) > nvalid_min:
-                field_coverage[i] = (dataset['radar_out'].range['data'][ind[-1]] -
-                                     dataset['radar_out'].range['data'][ind[0]])
+                field_coverage[i] = (
+                    dataset['radar_out'].range['data'][ind[-1]] -
+                    dataset['radar_out'].range['data'][ind[0]])
 
         # group coverage per elevation sectors
         nsteps = int((ele_max-ele_min)/ele_step)  # number of steps
@@ -1790,7 +1833,8 @@ def generate_vol_products(dataset, prdcfg):
             xval_aux = np.array([])
             for j in range(nele):
                 ele_target = ele_steps_vec[i]+j*ele_res
-                d_ele = np.abs(dataset['radar_out'].elevation['data']-ele_target)
+                d_ele = np.abs(
+                    dataset['radar_out'].elevation['data']-ele_target)
                 ind_ele = np.where(d_ele < prdcfg['AngTol'])[0]
                 if ind_ele.size == 0:
                     continue
@@ -1817,7 +1861,8 @@ def generate_vol_products(dataset, prdcfg):
             nazi = int((np.max(dataset['radar_out'].azimuth['data']) -
                         np.min(dataset['radar_out'].azimuth['data']))/azi_res+1)
 
-            xmeanval = np.arange(nazi)*azi_res+np.min(dataset['radar_out'].azimuth['data'])
+            xmeanval = np.arange(nazi)*azi_res+np.min(
+                dataset['radar_out'].azimuth['data'])
             ymeanval = np.ma.empty(nazi)
             ymeanval[:] = np.ma.masked
             for i in range(nazi):
@@ -1829,7 +1874,7 @@ def generate_vol_products(dataset, prdcfg):
             labelmeanval = ('ele '+'{:.1f}'.format(ele_sect_start)+'-' +
                             '{:.1f}'.format(ele_sect_stop)+' deg mean val')
 
-            meanval, quantval, nvalid = quantiles_weighted(
+            _, quantval, _ = quantiles_weighted(
                 field_coverage_sector, quantiles=quantiles/100.)
 
         # plot field coverage
@@ -1848,12 +1893,13 @@ def generate_vol_products(dataset, prdcfg):
         titl = (
             pyart.graph.common.generate_radar_time_begin(
                 dataset['radar_out']).isoformat() + 'Z' + '\n' +
-            get_field_name(dataset['radar_out'].fields[field_name], field_name))
+            get_field_name(
+                dataset['radar_out'].fields[field_name], field_name))
 
         plot_field_coverage(
             xval, yval, fname_list, labels=labels, title=titl, ymin=0.,
-            ymax=np.max(dataset['radar_out'].range['data'])+60000., xmeanval=xmeanval,
-            ymeanval=ymeanval, labelmeanval=labelmeanval)
+            ymax=np.max(dataset['radar_out'].range['data'])+60000.,
+            xmeanval=xmeanval, ymeanval=ymeanval, labelmeanval=labelmeanval)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -1956,8 +2002,9 @@ def generate_vol_products(dataset, prdcfg):
         if filterclt:
             echoID_field = get_fieldname_pyart('echoID')
             if echoID_field in dataset['radar_out'].fields:
-                echoID_ROI = dataset['radar_out'].fields[echoID_field]['data'][
-                    roi_flag == 1]
+                echoID_ROI = (
+                    dataset['radar_out'].fields[echoID_field]['data'][
+                        roi_flag == 1])
                 nclut = len(echoID_ROI[echoID_ROI == 2])
                 data[echoID_ROI == 2] = np.ma.masked
 
@@ -1966,7 +2013,9 @@ def generate_vol_products(dataset, prdcfg):
         if vismin is not None:
             vis_field = get_fieldname_pyart('VIS')
             if vis_field in dataset['radar_out'].fields:
-                vis_ROI = dataset['radar_out'].fields[vis_field]['data'][roi_flag == 1]
+                vis_ROI = (
+                    dataset['radar_out'].fields[vis_field]['data'][
+                        roi_flag == 1])
                 nblocked = len(vis_ROI[vis_ROI < vismin])
                 data[vis_ROI < vismin] = np.ma.masked
 
@@ -1975,7 +2024,9 @@ def generate_vol_products(dataset, prdcfg):
         if filterprec.size > 0:
             hydro_field = get_fieldname_pyart('hydro')
             if hydro_field in dataset['radar_out'].fields:
-                hydro_ROI = dataset['radar_out'].fields[hydro_field]['data'][roi_flag == 1]
+                hydro_ROI = (
+                    dataset['radar_out'].fields[hydro_field]['data'][
+                        roi_flag == 1])
                 nprec_filter = 0
                 for ind_hydro in filterprec:
                     nprec_filter += len(hydro_ROI[hydro_ROI == ind_hydro])
@@ -1995,8 +2046,7 @@ def generate_vol_products(dataset, prdcfg):
             data[mask] = nan_value
 
         # count and filter outliers
-        quantiles_lim, values_lim = compute_quantiles(
-            data, quantiles=[0.2, 99.8])
+        _, values_lim = compute_quantiles(data, quantiles=[0.2, 99.8])
         if values_lim.mask[0] or values_lim.mask[1]:
             warn('No valid radar gates found in sector')
             return None
@@ -2028,9 +2078,11 @@ def generate_vol_products(dataset, prdcfg):
         titl = (
             pyart.graph.common.generate_radar_time_begin(
                 dataset['radar_out']).isoformat() + 'Z' + '\n' +
-            get_field_name(dataset['radar_out'].fields[field_name], field_name))
+            get_field_name(
+                dataset['radar_out'].fields[field_name], field_name))
 
-        labelx = get_colobar_label(dataset['radar_out'].fields[field_name], field_name)
+        labelx = get_colobar_label(
+            dataset['radar_out'].fields[field_name], field_name)
 
         plot_quantiles(values, quantiles/100., fname_list, labelx=labelx,
                        labely='Cumulative probability', titl=titl)
@@ -2065,7 +2117,8 @@ def generate_vol_products(dataset, prdcfg):
 
         new_dataset = deepcopy(dataset['radar_out'])
         new_dataset.fields = dict()
-        new_dataset.add_field(field_name, dataset['radar_out'].fields[field_name])
+        new_dataset.add_field(
+            field_name, dataset['radar_out'].fields[field_name])
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
