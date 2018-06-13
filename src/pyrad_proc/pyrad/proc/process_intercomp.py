@@ -958,8 +958,7 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
         # if averaging required loop over valid gates and average
         if avg_rad1:
             ngates_valid = len(rad1_ray_ind)
-            val1_vec = np.ma.empty(ngates_valid, dtype=float)
-            val1_vec[:] = np.ma.masked
+            val1_vec = np.ma.masked_all(ngates_valid, dtype=float)
             is_valid_avg = np.zeros(ngates_valid, dtype=bool)
             for i in range(ngates_valid):
                 if rad1_rng_ind[i]+avg_rad_lim[1] >= radar1.ngates:
@@ -988,8 +987,7 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
 
         elif avg_rad2:
             ngates_valid = len(rad2_ray_ind)
-            val2_vec = np.ma.empty(ngates_valid, dtype=float)
-            val2_vec[:] = np.ma.masked
+            val2_vec = np.ma.masked_all(ngates_valid, dtype=float)
             is_valid_avg = np.zeros(ngates_valid, dtype=bool)
             for i in range(ngates_valid):
                 if rad2_rng_ind[i]+avg_rad_lim[1] >= radar2.ngates:
@@ -1310,12 +1308,9 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
         # only if all gates valid
         if avg_rad1:
             ngates_valid = len(rad1_ray_ind)
-            refl1_vec = np.ma.empty(ngates_valid, dtype=float)
-            refl1_vec[:] = np.ma.masked
-            phidp1_vec = np.ma.empty(ngates_valid, dtype=float)
-            phidp1_vec[:] = np.ma.masked
-            flag1_vec = np.ma.empty(ngates_valid, dtype=int)
-            flag1_vec[:] = np.ma.masked
+            refl1_vec = np.ma.masked_all(ngates_valid, dtype=float)
+            phidp1_vec = np.ma.masked_all(ngates_valid, dtype=float)
+            flag1_vec = np.ma.masked_all(ngates_valid, dtype=int)
             is_valid_avg = np.zeros(ngates_valid, dtype=bool)
             for i in range(ngates_valid):
                 if rad1_rng_ind[i]+avg_rad_lim[1] >= radar1.ngates:
@@ -1365,12 +1360,9 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
 
         elif avg_rad2:
             ngates_valid = len(rad2_ray_ind)
-            refl2_vec = np.ma.empty(ngates_valid, dtype=float)
-            refl2_vec[:] = np.ma.masked
-            phidp2_vec = np.ma.empty(ngates_valid, dtype=float)
-            phidp2_vec[:] = np.ma.masked
-            flag2_vec = np.ma.empty(ngates_valid, dtype=int)
-            flag2_vec[:] = np.ma.masked
+            refl2_vec = np.ma.masked_all(ngates_valid, dtype=float)
+            phidp2_vec = np.ma.masked_all(ngates_valid, dtype=float)
+            flag2_vec = np.ma.masked_all(ngates_valid, dtype=int)
             is_valid_avg = np.zeros(ngates_valid, dtype=bool)
             for i in range(ngates_valid):
                 if rad2_rng_ind[i]+avg_rad_lim[1] >= radar2.ngates:

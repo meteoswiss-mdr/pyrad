@@ -97,8 +97,7 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
         labelx = 'ray number'
 
     # compute percentiles of the histogram
-    az_percentile_ref = np.ma.empty(len(ang))
-    az_percentile_ref[:] = np.ma.masked
+    az_percentile_ref = np.ma.masked_all(len(ang))
     az_percentile_low = deepcopy(az_percentile_ref)
     az_percentile_high = deepcopy(az_percentile_ref)
     for ray in range(len(ang)):

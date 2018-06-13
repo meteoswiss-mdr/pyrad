@@ -934,8 +934,7 @@ def process_qvp(procstatus, dscfg, radar_list=None):
         # compute QVP data
         values = np.ma.mean(radar_aux.fields[field_name]['data'], axis=0)
         # altitude corresponding to qvp grid:
-        qvp_data = np.ma.zeros(qvp.ngates)
-        qvp_data[:] = np.ma.masked
+        qvp_data = np.ma.masked_all(qvp.ngates)
         for ind_r, h in enumerate(qvp.range['data']):
             ind_h = find_rng_index(
                 radar_aux.gate_altitude['data'][0, :], h, rng_tol=hres/2.)
@@ -1109,8 +1108,7 @@ def process_time_height(procstatus, dscfg, radar_list=None):
             th.range['data'], (th.nrays, th.ngates))
 
         # find data
-        th_data = np.ma.zeros(th.ngates)
-        th_data[:] = np.ma.masked
+        th_data = np.ma.masked_all(th.ngates)
 
         # find gates close to lat lon point
         inds = np.where(np.logical_and(
