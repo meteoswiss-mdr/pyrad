@@ -62,8 +62,7 @@ def process_echo_id(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'dBZ':
             refl_field = 'reflectivity'
         if datatype == 'dBuZ':
@@ -150,8 +149,7 @@ def process_birds_id(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'dBZ':
             refl_field = 'reflectivity'
         if datatype == 'dBuZ':
@@ -240,8 +238,7 @@ def process_clt_to_echo_id(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'CLT':
             clt_field = 'clutter_exit_code'
             break
@@ -306,8 +303,7 @@ def process_echo_filter(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'echoID':
             echoid_field = get_fieldname_pyart(datatype)
             break
@@ -329,8 +325,7 @@ def process_echo_filter(procstatus, dscfg, radar_list=None):
     new_dataset['radar_out'].fields = dict()
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'echoID':
             continue
 
@@ -392,8 +387,7 @@ def process_cdf(procstatus, dscfg, radar_list=None):
     hydro_field = None
     vis_field = None
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'echoID':
             echoid_field = get_fieldname_pyart(datatype)
         elif datatype == 'hydro':
@@ -472,8 +466,7 @@ def process_filter_snr(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if (datatype == 'SNRh') or (datatype == 'SNRv'):
             snr_field = get_fieldname_pyart(datatype)
             break
@@ -496,8 +489,7 @@ def process_filter_snr(procstatus, dscfg, radar_list=None):
     is_low_snr = gatefilter.gate_excluded == 1
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
 
         if (datatype == 'SNRh') or (datatype == 'SNRv'):
             continue
@@ -561,8 +553,7 @@ def process_filter_vel_diff(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'diffV':
             vel_diff_field = get_fieldname_pyart(datatype)
             break
@@ -584,8 +575,7 @@ def process_filter_vel_diff(procstatus, dscfg, radar_list=None):
     mask = np.ma.getmaskarray(radar.fields[vel_diff_field]['data'])
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
 
         if datatype == 'diffV':
             continue
@@ -646,8 +636,7 @@ def process_filter_visibility(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'VIS':
             vis_field = get_fieldname_pyart(datatype)
             break
@@ -671,7 +660,7 @@ def process_filter_visibility(procstatus, dscfg, radar_list=None):
     is_lowVIS = gatefilter.gate_excluded == 1
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+        _, _, datatype, _, _ = get_datatype_fields(
             datatypedescr)
 
         if datatype == 'VIS':
@@ -749,7 +738,7 @@ def process_outlier_filter(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+    radarnr, _, datatype, _, _ = get_datatype_fields(
         dscfg['datatype'][0])
 
     ind_rad = int(radarnr[5:8])-1
@@ -874,8 +863,7 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
         temp_field = None
         iso0_field = None
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             if datatype == 'dBZ':
                 refl_field = 'reflectivity'
             if datatype == 'dBZc':
@@ -1095,8 +1083,7 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
         temp_field = None
         iso0_field = None
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             if datatype == 'dBZ':
                 refl_field = 'reflectivity'
             if datatype == 'dBZc':
@@ -1142,37 +1129,47 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
             warn('Unable to detect melting layer. Missing data')
             return None, None
 
-        # User defined variables (more parameters are currently hard coded into the detection algorithm)
-        rhomin = dscfg.get('rhomin',0.75)                       # min rhohv to consider pixel potential melting layer pixel
-        rhomax = dscfg.get('rhomax',0.94)                       # max rhohv to consider pixel potential melting layer pixel
-        nml_points_min = dscfg.get('nml_points_min',1500)       # minimum number of melting layer points to consider valid melting layer detection
-        percentile_bottom = dscfg.get('percentile_bottom',0.3)  # percentile of ml points above which is considered that the bottom of the melting layer starts
+        # User defined variables
+        # (more parameters are currently hard coded into the detection
+        # algorithm)
+        # min rhohv to consider pixel potential melting layer pixel
+        rhomin = dscfg.get('rhomin', 0.75)
+        # max rhohv to consider pixel potential melting layer pixel
+        rhomax = dscfg.get('rhomax', 0.94)
+        # minimum number of melting layer points to consider valid melting
+        # layer detection
+        nml_points_min = dscfg.get('nml_points_min', 1500)
+        # percentile of ml points above which is considered that the bottom of
+        # the melting layer starts
+        percentile_bottom = dscfg.get('percentile_bottom', 0.3)
 
         if not dscfg['initialized']:
             # initialize dataset
             new_dataset = pyart.retrieve.melting_layer_giangrande(
-                radar,
-                rhomin=rhomin, rhomax=rhomax, nml_points_min=nml_points_min, percentile_bottom=percentile_bottom,
-                refl_field=refl_field, zdr_field=zdr_field,
-                rhv_field=rhv_field, temp_field=temp_field, iso0_field=iso0_field,
-                ml_field=None, temp_ref=temp_ref, get_iso0=True, new_dataset=None)
+                radar, rhomin=rhomin, rhomax=rhomax,
+                nml_points_min=nml_points_min,
+                percentile_bottom=percentile_bottom, refl_field=refl_field,
+                zdr_field=zdr_field, rhv_field=rhv_field,
+                temp_field=temp_field, iso0_field=iso0_field, ml_field=None,
+                temp_ref=temp_ref, get_iso0=True, new_dataset=None)
             dscfg['initialized'] = True
         else:
             # use previous detection
-            new_dataset  = pyart.retrieve.melting_layer_giangrande(
-                radar,
-                rhomin=rhomin, rhomax=rhomax, nml_points_min=nml_points_min, percentile_bottom=percentile_bottom,
-                refl_field=refl_field, zdr_field=zdr_field,
-                rhv_field=rhv_field, temp_field=temp_field, iso0_field=iso0_field,
-                ml_field=None, temp_ref=temp_ref, get_iso0=True, new_dataset=dscfg['ml_globdata'])
+            new_dataset = pyart.retrieve.melting_layer_giangrande(
+                radar, rhomin=rhomin, rhomax=rhomax,
+                nml_points_min=nml_points_min,
+                percentile_bottom=percentile_bottom, refl_field=refl_field,
+                zdr_field=zdr_field, rhv_field=rhv_field,
+                temp_field=temp_field, iso0_field=iso0_field, ml_field=None,
+                temp_ref=temp_ref, get_iso0=True,
+                new_dataset=dscfg['ml_globdata'])
 
         # update global stack
         dscfg['ml_globdata'] = new_dataset
 
     elif dscfg['ML_METHOD'] == 'WOLFENSBERGER':
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             if datatype == 'dBZ':
                 refl_field = 'reflectivity'
             if datatype == 'dBZc':
@@ -1232,8 +1229,7 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
 
     elif dscfg['ML_METHOD'] == 'FROM_HYDROCLASS':
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             if datatype == 'hydro':
                 hydro_field = get_fieldname_pyart(datatype)
 
@@ -1259,7 +1255,7 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
         is_rn = hydro_data == 5
         is_vi = hydro_data == 6
         is_ws = hydro_data == 7
-        is_mh = hydro_data == 8
+        # is_mh = hydro_data == 8
         is_ih = hydro_data == 9
 
         ml_data[is_ds] = 5
