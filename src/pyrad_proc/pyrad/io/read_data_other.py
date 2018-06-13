@@ -181,8 +181,7 @@ def read_quantiles_ts(fname_list, step=5., qmin=0., qmax=100.):
         quantiles, values = read_quantiles(fname)
         qbin_edges = np.arange(
             qmin-step/2, qmax+step/2+step/2, step=step, dtype=float)
-        values_aux = np.ma.empty(qbin_edges.size-1, dtype=float)
-        values_aux[:] = np.ma.masked
+        values_aux = np.ma.masked_all(qbin_edges.size-1, dtype=float)
         qbin_centers = np.arange(qmin, qmax+step/2, step=step)
         for i, qbin_center in enumerate(qbin_centers):
             val_aux = values[quantiles == qbin_center]
@@ -1057,10 +1056,8 @@ def read_monitoring_ts_old(fname):
             nrows = sum(1 for row in reader)
             np_t = np.zeros(nrows, dtype=int)
             central_quantile = np.ma.empty(nrows, dtype=float)
-            low_quantile = np.ma.empty(nrows, dtype=float)
-            low_quantile[:] = np.ma.masked
-            high_quantile = np.ma.empty(nrows, dtype=float)
-            high_quantile[:] = np.ma.masked
+            low_quantile = np.ma.masked_all(nrows, dtype=float)
+            high_quantile = np.ma.masked_all(nrows, dtype=float)
 
             # now read the data
             csvfile.seek(0)
@@ -1229,16 +1226,13 @@ def read_intercomp_scores_ts_old(fname):
             np_vec = np.zeros(nrows, dtype=int)
             meanbias_vec = np.ma.empty(nrows, dtype=float)
             medianbias_vec = np.ma.empty(nrows, dtype=float)
-            quant25bias_vec = np.ma.empty(nrows, dtype=float)
-            quant25bias_vec[:] = np.ma.masked
-            quant75bias_vec = np.ma.empty(nrows, dtype=float)
-            quant75bias_vec[:] = np.ma.masked
+            quant25bias_vec = np.ma.masked_all(nrows, dtype=float)
+            quant75bias_vec = np.ma.masked_all(nrows, dtype=float)
             modebias_vec = np.ma.empty(nrows, dtype=float)
             corr_vec = np.ma.empty(nrows, dtype=float)
             slope_vec = np.ma.empty(nrows, dtype=float)
             intercep_vec = np.ma.empty(nrows, dtype=float)
-            intercep_slope1_vec = np.ma.empty(nrows, dtype=float)
-            intercep_slope1_vec[:] = np.ma.masked
+            intercep_slope1_vec = np.ma.masked_all(nrows, dtype=float)
 
             # now read the data
             csvfile.seek(0)
@@ -1369,20 +1363,13 @@ def read_intercomp_scores_ts_old_v0(fname, corr_min=0.6, np_min=9):
                 meanbias_vec[-1] = np.sum(np_aux*meanbias_aux)/np_vec[-1]
                 corr_vec[-1] = np.sum(np_aux*corr_aux)/np_vec[-1]
 
-            medianbias_vec = np.ma.empty(nelements, dtype=float)
-            medianbias_vec[:] = np.ma.masked
-            quant25bias_vec = np.ma.empty(nelements, dtype=float)
-            quant25bias_vec[:] = np.ma.masked
-            quant75bias_vec = np.ma.empty(nelements, dtype=float)
-            quant75bias_vec[:] = np.ma.masked
-            modebias_vec = np.ma.empty(nelements, dtype=float)
-            modebias_vec[:] = np.ma.masked
-            slope_vec = np.ma.empty(nelements, dtype=float)
-            slope_vec[:] = np.ma.masked
-            intercep_vec = np.ma.empty(nelements, dtype=float)
-            intercep_vec[:] = np.ma.masked
-            intercep_slope1_vec = np.ma.empty(nelements, dtype=float)
-            intercep_slope1_vec[:] = np.ma.masked
+            medianbias_vec = np.ma.masked_all(nelements, dtype=float)
+            quant25bias_vec = np.ma.masked_all(nelements, dtype=float)
+            quant75bias_vec = np.ma.masked_all(nelements, dtype=float)
+            modebias_vec = np.ma.masked_all(nelements, dtype=float)
+            slope_vec = np.ma.masked_all(nelements, dtype=float)
+            intercep_vec = np.ma.masked_all(nelements, dtype=float)
+            intercep_slope1_vec = np.ma.masked_all(nelements, dtype=float)
 
             return (date_vec, np_vec, meanbias_vec, medianbias_vec,
                     quant25bias_vec, quant75bias_vec, modebias_vec, corr_vec,

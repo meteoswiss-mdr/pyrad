@@ -328,10 +328,8 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
             # get indexes of gates close to target
             ngc = np.size(dscfg['global_data']['ray_ind'])
 
-            ray_ind = np.ma.empty(ngc, dtype=int)
-            ray_ind[:] = np.ma.masked
-            rng_ind = np.ma.empty(ngc, dtype=int)
-            rng_ind[:] = np.ma.masked
+            ray_ind = np.ma.masked_all(ngc, dtype=int)
+            rng_ind = np.ma.masked_all(ngc, dtype=int)
             for i in range(ngc):
                 ind_ray_rad = find_ray_index(
                     radar.elevation['data'], radar.azimuth['data'],

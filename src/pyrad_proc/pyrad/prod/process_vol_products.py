@@ -85,10 +85,11 @@ def generate_vol_products(dataset, prdcfg):
 
         step = prdcfg.get('step', None)
         quantiles = prdcfg.get('quantiles', None)
-        plot_type = prdcfg.get('plot_type', 'RHI')
+        plot_type = prdcfg.get('plot_type', 'PPI')
 
-        plot_ppi(dataset['radar_out'], field_name, ind_el, prdcfg, fname_list,
-                 plot_type=plot_type, step=step, quantiles=quantiles)
+        fname_list = plot_ppi(
+            dataset['radar_out'], field_name, ind_el, prdcfg, fname_list,
+            plot_type=plot_type, step=step, quantiles=quantiles)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -931,22 +932,18 @@ def generate_vol_products(dataset, prdcfg):
             dataset['radar_out'].fields['velocity_difference']['data'])
 
         # remove azimuth information
-        u_vel_aux = np.ma.empty(
+        u_vel_aux = np.ma.masked_all(
             (dataset['radar_out'].nsweeps, dataset['radar_out'].ngates),
             dtype=float)
-        u_vel_aux[:] = np.ma.masked
-        v_vel_aux = np.ma.empty(
+        v_vel_aux = np.ma.masked_all(
             (dataset['radar_out'].nsweeps, dataset['radar_out'].ngates),
             dtype=float)
-        v_vel_aux[:] = np.ma.masked
-        w_vel_aux = np.ma.empty(
+        w_vel_aux = np.ma.masked_all(
             (dataset['radar_out'].nsweeps, dataset['radar_out'].ngates),
             dtype=float)
-        w_vel_aux[:] = np.ma.masked
-        std_vel_aux = np.ma.empty(
+        std_vel_aux = np.ma.masked_all(
             (dataset['radar_out'].nsweeps, dataset['radar_out'].ngates),
             dtype=float)
-        std_vel_aux[:] = np.ma.masked
         ngates_aux = np.zeros(
             (dataset['radar_out'].nsweeps, dataset['radar_out'].ngates),
             dtype=int)
@@ -1802,8 +1799,7 @@ def generate_vol_products(dataset, prdcfg):
             quantiles = np.array(prdcfg['quantiles'])
 
         # get coverage per ray
-        field_coverage = np.ma.empty(dataset['radar_out'].nrays)
-        field_coverage[:] = np.ma.masked
+        field_coverage = np.ma.masked_all(dataset['radar_out'].nrays)
 
         for i in range(dataset['radar_out'].nrays):
             mask = np.ma.getmaskarray(
@@ -1862,8 +1858,7 @@ def generate_vol_products(dataset, prdcfg):
 
             xmeanval = np.arange(nazi)*azi_res+np.min(
                 dataset['radar_out'].azimuth['data'])
-            ymeanval = np.ma.empty(nazi)
-            ymeanval[:] = np.ma.masked
+            ymeanval = np.ma.masked_all(nazi)
             for i in range(nazi):
                 d_azi = np.abs(azi_sector-xmeanval[i])
                 ind_azi = np.where(d_azi < prdcfg['AngTol'])[0]
