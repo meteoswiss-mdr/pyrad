@@ -754,10 +754,14 @@ def write_ts_ml(dt_ml, ml_top_avg, ml_top_std, thick_avg, thick_std,
             writer.writeheader()
             writer.writerow(
                 {'date-time [UTC]': dt_ml.strftime('%Y-%m-%d %H:%M:%S'),
-                 'mean ml top height [m MSL]': ml_top_avg,
-                 'std ml top height [m MSL]': ml_top_std,
-                 'mean ml thickness [m]': thick_avg,
-                 'std ml thickness [m]': thick_std,
+                 'mean ml top height [m MSL]': ml_top_avg.filled(
+                     fill_value=get_fillvalue()),
+                 'std ml top height [m MSL]': ml_top_std.filled(
+                     fill_value=get_fillvalue()),
+                 'mean ml thickness [m]': thick_avg.filled(
+                     fill_value=get_fillvalue()),
+                 'std ml thickness [m]': thick_std.filled(
+                     fill_value=get_fillvalue()),
                  'N valid rays': nrays_valid,
                  'rays total': nrays_total})
             csvfile.close()
@@ -770,10 +774,14 @@ def write_ts_ml(dt_ml, ml_top_avg, ml_top_std, thick_avg, thick_std,
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writerow(
                 {'date-time [UTC]': dt_ml.strftime('%Y-%m-%d %H:%M:%S'),
-                 'mean ml top height [m MSL]': ml_top_avg,
-                 'std ml top height [m MSL]': ml_top_std,
-                 'mean ml thickness [m]': thick_avg,
-                 'std ml thickness [m]': thick_std,
+                 'mean ml top height [m MSL]': ml_top_avg.filled(
+                     fill_value=get_fillvalue()),
+                 'std ml top height [m MSL]': ml_top_std.filled(
+                     fill_value=get_fillvalue()),
+                 'mean ml thickness [m]': thick_avg.filled(
+                     fill_value=get_fillvalue()),
+                 'std ml thickness [m]': thick_std.filled(
+                     fill_value=get_fillvalue()),
                  'N valid rays': nrays_valid,
                  'rays total': nrays_total})
             csvfile.close()
