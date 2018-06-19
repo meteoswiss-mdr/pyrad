@@ -1079,7 +1079,7 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
 
     if dscfg['ML_METHOD'] == 'GIANGRANDE':
 
-        temp_ref = 'temperature'
+        temp_ref = None
         temp_field = None
         iso0_field = None
         for datatypedescr in dscfg['datatype']:
@@ -1107,21 +1107,23 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
             return None, None
         radar = radar_list[ind_rad]
 
-        if temp_field is None and iso0_field is None:
-            warn('iso0 or temperature fields needed to detect melting layer')
-            return None, None
-
-        if temp_field is not None and (temp_field not in radar.fields):
-            warn('Unable to detect melting layer. Missing temperature field')
-            return None, None
-
+        # Check which should be the reference field for temperature
         if iso0_field is not None and (iso0_field not in radar.fields):
             warn('Unable to detect melting layer. ' +
                  'Missing height over iso0 field')
             return None, None
-
-        if iso0_field is not None:
+        else:
             temp_ref = 'height_over_iso0'
+
+        if temp_field is not None and (temp_field not in radar.fields):
+            warn('Unable to detect melting layer. Missing temperature field')
+            return None, None
+        else:
+            temp_ref = 'temperature'
+            iso0_field = 'height_over_iso0'
+
+        if temp_ref is None:
+            iso0_field = 'height_over_iso0'
 
         if ((refl_field not in radar.fields) or
                 (zdr_field not in radar.fields) or
@@ -1130,42 +1132,75 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
             return None, None
 
         # User defined variables
-        # (more parameters are currently hard coded into the detection
-        # algorithm)
-        # min rhohv to consider pixel potential melting layer pixel
+        nVol = dscfg.get('nVol', 3)
+        maxh = dscfg.get('maxh', 6000.)
+        hres = dscfg.get('hres', 50.)
+
+        rmin = dscfg.get('rmin', 1000.)
+        elmin = dscfg.get('elmin', 4.)
+        elmax = dscfg.get('elmax', 10.)
         rhomin = dscfg.get('rhomin', 0.75)
-        # max rhohv to consider pixel potential melting layer pixel
         rhomax = dscfg.get('rhomax', 0.94)
-        # minimum number of melting layer points to consider valid melting
-        # layer detection
-        nml_points_min = dscfg.get('nml_points_min', 1500)
-        # percentile of ml points above which is considered that the bottom of
-        # the melting layer starts
+        zhmin = dscfg.get('zhmin', 20.)
+        hwindow = dscfg.get('hwindow', 500.)
+        mlzhmin = dscfg.get('mlzhmin', 30.)
+        mlzhmax = dscfg.get('mlzhmax', 50.)
+        mlzdrmin = dscfg.get('mlzdrmin', 1.)
+        mlzdrmax = dscfg.get('mlzdrmax', 5.)
+        htol = dscfg.get('htol', 500.)
+        ml_bottom_diff_max = dscfg.get('ml_bottom_diff_max', 1000.)
+
+        time_accu_max = dscfg.get('time_accu_max', 1800.)
+        nml_points_min = dscfg.get('nml_points_min', None)
+        wlength = dscfg.get('wlength', 20.)
         percentile_bottom = dscfg.get('percentile_bottom', 0.3)
+        percentile_top = dscfg.get('percentile_top', 0.9)
+        interpol = dscfg.get('interpol', True)
+        time_nodata_allowed = dscfg.get('time_nodata_allowed', 3600.)
+
+        get_iso0 = dscfg.get('get_iso0', True)
 
         if not dscfg['initialized']:
             # initialize dataset
-            new_dataset = pyart.retrieve.melting_layer_giangrande(
-                radar, rhomin=rhomin, rhomax=rhomax,
-                nml_points_min=nml_points_min,
-                percentile_bottom=percentile_bottom, refl_field=refl_field,
-                zdr_field=zdr_field, rhv_field=rhv_field,
-                temp_field=temp_field, iso0_field=iso0_field, ml_field=None,
-                temp_ref=temp_ref, get_iso0=True, new_dataset=None)
+            ml_obj, ml_dict, iso0_dict, ml_global = (
+                pyart.retrieve.melting_layer_giangrande(
+                    radar, nVol=nVol, maxh=maxh, hres=hres, rmin=rmin,
+                    elmin=elmin, elmax=elmax, rhomin=rhomin, rhomax=rhomax,
+                    zhmin=zhmin, hwindow=hwindow, mlzhmin=mlzhmin,
+                    mlzhmax=mlzhmax, mlzdrmin=mlzdrmin, mlzdrmax=mlzdrmax,
+                    htol=htol, ml_bottom_diff_max=ml_bottom_diff_max,
+                    time_accu_max=time_accu_max, nml_points_min=nml_points_min,
+                    wlength=wlength, percentile_bottom=percentile_bottom,
+                    percentile_top=percentile_top, interpol=interpol,
+                    time_nodata_allowed=time_nodata_allowed,
+                    refl_field=refl_field, zdr_field=zdr_field,
+                    rhv_field=rhv_field, temp_field=temp_field,
+                    iso0_field=iso0_field, ml_field='melting_layer',
+                    ml_pos_field='melting_layer_height',
+                    temp_ref=temp_ref, get_iso0=get_iso0, ml_global=None))
             dscfg['initialized'] = True
         else:
             # use previous detection
-            new_dataset = pyart.retrieve.melting_layer_giangrande(
-                radar, rhomin=rhomin, rhomax=rhomax,
-                nml_points_min=nml_points_min,
-                percentile_bottom=percentile_bottom, refl_field=refl_field,
-                zdr_field=zdr_field, rhv_field=rhv_field,
-                temp_field=temp_field, iso0_field=iso0_field, ml_field=None,
-                temp_ref=temp_ref, get_iso0=True,
-                new_dataset=dscfg['ml_globdata'])
+            ml_obj, ml_dict, iso0_dict, ml_global = (
+                pyart.retrieve.melting_layer_giangrande(
+                    radar, nVol=nVol, maxh=maxh, hres=hres, rmin=rmin,
+                    elmin=elmin, elmax=elmax, rhomin=rhomin, rhomax=rhomax,
+                    zhmin=zhmin, hwindow=hwindow, mlzhmin=mlzhmin,
+                    mlzhmax=mlzhmax, mlzdrmin=mlzdrmin, mlzdrmax=mlzdrmax,
+                    htol=htol, ml_bottom_diff_max=ml_bottom_diff_max,
+                    time_accu_max=time_accu_max, nml_points_min=nml_points_min,
+                    wlength=wlength, percentile_bottom=percentile_bottom,
+                    percentile_top=percentile_top, interpol=interpol,
+                    time_nodata_allowed=time_nodata_allowed,
+                    refl_field=refl_field, zdr_field=zdr_field,
+                    rhv_field=rhv_field, temp_field=temp_field,
+                    iso0_field=iso0_field, ml_field='melting_layer',
+                    ml_pos_field='melting_layer_height',
+                    temp_ref=temp_ref, get_iso0=get_iso0,
+                    ml_global=dscfg['global_data']))
 
         # update global stack
-        dscfg['ml_globdata'] = new_dataset
+        dscfg['global_data'] = ml_global
 
     elif dscfg['ML_METHOD'] == 'WOLFENSBERGER':
         for datatypedescr in dscfg['datatype']:
@@ -1196,36 +1231,15 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
         interp_holes = dscfg.get('interp_holes', False)
         max_length_holes = dscfg.get('max_length_holes', 250)
         check_min_length = dscfg.get('check_min_length', True)
+        get_iso0 = dscfg.get('get_iso0', True)
 
-        ml_list = pyart.retrieve.detect_ml(
+        ml_obj, ml_dict, iso0_dict, _ = pyart.retrieve.detect_ml(
             radar, refl_field=refl_field, rhohv_field=rhohv_field,
-            max_range=max_range, detect_threshold=detect_threshold,
-            interp_holes=interp_holes, max_length_holes=max_length_holes,
-            check_min_length=check_min_length)
-
-        ml_data = np.ma.empty((radar.nrays, radar.ngates), dtype=int)
-        ml_data[:] = np.ma.masked
-
-        ml_top = np.ma.empty(radar.nrays, dtype=float)
-        ml_top[:] = np.ma.masked
-        ml_bottom = np.ma.empty(radar.nrays, dtype=float)
-        ml_bottom[:] = np.ma.masked
-        for ind_sweep, ml_dict in enumerate(ml_list):
-            ind_start = radar.sweep_start_ray_index['data'][ind_sweep]
-            ind_end = radar.sweep_end_ray_index['data'][ind_sweep]
-            ml_data[ind_start:ind_end+1, :] = ml_dict['ml_pol']['data']+2
-            ml_top[ind_start:ind_end+1] = ml_dict['ml_pol']['top_ml']
-            ml_bottom[ind_start:ind_end+1] = ml_dict['ml_pol']['bottom_ml']
-
-        mask = np.logical_or(
-            np.ma.getmaskarray(radar.fields[refl_field]['data']),
-            np.ma.getmaskarray(radar.fields[rhohv_field]['data']))
-        ml_data = np.ma.masked_where(mask, ml_data)
-        ml = pyart.config.get_metadata('melting_layer')
-        ml['data'] = ml_data
-
-        ml_top = np.ma.masked_invalid(ml_top)
-        ml_bottom = np.ma.masked_invalid(ml_bottom)
+            ml_field='melting_layer', ml_pos_field='melting_layer_height',
+            iso0_field='height_over_iso0', max_range=max_range,
+            detect_threshold=detect_threshold, interp_holes=interp_holes,
+            max_length_holes=max_length_holes,
+            check_min_length=check_min_length, get_iso0=get_iso0)
 
     elif dscfg['ML_METHOD'] == 'FROM_HYDROCLASS':
         for datatypedescr in dscfg['datatype']:
@@ -1243,135 +1257,31 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
             warn('Unable to detect melting layer. Missing data')
             return None, None
 
-        ml_data = np.ma.empty((radar.nrays, radar.ngates), dtype=int)
-        ml_data[:] = np.ma.masked
-        hydro_data = radar.fields[hydro_field]['data']
-
-        # get the location of each hydrometeor class
-        is_ds = hydro_data == 1
-        is_cr = hydro_data == 2
-        is_lr = hydro_data == 3
-        is_gr = hydro_data == 4
-        is_rn = hydro_data == 5
-        is_vi = hydro_data == 6
-        is_ws = hydro_data == 7
-        # is_mh = hydro_data == 8
-        is_ih = hydro_data == 9
-
-        ml_data[is_ds] = 5
-        ml_data[is_cr] = 5
-        ml_data[is_lr] = 1
-        ml_data[is_gr] = 5
-        ml_data[is_rn] = 1
-        ml_data[is_vi] = 5
-        ml_data[is_ws] = 3
-        ml_data[is_ih] = 5
-
-        mask = deepcopy(np.ma.getmaskarray(ml_data))
-
         # User defined parameters
         force_continuity = dscfg.get('force_continuity', True)
         dist_max = dscfg.get('dist_max', 350.)
-
-        ml_top = np.ma.empty(radar.nrays, dtype=float)
-        ml_top[:] = np.ma.masked
-        ml_bottom = np.ma.empty(radar.nrays, dtype=float)
-        ml_bottom[:] = np.ma.masked
-        for ind_ray in range(radar.nrays):
-            inds_rng_ml = np.ma.where(ml_data[ind_ray, :] == 3)[0]
-
-            # No melting layer identified. Do nothing
-            if inds_rng_ml.size == 0:
-                if force_continuity:
-                    ml_data[ind_ray, :] = np.ma.masked
-                continue
-
-            # Remove holes in melting layer
-            if force_continuity:
-                # There is just one gate. Do nothing
-                if inds_rng_ml.size == 1:
-                    continue
-
-                # identify continuos regions
-                rng_ml = radar.range['data'][inds_rng_ml]
-                dist_ml = np.append(
-                    rng_ml[1:]-rng_ml[0:-1], rng_ml[-1]-rng_ml[-2])
-                ind_valid = np.where(dist_ml < dist_max)[0]
-                inds_rng_ml = inds_rng_ml[ind_valid]
-
-                # melting layer discontinuous. Remove ray
-                if inds_rng_ml.size == 0:
-                    ml_data[ind_ray, :] = np.ma.masked
-                    continue
-
-                # Fill in gaps
-                ml_data[ind_ray, :] = 3
-                if inds_rng_ml[0] > 0:
-                    ml_data[ind_ray, 0:inds_rng_ml[0]] = 1
-                if inds_rng_ml[-1] < radar.ngates-1:
-                    ml_data[ind_ray, inds_rng_ml[-1]+1:] = 5
-
-            # get top and bottom
-            ml_bottom[ind_ray] = (
-                radar.gate_altitude['data'][ind_ray, inds_rng_ml[0]])
-            ml_top[ind_ray] = (
-                radar.gate_altitude['data'][ind_ray, inds_rng_ml[-1]])
-
-        if force_continuity:
-            ml_data = np.ma.masked_where(mask, ml_data)
-
-        ml = pyart.config.get_metadata('melting_layer')
-        ml['data'] = ml_data
-
         get_iso0 = dscfg.get('get_iso0', False)
 
-        # Create melting layer object containing top and bottom and metadata
-        ml_obj = deepcopy(radar)
-
-        # modify original metadata
-        ml_obj.range['data'] = np.array([0, 1], dtype='float64')
-        ml_obj.ngates = 2
-
-        ml_obj.gate_x = np.zeros((ml_obj.nrays, ml_obj.ngates), dtype=float)
-        ml_obj.gate_y = np.zeros((ml_obj.nrays, ml_obj.ngates), dtype=float)
-        ml_obj.gate_z = np.zeros((ml_obj.nrays, ml_obj.ngates), dtype=float)
-
-        ml_obj.gate_longitude = np.zeros(
-            (ml_obj.nrays, ml_obj.ngates), dtype=float)
-        ml_obj.gate_latitude = np.zeros(
-            (ml_obj.nrays, ml_obj.ngates), dtype=float)
-        ml_obj.gate_altitude = np.zeros(
-            (ml_obj.nrays, ml_obj.ngates), dtype=float)
-
-        # input field
-        ml_pos = pyart.config.get_metadata('melting_layer_height')
-        ml_aux = np.ma.empty((ml_obj.nrays, ml_obj.ngates), dtype='float64')
-        ml_aux[:, 0] = ml_bottom
-        ml_aux[:, 1] = ml_top
-        ml_pos['data'] = ml_aux
-
-        ml_obj.fields = dict()
-        ml_obj.add_field('melting_layer_height', ml_pos)
-
-        # prepare for exit
-        new_dataset = {
-            'radar_out': deepcopy(radar),
-            'ml_obj': ml_obj}
-        new_dataset['radar_out'].fields = dict()
-        new_dataset['radar_out'].add_field('melting_layer', ml)
-
-        if get_iso0:
-            iso0_data = np.ma.empty((radar.nrays, radar.ngates), dtype=float)
-            iso0_data[:] = np.ma.masked
-            for ind_ray in range(radar.nrays):
-                iso0_data[ind_ray, :] = radar.gate_altitude['data'][ind_ray, :]-ml_top[ind_ray]
-            iso0_dict = pyart.config.get_metadata('height_over_iso0')
-            iso0_dict['data'] = iso0_data
-            new_dataset['radar_out'].add_field('height_over_iso0', iso0_dict)
+        ml_obj, ml_dict, iso0_dict = pyart.retrieve.melting_layer_hydroclass(
+            radar, hydro_field=hydro_field, ml_field='melting_layer',
+            ml_pos_field='melting_layer_height',
+            iso0_field='height_over_iso0', force_continuity=force_continuity,
+            dist_max=dist_max, get_iso0=get_iso0)
 
     else:
         raise Exception(
             "ERROR: Unknown melting layer retrieval method " +
             dscfg['ML_METHOD'])
+
+    # prepare for exit
+    if ml_dict is None:
+        return None, None
+
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field('melting_layer', ml_dict)
+    if iso0_dict is not None:
+        new_dataset['radar_out'].add_field('height_over_iso0', iso0_dict)
+    new_dataset.update({'ml_obj': ml_obj})
 
     return new_dataset, ind_rad

@@ -488,11 +488,11 @@ def generate_ml_products(dataset, prdcfg):
         ml_bottom = dataset['ml_obj'].fields['melting_layer_height']['data'][:, 0]
         ml_top = dataset['ml_obj'].fields['melting_layer_height']['data'][:, 1]
 
-        ml_top_avg = np.ma.mean(ml_top)
-        ml_top_std = np.ma.std(ml_top)
+        ml_top_avg = np.ma.asarray(np.ma.mean(ml_top))
+        ml_top_std = np.ma.asarray(np.ma.std(ml_top))
         thick = ml_top-ml_bottom
-        thick_avg = np.ma.mean(thick)
-        thick_std = np.ma.std(thick)
+        thick_avg = np.ma.asarray(np.ma.mean(thick))
+        thick_std = np.ma.asarray(np.ma.std(thick))
         nrays_valid = thick.compressed().size
         nrays_total = thick.size
 
