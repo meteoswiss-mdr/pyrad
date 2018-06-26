@@ -12,6 +12,7 @@ Functions for reading data from other sensors
     read_smn
     read_smn2
     read_disdro_scattering
+    read_disdro
 
 """
 
@@ -20,6 +21,7 @@ import datetime
 import csv
 from warnings import warn
 from copy import deepcopy
+import re
 
 import numpy as np
 
@@ -140,23 +142,28 @@ def get_sensor_data(date, datatype, cfg):
         if sensordate is None:
             return None, None, None, None
         label = 'RG'
-        period = (sensordate[1]-sensordate[0]).total_seconds()
-    elif cfg['sensor'] == 'disdro':
-        datapath = cfg['disdropath']
-        datafile = ('DSDfiltpolvar-'+cfg['sensorid']+'_' +
-                    date.strftime('%Y%m%d')+'_Xband_temp' + cfg['temp'] +
-                    '_elev'+cfg['elev']+'.txt')
-        (sensordate, prectype, lwc, rr, zh, zv, zdr, ldr, ah, av,
-         adiff, kdp, detaco, rhohv) = read_disdro_scattering(
+        period = (sensordate[1]-sensordate[0]).total_seconds()        
+    elif cfg['sensor'] == 'disdro':        
+        if (datatype == 'dBZ') or (datatype == 'dBZc'):
+            sensor_datatype = 'dBZ'
+        else:
+            sensor_datatype = datatype
+
+        datapath = (
+            cfg['disdropath']+cfg['sensorid']+'/scattering/' +
+            date.strftime('%Y')+'/'+date.strftime('%Y%m')+'/')
+        datafile = (
+            date.strftime('%Y%m%d')+'_'+cfg['sensorid']+'_'+cfg['location'] +
+            '_'+str(cfg['freq'])+'GHz_'+sensor_datatype+'_el'+str(cfg['ele']) +
+            '.csv')
+
+        (sensordate, prectype, sensorvalue, temp) = read_disdro(
              datapath+datafile)
         if sensordate is None:
             return None, None, None, None
         label = 'Disdro'
         period = (sensordate[1]-sensordate[0]).total_seconds()
-        if datatype == 'RR':
-            sensorvalue = rr
-        elif (datatype == 'dBZ') or (datatype == 'dBZc'):
-            sensorvalue = zh
+
     else:
         warn('Unknown sensor: '+cfg['sensor'])
         return None, None, None, None
@@ -372,3 +379,61 @@ def read_disdro_scattering(fname):
         warn('Unable to read file '+fname)
         return (None, None, None, None, None, None, None, None, None, None,
                 None, None, None)
+
+
+def read_disdro(fname):
+    """
+    Reads scattering parameters computed from disdrometer data contained in a
+    text file
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    date, preciptype, variable, scattering temperature: tuple
+        The read values
+
+    """
+    try:
+        var = re.search('GHz_(.{,7})_el', fname).group(1)
+    except AttributeError:
+        # AAA, ZZZ not found in the original string
+        var = '' # apply your error handling
+    try:
+        with open(fname, 'r', newline='', encoding='utf-8', errors='ignore') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                (row for row in csvfile if not row.startswith('#')),
+                delimiter = ',')
+            nrows = sum(1 for row in reader)
+
+            variable = np.ma.empty(nrows, dtype='float32')
+            scatt_temp = np.ma.empty(nrows, dtype='float32')
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                (row for row in csvfile if not row.startswith('#')),
+                delimiter = ',')
+            i = 0
+            date = list()
+            preciptype = list()
+            for row in reader:
+                date.append(datetime.datetime.strptime(
+                    row['date'], '%Y-%m-%d %H:%M:%S'))
+                preciptype.append(row['Precip Code'])
+                variable[i] = float(row[var])
+                scatt_temp[i] = float(row['Scattering Temp [deg C]'])
+                i += 1
+            variable = np.ma.masked_where(variable == -9999.0, variable)
+            np.ma.set_fill_value(variable, -9999.0)
+            csvfile.close()
+
+            return (date, preciptype, variable, scatt_temp)
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return (None, None, None, None)
