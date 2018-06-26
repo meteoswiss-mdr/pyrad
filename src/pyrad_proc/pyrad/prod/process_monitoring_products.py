@@ -26,6 +26,7 @@ from ..io.io_aux import generate_field_name_str
 from ..io.read_data_other import read_monitoring_ts
 
 from ..io.write_data import write_monitoring_ts, write_alarm_msg, send_msg
+from ..io.write_data import write_histogram
 
 from ..graph.plots import plot_histogram2, plot_density
 from ..graph.plots_timeseries import plot_monitoring_ts
@@ -54,9 +55,7 @@ def generate_monitoring_products(dataset, prdcfg):
     """
 
     # check the type of dataset required
-    hist_type = 'cumulative'
-    if 'hist_type' in prdcfg:
-        hist_type = prdcfg['hist_type']
+    hist_type = prdcfg.get('hist_type', 'cumulative')
 
     if dataset['hist_type'] != hist_type:
         return None
@@ -75,6 +74,8 @@ def generate_monitoring_products(dataset, prdcfg):
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
             return None
+
+        write_data = prdcfg.get('write_data', 1)
 
         timeformat = '%Y%m%d'
         titl = (
@@ -102,13 +103,28 @@ def generate_monitoring_products(dataset, prdcfg):
 
         labelx = get_colobar_label(hist_obj.fields[field_name], field_name)
 
+        bin_centers = hist_obj.range['data']
+        hist = np.sum(hist_obj.fields[field_name]['data'], axis=0)
         plot_histogram2(
-            hist_obj.range['data'],
-            np.sum(hist_obj.fields[field_name]['data'], axis=0),
-            fname_list, labelx=labelx, labely='Number of Samples',
-            titl=titl)
+            bin_centers, hist, fname_list, labelx=labelx,
+            labely='Number of Samples', titl=titl)
 
         print('----- save to '+' '.join(fname_list))
+
+        if write_data:
+            fname = savedir+make_filename(
+                'histogram', prdcfg['dstype'], prdcfg['voltype'],
+                ['csv'], timeinfo=dataset['timeinfo'],
+                timeformat=timeformat)[0]
+
+            step = bin_centers[1]-bin_centers[0]
+            bin_edges = np.append(
+                bin_centers-step/2., bin_centers[-1]+step/2.)
+            write_histogram(
+                bin_edges, hist, fname, datatype=prdcfg['voltype'], step=step)
+            print('----- save to '+fname)
+
+            return fname
 
         return fname_list
 
@@ -194,16 +210,14 @@ def generate_monitoring_products(dataset, prdcfg):
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        quantiles = np.array([25., 50., 75.])
-        ref_value = 0.
-        if 'quantiles' in prdcfg:
-            quantiles = prdcfg['quantiles']
-        if 'ref_value' in prdcfg:
-            ref_value = prdcfg['ref_value']
+        quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.]))
+        ref_value = prdcfg.get('ref_value', 0.)
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
 
         plot_density(
             hist_obj, hist_type, field_name, ind_el, prdcfg, fname_list,
-            quantiles=quantiles, ref_value=ref_value)
+            quantiles=quantiles, ref_value=ref_value, vmin=vmin, vmax=vmax)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -231,18 +245,10 @@ def generate_monitoring_products(dataset, prdcfg):
                 csvtimeinfo_file = dataset['timeinfo']
                 timeformat = '%Y'
 
-        quantiles = np.array([25., 50., 75.])
-        ref_value = 0.
-        sort_by_date = False
-        rewrite = False
-        if 'quantiles' in prdcfg:
-            quantiles = prdcfg['quantiles']
-        if 'ref_value' in prdcfg:
-            ref_value = prdcfg['ref_value']
-        if 'sort_by_date' in prdcfg:
-            sort_by_date = prdcfg['sort_by_date']
-        if 'rewrite' in prdcfg:
-            rewrite = prdcfg['rewrite']
+        quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.]))
+        ref_value = prdcfg.get('ref_value', 0.)
+        sort_by_date = prdcfg.get('sort_by_date', False)
+        rewrite = prdcfg.get('rewrite', False)
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -330,9 +336,7 @@ def generate_monitoring_products(dataset, prdcfg):
         print('----- save to '+' '.join(figfname_list))
 
         # generate alarms if needed
-        alarm = 0
-        if 'alarm' in prdcfg:
-            alarm = prdcfg['alarm']
+        alarm = prdcfg.get('alarm', 0)
 
         if not alarm:
             return figfname_list
@@ -451,18 +455,10 @@ def generate_monitoring_products(dataset, prdcfg):
         csvtimeinfo_file = dataset['timeinfo']
         timeformat = '%Y%m%d'
 
-        quantiles = np.array([25., 50., 75.])
-        ref_value = 0.
-        sort_by_date = False
-        rewrite = False
-        if 'quantiles' in prdcfg:
-            quantiles = prdcfg['quantiles']
-        if 'ref_value' in prdcfg:
-            ref_value = prdcfg['ref_value']
-        if 'sort_by_date' in prdcfg:
-            sort_by_date = prdcfg['sort_by_date']
-        if 'rewrite' in prdcfg:
-            rewrite = prdcfg['rewrite']
+        quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.]))
+        ref_value = prdcfg.get('ref_value', 0.)
+        sort_by_date = prdcfg.get('sort_by_date', False)
+        rewrite = prdcfg.get('rewrite', False)
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -552,17 +548,9 @@ def generate_monitoring_products(dataset, prdcfg):
 
         labely = generate_field_name_str(prdcfg['voltype'])
 
-        np_min = 0
-        if 'npoints_min' in prdcfg:
-            np_min = prdcfg['npoints_min']
-
-        vmin = None
-        if 'vmin' in prdcfg:
-            vmin = prdcfg['vmin']
-
-        vmax = None
-        if 'vmax' in prdcfg:
-            vmax = prdcfg['vmax']
+        np_min = prdcfg.get('npoints_min', 0)
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
 
         plot_monitoring_ts(
             date, np_t_vec, cquant_vec, lquant_vec, hquant_vec, field_name,
@@ -571,10 +559,7 @@ def generate_monitoring_products(dataset, prdcfg):
         print('----- save to '+' '.join(figfname_list))
 
         # generate alarms if needed
-        alarm = 0
-        if 'alarm' in prdcfg:
-            alarm = prdcfg['alarm']
-
+        alarm = prdcfg.get('alarm', 0)
         if not alarm:
             return figfname_list
 

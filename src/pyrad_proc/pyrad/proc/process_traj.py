@@ -10,6 +10,7 @@ the product generation functions.
 
     process_trajectory
     process_traj_lightning
+    process_traj_trt
     process_traj_atplane
     process_traj_antenna_pattern
     _get_closests_bin
@@ -20,6 +21,7 @@ the product generation functions.
 from warnings import warn
 import sys
 import gc
+from copy import deepcopy
 
 import numpy as np
 from netCDF4 import num2date, date2num
@@ -34,6 +36,7 @@ from ..io.timeseries import TimeSeries
 from ..io.read_data_other import read_antenna_pattern
 
 from ..util.stat_utils import quantiles_weighted
+from ..util.radar_utils import belongs_roi_indices
 
 
 def process_trajectory(procstatus, dscfg, radar_list=None, trajectory=None):
@@ -121,11 +124,15 @@ def process_traj_lightning(procstatus, dscfg, radar_list=None,
             warn('ERROR: No trajectory dataset available!')
             return None, None
         trajdict = dscfg['traj_atplane_dict']
-        return trajdict['ts'], trajdict['ind_rad']
+
+        dataset = {
+            'ts': trajdict['ts'],
+            'final': 1
+        }
+        return dataset, trajdict['ind_rad']
 
     # Process
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        dscfg['datatype'][0])
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
     field_name = get_fieldname_pyart(datatype)
     ind_rad = int(radarnr[5:8])-1
     if ((radar_list is None) or (radar_list[ind_rad] is None)):
@@ -155,7 +162,7 @@ def process_traj_lightning(procstatus, dscfg, radar_list=None,
             "of the lightning flash.",
             "The time samples where the flash was out of the weather radar",
             "sector are NOT included in this file.",
-            "NaN (Not a number): No rain detected at the plane location."
+            "NaN (Not a number): No data detected at the flash location."
         ]
 
         # Tmp: define timeformat="%Y-%m-%d %H:%M:%S.%f"
@@ -203,8 +210,15 @@ def process_traj_lightning(procstatus, dscfg, radar_list=None,
 
     if np.size(traj_ind) == 0:
         warn('No trajectory samples within current period')
+
+        trajdict['radar_old2'] = trajdict['radar_old']
+        trajdict['radar_old'] = radar
         return None, None
 
+    az_list = []
+    el_list = []
+    rr_list = []
+    tt_list = []
     for tind in np.nditer(traj_ind):
         az = rad_traj.azimuth_vec[tind]
         el = rad_traj.elevation_vec[tind]
@@ -263,13 +277,183 @@ def process_traj_lightning(procstatus, dscfg, radar_list=None,
             trajectory.time_vector[tind],
             (flashnr, dBm, val, val_mean, val_min, val_max, nvals_valid))
 
+        az_list.append(az)
+        el_list.append(el)
+        rr_list.append(rr)
+        tt_list.append(trajectory.time_vector[tind])
         # end loop over traj samples within period
 
+    # output radar volume and flash coordinates respect to radar
+    radar_sel = radar
+    if trajdict['radar_old'] is not None:
+        radar_sel = trajdict['radar_old']
+
+    dataset = {
+        'azi_traj': np.asarray(az_list),
+        'ele_traj': np.asarray(el_list),
+        'rng_traj': np.asarray(rr_list),
+        'time_traj': np.asarray(tt_list),
+        'radar': radar_sel,
+        'final': 0
+    }
+
+    # update trajectory dictionary
     trajdict['last_task_start_dt'] = dt_task_start
     trajdict['radar_old2'] = trajdict['radar_old']
     trajdict['radar_old'] = radar
 
-    return None, None
+    return dataset, ind_rad
+
+
+def process_traj_trt(procstatus, dscfg, radar_list=None, trajectory=None):
+    """
+    Processes data according to TRT trajectory
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+    trajectory : Trajectory object
+        containing trajectory samples
+
+    Returns
+    -------
+    trajectory : Trajectory object
+        Object holding time series
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    # Process
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
+    field_name = get_fieldname_pyart(datatype)
+    ind_rad = int(radarnr[5:8])-1
+    if ((radar_list is None) or (radar_list[ind_rad] is None)):
+        warn('ERROR: No valid radar found')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if field_name not in radar.fields:
+        warn("Datatype '%s' not available in radar data" % field_name)
+        return None, None
+
+    # get TRT cell corresponding to current radar volume
+    time_tol = dscfg.get('TimeTol', 100.)
+    dt = np.empty(trajectory.time_vector.size, dtype=float)
+    for i, time_traj in enumerate(trajectory.time_vector):
+        dt[i] = np.abs((dscfg['timeinfo'] - time_traj).total_seconds())
+    if dt.min() > time_tol:
+        warn('No TRT data for radar volume time')
+        return None, None
+    ind = np.argmin(dt)
+    lon_roi = trajectory.cell_contour[ind]['lon']
+    lat_roi = trajectory.cell_contour[ind]['lat']
+
+    alt_min = dscfg.get('alt_min', None)
+    alt_max = dscfg.get('alt_max', None)
+
+    roi_dict = {
+        'lon': lon_roi,
+        'lat': lat_roi,
+        'alt_min': alt_min,
+        'alt_max': alt_max}
+
+    # extract the data within the ROI boundaries
+    inds_ray, inds_rng = np.indices(np.shape(radar.gate_longitude['data']))
+
+    mask = np.logical_and(
+        np.logical_and(
+            radar.gate_latitude['data'] >= roi_dict['lat'].min(),
+            radar.gate_latitude['data'] <= roi_dict['lat'].max()),
+        np.logical_and(
+            radar.gate_longitude['data'] >= roi_dict['lon'].min(),
+            radar.gate_longitude['data'] <= roi_dict['lon'].max()))
+
+    if alt_min is not None:
+        mask[radar.gate_altitude['data'] < alt_min] = 0
+    if alt_max is not None:
+        mask[radar.gate_altitude['data'] > alt_max] = 0
+
+    if np.all(mask == 0):
+        warn('No values within ROI')
+        return None, None
+
+    inds_ray = inds_ray[mask]
+    inds_rng = inds_rng[mask]
+
+    # extract the data inside the ROI
+    lat = radar.gate_latitude['data'][mask]
+    lon = radar.gate_longitude['data'][mask]
+    inds, is_roi = belongs_roi_indices(lat, lon, roi_dict)
+
+    if is_roi == 'None':
+        warn('No values within ROI')
+        return None, None
+
+    inds_ray = inds_ray[inds]
+    inds_rng = inds_rng[inds]
+
+    lat = lat[inds]
+    lon = lon[inds]
+    alt = radar.gate_altitude['data'][inds_ray, inds_rng]
+
+    # prepare new radar object output
+    radar_roi = deepcopy(radar)
+
+    radar_roi.range['data'] = radar.range['data'][inds_rng]
+    radar_roi.ngates = inds_rng.size
+    radar_roi.time['data'] = np.asarray([radar_roi.time['data'][0]])
+    radar_roi.scan_type = 'roi'
+    radar_roi.sweep_mode['data'] = np.array(['roi'])
+    radar_roi.sweep_start_ray_index['data'] = np.array([0], dtype='int32')
+    radar_roi.fixed_angle['data'] = np.array([], dtype='float64')
+    radar_roi.sweep_number['data'] = np.array([0], dtype='int32')
+    radar_roi.nsweeps = 1
+
+    if radar.rays_are_indexed is not None:
+        radar_roi.rays_are_indexed['data'] = np.array(
+            [radar.rays_are_indexed['data'][0]])
+    if radar.ray_angle_res is not None:
+        radar_roi.ray_angle_res['data'] = np.array(
+            [radar.ray_angle_res['data'][0]])
+
+    radar_roi.sweep_end_ray_index['data'] = np.array([1], dtype='int32')
+    radar_roi.rays_per_sweep = np.array([1], dtype='int32')
+    radar_roi.azimuth['data'] = np.array([], dtype='float64')
+    radar_roi.elevation['data'] = np.array([], dtype='float64')
+    radar_roi.nrays = 1
+
+    radar_roi.gate_longitude['data'] = np.empty((radar_roi.nrays, radar_roi.ngates), dtype=float)
+    radar_roi.gate_latitude['data'] = np.empty((radar_roi.nrays, radar_roi.ngates), dtype=float)
+    radar_roi.gate_altitude['data'] = np.empty((radar_roi.nrays, radar_roi.ngates), dtype=float)
+
+    radar_roi.gate_x['data'] = np.empty((radar_roi.nrays, radar_roi.ngates), dtype=float)
+    radar_roi.gate_y['data'] = np.empty((radar_roi.nrays, radar_roi.ngates), dtype=float)
+    radar_roi.gate_z['data'] = np.empty((radar_roi.nrays, radar_roi.ngates), dtype=float)
+
+    radar_roi.gate_longitude['data'][0, :] = lon
+    radar_roi.gate_latitude['data'][0, :] = lat
+    radar_roi.gate_altitude['data'][0, :] = alt
+
+    radar_roi.gate_x['data'][0, :] = radar.gate_x['data'][inds_ray, inds_rng]
+    radar_roi.gate_y['data'][0, :] = radar.gate_y['data'][inds_ray, inds_rng]
+    radar_roi.gate_z['data'][0, :] = radar.gate_z['data'][inds_ray, inds_rng]
+
+    radar_roi.fields = dict()
+    field_dict = deepcopy(radar.fields[field_name])
+    field_dict['data'] = np.ma.empty((radar_roi.nrays, radar_roi.ngates), dtype=float)
+    field_dict['data'][0, :] = radar.fields[field_name]['data'][inds_ray, inds_rng]
+    radar_roi.add_field(field_name, field_dict)
+
+    return radar_roi, ind_rad
 
 
 def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
@@ -309,11 +493,15 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
             warn('ERROR: No trajectory dataset available!')
             return None, None
         trajdict = dscfg['traj_atplane_dict']
-        return trajdict['ts'], trajdict['ind_rad']
+
+        dataset = {
+            'ts': trajdict['ts'],
+            'final': 1
+        }
+        return dataset, trajdict['ind_rad']
 
     # Process
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        dscfg['datatype'][0])
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
     field_name = get_fieldname_pyart(datatype)
     ind_rad = int(radarnr[5:8])-1
     if ((radar_list is None) or (radar_list[ind_rad] is None)):
@@ -388,8 +576,15 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
 
     if np.size(traj_ind) == 0:
         warn('No trajectory samples within current period')
+
+        trajdict['radar_old2'] = trajdict['radar_old']
+        trajdict['radar_old'] = radar
         return None, None
 
+    az_list = []
+    el_list = []
+    rr_list = []
+    tt_list = []
     for tind in np.nditer(traj_ind):
         az = rad_traj.azimuth_vec[tind]
         el = rad_traj.elevation_vec[tind]
@@ -445,13 +640,32 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
         ts.add_timesample(trajectory.time_vector[tind],
                           (val, val_mean, val_min, val_max, nvals_valid))
 
+        az_list.append(az)
+        el_list.append(el)
+        rr_list.append(rr)
+        tt_list.append(trajectory.time_vector[tind])
         # end loop over traj samples within period
 
+    # output radar volume and antenna coordinates respect to radar
+    radar_sel = radar
+    if trajdict['radar_old'] is not None:
+        radar_sel = trajdict['radar_old']
+
+    dataset = {
+        'azi_traj': np.asarray(az_list),
+        'ele_traj': np.asarray(el_list),
+        'rng_traj': np.asarray(rr_list),
+        'time_traj': np.asarray(tt_list),
+        'radar': radar_sel,
+        'final': 0
+    }
+
+    # update trajectory dictionary
     trajdict['last_task_start_dt'] = dt_task_start
     trajdict['radar_old2'] = trajdict['radar_old']
     trajdict['radar_old'] = radar
 
-    return None, None
+    return dataset, ind_rad
 
 
 def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
@@ -492,15 +706,18 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             warn('ERROR: No trajectory dataset available!')
             return None, None
         tadict = dscfg['traj_antenna_dict']
-        return tadict['ts'], tadict['ind_rad']
+        dataset = {
+            'ts': tadict['ts'],
+            'final': 1
+        }
+        return dataset, tadict['ind_rad']
 
     # Tolerance in azimuth to find traj for the reference radar, also in range
     az_traj_tol = 10
     rg_traj_tol = 10000 #m
 
     # Process
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        dscfg['datatype'][0])
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
     field_name = get_fieldname_pyart(datatype)
     ind_rad = int(radarnr[5:8])-1
     if ((radar_list is None) or (radar_list[ind_rad] is None)):
@@ -645,17 +862,13 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
                             " '%s'" % (dscfg['antennaType'], dscfg['dsname']))
 
         # Read dataset config parameters:
+        nan_value = dscfg.get('nan_value', 0.)
         use_nans = False
-        nan_value = 0.0
         if 'use_nans' in dscfg:
             if dscfg['use_nans'] != 0:
                 use_nans = True
-                if 'nan_value' in dscfg:
-                    nan_value = dscfg['nan_value']
 
-        weight_threshold = 0.0
-        if 'pattern_thres' in dscfg:
-            weight_threshold = dscfg['pattern_thres']
+        weight_threshold = dscfg.get('pattern_thres', 0.)
 
         do_all_ranges = False
         if 'range_all' in dscfg:
@@ -664,22 +877,10 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
 
         # Config parameters for processing when the weather radar and the
         # antenna are not at the same place:
-
-        max_altitude = 12000.0  # [m]
-        if 'max_altitude' in dscfg:
-            max_altitude = dscfg['max_altitude']
-
-        rhi_resolution = 0.5  # [deg]
-        if 'rhi_resolution' in dscfg:
-            rhi_resolution = dscfg['rhi_resolution']
-
-        latlon_tol = 0.04  # [deg]
-        if 'latlon_tol' in dscfg:
-            latlon_tol = dscfg['latlon_tol']
-
-        alt_tol = 1000  # [m]
-        if 'alt_tol' in dscfg:
-            alt_tol = dscfg['alt_tol']
+        max_altitude = dscfg.get('max_altitude', 12000.) # [m]
+        rhi_resolution = dscfg.get('rhi_resolution', 0.5)  # [deg]
+        latlon_tol = dscfg.get('latlon_tol', 0.04)  # [deg]
+        alt_tol = dscfg.get('alt_tol', 1000.)  # [m]
 
         data_is_log = False
         if 'data_is_log' in dscfg:
@@ -894,7 +1095,8 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             ##r_radar.fields['colocated_gates']['data'][r_ind_invalid] = 0
 
             # Find minimum and maximum azimuth in trajectory in this
-            # time step.
+            # time step.TODO: how to input them in the next function?
+            # If given like this the function misbehaves
             azmin = az-az_traj_tol
             azmax = az+az_traj_tol
             rmin = rr-rg_traj_tol
@@ -908,8 +1110,8 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             gate_coloc_radar_sel = intersection(
                 radar_sel, r_radar, h_tol=alt_tol, latlon_tol=latlon_tol,
                 vol_d_tol=None, vismin=None, hmin=None, hmax=max_altitude,
-                rmin=rmin, rmax=rmax, elmin=None, elmax=None, azmin=azmin,
-                azmax=azmax, visib_field=None,
+                rmin=None, rmax=None, elmin=None, elmax=None, azmin=None,
+                azmax=None, visib_field=None,
                 intersec_field='colocated_gates')
             radar_sel.add_field('colocated_gates', gate_coloc_radar_sel,
                                 replace_existing=True)

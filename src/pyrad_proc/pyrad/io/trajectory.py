@@ -24,7 +24,7 @@ import numpy as np
 
 import pyart
 
-from ..io.read_data_sensor import read_lightning
+from ..io.read_data_sensor import read_lightning, read_trt_traj_data
 
 
 class Trajectory(object):
@@ -128,12 +128,17 @@ class Trajectory(object):
             self.time_in_flash = np.array([], dtype=datetime.datetime)
             self.dBm = np.array([], dtype=float)
             self.flashnr_vec = np.array([], dtype=float)
+        elif self.trajtype == 'trt':
+            self.cell_contour = np.array([])
 
         try:
-            if trajtype == 'plane':
-                self._read_traj()
-            else:
+            if self.trajtype == 'lightning':
                 self._read_traj_lightning(flashnr)
+            elif self.trajtype == 'trt':
+                self._read_traj_trt()
+            else:
+                self._read_traj()
+
         except:
             raise Exception(
                 "ERROR: Could not load trajectory data from file '" +
@@ -442,6 +447,82 @@ class Trajectory(object):
             self.wgs84_alt_m = np.append(self.wgs84_alt_m, [alt[i]])
 
             self.dBm = np.append(self.dBm, [dBm_val])
+
+        self.nsamples = len(self.time_vector)
+
+    def _read_traj_trt(self):
+        """
+        Read trajectory from TRT file
+
+        File format
+        -----------
+        Columns:
+        1. traj_ID
+        2. yyyymmddHHMM (UTC)
+        2. lon (deg)
+        3. lat [deg]
+        4. ell_L
+        5. ell_S
+        6. ell_or
+        7. area
+        8. vel_x
+        9. vel_y
+        10. det
+        11. RANKr
+        12. CG_n
+        13. CG_p
+        14. CG
+        15. CG_percent_p
+        16. ET45
+        17. ET45m
+        18. ET15
+        19. ET15m
+        20. VIL
+        21. maxH
+        22. maxHm
+        23. POH
+        24. RANK
+        25. Dvel_x
+        26. Dvel_y
+        27. cell_contours
+
+        Parameters
+        ----------
+
+        """
+        (traj_ID, yyyymmddHHMM, lon, lat, _, _, _, _, _, _, _, _, _, _, _, _,
+         _, _, _, _, _, _, _, _, _, _, _, cell_contours) = read_trt_traj_data(
+             self.filename)
+
+        if traj_ID is None:
+            raise Exception("ERROR: Could not find|open trajectory file '" +
+                            self.filename+"'")
+
+        recording_started = True
+        if self.starttime is not None:
+            recording_started = False
+        recording_check_stop = False
+        if self.endtime is not None:
+            recording_check_stop = True
+
+        for i, cell_contour in enumerate(cell_contours):
+            if not recording_started:
+                if yyyymmddHHMM[i] < self.starttime:
+                    continue
+                else:
+                    recording_started = True
+
+            if recording_check_stop:
+                if yyyymmddHHMM[i] > self.endtime:
+                    break
+
+            self.time_vector = np.append(self.time_vector, [yyyymmddHHMM[i]])
+
+            self.wgs84_lat_deg = np.append(self.wgs84_lat_deg, [lat[i]])
+            self.wgs84_lon_deg = np.append(self.wgs84_lon_deg, [lon[i]])
+            self.wgs84_alt_m = np.append(self.wgs84_alt_m, 0.)
+
+            self.cell_contour = np.append(self.cell_contour, [cell_contour])
 
         self.nsamples = len(self.time_vector)
 

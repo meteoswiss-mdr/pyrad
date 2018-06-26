@@ -8,6 +8,7 @@ Auxiliary functions for reading/writing files
     :toctree: generated/
 
     map_hydro
+    map_Doppler
     get_save_dir
     make_filename
     generate_field_name_str
@@ -17,6 +18,7 @@ Auxiliary functions for reading/writing files
     get_field_unit
     get_field_name
     get_file_list
+    get_trtfile_list
     get_scan_list
     get_new_rainbow_file_name
     get_datatype_fields
@@ -26,6 +28,7 @@ Auxiliary functions for reading/writing files
     find_cosmo_file
     find_hzt_file
     find_rad4alpcosmo_file
+    _get_datetime
 
 """
 
@@ -66,6 +69,26 @@ def map_hydro(hydro_data_op):
     hydro_data_py[hydro_data_op == 200] = 8  # melting hail
 
     return hydro_data_py
+
+
+def map_Doppler(Doppler_data_bin, Nyquist_vel):
+    """
+    maps the binary METRANET Doppler data to actual Doppler velocity
+
+    Parameters
+    ----------
+    Doppler_data_bin : numpy array
+        The binary METRANET data
+
+    Returns
+    -------
+    Doppler_data : numpy array
+        The Doppler veloctiy in [m/s]
+
+    """
+    Doppler_data = (Doppler_data_bin-128.)/127.*Nyquist_vel
+
+    return Doppler_data
 
 
 def get_save_dir(basepath, procname, dsname, prdname, timeinfo=None,
@@ -316,6 +339,10 @@ def get_fieldname_pyart(datatype):
         field_name = 'corrected_unfiltered_reflectivity_vv'
     elif datatype == 'dBZ_bias':
         field_name = 'reflectivity_bias'
+    elif datatype == 'eta_h':
+        field_name = 'volumetric_reflectivity'
+    elif datatype == 'eta_v':
+        field_name = 'volumetric_reflectivity_vv'
 
     elif datatype == 'ZDR':
         field_name = 'differential_reflectivity'
@@ -392,8 +419,18 @@ def get_fieldname_pyart(datatype):
 
     elif datatype == 'V':
         field_name = 'velocity'
+    elif datatype == 'dealV':
+        field_name = 'dealiased_velocity'
     elif datatype == 'Vc':
         field_name = 'corrected_velocity'
+    elif datatype == 'dealVc':
+        field_name = 'dealiased_corrected_velocity'
+    elif datatype == 'estV':
+        field_name = 'retrieved_velocity'
+    elif datatype == 'stdV':
+        field_name = 'retrieved_velocity_std'
+    elif datatype == 'diffV':
+        field_name = 'velocity_difference'
     elif datatype == 'W':
         field_name = 'spectrum_width'
     elif datatype == 'Wc':
@@ -402,6 +439,10 @@ def get_fieldname_pyart(datatype):
         field_name = 'azimuthal_horizontal_wind_component'
     elif datatype == 'wind_vel_v':
         field_name = 'vertical_wind_component'
+    elif datatype == 'wind_vel_h_u':
+        field_name = 'eastward_wind_component'
+    elif datatype == 'wind_vel_h_v':
+        field_name = 'northward_wind_component'
     elif datatype == 'windshear_v':
         field_name = 'vertical_wind_shear'
     elif datatype == 'WIND_SPEED':
@@ -436,6 +477,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'cosmo_index'
     elif datatype == 'hzt_index':
         field_name = 'hzt_index'
+    elif datatype == 'ml':
+        field_name = 'melting_layer'
 
     elif datatype == 'VIS':
         field_name = 'visibility'
@@ -458,6 +501,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'colocated_gates'
     elif datatype == 'nsamples':
         field_name = 'number_of_samples'
+    elif datatype == 'bird_density':
+        field_name = 'bird_density'
     else:
         raise ValueError('ERROR: Unknown data type '+datatype)
 
@@ -512,8 +557,8 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
 
     Returns
     -------
-    radar : Radar
-        radar object
+    filelist : list of strings
+        list of files within the time period
 
     """
     startdate = starttime.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -644,6 +689,43 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
     return sorted(filelist)
 
 
+def get_trtfile_list(datapath, starttime, endtime):
+    """
+    gets the list of TRT files with a time period
+
+    Parameters
+    ----------
+    datapath : str
+        directory where to look for data
+    startime : datetime object
+        start of time period
+    endtime : datetime object
+        end of time period
+
+    Returns
+    -------
+    filelist : list of strings
+        list of files within the time period
+
+    """
+    dayfilelist = glob.glob(datapath+'CZC*0T.trt')
+    if not dayfilelist:
+        warn('No TRT files in '+datapath)
+        return None
+
+    filelist = []
+    for filename in dayfilelist:
+        bfile = os.path.basename(filename)
+        datetimestr = bfile[3:12]
+        fdatetime = datetime.datetime.strptime(datetimestr, '%y%j%H%M')
+        if (fdatetime >= starttime) and (fdatetime <= endtime):
+            pass
+            # filelist.append(filename)
+        filelist.append(filename)
+
+    return sorted(filelist)
+
+
 def get_scan_list(scandescriptor_list):
     """
     determine which is the scan list for each radar
@@ -701,8 +783,7 @@ def get_new_rainbow_file_name(master_fname, master_datadescriptor, datatype):
         the new file name
 
     """
-    radarnr, datagroup, master_datatype, dataset, product = (
-        get_datatype_fields(master_datadescriptor))
+    _, _, master_datatype, _, _ = get_datatype_fields(master_datadescriptor)
     datapath = os.path.dirname(master_fname)
     voltime = get_datetime(master_fname, master_datatype)
     voltype = os.path.basename(master_fname).split('.')[1]
@@ -817,12 +898,12 @@ def get_dataset_fields(datasetdescr):
 
 def get_datetime(fname, datadescriptor):
     """
-    gets date and time from file name
+    Given a data descriptor gets date and time from file name
 
     Parameters
     ----------
-    fname : file name
-
+    fname : str
+        file name
     datadescriptor : str
         radar field type. Format : [radar file type]:[datatype]
 
@@ -832,24 +913,9 @@ def get_datetime(fname, datadescriptor):
         date and time in file name
 
     """
+    _, datagroup, _, _, _ = get_datatype_fields(datadescriptor)
 
-    bfile = os.path.basename(fname)
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        datadescriptor)
-    if datagroup == 'RAINBOW' or datagroup == 'CFRADIAL':
-        datetimestr = bfile[0:14]
-        fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d%H%M%S')
-    elif datagroup == 'RAD4ALP':
-        datetimestr = bfile[3:12]
-        fdatetime = datetime.datetime.strptime(datetimestr, '%y%j%H%M')
-    elif datagroup == 'MXPOL':
-        datetimestr = re.findall(r"([0-9]{8}-[0-9]{6})", bfile)[0]
-        fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d-%H%M%S')
-    else:
-        warn('unknown data group')
-        return None
-
-    return fdatetime
+    return _get_datetime(fname, datagroup)
 
 
 def find_cosmo_file(voltime, datatype, cfg, scanid, ind_rad=0):
@@ -1071,3 +1137,37 @@ def find_rad4alpcosmo_file(voltime, datatype, cfg, scanid, ind_rad=0):
         return None
 
     return fname[0]
+
+
+def _get_datetime(fname, datagroup):
+    """
+    Given a data group gets date and time from file name
+
+    Parameters
+    ----------
+    fname : str
+        file name
+    datadescriptor : str
+        radar field type. Format : [radar file type]:[datatype]
+
+    Returns
+    -------
+    fdatetime : datetime object
+        date and time in file name
+
+    """
+    bfile = os.path.basename(fname)
+    if datagroup == 'RAINBOW' or datagroup == 'CFRADIAL':
+        datetimestr = bfile[0:14]
+        fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d%H%M%S')
+    elif datagroup == 'RAD4ALP':
+        datetimestr = bfile[3:12]
+        fdatetime = datetime.datetime.strptime(datetimestr, '%y%j%H%M')
+    elif datagroup == 'MXPOL':
+        datetimestr = re.findall(r"([0-9]{8}-[0-9]{6})", bfile)[0]
+        fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d-%H%M%S')
+    else:
+        warn('unknown data group')
+        return None
+
+    return fdatetime

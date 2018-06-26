@@ -115,11 +115,9 @@ def generate_intercomp_products(dataset, prdcfg):
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        step = None
-        if 'step' in prdcfg:
-            step = prdcfg['step']
+        step = prdcfg.get('step', None)
 
-        hist_2d, bins1, bins2, stats = compute_2d_stats(
+        hist_2d, bin_edges1, bin_edges2, stats = compute_2d_stats(
             np.ma.asarray(dataset['intercomp_dict']['rad1_val']),
             np.ma.asarray(dataset['intercomp_dict']['rad2_val']),
             field_name, field_name, step1=step, step2=step)
@@ -137,7 +135,7 @@ def generate_intercomp_products(dataset, prdcfg):
             'slope: '+'{:.2f}'.format(float(stats['slope']))+'\n' +
             'intercep: '+'{:.2f}'.format(float(stats['intercep']))+'\n')
 
-        plot_scatter(bins1, bins2, np.ma.asarray(hist_2d), field_name,
+        plot_scatter(bin_edges1, bin_edges2, np.ma.asarray(hist_2d), field_name,
                      field_name, fname_list, prdcfg, metadata=metadata,
                      lin_regr=[stats['slope'], stats['intercep']],
                      lin_regr_slope1=stats['intercep_slope_1'],
@@ -152,14 +150,12 @@ def generate_intercomp_products(dataset, prdcfg):
             return None
 
         field_name = get_fieldname_pyart(prdcfg['voltype'])
-        step = None
-        if 'step' in prdcfg:
-            step = prdcfg['step']
+        step = prdcfg.get('step', None)
 
         rad1_name = dataset['intercomp_dict']['rad1_name']
         rad2_name = dataset['intercomp_dict']['rad2_name']
 
-        hist_2d, bins1, bins2, stats = compute_2d_stats(
+        hist_2d, bin_edges1, bin_edges2, stats = compute_2d_stats(
             np.ma.asarray(dataset['intercomp_dict']['rad1_val']),
             np.ma.asarray(dataset['intercomp_dict']['rad2_val']),
             field_name, field_name, step1=step, step2=step)
@@ -242,12 +238,8 @@ def generate_intercomp_products(dataset, prdcfg):
         for i, figfname in enumerate(figfname_list):
             figfname_list[i] = savedir+figfname
 
-        np_min = 0
-        if 'npoints_min' in prdcfg:
-            np_min = prdcfg['npoints_min']
-        corr_min = 0.
-        if 'corr_min' in prdcfg:
-            corr_min = prdcfg['corr_min']
+        np_min = prdcfg.get('npoints_min', 0)
+        corr_min = prdcfg.get('corr_min', 0.)
 
         titl = (rad1_name+'-'+rad2_name+' '+field_name+' intercomparison ' +
                 titldate)
@@ -312,7 +304,7 @@ def generate_colocated_gates_products(dataset, prdcfg):
             return None
 
         prdcfg['timeinfo'] = None
-        generate_vol_products(dataset[prdcfg['radar']]['radar'], prdcfg)
+        generate_vol_products(dataset[prdcfg['radar']], prdcfg)
 
 
 def generate_time_avg_products(dataset, prdcfg):
@@ -335,4 +327,4 @@ def generate_time_avg_products(dataset, prdcfg):
     """
     prdcfg['timeinfo'] = dataset['timeinfo']
 
-    return generate_vol_products(dataset['radar_obj'], prdcfg)
+    return generate_vol_products(dataset, prdcfg)

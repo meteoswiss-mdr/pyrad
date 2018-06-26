@@ -62,8 +62,8 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -75,8 +75,7 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
     temp = None
     iso0 = None
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'dBZc':
             refl = 'corrected_reflectivity'
         if datatype == 'dBZ':
@@ -202,11 +201,11 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
             phidpsim_field=phidpsim_field, temp_ref=temp_ref)
 
         # prepare for exit
-        new_dataset = deepcopy(radar)
-        new_dataset.fields = dict()
+        new_dataset = {'radar_out': deepcopy(radar)}
+        new_dataset['radar_out'].fields = dict()
 
-        new_dataset.add_field(kdpsim_field, kdpsim)
-        new_dataset.add_field(phidpsim_field, phidpsim)
+        new_dataset['radar_out'].add_field(kdpsim_field, kdpsim)
+        new_dataset['radar_out'].add_field(phidpsim_field, phidpsim)
 
         return new_dataset, ind_rad
 
@@ -248,8 +247,8 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -261,8 +260,7 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
     temp = None
     iso0 = None
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'dBZc':
             refl = 'corrected_reflectivity'
         if datatype == 'dBZ':
@@ -398,10 +396,10 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
             iso0_field=iso0, rhohv_field=rhohv, temp_ref=temp_ref)
 
         # prepare for exit
-        new_dataset = deepcopy(radar)
-        new_dataset.fields = dict()
+        new_dataset = {'radar_out': deepcopy(radar)}
+        new_dataset['radar_out'].fields = dict()
 
-        new_dataset.add_field('reflectivity_bias', refl_bias)
+        new_dataset['radar_out'].add_field('reflectivity_bias', refl_bias)
 
         return new_dataset, ind_rad
 
@@ -435,8 +433,8 @@ def process_estimate_phidp0(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -446,8 +444,7 @@ def process_estimate_phidp0(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'dBZ':
             refl_field = 'reflectivity'
         if datatype == 'dBZc':
@@ -480,11 +477,12 @@ def process_estimate_phidp0(procstatus, dscfg, radar_list=None):
         refl_field=refl_field)
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
 
-    new_dataset.add_field('system_differential_phase', phidp0)
-    new_dataset.add_field('first_gate_differential_phase', first_gates)
+    new_dataset['radar_out'].add_field('system_differential_phase', phidp0)
+    new_dataset['radar_out'].add_field(
+        'first_gate_differential_phase', first_gates)
 
     return new_dataset, ind_rad
 
@@ -524,8 +522,8 @@ def process_rhohv_rain(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -537,8 +535,7 @@ def process_rhohv_rain(procstatus, dscfg, radar_list=None):
     temp_field = None
     iso0_field = None
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'RhoHV':
             rhohv_field = 'cross_correlation_ratio'
         if datatype == 'RhoHVc':
@@ -623,10 +620,10 @@ def process_rhohv_rain(procstatus, dscfg, radar_list=None):
         refl_field=refl_field, temp_ref=temp_ref)
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-
-    new_dataset.add_field('cross_correlation_ratio_in_rain', rhohv_rain)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field(
+        'cross_correlation_ratio_in_rain', rhohv_rain)
 
     return new_dataset, ind_rad
 
@@ -679,8 +676,8 @@ def process_zdr_precip(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -692,8 +689,7 @@ def process_zdr_precip(procstatus, dscfg, radar_list=None):
     temp_field = None
     iso0_field = None
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'ZDR':
             zdr_field = 'differential_reflectivity'
         if datatype == 'ZDRc':
@@ -808,10 +804,10 @@ def process_zdr_precip(procstatus, dscfg, radar_list=None):
         temp_ref=temp_ref)
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
 
-    new_dataset.add_field(
+    new_dataset['radar_out'].add_field(
         'differential_reflectivity_in_precipitation', zdr_precip)
 
     return new_dataset, ind_rad
@@ -874,8 +870,8 @@ def process_zdr_snow(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
     """
@@ -886,8 +882,7 @@ def process_zdr_snow(procstatus, dscfg, radar_list=None):
     temp_field = None
     kdp_field = None
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'ZDR':
             zdr_field = 'differential_reflectivity'
         if datatype == 'ZDRc':
@@ -990,10 +985,10 @@ def process_zdr_snow(procstatus, dscfg, radar_list=None):
         kdp_field=kdp_field, refl_field=refl_field)
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
 
-    new_dataset.add_field(
+    new_dataset['radar_out'].add_field(
         'differential_reflectivity_in_snow', zdr_snow)
 
     return new_dataset, ind_rad
@@ -1033,8 +1028,7 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
 
     if procstatus == 1:
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             field_name = get_fieldname_pyart(datatype)
             break
         ind_rad = int(radarnr[5:8])-1
@@ -1047,16 +1041,16 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
             warn(field_name+' not available.')
             return None, None
 
-        step = None
-        if 'step' in dscfg:
-            step = dscfg['step']
+        step = dscfg.get('step', None)
 
-        bins = get_histogram_bins(field_name, step=step)
-        nbins = len(bins)-1
+        bin_edges = get_histogram_bins(field_name, step=step)
+        nbins = len(bin_edges)-1
+        step = bin_edges[1]-bin_edges[0]
+        bin_centers = bin_edges[:-1]+step/2.
 
         radar_aux = deepcopy(radar)
         radar_aux.fields = dict()
-        radar_aux.range['data'] = bins[0:-1]
+        radar_aux.range['data'] = bin_centers
         radar_aux.ngates = nbins
 
         field_dict = pyart.config.get_metadata(field_name)
@@ -1066,15 +1060,15 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
 
         # put gates with values off limits to limit
         mask = np.ma.getmaskarray(field)
-        ind = np.where(np.logical_and(mask == False, field < bins[0]))
-        field[ind] = bins[0]
+        ind = np.where(np.logical_and(mask == False, field < bin_centers[0]))
+        field[ind] = bin_centers[0]
 
-        ind = np.where(np.logical_and(mask == False, field > bins[-1]))
-        field[ind] = bins[-1]
+        ind = np.where(np.logical_and(mask == False, field > bin_centers[-1]))
+        field[ind] = bin_centers[-1]
 
         for ray in range(radar.nrays):
             field_dict['data'][ray, :], bin_edges = np.histogram(
-                field[ray, :].compressed(), bins=bins)
+                field[ray, :].compressed(), bins=bin_edges)
 
         radar_aux.add_field(field_name, field_dict)
         start_time = pyart.graph.common.generate_radar_time_begin(radar_aux)
@@ -1105,8 +1099,7 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
             return None, None
 
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             field_name = get_fieldname_pyart(datatype)
             break
         ind_rad = int(radarnr[5:8])-1

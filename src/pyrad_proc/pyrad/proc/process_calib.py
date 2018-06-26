@@ -52,8 +52,8 @@ def process_correct_bias(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -63,8 +63,7 @@ def process_correct_bias(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         break
     field_name = get_fieldname_pyart(datatype)
 
@@ -79,10 +78,7 @@ def process_correct_bias(procstatus, dscfg, radar_list=None):
              '. Field not available')
         return None, None
 
-    bias = 0.
-    if 'bias' in dscfg:
-        bias = dscfg['bias']
-
+    bias = dscfg.get('bias', 0.)
     corrected_field = pyart.correct.correct_bias(
         radar, bias=bias, field_name=field_name)
 
@@ -92,9 +88,9 @@ def process_correct_bias(procstatus, dscfg, radar_list=None):
         new_field_name = 'corrected_'+field_name
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field(new_field_name, corrected_field)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field(new_field_name, corrected_field)
 
     return new_dataset, ind_rad
 
@@ -119,8 +115,8 @@ def process_correct_noise_rhohv(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -130,8 +126,7 @@ def process_correct_noise_rhohv(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'uRhoHV':
             urhohv = 'uncorrected_cross_correlation_ratio'
         if datatype == 'SNRh':
@@ -164,9 +159,9 @@ def process_correct_noise_rhohv(procstatus, dscfg, radar_list=None):
         nh_field=nh, nv_field=nv, rhohv_field='cross_correlation_ratio')
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field('cross_correlation_ratio', rhohv)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field('cross_correlation_ratio', rhohv)
 
     return new_dataset, ind_rad
 
@@ -216,8 +211,7 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
     """
     echoid_field = None
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = (
-            get_datatype_fields(datatypedescr))
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'echoID':
             echoid_field = get_fieldname_pyart(datatype)
         else:
@@ -257,10 +251,7 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
             return None, None
 
         # filter out low values
-        val_min = None
-        if 'val_min' in dscfg:
-            val_min = dscfg['val_min']
-
+        val_min = dscfg.get('val_min', None)
         mask = np.ma.getmaskarray(radar.fields[field_name]['data'])
         if val_min is not None:
             mask = np.logical_or(
@@ -270,10 +261,7 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
         field[mask] = np.ma.masked
 
         # filter wet or dry volumes
-        filter_prec = 'None'
-        if 'filter_prec' in dscfg:
-            filter_prec = dscfg['filter_prec']
-
+        filter_prec = dscfg.get('filter_prec', 'None')
         if filter_prec == 'keep_wet' or filter_prec == 'keep_dry':
             if echoid_field not in radar.fields:
                 warn('Unable to determine if there is precipitation ' +
@@ -284,13 +272,8 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
             echoid = deepcopy(radar.fields[echoid_field]['data'])
             echoid[mask] = 1
 
-            rmax_prec = 0.
-            if 'rmax_prec' in dscfg:
-                rmax_prec = dscfg['rmax_prec']
-
-            percent_prec_max = 10.
-            if 'percent_prec_max' in dscfg:
-                percent_prec_max = dscfg['percent_prec_max']
+            rmax_prec = dscfg.get('rmax_prec', 0.)
+            percent_prec_max = dscfg.get('percent_prec_max', 10.)
 
             ngates = radar.ngates
             if rmax_prec > 0.:
@@ -315,17 +298,16 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
                          str(percent_prec_max))
                     return None, None
 
-        step = None
-        if 'step' in dscfg:
-            step = dscfg['step']
-
-        bins = get_histogram_bins(field_name, step=step)
-        nbins = len(bins)-1
+        step = dscfg.get('step', None)
+        bin_edges = get_histogram_bins(field_name, step=step)
+        nbins = len(bin_edges)-1
+        step = bin_edges[1]-bin_edges[0]
+        bin_centers = bin_edges[:-1]+step/2.
 
         # create histogram object from radar object
         radar_aux = deepcopy(radar)
         radar_aux.fields = dict()
-        radar_aux.range['data'] = bins[0:-1]
+        radar_aux.range['data'] = bin_centers
         radar_aux.ngates = nbins
         radar_aux.nrays = 1
 
@@ -333,41 +315,31 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
         field_dict['data'] = np.ma.zeros((1, nbins), dtype=int)
 
         # rays are indexed to regular grid
-        regular_grid = False
-        if 'regular_grid' in dscfg:
-            regular_grid = dscfg['regular_grid']
-
+        regular_grid = dscfg.get('regular_grid', False)
         if regular_grid:
             ray_ind = dscfg['global_data']['ray_ind']
             rng_ind = dscfg['global_data']['rng_ind']
             field = field[ray_ind, rng_ind].compressed()
         else:
-            azi_tol = 0.5
-            ele_tol = 0.5
-            rng_tol = 50.
-
-            if 'azi_tol' in dscfg:
-                azi_tol = dscfg['azi_tol']
-            if 'ele_tol' in dscfg:
-                ele_tol = dscfg['ele_tol']
-            if 'rng_tol' in dscfg:
-                rng_tol = dscfg['rng_tol']
+            azi_tol = dscfg.get('azi_tol', 0.5)
+            ele_tol = dscfg.get('ele_tol', 0.5)
+            rng_tol = dscfg.get('rng_tol', 50.)
 
             # get indexes of gates close to target
-            ray_ind = np.ma.empty(len(dscfg['global_data']['ray_ind']))
-            ray_ind[:] = np.ma.masked
-            rng_ind = np.ma.empty(len(dscfg['global_data']['ray_ind']))
-            rng_ind[:] = np.ma.masked
-            for i in range(len(dscfg['global_data']['ele'])):
+            ngc = np.size(dscfg['global_data']['ray_ind'])
+
+            ray_ind = np.ma.masked_all(ngc, dtype=int)
+            rng_ind = np.ma.masked_all(ngc, dtype=int)
+            for i in range(ngc):
                 ind_ray_rad = find_ray_index(
-                    radar_aux.elevation['data'], radar_aux.azimuth['data'],
+                    radar.elevation['data'], radar.azimuth['data'],
                     dscfg['global_data']['ele'][i],
                     dscfg['global_data']['azi'][i],
                     ele_tol=ele_tol, azi_tol=azi_tol)
                 if ind_ray_rad is None:
                     continue
                 ind_rng_rad = find_rng_index(
-                    radar_aux.range['data'], dscfg['global_data']['rng'][i],
+                    radar.range['data'], dscfg['global_data']['rng'][i],
                     rng_tol=rng_tol)
                 if ind_rng_rad is None:
                     continue
@@ -379,10 +351,10 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
 
         # put gates with values off limits to limit
         # and compute histogram
-        field[field < bins[0]] = bins[0]
-        field[field > bins[-1]] = bins[-1]
+        field[field < bin_centers[0]] = bin_centers[0]
+        field[field > bin_centers[-1]] = bin_centers[-1]
 
-        field_dict['data'][0, :], bin_edges = np.histogram(field, bins=bins)
+        field_dict['data'][0, :], bin_edges = np.histogram(field, bins=bin_edges)
         radar_aux.add_field(field_name, field_dict)
         start_time = pyart.graph.common.generate_radar_time_begin(radar_aux)
 
@@ -451,16 +423,15 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
     """
     echoid_field = None
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'echoID':
             echoid_field = get_fieldname_pyart(datatype)
         else:
@@ -481,19 +452,13 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
             return None, None
 
         # filter out low values
-        val_min = None
-        if 'val_min' in dscfg:
-            val_min = dscfg['val_min']
-
+        val_min = dscfg.get('val_min', None)
         mask = np.ma.getmaskarray(radar.fields[field_name]['data'])
         if val_min is not None:
             mask = np.logical_or(
                 mask, radar.fields[field_name]['data'] < val_min)
 
-        filter_prec = 'None'
-        if 'filter_prec' in dscfg:
-            filter_prec = dscfg['filter_prec']
-
+        filter_prec = dscfg.get('filter_prec', 'None')
         if filter_prec == 'keep_wet' or filter_prec == 'keep_dry':
             if echoid_field not in radar.fields:
                 warn('Unable to determine if there is precipitation ' +
@@ -504,13 +469,8 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
             echoid = deepcopy(radar.fields[echoid_field]['data'])
             echoid[mask] = 1
 
-            rmax_prec = 0.
-            if 'rmax_prec' in dscfg:
-                rmax_prec = dscfg['rmax_prec']
-
-            percent_prec_max = 10.
-            if 'percent_prec_max' in dscfg:
-                percent_prec_max = dscfg['percent_prec_max']
+            rmax_prec = dscfg.get('rmax_prec', 0.)
+            percent_prec_max = dscfg.get('percent_prec_max', 10.)
 
             ngates = radar.ngates
             if rmax_prec > 0.:
@@ -550,14 +510,8 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
         occu_dict['data'][np.logical_not(mask)] = 1
 
         # filter out out of range data
-        rmin = -1.
-        if 'rmin' in dscfg:
-            rmin = dscfg['rmin']
-
-        rmax = -1.
-        if 'rmax' in dscfg:
-            rmax = dscfg['rmax']
-
+        rmin = dscfg.get('rmin', -1.)
+        rmax = dscfg.get('rmax', -1.)
         if rmin >= 0.:
             ind_min = np.where(radar_aux.range['data'] < rmin)[0]
             if ind_min:
@@ -574,7 +528,7 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
         # first volume: initialize radar object
         if dscfg['initialized'] == 0:
             new_dataset = {
-                'radar_obj': radar_aux,
+                'radar_out': radar_aux,
                 'starttime': dscfg['timeinfo'],
                 'endtime': dscfg['timeinfo'],
                 'occu_final': False}
@@ -591,31 +545,31 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
 
         if not regular_grid:
             occu_interp = interpol_field(
-                dscfg['global_data']['radar_obj'], radar_aux, 'occurrence')
+                dscfg['global_data']['radar_out'], radar_aux, 'occurrence')
             npoints_interp = interpol_field(
-                dscfg['global_data']['radar_obj'], radar_aux,
+                dscfg['global_data']['radar_out'], radar_aux,
                 'number_of_samples')
         else:
-            if radar_aux.nrays != dscfg['global_data']['radar_obj'].nrays:
+            if radar_aux.nrays != dscfg['global_data']['radar_out'].nrays:
                 warn('Unable to accumulate radar object. ' +
                      'Number of rays of current radar different from ' +
                      'reference. nrays current: '+str(radar_aux.nrays) +
                      ' nrays ref: ' +
-                     str(dscfg['global_data']['radar_obj'].nrays))
+                     str(dscfg['global_data']['radar_out'].nrays))
                 return None, None
             occu_interp = radar_aux.fields['occurrence']
             npoints_interp = radar_aux.fields['number_of_samples']
 
-        dscfg['global_data']['radar_obj'].fields['occurrence']['data'] += (
+        dscfg['global_data']['radar_out'].fields['occurrence']['data'] += (
             np.ma.asarray(
                 occu_interp['data'].filled(fill_value=0)).astype('int'))
-        dscfg['global_data']['radar_obj'].fields['number_of_samples'][
+        dscfg['global_data']['radar_out'].fields['number_of_samples'][
             'data'] += (np.ma.asarray(
                 npoints_interp['data'].filled(fill_value=0)).astype('int'))
         dscfg['global_data']['endtime'] = dscfg['timeinfo']
 
         new_dataset = {
-            'radar_obj': dscfg['global_data']['radar_obj'],
+            'radar_out': dscfg['global_data']['radar_out'],
             'starttime': dscfg['global_data']['starttime'],
             'endtime': dscfg['global_data']['endtime'],
             'occu_final': False}
@@ -626,10 +580,10 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
     if procstatus == 2:
         if dscfg['initialized'] == 0:
             return None, None
-        if 'radar_obj' not in dscfg['global_data']:
+        if 'radar_out' not in dscfg['global_data']:
             return None, None
 
-        radar = dscfg['global_data']['radar_obj']
+        radar = dscfg['global_data']['radar_out']
 
         freq_occu_dict = pyart.config.get_metadata('frequency_of_occurrence')
         freq_occu_dict['data'] = (100.*radar.fields['occurrence']['data'] /
@@ -638,7 +592,7 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
         radar.add_field('frequency_of_occurrence', freq_occu_dict)
 
         new_dataset = {
-            'radar_obj': dscfg['global_data']['radar_obj'],
+            'radar_out': dscfg['global_data']['radar_out'],
             'starttime': dscfg['global_data']['starttime'],
             'endtime': dscfg['global_data']['endtime'],
             'occu_final': True}
@@ -671,15 +625,14 @@ def process_occurrence_period(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
     """
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'occurrence':
             occu_field = get_fieldname_pyart(datatype)
         elif datatype == 'nsamples':
@@ -707,14 +660,8 @@ def process_occurrence_period(procstatus, dscfg, radar_list=None):
             'number_of_samples', radar.fields['number_of_samples'])
 
         # filter out out of range data
-        rmin = -1.
-        if 'rmin' in dscfg:
-            rmin = dscfg['rmin']
-
-        rmax = -1.
-        if 'rmax' in dscfg:
-            rmax = dscfg['rmax']
-
+        rmin = dscfg.get('rmin', -1.)
+        rmax = dscfg.get('rmax', -1.)
         if rmin >= 0.:
             ind_min = np.where(radar_aux.range['data'] < rmin)[0]
             if ind_min:
@@ -730,7 +677,7 @@ def process_occurrence_period(procstatus, dscfg, radar_list=None):
         # first volume: initialize radar object
         if dscfg['initialized'] == 0:
             new_dataset = {
-                'radar_obj': radar_aux,
+                'radar_out': radar_aux,
                 'starttime': dscfg['timeinfo'],
                 'endtime': dscfg['timeinfo'],
                 'occu_final': False}
@@ -747,31 +694,31 @@ def process_occurrence_period(procstatus, dscfg, radar_list=None):
 
         if not regular_grid:
             occu_interp = interpol_field(
-                dscfg['global_data']['radar_obj'], radar_aux, 'occurrence')
+                dscfg['global_data']['radar_out'], radar_aux, 'occurrence')
             npoints_interp = interpol_field(
-                dscfg['global_data']['radar_obj'], radar_aux,
+                dscfg['global_data']['radar_out'], radar_aux,
                 'number_of_samples')
         else:
-            if radar_aux.nrays != dscfg['global_data']['radar_obj'].nrays:
+            if radar_aux.nrays != dscfg['global_data']['radar_out'].nrays:
                 warn('Unable to accumulate radar object. ' +
                      'Number of rays of current radar different from ' +
                      'reference. nrays current: '+str(radar_aux.nrays) +
                      ' nrays ref: ' +
-                     str(dscfg['global_data']['radar_obj'].nrays))
+                     str(dscfg['global_data']['radar_out'].nrays))
                 return None, None
             occu_interp = radar_aux.fields['occurrence']
             npoints_interp = radar_aux.fields['number_of_samples']
 
-        dscfg['global_data']['radar_obj'].fields['occurrence']['data'] += (
+        dscfg['global_data']['radar_out'].fields['occurrence']['data'] += (
             np.ma.asarray(
                 occu_interp['data'].filled(fill_value=0)).astype('int'))
-        dscfg['global_data']['radar_obj'].fields['number_of_samples'][
+        dscfg['global_data']['radar_out'].fields['number_of_samples'][
             'data'] += np.ma.asarray(
                 npoints_interp['data'].filled(fill_value=0)).astype('int')
         dscfg['global_data']['endtime'] = dscfg['timeinfo']
 
         new_dataset = {
-            'radar_obj': dscfg['global_data']['radar_obj'],
+            'radar_out': dscfg['global_data']['radar_out'],
             'starttime': dscfg['global_data']['starttime'],
             'endtime': dscfg['global_data']['endtime'],
             'occu_final': False}
@@ -782,10 +729,10 @@ def process_occurrence_period(procstatus, dscfg, radar_list=None):
     if procstatus == 2:
         if dscfg['initialized'] == 0:
             return None, None
-        if 'radar_obj' not in dscfg['global_data']:
+        if 'radar_out' not in dscfg['global_data']:
             return None, None
 
-        radar = dscfg['global_data']['radar_obj']
+        radar = dscfg['global_data']['radar_out']
 
         freq_occu_dict = pyart.config.get_metadata('frequency_of_occurrence')
         freq_occu_dict['data'] = (100.*radar.fields['occurrence']['data'] /
@@ -794,7 +741,7 @@ def process_occurrence_period(procstatus, dscfg, radar_list=None):
         radar.add_field('frequency_of_occurrence', freq_occu_dict)
 
         new_dataset = {
-            'radar_obj': dscfg['global_data']['radar_obj'],
+            'radar_out': dscfg['global_data']['radar_out'],
             'starttime': dscfg['global_data']['starttime'],
             'endtime': dscfg['global_data']['endtime'],
             'occu_final': True}
@@ -879,8 +826,7 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
 
     if procstatus == 1:
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             if datatype == 'dBm':
                 pwrh_field = 'signal_power_hh'
             if datatype == 'dBmv':
@@ -945,38 +891,16 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
 
         dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
 
-        # default values
-        rmin = 50000.
-        hmin = 10000.
-        delev_max = 1.5
-        dazim_max = 1.5
-        elmin = 1.
-        nbins_min = 20
-        attg = None
-        max_std_pwr = 2.
-        max_std_zdr = 2.
-
         # user values
-        if 'rmin' in dscfg:
-            rmin = dscfg['rmin']
-        if 'hmin' in dscfg:
-            hmin = dscfg['hmin']
-        if 'delev_max' in dscfg:
-            delev_max = dscfg['delev_max']
-        if 'dazim_max' in dscfg:
-            dazim_max = dscfg['dazim_max']
-        if 'elmin' in dscfg:
-            elmin = dscfg['elmin']
-        if 'nbins_min' in dscfg:
-            nbins_min = dscfg['nbins_min']
-        if 'attg' in dscfg:
-            attg = dscfg['attg']
-        if 'max_std_pwr' in dscfg:
-            max_std_pwr = dscfg['max_std_pwr']
-        if 'max_std_zdr' in dscfg:
-            max_std_zdr = dscfg['max_std_zdr']
-
-        ind_rmin = np.where(radar.range['data'] > rmin)[0][0]
+        rmin = dscfg.get('rmin', 50000.)
+        hmin = dscfg.get('hmin', 10000.)
+        delev_max = dscfg.get('delev_max', 1.5)
+        dazim_max = dscfg.get('dazim_max', 1.5)
+        elmin = dscfg.get('elmin', 1.)
+        nbins_min = dscfg.get('nbins_min', 20)
+        attg = dscfg.get('attg', None)
+        max_std_pwr = dscfg.get('max_std_pwr', 2.)
+        max_std_zdr = dscfg.get('max_std_zdr', 2.)
 
         sun_hits, new_radar = pyart.correct.get_sun_hits(
             radar, delev_max=delev_max, dazim_max=dazim_max, elmin=elmin,
@@ -990,40 +914,24 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
 
         sun_hits_dataset = dict()
         sun_hits_dataset.update({'sun_hits': sun_hits})
-        sun_hits_dataset.update({'radar': new_radar})
+        sun_hits_dataset.update({'radar_out': new_radar})
         sun_hits_dataset.update({'timeinfo': dscfg['timeinfo']})
 
         return sun_hits_dataset, ind_rad
 
     if procstatus == 2:
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             break
 
         ind_rad = int(radarnr[5:8])-1
 
-        # default values
-        az_width_co = None
-        el_width_co = None
-        az_width_cross = None
-        el_width_cross = None
-        nfiles = 1
-        coeff_band = 1.2
-
         # user values
-        if 'az_width_co' in dscfg:
-            az_width_co = dscfg['az_width_co']
-        if 'el_width_co' in dscfg:
-            el_width_co = dscfg['el_width_co']
-        if 'az_width_cross' in dscfg:
-            az_width_cross = dscfg['az_width_cross']
-        if 'el_width_cross' in dscfg:
-            el_width_cross = dscfg['el_width_cross']
-        if 'ndays' in dscfg:
-            nfiles = dscfg['ndays']
-        if 'coeff_band' in dscfg:
-            coeff_band = dscfg['coeff_band']
+        az_width_co = dscfg.get('az_width_co', None)
+        el_width_co = dscfg.get('el_width_co', None)
+        az_width_cross = dscfg.get('az_width_cross', None)
+        el_width_cross = dscfg.get('el_width_cross', None)
+        nfiles = dscfg.get('ndays', 1)
 
         sun_hits = read_sun_hits_multiple_days(
             dscfg, dscfg['global_data']['timeinfo'], nfiles=nfiles)

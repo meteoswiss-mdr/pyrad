@@ -15,8 +15,9 @@ from copy import deepcopy
 from warnings import warn
 
 import numpy as np
+from netCDF4 import num2date
 
-from ..io.io_aux import get_save_dir, make_filename
+from ..io.io_aux import get_save_dir, make_filename, get_fieldname_pyart
 from ..io.io_aux import generate_field_name_str
 
 from ..io.read_data_sensor import get_sensor_data
@@ -25,6 +26,7 @@ from ..io.read_data_other import read_timeseries
 from ..io.write_data import write_ts_polar_data, write_ts_cum
 
 from ..graph.plots_timeseries import plot_timeseries, plot_timeseries_comp
+from ..graph.plots_vol import plot_cappi, plot_traj
 from ..graph.plots import plot_scatter_comp
 
 from ..util.radar_utils import rainfall_accumulation
@@ -56,9 +58,7 @@ def generate_timeseries_products(dataset, prdcfg):
         if dataset['final']:
             return None
 
-        dpi = 72
-        if 'dpi' in prdcfg:
-            dpi = prdcfg['dpi']
+        dpi = prdcfg.get('dpi', 72)
 
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
@@ -114,9 +114,7 @@ def generate_timeseries_products(dataset, prdcfg):
         if dataset['final']:
             return None
 
-        dpi = 72
-        if 'dpi' in prdcfg:
-            dpi = prdcfg['dpi']
+        dpi = prdcfg.get('dpi', 72)
 
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
@@ -167,9 +165,7 @@ def generate_timeseries_products(dataset, prdcfg):
         if dataset['final']:
             return None
 
-        dpi = 72
-        if 'dpi' in prdcfg:
-            dpi = prdcfg['dpi']
+        dpi = prdcfg.get('dpi', 72)
 
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
@@ -194,7 +190,7 @@ def generate_timeseries_products(dataset, prdcfg):
                 'No valid radar data')
             return None
 
-        sensordate, sensorvalue, sensortype, period = get_sensor_data(
+        sensordate, sensorvalue, sensortype, _ = get_sensor_data(
             radardate[0], dataset['datatype'], prdcfg)
         if sensordate is None:
             warn(
@@ -234,9 +230,7 @@ def generate_timeseries_products(dataset, prdcfg):
         if dataset['final']:
             return None
 
-        dpi = 72
-        if 'dpi' in prdcfg:
-            dpi = prdcfg['dpi']
+        dpi = prdcfg.get('dpi', 72)
 
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
@@ -301,9 +295,7 @@ def generate_timeseries_products(dataset, prdcfg):
         if not dataset['final']:
             return None
 
-        dpi = 72
-        if 'dpi' in prdcfg:
-            dpi = prdcfg['dpi']
+        dpi = prdcfg.get('dpi', 72)
 
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
@@ -334,13 +326,8 @@ def generate_timeseries_products(dataset, prdcfg):
                 'No valid sensor data')
             return None
 
-        cum_time = 3600
-        if 'cum_time' in prdcfg:
-            cum_time = prdcfg['cum_time']
-
-        base_time = 0
-        if 'base_time' in prdcfg:
-            base_time = prdcfg['base_time']
+        cum_time = prdcfg.get('cum_time', 3600)
+        base_time = prdcfg.get('base_time', 0)
 
         sensordate_cum, sensorvalue_cum, np_sensor_cum = rainfall_accumulation(
             sensordate, sensorvalue, cum_time=cum_time, base_time=base_time,
@@ -410,42 +397,43 @@ def generate_timeseries_products(dataset, prdcfg):
 
     # ================================================================
     elif prdcfg['type'] == 'PLOT_AND_WRITE':
+        if not dataset['final']:
+            return None
 
-        timeinfo = dataset.time_vector[0]
+        timeinfo = dataset['ts'].time_vector[0]
 
         savedir = get_save_dir(prdcfg['basepath'], prdcfg['procname'],
                                dssavedir, prdcfg['prdname'],
                                timeinfo=timeinfo)
 
         dstype_str = prdcfg['dstype'].lower().replace('_', '')
-        fname = make_filename('ts', dstype_str, dataset.datatype,
+        fname = make_filename('ts', dstype_str, dataset['ts'].datatype,
                               ['csv'],
                               prdcfginfo=None, timeinfo=timeinfo,
                               timeformat='%Y%m%d%H%M%S',
                               runinfo=prdcfg['runinfo'])
 
-        dataset.write(savedir + fname[0])
+        dataset['ts'].write(savedir + fname[0])
 
-        fname = make_filename('ts', dstype_str, dataset.datatype,
+        fname = make_filename('ts', dstype_str, dataset['ts'].datatype,
                               prdcfg['imgformat'],
                               prdcfginfo=None, timeinfo=timeinfo,
                               timeformat='%Y%m%d%H%M%S',
                               runinfo=prdcfg['runinfo'])
 
-        ymin = None
-        ymax = None
-        if 'vmin' in prdcfg:
-            ymin = prdcfg['vmin']
-        if 'vmax' in prdcfg:
-            ymax = prdcfg['vmax']
 
-        dataset.plot(savedir + fname[0], ymin=ymin, ymax=ymax)
+        ymin = prdcfg.get('ymin', None)
+        ymax = prdcfg.get('ymax', None)
+
+        dataset['ts'].plot(savedir + fname[0], ymin=ymin, ymax=ymax)
 
         return None
 
     elif prdcfg['type'] == 'PLOT_HIST':
+        if not dataset['final']:
+            return None
 
-        timeinfo = dataset.time_vector[0]
+        timeinfo = dataset['ts'].time_vector[0]
 
         savedir = get_save_dir(prdcfg['basepath'], prdcfg['procname'],
                                dssavedir, prdcfg['prdname'],
@@ -453,17 +441,69 @@ def generate_timeseries_products(dataset, prdcfg):
 
         dstype_str = prdcfg['dstype'].lower().replace('_', '')
 
-        fname = make_filename('hist', dstype_str, dataset.datatype,
+        fname = make_filename('hist', dstype_str, dataset['ts'].datatype,
                               prdcfg['imgformat'],
                               prdcfginfo=None, timeinfo=timeinfo,
                               timeformat='%Y%m%d%H%M%S',
                               runinfo=prdcfg['runinfo'])
 
-        step = None
-        if 'step' in prdcfg:
-            step = prdcfg['step']
+        step = prdcfg.get('step', None)
 
-        dataset.plot_hist(savedir + fname[0], step=step)
+        dataset['ts'].plot_hist(savedir + fname[0], step=step)
+
+        return None
+
+    elif prdcfg['type'] == 'TRAJ_CAPPI_IMAGE':
+        if dataset['final']:
+            return None
+
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        savedir = get_save_dir(prdcfg['basepath'], prdcfg['procname'],
+                               dssavedir, prdcfg['prdname'],
+                               timeinfo=prdcfg['timeinfo'])
+
+        color_ref = prdcfg.get('color_ref', 'None')
+        if color_ref == 'altitude':
+            prdtype = 'cappi_alt'
+        elif color_ref == 'rel_altitude':
+            prdtype = 'cappi_rel_alt'
+        elif color_ref == 'time':
+            prdtype = 'cappi_time'
+        else:
+            prdtype = 'cappi'
+
+        fname_list = make_filename(
+            prdtype, prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'],
+            prdcfginfo='alt'+'{:.1f}'.format(prdcfg['altitude']),
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        fig, ax = plot_cappi(
+            dataset['radar'], field_name, prdcfg['altitude'], prdcfg,
+            fname_list, save_fig=False)
+
+        # start time of radar object
+        t_start = dataset['radar'].time['data'].min()
+        dt_start = num2date(t_start, dataset['radar'].time['units'],
+                            dataset['radar'].time['calendar'])
+
+        fname_list = plot_traj(
+            dataset['rng_traj'], dataset['azi_traj'], dataset['ele_traj'],
+            dataset['time_traj'], prdcfg, fname_list,
+            rad_alt=dataset['radar'].altitude['data'], rad_tstart=dt_start,
+            ax=ax, fig=fig, save_fig=True)
+
+        print('----- saved to '+' '.join(fname_list))
 
         return None
 

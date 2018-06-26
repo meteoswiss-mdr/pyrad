@@ -1,11 +1,6 @@
-# ---------------------------------
-# This is the config file for the processing of the Meiringen vol data acquired
-# during the MALS_MEI_WEATHER scan performed off-line the next day in zueub222
-# ---------------------------------
-
 # Name of this configuration:
 # Will be used in product generation save path
-name STRING mals_mei_vol
+name STRING rad4alp_hydro_PHA
 
 # ---------------------------------------------------------
 #  Raw data pathes
@@ -19,19 +14,25 @@ datapath STRING /data/DX50/rawdata/
 # Base path for cosmo data
 cosmopath STRING /data/cosmo/
 
-# Base path for dem data
-dempath STRING /data/DEM/DX50_MEI/
-
 # Loading of saved datasets
-loadbasepath STRING /data/pyrad_examples/
-loadname STRING mals_mei_vol
-    
+loadbasepath STRING /data/pyrad_products/
+loadname STRING  rad4alp_hydro_PHA
+
+# ------------------------------------------------------------
+# Auxiliary data pathes
+# ------------------------------------------------------------
+# Base path for swissmetnet data
+smnpath STRING /data/meteo_products/SMNRetrieve/
+
+# Base path for disdrometer data
+disdropath STRING /data/scattering/dsd_ts/
+
 # --------------------------------------------
 # Output data
 # --------------------------------------------
-saveimgbasepath STRING /data/pyrad_examples/
-saveimg         INT 1
-imgformat       STRING png
+saveimgbasepath STRING /data/pyrad_products/
+# Supported formats: eps, jpeg, jpg, pdf, pgf, png, ps, raw, rgba, svg, svgz, tif, tiff
+imgformat STRING png
 
 # --------------------------------------------------------
 # configuration files pathes
@@ -41,11 +42,8 @@ imgformat       STRING png
 configpath STRING $HOME/pyrad/config/
 
 # Configuration of the radar location and approach direction
-locationConfigFile STRING $HOME/pyrad/config/processing/mals_mei_vol_loc.txt
+locationConfigFile STRING $HOME/pyrad/config/processing/rad4alp_hydro_PHA_postproc_loc.txt
 
 # Configuration of the product generation
-productConfigFile STRING $HOME/pyrad/config/processing/mals_mei_vol_prod.txt
-
-# State after last run
-#lastStateFile STRING $HOME/postproc_pyrad/mals_mei_vol_postproc_lastState.txt
+productConfigFile STRING $HOME/pyrad/config/processing/rad4alp_hydro_PHA_postproc_prod.txt
 

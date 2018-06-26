@@ -22,15 +22,16 @@ import pyart
 from ..io.io_aux import get_save_dir, make_filename, get_fieldname_pyart
 
 from ..io.write_data import write_cdf, write_rhi_profile, write_field_coverage
-from ..io.write_data import write_last_state
+from ..io.write_data import write_last_state, write_histogram, write_quantiles
 
 from ..graph.plots_vol import plot_ppi, plot_ppi_map, plot_rhi, plot_cappi
 from ..graph.plots_vol import plot_bscope, plot_rhi_profile, plot_along_coord
 from ..graph.plots_vol import plot_field_coverage, plot_time_range
+from ..graph.plots_vol import plot_rhi_contour, plot_ppi_contour
 from ..graph.plots import plot_quantiles, plot_histogram
 from ..graph.plots_aux import get_colobar_label, get_field_name
 
-from ..util.radar_utils import get_ROI
+from ..util.radar_utils import get_ROI, compute_profile_stats
 from ..util.radar_utils import compute_histogram, compute_quantiles
 from ..util.stat_utils import quantiles_weighted
 
@@ -41,8 +42,8 @@ def generate_vol_products(dataset, prdcfg):
 
     Parameters
     ----------
-    dataset : Radar
-        radar object
+    dataset : dict
+        dictionary with key radar_out containing a radar object
 
     prdcfg : dictionary of dictionaries
         product configuration dictionary of dictionaries
@@ -59,16 +60,16 @@ def generate_vol_products(dataset, prdcfg):
 
     if prdcfg['type'] == 'PPI_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
+        if field_name not in dataset['radar_out'].fields:
             warn(
                 ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
             return None
 
-        el_vec = np.sort(dataset.fixed_angle['data'])
+        el_vec = np.sort(dataset['radar_out'].fixed_angle['data'])
         el = el_vec[prdcfg['anglenr']]
-        ind_el = np.where(dataset.fixed_angle['data'] == el)[0][0]
+        ind_el = np.where(dataset['radar_out'].fixed_angle['data'] == el)[0][0]
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -82,240 +83,21 @@ def generate_vol_products(dataset, prdcfg):
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        step = None
-        quantiles = None
-        plot_type = 'PPI'
-        if 'plot_type' in prdcfg:
-            plot_type = prdcfg['plot_type']
-        if 'step' in prdcfg:
-            step = prdcfg['step']
-        if 'quantiles' in prdcfg:
-            quantiles = prdcfg['quantiles']
+        step = prdcfg.get('step', None)
+        quantiles = prdcfg.get('quantiles', None)
+        plot_type = prdcfg.get('plot_type', 'PPI')
 
-        plot_ppi(dataset, field_name, ind_el, prdcfg, fname_list,
-                 plot_type=plot_type, step=step, quantiles=quantiles)
+        fname_list = plot_ppi(
+            dataset['radar_out'], field_name, ind_el, prdcfg, fname_list,
+            plot_type=plot_type, step=step, quantiles=quantiles)
 
         print('----- save to '+' '.join(fname_list))
 
         return fname_list
-
-    if prdcfg['type'] == 'PPI_MAP':
-        field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
-            warn(
-                ' Field type ' + field_name +
-                ' not available in data set. Skipping product ' +
-                prdcfg['type'])
-            return None
-
-        el_vec = np.sort(dataset.fixed_angle['data'])
-        el = el_vec[prdcfg['anglenr']]
-        ind_el = np.where(dataset.fixed_angle['data'] == el)[0][0]
-
-        savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
-
-        fname_list = make_filename(
-            'ppi_map', prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
-            timeinfo=prdcfg['timeinfo'])
-
-        for i, fname in enumerate(fname_list):
-            fname_list[i] = savedir+fname
-
-        plot_ppi_map(dataset, field_name, ind_el, prdcfg, fname_list)
-
-        print('----- save to '+' '.join(fname_list))
-
-        return fname_list
-
-    elif prdcfg['type'] == 'RHI_IMAGE':
-        field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
-            warn(
-                ' Field type ' + field_name +
-                ' not available in data set. Skipping product ' +
-                prdcfg['type'])
-            return None
-
-        az_vec = np.sort(dataset.fixed_angle['data'])
-        az = az_vec[prdcfg['anglenr']]
-        ind_az = np.where(dataset.fixed_angle['data'] == az)[0][0]
-
-        savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
-
-        fname_list = make_filename(
-            'rhi', prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'], prdcfginfo='az'+'{:.1f}'.format(az),
-            timeinfo=prdcfg['timeinfo'])
-
-        for i, fname in enumerate(fname_list):
-            fname_list[i] = savedir+fname
-
-        step = None
-        quantiles = None
-        plot_type = 'RHI'
-        if 'plot_type' in prdcfg:
-            plot_type = prdcfg['plot_type']
-        if 'step' in prdcfg:
-            step = prdcfg['step']
-        if 'quantiles' in prdcfg:
-            quantiles = prdcfg['quantiles']
-
-        plot_rhi(dataset, field_name, ind_az, prdcfg, fname_list,
-                 plot_type=plot_type, step=step, quantiles=quantiles)
-
-        print('----- save to '+' '.join(fname_list))
-
-        return fname_list
-
-    elif prdcfg['type'] == 'RHI_PROFILE':
-        field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
-            warn(
-                ' Field type ' + field_name +
-                ' not available in data set. Skipping product ' +
-                prdcfg['type'])
-            return None
-
-        az_vec = np.sort(dataset.fixed_angle['data'])
-        az = az_vec[prdcfg['anglenr']]
-        ind_az = np.where(dataset.fixed_angle['data'] == az)[0][0]
-
-        rangeStart = 0.
-        if 'rangeStart' in prdcfg:
-            rangeStart = prdcfg['rangeStart']
-        rangeStop = 25000.
-        if 'rangeStop' in prdcfg:
-            rangeStop = prdcfg['rangeStop']
-        heightResolution = 500.
-        if 'heightResolution' in prdcfg:
-            heightResolution = prdcfg['heightResolution']
-        hmax_user = 8000.
-        if 'heightMax' in prdcfg:
-            hmax_user = prdcfg['heightMax']
-        quantity = 'median'
-        if 'quantity' in prdcfg:
-            quantity = prdcfg['quantity']
-
-        # create new radar object with only data for the given rhi and range
-        new_dataset = dataset.extract_sweeps([ind_az])
-        field = new_dataset.fields[field_name]
-        rng_mask = np.logical_and(new_dataset.range['data'] >= rangeStart,
-                                  new_dataset.range['data'] <= rangeStop)
-        field['data'] = field['data'][:, rng_mask]
-        new_dataset.range['data'] = new_dataset.range['data'][rng_mask]
-        new_dataset.ngates = len(new_dataset.range['data'])
-        new_dataset.init_gate_x_y_z()
-        new_dataset.init_gate_longitude_latitude()
-        new_dataset.init_gate_altitude()
-
-        new_dataset.fields = dict()
-        new_dataset.add_field(field_name, field)
-
-        # compute quantities
-        minheight = (round(
-            np.min(new_dataset.gate_altitude['data']) /
-            heightResolution)*heightResolution-heightResolution)
-        maxheight = (round(
-            hmax_user/heightResolution)*heightResolution +
-                     heightResolution)
-
-        nlevels = int((maxheight-minheight)/heightResolution)
-
-        hmin_vec = minheight+np.arange(nlevels)*heightResolution
-        hmax_vec = hmin_vec+heightResolution
-        hvec = hmin_vec+heightResolution/2.
-        val_median = np.ma.empty(nlevels)
-        val_median[:] = np.ma.masked
-        val_mean = np.ma.empty(nlevels)
-        val_mean[:] = np.ma.masked
-        val_quant25 = np.ma.empty(nlevels)
-        val_quant25[:] = np.ma.masked
-        val_quant75 = np.ma.empty(nlevels)
-        val_quant75[:] = np.ma.masked
-        val_valid = np.zeros(nlevels, dtype=int)
-
-        gate_altitude = new_dataset.gate_altitude['data']
-        for i in range(nlevels):
-            data = field['data'][np.logical_and(
-                gate_altitude >= hmin_vec[i], gate_altitude <= hmax_vec[i])]
-            avg, quants, nvalid = quantiles_weighted(
-                data, quantiles=np.array([0.25, 0.50, 0.75]))
-            if nvalid is not None:
-                if nvalid >= 4:
-                    val_median[i] = quants[1]
-                    val_quant25[i] = quants[0]
-                    val_quant75[i] = quants[2]
-                    val_mean[i] = avg
-                    val_valid[i] = nvalid
-
-        # plot data
-        if quantity == 'mean':
-            data = [val_mean]
-            labels = ['Mean']
-            colors = ['b']
-            linestyles = ['-']
-        else:
-            data = [val_median, val_quant25, val_quant75]
-            labels = ['median', '25-percentile', '75-percentile']
-            colors = ['b', 'k', 'k']
-            linestyles = ['-', '--', '--']
-
-        labelx = get_colobar_label(dataset.fields[field_name], field_name)
-        titl = (
-            pyart.graph.common.generate_radar_time_begin(
-                dataset).isoformat() + 'Z' + '\n' +
-            get_field_name(dataset.fields[field_name], field_name))
-
-        savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
-
-        prdcfginfo = 'az'+'{:.1f}'.format(az)+'hres'+str(int(heightResolution))
-        fname_list = make_filename(
-            'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'], prdcfginfo=prdcfginfo,
-            timeinfo=prdcfg['timeinfo'])
-
-        for i, fname in enumerate(fname_list):
-            fname_list[i] = savedir+fname
-
-        plot_rhi_profile(
-            data, hvec, fname_list, labelx=labelx, labely='Height (m MSL)',
-            labels=labels, title=titl, colors=colors,
-            linestyles=linestyles, xmin=None, xmax=None)
-
-        print('----- save to '+' '.join(fname_list))
-
-        fname = make_filename(
-            'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
-            ['csv'], prdcfginfo=prdcfginfo,
-            timeinfo=prdcfg['timeinfo'])[0]
-
-        fname = savedir+fname
-
-        sector = {
-            'rmin': rangeStart,
-            'rmax': rangeStop,
-            'az': az
-        }
-        write_rhi_profile(
-            hvec, data, val_valid, labels, fname, datatype=labelx,
-            timeinfo=prdcfg['timeinfo'], sector=sector)
-
-        print('----- save to '+fname)
-
-        # TODO: add Cartesian interpolation option
-
-        return fname
 
     elif prdcfg['type'] == 'PSEUDOPPI_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
+        if field_name not in dataset['radar_out'].fields:
             warn(
                 ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
@@ -324,7 +106,7 @@ def generate_vol_products(dataset, prdcfg):
 
         try:
             xsect = pyart.util.cross_section_rhi(
-                dataset, [prdcfg['angle']], el_tol=prdcfg['EleTol'])
+                dataset['radar_out'], [prdcfg['angle']], el_tol=prdcfg['EleTol'])
 
             savedir = get_save_dir(
                 prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -337,7 +119,7 @@ def generate_vol_products(dataset, prdcfg):
                 timeinfo=prdcfg['timeinfo'])
 
             for i, fname in enumerate(fname_list):
-                fname[i] = savedir+fname
+                fname_list[i] = savedir+fname
 
             step = None
             quantiles = None
@@ -362,9 +144,1091 @@ def generate_vol_products(dataset, prdcfg):
 
             return None
 
+    if prdcfg['type'] == 'PPI_MAP':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        el_vec = np.sort(dataset['radar_out'].fixed_angle['data'])
+        el = el_vec[prdcfg['anglenr']]
+        ind_el = np.where(dataset['radar_out'].fixed_angle['data'] == el)[0][0]
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            'ppi_map', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        plot_ppi_map(dataset['radar_out'], field_name, ind_el, prdcfg, fname_list)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+
+    if prdcfg['type'] == 'PPI_CONTOUR_OVERPLOT':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_name = get_fieldname_pyart(prdcfg['contourtype'])
+        if contour_name not in dataset['radar_out'].fields:
+            warn(
+                'Contour type ' + contour_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_values = prdcfg.get('contour_values', None)
+
+        el_vec = np.sort(dataset['radar_out'].fixed_angle['data'])
+        el = el_vec[prdcfg['anglenr']]
+        ind_el = np.where(dataset['radar_out'].fixed_angle['data'] == el)[0][0]
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            'ppi', prdcfg['dstype'],
+            prdcfg['voltype']+'-'+prdcfg['contourtype'],
+            prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        titl = (
+            pyart.graph.common.generate_title(dataset['radar_out'], field_name, ind_el) +
+            ' - ' +
+            pyart.graph.common.generate_field_name(dataset['radar_out'], contour_name))
+
+        fig, ax = plot_ppi(dataset['radar_out'], field_name, ind_el, prdcfg, fname_list,
+                           titl=titl, save_fig=False)
+
+        fname_list = plot_ppi_contour(
+            dataset['radar_out'], contour_name, ind_el, prdcfg, fname_list,
+            contour_values=contour_values, ax=ax, fig=fig, save_fig=True)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+    elif prdcfg['type'] == 'PSEUDOPPI_CONTOUR_OVERPLOT':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_name = get_fieldname_pyart(prdcfg['contourtype'])
+        if contour_name not in dataset['radar_out'].fields:
+            warn(
+                'Contour type ' + contour_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_values = prdcfg.get('contour_values', None)
+
+        try:
+            xsect = pyart.util.cross_section_rhi(
+                dataset['radar_out'], [prdcfg['angle']], el_tol=prdcfg['EleTol'])
+
+            savedir = get_save_dir(
+                prdcfg['basepath'], prdcfg['procname'], dssavedir,
+                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+            fname_list = make_filename(
+                'ppi', prdcfg['dstype'],
+                prdcfg['voltype']+'-'+prdcfg['contourtype'],
+                prdcfg['imgformat'],
+                prdcfginfo='el'+'{:.1f}'.format(prdcfg['angle']),
+                timeinfo=prdcfg['timeinfo'])
+
+            for i, fname in enumerate(fname_list):
+                fname_list[i] = savedir+fname
+
+            titl = (
+                pyart.graph.common.generate_title(xsect, field_name, 0) +
+                ' - ' +
+                pyart.graph.common.generate_field_name(xsect, contour_name))
+
+            fig, ax = plot_ppi(xsect, field_name, 0, prdcfg, fname_list,
+                               titl=titl, save_fig=False)
+
+            fname_list = plot_ppi_contour(
+                xsect, contour_name, 0, prdcfg, fname_list,
+                contour_values=contour_values, ax=ax, fig=fig, save_fig=True)
+
+            print('----- save to '+' '.join(fname_list))
+
+            return fname_list
+        except EnvironmentError:
+            warn(
+                'No data found at elevation ' + str(prdcfg['angle']) +
+                '. Skipping product ' + prdcfg['type'])
+
+            return None
+
+    if prdcfg['type'] == 'PPI_CONTOUR':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_values = prdcfg.get('contour_values', None)
+
+        el_vec = np.sort(dataset['radar_out'].fixed_angle['data'])
+        el = el_vec[prdcfg['anglenr']]
+        ind_el = np.where(dataset['radar_out'].fixed_angle['data'] == el)[0][0]
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            'ppi', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        fname_list = plot_ppi_contour(
+            dataset['radar_out'], field_name, ind_el, prdcfg, fname_list,
+            contour_values=contour_values)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+    elif prdcfg['type'] == 'PSEUDOPPI_CONTOUR':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_values = prdcfg.get('contour_values', None)
+
+        try:
+            xsect = pyart.util.cross_section_rhi(
+                dataset['radar_out'], [prdcfg['angle']], el_tol=prdcfg['EleTol'])
+
+            savedir = get_save_dir(
+                prdcfg['basepath'], prdcfg['procname'], dssavedir,
+                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+            fname_list = make_filename(
+                'ppi', prdcfg['dstype'], prdcfg['voltype'],
+                prdcfg['imgformat'],
+                prdcfginfo='el'+'{:.1f}'.format(prdcfg['angle']),
+                timeinfo=prdcfg['timeinfo'])
+
+            for i, fname in enumerate(fname_list):
+                fname_list[i] = savedir+fname
+
+            fname_list = plot_ppi_contour(
+                xsect, field_name, 0, prdcfg, fname_list,
+                contour_values=contour_values)
+
+            print('----- save to '+' '.join(fname_list))
+
+            return fname_list
+        except EnvironmentError:
+            warn(
+                'No data found at elevation ' + str(prdcfg['angle']) +
+                '. Skipping product ' + prdcfg['type'])
+
+            return None
+
+    elif prdcfg['type'] == 'RHI_IMAGE':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        az_vec = np.sort(dataset['radar_out'].fixed_angle['data'])
+        az = az_vec[prdcfg['anglenr']]
+        ind_az = np.where(dataset['radar_out'].fixed_angle['data'] == az)[0][0]
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            'rhi', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo='az'+'{:.1f}'.format(az),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        step = prdcfg.get('step', None)
+        quantiles = prdcfg.get('quantiles', None)
+        plot_type = prdcfg.get('plot_type', 'RHI')
+
+        plot_rhi(dataset['radar_out'], field_name, ind_az, prdcfg, fname_list,
+                 plot_type=plot_type, step=step, quantiles=quantiles)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+    elif prdcfg['type'] == 'PSEUDORHI_IMAGE':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        try:
+            xsect = pyart.util.cross_section_ppi(
+                dataset['radar_out'], [prdcfg['angle']], az_tol=prdcfg['AziTol'])
+
+            savedir = get_save_dir(
+                prdcfg['basepath'], prdcfg['procname'], dssavedir,
+                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+            fname_list = make_filename(
+                'rhi', prdcfg['dstype'], prdcfg['voltype'],
+                prdcfg['imgformat'],
+                prdcfginfo='az'+'{:.1f}'.format(prdcfg['angle']),
+                timeinfo=prdcfg['timeinfo'])
+
+            for i, fname in enumerate(fname_list):
+                fname_list[i] = savedir+fname
+
+            step = prdcfg.get('step', None)
+            quantiles = prdcfg.get('quantiles', None)
+            plot_type = prdcfg.get('plot_type', 'RHI')
+
+            plot_rhi(xsect, field_name, 0, prdcfg, fname_list,
+                     plot_type=plot_type, step=step, quantiles=quantiles)
+
+            print('----- save to '+' '.join(fname_list))
+
+            return fname_list
+        except EnvironmentError:
+            warn(
+                ' No data found at azimuth ' +
+                str(prdcfg['angle'])+'. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+    elif prdcfg['type'] == 'RHI_CONTOUR_OVERPLOT':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_name = get_fieldname_pyart(prdcfg['contourtype'])
+        if contour_name not in dataset['radar_out'].fields:
+            warn(
+                'Contour type ' + contour_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_values = prdcfg.get('contour_values', None)
+
+        az_vec = np.sort(dataset['radar_out'].fixed_angle['data'])
+        az = az_vec[prdcfg['anglenr']]
+        ind_az = np.where(dataset['radar_out'].fixed_angle['data'] == az)[0][0]
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            'rhi', prdcfg['dstype'],
+            prdcfg['voltype']+'-'+prdcfg['contourtype'],
+            prdcfg['imgformat'], prdcfginfo='az'+'{:.1f}'.format(az),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        titl = (
+            pyart.graph.common.generate_title(dataset['radar_out'], field_name, ind_az) +
+            ' - ' +
+            pyart.graph.common.generate_field_name(dataset['radar_out'], contour_name))
+
+        fig, ax = plot_rhi(dataset['radar_out'], field_name, ind_az, prdcfg, fname_list,
+                           titl=titl, save_fig=False)
+
+        fname_list = plot_rhi_contour(
+            dataset['radar_out'], contour_name, ind_az, prdcfg, fname_list,
+            contour_values=contour_values, ax=ax, fig=fig, save_fig=True)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+    elif prdcfg['type'] == 'PSEUDORHI_CONTOUR_OVERPLOT':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_name = get_fieldname_pyart(prdcfg['contourtype'])
+        if contour_name not in dataset['radar_out'].fields:
+            warn(
+                'Contour type ' + contour_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_values = prdcfg.get('contour_values', None)
+
+        try:
+            xsect = pyart.util.cross_section_ppi(
+                dataset['radar_out'], [prdcfg['angle']], az_tol=prdcfg['AziTol'])
+
+            savedir = get_save_dir(
+                prdcfg['basepath'], prdcfg['procname'], dssavedir,
+                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+            fname_list = make_filename(
+                'rhi', prdcfg['dstype'],
+                prdcfg['voltype']+'-'+prdcfg['contourtype'],
+                prdcfg['imgformat'],
+                prdcfginfo='az'+'{:.1f}'.format(prdcfg['angle']),
+                timeinfo=prdcfg['timeinfo'])
+
+            for i, fname in enumerate(fname_list):
+                fname_list[i] = savedir+fname
+
+            titl = (
+                pyart.graph.common.generate_title(xsect, field_name, 0) +
+                ' - ' +
+                pyart.graph.common.generate_field_name(xsect, contour_name))
+
+            fig, ax = plot_rhi(xsect, field_name, 0, prdcfg, fname_list,
+                               titl=titl, save_fig=False)
+
+            fname_list = plot_rhi_contour(
+                xsect, contour_name, 0, prdcfg, fname_list,
+                contour_values=contour_values, ax=ax, fig=fig, save_fig=True)
+
+            print('----- save to '+' '.join(fname_list))
+
+            return fname_list
+        except EnvironmentError:
+            warn(
+                ' No data found at azimuth ' +
+                str(prdcfg['angle'])+'. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+    elif prdcfg['type'] == 'RHI_CONTOUR':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_values = prdcfg.get('contour_values', None)
+
+        az_vec = np.sort(dataset['radar_out'].fixed_angle['data'])
+        az = az_vec[prdcfg['anglenr']]
+        ind_az = np.where(dataset['radar_out'].fixed_angle['data'] == az)[0][0]
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            'rhi', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo='az'+'{:.1f}'.format(az),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        fname_list = plot_rhi_contour(
+            dataset['radar_out'], field_name, ind_az, prdcfg, fname_list,
+            contour_values=contour_values)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+    elif prdcfg['type'] == 'PSEUDORHI_CONTOUR':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_values = prdcfg.get('contour_values', None)
+
+        try:
+            xsect = pyart.util.cross_section_ppi(
+                dataset['radar_out'], [prdcfg['angle']], az_tol=prdcfg['AziTol'])
+
+            savedir = get_save_dir(
+                prdcfg['basepath'], prdcfg['procname'], dssavedir,
+                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+            fname_list = make_filename(
+                'rhi', prdcfg['dstype'], prdcfg['voltype'],
+                prdcfg['imgformat'],
+                prdcfginfo='az'+'{:.1f}'.format(prdcfg['angle']),
+                timeinfo=prdcfg['timeinfo'])
+
+            for i, fname in enumerate(fname_list):
+                fname_list[i] = savedir+fname
+
+            fname_list = plot_rhi_contour(
+                xsect, field_name, 0, prdcfg, fname_list,
+                contour_values=contour_values)
+
+            print('----- save to '+' '.join(fname_list))
+
+            return fname_list
+        except EnvironmentError:
+            warn(
+                ' No data found at azimuth ' +
+                str(prdcfg['angle'])+'. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+    elif prdcfg['type'] == 'RHI_PROFILE':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # user defined parameters
+        rangeStart = prdcfg.get('rangeStart', 0.)
+        rangeStop = prdcfg.get('rangeStop', 25000.)
+        heightResolution = prdcfg.get('heightResolution', 500.)
+        hmin_user = prdcfg.get('heightMin', None)
+        hmax_user = prdcfg.get('heightMax', None)
+        quantity = prdcfg.get('quantity', 'quantiles')
+        quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.]))
+        nvalid_min = prdcfg.get('nvalid_min', 4)
+
+        fixed_span = prdcfg.get('fixed_span', 1)
+        vmin = None
+        vmax = None
+        if fixed_span:
+            vmin, vmax = pyart.config.get_field_limits(field_name)
+            if 'vmin' in prdcfg:
+                vmin = prdcfg['vmin']
+            if 'vmax' in prdcfg:
+                vmax = prdcfg['vmax']
+
+        # create new radar object with only data for the given rhi and range
+        az_vec = np.sort(dataset['radar_out'].fixed_angle['data'])
+        az = az_vec[prdcfg['anglenr']]
+        ind_az = np.where(dataset['radar_out'].fixed_angle['data'] == az)[0][0]
+
+        new_dataset = dataset['radar_out'].extract_sweeps([ind_az])
+        field = new_dataset.fields[field_name]
+        rng_mask = np.logical_and(new_dataset.range['data'] >= rangeStart,
+                                  new_dataset.range['data'] <= rangeStop)
+        field['data'] = field['data'][:, rng_mask]
+        new_dataset.range['data'] = new_dataset.range['data'][rng_mask]
+        new_dataset.ngates = len(new_dataset.range['data'])
+        new_dataset.init_gate_x_y_z()
+        new_dataset.init_gate_longitude_latitude()
+        new_dataset.init_gate_altitude()
+
+        new_dataset.fields = dict()
+        new_dataset.add_field(field_name, field)
+
+        # compute quantities
+        if hmin_user is None:
+            minheight = (
+                round(np.min(dataset['radar_out'].gate_altitude['data']) /
+                      heightResolution)*heightResolution-heightResolution)
+        else:
+            minheight = hmin_user
+        if hmax_user is None:
+            maxheight = (
+                round(np.max(dataset['radar_out'].gate_altitude['data']) /
+                      heightResolution)*heightResolution+heightResolution)
+        else:
+            maxheight = hmax_user
+        nlevels = int((maxheight-minheight)/heightResolution)
+
+        h_vec = minheight+np.arange(nlevels)*heightResolution+heightResolution/2.
+        vals, val_valid = compute_profile_stats(
+            field['data'], new_dataset.gate_altitude['data'], h_vec,
+            heightResolution, quantity=quantity, quantiles=quantiles/100.,
+            nvalid_min=nvalid_min)
+
+        # plot data
+        if quantity == 'mean':
+            data = [vals[:, 0], vals[:, 1], vals[:, 2]]
+            labels = ['Mean', 'Min', 'Max']
+            colors = ['b', 'k', 'k']
+            linestyles = ['-', '--', '--']
+        elif quantity == 'mode':
+            data = [vals[:, 0], vals[:, 2], vals[:, 4]]
+            labels = ['Mode', '2nd most common', '3rd most common']
+            colors = ['b', 'k', 'r']
+            linestyles = ['-', '--', '--']
+        else:
+            data = [vals[:, 1], vals[:, 0], vals[:, 2]]
+            labels = [
+                str(quantiles[1])+'-percentile',
+                str(quantiles[0])+'-percentile',
+                str(quantiles[2])+'-percentile']
+            colors = ['b', 'k', 'k']
+            linestyles = ['-', '--', '--']
+
+        labelx = get_colobar_label(dataset['radar_out'].fields[field_name], field_name)
+        titl = (
+            pyart.graph.common.generate_radar_time_begin(
+                dataset['radar_out']).isoformat() + 'Z' + '\n' +
+            get_field_name(dataset['radar_out'].fields[field_name], field_name))
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        prdcfginfo = 'az'+'{:.1f}'.format(az)+'hres'+str(int(heightResolution))
+        fname_list = make_filename(
+            'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo=prdcfginfo,
+            timeinfo=prdcfg['timeinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        plot_rhi_profile(
+            data, h_vec, fname_list, labelx=labelx, labely='Height (m MSL)',
+            labels=labels, title=titl, colors=colors,
+            linestyles=linestyles)
+
+        print('----- save to '+' '.join(fname_list))
+
+        fname = make_filename(
+            'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
+            ['csv'], prdcfginfo=prdcfginfo,
+            timeinfo=prdcfg['timeinfo'])[0]
+
+        fname = savedir+fname
+
+        if quantity == 'mode':
+            data.append(vals[:, 1])
+            labels.append('% points mode')
+            data.append(vals[:, 3])
+            labels.append('% points 2nd most common')
+            data.append(vals[:, 5])
+            labels.append('% points 3rd most common')
+
+        sector = {
+            'rmin': rangeStart,
+            'rmax': rangeStop,
+            'az': az
+        }
+        write_rhi_profile(
+            h_vec, data, val_valid, labels, fname, datatype=labelx,
+            timeinfo=prdcfg['timeinfo'], sector=sector)
+
+        print('----- save to '+fname)
+
+        # TODO: add Cartesian interpolation option
+
+        return fname
+
+    elif prdcfg['type'] == 'PROFILE_STATS':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # mask unclassified data
+        field = deepcopy(dataset['radar_out'].fields[field_name]['data'])
+        if prdcfg['voltype'] == 'hydro':
+            field = np.ma.masked_equal(field, 0)
+
+        # user defined parameters
+        heightResolution = prdcfg.get('heightResolution', 100.)
+        hmin_user = prdcfg.get('heightMin', None)
+        hmax_user = prdcfg.get('heightMax', None)
+        quantity = prdcfg.get('quantity', 'quantiles')
+        quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.]))
+        nvalid_min = prdcfg.get('nvalid_min', 4)
+
+        fixed_span = prdcfg.get('fixed_span', 1)
+        vmin = None
+        vmax = None
+        if fixed_span:
+            vmin, vmax = pyart.config.get_field_limits(field_name)
+            if 'vmin' in prdcfg:
+                vmin = prdcfg['vmin']
+            if 'vmax' in prdcfg:
+                vmax = prdcfg['vmax']
+
+        # compute quantities
+        if hmin_user is None:
+            minheight = (round(
+                np.min(dataset['radar_out'].gate_altitude['data']) /
+                heightResolution)*heightResolution-heightResolution)
+        else:
+            minheight = hmin_user
+        if hmax_user is None:
+            maxheight = (round(
+                np.max(dataset['radar_out'].gate_altitude['data']) /
+                heightResolution)*heightResolution+heightResolution)
+        else:
+            maxheight = hmax_user
+        nlevels = int((maxheight-minheight)/heightResolution)
+
+        h_vec = minheight+np.arange(nlevels)*heightResolution+heightResolution/2.
+        vals, val_valid = compute_profile_stats(
+            field, dataset['radar_out'].gate_altitude['data'], h_vec, heightResolution,
+            quantity=quantity, quantiles=quantiles/100.,
+            nvalid_min=nvalid_min)
+
+        # plot data
+        if quantity == 'mean':
+            data = [vals[:, 0], vals[:, 1], vals[:, 2]]
+            labels = ['Mean', 'Min', 'Max']
+            colors = ['b', 'k', 'k']
+            linestyles = ['-', '--', '--']
+        elif quantity == 'mode':
+            data = [vals[:, 0], vals[:, 2], vals[:, 4]]
+            labels = ['Mode', '2nd most common', '3rd most common']
+            colors = ['b', 'k', 'r']
+            linestyles = ['-', '--', '--']
+        else:
+            data = [vals[:, 1], vals[:, 0], vals[:, 2]]
+            labels = [
+                str(quantiles[1])+'-percentile',
+                str(quantiles[0])+'-percentile',
+                str(quantiles[2])+'-percentile']
+            colors = ['b', 'k', 'k']
+            linestyles = ['-', '--', '--']
+
+        labelx = get_colobar_label(dataset['radar_out'].fields[field_name], field_name)
+        titl = (
+            pyart.graph.common.generate_radar_time_begin(
+                dataset['radar_out']).isoformat() + 'Z' + '\n' +
+            get_field_name(dataset['radar_out'].fields[field_name], field_name))
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        prdcfginfo = 'hres'+str(int(heightResolution))
+        fname_list = make_filename(
+            'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo=prdcfginfo,
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        plot_rhi_profile(
+            data, h_vec, fname_list, labelx=labelx, labely='Height (m MSL)',
+            labels=labels, title=titl, colors=colors,
+            linestyles=linestyles, vmin=vmin, vmax=vmax,
+            hmin=minheight, hmax=maxheight)
+
+        print('----- save to '+' '.join(fname_list))
+
+        fname = make_filename(
+            'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
+            ['csv'], prdcfginfo=prdcfginfo,
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])[0]
+
+        fname = savedir+fname
+
+        if quantity == 'mode':
+            data.append(vals[:, 1])
+            labels.append('% points mode')
+            data.append(vals[:, 3])
+            labels.append('% points 2nd most common')
+            data.append(vals[:, 5])
+            labels.append('% points 3rd most common')
+
+        write_rhi_profile(
+            h_vec, data, val_valid, labels, fname, datatype=labelx,
+            timeinfo=prdcfg['timeinfo'])
+
+        print('----- save to '+fname)
+
+        # TODO: add Cartesian interpolation option
+
+        return fname
+
+    elif prdcfg['type'] == 'WIND_PROFILE':
+        # user defined parameters
+        heightResolution = prdcfg.get('heightResolution', 100.)
+        hmin_user = prdcfg.get('heightMin', None)
+        hmax_user = prdcfg.get('heightMax', None)
+        min_ele = prdcfg.get('min_ele', 5.)
+        max_ele = prdcfg.get('max_ele', 85.)
+
+        fixed_span = prdcfg.get('fixed_span', 1)
+        vmin = None
+        vmax = None
+        if fixed_span:
+            vmin, vmax = pyart.config.get_field_limits(
+                'eastward_wind_component')
+            if 'vmin' in prdcfg:
+                vmin = prdcfg['vmin']
+            if 'vmax' in prdcfg:
+                vmax = prdcfg['vmax']
+
+        u_vel = deepcopy(
+            dataset['radar_out'].fields['eastward_wind_component']['data'])
+        v_vel = deepcopy(
+            dataset['radar_out'].fields['northward_wind_component']['data'])
+        w_vel = deepcopy(
+            dataset['radar_out'].fields['vertical_wind_component']['data'])
+        std_vel = deepcopy(
+            dataset['radar_out'].fields['retrieved_velocity_std']['data'])
+        diff_vel = deepcopy(
+            dataset['radar_out'].fields['velocity_difference']['data'])
+
+        # remove azimuth information
+        u_vel_aux = np.ma.masked_all(
+            (dataset['radar_out'].nsweeps, dataset['radar_out'].ngates),
+            dtype=float)
+        v_vel_aux = np.ma.masked_all(
+            (dataset['radar_out'].nsweeps, dataset['radar_out'].ngates),
+            dtype=float)
+        w_vel_aux = np.ma.masked_all(
+            (dataset['radar_out'].nsweeps, dataset['radar_out'].ngates),
+            dtype=float)
+        std_vel_aux = np.ma.masked_all(
+            (dataset['radar_out'].nsweeps, dataset['radar_out'].ngates),
+            dtype=float)
+        ngates_aux = np.zeros(
+            (dataset['radar_out'].nsweeps, dataset['radar_out'].ngates),
+            dtype=int)
+        gate_altitude_aux = np.empty(
+            (dataset['radar_out'].nsweeps, dataset['radar_out'].ngates),
+            dtype=float)
+        for ind_sweep in range(dataset['radar_out'].nsweeps):
+            ind_start = (
+                dataset['radar_out'].sweep_start_ray_index['data'][ind_sweep])
+            ind_end = (
+                dataset['radar_out'].sweep_end_ray_index['data'][ind_sweep])
+            for ind_rng in range(dataset['radar_out'].ngates):
+                u_vel_aux[ind_sweep, ind_rng] = u_vel[ind_start, ind_rng]
+                v_vel_aux[ind_sweep, ind_rng] = v_vel[ind_start, ind_rng]
+                w_vel_aux[ind_sweep, ind_rng] = w_vel[ind_start, ind_rng]
+                std_vel_aux[ind_sweep, ind_rng] = std_vel[ind_start, ind_rng]
+                gate_altitude_aux[ind_sweep, ind_rng] = (
+                    dataset['radar_out'].gate_altitude['data'][ind_start, ind_rng])
+                ngates_aux[ind_sweep, ind_rng] = (
+                    diff_vel[ind_start:ind_end, ind_rng].compressed().size)
+
+        # exclude low elevations in the computation of vertical velocities
+        std_w_vel_aux = deepcopy(std_vel_aux)
+        ngates_w_aux = deepcopy(ngates_aux)
+        ind = np.where(dataset['radar_out'].fixed_angle['data'] < min_ele)[0]
+        if ind.size > 0:
+            w_vel_aux[ind, :] = np.ma.masked
+            std_w_vel_aux[ind, :] = np.ma.masked
+            ngates_w_aux[ind, :] = 0
+
+        # exclude hig elevations in the computation of horizontal velocities
+        ind = np.where(dataset['radar_out'].fixed_angle['data'] > max_ele)[0]
+        if ind.size > 0:
+            u_vel_aux[ind, :] = np.ma.masked
+            v_vel_aux[ind, :] = np.ma.masked
+            std_vel_aux[ind, :] = np.ma.masked
+            ngates_aux[ind, :] = 0
+
+        # compute quantities
+        if hmin_user is None:
+            minheight = (round(
+                np.min(dataset['radar_out'].gate_altitude['data']) /
+                heightResolution)*heightResolution-heightResolution)
+        else:
+            minheight = hmin_user
+        if hmax_user is None:
+            maxheight = (round(
+                np.max(dataset['radar_out'].gate_altitude['data']) /
+                heightResolution)*heightResolution+heightResolution)
+        else:
+            maxheight = hmax_user
+        nlevels = int((maxheight-minheight)/heightResolution)
+
+        h_vec = minheight+np.arange(nlevels)*heightResolution+heightResolution/2.
+
+        u_vals, val_valid = compute_profile_stats(
+            u_vel_aux, gate_altitude_aux, h_vec, heightResolution,
+            quantity='regression_mean', std_field=std_vel_aux,
+            np_field=ngates_aux)
+        v_vals, val_valid = compute_profile_stats(
+            v_vel_aux, gate_altitude_aux, h_vec, heightResolution,
+            quantity='regression_mean', std_field=std_vel_aux,
+            np_field=ngates_aux)
+        w_vals, w_val_valid = compute_profile_stats(
+            w_vel_aux, gate_altitude_aux, h_vec, heightResolution,
+            quantity='regression_mean', std_field=std_w_vel_aux,
+            np_field=ngates_w_aux)
+
+        # plot u wind data
+        u_data = [u_vals[:, 0], u_vals[:, 0]+u_vals[:, 1],
+                  u_vals[:, 0]-u_vals[:, 1]]
+        labels = ['Regression mean', '+std', '-std']
+        colors = ['b', 'k', 'k']
+        linestyles = ['-', '--', '--']
+
+        labelx = get_colobar_label(
+            dataset['radar_out'].fields['eastward_wind_component'],
+            'eastward_wind_component')
+        titl = (
+            pyart.graph.common.generate_radar_time_begin(
+                dataset['radar_out']).isoformat() + 'Z' + '\n' +
+            get_field_name(
+                dataset['radar_out'].fields['eastward_wind_component'],
+                'eastward_wind_component'))
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        prdcfginfo = 'hres'+str(int(heightResolution))
+        fname_list = make_filename(
+            'wind_profile', prdcfg['dstype'], 'wind_vel_h_u',
+            prdcfg['imgformat'], prdcfginfo=prdcfginfo,
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        plot_rhi_profile(
+            u_data, h_vec, fname_list, labelx=labelx, labely='Height (m MSL)',
+            labels=labels, title=titl, colors=colors,
+            linestyles=linestyles, vmin=vmin, vmax=vmax,
+            hmin=minheight, hmax=maxheight)
+
+        print('----- save to '+' '.join(fname_list))
+
+        # plot v wind data
+        v_data = [v_vals[:, 0], v_vals[:, 0]+v_vals[:, 1],
+                  v_vals[:, 0]-v_vals[:, 1]]
+        labels = ['Regression mean', '+std', '-std']
+        colors = ['b', 'k', 'k']
+        linestyles = ['-', '--', '--']
+
+        labelx = get_colobar_label(
+            dataset['radar_out'].fields['northward_wind_component'],
+            'northward_wind_component')
+        titl = (
+            pyart.graph.common.generate_radar_time_begin(
+                dataset['radar_out']).isoformat() + 'Z' + '\n' +
+            get_field_name(
+                dataset['radar_out'].fields['northward_wind_component'],
+                'northward_wind_component'))
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        prdcfginfo = 'hres'+str(int(heightResolution))
+        fname_list = make_filename(
+            'wind_profile', prdcfg['dstype'], 'wind_vel_h_v',
+            prdcfg['imgformat'], prdcfginfo=prdcfginfo,
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        plot_rhi_profile(
+            v_data, h_vec, fname_list, labelx=labelx, labely='Height (m MSL)',
+            labels=labels, title=titl, colors=colors,
+            linestyles=linestyles, vmin=vmin, vmax=vmax,
+            hmin=minheight, hmax=maxheight)
+
+        print('----- save to '+' '.join(fname_list))
+
+        # plot vertical wind data
+        w_data = [w_vals[:, 0], w_vals[:, 0]+w_vals[:, 1],
+                  w_vals[:, 0]-w_vals[:, 1]]
+        labels = ['Regression mean', '+std', '-std']
+        colors = ['b', 'k', 'k']
+        linestyles = ['-', '--', '--']
+
+        labelx = get_colobar_label(
+            dataset['radar_out'].fields['vertical_wind_component'],
+            'vertical_wind_component')
+        titl = (
+            pyart.graph.common.generate_radar_time_begin(
+                dataset['radar_out']).isoformat() + 'Z' + '\n' +
+            get_field_name(
+                dataset['radar_out'].fields['vertical_wind_component'],
+                'vertical_wind_component'))
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        prdcfginfo = 'hres'+str(int(heightResolution))
+        fname_list = make_filename(
+            'wind_profile', prdcfg['dstype'], 'wind_vel_v',
+            prdcfg['imgformat'], prdcfginfo=prdcfginfo,
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        plot_rhi_profile(
+            w_data, h_vec, fname_list, labelx=labelx, labely='Height (m MSL)',
+            labels=labels, title=titl, colors=colors,
+            linestyles=linestyles, vmin=vmin, vmax=vmax,
+            hmin=minheight, hmax=maxheight)
+
+        print('----- save to '+' '.join(fname_list))
+
+        # plot horizontal wind magnitude
+        mag = np.ma.sqrt(
+            np.ma.power(u_vals[:, 0], 2.)+np.ma.power(v_vals[:, 0], 2.))
+        mag_data = [mag]
+        labels = ['Regression mean']
+        colors = ['b']
+        linestyles = ['-']
+
+        field_dict = pyart.config.get_metadata('wind_speed')
+        labelx = get_colobar_label(field_dict, 'wind_speed')
+        titl = (
+            pyart.graph.common.generate_radar_time_begin(
+                dataset['radar_out']).isoformat() + 'Z' + '\n' +
+            get_field_name(field_dict, 'wind_speed'))
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        prdcfginfo = 'hres'+str(int(heightResolution))
+        fname_list = make_filename(
+            'wind_profile', prdcfg['dstype'], 'WIND_SPEED',
+            prdcfg['imgformat'], prdcfginfo=prdcfginfo,
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        plot_rhi_profile(
+            mag_data, h_vec, fname_list, labelx=labelx, labely='Height (m MSL)',
+            labels=labels, title=titl, colors=colors,
+            linestyles=linestyles, vmin=vmin, vmax=vmax,
+            hmin=minheight, hmax=maxheight)
+
+        print('----- save to '+' '.join(fname_list))
+
+        # plot horizontal wind direction
+        wind_dir = (
+            90.-np.ma.arctan2(u_vals[:, 0]/mag, v_vals[:, 0]/mag)*180. /
+            np.pi+180.)
+        wind_dir[wind_dir >= 360.] = wind_dir[wind_dir >= 360.]-360.
+        dir_data = [wind_dir]
+        labels = ['Regression mean']
+        colors = ['b']
+        linestyles = ['-']
+
+        field_dict = pyart.config.get_metadata('wind_direction')
+        labelx = get_colobar_label(field_dict, 'wind_direction')
+        titl = (
+            pyart.graph.common.generate_radar_time_begin(
+                dataset['radar_out']).isoformat() + 'Z' + '\n' +
+            get_field_name(field_dict, 'wind_direction'))
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        prdcfginfo = 'hres'+str(int(heightResolution))
+        fname_list = make_filename(
+            'wind_profile', prdcfg['dstype'], 'WIND_DIRECTION',
+            prdcfg['imgformat'], prdcfginfo=prdcfginfo,
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        plot_rhi_profile(
+            dir_data, h_vec, fname_list, labelx=labelx,
+            labely='Height (m MSL)', labels=labels, title=titl, colors=colors,
+            linestyles=linestyles, vmin=0., vmax=360.,
+            hmin=minheight, hmax=maxheight)
+
+        print('----- save to '+' '.join(fname_list))
+
+        fname = make_filename(
+            'wind_profile', prdcfg['dstype'], 'WIND',
+            ['csv'], prdcfginfo=prdcfginfo,
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])[0]
+
+        fname = savedir+fname
+
+        data = [
+            u_vals[:, 0], u_vals[:, 1], np.ma.asarray(val_valid),
+            v_vals[:, 0], v_vals[:, 1], np.ma.asarray(val_valid),
+            w_vals[:, 0], w_vals[:, 1], np.ma.asarray(w_val_valid),
+            mag, wind_dir]
+        labels = [
+            'u_wind', 'std_u_wind', 'np_u_wind',
+            'v_wind', 'std_v_wind', 'np_v_wind',
+            'w_wind', 'std_w_wind', 'np_w_wind',
+            'mag_h_wind', 'dir_h_wind']
+
+        write_rhi_profile(
+            h_vec, data, val_valid, labels, fname, datatype=None,
+            timeinfo=prdcfg['timeinfo'])
+
+        print('----- save to '+fname)
+
+        return fname
+
     elif prdcfg['type'] == 'PSEUDOPPI_MAP':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
+        if field_name not in dataset['radar_out'].fields:
             warn(
                 ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
@@ -373,7 +1237,8 @@ def generate_vol_products(dataset, prdcfg):
 
         try:
             xsect = pyart.util.cross_section_rhi(
-                dataset, [prdcfg['angle']], el_tol=prdcfg['EleTol'])
+                dataset['radar_out'], [prdcfg['angle']],
+                el_tol=prdcfg['EleTol'])
 
             savedir = get_save_dir(
                 prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -400,58 +1265,9 @@ def generate_vol_products(dataset, prdcfg):
 
             return None
 
-    elif prdcfg['type'] == 'PSEUDORHI_IMAGE':
-        field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
-            warn(
-                ' Field type ' + field_name +
-                ' not available in data set. Skipping product ' +
-                prdcfg['type'])
-            return None
-
-        try:
-            xsect = pyart.util.cross_section_ppi(
-                dataset, [prdcfg['angle']], az_tol=prdcfg['AziTol'])
-
-            savedir = get_save_dir(
-                prdcfg['basepath'], prdcfg['procname'], dssavedir,
-                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
-
-            fname_list = make_filename(
-                'rhi', prdcfg['dstype'], prdcfg['voltype'],
-                prdcfg['imgformat'],
-                prdcfginfo='az'+'{:.1f}'.format(prdcfg['angle']),
-                timeinfo=prdcfg['timeinfo'])
-
-            for i, fname in enumerate(fname_list):
-                fname_list[i] = savedir+fname
-
-            step = None
-            quantiles = None
-            plot_type = 'RHI'
-            if 'plot_type' in prdcfg:
-                plot_type = prdcfg['plot_type']
-            if 'step' in prdcfg:
-                step = prdcfg['step']
-            if 'quantiles' in prdcfg:
-                quantiles = prdcfg['quantiles']
-
-            plot_rhi(xsect, field_name, 0, prdcfg, fname_list,
-                     plot_type=plot_type, step=step, quantiles=quantiles)
-
-            print('----- save to '+' '.join(fname_list))
-
-            return fname_list
-        except EnvironmentError:
-            warn(
-                ' No data found at azimuth ' +
-                str(prdcfg['angle'])+'. Skipping product ' +
-                prdcfg['type'])
-            return None
-
     elif prdcfg['type'] == 'CAPPI_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
+        if field_name not in dataset['radar_out'].fields:
             warn(
                 ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
@@ -472,21 +1288,23 @@ def generate_vol_products(dataset, prdcfg):
             fname_list[i] = savedir+fname
 
         plot_cappi(
-            dataset, field_name, prdcfg['altitude'], prdcfg, fname_list)
+            dataset['radar_out'], field_name, prdcfg['altitude'], prdcfg,
+            fname_list)
         print('----- save to '+' '.join(fname_list))
 
         return fname_list
 
     elif prdcfg['type'] == 'PLOT_ALONG_COORD':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
+        if field_name not in dataset['radar_out'].fields:
             warn(
                 ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
             return None
 
-        if dataset.scan_type != 'ppi' and dataset.scan_type != 'rhi':
+        if ((dataset['radar_out'].scan_type != 'ppi') and
+                (dataset['radar_out'].scan_type != 'rhi')):
             warn('This product is only available for PPI or RHI volumes')
             return None
 
@@ -498,22 +1316,23 @@ def generate_vol_products(dataset, prdcfg):
             value_start = 0.
             if 'value_start' in prdcfg:
                 value_start = prdcfg['value_start']
-            value_stop = np.max(dataset.range['data'])
+            value_stop = np.max(dataset['radar_out'].range['data'])
             if 'value_stop' in prdcfg:
                 value_stop = prdcfg['value_stop']
 
-            rng_mask = np.logical_and(dataset.range['data'] >= value_start,
-                                      dataset.range['data'] <= value_stop)
+            rng_mask = np.logical_and(
+                dataset['radar_out'].range['data'] >= value_start,
+                dataset['radar_out'].range['data'] <= value_stop)
 
-            x = dataset.range['data'][rng_mask]
+            x = dataset['radar_out'].range['data'][rng_mask]
 
             xvals = []
             yvals = []
             valid_azi = []
             valid_ele = []
-            if dataset.scan_type == 'ppi':
+            if dataset['radar_out'].scan_type == 'ppi':
                 for i in range(len(prdcfg['fix_elevations'])):
-                    d_el = np.abs(dataset.fixed_angle['data'] -
+                    d_el = np.abs(dataset['radar_out'].fixed_angle['data'] -
                                   prdcfg['fix_elevations'][i])
                     min_d_el = np.min(d_el)
                     if min_d_el > prdcfg['AngTol']:
@@ -521,7 +1340,8 @@ def generate_vol_products(dataset, prdcfg):
                              str(prdcfg['fix_elevations'][i]))
                         continue
                     ind_sweep = np.argmin(d_el)
-                    new_dataset = dataset.extract_sweeps([ind_sweep])
+                    new_dataset = dataset['radar_out'].extract_sweeps(
+                        [ind_sweep])
 
                     try:
                         dataset_line = pyart.util.cross_section_ppi(
@@ -539,7 +1359,7 @@ def generate_vol_products(dataset, prdcfg):
                     valid_ele.append(dataset_line.elevation['data'][0])
             else:
                 for i in range(len(prdcfg['fix_azimuths'])):
-                    d_az = np.abs(dataset.fixed_angle['data'] -
+                    d_az = np.abs(dataset['radar_out'].fixed_angle['data'] -
                                   prdcfg['fix_azimuths'][i])
                     min_d_az = np.min(d_az)
                     if min_d_az > prdcfg['AngTol']:
@@ -547,7 +1367,8 @@ def generate_vol_products(dataset, prdcfg):
                              str(prdcfg['fix_azimuths'][i]))
                         continue
                     ind_sweep = np.argmin(d_az)
-                    new_dataset = dataset.extract_sweeps([ind_sweep])
+                    new_dataset = dataset['radar_out'].extract_sweeps(
+                        [ind_sweep])
 
                     try:
                         dataset_line = pyart.util.cross_section_rhi(
@@ -578,10 +1399,10 @@ def generate_vol_products(dataset, prdcfg):
                     ' ele '+'{:.1f}'.format(valid_ele[i]))
 
         elif prdcfg['mode'] == 'ALONG_AZI':
-            value_start = np.min(dataset.azimuth['data'])
+            value_start = np.min(dataset['radar_out'].azimuth['data'])
             if 'value_start' in prdcfg:
                 value_start = prdcfg['value_start']
-            value_stop = np.max(dataset.azimuth['data'])
+            value_stop = np.max(dataset['radar_out'].azimuth['data'])
             if 'value_stop' in prdcfg:
                 value_stop = prdcfg['value_stop']
 
@@ -590,7 +1411,7 @@ def generate_vol_products(dataset, prdcfg):
             valid_rng = []
             valid_ele = []
             for i in range(len(prdcfg['fix_ranges'])):
-                d_rng = np.abs(dataset.range['data'] -
+                d_rng = np.abs(dataset['radar_out'].range['data'] -
                                prdcfg['fix_ranges'][i])
                 min_d_rng = np.min(d_rng)
                 if min_d_rng > prdcfg['RngTol']:
@@ -599,8 +1420,8 @@ def generate_vol_products(dataset, prdcfg):
                     continue
                 ind_rng = np.argmin(d_rng)
 
-                if dataset.scan_type == 'ppi':
-                    d_el = np.abs(dataset.fixed_angle['data'] -
+                if dataset['radar_out'].scan_type == 'ppi':
+                    d_el = np.abs(dataset['radar_out'].fixed_angle['data'] -
                                   prdcfg['fix_elevations'][i])
                     min_d_el = np.min(d_el)
                     if min_d_el > prdcfg['AngTol']:
@@ -608,11 +1429,13 @@ def generate_vol_products(dataset, prdcfg):
                              str(prdcfg['fix_elevations'][i]))
                         continue
                     ind_sweep = np.argmin(d_el)
-                    new_dataset = dataset.extract_sweeps([ind_sweep])
+                    new_dataset = dataset['radar_out'].extract_sweeps(
+                        [ind_sweep])
                 else:
                     try:
                         new_dataset = pyart.util.cross_section_rhi(
-                            dataset, [prdcfg['fix_elevations'][i]],
+                            dataset['radar_out'],
+                            [prdcfg['fix_elevations'][i]],
                             el_tol=prdcfg['AngTol'])
                     except EnvironmentError:
                         warn(
@@ -647,10 +1470,10 @@ def generate_vol_products(dataset, prdcfg):
                     ' ele '+'{:.1f}'.format(valid_ele[i]))
 
         elif prdcfg['mode'] == 'ALONG_ELE':
-            value_start = np.min(dataset.elevation['data'])
+            value_start = np.min(dataset['radar_out'].elevation['data'])
             if 'value_start' in prdcfg:
                 value_start = prdcfg['value_start']
-            value_stop = np.max(dataset.elevation['data'])
+            value_stop = np.max(dataset['radar_out'].elevation['data'])
             if 'value_stop' in prdcfg:
                 value_stop = prdcfg['value_stop']
 
@@ -659,7 +1482,7 @@ def generate_vol_products(dataset, prdcfg):
             valid_rng = []
             valid_azi = []
             for i in range(len(prdcfg['fix_ranges'])):
-                d_rng = np.abs(dataset.range['data'] -
+                d_rng = np.abs(dataset['radar_out'].range['data'] -
                                prdcfg['fix_ranges'][i])
                 min_d_rng = np.min(d_rng)
                 if min_d_rng > prdcfg['RngTol']:
@@ -668,7 +1491,7 @@ def generate_vol_products(dataset, prdcfg):
                     continue
                 ind_rng = np.argmin(d_rng)
 
-                if dataset.scan_type == 'ppi':
+                if dataset['radar_out'].scan_type == 'ppi':
                     try:
                         new_dataset = pyart.util.cross_section_ppi(
                             dataset, [prdcfg['fix_azimuths'][i]],
@@ -680,7 +1503,7 @@ def generate_vol_products(dataset, prdcfg):
                             prdcfg['fix_azimuths'][i])
                         continue
                 else:
-                    d_az = np.abs(dataset.fixed_angle['data'] -
+                    d_az = np.abs(dataset['radar_out'].fixed_angle['data'] -
                                   prdcfg['fix_azimuths'][i])
                     min_d_az = np.min(d_az)
                     if min_d_az > prdcfg['AngTol']:
@@ -688,7 +1511,8 @@ def generate_vol_products(dataset, prdcfg):
                              str(prdcfg['fix_azimuths'][i]))
                         continue
                     ind_sweep = np.argmin(d_az)
-                    new_dataset = dataset.extract_sweeps([ind_sweep])
+                    new_dataset = dataset['radar_out'].extract_sweeps(
+                        [ind_sweep])
                 ele_mask = np.logical_and(
                     new_dataset.elevation['data'] >= value_start,
                     new_dataset.elevation['data'] <= value_stop)
@@ -711,11 +1535,13 @@ def generate_vol_products(dataset, prdcfg):
             warn('Unknown plotting mode '+prdcfg['mode'])
             return None
 
-        labely = get_colobar_label(dataset.fields[field_name], field_name)
+        labely = get_colobar_label(
+            dataset['radar_out'].fields[field_name], field_name)
         titl = (
             pyart.graph.common.generate_radar_time_begin(
-                dataset).isoformat() + 'Z' + '\n' +
-            get_field_name(dataset.fields[field_name], field_name))
+                dataset['radar_out']).isoformat() + 'Z' + '\n' +
+            get_field_name(
+                dataset['radar_out'].fields[field_name], field_name))
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -738,16 +1564,17 @@ def generate_vol_products(dataset, prdcfg):
 
     elif prdcfg['type'] == 'BSCOPE_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
+        if field_name not in dataset['radar_out'].fields:
             warn(
                 ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
             return None
 
-        ang_vec = np.sort(dataset.fixed_angle['data'])
+        ang_vec = np.sort(dataset['radar_out'].fixed_angle['data'])
         ang = ang_vec[prdcfg['anglenr']]
-        ind_ang = np.where(dataset.fixed_angle['data'] == ang)[0][0]
+        ind_ang = np.where(
+            dataset['radar_out'].fixed_angle['data'] == ang)[0][0]
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -762,23 +1589,25 @@ def generate_vol_products(dataset, prdcfg):
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        plot_bscope(dataset, field_name, ind_ang, prdcfg, fname_list)
+        plot_bscope(
+            dataset['radar_out'], field_name, ind_ang, prdcfg, fname_list)
         print('----- save to '+' '.join(fname_list))
 
         return fname_list
 
     elif prdcfg['type'] == 'TIME_RANGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
+        if field_name not in dataset['radar_out'].fields:
             warn(
                 ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
             return None
 
-        ang_vec = np.sort(dataset.fixed_angle['data'])
+        ang_vec = np.sort(dataset['radar_out'].fixed_angle['data'])
         ang = ang_vec[prdcfg['anglenr']]
-        ind_ang = np.where(dataset.fixed_angle['data'] == ang)[0][0]
+        ind_ang = np.where(
+            dataset['radar_out'].fixed_angle['data'] == ang)[0][0]
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -793,23 +1622,23 @@ def generate_vol_products(dataset, prdcfg):
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        plot_time_range(dataset, field_name, ind_ang, prdcfg, fname_list)
+        plot_time_range(
+            dataset['radar_out'], field_name, ind_ang, prdcfg, fname_list)
         print('----- save to '+' '.join(fname_list))
 
         return fname_list
 
     elif prdcfg['type'] == 'HISTOGRAM':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
+        if field_name not in dataset['radar_out'].fields:
             warn(
                 ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
             return None
 
-        step = None
-        if 'step' in prdcfg:
-            step = prdcfg['step']
+        step = prdcfg.get('step', None)
+        write_data = prdcfg.get('write_data', 0)
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -818,40 +1647,71 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'histogram', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        bins, values = compute_histogram(
-            dataset.fields[field_name]['data'], field_name, step=step)
+        bin_edges, values = compute_histogram(
+            dataset['radar_out'].fields[field_name]['data'], field_name,
+            step=step)
 
         titl = (
             pyart.graph.common.generate_radar_time_begin(
-                dataset).isoformat() + 'Z' + '\n' +
-            get_field_name(dataset.fields[field_name], field_name))
+                dataset['radar_out']).isoformat() + 'Z' + '\n' +
+            get_field_name(
+                dataset['radar_out'].fields[field_name], field_name))
 
-        labelx = get_colobar_label(dataset.fields[field_name], field_name)
+        labelx = get_colobar_label(
+            dataset['radar_out'].fields[field_name], field_name)
 
-        plot_histogram(bins, values, fname_list, labelx=labelx,
+        plot_histogram(bin_edges, values, fname_list, labelx=labelx,
                        labely='Number of Samples', titl=titl)
 
         print('----- save to '+' '.join(fname_list))
+
+        if write_data:
+            fname = savedir+make_filename(
+                'histogram', prdcfg['dstype'], prdcfg['voltype'],
+                ['csv'], timeinfo=prdcfg['timeinfo'],
+                runinfo=prdcfg['runinfo'])[0]
+
+            hist, _ = np.histogram(values, bins=bin_edges)
+            write_histogram(
+                bin_edges, hist, fname, datatype=prdcfg['voltype'], step=step)
+            print('----- save to '+fname)
+
+            return fname
 
         return fname_list
 
     elif prdcfg['type'] == 'QUANTILES':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
+        if field_name not in dataset['radar_out'].fields:
             warn(
                 ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
             return None
 
-        quantiles = None
-        if 'quantiles' in prdcfg:
-            quantiles = prdcfg['quantiles']
+        # mask unclassified data
+        field = deepcopy(dataset['radar_out'].fields[field_name]['data'])
+        if prdcfg['voltype'] == 'hydro':
+            field = np.ma.masked_equal(field, 0)
+
+        # user defined variables
+        quantiles = prdcfg.get('quantiles', None)
+        write_data = prdcfg.get('write_data', 0)
+
+        fixed_span = prdcfg.get('fixed_span', 1)
+        vmin = None
+        vmax = None
+        if fixed_span:
+            vmin, vmax = pyart.config.get_field_limits(field_name)
+            if 'vmin' in prdcfg:
+                vmin = prdcfg['vmin']
+            if 'vmax' in prdcfg:
+                vmax = prdcfg['vmax']
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -860,31 +1720,44 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'quantiles', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        quantiles, values = compute_quantiles(
-            dataset.fields[field_name]['data'], quantiles=quantiles)
+        quantiles, values = compute_quantiles(field, quantiles=quantiles)
 
         titl = (
             pyart.graph.common.generate_radar_time_begin(
-                dataset).isoformat() + 'Z' + '\n' +
-            get_field_name(dataset.fields[field_name], field_name))
+                dataset['radar_out']).isoformat() + 'Z' + '\n' +
+            get_field_name(
+                dataset['radar_out'].fields[field_name], field_name))
 
-        labely = get_colobar_label(dataset.fields[field_name], field_name)
+        labely = get_colobar_label(
+            dataset['radar_out'].fields[field_name], field_name)
 
         plot_quantiles(quantiles, values, fname_list, labelx='quantile',
-                       labely=labely, titl=titl)
+                       labely=labely, titl=titl, vmin=vmin, vmax=vmax)
 
         print('----- save to '+' '.join(fname_list))
+
+        if write_data:
+            fname = savedir+make_filename(
+                'quantiles', prdcfg['dstype'], prdcfg['voltype'],
+                ['csv'], timeinfo=prdcfg['timeinfo'],
+                runinfo=prdcfg['runinfo'])[0]
+
+            write_quantiles(
+                quantiles, values, fname, datatype=prdcfg['voltype'])
+            print('----- save to '+fname)
+
+            return fname
 
         return fname_list
 
     elif prdcfg['type'] == 'FIELD_COVERAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
+        if field_name not in dataset['radar_out'].fields:
             warn(
                 ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
@@ -926,21 +1799,21 @@ def generate_vol_products(dataset, prdcfg):
             quantiles = np.array(prdcfg['quantiles'])
 
         # get coverage per ray
-        field_coverage = np.ma.empty(dataset.nrays)
-        field_coverage[:] = np.ma.masked
+        field_coverage = np.ma.masked_all(dataset['radar_out'].nrays)
 
-        for i in range(dataset.nrays):
+        for i in range(dataset['radar_out'].nrays):
             mask = np.ma.getmaskarray(
-                dataset.fields[field_name]['data'][i, :])
+                dataset['radar_out'].fields[field_name]['data'][i, :])
             if threshold is not None:
                 ind = np.where(np.logical_and(
                     ~mask,
-                    dataset.fields[field_name]['data'][i, :] >= threshold))[0]
+                    dataset['radar_out'].fields[field_name]['data'][i, :] >= threshold))[0]
             else:
                 ind = np.where(~mask)[0]
             if len(ind) > nvalid_min:
-                field_coverage[i] = (dataset.range['data'][ind[-1]] -
-                                     dataset.range['data'][ind[0]])
+                field_coverage[i] = (
+                    dataset['radar_out'].range['data'][ind[-1]] -
+                    dataset['radar_out'].range['data'][ind[0]])
 
         # group coverage per elevation sectors
         nsteps = int((ele_max-ele_min)/ele_step)  # number of steps
@@ -955,14 +1828,15 @@ def generate_vol_products(dataset, prdcfg):
             xval_aux = np.array([])
             for j in range(nele):
                 ele_target = ele_steps_vec[i]+j*ele_res
-                d_ele = np.abs(dataset.elevation['data']-ele_target)
+                d_ele = np.abs(
+                    dataset['radar_out'].elevation['data']-ele_target)
                 ind_ele = np.where(d_ele < prdcfg['AngTol'])[0]
                 if ind_ele.size == 0:
                     continue
                 yval_aux = np.ma.concatenate(
                     [yval_aux, field_coverage[ind_ele]])
                 xval_aux = np.concatenate(
-                    [xval_aux, dataset.azimuth['data'][ind_ele]])
+                    [xval_aux, dataset['radar_out'].azimuth['data'][ind_ele]])
             yval.append(yval_aux)
             xval.append(xval_aux)
             labels.append('ele '+'{:.1f}'.format(ele_steps_vec[i])+'-' +
@@ -975,16 +1849,16 @@ def generate_vol_products(dataset, prdcfg):
         labelmeanval = None
         if ele_sect_start is not None and ele_sect_stop is not None:
             ind_ele = np.where(np.logical_and(
-                dataset.elevation['data'] >= ele_sect_start,
-                dataset.elevation['data'] <= ele_sect_stop))
+                dataset['radar_out'].elevation['data'] >= ele_sect_start,
+                dataset['radar_out'].elevation['data'] <= ele_sect_stop))
             field_coverage_sector = field_coverage[ind_ele]
-            azi_sector = dataset.azimuth['data'][ind_ele]
-            nazi = int((np.max(dataset.azimuth['data']) -
-                        np.min(dataset.azimuth['data']))/azi_res+1)
+            azi_sector = dataset['radar_out'].azimuth['data'][ind_ele]
+            nazi = int((np.max(dataset['radar_out'].azimuth['data']) -
+                        np.min(dataset['radar_out'].azimuth['data']))/azi_res+1)
 
-            xmeanval = np.arange(nazi)*azi_res+np.min(dataset.azimuth['data'])
-            ymeanval = np.ma.empty(nazi)
-            ymeanval[:] = np.ma.masked
+            xmeanval = np.arange(nazi)*azi_res+np.min(
+                dataset['radar_out'].azimuth['data'])
+            ymeanval = np.ma.masked_all(nazi)
             for i in range(nazi):
                 d_azi = np.abs(azi_sector-xmeanval[i])
                 ind_azi = np.where(d_azi < prdcfg['AngTol'])[0]
@@ -994,7 +1868,7 @@ def generate_vol_products(dataset, prdcfg):
             labelmeanval = ('ele '+'{:.1f}'.format(ele_sect_start)+'-' +
                             '{:.1f}'.format(ele_sect_stop)+' deg mean val')
 
-            meanval, quantval, nvalid = quantiles_weighted(
+            _, quantval, _ = quantiles_weighted(
                 field_coverage_sector, quantiles=quantiles/100.)
 
         # plot field coverage
@@ -1012,13 +1886,14 @@ def generate_vol_products(dataset, prdcfg):
 
         titl = (
             pyart.graph.common.generate_radar_time_begin(
-                dataset).isoformat() + 'Z' + '\n' +
-            get_field_name(dataset.fields[field_name], field_name))
+                dataset['radar_out']).isoformat() + 'Z' + '\n' +
+            get_field_name(
+                dataset['radar_out'].fields[field_name], field_name))
 
         plot_field_coverage(
             xval, yval, fname_list, labels=labels, title=titl, ymin=0.,
-            ymax=np.max(dataset.range['data'])+60000., xmeanval=xmeanval,
-            ymeanval=ymeanval, labelmeanval=labelmeanval)
+            ymax=np.max(dataset['radar_out'].range['data'])+60000.,
+            xmeanval=xmeanval, ymeanval=ymeanval, labelmeanval=labelmeanval)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -1030,7 +1905,7 @@ def generate_vol_products(dataset, prdcfg):
 
         if quantval is not None:
             data_type = get_colobar_label(
-                dataset.fields[field_name], field_name)
+                dataset['radar_out'].fields[field_name], field_name)
             write_field_coverage(
                 quantiles, quantval, ele_sect_start, ele_sect_stop,
                 np.min(xmeanval), np.max(xmeanval), threshold, nvalid_min,
@@ -1042,7 +1917,7 @@ def generate_vol_products(dataset, prdcfg):
 
     elif prdcfg['type'] == 'CDF':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
+        if field_name not in dataset['radar_out'].fields:
             warn(
                 ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
@@ -1100,14 +1975,14 @@ def generate_vol_products(dataset, prdcfg):
         if 'filterclt' in prdcfg:
             filterclt = prdcfg['filterclt']
 
-        filterprec = []
+        filterprec = np.array([], dtype=int)
         if 'filterprec' in prdcfg:
             filterprec = prdcfg['filterprec']
 
-        data = deepcopy(dataset.fields[field_name]['data'])
+        data = deepcopy(dataset['radar_out'].fields[field_name]['data'])
 
         # define region of interest
-        roi_flag = get_ROI(dataset, field_name, sector)
+        roi_flag = get_ROI(dataset['radar_out'], field_name, sector)
         data = data[roi_flag == 1]
 
         ntot = np.size(roi_flag[roi_flag == 1])
@@ -1120,9 +1995,10 @@ def generate_vol_products(dataset, prdcfg):
         nclut = -1
         if filterclt:
             echoID_field = get_fieldname_pyart('echoID')
-            if echoID_field in dataset.fields:
-                echoID_ROI = dataset.fields[echoID_field]['data'][
-                    roi_flag == 1]
+            if echoID_field in dataset['radar_out'].fields:
+                echoID_ROI = (
+                    dataset['radar_out'].fields[echoID_field]['data'][
+                        roi_flag == 1])
                 nclut = len(echoID_ROI[echoID_ROI == 2])
                 data[echoID_ROI == 2] = np.ma.masked
 
@@ -1130,17 +2006,21 @@ def generate_vol_products(dataset, prdcfg):
         nblocked = -1
         if vismin is not None:
             vis_field = get_fieldname_pyart('VIS')
-            if vis_field in dataset.fields:
-                vis_ROI = dataset.fields[vis_field]['data'][roi_flag == 1]
+            if vis_field in dataset['radar_out'].fields:
+                vis_ROI = (
+                    dataset['radar_out'].fields[vis_field]['data'][
+                        roi_flag == 1])
                 nblocked = len(vis_ROI[vis_ROI < vismin])
                 data[vis_ROI < vismin] = np.ma.masked
 
         # filter according to precip type
         nprec_filter = -1
-        if filterprec:
+        if filterprec.size > 0:
             hydro_field = get_fieldname_pyart('hydro')
-            if hydro_field in dataset.fields:
-                hydro_ROI = dataset.fields[hydro_field]['data'][roi_flag == 1]
+            if hydro_field in dataset['radar_out'].fields:
+                hydro_ROI = (
+                    dataset['radar_out'].fields[hydro_field]['data'][
+                        roi_flag == 1])
                 nprec_filter = 0
                 for ind_hydro in filterprec:
                     nprec_filter += len(hydro_ROI[hydro_ROI == ind_hydro])
@@ -1160,8 +2040,7 @@ def generate_vol_products(dataset, prdcfg):
             data[mask] = nan_value
 
         # count and filter outliers
-        quantiles_lim, values_lim = compute_quantiles(
-            data, quantiles=[0.2, 99.8])
+        _, values_lim = compute_quantiles(data, quantiles=[0.2, 99.8])
         if values_lim.mask[0] or values_lim.mask[1]:
             warn('No valid radar gates found in sector')
             return None
@@ -1192,10 +2071,12 @@ def generate_vol_products(dataset, prdcfg):
 
         titl = (
             pyart.graph.common.generate_radar_time_begin(
-                dataset).isoformat() + 'Z' + '\n' +
-            get_field_name(dataset.fields[field_name], field_name))
+                dataset['radar_out']).isoformat() + 'Z' + '\n' +
+            get_field_name(
+                dataset['radar_out'].fields[field_name], field_name))
 
-        labelx = get_colobar_label(dataset.fields[field_name], field_name)
+        labelx = get_colobar_label(
+            dataset['radar_out'].fields[field_name], field_name)
 
         plot_quantiles(values, quantiles/100., fname_list, labelx=labelx,
                        labely='Cumulative probability', titl=titl)
@@ -1221,16 +2102,17 @@ def generate_vol_products(dataset, prdcfg):
 
     elif prdcfg['type'] == 'SAVEVOL':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
+        if field_name not in dataset['radar_out'].fields:
             warn(
                 ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
             return None
 
-        new_dataset = deepcopy(dataset)
+        new_dataset = deepcopy(dataset['radar_out'])
         new_dataset.fields = dict()
-        new_dataset.add_field(field_name, dataset.fields[field_name])
+        new_dataset.add_field(
+            field_name, dataset['radar_out'].fields[field_name])
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -1238,7 +2120,7 @@ def generate_vol_products(dataset, prdcfg):
 
         fname = make_filename(
             'savevol', prdcfg['dstype'], prdcfg['voltype'], ['nc'],
-            timeinfo=prdcfg['timeinfo'])[0]
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])[0]
 
         fname = savedir+fname
 
@@ -1254,11 +2136,11 @@ def generate_vol_products(dataset, prdcfg):
 
         fname = make_filename(
             'savevol', prdcfg['dstype'], 'all_fields', ['nc'],
-            timeinfo=prdcfg['timeinfo'])[0]
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])[0]
 
         fname = savedir+fname
 
-        pyart.io.cfradial.write_cfradial(fname, dataset)
+        pyart.io.cfradial.write_cfradial(fname, dataset['radar_out'])
         print('saved file: '+fname)
 
         return fname
@@ -1269,16 +2151,16 @@ def generate_vol_products(dataset, prdcfg):
             return None
 
         field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
+        if field_name not in dataset['radar_out'].fields:
             warn(
                 ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
             return None
 
-        max_time = np.max(dataset.time['data'])
-        units = dataset.time['units']
-        calendar = dataset.time['calendar']
+        max_time = np.max(dataset['radar_out'].time['data'])
+        units = dataset['radar_out'].time['units']
+        calendar = dataset['radar_out'].time['calendar']
         last_date = num2date(max_time, units, calendar)
 
         write_last_state(last_date, prdcfg['lastStateFile'])

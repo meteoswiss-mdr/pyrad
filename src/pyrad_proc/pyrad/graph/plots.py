@@ -39,7 +39,8 @@ from ..util.radar_utils import compute_quantiles_from_hist
 
 
 def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
-                 fname_list, quantiles=[25., 50., 75.], ref_value=0.):
+                 fname_list, quantiles=[25., 50., 75.], ref_value=0.,
+                 vmin=None, vmax=None):
     """
     density plot (angle-values representation)
 
@@ -61,6 +62,8 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
         the quantile lines to plot
     ref_value : float
         the reference value
+    vmin, vmax : float
+        Minim and maximum extend of the vertical axis
 
     Returns
     -------
@@ -74,6 +77,7 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
         ind_ang = np.argsort(hist_obj_aux.azimuth['data'])
         ang_min = np.min(hist_obj_aux.azimuth['data'])
         ang_max = np.max(hist_obj_aux.azimuth['data'])
+        ang_step = ang[1]-ang[0]
         field = hist_obj_aux.fields[field_name]['data'][ind_ang, :]
         labelx = 'azimuth angle (degrees)'
     elif hist_obj_aux.scan_type == 'rhi':
@@ -81,6 +85,7 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
         ind_ang = np.argsort(hist_obj_aux.elevation['data'])
         ang_min = np.min(hist_obj_aux.elevation['data'])
         ang_max = np.max(hist_obj_aux.elevation['data'])
+        ang_step = ang[1]-ang[0]
         field = hist_obj_aux.fields[field_name]['data'][ind_ang, :]
         labelx = 'elevation angle (degrees)'
     else:
@@ -88,11 +93,11 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
         ang = np.array(range(hist_obj_aux.nrays))
         ang_min = 0
         ang_max = hist_obj_aux.nrays-1
+        ang_step = ang[1]-ang[0]
         labelx = 'ray number'
 
     # compute percentiles of the histogram
-    az_percentile_ref = np.ma.empty(len(ang))
-    az_percentile_ref[:] = np.ma.masked
+    az_percentile_ref = np.ma.masked_all(len(ang))
     az_percentile_low = deepcopy(az_percentile_ref)
     az_percentile_high = deepcopy(az_percentile_ref)
     for ray in range(len(ang)):
@@ -132,27 +137,34 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
                      dpi=dpi)
     ax = fig.add_subplot(111)
 
+    # define limits of field and color map
     cmap = pyart.config.get_field_colormap(field_name)
-    vmin, vmax = pyart.config.get_field_limits(field_name)
+    step = hist_obj.range['data'][1]-hist_obj.range['data'][0]
+    xmin = ang_min-ang_step/2.
+    xmax = ang_max+ang_step/2.
+    ymin = hist_obj.range['data'][0]-step/2.
+    ymax = hist_obj.range['data'][-1]+step/2.
 
     cax = ax.imshow(
         np.ma.transpose(field), origin='lower', cmap=cmap, vmin=0.,
-        vmax=np.max(field), extent=(ang_min, ang_max, vmin, vmax),
+        vmax=np.max(field), extent=(xmin, xmax, ymin, ymax),
         aspect='auto', interpolation='none')
+    ax.set_ylim(bottom=vmin, top=vmax)
+    ax.autoscale(False)
 
     # plot reference
-    plt.plot(ang, np.zeros(len(ang))+ref_value, 'k--')
+    ax.plot(ang, np.zeros(len(ang))+ref_value, 'k--')
 
     # plot quantiles
-    plt.plot(ang, np.zeros(len(ang))+values_sweep[1], 'r')
-    plt.plot(ang, np.zeros(len(ang))+values_sweep[0], 'r--')
-    plt.plot(ang, np.zeros(len(ang))+values_sweep[2], 'r--')
+    ax.plot(ang, np.zeros(len(ang))+values_sweep[1], 'r')
+    ax.plot(ang, np.zeros(len(ang))+values_sweep[0], 'r--')
+    ax.plot(ang, np.zeros(len(ang))+values_sweep[2], 'r--')
 
-    plt.plot(ang, az_percentile_ref, 'k')
-    plt.plot(ang, az_percentile_low, 'k--')
-    plt.plot(ang, az_percentile_high, 'k--')
+    ax.plot(ang, az_percentile_ref, 'k')
+    ax.plot(ang, az_percentile_low, 'k--')
+    ax.plot(ang, az_percentile_high, 'k--')
 
-    plt.autoscale(enable=True, axis='both', tight=True)
+    # ax.autoscale(enable=True, axis='both', tight=True)
 
     plt.xlabel(labelx)
     plt.ylabel(labely)
@@ -161,14 +173,27 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
     cb = fig.colorbar(cax)
     cb.set_label(label)
 
+    val_quant0_str = '--'
+    if values_sweep[0] is not np.ma.masked:
+        val_quant0_str = '{:.3f}'.format(values_sweep[0])
+    val_quant1_str = '--'
+    if values_sweep[1] is not np.ma.masked:
+        val_quant1_str = '{:.3f}'.format(values_sweep[1])
+    val_quant2_str = '--'
+    if values_sweep[2] is not np.ma.masked:
+        val_quant2_str = '{:.3f}'.format(values_sweep[2])
+
     metadata = (
         'npoints: '+str(np.ma.sum(field))+'\n' +
-        str(quantiles[1])+' quant: '+str(values_sweep[1])+'\n' +
-        str(quantiles[0])+' quant: '+str(values_sweep[0])+'\n' +
-        str(quantiles[2])+' quant: '+str(values_sweep[2])+'\n')
+        str(quantiles[1])+' quant: '+val_quant1_str+'\n' +
+        str(quantiles[0])+' quant: '+val_quant0_str+'\n' +
+        str(quantiles[2])+' quant: '+val_quant2_str+'\n')
 
-    plt.text(0.05, 0.95, metadata, horizontalalignment='left',
-             verticalalignment='top', transform=ax.transAxes)
+    ax.text(0.05, 0.05, metadata, horizontalalignment='left',
+            verticalalignment='bottom', transform=ax.transAxes)
+
+    # Turn on the grid
+    ax.grid()
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
@@ -177,7 +202,7 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
     return fname_list
 
 
-def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
+def plot_scatter(bin_edges1, bin_edges2, hist_2d, field_name1, field_name2, fname_list,
                  prdcfg, metadata=None, lin_regr=None, lin_regr_slope1=None,
                  rad1_name='RADAR001', rad2_name='RADAR002'):
     """
@@ -185,7 +210,7 @@ def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
 
     Parameters
     ----------
-    bins1, bins2 : float array2
+    bin_edges1, bin_edges2 : float array2
         the bins of each field
     hist_2d : ndarray 2D
         the 2D histogram
@@ -233,19 +258,26 @@ def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
     cax = ax.imshow(
         np.ma.transpose(hist_2d), origin='lower', cmap=cmap, vmin=0.,
         vmax=np.max(hist_2d),
-        extent=(bins1[0], bins1[-1], bins2[0], bins2[-1]),
+        extent=(bin_edges1[0], bin_edges1[-1], bin_edges2[0], bin_edges2[-1]),
         aspect='auto', interpolation='none')
+    ax.autoscale(False)
 
     # plot reference
-    plt.plot(bins1, bins2, 'k--')
+    step1 = bin_edges1[1]-bin_edges1[0]
+    bin_centers1 = bin_edges1[0:-1]+step1/2.
+
+    step2 = bin_edges2[1]-bin_edges2[0]
+    bin_centers2 = bin_edges2[0:-1]+step2/2.
+
+    ax.plot(bin_centers1, bin_centers2, 'k--')
 
     # plot linear regression
     if lin_regr is not None:
-        plt.plot(bins1, lin_regr[0]*bins1+lin_regr[1], 'r')
+        ax.plot(bin_centers1, lin_regr[0]*bin_centers1+lin_regr[1], 'r')
     if lin_regr_slope1 is not None:
-        plt.plot(bins1, bins1+lin_regr_slope1, 'g')
+        ax.plot(bin_centers1, bin_centers1+lin_regr_slope1, 'g')
 
-    plt.autoscale(enable=True, axis='both', tight=True)
+    # ax.autoscale(enable=True, axis='both', tight=True)
 
     plt.xlabel(labelx)
     plt.ylabel(labely)
@@ -269,7 +301,7 @@ def plot_scatter(bins1, bins2, hist_2d, field_name1, field_name2, fname_list,
 
 
 def plot_quantiles(quant, value, fname_list, labelx='quantile', labely='value',
-                   titl='quantile', dpi=72):
+                   titl='quantile', vmin=None, vmax=None, dpi=72):
     """
     plots quantiles
 
@@ -287,6 +319,8 @@ def plot_quantiles(quant, value, fname_list, labelx='quantile', labely='value',
         The label of the Y axis
     titl : str
         The figure title
+    vmin, vmax: float
+        Lower/Upper limit of data values
     dpi : int
         dots per inch
 
@@ -296,11 +330,15 @@ def plot_quantiles(quant, value, fname_list, labelx='quantile', labely='value',
         list of names of the created plots
 
     """
-    fig = plt.figure(figsize=[10, 6], dpi=dpi)
-    plt.plot(quant, value, 'bx-')
-    plt.xlabel(labelx)
-    plt.ylabel(labely)
-    plt.title(titl)
+    fig, ax = plt.subplots(figsize=[10, 6], dpi=dpi)
+    ax.plot(quant, value, 'bx-')
+    ax.set_xlabel(labelx)
+    ax.set_ylabel(labely)
+    ax.set_ylim(bottom=vmin, top=vmax)
+    ax.set_title(titl)
+
+    # Turn on the grid
+    ax.grid()
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
@@ -309,15 +347,15 @@ def plot_quantiles(quant, value, fname_list, labelx='quantile', labely='value',
     return fname_list
 
 
-def plot_histogram(bins, values, fname_list, labelx='bins',
+def plot_histogram(bin_edges, values, fname_list, labelx='bins',
                    labely='Number of Samples', titl='histogram', dpi=72):
     """
     computes and plots histogram
 
     Parameters
     ----------
-    bins : array
-        histogram bins
+    bin_edges : array
+        histogram bin edges
     values : array
         data values
     fname_list : list of str
@@ -338,7 +376,7 @@ def plot_histogram(bins, values, fname_list, labelx='bins',
 
     """
     fig = plt.figure(figsize=[10, 6], dpi=dpi)
-    plt.hist(values, bins=bins)
+    plt.hist(values, bins=bin_edges)
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)
@@ -353,15 +391,15 @@ def plot_histogram(bins, values, fname_list, labelx='bins',
     return fname_list
 
 
-def plot_histogram2(bins, hist, fname_list, labelx='bins',
+def plot_histogram2(bin_centers, hist, fname_list, labelx='bins',
                     labely='Number of Samples', titl='histogram', dpi=72):
     """
     plots histogram
 
     Parameters
     ----------
-    quant : array
-        histogram bins
+    bin_centers : array
+        histogram bin centers
     hist : array
         values for each bin
     fname_list : list of str
@@ -382,7 +420,7 @@ def plot_histogram2(bins, hist, fname_list, labelx='bins',
 
     """
     fig = plt.figure(figsize=[10, 6], dpi=dpi)
-    plt.bar(bins, hist, width=bins[1]-bins[0])
+    plt.bar(bin_centers, hist, width=bin_centers[1]-bin_centers[0])
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)
