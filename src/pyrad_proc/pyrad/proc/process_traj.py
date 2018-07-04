@@ -132,8 +132,7 @@ def process_traj_lightning(procstatus, dscfg, radar_list=None,
         return dataset, trajdict['ind_rad']
 
     # Process
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        dscfg['datatype'][0])
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
     field_name = get_fieldname_pyart(datatype)
     ind_rad = int(radarnr[5:8])-1
     if ((radar_list is None) or (radar_list[ind_rad] is None)):
@@ -334,8 +333,7 @@ def process_traj_trt(procstatus, dscfg, radar_list=None, trajectory=None):
         return None, None
 
     # Process
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        dscfg['datatype'][0])
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
     field_name = get_fieldname_pyart(datatype)
     ind_rad = int(radarnr[5:8])-1
     if ((radar_list is None) or (radar_list[ind_rad] is None)):
@@ -503,8 +501,7 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
         return dataset, trajdict['ind_rad']
 
     # Process
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        dscfg['datatype'][0])
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
     field_name = get_fieldname_pyart(datatype)
     ind_rad = int(radarnr[5:8])-1
     if ((radar_list is None) or (radar_list[ind_rad] is None)):
@@ -720,8 +717,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
     rg_traj_tol = 10000 #m
 
     # Process
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        dscfg['datatype'][0])
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
     field_name = get_fieldname_pyart(datatype)
     ind_rad = int(radarnr[5:8])-1
     if ((radar_list is None) or (radar_list[ind_rad] is None)):

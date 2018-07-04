@@ -120,13 +120,13 @@ def main():
     # data is to be retrieved from the archive
     # info has to have the same number of cfgfiles to be applied
     # cfgpath can have one value or as many as cfg files
-    cfgfiles = (        
+    cfgfiles = (
         'cscs_rad4alp_gc_freq_PHW.txt')
     radar = 'W'
     res = 'H'
     info = 'W'
     cfgpath = os.path.expanduser('~')+'/pyrad/config/processing/'
-    
+
     trajfile = ['None']
     trajtype = 'lightning'
     flashnr = 0

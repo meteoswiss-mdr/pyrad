@@ -8,10 +8,12 @@ Functions for echo classification and filtering
     :toctree: generated/
 
     process_echo_id
+    process_birds_id
     process_clt_to_echo_id
     process_echo_filter
     process_cdf
     process_filter_snr
+    process_filter_vel_diff
     process_filter_visibility
     process_outlier_filter
     process_hydroclass
@@ -49,8 +51,8 @@ def process_echo_id(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -60,8 +62,7 @@ def process_echo_id(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'dBZ':
             refl_field = 'reflectivity'
         if datatype == 'dBuZ':
@@ -110,9 +111,99 @@ def process_echo_id(procstatus, dscfg, radar_list=None):
     id_field['data'] = echo_id
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field('radar_echo_id', id_field)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field('radar_echo_id', id_field)
+
+    return new_dataset, ind_rad
+
+
+def process_birds_id(procstatus, dscfg, radar_list=None):
+    """
+    identifies echoes as 0: No data, 1: Noise, 2: Clutter,
+    3: Birds
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the output
+    ind_rad : int
+        radar index
+
+    """
+
+    if procstatus != 1:
+        return None, None
+
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+        if datatype == 'dBZ':
+            refl_field = 'reflectivity'
+        if datatype == 'dBuZ':
+            refl_field = 'unfiltered_reflectivity'
+        if datatype == 'ZDR':
+            zdr_field = 'differential_reflectivity'
+        if datatype == 'ZDRu':
+            zdr_field = 'unfiltered_differential_reflectivity'
+        if datatype == 'RhoHV':
+            rhv_field = 'cross_correlation_ratio'
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if ((refl_field not in radar.fields) or
+            (zdr_field not in radar.fields) or
+            (rhv_field not in radar.fields)):
+        warn('Unable to create radar_echo_id dataset. Missing data')
+        return None, None
+
+    # user defined parameters
+    max_zdr = dscfg.get('max_zdr', 3.)
+    max_rhv = dscfg.get('max_rhv', 0.9)
+    max_refl = dscfg.get('max_refl', 20.)
+    rmin = dscfg.get('rmin', 2000.)
+    rmax = dscfg.get('rmax', 25000.)
+    elmin = dscfg.get('elmin', 1.5)
+    elmax = dscfg.get('elmax', 85.)
+    echo_id = np.zeros((radar.nrays, radar.ngates), dtype='int32')+3
+
+    # look for clutter
+    gatefilter = pyart.filters.birds_gate_filter(
+        radar, zdr_field=zdr_field, rhv_field=rhv_field,
+        refl_field=refl_field, max_zdr=max_zdr, max_rhv=max_rhv,
+        max_refl=max_refl, rmin=rmin, rmax=rmax, elmin=elmin, elmax=elmax)
+
+    is_clutter = gatefilter.gate_excluded == 1
+    echo_id[is_clutter] = 2
+
+    # look for noise
+    is_noise = radar.fields[refl_field]['data'].data == (
+        pyart.config.get_fillvalue())
+    echo_id[is_noise] = 1
+
+    id_field = pyart.config.get_metadata('radar_echo_id')
+    id_field['data'] = echo_id
+
+    # prepare for exit
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field('radar_echo_id', id_field)
 
     return new_dataset, ind_rad
 
@@ -136,8 +227,8 @@ def process_clt_to_echo_id(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -147,8 +238,7 @@ def process_clt_to_echo_id(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'CLT':
             clt_field = 'clutter_exit_code'
             break
@@ -172,9 +262,9 @@ def process_clt_to_echo_id(procstatus, dscfg, radar_list=None):
     id_field['data'] = echo_id
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field('radar_echo_id', id_field)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field('radar_echo_id', id_field)
 
     return new_dataset, ind_rad
 
@@ -202,8 +292,8 @@ def process_echo_filter(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -213,8 +303,7 @@ def process_echo_filter(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'echoID':
             echoid_field = get_fieldname_pyart(datatype)
             break
@@ -232,32 +321,33 @@ def process_echo_filter(procstatus, dscfg, radar_list=None):
     echo_type = dscfg.get('echo_type', 3)
     mask = radar.fields[echoid_field]['data'] != echo_type
 
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+        if datatype == 'echoID':
+            continue
+
         field_name = get_fieldname_pyart(datatype)
-        if field_name not in echoid_field:
-            if field_name in radar.fields:
-                radar_field = deepcopy(radar.fields[field_name])
-                radar_field['data'] = np.ma.masked_where(
-                    mask, radar_field['data'])
+        if field_name not in radar.fields:
+            warn('Unable to filter '+field_name+' according to echo ID. ' +
+                 'No valid input fields')
+            continue
+        radar_field = deepcopy(radar.fields[field_name])
+        radar_field['data'] = np.ma.masked_where(
+            mask, radar_field['data'])
 
-                if field_name.startswith('corrected_'):
-                    new_field_name = field_name
-                elif field_name.startswith('uncorrected_'):
-                    new_field_name = field_name.replace(
-                        'uncorrected_', 'corrected_', 1)
-                else:
-                    new_field_name = 'corrected_'+field_name
-                new_dataset.add_field(new_field_name, radar_field)
-            else:
-                warn('Unable to filter '+field_name+' according to echo ID. ' +
-                     'No valid input fields')
+        if field_name.startswith('corrected_'):
+            new_field_name = field_name
+        elif field_name.startswith('uncorrected_'):
+            new_field_name = field_name.replace(
+                'uncorrected_', 'corrected_', 1)
+        else:
+            new_field_name = 'corrected_'+field_name
+        new_dataset['radar_out'].add_field(new_field_name, radar_field)
 
-    if not new_dataset.fields:
+    if not new_dataset['radar_out'].fields:
         return None, None
 
     return new_dataset, ind_rad
@@ -283,8 +373,8 @@ def process_cdf(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -297,8 +387,7 @@ def process_cdf(procstatus, dscfg, radar_list=None):
     hydro_field = None
     vis_field = None
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'echoID':
             echoid_field = get_fieldname_pyart(datatype)
         elif datatype == 'hydro':
@@ -318,26 +407,29 @@ def process_cdf(procstatus, dscfg, radar_list=None):
         warn('Unable to compute CDF. Missing field')
         return None, None
 
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
 
-    new_dataset.add_field(field_name, radar.fields[field_name])
+    new_dataset['radar_out'].add_field(field_name, radar.fields[field_name])
     if echoid_field is not None:
         if echoid_field not in radar.fields:
             warn('Missing echo ID field. Clutter can not be filtered')
         else:
-            new_dataset.add_field(echoid_field, radar.fields[echoid_field])
+            new_dataset['radar_out'].add_field(
+                echoid_field, radar.fields[echoid_field])
     if hydro_field is not None:
         if hydro_field not in radar.fields:
             warn('Missing hydrometeor type field. ' +
                  'Filtration according to hydrometeor type not possible')
         else:
-            new_dataset.add_field(hydro_field, radar.fields[hydro_field])
+            new_dataset['radar_out'].add_field(
+                hydro_field, radar.fields[hydro_field])
     if vis_field is not None:
         if vis_field not in radar.fields:
             warn('Missing visibility field. Blocked gates can not be filtered')
         else:
-            new_dataset.add_field(vis_field, radar.fields[vis_field])
+            new_dataset['radar_out'].add_field(
+                vis_field, radar.fields[vis_field])
 
     return new_dataset, ind_rad
 
@@ -363,8 +455,8 @@ def process_filter_snr(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -374,8 +466,7 @@ def process_filter_snr(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if (datatype == 'SNRh') or (datatype == 'SNRv'):
             snr_field = get_fieldname_pyart(datatype)
             break
@@ -386,8 +477,8 @@ def process_filter_snr(procstatus, dscfg, radar_list=None):
         return None, None
     radar = radar_list[ind_rad]
 
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
 
     if snr_field not in radar.fields:
         warn('Unable to filter dataset according to SNR. Missing SNR field')
@@ -398,29 +489,116 @@ def process_filter_snr(procstatus, dscfg, radar_list=None):
     is_low_snr = gatefilter.gate_excluded == 1
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
 
-        if (datatype != 'SNRh') and (datatype != 'SNRv'):
-            field_name = get_fieldname_pyart(datatype)
-            if field_name in radar.fields:
-                radar_field = deepcopy(radar.fields[field_name])
-                radar_field['data'] = np.ma.masked_where(
-                    is_low_snr, radar_field['data'])
+        if (datatype == 'SNRh') or (datatype == 'SNRv'):
+            continue
 
-                if field_name.startswith('corrected_'):
-                    new_field_name = field_name
-                elif field_name.startswith('uncorrected_'):
-                    new_field_name = field_name.replace(
-                        'uncorrected_', 'corrected_', 1)
-                else:
-                    new_field_name = 'corrected_'+field_name
-                new_dataset.add_field(new_field_name, radar_field)
-            else:
-                warn('Unable to filter '+field_name +
-                     ' according to SNR. '+'No valid input fields')
+        field_name = get_fieldname_pyart(datatype)
+        if field_name not in radar.fields:
+            warn('Unable to filter '+field_name +
+                 ' according to SNR. '+'No valid input fields')
+            continue
 
-    if not new_dataset.fields:
+        radar_field = deepcopy(radar.fields[field_name])
+        radar_field['data'] = np.ma.masked_where(
+            is_low_snr, radar_field['data'])
+
+        if field_name.startswith('corrected_'):
+            new_field_name = field_name
+        elif field_name.startswith('uncorrected_'):
+            new_field_name = field_name.replace(
+                'uncorrected_', 'corrected_', 1)
+        else:
+            new_field_name = 'corrected_'+field_name
+        new_dataset['radar_out'].add_field(new_field_name, radar_field)
+
+
+    if not new_dataset['radar_out'].fields:
+        return None, None
+
+    return new_dataset, ind_rad
+
+
+def process_filter_vel_diff(procstatus, dscfg, radar_list=None):
+    """
+    filters out range gates that could not be used for Doppler velocity
+    estimation
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        SNRmin : float. Dataset keyword
+            The minimum SNR to keep the data.
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the output
+    ind_rad : int
+        radar index
+
+    """
+
+    if procstatus != 1:
+        return None, None
+
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+        if datatype == 'diffV':
+            vel_diff_field = get_fieldname_pyart(datatype)
+            break
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+
+    if vel_diff_field not in radar.fields:
+        warn('Unable to filter dataset according to valid velocity. ' +
+             'Missing velocity differences field')
+        return None, None
+
+    mask = np.ma.getmaskarray(radar.fields[vel_diff_field]['data'])
+
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+
+        if datatype == 'diffV':
+            continue
+
+        field_name = get_fieldname_pyart(datatype)
+        if field_name not in radar.fields:
+            warn('Unable to filter '+field_name +
+                 ' according to SNR. '+'No valid input fields')
+            continue
+
+        radar_field = deepcopy(radar.fields[field_name])
+        radar_field['data'] = np.ma.masked_where(mask, radar_field['data'])
+
+        if field_name.find('corrected_') != -1:
+            new_field_name = field_name
+        elif field_name.startswith('uncorrected_'):
+            new_field_name = field_name.replace(
+                'uncorrected_', 'corrected_', 1)
+        else:
+            new_field_name = 'corrected_'+field_name
+        new_dataset['radar_out'].add_field(new_field_name, radar_field)
+
+    if not new_dataset['radar_out'].fields:
         return None, None
 
     return new_dataset, ind_rad
@@ -447,8 +625,8 @@ def process_filter_visibility(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -458,8 +636,7 @@ def process_filter_visibility(procstatus, dscfg, radar_list=None):
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'VIS':
             vis_field = get_fieldname_pyart(datatype)
             break
@@ -470,8 +647,8 @@ def process_filter_visibility(procstatus, dscfg, radar_list=None):
         return None, None
     radar = radar_list[ind_rad]
 
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
 
     if vis_field not in radar.fields:
         warn('Unable to filter dataset according to visibility. ' +
@@ -483,37 +660,39 @@ def process_filter_visibility(procstatus, dscfg, radar_list=None):
     is_lowVIS = gatefilter.gate_excluded == 1
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+        _, _, datatype, _, _ = get_datatype_fields(
             datatypedescr)
 
-        if datatype != 'VIS':
-            field_name = get_fieldname_pyart(datatype)
-            if field_name in radar.fields:
-                radar_aux = deepcopy(radar)
-                radar_aux.fields[field_name]['data'] = np.ma.masked_where(
-                    is_lowVIS, radar_aux.fields[field_name]['data'])
+        if datatype == 'VIS':
+            continue
+        field_name = get_fieldname_pyart(datatype)
+        if field_name not in radar.fields:
+            warn('Unable to filter '+field_name +
+                 ' according to visibility. No valid input fields')
+            continue
 
-                if ((datatype == 'dBZ') or (datatype == 'dBZc') or
-                        (datatype == 'dBuZ') or (datatype == 'dBZv') or
-                        (datatype == 'dBZvc') or (datatype == 'dBuZv')):
-                    radar_field = pyart.correct.correct_visibility(
-                        radar_aux, vis_field=vis_field, field_name=field_name)
-                else:
-                    radar_field = radar_aux.fields[field_name]
+        radar_aux = deepcopy(radar)
+        radar_aux.fields[field_name]['data'] = np.ma.masked_where(
+            is_lowVIS, radar_aux.fields[field_name]['data'])
 
-                if field_name.startswith('corrected_'):
-                    new_field_name = field_name
-                elif field_name.startswith('uncorrected_'):
-                    new_field_name = field_name.replace(
-                        'uncorrected_', 'corrected_', 1)
-                else:
-                    new_field_name = 'corrected_'+field_name
-                new_dataset.add_field(new_field_name, radar_field)
-            else:
-                warn('Unable to filter '+field_name +
-                     ' according to visibility. No valid input fields')
+        if ((datatype == 'dBZ') or (datatype == 'dBZc') or
+                (datatype == 'dBuZ') or (datatype == 'dBZv') or
+                (datatype == 'dBZvc') or (datatype == 'dBuZv')):
+            radar_field = pyart.correct.correct_visibility(
+                radar_aux, vis_field=vis_field, field_name=field_name)
+        else:
+            radar_field = radar_aux.fields[field_name]
 
-    if not new_dataset.fields:
+        if field_name.startswith('corrected_'):
+            new_field_name = field_name
+        elif field_name.startswith('uncorrected_'):
+            new_field_name = field_name.replace(
+                'uncorrected_', 'corrected_', 1)
+        else:
+            new_field_name = 'corrected_'+field_name
+        new_dataset['radar_out'].add_field(new_field_name, radar_field)
+
+    if not new_dataset['radar_out'].fields:
         return None, None
 
     return new_dataset, ind_rad
@@ -550,8 +729,8 @@ def process_outlier_filter(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -559,7 +738,7 @@ def process_outlier_filter(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
+    radarnr, _, datatype, _, _ = get_datatype_fields(
         dscfg['datatype'][0])
 
     ind_rad = int(radarnr[5:8])-1
@@ -595,38 +774,35 @@ def process_outlier_filter(procstatus, dscfg, radar_list=None):
         percent_vals = np.nanpercentile(
             data_sweep.filled(fill_value=np.nan),
             (percentile_min, percentile_max))
-        ind_ray, ind_rng = np.ma.where(
+        ind_rays, ind_rngs = np.ma.where(
             np.ma.logical_or(
                 data_sweep < percent_vals[0], data_sweep > percent_vals[1]))
 
-        for gate in range(len(ind_ray)):
+        for i, ind_ray in enumerate(ind_rays):
+            ind_rng = ind_rngs[i]
             # find neighbours of suspected outlier gate
             data_cube = []
             for ray_nb in range(-nb, nb+1):
                 for rng_nb in range(-nb, nb+1):
                     if ray_nb == 0 and rng_nb == 0:
                         continue
-                    if ((ind_ray[gate]+ray_nb >= 0) and
-                            (ind_ray[gate]+ray_nb < nrays_sweep) and
-                            (ind_rng[gate]+rng_nb >= 0) and
-                            (ind_rng[gate]+rng_nb < radar.ngates)):
-                        if (data_sweep[ind_ray[gate]+ray_nb,
-                                       ind_rng[gate]+rng_nb] is not
+                    if ((ind_ray+ray_nb >= 0) and
+                            (ind_ray+ray_nb < nrays_sweep) and
+                            (ind_rng+rng_nb >= 0) and
+                            (ind_rng+rng_nb < radar.ngates)):
+                        if (data_sweep[ind_ray+ray_nb, ind_rng+rng_nb] is not
                                 np.ma.masked):
                             data_cube.append(
-                                data_sweep[ind_ray[gate]+ray_nb,
-                                           ind_rng[gate]+rng_nb])
+                                data_sweep[ind_ray+ray_nb, ind_rng+rng_nb])
 
             # remove data far from median of neighbours or with not enough
             # valid neighbours
             if len(data_cube) < nb_min:
                 field_out['data'][
-                    sweep_start+ind_ray[gate], ind_rng[gate]] = np.ma.masked
-            elif (abs(
-                    np.ma.median(data_cube) -
-                    data_sweep[ind_ray[gate], ind_rng[gate]]) > threshold):
-                field_out['data'][
-                    sweep_start+ind_ray[gate], ind_rng[gate]] = np.ma.masked
+                    sweep_start+ind_ray, ind_rng] = np.ma.masked
+            elif (abs(np.ma.median(data_cube) -
+                      data_sweep[ind_ray, ind_rng]) > threshold):
+                field_out['data'][sweep_start+ind_ray, ind_rng] = np.ma.masked
 
     if field_name.startswith('corrected_'):
         new_field_name = field_name
@@ -636,9 +812,9 @@ def process_outlier_filter(procstatus, dscfg, radar_list=None):
     else:
         new_field_name = 'corrected_'+field_name
 
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field(new_field_name, field_out)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field(new_field_name, field_out)
 
     return new_dataset, ind_rad
 
@@ -669,8 +845,8 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -687,8 +863,7 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
         temp_field = None
         iso0_field = None
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             if datatype == 'dBZ':
                 refl_field = 'reflectivity'
             if datatype == 'dBZc':
@@ -862,9 +1037,9 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
             dscfg['HYDRO_METHOD'])
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field('radar_echo_classification', hydro)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field('radar_echo_classification', hydro)
 
     return new_dataset, ind_rad
 
@@ -888,8 +1063,8 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -903,11 +1078,12 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
             % dscfg['dsname'])
 
     if dscfg['ML_METHOD'] == 'GIANGRANDE':
+
+        temp_ref = None
         temp_field = None
         iso0_field = None
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             if datatype == 'dBZ':
                 refl_field = 'reflectivity'
             if datatype == 'dBZc':
@@ -931,22 +1107,23 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
             return None, None
         radar = radar_list[ind_rad]
 
-        if temp_field is None and iso0_field is None:
-            warn('iso0 or temperature fields needed to detect melting layer')
-            return None, None
-
-        if temp_field is not None and (temp_field not in radar.fields):
-            warn('Unable to detect melting layer. Missing temperature field')
-            return None, None
-
+        # Check which should be the reference field for temperature
         if iso0_field is not None and (iso0_field not in radar.fields):
             warn('Unable to detect melting layer. ' +
                  'Missing height over iso0 field')
             return None, None
-
-        temp_ref = 'temperature'
-        if iso0_field is not None:
+        else:
             temp_ref = 'height_over_iso0'
+
+        if temp_field is not None and (temp_field not in radar.fields):
+            warn('Unable to detect melting layer. Missing temperature field')
+            return None, None
+        else:
+            temp_ref = 'temperature'
+            iso0_field = 'height_over_iso0'
+
+        if temp_ref is None:
+            iso0_field = 'height_over_iso0'
 
         if ((refl_field not in radar.fields) or
                 (zdr_field not in radar.fields) or
@@ -954,29 +1131,80 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
             warn('Unable to detect melting layer. Missing data')
             return None, None
 
-        # User defined variables here. See line 516
+        # User defined variables
+        nVol = dscfg.get('nVol', 3)
+        maxh = dscfg.get('maxh', 6000.)
+        hres = dscfg.get('hres', 50.)
 
-        # initialize dataset
-        if dscfg['initialized'] == 0:
-            ml_vol, ml_stack = pyart.retrieve.melting_layer_giangrande(
-                radar, refl_field=refl_field, zdr_field=zdr_field,
-                rhv_field=rhv_field, temp_field=temp_field,
-                iso0_field=iso0_field, ml_field=None, temp_ref=temp_ref,
-                ml_stack=None)
-            dscfg['initialized'] = 1
+        rmin = dscfg.get('rmin', 1000.)
+        elmin = dscfg.get('elmin', 4.)
+        elmax = dscfg.get('elmax', 10.)
+        rhomin = dscfg.get('rhomin', 0.75)
+        rhomax = dscfg.get('rhomax', 0.94)
+        zhmin = dscfg.get('zhmin', 20.)
+        hwindow = dscfg.get('hwindow', 500.)
+        mlzhmin = dscfg.get('mlzhmin', 30.)
+        mlzhmax = dscfg.get('mlzhmax', 50.)
+        mlzdrmin = dscfg.get('mlzdrmin', 1.)
+        mlzdrmax = dscfg.get('mlzdrmax', 5.)
+        htol = dscfg.get('htol', 500.)
+        ml_bottom_diff_max = dscfg.get('ml_bottom_diff_max', 1000.)
+
+        time_accu_max = dscfg.get('time_accu_max', 1800.)
+        nml_points_min = dscfg.get('nml_points_min', None)
+        wlength = dscfg.get('wlength', 20.)
+        percentile_bottom = dscfg.get('percentile_bottom', 0.3)
+        percentile_top = dscfg.get('percentile_top', 0.9)
+        interpol = dscfg.get('interpol', True)
+        time_nodata_allowed = dscfg.get('time_nodata_allowed', 3600.)
+
+        get_iso0 = dscfg.get('get_iso0', True)
+
+        if not dscfg['initialized']:
+            # initialize dataset
+            ml_obj, ml_dict, iso0_dict, ml_global = (
+                pyart.retrieve.melting_layer_giangrande(
+                    radar, nVol=nVol, maxh=maxh, hres=hres, rmin=rmin,
+                    elmin=elmin, elmax=elmax, rhomin=rhomin, rhomax=rhomax,
+                    zhmin=zhmin, hwindow=hwindow, mlzhmin=mlzhmin,
+                    mlzhmax=mlzhmax, mlzdrmin=mlzdrmin, mlzdrmax=mlzdrmax,
+                    htol=htol, ml_bottom_diff_max=ml_bottom_diff_max,
+                    time_accu_max=time_accu_max, nml_points_min=nml_points_min,
+                    wlength=wlength, percentile_bottom=percentile_bottom,
+                    percentile_top=percentile_top, interpol=interpol,
+                    time_nodata_allowed=time_nodata_allowed,
+                    refl_field=refl_field, zdr_field=zdr_field,
+                    rhv_field=rhv_field, temp_field=temp_field,
+                    iso0_field=iso0_field, ml_field='melting_layer',
+                    ml_pos_field='melting_layer_height',
+                    temp_ref=temp_ref, get_iso0=get_iso0, ml_global=None))
+            dscfg['initialized'] = True
         else:
-            ml_vol, ml_stack = pyart.retrieve.melting_layer_giangrande(
-                radar, refl_field=refl_field, zdr_field=zdr_field,
-                rhv_field=rhv_field, temp_field=temp_field,
-                iso0_field=iso0_field, ml_field=None, temp_ref=temp_ref,
-                ml_stack=dscfg['global_data'])
+            # use previous detection
+            ml_obj, ml_dict, iso0_dict, ml_global = (
+                pyart.retrieve.melting_layer_giangrande(
+                    radar, nVol=nVol, maxh=maxh, hres=hres, rmin=rmin,
+                    elmin=elmin, elmax=elmax, rhomin=rhomin, rhomax=rhomax,
+                    zhmin=zhmin, hwindow=hwindow, mlzhmin=mlzhmin,
+                    mlzhmax=mlzhmax, mlzdrmin=mlzdrmin, mlzdrmax=mlzdrmax,
+                    htol=htol, ml_bottom_diff_max=ml_bottom_diff_max,
+                    time_accu_max=time_accu_max, nml_points_min=nml_points_min,
+                    wlength=wlength, percentile_bottom=percentile_bottom,
+                    percentile_top=percentile_top, interpol=interpol,
+                    time_nodata_allowed=time_nodata_allowed,
+                    refl_field=refl_field, zdr_field=zdr_field,
+                    rhv_field=rhv_field, temp_field=temp_field,
+                    iso0_field=iso0_field, ml_field='melting_layer',
+                    ml_pos_field='melting_layer_height',
+                    temp_ref=temp_ref, get_iso0=get_iso0,
+                    ml_global=dscfg['global_data']))
 
-        dscfg['global_data'] = ml_stack
+        # update global stack
+        dscfg['global_data'] = ml_global
 
     elif dscfg['ML_METHOD'] == 'WOLFENSBERGER':
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             if datatype == 'dBZ':
                 refl_field = 'reflectivity'
             if datatype == 'dBZc':
@@ -1003,26 +1231,57 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
         interp_holes = dscfg.get('interp_holes', False)
         max_length_holes = dscfg.get('max_length_holes', 250)
         check_min_length = dscfg.get('check_min_length', True)
+        get_iso0 = dscfg.get('get_iso0', True)
 
-        ml_dict = pyart.retrieve.detect_ml(
+        ml_obj, ml_dict, iso0_dict, _ = pyart.retrieve.detect_ml(
             radar, refl_field=refl_field, rhohv_field=rhohv_field,
-            max_range=max_range, detect_threshold=detect_threshold,
-            interp_holes=interp_holes, max_length_holes=max_length_holes,
-            check_min_length=check_min_length)
+            ml_field='melting_layer', ml_pos_field='melting_layer_height',
+            iso0_field='height_over_iso0', max_range=max_range,
+            detect_threshold=detect_threshold, interp_holes=interp_holes,
+            max_length_holes=max_length_holes,
+            check_min_length=check_min_length, get_iso0=get_iso0)
 
-        if ml_dict['ml_exists']:
-            print('bottom_ml', ml_dict['ml_pol']['bottom_ml'])
-            print('top_ml', ml_dict['ml_pol']['top_ml'])
-        else:
-            warn('No melting layer detected')
+    elif dscfg['ML_METHOD'] == 'FROM_HYDROCLASS':
+        for datatypedescr in dscfg['datatype']:
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+            if datatype == 'hydro':
+                hydro_field = get_fieldname_pyart(datatype)
+
+        ind_rad = int(radarnr[5:8])-1
+        if radar_list[ind_rad] is None:
+            warn('No valid radar')
+            return None, None
+        radar = radar_list[ind_rad]
+
+        if hydro_field not in radar.fields:
+            warn('Unable to detect melting layer. Missing data')
+            return None, None
+
+        # User defined parameters
+        force_continuity = dscfg.get('force_continuity', True)
+        dist_max = dscfg.get('dist_max', 350.)
+        get_iso0 = dscfg.get('get_iso0', False)
+
+        ml_obj, ml_dict, iso0_dict = pyart.retrieve.melting_layer_hydroclass(
+            radar, hydro_field=hydro_field, ml_field='melting_layer',
+            ml_pos_field='melting_layer_height',
+            iso0_field='height_over_iso0', force_continuity=force_continuity,
+            dist_max=dist_max, get_iso0=get_iso0)
+
     else:
         raise Exception(
             "ERROR: Unknown melting layer retrieval method " +
             dscfg['ML_METHOD'])
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    # new_dataset.add_field('melting_layer', ml)
+    if ml_dict is None:
+        return None, None
+
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field('melting_layer', ml_dict)
+    if iso0_dict is not None:
+        new_dataset['radar_out'].add_field('height_over_iso0', iso0_dict)
+    new_dataset.update({'ml_obj': ml_obj})
 
     return new_dataset, ind_rad

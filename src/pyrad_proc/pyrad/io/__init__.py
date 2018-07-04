@@ -76,6 +76,7 @@ Reading other data
     read_profile_ts
     read_histogram_ts
     read_quantiles_ts
+    read_ml_ts
 
 Writing data
 ==================
@@ -112,6 +113,7 @@ Auxiliary functions
     :toctree: generated/
 
     map_hydro
+    map_Doppler
     get_save_dir
     make_filename
     get_datetime
@@ -167,7 +169,7 @@ from .read_data_other import read_colocated_data, read_antenna_pattern
 from .read_data_other import read_last_state, read_rhi_profile
 from .read_data_other import read_excess_gates, read_histogram
 from .read_data_other import read_profile_ts, read_histogram_ts
-from .read_data_other import read_quantiles_ts
+from .read_data_other import read_quantiles_ts, read_ml_ts
 
 from .read_data_sensor import read_lightning, read_lightning_traj
 from .read_data_sensor import get_sensor_data, read_smn, read_smn2
@@ -188,7 +190,7 @@ from .write_data import write_excess_gates, write_trt_cell_data
 from .write_data import write_histogram, write_quantiles
 
 from .io_aux import get_save_dir, make_filename, get_new_rainbow_file_name
-from .io_aux import get_datetime, get_dataset_fields, map_hydro
+from .io_aux import get_datetime, get_dataset_fields, map_hydro, map_Doppler
 from .io_aux import get_file_list, get_trtfile_list, get_datatype_fields
 from .io_aux import get_fieldname_pyart, get_field_unit, get_fieldname_cosmo
 from .io_aux import generate_field_name_str, find_raw_cosmo_file

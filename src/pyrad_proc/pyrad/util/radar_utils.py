@@ -427,14 +427,10 @@ def find_colocated_indexes(radar1, radar2, rad1_ele, rad1_azi, rad1_rng,
 
     """
     ngates = len(rad1_ele)
-    ind_ray_rad1 = np.ma.empty(ngates, dtype=int)
-    ind_ray_rad1[:] = np.ma.masked
-    ind_rng_rad1 = np.ma.empty(ngates, dtype=int)
-    ind_rng_rad1[:] = np.ma.masked
-    ind_ray_rad2 = np.ma.empty(ngates, dtype=int)
-    ind_ray_rad2[:] = np.ma.masked
-    ind_rng_rad2 = np.ma.empty(ngates, dtype=int)
-    ind_rng_rad2[:] = np.ma.masked
+    ind_ray_rad1 = np.ma.masked_all(ngates, dtype=int)
+    ind_rng_rad1 = np.ma.masked_all(ngates, dtype=int)
+    ind_ray_rad2 = np.ma.masked_all(ngates, dtype=int)
+    ind_rng_rad2 = np.ma.masked_all(ngates, dtype=int)
     for i in range(ngates):
         ind_ray_rad1_aux = find_ray_index(
             radar1.elevation['data'], radar1.azimuth['data'], rad1_ele[i],
@@ -529,8 +525,7 @@ def get_closest_solar_flux(hit_datetime_list, flux_datetime_list,
 
     """
     flux_datetime_closest_list = list()
-    flux_value_closest_list = np.ma.empty(len(hit_datetime_list))
-    flux_value_closest_list[:] = np.ma.masked
+    flux_value_closest_list = np.ma.masked_all(len(hit_datetime_list))
 
     i = 0
     for hit_dt in hit_datetime_list:
@@ -594,8 +589,7 @@ def create_sun_hits_field(rad_el, rad_az, sun_el, sun_az, data, imgcfg):
 
     npix_az = int((azmax-azmin)/azres)
     npix_el = int((elmax-elmin)/elres)
-    field = np.ma.zeros((npix_az, npix_el))
-    field[:] = np.ma.masked
+    field = np.ma.masked_all((npix_az, npix_el))
 
     ind_az = ((d_az+azmin)/azres).astype(int)
     ind_el = ((d_el+elmin)/elres).astype(int)
@@ -633,8 +627,7 @@ def create_sun_retrieval_field(par, field_name, imgcfg, lant=0.):
     npix_az = int((azmax-azmin)/azres)
     npix_el = int((elmax-elmin)/elres)
 
-    field = np.ma.zeros((npix_az, npix_el))
-    field[:] = np.ma.masked
+    field = np.ma.masked_all((npix_az, npix_el))
 
     d_az = np.array(np.array(range(npix_az))*azres+azmin)
     d_el = np.array(np.array(range(npix_el))*elres+elmin)
@@ -677,8 +670,7 @@ def compute_quantiles(field, quantiles=None):
         warn('No quantiles have been defined. Default ' + str(quantiles) +
              ' will be used')
     nquantiles = len(quantiles)
-    values = np.ma.zeros(nquantiles)
-    values[:] = np.ma.masked
+    values = np.ma.masked_all(nquantiles)
 
     data_valid = field.compressed()
     if np.size(data_valid) < 10:
@@ -717,8 +709,7 @@ def compute_quantiles_from_hist(bin_centers, hist, quantiles=None):
         warn('No quantiles have been defined. Default ' + str(quantiles) +
              ' will be used')
     nquantiles = len(quantiles)
-    values = np.ma.empty(nquantiles)
-    values[:] = np.ma.masked
+    values = np.ma.masked_all(nquantiles)
 
     # check if all elements in histogram are masked values
     mask = np.ma.getmaskarray(hist)
@@ -765,8 +756,7 @@ def compute_quantiles_sweep(field, ray_start, ray_end, quantiles=None):
         warn('No quantiles have been defined. Default ' + str(quantiles) +
              ' will be used')
     nquantiles = len(quantiles)
-    values = np.ma.zeros(nquantiles)
-    values[:] = np.ma.masked
+    values = np.ma.masked_all(nquantiles)
 
     data_valid = field[ray_start:ray_end+1, :].compressed()
     if np.size(data_valid) < 10:
@@ -929,7 +919,7 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
     quant75bias = np.percentile((field2-field1).compressed(), 75.)
     ind_max_val1, ind_max_val2 = np.where(hist_2d == np.ma.amax(hist_2d))
     modebias = bin_centers2[ind_max_val2[0]]-bin_centers1[ind_max_val1[0]]
-    slope, intercep, corr, pval, stderr = scipy.stats.linregress(
+    slope, intercep, corr, _, _ = scipy.stats.linregress(
         field1, y=field2)
     intercep_slope_1 = np.ma.mean(field2-field1)
 
@@ -979,8 +969,7 @@ def compute_1d_stats(field1, field2):
     mean1 = np.ma.mean(field1)
     mean2 = np.ma.mean(field2)
     nb = mean2/mean1-1
-    slope, intercep, corr, pval, stderr = scipy.stats.linregress(
-        field1, y=field2)
+    _, _, corr, _, _ = scipy.stats.linregress(field1, y=field2)
     rms = np.ma.sqrt(np.ma.sum(np.ma.power(field2-field1, 2.))/npoints)
     nash = (1.-np.ma.sum(np.ma.power(field2-field1, 2.)) /
             np.ma.sum(np.ma.power(field1-mean1, 2.)))
@@ -1069,7 +1058,7 @@ def quantize_field(field, field_name, step):
 def compute_profile_stats(field, gate_altitude, h_vec, h_res,
                           quantity='quantiles',
                           quantiles=np.array([0.25, 0.50, 0.75]),
-                          nvalid_min=4):
+                          nvalid_min=4, std_field=None, np_field=None):
     """
     Compute statistics of vertical profile
 
@@ -1084,12 +1073,17 @@ def compute_profile_stats(field, gate_altitude, h_vec, h_res,
     h_res : float
         heigh resolution [m]
     quantity : str
-        The quantity to compute. Can be either 'quantiles' or 'mean'.
+        The quantity to compute. Can be
+        ['quantiles', 'mode', 'regression_mean', 'mean'].
         If 'mean', the min, max, and average is computed.
     quantiles : 1D ndarray
         the quantiles to compute
     nvalid_min : int
         the minimum number of points to consider the stats valid
+    std_field : ndarray
+        the standard deviation of the regression at each range gate
+    np_field : ndarray
+        the number of points used to compute the regression at each range gate
 
     Returns
     -------
@@ -1112,9 +1106,10 @@ def compute_profile_stats(field, gate_altitude, h_vec, h_res,
         vals[:, 1] = 0
         vals[:, 3] = 0
         vals[:, 5] = 0
+    elif quantity == 'regression_mean':
+        vals = np.ma.masked_all((nh, 2), dtype=float)
     else:
-        vals = np.ma.empty((nh, quantiles.size), dtype=float)
-        vals[:] = np.ma.masked
+        vals = np.ma.masked_all((nh, quantiles.size), dtype=float)
 
     val_valid = np.zeros(nh, dtype=int)
     for i, h in enumerate(h_vec):
@@ -1160,8 +1155,26 @@ def compute_profile_stats(field, gate_altitude, h_vec, h_res,
                     data, axis=None, nan_policy='omit')
                 vals[i, 4] = mode
                 vals[i, 5] = count/nvalid*100.
+        elif quantity == 'regression_mean':
+            if std_field is None or np_field is None:
+                warn('Unable to compute regression mean')
+                return None, None
+            data_std = std_field[np.logical_and(
+                gate_altitude >= h-h_res/2., gate_altitude < h+h_res/2.)]
+            data_np = np_field[np.logical_and(
+                gate_altitude >= h-h_res/2., gate_altitude < h+h_res/2.)]
+
+            val_valid[i] = np.sum(data_np)
+            if val_valid[i] == 0.:
+                continue
+
+            data_var = np.ma.power(data_std, 2.)
+            weights = (data_np-1)/(data_var+0.01)
+            vals[i, 0] = np.ma.sum(weights*data)/np.ma.sum(weights)
+            vals[i, 1] = np.ma.sqrt(
+                np.ma.sum((data_np-1)*data_var)/np.ma.sum(data_np-1))
         else:
-            avg, quants, nvalid = quantiles_weighted(
+            _, quants, nvalid = quantiles_weighted(
                 data, quantiles=quantiles)
             if nvalid is not None:
                 if nvalid >= nvalid_min:

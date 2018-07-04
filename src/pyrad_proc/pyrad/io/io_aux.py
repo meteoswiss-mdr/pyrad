@@ -8,6 +8,7 @@ Auxiliary functions for reading/writing files
     :toctree: generated/
 
     map_hydro
+    map_Doppler
     get_save_dir
     make_filename
     generate_field_name_str
@@ -68,6 +69,26 @@ def map_hydro(hydro_data_op):
     hydro_data_py[hydro_data_op == 200] = 8  # melting hail
 
     return hydro_data_py
+
+
+def map_Doppler(Doppler_data_bin, Nyquist_vel):
+    """
+    maps the binary METRANET Doppler data to actual Doppler velocity
+
+    Parameters
+    ----------
+    Doppler_data_bin : numpy array
+        The binary METRANET data
+
+    Returns
+    -------
+    Doppler_data : numpy array
+        The Doppler veloctiy in [m/s]
+
+    """
+    Doppler_data = (Doppler_data_bin-128.)/127.*Nyquist_vel
+
+    return Doppler_data
 
 
 def get_save_dir(basepath, procname, dsname, prdname, timeinfo=None,
@@ -318,6 +339,10 @@ def get_fieldname_pyart(datatype):
         field_name = 'corrected_unfiltered_reflectivity_vv'
     elif datatype == 'dBZ_bias':
         field_name = 'reflectivity_bias'
+    elif datatype == 'eta_h':
+        field_name = 'volumetric_reflectivity'
+    elif datatype == 'eta_v':
+        field_name = 'volumetric_reflectivity_vv'
 
     elif datatype == 'ZDR':
         field_name = 'differential_reflectivity'
@@ -394,8 +419,18 @@ def get_fieldname_pyart(datatype):
 
     elif datatype == 'V':
         field_name = 'velocity'
+    elif datatype == 'dealV':
+        field_name = 'dealiased_velocity'
     elif datatype == 'Vc':
         field_name = 'corrected_velocity'
+    elif datatype == 'dealVc':
+        field_name = 'dealiased_corrected_velocity'
+    elif datatype == 'estV':
+        field_name = 'retrieved_velocity'
+    elif datatype == 'stdV':
+        field_name = 'retrieved_velocity_std'
+    elif datatype == 'diffV':
+        field_name = 'velocity_difference'
     elif datatype == 'W':
         field_name = 'spectrum_width'
     elif datatype == 'Wc':
@@ -404,6 +439,10 @@ def get_fieldname_pyart(datatype):
         field_name = 'azimuthal_horizontal_wind_component'
     elif datatype == 'wind_vel_v':
         field_name = 'vertical_wind_component'
+    elif datatype == 'wind_vel_h_u':
+        field_name = 'eastward_wind_component'
+    elif datatype == 'wind_vel_h_v':
+        field_name = 'northward_wind_component'
     elif datatype == 'windshear_v':
         field_name = 'vertical_wind_shear'
     elif datatype == 'WIND_SPEED':
@@ -438,6 +477,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'cosmo_index'
     elif datatype == 'hzt_index':
         field_name = 'hzt_index'
+    elif datatype == 'ml':
+        field_name = 'melting_layer'
 
     elif datatype == 'VIS':
         field_name = 'visibility'
@@ -460,6 +501,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'colocated_gates'
     elif datatype == 'nsamples':
         field_name = 'number_of_samples'
+    elif datatype == 'bird_density':
+        field_name = 'bird_density'
     else:
         raise ValueError('ERROR: Unknown data type '+datatype)
 
@@ -740,8 +783,7 @@ def get_new_rainbow_file_name(master_fname, master_datadescriptor, datatype):
         the new file name
 
     """
-    radarnr, datagroup, master_datatype, dataset, product = (
-        get_datatype_fields(master_datadescriptor))
+    _, _, master_datatype, _, _ = get_datatype_fields(master_datadescriptor)
     datapath = os.path.dirname(master_fname)
     voltime = get_datetime(master_fname, master_datatype)
     voltype = os.path.basename(master_fname).split('.')[1]
@@ -871,8 +913,7 @@ def get_datetime(fname, datadescriptor):
         date and time in file name
 
     """
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        datadescriptor)
+    _, datagroup, _, _, _ = get_datatype_fields(datadescriptor)
 
     return _get_datetime(fname, datagroup)
 
