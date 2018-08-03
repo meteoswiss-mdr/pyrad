@@ -20,6 +20,9 @@ Auxiliary functions
     process_roi
     process_grid
     process_qvp
+    process_rqvp
+    process_svp
+    process_evp
     process_time_height
 
 Echo classification and filtering
@@ -110,6 +113,19 @@ Doppler processing
     process_windshear
     process_vad
 
+Time series functions
+====================
+
+.. autosummary::
+    :toctree: generated/
+
+    process_point_measurement
+    process_qvp
+    process_rqvp
+    process_svp
+    process_evp
+    process_time_height
+
 Trajectory functions
 ====================
 
@@ -137,8 +153,12 @@ COSMO data
 """
 
 from .process_aux import get_process_func, process_raw, process_save_radar
-from .process_aux import process_point_measurement, process_grid, process_qvp
-from .process_aux import process_time_height, process_roi
+from .process_aux import process_grid, process_roi
+
+from .process_timeseries import process_point_measurement, process_qvp
+from .process_timeseries import process_rqvp, process_evp, process_svp
+from .process_timeseries import process_time_height
+
 from .process_traj import process_trajectory, process_traj_atplane
 from .process_traj import process_traj_antenna_pattern
 
