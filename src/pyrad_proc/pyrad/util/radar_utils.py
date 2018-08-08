@@ -1305,7 +1305,8 @@ def compute_directional_stats(field, avg_type='mean', nvalid_min=1, axis=0):
     return values, nvalid
 
 
-def project_to_vertical(data_in, data_height, grid_height, interp_kind='none'):
+def project_to_vertical(data_in, data_height, grid_height, interp_kind='none',
+                        fill_value=-9999.):
     """
     Projects radar data to a regular vertical grid
 
@@ -1318,7 +1319,9 @@ def project_to_vertical(data_in, data_height, grid_height, interp_kind='none'):
     grid_height : ndarray 1D
         the regular vertical grid to project to
     interp_kind : str
-        The type of interpolation to use: 'none', 'nearest', etc.
+        The type of interpolation to use: 'none' or 'nearest'
+    fill_value : float
+        The fill value used for interpolation
 
     Returns
     -------
@@ -1338,10 +1341,19 @@ def project_to_vertical(data_in, data_height, grid_height, interp_kind='none'):
             if ind_h is None:
                 continue
             data_out[ind_r] = data_in[ind_h]
-    else:
-        data_in.filled(fill_value=np.nan)
+    elif interp_kind == 'nearest':
+        data_filled = data_in.filled(fill_value=fill_value)
         f = scipy.interpolate.interp1d(
-            data_height, data_in, kind=interp_kind, bounds_error=False)
-        data_out = np.ma.masked_invalid(f(grid_height))
+            data_height, data_filled, kind=interp_kind, bounds_error=False,
+            fill_value=fill_value)
+        data_out = np.ma.masked_values(f(grid_height), fill_value)
+    else:
+        valid = np.logical_not(np.ma.getmaskarray(data_in))
+        height_valid = data_height[valid]
+        data_valid = data_in[valid]
+        f = scipy.interpolate.interp1d(
+            height_valid, data_valid, kind=interp_kind, bounds_error=False,
+            fill_value=fill_value)
+        data_out = np.ma.masked_values(f(grid_height), fill_value)
 
     return data_out

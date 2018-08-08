@@ -18,6 +18,7 @@ from .process_product import generate_ml_products
 
 from .process_vol_products import generate_vol_products
 from .process_grid_products import generate_grid_products
+from .process_grid_products import generate_sparse_grid_products
 from .process_timeseries_products import generate_timeseries_products
 from .process_traj_products import generate_traj_product
 from .process_monitoring_products import generate_monitoring_products
@@ -48,6 +49,8 @@ def get_prodgen_func(dsformat, dsname, dstype):
         func = generate_timeseries_products
     elif dsformat == 'GRID':
         func = generate_grid_products
+    elif dsformat == 'SPARSE_GRID':
+        func = generate_sparse_grid_products
     elif dsformat == 'TIMEAVG':
         func = generate_time_avg_products
     elif dsformat == 'SUN_HITS':

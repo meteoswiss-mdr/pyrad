@@ -935,7 +935,7 @@ def plot_ppi_contour(radar, field_name, ind_el, prdcfg, fname_list,
 
 def plot_pos(lat, lon, alt, fname_list, ax=None, fig=None, save_fig=True,
              sort_altitude='No', dpi=72, alpha=1., cb_label='height [m MSL]',
-             titl='Position'):
+             titl='Position', limits=None):
     """
     plots a trajectory on a Cartesian surface
 
@@ -963,6 +963,8 @@ def plot_pos(lat, lon, alt, fname_list, ax=None, fig=None, save_fig=True,
         Color bar label
     titl : str
         Plot title
+    limits : tupple or None
+        The limits of the field to plot
 
     Returns
     -------

@@ -98,6 +98,9 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_clt_to_echo_id'
     elif dataset_type == 'ECHO_FILTER':
         func_name = 'process_echo_filter'
+    elif dataset_type == 'ZDR_COLUMN':
+        func_name = 'process_zdr_column'
+        dsformat = 'SPARSE_GRID'
     elif dataset_type == 'SNR_FILTER':
         func_name = 'process_filter_snr'
     elif dataset_type == 'VEL_FILTER':

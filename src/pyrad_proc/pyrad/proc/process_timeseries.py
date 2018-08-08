@@ -42,43 +42,32 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
 
         datatype : string. Dataset keyword
             The data type where we want to extract the point measurement
-
         latlon : boolean. Dataset keyword
             if True position is obtained from latitude, longitude information,
             otherwise position is obtained from antenna coordinates
             (range, azimuth, elevation).
-
         truealt : boolean. Dataset keyword
             if True the user input altitude is used to determine the point of
             interest.
             if False use the altitude at a given radar elevation ele over the
             point of interest.
-
         lon : float. Dataset keyword
             the longitude [deg]. Use when latlon is True.
-
         lat : float. Dataset keyword
             the latitude [deg]. Use when latlon is True.
-
         alt : float. Dataset keyword
             altitude [m MSL]. Use when latlon is True.
-
         ele : float. Dataset keyword
             radar elevation [deg]. Use when latlon is False or when latlon is
             True and truealt is False
-
         azi : float. Dataset keyword
             radar azimuth [deg]. Use when latlon is False
-
         rng : float. Dataset keyword
             range from radar [m]. Use when latlon is False
-
         AziTol : float. Dataset keyword
             azimuthal tolerance to determine which radar azimuth to use [deg]
-
         EleTol : float. Dataset keyword
             elevation tolerance to determine which radar elevation to use [deg]
-
         RngTol : float. Dataset keyword
             range tolerance to determine which radar bin to use [m]
 
@@ -242,7 +231,7 @@ def process_qvp(procstatus, dscfg, radar_list=None):
             The data type where we want to extract the point measurement
         anglenr : int
             The sweep number to use. It assumes the radar volume consists on
-            PPI scans
+            PPI scans. Default 0.
         hmax : float
             The maximum height to plot [m]. Default 10000.
         hres : float
@@ -251,10 +240,17 @@ def process_qvp(procstatus, dscfg, radar_list=None):
             The type of averaging to perform. Can be either "mean" or "median"
             Default "mean"
         nvalid_min : int
-            Minimum number of valid points to accept average
+            Minimum number of valid points to accept average. Default 30.
         interp_kind : str
             type of interpolation when projecting to vertical grid: 'none',
-            'nearest', etc.
+            or 'nearest', etc. Default 'none'
+            'none' will select from all data points within the regular grid
+            height bin the closest to the center of the bin.
+            'nearest' will select the closest data point to the center of the
+            height bin regardless if it is within the height bin or not.
+            Data points can be masked values
+            If another type of interpolation is selected masked values will be
+            eliminated from the data points before the interpolation
 
     radar_list : list of Radar objects
         Optional. list of radar objects
@@ -432,17 +428,29 @@ def process_rqvp(procstatus, dscfg, radar_list=None):
         hmax : float
             The maximum height to plot [m]. Default 10000.
         hres : float
-            The height resolution [m]. Default 50
+            The height resolution [m]. Default 2.
         avg_type : str
             The type of averaging to perform. Can be either "mean" or "median"
             Default "mean"
         nvalid_min : int
-            Minimum number of valid points to accept average
+            Minimum number of valid points to accept average. Default 30.
         interp_kind : str
             type of interpolation when projecting to vertical grid: 'none',
-            'nearest', etc.
+            or 'nearest', etc. Default 'nearest'
+            'none' will select from all data points within the regular grid
+            height bin the closest to the center of the bin.
+            'nearest' will select the closest data point to the center of the
+            height bin regardless if it is within the height bin or not.
+            Data points can be masked values
+            If another type of interpolation is selected masked values will be
+            eliminated from the data points before the interpolation
         rmax : float
-            range up to which use data
+            ground range up to which the data is intended for use [m].
+            Default 50000.
+        weight_power : float
+            Power p of the weighting function 1/abs(grng-(rmax-1))**p given to
+            the data outside the desired range. -1 will set the weight to 0.
+            Default 2.
 
     radar_list : list of Radar objects
         Optional. list of radar objects
@@ -487,8 +495,9 @@ def process_rqvp(procstatus, dscfg, radar_list=None):
         hres = dscfg.get('hres', 2.)
         avg_type = dscfg.get('avg_type', 'mean')
         nvalid_min = dscfg.get('nvalid_min', 30)
-        rmax = dscfg.get('rmax', 50000.)
         interp_kind = dscfg.get('interp_kind', 'nearest')
+        rmax = dscfg.get('rmax', 50000.)/1000.  # [Km]
+        weight_power = dscfg.get('weight_power', 2.)
 
         if avg_type != 'mean' and avg_type != 'median':
             warn('Unsuported statistics '+avg_type)
@@ -563,32 +572,44 @@ def process_rqvp(procstatus, dscfg, radar_list=None):
             radar_aux = deepcopy(radar)
             radar_aux = radar_aux.extract_sweeps([sweep])
 
+            # Compute QVP for this sweep
             values, _ = compute_directional_stats(
                 radar_aux.fields[field_name]['data'], avg_type=avg_type,
                 nvalid_min=nvalid_min, axis=0)
 
             height = radar_aux.gate_altitude['data'][0, :]
+
+            # Project to grid
+            val_interp[sweep, :] = project_to_vertical(
+                values, height, qvp.range['data'], interp_kind=interp_kind)
+
+            # compute ground range [Km]
             grng = np.sqrt(
                 np.power(radar_aux.gate_x['data'][0, :], 2.) +
-                np.power(radar_aux.gate_y['data'][0, :], 2.))
+                np.power(radar_aux.gate_y['data'][0, :], 2.))/1000.
 
-            values.filled(fill_value=np.nan)
-            f1 = interp1d(
-                height, values, kind=interp_kind, bounds_error=False)
-            val_interp[sweep, :] = np.ma.masked_invalid(f1(qvp.range['data']))
-
-            f2 = interp1d(
+            # Project ground range to grid
+            f = interp1d(
                 height, grng, kind=interp_kind, bounds_error=False,
                 fill_value='extrapolate')
-            grng_interp[sweep, :] = np.ma.masked_invalid(
-                f2(qvp.range['data']))
+            grng_interp[sweep, :] = f(qvp.range['data'])
 
-        weight = np.sqrt(grng_interp-(rmax-1000.))
-        weight[grng_interp <= rmax-1000.] = np.power(
-            weight[grng_interp <= rmax-1000.], 0.)
-        weight[grng_interp > rmax-1000.] = np.power(
-            weight[grng_interp > rmax-1000.], 2.)
-        weight = 1./weight
+        # Compute weight
+        weight = np.ma.abs(grng_interp-(rmax-1.))
+        weight[grng_interp <= rmax-1.] = 1./np.power(
+            weight[grng_interp <= rmax-1.], 0.)
+
+        if weight_power == -1:
+            weight[grng_interp > rmax-1.] = 0.
+        else:
+            weight[grng_interp > rmax-1.] = 1./np.power(
+                weight[grng_interp > rmax-1.], weight_power)
+
+        # mask weights where there is no data
+        mask = np.ma.getmaskarray(val_interp)
+        weight = np.ma.masked_where(mask, weight)
+
+        # Weighted average
         qvp_data = (
             np.ma.sum(val_interp*weight, axis=0)/np.ma.sum(weight, axis=0))
 
@@ -651,16 +672,23 @@ def process_evp(procstatus, dscfg, radar_list=None):
         hmax : float
             The maximum height to plot [m]. Default 10000.
         hres : float
-            The height resolution [m]. Default 50
+            The height resolution [m]. Default 250.
         avg_type : str
             The type of averaging to perform. Can be either "mean" or "median"
             Default "mean"
         nvalid_min : int
             Minimum number of valid points to consider the data valid when
-            performing the averaging. Default 0
+            performing the averaging. Default 1
         interp_kind : str
             type of interpolation when projecting to vertical grid: 'none',
-            'nearest', etc.
+            or 'nearest', etc. Default 'none'.
+            'none' will select from all data points within the regular grid
+            height bin the closest to the center of the bin.
+            'nearest' will select the closest data point to the center of the
+            height bin regardless if it is within the height bin or not.
+            Data points can be masked values
+            If another type of interpolation is selected masked values will be
+            eliminated from the data points before the interpolation
 
     radar_list : list of Radar objects
         Optional. list of radar objects
@@ -703,7 +731,7 @@ def process_evp(procstatus, dscfg, radar_list=None):
         hmax = dscfg.get('hmax', 10000.)
         hres = dscfg.get('hres', 250.)
         avg_type = dscfg.get('avg_type', 'mean')
-        nvalid_min = dscfg.get('nvalid_min', 0)
+        nvalid_min = dscfg.get('nvalid_min', 1)
         interp_kind = dscfg.get('interp_kind', 'none')
         if avg_type != 'mean' and avg_type != 'median':
             warn('Unsuported statistics '+avg_type)
@@ -790,7 +818,7 @@ def process_evp(procstatus, dscfg, radar_list=None):
 
             vals, _ = compute_directional_stats(
                 field, avg_type=avg_type, nvalid_min=nvalid_min, axis=0)
-            values = np.append(values, vals)
+            values = np.ma.append(values, vals)
 
             height = np.append(
                 height,
@@ -860,16 +888,23 @@ def process_svp(procstatus, dscfg, radar_list=None):
         hmax : float
             The maximum height to plot [m]. Default 10000.
         hres : float
-            The height resolution [m]. Default 50
+            The height resolution [m]. Default 250.
         avg_type : str
             The type of averaging to perform. Can be either "mean" or "median"
             Default "mean"
         nvalid_min : int
             Minimum number of valid points to consider the data valid when
-            performing the averaging. Default 0
+            performing the averaging. Default 1
         interp_kind : str
             type of interpolation when projecting to vertical grid: 'none',
-            'nearest', etc.
+            or 'nearest', etc. Default 'none'
+            'none' will select from all data points within the regular grid
+            height bin the closest to the center of the bin.
+            'nearest' will select the closest data point to the center of the
+            height bin regardless if it is within the height bin or not.
+            Data points can be masked values
+            If another type of interpolation is selected masked values will be
+            eliminated from the data points before the interpolation
 
     radar_list : list of Radar objects
         Optional. list of radar objects
@@ -913,7 +948,7 @@ def process_svp(procstatus, dscfg, radar_list=None):
         hmax = dscfg.get('hmax', 10000.)
         hres = dscfg.get('hres', 250.)
         avg_type = dscfg.get('avg_type', 'mean')
-        nvalid_min = dscfg.get('nvalid_min', 0)
+        nvalid_min = dscfg.get('nvalid_min', 1)
         interp_kind = dscfg.get('interp_kind', 'none')
         if avg_type != 'mean' and avg_type != 'median':
             warn('Unsuported statistics '+avg_type)
@@ -1063,7 +1098,14 @@ def process_time_height(procstatus, dscfg, radar_list=None):
             The height resolution [m]. Default 50
         interp_kind : str
             type of interpolation when projecting to vertical grid: 'none',
-            'nearest', etc.
+            or 'nearest', etc. Default 'none'
+            'none' will select from all data points within the regular grid
+            height bin the closest to the center of the bin.
+            'nearest' will select the closest data point to the center of the
+            height bin regardless if it is within the height bin or not.
+            Data points can be masked values
+            If another type of interpolation is selected masked values will be
+            eliminated from the data points before the interpolation
 
     radar_list : list of Radar objects
         Optional. list of radar objects
@@ -1184,7 +1226,7 @@ def process_time_height(procstatus, dscfg, radar_list=None):
             if ind_ray is None:
                 continue
 
-            values = np.append(
+            values = np.ma.append(
                 values,
                 radar_aux.fields[field_name]['data'][ind_ray, ind_rng])
             height = np.append(
