@@ -55,9 +55,7 @@ def generate_monitoring_products(dataset, prdcfg):
     """
 
     # check the type of dataset required
-    hist_type = 'cumulative'
-    if 'hist_type' in prdcfg:
-        hist_type = prdcfg['hist_type']
+    hist_type = prdcfg.get('hist_type', 'cumulative')
 
     if dataset['hist_type'] != hist_type:
         return None
@@ -214,10 +212,12 @@ def generate_monitoring_products(dataset, prdcfg):
 
         quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.]))
         ref_value = prdcfg.get('ref_value', 0.)
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
 
         plot_density(
             hist_obj, hist_type, field_name, ind_el, prdcfg, fname_list,
-            quantiles=quantiles, ref_value=ref_value)
+            quantiles=quantiles, ref_value=ref_value, vmin=vmin, vmax=vmax)
 
         print('----- save to '+' '.join(fname_list))
 

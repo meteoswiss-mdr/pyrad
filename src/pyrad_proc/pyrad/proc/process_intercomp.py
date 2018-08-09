@@ -59,15 +59,14 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
     """
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         field_name = get_fieldname_pyart(datatype)
         break
     ind_rad = int(radarnr[5:8])-1
@@ -129,7 +128,7 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
 
         dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
         # no radar object in global data: create it
-        if 'radar_obj' not in dscfg['global_data']:
+        if 'radar_out' not in dscfg['global_data']:
             # get start and stop times of new radar object
             (dscfg['global_data']['starttime'],
              dscfg['global_data']['endtime']) = (
@@ -139,20 +138,20 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
 
             # check if volume time older than starttime
             if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
-                dscfg['global_data'].update({'radar_obj': radar_aux})
+                dscfg['global_data'].update({'radar_out': radar_aux})
 
             return None, None
 
         # still accumulating: add field to global field
         if dscfg['timeinfo'] < dscfg['global_data']['endtime']:
             field_interp = interpol_field(
-                dscfg['global_data']['radar_obj'], radar_aux, field_name)
+                dscfg['global_data']['radar_out'], radar_aux, field_name)
             npoints_interp = interpol_field(
-                dscfg['global_data']['radar_obj'], radar_aux,
+                dscfg['global_data']['radar_out'], radar_aux,
                 'number_of_samples')
-            dscfg['global_data']['radar_obj'].fields[field_name]['data'] += (
+            dscfg['global_data']['radar_out'].fields[field_name]['data'] += (
                 field_interp['data'].filled(fill_value=0))
-            dscfg['global_data']['radar_obj'].fields[
+            dscfg['global_data']['radar_out'].fields[
                 'number_of_samples']['data'] += (
                     npoints_interp['data'].filled(fill_value=0)).astype('int')
 
@@ -160,17 +159,17 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
 
         # we have reached the end of the accumulation period: do the averaging
         # and start a new object
-        dscfg['global_data']['radar_obj'].fields[field_name]['data'] /= (
-            dscfg['global_data']['radar_obj'].fields[
+        dscfg['global_data']['radar_out'].fields[field_name]['data'] /= (
+            dscfg['global_data']['radar_out'].fields[
                 'number_of_samples']['data'])
         if lin_trans:
-            dscfg['global_data']['radar_obj'].fields[field_name]['data'] = (
+            dscfg['global_data']['radar_out'].fields[field_name]['data'] = (
                 10.*np.ma.log10(
-                    dscfg['global_data']['radar_obj'].fields[
+                    dscfg['global_data']['radar_out'].fields[
                         field_name]['data']))
 
         new_dataset = {
-            'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
+            'radar_out': deepcopy(dscfg['global_data']['radar_out']),
             'timeinfo': dscfg['global_data']['endtime']}
 
         dscfg['global_data']['starttime'] += datetime.timedelta(
@@ -178,7 +177,7 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
         dscfg['global_data']['endtime'] += datetime.timedelta(seconds=period)
 
         # remove old radar object from global_data dictionary
-        dscfg['global_data'].pop('radar_obj', None)
+        dscfg['global_data'].pop('radar_out', None)
 
         # get start and stop times of new radar object
         dscfg['global_data']['starttime'], dscfg['global_data']['endtime'] = (
@@ -188,7 +187,7 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
 
         # check if volume time older than starttime
         if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
-            dscfg['global_data'].update({'radar_obj': radar_aux})
+            dscfg['global_data'].update({'radar_out': radar_aux})
 
         return new_dataset, ind_rad
 
@@ -196,21 +195,21 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
     if procstatus == 2:
         if dscfg['initialized'] == 0:
             return None, None
-        if 'radar_obj' not in dscfg['global_data']:
+        if 'radar_out' not in dscfg['global_data']:
             return None, None
 
-        (dscfg['global_data']['radar_obj'].fields[field_name][
+        (dscfg['global_data']['radar_out'].fields[field_name][
             'data']) /= (
-                dscfg['global_data']['radar_obj'].fields[
+                dscfg['global_data']['radar_out'].fields[
                     'number_of_samples']['data'])
         if lin_trans:
-            dscfg['global_data']['radar_obj'].fields[field_name]['data'] = (
+            dscfg['global_data']['radar_out'].fields[field_name]['data'] = (
                 10.*np.ma.log10(
-                    dscfg['global_data']['radar_obj'].fields[
+                    dscfg['global_data']['radar_out'].fields[
                         field_name]['data']))
 
         new_dataset = {
-            'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
+            'radar_out': deepcopy(dscfg['global_data']['radar_out']),
             'timeinfo': dscfg['global_data']['endtime']}
 
         return new_dataset, ind_rad
@@ -246,8 +245,7 @@ def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
 
     """
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if ((datatype == 'dBZ') or (datatype == 'dBZc') or
                 (datatype == 'dBuZ') or (datatype == 'dBZv') or
                 (datatype == 'dBZvc') or (datatype == 'dBuZv')):
@@ -312,7 +310,7 @@ def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
 
         dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
         # no radar object in global data: create it
-        if 'radar_obj' not in dscfg['global_data']:
+        if 'radar_out' not in dscfg['global_data']:
             # get start and stop times of new radar object
             (dscfg['global_data']['starttime'],
              dscfg['global_data']['endtime']) = (
@@ -322,31 +320,31 @@ def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
 
             # check if volume time older than starttime
             if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
-                dscfg['global_data'].update({'radar_obj': radar_aux})
+                dscfg['global_data'].update({'radar_out': radar_aux})
 
             return None, None
 
         # still accumulating: add field to global field
         if dscfg['timeinfo'] < dscfg['global_data']['endtime']:
             field_interp = interpol_field(
-                dscfg['global_data']['radar_obj'], radar_aux, field_name)
-            dscfg['global_data']['radar_obj'].fields[field_name]['data'] += (
+                dscfg['global_data']['radar_out'], radar_aux, field_name)
+            dscfg['global_data']['radar_out'].fields[field_name]['data'] += (
                 field_interp['data'].filled(fill_value=0))
 
             refl_interp = interpol_field(
-                dscfg['global_data']['radar_obj'], radar_aux, refl_name)
-            dscfg['global_data']['radar_obj'].fields[refl_name]['data'] += (
+                dscfg['global_data']['radar_out'], radar_aux, refl_name)
+            dscfg['global_data']['radar_out'].fields[refl_name]['data'] += (
                 refl_interp['data'].filled(fill_value=0))
 
             return None, None
 
         # we have reached the end of the accumulation period: do the averaging
         # and start a new object
-        dscfg['global_data']['radar_obj'].fields[field_name]['data'] /= (
-            dscfg['global_data']['radar_obj'].fields[refl_name]['data'])
+        dscfg['global_data']['radar_out'].fields[field_name]['data'] /= (
+            dscfg['global_data']['radar_out'].fields[refl_name]['data'])
 
         new_dataset = {
-            'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
+            'radar_out': deepcopy(dscfg['global_data']['radar_out']),
             'timeinfo': dscfg['global_data']['endtime']}
 
         dscfg['global_data']['starttime'] += datetime.timedelta(
@@ -354,7 +352,7 @@ def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
         dscfg['global_data']['endtime'] += datetime.timedelta(seconds=period)
 
         # remove old radar object from global_data dictionary
-        dscfg['global_data'].pop('radar_obj', None)
+        dscfg['global_data'].pop('radar_out', None)
 
         # get start and stop times of new radar object
         dscfg['global_data']['starttime'], dscfg['global_data']['endtime'] = (
@@ -364,7 +362,7 @@ def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
 
         # check if volume time older than starttime
         if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
-            dscfg['global_data'].update({'radar_obj': radar_aux})
+            dscfg['global_data'].update({'radar_out': radar_aux})
 
         return new_dataset, ind_rad
 
@@ -372,14 +370,14 @@ def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
     if procstatus == 2:
         if dscfg['initialized'] == 0:
             return None, None
-        if 'radar_obj' not in dscfg['global_data']:
+        if 'radar_out' not in dscfg['global_data']:
             return None, None
 
-        dscfg['global_data']['radar_obj'].fields[field_name]['data'] /= (
-            dscfg['global_data']['radar_obj'].fields[refl_name]['data'])
+        dscfg['global_data']['radar_out'].fields[field_name]['data'] /= (
+            dscfg['global_data']['radar_out'].fields[refl_name]['data'])
 
         new_dataset = {
-            'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
+            'radar_out': deepcopy(dscfg['global_data']['radar_out']),
             'timeinfo': dscfg['global_data']['endtime']}
 
         return new_dataset, ind_rad
@@ -422,8 +420,7 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
     iso0_name = None
     echo_name = None
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if ((datatype == 'PhiDP') or (datatype == 'PhiDPc')):
             phidp_name = get_fieldname_pyart(datatype)
         elif datatype == 'echoID':
@@ -495,7 +492,7 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
                     warn('Unknown radar antenna beamwidth.')
                     beamwidth = None
 
-                mask_fzl, end_gate_arr = pyart.correct.get_mask_fzl(
+                mask_fzl, _ = pyart.correct.get_mask_fzl(
                     radar, fzl=None, doc=None, min_temp=0., max_h_iso0=0.,
                     thickness=700., beamwidth=beamwidth,
                     temp_field=temp_name, iso0_field=iso0_name,
@@ -514,7 +511,7 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
                     warn('Unknown radar antenna beamwidth.')
                     beamwidth = None
 
-                mask_fzl, end_gate_arr = pyart.correct.get_mask_fzl(
+                mask_fzl, _ = pyart.correct.get_mask_fzl(
                     radar, fzl=None, doc=None, min_temp=0., max_h_iso0=0.,
                     thickness=700., beamwidth=beamwidth,
                     temp_field=temp_name, iso0_field=iso0_name,
@@ -550,7 +547,7 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
 
         dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
         # no radar object in global data: create it
-        if 'radar_obj' not in dscfg['global_data']:
+        if 'radar_out' not in dscfg['global_data']:
             # get start and stop times of new radar object
             (dscfg['global_data']['starttime'],
              dscfg['global_data']['endtime']) = (
@@ -560,15 +557,15 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
 
             # check if volume time older than starttime
             if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
-                dscfg['global_data'].update({'radar_obj': radar_aux})
+                dscfg['global_data'].update({'radar_out': radar_aux})
 
             return None, None
 
         # still accumulating: add field to global field
         if dscfg['timeinfo'] < dscfg['global_data']['endtime']:
             flag_interp = interpol_field(
-                dscfg['global_data']['radar_obj'], radar_aux, 'time_avg_flag')
-            dscfg['global_data']['radar_obj'].fields[
+                dscfg['global_data']['radar_out'], radar_aux, 'time_avg_flag')
+            dscfg['global_data']['radar_out'].fields[
                 'time_avg_flag']['data'] += (
                     flag_interp['data'].filled(fill_value=0)).astype(int)
 
@@ -576,7 +573,7 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
 
         # we have reached the end of the accumulation: start a new object
         new_dataset = {
-            'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
+            'radar_out': deepcopy(dscfg['global_data']['radar_out']),
             'timeinfo': dscfg['global_data']['endtime']}
 
         dscfg['global_data']['starttime'] += datetime.timedelta(
@@ -584,7 +581,7 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
         dscfg['global_data']['endtime'] += datetime.timedelta(seconds=period)
 
         # remove old radar object from global_data dictionary
-        dscfg['global_data'].pop('radar_obj', None)
+        dscfg['global_data'].pop('radar_out', None)
 
         # get start and stop times of new radar object
         dscfg['global_data']['starttime'], dscfg['global_data']['endtime'] = (
@@ -594,7 +591,7 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
 
         # check if volume time older than starttime
         if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
-            dscfg['global_data'].update({'radar_obj': radar_aux})
+            dscfg['global_data'].update({'radar_out': radar_aux})
 
         return new_dataset, ind_rad
 
@@ -602,11 +599,11 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
     if procstatus == 2:
         if dscfg['initialized'] == 0:
             return None, None
-        if 'radar_obj' not in dscfg['global_data']:
+        if 'radar_out' not in dscfg['global_data']:
             return None, None
 
         new_dataset = {
-            'radar_obj': deepcopy(dscfg['global_data']['radar_obj']),
+            'radar_out': deepcopy(dscfg['global_data']['radar_out']),
             'timeinfo': dscfg['global_data']['endtime']}
 
         return new_dataset, ind_rad
@@ -687,8 +684,7 @@ def process_colocated_gates(procstatus, dscfg, radar_list=None):
 
     # create the list of data types for each radar
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if radarnr in radarnr_dict:
             radarnr_dict[radarnr].append(get_fieldname_pyart(datatype))
 
@@ -774,11 +770,11 @@ def process_colocated_gates(procstatus, dscfg, radar_list=None):
     # prepare output
     rad1_dict = {
         'coloc_dict': coloc_rad1_dict,
-        'radar': new_rad1}
+        'radar_out': new_rad1}
 
     rad2_dict = {
         'coloc_dict': coloc_rad2_dict,
-        'radar': new_rad2}
+        'radar_out': new_rad2}
 
     new_dataset = {
         'RADAR'+'{:03d}'.format(ind_radar_list[0]+1): rad1_dict,
@@ -874,8 +870,7 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
 
         # create the list of data types for each radar
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             field_name = get_fieldname_pyart(datatype)
             break
 
@@ -963,8 +958,7 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
         # if averaging required loop over valid gates and average
         if avg_rad1:
             ngates_valid = len(rad1_ray_ind)
-            val1_vec = np.ma.empty(ngates_valid, dtype=float)
-            val1_vec[:] = np.ma.masked
+            val1_vec = np.ma.masked_all(ngates_valid, dtype=float)
             is_valid_avg = np.zeros(ngates_valid, dtype=bool)
             for i in range(ngates_valid):
                 if rad1_rng_ind[i]+avg_rad_lim[1] >= radar1.ngates:
@@ -993,8 +987,7 @@ def process_intercomp(procstatus, dscfg, radar_list=None):
 
         elif avg_rad2:
             ngates_valid = len(rad2_ray_ind)
-            val2_vec = np.ma.empty(ngates_valid, dtype=float)
-            val2_vec[:] = np.ma.masked
+            val2_vec = np.ma.masked_all(ngates_valid, dtype=float)
             is_valid_avg = np.zeros(ngates_valid, dtype=bool)
             for i in range(ngates_valid):
                 if rad2_rng_ind[i]+avg_rad_lim[1] >= radar2.ngates:
@@ -1187,8 +1180,7 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
 
         # get field names
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             if radarnr == radarnr_list[0]:
                 if ((datatype == 'dBZ') or (datatype == 'dBZc') or
                         (datatype == 'dBuZ') or (datatype == 'dBZv') or
@@ -1316,12 +1308,9 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
         # only if all gates valid
         if avg_rad1:
             ngates_valid = len(rad1_ray_ind)
-            refl1_vec = np.ma.empty(ngates_valid, dtype=float)
-            refl1_vec[:] = np.ma.masked
-            phidp1_vec = np.ma.empty(ngates_valid, dtype=float)
-            phidp1_vec[:] = np.ma.masked
-            flag1_vec = np.ma.empty(ngates_valid, dtype=int)
-            flag1_vec[:] = np.ma.masked
+            refl1_vec = np.ma.masked_all(ngates_valid, dtype=float)
+            phidp1_vec = np.ma.masked_all(ngates_valid, dtype=float)
+            flag1_vec = np.ma.masked_all(ngates_valid, dtype=int)
             is_valid_avg = np.zeros(ngates_valid, dtype=bool)
             for i in range(ngates_valid):
                 if rad1_rng_ind[i]+avg_rad_lim[1] >= radar1.ngates:
@@ -1371,12 +1360,9 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
 
         elif avg_rad2:
             ngates_valid = len(rad2_ray_ind)
-            refl2_vec = np.ma.empty(ngates_valid, dtype=float)
-            refl2_vec[:] = np.ma.masked
-            phidp2_vec = np.ma.empty(ngates_valid, dtype=float)
-            phidp2_vec[:] = np.ma.masked
-            flag2_vec = np.ma.empty(ngates_valid, dtype=int)
-            flag2_vec[:] = np.ma.masked
+            refl2_vec = np.ma.masked_all(ngates_valid, dtype=float)
+            phidp2_vec = np.ma.masked_all(ngates_valid, dtype=float)
+            flag2_vec = np.ma.masked_all(ngates_valid, dtype=int)
             is_valid_avg = np.zeros(ngates_valid, dtype=bool)
             for i in range(ngates_valid):
                 if rad2_rng_ind[i]+avg_rad_lim[1] >= radar2.ngates:
@@ -1462,8 +1448,7 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
         # get field name
         refl_type = None
         for datatypedescr in dscfg['datatype']:
-            radarnr, datagroup, datatype, dataset, product = (
-                get_datatype_fields(datatypedescr))
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
             if ((datatype == 'dBZ') or (datatype == 'dBZc') or
                     (datatype == 'dBuZ') or (datatype == 'dBZv') or
                     (datatype == 'dBZvc') or (datatype == 'dBuZv')):

@@ -132,8 +132,7 @@ def process_traj_lightning(procstatus, dscfg, radar_list=None,
         return dataset, trajdict['ind_rad']
 
     # Process
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        dscfg['datatype'][0])
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
     field_name = get_fieldname_pyart(datatype)
     ind_rad = int(radarnr[5:8])-1
     if ((radar_list is None) or (radar_list[ind_rad] is None)):
@@ -334,8 +333,7 @@ def process_traj_trt(procstatus, dscfg, radar_list=None, trajectory=None):
         return None, None
 
     # Process
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        dscfg['datatype'][0])
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
     field_name = get_fieldname_pyart(datatype)
     ind_rad = int(radarnr[5:8])-1
     if ((radar_list is None) or (radar_list[ind_rad] is None)):
@@ -503,8 +501,7 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
         return dataset, trajdict['ind_rad']
 
     # Process
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        dscfg['datatype'][0])
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
     field_name = get_fieldname_pyart(datatype)
     ind_rad = int(radarnr[5:8])-1
     if ((radar_list is None) or (radar_list[ind_rad] is None)):
@@ -720,8 +717,7 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
     rg_traj_tol = 10000 #m
 
     # Process
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        dscfg['datatype'][0])
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
     field_name = get_fieldname_pyart(datatype)
     ind_rad = int(radarnr[5:8])-1
     if ((radar_list is None) or (radar_list[ind_rad] is None)):
@@ -1095,20 +1091,20 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
                             r_azimuth, r_elevation)
 
             # flag regions with colocated usable data in r_radar
-            ##r_ind_invalid = r_radar.gate_altitude['data'] > max_altitude
-            ##r_radar.fields['colocated_gates']['data'][r_ind_invalid] = 0
+            r_ind_invalid = r_radar.gate_altitude['data'] > max_altitude
+            r_radar.fields['colocated_gates']['data'][r_ind_invalid] = 0
 
             # Find minimum and maximum azimuth in trajectory in this
             # time step.TODO: how to input them in the next function?
             # If given like this the function misbehaves
-            azmin = az-az_traj_tol
-            azmax = az+az_traj_tol
-            rmin = rr-rg_traj_tol
-            rmax = rr+rg_traj_tol
-            if azmin < 0:
-                azmin = azmin+360
-            if azmax > 360:
-                azmax = azmax-360
+            #azmin = az-az_traj_tol
+            #azmax = az+az_traj_tol
+            #rmin = rr-rg_traj_tol
+            #rmax = rr+rg_traj_tol
+            #if azmin < 0:
+            #    azmin = azmin+360
+            #if azmax > 360:
+            #    azmax = azmax-360
 
             # flag regions with colocated usable data in radar_sel
             gate_coloc_radar_sel = intersection(

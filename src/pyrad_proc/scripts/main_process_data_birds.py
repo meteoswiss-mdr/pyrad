@@ -8,25 +8,7 @@ Pyrad: The MeteoSwiss Radar Processing framework
 
 Welcome to Pyrad!
 
-This program processes TRT data
-
-To run the processing framework type:
-    python main_process_data.py \
-[config_file] --starttime [process_start_time] --endtime [process_end_time] \
---postproc_cfgfile [postproc_config_file] --cfgpath [cfgpath]
-
-If startime and endtime are not specified the program determines them from
-the trajectory file or the last processed volume.
-postproc_cfgfile is an optional argument with default: None
-cfgpath is an optional argument with default: \
-'$HOME/pyrad/config/processing/'
-The trajectory file can be of type plane or type lightning. If it is of type \
-lightning the flash number can be specified
-
-Example:
-    python main_process_data.py 'paradiso_fvj_vol.txt' --starttime \
-'20140523000000' --endtime '20140523001000' --postproc_cfgfile \
-'paradiso_fvj_vol_postproc.txt' --cfgpath '$HOME/pyrad/config/processing/'
+This program processes bird data
 
 """
 
@@ -40,13 +22,10 @@ import os
 import glob
 from warnings import warn
 
-import numpy as np
-
 from pyrad.flow.flow_control import main as pyrad_main
 from pyrad.io import get_fieldname_pyart
-from pyrad.io import read_profile_ts, read_histogram_ts, read_quantiles_ts
-from pyrad.graph import get_field_name, get_colobar_label
-from pyrad.graph import _plot_time_range
+from pyrad.io import read_profile_ts
+from pyrad.graph import get_field_name, _plot_time_range
 
 from pyart.config import get_metadata
 
@@ -76,14 +55,14 @@ def main():
         '--cfgpath', type=str,
         default=os.path.expanduser('~')+'/pyrad/config/processing/',
         help='configuration file path')
-        
+
     parser.add_argument(
         '--storepath', type=str,
         default='/store/msrad/radar/pyrad_products/rad4alp_birds_PHA/',
         help='Base data storing path')
-        
+
     parser.add_argument(
-        '--hres', type=float, default=200., help='Height resolution [m]')
+        '--hres', type=int, default=200, help='Height resolution [m]')
 
     args = parser.parse_args()
 
@@ -116,11 +95,11 @@ def main():
     startdate = proc_starttime.replace(hour=0, minute=0, second=0, microsecond=0)
     enddate = proc_endtime.replace(hour=0, minute=0, second=0, microsecond=0)
     ndays = int((enddate-startdate).days)+1
-    for i, datatype in enumerate(datatype_list):
+    for datatype in datatype_list:
         flist = []
-        for j in range(ndays):
+        for i in range(ndays):
             time_dir = (
-                proc_starttime+datetime.timedelta(days=j)).strftime('%Y-%m-%d')
+                proc_starttime+datetime.timedelta(days=i)).strftime('%Y-%m-%d')
 
             filepath = (
                 file_base+time_dir+'/VAD/PROFILE_WIND/' +
@@ -130,7 +109,7 @@ def main():
                 'v_wind', 'std_v_wind', 'np_v_wind',
                 'w_wind', 'std_w_wind', 'np_w_wind',
                 'mag_h_wind', 'dir_h_wind']
-            label_nr=0
+            label_nr = 0
             if datatype == 'eta_h':
                 filepath = (
                     file_base+time_dir+'/vol_refl/PROFILE/' +
@@ -144,15 +123,15 @@ def main():
                 labels = [
                     '50.0-percentile', '25.0-percentile', '75.0-percentile']
             elif datatype == 'WIND_SPEED':
-                label_nr=9
+                label_nr = 9
             elif datatype == 'WIND_DIRECTION':
-                label_nr=10
+                label_nr = 10
             elif datatype == 'wind_vel_h_u':
-                label_nr=0
+                label_nr = 0
             elif datatype == 'wind_vel_h_v':
-                label_nr=3
+                label_nr = 3
             elif datatype == 'wind_vel_v':
-                label_nr=6
+                label_nr = 6
 
             flist_aux = glob.glob(filepath)
             if not flist_aux:

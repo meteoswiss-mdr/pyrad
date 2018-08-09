@@ -356,6 +356,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'differential_reflectivity_in_precipitation'
     elif datatype == 'ZDR_snow':
         field_name = 'differential_reflectivity_in_snow'
+    elif datatype == 'ZDR_col':
+        field_name = 'differential_reflectivity_column_height'
 
     elif datatype == 'dBm':
         field_name = 'signal_power_hh'
@@ -477,6 +479,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'cosmo_index'
     elif datatype == 'hzt_index':
         field_name = 'hzt_index'
+    elif datatype == 'ml':
+        field_name = 'melting_layer'
 
     elif datatype == 'VIS':
         field_name = 'visibility'
@@ -781,8 +785,7 @@ def get_new_rainbow_file_name(master_fname, master_datadescriptor, datatype):
         the new file name
 
     """
-    radarnr, datagroup, master_datatype, dataset, product = (
-        get_datatype_fields(master_datadescriptor))
+    _, _, master_datatype, _, _ = get_datatype_fields(master_datadescriptor)
     datapath = os.path.dirname(master_fname)
     voltime = get_datetime(master_fname, master_datatype)
     voltype = os.path.basename(master_fname).split('.')[1]
@@ -912,8 +915,7 @@ def get_datetime(fname, datadescriptor):
         date and time in file name
 
     """
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        datadescriptor)
+    _, datagroup, _, _, _ = get_datatype_fields(datadescriptor)
 
     return _get_datetime(fname, datagroup)
 

@@ -101,6 +101,9 @@ differential_reflectivity_in_precipitation = (
 
 differential_reflectivity_in_snow = 'differential_reflectivity_in_snow'
 
+differential_reflectivity_column_height = (
+    'differential_reflectivity_column_height')
+
 # Cross correlation ratio, correlation coefficient, RhoHV
 cross_correlation_ratio = 'cross_correlation_ratio'
 
@@ -161,6 +164,7 @@ radar_echo_classification = 'radar_echo_classification'
 radar_echo_id = 'radar_echo_id'
 clutter_exit_code = 'clutter_exit_code'
 melting_layer = 'melting_layer'
+melting_layer_height = 'melting_layer_height'
 
 bird_density = 'bird_density'
 
@@ -303,6 +307,8 @@ DEFAULT_FIELD_NAMES = {
     'differential_reflectivity_in_precipitation': (
         differential_reflectivity_in_precipitation),
     'differential_reflectivity_in_snow': differential_reflectivity_in_snow,
+    'differential_reflectivity_column_height': (
+        differential_reflectivity_column_height),
     'cross_correlation_ratio': cross_correlation_ratio,
     'corrected_cross_correlation_ratio': corrected_cross_correlation_ratio,
     'unfiltered_cross_correlation_ratio': unfiltered_cross_correlation_ratio,
@@ -347,6 +353,7 @@ DEFAULT_FIELD_NAMES = {
     'radar_echo_id': radar_echo_id,
     'clutter_exit_code': clutter_exit_code,
     'melting_layer': melting_layer,
+    'melting_layer_height': melting_layer_height,
     'specific_attenuation': specific_attenuation,
     'path_integrated_attenuation': path_integrated_attenuation,
     'specific_differential_attenuation': specific_differential_attenuation,
@@ -858,6 +865,12 @@ DEFAULT_METADATA = {
         'long_name': 'Differential reflectivity in snow',
         'coordinates': 'elevation azimuth range'},
 
+    differential_reflectivity_column_height: {
+        'units': 'Km above freezing level',
+        'standard_name': 'differential_reflectivity_column_height',
+        'long_name': 'Differential reflectivity column height above freezing level',
+        'coordinates': 'elevation azimuth range'},
+
     cross_correlation_ratio: {
         'units': '-',
         'standard_name': 'copolar_correlation_coefficient',
@@ -1097,6 +1110,12 @@ DEFAULT_METADATA = {
         'ticks': [1, 2, 3, 4, 5],
         'boundaries': [0.5, 1.5, 2.5, 3.5, 4.5, 5.5],
         'coordinates': 'elevation azimuth range'},
+
+    melting_layer_height: {
+        'units': 'm MSL',
+        'standard_name': 'melting_layer_height',
+        'long_name': 'Top and bottom melting layer height',
+        'coordinates': 'elevation azimuth'},
 
     specific_attenuation: {
         'units': 'dB/km',
@@ -2041,6 +2060,7 @@ DEFAULT_FIELD_COLORMAP = {
     unfiltered_differential_reflectivity: 'pyart_RefDiff',
     differential_reflectivity_in_precipitation: 'pyart_RefDiff',
     differential_reflectivity_in_snow: 'pyart_RefDiff',
+    differential_reflectivity_column_height: 'pyart_RefDiff',
 
     cross_correlation_ratio: 'pyart_RefDiff',
     corrected_cross_correlation_ratio:  'pyart_RefDiff',
@@ -2175,6 +2195,7 @@ DEFAULT_FIELD_LIMITS = {
     unfiltered_differential_reflectivity: (-1., 8.),
     differential_reflectivity_in_precipitation: (-10., 10.),
     differential_reflectivity_in_snow: (-10., 10.),
+    differential_reflectivity_column_height: (0., 6.),
 
     cross_correlation_ratio: (0.7, 1.),
     corrected_cross_correlation_ratio: (0.7, 1.),
