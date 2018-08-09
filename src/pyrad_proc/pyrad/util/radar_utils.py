@@ -15,6 +15,8 @@ Miscellaneous functions dealing with radar data
     belongs_roi_indices
     find_ray_index
     find_rng_index
+    find_nearest_gate
+    find_neighbour_gates
     find_colocated_indexes
     time_avg_range
     get_closest_solar_flux
@@ -31,6 +33,8 @@ Miscellaneous functions dealing with radar data
     compute_2d_hist
     quantize_field
     compute_profile_stats
+    compute_directional_stats
+    project_to_vertical
 
 """
 from warnings import warn
@@ -397,6 +401,85 @@ def find_rng_index(rng_vec, rng, rng_tol=0.):
         return None
 
     return ind_rng
+
+
+def find_nearest_gate(radar, lat, lon, latlon_tol=0.0005):
+    """
+    Find the radar gate closest to a lat,lon point
+
+    Parameters
+    ----------
+    radar : radar object
+        the radar object
+    lat, lon : float
+        The position of the point
+    latlon_tol : float
+        The tolerance around this point
+
+    Returns
+    -------
+    ind_ray, ind_rng : int
+        The ray and range index
+    azi, rng : float
+        the range and azimuth position of the gate
+
+    """
+    # find gates close to lat lon point
+    inds_ray_aux, inds_rng_aux = np.where(np.logical_and(
+        np.logical_and(
+            radar.gate_latitude['data'] < lat+latlon_tol,
+            radar.gate_latitude['data'] > lat-latlon_tol),
+        np.logical_and(
+            radar.gate_longitude['data'] < lon+latlon_tol,
+            radar.gate_longitude['data'] > lon-latlon_tol)))
+
+    if inds_ray_aux.size == 0:
+        warn('No data found at point lat '+str(lat)+' +- ' +
+             str(latlon_tol)+' lon '+str(lon)+' +- ' +
+             str(latlon_tol)+' deg')
+
+        return None, None, None, None
+
+    # find closest latitude
+    ind_min = np.argmin(np.abs(
+        radar.gate_latitude['data'][inds_ray_aux, inds_rng_aux]-lat))
+    ind_ray = inds_ray_aux[ind_min]
+    ind_rng = inds_rng_aux[ind_min]
+
+    azi = radar.azimuth['data'][ind_ray]
+    rng = radar.range['data'][ind_rng]
+
+    return ind_ray, ind_rng, azi, rng
+
+
+def find_neighbour_gates(radar, azi, rng, delta_azi=10., delta_rng=15000.):
+    """
+    Find the neighbouring gates within +-delta_azi and +-delta_rng
+
+    Parameters
+    ----------
+    radar : radar object
+        the radar object
+    azi, rng : float
+        The azimuth [deg] and range [m] of the central gate
+    delta_azi, delta_rng : float
+        The extend where to look for
+
+    Returns
+    -------
+    inds_ray_aux, ind_rng_aux : int
+        The indices (ray, rng) of the neighbouring gates
+
+    """
+    # find gates close to lat lon point
+    inds_ray = np.where(np.logical_and(
+        radar.azimuth['data'] < azi+delta_azi,
+        radar.azimuth['data'] > azi-delta_azi))[0]
+    inds_rng = np.where(np.logical_and(
+        radar.range['data'] < rng+delta_rng,
+        radar.range['data'] > rng-delta_rng))[0]
+
+    return inds_ray, inds_rng
 
 
 def find_colocated_indexes(radar1, radar2, rad1_ele, rad1_azi, rad1_rng,
@@ -1115,6 +1198,8 @@ def compute_profile_stats(field, gate_altitude, h_vec, h_res,
     for i, h in enumerate(h_vec):
         data = field[np.logical_and(
             gate_altitude >= h-h_res/2., gate_altitude < h+h_res/2.)]
+        if data.size == 0:
+            continue
         if quantity == 'mean':
             mask = np.ma.getmaskarray(data)
             nvalid = np.count_nonzero(np.logical_not(mask))
@@ -1182,3 +1267,93 @@ def compute_profile_stats(field, gate_altitude, h_vec, h_res,
                     val_valid[i] = nvalid
 
     return vals, val_valid
+
+
+def compute_directional_stats(field, avg_type='mean', nvalid_min=1, axis=0):
+    """
+    Computes the mean or the median along one of the axis (ray or range)
+
+    Parameters
+    ----------
+    field : ndarray
+        the radar field
+    avg_type :str
+        the type of average: 'mean' or 'median'
+    nvalid_min : int
+        the minimum number of points to consider the stats valid. Default 1
+    axis : int
+        the axis along which to compute (0=ray, 1=range)
+
+    Returns
+    -------
+    values : ndarray 1D
+        The resultant statistics
+    nvalid : ndarray 1D
+        The number of valid points used in the computation
+
+    """
+    if avg_type == 'mean':
+        values = np.ma.mean(field, axis=axis)
+    else:
+        values = np.ma.median(field, axis=axis)
+
+    # Set to non-valid if there is not a minimum number of valid gates
+    valid = np.logical_not(np.ma.getmaskarray(field))
+    nvalid = np.sum(valid, axis=0, dtype=int)
+    values[nvalid < nvalid_min] = np.ma.masked
+
+    return values, nvalid
+
+
+def project_to_vertical(data_in, data_height, grid_height, interp_kind='none',
+                        fill_value=-9999.):
+    """
+    Projects radar data to a regular vertical grid
+
+    Parameters
+    ----------
+    data_in : ndarray 1D
+        the radar data to project
+    data_height : ndarray 1D
+        the height of each radar point
+    grid_height : ndarray 1D
+        the regular vertical grid to project to
+    interp_kind : str
+        The type of interpolation to use: 'none' or 'nearest'
+    fill_value : float
+        The fill value used for interpolation
+
+    Returns
+    -------
+    data_out : ndarray 1D
+        The projected data
+
+    """
+    if data_in.size == 0:
+        data_out = np.ma.masked_all(grid_height.size)
+        return data_out
+
+    if interp_kind == 'none':
+        hres = grid_height[1]-grid_height[0]
+        data_out = np.ma.masked_all(grid_height.size)
+        for ind_r, h in enumerate(grid_height):
+            ind_h = find_rng_index(data_height, h, rng_tol=hres/2.)
+            if ind_h is None:
+                continue
+            data_out[ind_r] = data_in[ind_h]
+    elif interp_kind == 'nearest':
+        data_filled = data_in.filled(fill_value=fill_value)
+        f = scipy.interpolate.interp1d(
+            data_height, data_filled, kind=interp_kind, bounds_error=False,
+            fill_value=fill_value)
+        data_out = np.ma.masked_values(f(grid_height), fill_value)
+    else:
+        valid = np.logical_not(np.ma.getmaskarray(data_in))
+        height_valid = data_height[valid]
+        data_valid = data_in[valid]
+        f = scipy.interpolate.interp1d(
+            height_valid, data_valid, kind=interp_kind, bounds_error=False,
+            fill_value=fill_value)
+        data_out = np.ma.masked_values(f(grid_height), fill_value)
+
+    return data_out
