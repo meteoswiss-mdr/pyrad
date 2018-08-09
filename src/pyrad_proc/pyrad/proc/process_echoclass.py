@@ -1452,14 +1452,18 @@ def process_zdr_column(procstatus, dscfg, radar_list=None):
                 lon_cols, radar.gate_longitude['data'][ind_ray_col, ind_rng_col])
             zdr_cols = np.append(zdr_cols, zdr_col)
 
+
+    zdr_col_dict = pyart.config.get_metadata(
+        'differential_reflectivity_column_height')
+    zdr_col_dict['data'] = zdr_cols/1000.
     new_dataset = {
-        'field_limits': (
-            np.min[radar.gate_latitude['data']],
-            np.max[radar.gate_latitude['data']],
-            np.min[radar.gate_longitude['data']],
-            np.max[radar.gate_longitude['data']]),
+        'field_limits': [
+            np.min(radar.gate_longitude['data']),
+            np.max(radar.gate_longitude['data']),
+            np.min(radar.gate_latitude['data']),
+            np.max(radar.gate_latitude['data'])],
         'lat': lat_cols,
         'lon': lon_cols,
-        'fields': {'differential_reflectivity_column_height':zdr_cols/1000.}}
+        'fields': {'differential_reflectivity_column_height': zdr_col_dict}}
 
     return new_dataset, ind_rad

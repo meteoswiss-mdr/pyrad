@@ -22,6 +22,7 @@ from ..graph.plots_grid import plot_surface
 from ..graph.plots_grid import plot_longitude_slice, plot_latitude_slice
 from ..graph.plots_grid import plot_latlon_slice
 from ..graph.plots_vol import plot_pos
+from ..graph.plots_aux import get_colobar_label, get_field_name, get_norm
 
 
 def generate_sparse_grid_products(dataset, prdcfg):
@@ -64,10 +65,25 @@ def generate_sparse_grid_products(dataset, prdcfg):
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
+        cb_label = get_colobar_label(
+            dataset['fields'][field_name], field_name)
+
+        titl= (prdcfg['timeinfo'].strftime('%Y-%m-%dT%H:%M%SZ')+'\n' +
+               get_field_name(dataset['fields'][field_name], field_name))
+
+        if 'field_limits' in prdcfg:
+            field_limits = prdcfg['field_limits']
+        else:
+            field_limits = dataset['field_limits']
+
+        # get colobar limits
+        vmin, vmax = pyart.config.get_field_limits(field_name)
         plot_pos(
-            dataset['lat'], dataset['lon'], dataset['fields'][field_name],
-            fname_list, cb_label='ZDR column height [Km above freezing level]',
-            titl='ZDR column height')
+            dataset['lat'], dataset['lon'],
+            dataset['fields'][field_name]['data'],
+            fname_list, cb_label=cb_label,
+            titl=titl, limits=field_limits, vmin=vmin,
+            vmax=vmax)
 
         print('----- save to '+' '.join(fname_list))
 

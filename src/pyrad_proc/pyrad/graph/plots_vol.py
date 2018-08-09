@@ -935,7 +935,7 @@ def plot_ppi_contour(radar, field_name, ind_el, prdcfg, fname_list,
 
 def plot_pos(lat, lon, alt, fname_list, ax=None, fig=None, save_fig=True,
              sort_altitude='No', dpi=72, alpha=1., cb_label='height [m MSL]',
-             titl='Position', limits=None):
+             titl='Position', limits=None, vmin=None, vmax=None):
     """
     plots a trajectory on a Cartesian surface
 
@@ -981,10 +981,14 @@ def plot_pos(lat, lon, alt, fname_list, ax=None, fig=None, save_fig=True,
         lon = lon[ind]
         alt = alt[ind]
 
+    if vmin is None:
+        vmin = alt.min()
+    if vmax is None:
+        vmax = alt.max()
     marker = 'x'
     col = alt
     cmap = 'viridis'
-    norm = plt.Normalize(alt.min(), alt.max())
+    norm = plt.Normalize(vmin, vmax)
 
     if fig is None:
         fig = plt.figure(figsize=[10, 8], dpi=dpi)
@@ -994,6 +998,10 @@ def plot_pos(lat, lon, alt, fname_list, ax=None, fig=None, save_fig=True,
 
     cax = ax.scatter(
         lon, lat, c=col, marker=marker, alpha=alpha, cmap=cmap, norm=norm)
+
+    if limits is not None:
+        ax.set_xlim(limits[0], limits[1])
+        ax.set_ylim(limits[2], limits[3])
 
     # plot colorbar
     cb = fig.colorbar(cax, orientation='horizontal')
