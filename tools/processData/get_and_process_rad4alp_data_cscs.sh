@@ -222,6 +222,7 @@ if [ "$GET_COSMO" -eq 1 ] || [ "$GET_HZT" -eq 1 ]; then
     run_period=3
     start_hour_aux=$(echo ${START_TIME} | cut -c1-2)
     start_hour=$[(${start_hour_aux}/${run_period})*${run_period}]
+    ((start_hour=start_hour-start_hour%run_period))
     end_hour=$(echo ${END_TIME} | cut -c1-2)
     vals=($(seq $start_hour $run_period $end_hour))
     nvals=${#vals[@]}
