@@ -85,6 +85,9 @@ def generate_timeseries_products(dataset, prdcfg):
             warn(
                 'Unable to plot time series. No valid data')
             return None
+            
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
 
         figfname_list = make_filename(
             'ts', prdcfg['dstype'], dataset['datatype'],
@@ -101,7 +104,8 @@ def generate_timeseries_products(dataset, prdcfg):
 
         plot_timeseries(
             date, [value], figfname_list, labelx='Time UTC',
-            labely=labely, labels=[label1], title=titl, dpi=dpi)
+            labely=labely, labels=[label1], title=titl, dpi=dpi,
+            ymin=vmin, ymax=vmax)
         print('----- save to '+' '.join(figfname_list))
 
         return figfname_list
@@ -151,7 +155,8 @@ def generate_timeseries_products(dataset, prdcfg):
         plot_timeseries(
             date, [value], figfname_list, labelx='Time UTC',
             labely=labely, labels=[label1], title=titl,
-            period=prdcfg['ScanPeriod']*60., dpi=dpi)
+            period=prdcfg['ScanPeriod']*60.,
+            ymin=vmin, ymax=vmax, dpi=dpi)
         print('----- save to '+' '.join(figfname_list))
 
         return figfname_list
@@ -192,6 +197,9 @@ def generate_timeseries_products(dataset, prdcfg):
                 'Unable to plot sensor comparison at point of interest. ' +
                 'No valid sensor data')
             return None
+            
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -213,7 +221,7 @@ def generate_timeseries_products(dataset, prdcfg):
         plot_timeseries_comp(
             radardate, radarvalue, sensordate, sensorvalue, figfname_list,
             labelx='Time UTC', labely=labely, label1=label1, label2=label2,
-            titl=titl, dpi=dpi)
+            titl=titl, ymin=vmin, ymax=vmax, dpi=dpi)
         print('----- save to '+' '.join(figfname_list))
 
         return figfname_list
@@ -277,7 +285,8 @@ def generate_timeseries_products(dataset, prdcfg):
             radardate, radarvalue, sensordate, sensorvalue,
             figfname_list, labelx='Time UTC', labely=labely,
             label1=label1, label2=label2, titl=titl,
-            period1=prdcfg['ScanPeriod']*60., period2=period2, dpi=dpi)
+            period1=prdcfg['ScanPeriod']*60., period2=period2,
+            ymin=vmin, ymax=vmax, dpi=dpi)
         print('----- save to '+' '.join(figfname_list))
 
         return figfname_list
@@ -411,6 +420,7 @@ def generate_timeseries_products(dataset, prdcfg):
                               prdcfginfo=None, timeinfo=timeinfo,
                               timeformat='%Y%m%d%H%M%S',
                               runinfo=prdcfg['runinfo'])
+
 
         ymin = prdcfg.get('ymin', None)
         ymax = prdcfg.get('ymax', None)

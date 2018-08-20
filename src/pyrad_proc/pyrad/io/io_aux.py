@@ -356,6 +356,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'differential_reflectivity_in_precipitation'
     elif datatype == 'ZDR_snow':
         field_name = 'differential_reflectivity_in_snow'
+    elif datatype == 'ZDR_col':
+        field_name = 'differential_reflectivity_column_height'
 
     elif datatype == 'dBm':
         field_name = 'signal_power_hh'
@@ -503,6 +505,40 @@ def get_fieldname_pyart(datatype):
         field_name = 'number_of_samples'
     elif datatype == 'bird_density':
         field_name = 'bird_density'
+
+    # vol2bird field names
+    elif datatype == 'ff':
+        field_name = 'wind_speed'
+    elif datatype == 'dd':
+        field_name = 'wind_direction'
+    elif datatype == 'u':
+        field_name = 'eastward_wind_component'
+    elif datatype == 'v':
+        field_name = 'northward_wind_component'
+    elif datatype == 'w':
+        field_name = 'vertical_wind_component'
+    elif datatype == 'width':
+        field_name = 'height_resolution'
+    elif datatype == 'gap':
+        field_name = 'gap'
+    elif datatype == 'dbz':
+        field_name = 'bird_reflectivity'
+    elif datatype == 'eta':
+        field_name = 'volumetric_reflectivity'
+    elif datatype == 'dens':
+        field_name = 'bird_density'
+    elif datatype == 'n':
+        field_name = 'number_of_samples_velocity'
+    elif datatype == 'n_dbz':
+        field_name = 'number_of_samples_reflectivity'
+    elif datatype == 'sd_vvp':
+        field_name = 'retrieved_velocity_std'
+    elif datatype == 'DBZH':
+        field_name = 'reflectivity'
+    elif datatype == 'n_all':
+        field_name = 'number_of_samples_velocity_all'
+    elif datatype == 'n_dbz_all':
+        field_name = 'number_of_samples_reflectivity_all'
     else:
         raise ValueError('ERROR: Unknown data type '+datatype)
 

@@ -101,6 +101,9 @@ differential_reflectivity_in_precipitation = (
 
 differential_reflectivity_in_snow = 'differential_reflectivity_in_snow'
 
+differential_reflectivity_column_height = (
+    'differential_reflectivity_column_height')
+
 # Cross correlation ratio, correlation coefficient, RhoHV
 cross_correlation_ratio = 'cross_correlation_ratio'
 
@@ -164,6 +167,7 @@ melting_layer = 'melting_layer'
 melting_layer_height = 'melting_layer_height'
 
 bird_density = 'bird_density'
+bird_reflectivity = 'bird_reflectivity'
 
 # attenuation
 specific_attenuation = 'specific_attenuation'
@@ -264,6 +268,7 @@ FILL_VALUE = fill_value
 DEFAULT_FIELD_NAMES = {
     # Internal field name (do not change): field name used (can change)
     'reflectivity': reflectivity,
+    'bird_reflectivity': bird_reflectivity,
     'corrected_reflectivity': corrected_reflectivity,
     'total_power': total_power,
     'unfiltered_reflectivity': unfiltered_reflectivity,
@@ -304,6 +309,8 @@ DEFAULT_FIELD_NAMES = {
     'differential_reflectivity_in_precipitation': (
         differential_reflectivity_in_precipitation),
     'differential_reflectivity_in_snow': differential_reflectivity_in_snow,
+    'differential_reflectivity_column_height': (
+        differential_reflectivity_column_height),
     'cross_correlation_ratio': cross_correlation_ratio,
     'corrected_cross_correlation_ratio': corrected_cross_correlation_ratio,
     'unfiltered_cross_correlation_ratio': unfiltered_cross_correlation_ratio,
@@ -677,6 +684,12 @@ DEFAULT_METADATA = {
         'long_name': 'Horizontal Reflectivity',
         'coordinates': 'elevation azimuth range'},
 
+    bird_reflectivity: {
+        'units': 'dBZ',
+        'standard_name': 'bird_reflectivity',
+        'long_name': 'Bird Reflectivity',
+        'coordinates': 'elevation azimuth range'},
+
     unfiltered_reflectivity: {
         'units': 'dBZ',
         'standard_name': 'horizontal_reflectivity',
@@ -858,6 +871,12 @@ DEFAULT_METADATA = {
         'units': 'dB',
         'standard_name': 'differential_reflectivity_in_snow',
         'long_name': 'Differential reflectivity in snow',
+        'coordinates': 'elevation azimuth range'},
+
+    differential_reflectivity_column_height: {
+        'units': 'Km above freezing level',
+        'standard_name': 'differential_reflectivity_column_height',
+        'long_name': 'Differential reflectivity column height above freezing level',
         'coordinates': 'elevation azimuth range'},
 
     cross_correlation_ratio: {
@@ -1996,6 +2015,7 @@ DEFAULT_FIELD_COLORMAP = {
     volumetric_reflectivity: 'pyart_NWSRef',
     volumetric_reflectivity_vv: 'pyart_NWSRef',
     bird_density: 'pyart_NWSRef',
+    bird_reflectivity: 'pyart_NWSRef',
 
     signal_to_noise_ratio: 'pyart_Carbone17',
     signal_to_noise_ratio_hh: 'pyart_Carbone17',
@@ -2049,6 +2069,7 @@ DEFAULT_FIELD_COLORMAP = {
     unfiltered_differential_reflectivity: 'pyart_RefDiff',
     differential_reflectivity_in_precipitation: 'pyart_RefDiff',
     differential_reflectivity_in_snow: 'pyart_RefDiff',
+    differential_reflectivity_column_height: 'pyart_RefDiff',
 
     cross_correlation_ratio: 'pyart_RefDiff',
     corrected_cross_correlation_ratio:  'pyart_RefDiff',
@@ -2124,6 +2145,7 @@ DEFAULT_FIELD_COLORMAP = {
 DEFAULT_FIELD_LIMITS = {
     # field name : limits
     reflectivity: (-30., 75.),
+    bird_reflectivity: (-30., 75.),
     corrected_reflectivity: (-30., 75.),
     total_power: (-30., 75.),
     unfiltered_reflectivity: (-30., 75.),
@@ -2183,6 +2205,7 @@ DEFAULT_FIELD_LIMITS = {
     unfiltered_differential_reflectivity: (-1., 8.),
     differential_reflectivity_in_precipitation: (-10., 10.),
     differential_reflectivity_in_snow: (-10., 10.),
+    differential_reflectivity_column_height: (0., 6.),
 
     cross_correlation_ratio: (0.7, 1.),
     corrected_cross_correlation_ratio: (0.7, 1.),

@@ -89,7 +89,7 @@ def main():
     hres = args.hres
 
     datatype_list = [
-        'eta_h', 'bird_density', 'WIND_SPEED', 'WIND_DIRECTION',
+        'dBZc', 'eta_h', 'bird_density', 'WIND_SPEED', 'WIND_DIRECTION',
         'wind_vel_h_u', 'wind_vel_h_v', 'wind_vel_v']
 
     startdate = proc_starttime.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -110,18 +110,52 @@ def main():
                 'w_wind', 'std_w_wind', 'np_w_wind',
                 'mag_h_wind', 'dir_h_wind']
             label_nr = 0
-            if datatype == 'eta_h':
+            if datatype == 'dBZc':
+                filepath = (
+                    file_base+time_dir+'/velFilter/PROFILE_dBZc/' +
+                    '*_rhi_profile_*_dBZc_hres'+str(hres)+'.csv')
+                labels = [
+                    '50.0-percentile', '25.0-percentile', '75.0-percentile']
+
+                # dBZ mean data
+                # filepath = (
+                #     file_base+time_dir+'/velFilter/PROFILE_dBZc_mean/' +
+                #     '*_rhi_profile_*_dBZc_hres'+str(hres)+'.csv')
+                # labels = [
+                #     'Mean', 'Min', 'Max']
+
+                # dBZ linear mean data
+                # filepath = (
+                #     file_base+time_dir+'/velFilter/PROFILE_dBZc_linear_mean/' +
+                #     '*_rhi_profile_*_dBZc_hres'+str(hres)+'.csv')
+                # labels = [
+                #     'Mean', 'Min', 'Max']
+            elif datatype == 'eta_h':
                 filepath = (
                     file_base+time_dir+'/vol_refl/PROFILE/' +
                     '*_rhi_profile_*_eta_h_hres'+str(hres)+'.csv')
                 labels = [
                     '50.0-percentile', '25.0-percentile', '75.0-percentile']
+
+                # mean data
+                # filepath = (
+                #     file_base+time_dir+'/vol_refl/PROFILE_mean/' +
+                #     '*_rhi_profile_*_eta_h_hres'+str(hres)+'.csv')
+                # labels = [
+                #     'Mean', 'Min', 'Max']
             elif datatype == 'bird_density':
                 filepath = (
                     file_base+time_dir+'/bird_density/PROFILE/' +
                     '*_rhi_profile_*_bird_density_hres'+str(hres)+'.csv')
                 labels = [
                     '50.0-percentile', '25.0-percentile', '75.0-percentile']
+
+                # mean data
+                # filepath = (
+                #     file_base+time_dir+'/bird_density/PROFILE_mean/' +
+                #     '*_rhi_profile_*_bird_density_hres'+str(hres)+'.csv')
+                # labels = [
+                #     'Mean', 'Min', 'Max']
             elif datatype == 'WIND_SPEED':
                 label_nr = 9
             elif datatype == 'WIND_DIRECTION':
@@ -149,7 +183,7 @@ def main():
         titl = 'bird retrieval '+args.starttime+'\n'+get_field_name(
             field_dict, field_name)
 
-        tbin_edges, hbin_edges, data_ma = read_profile_ts(
+        tbin_edges, hbin_edges, np_ma, data_ma = read_profile_ts(
             flist, labels, hres=hres, label_nr=label_nr)
 
         basepath_out = os.path.dirname(flist[0])
@@ -159,7 +193,23 @@ def main():
 
         vmin = vmax = None
         _plot_time_range(
-            tbin_edges, hbin_edges, data_ma, field_name, [fname],
+            tbin_edges, hbin_edges/1000., data_ma, field_name, [fname],
+            titl=titl, figsize=[10, 8], vmin=vmin, vmax=vmax, dpi=72)
+
+        print("----- plot to '%s'" % fname)
+
+        # Plot number of points
+        field_dict = get_metadata('number_of_samples')
+        titl = 'bird retrieval '+args.starttime+'\n'+get_field_name(
+            field_dict, 'number_of_samples')
+
+        fname = (
+            basepath_out+'/'+args.starttime+'_TIME_HEIGHT_' +
+            datatype+'nsamples_hres'+str(hres)+'.png')
+
+        vmin = vmax = None
+        _plot_time_range(
+            tbin_edges, hbin_edges/1000., np_ma, 'number_of_samples', [fname],
             titl=titl, figsize=[10, 8], vmin=vmin, vmax=vmax, dpi=72)
 
         print("----- plot to '%s'" % fname)

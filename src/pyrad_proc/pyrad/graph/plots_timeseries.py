@@ -138,7 +138,7 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname_list,
                          labelx='Time [UTC]', labely='Value',
                          label1='Sensor 1', label2='Sensor 2',
                          titl='Time Series Comparison', period1=0, period2=0,
-                         dpi=72):
+                         ymin=None, ymax=None, dpi=72):
     """
     plots 2 time series in the same graph
 
@@ -167,6 +167,8 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname_list,
         accumulation is computed
     dpi : int
         dots per inch
+    ymin, ymax : float
+        The limits of the Y-axis. None will keep the default limit.
 
     Returns
     -------
@@ -198,7 +200,10 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname_list,
     # Get the axis and turn on the grid
     ax = plt.gca()
     ax.grid()
-
+    
+    ax.set_ylim(bottom=ymin, top=ymax)
+    ax.set_xlim([date2[0], date2[-1]])
+    
     # rotates and right aligns the x labels, and moves the bottom of the
     # axes up to make room for them
     fig.autofmt_xdate()

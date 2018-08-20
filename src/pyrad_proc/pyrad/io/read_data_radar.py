@@ -694,7 +694,7 @@ def merge_scans_cosmo_rad4alp(voltime, datatype, cfg, ind_rad=0):
         return radar
 
     # add the other scans
-    for i, scan in enumerate(cfg['ScanList'][ind_rad], start=1):
+    for i, scan in enumerate(cfg['ScanList'][ind_rad][1:], start=1):
         filename = glob.glob(datapath+basename+timeinfo+'*.'+scan)
         if not filename:
             warn('No file found in '+datapath+basename+timeinfo+'*.'+scan)
@@ -1277,7 +1277,7 @@ def merge_fields_cfradial(basepath, loadname, voltime, datatype_list,
 
     if len(datatype_list) > 1:
         # add other fields in the same scan
-        for i, dataset in enumerate(dataset_list, start=1):
+        for i, dataset in enumerate(dataset_list[1:], start=1):
             datapath = (
                 basepath+loadname+'/'+voltime.strftime('%Y-%m-%d')+'/' +
                 dataset+'/'+product_list[i]+'/')
@@ -1285,26 +1285,27 @@ def merge_fields_cfradial(basepath, loadname, voltime, datatype_list,
                 datapath+fdatetime+'*'+datatype_list[i]+'.nc')
             if not filename:
                 warn('No file found in '+datapath+fdatetime+'*' +
-                     datatype_list[0]+'.nc')
+                     datatype_list[i]+'.nc')
+                continue
+
+            radar_aux = pyart.io.read_cfradial(filename[0])
+            if rmax > 0.:
+                radar_aux.range['data'] = radar_aux.range['data'][
+                    radar_aux.range['data'] < rmax]
+                radar_aux.ngates = len(radar_aux.range['data'])
+                for field in radar_aux.fields:
+                    radar_aux.fields[field]['data'] = (
+                        radar_aux.fields[field]['data'][
+                            :, :radar_aux.ngates])
+                radar_aux.gate_x['data'] = (
+                    radar_aux.gate_x['data'][:, :radar_aux.ngates])
+                radar_aux.init_gate_x_y_z()
+                radar_aux.init_gate_longitude_latitude()
+                radar_aux.init_gate_altitude()
+            if radar is None:
+                radar = radar_aux
             else:
-                radar_aux = pyart.io.read_cfradial(filename[0])
-                if rmax > 0.:
-                    radar_aux.range['data'] = radar_aux.range['data'][
-                        radar_aux.range['data'] < rmax]
-                    radar_aux.ngates = len(radar_aux.range['data'])
-                    for field in radar_aux.fields:
-                        radar_aux.fields[field]['data'] = (
-                            radar_aux.fields[field]['data'][
-                                :, :radar_aux.ngates])
-                    radar_aux.gate_x['data'] = (
-                        radar_aux.gate_x['data'][:, :radar_aux.ngates])
-                    radar_aux.init_gate_x_y_z()
-                    radar_aux.init_gate_longitude_latitude()
-                    radar_aux.init_gate_altitude()
-                if radar is None:
-                    radar = radar_aux
-                else:
-                    add_field(radar, radar_aux)
+                add_field(radar, radar_aux)
 
     for field in radar.fields:
         radar.fields[field]['data'] = np.ma.asarray(

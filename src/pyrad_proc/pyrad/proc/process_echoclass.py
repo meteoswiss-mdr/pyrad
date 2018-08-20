@@ -18,6 +18,7 @@ Functions for echo classification and filtering
     process_outlier_filter
     process_hydroclass
     process_melting_layer
+    process_zdr_column
 
 """
 
@@ -959,6 +960,26 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
                 52.6547, 2.7054, 2.5101, 0.9765, -1114.6]  # MH
             mass_centers[8, :] = [
                 46.4998, 0.1978, 0.6431, 0.9845, 1010.1]  # IH/HDG
+        elif dscfg['RADARCENTROIDS'] == 'D':
+            #       Zh      ZDR     kdp   RhoHV   delta_Z
+            mass_centers[0, :] = [
+                12.567, 0.18934, 0.041193, 0.97693, 1328.1]  # DS
+            mass_centers[1, :] = [
+                3.2115, 0.13379, 0.0000, 0.96918, 1406.3]  # CR
+            mass_centers[2, :] = [
+                10.669, 0.18119, 0.0000, 0.97337, -1171.9]  # LR
+            mass_centers[3, :] = [
+                34.941, 0.13301, 0.090056, 0.9979, 898.44]  # GR
+            mass_centers[4, :] = [
+                39.653, 1.1432, 0.35013, 0.98501, -859.38]  # RN
+            mass_centers[5, :] = [
+                2.8874, -0.46363, 0.0000, 0.95653, 1015.6]  # VI
+            mass_centers[6, :] = [
+                34.122, 0.87987 ,0.2281, 0.98003, -234.37]  # WS
+            mass_centers[7, :] = [
+                53.134, 2.0888, 2.0055, 0.96927, -1054.7]  # MH
+            mass_centers[8, :] = [
+                46.715, 0.030477, 0.16994, 0.9969, 976.56]  # IH/HDG
         elif dscfg['RADARCENTROIDS'] == 'P':
             #       Zh      ZDR     kdp   RhoHV   delta_Z
             mass_centers[0, :] = [
@@ -1283,5 +1304,186 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
     if iso0_dict is not None:
         new_dataset['radar_out'].add_field('height_over_iso0', iso0_dict)
     new_dataset.update({'ml_obj': ml_obj})
+
+    return new_dataset, ind_rad
+
+
+def process_zdr_column(procstatus, dscfg, radar_list=None):
+    """
+    Detects ZDR columns
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the output
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    temp_ref = None
+    temp_field = None
+    iso0_field = None
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+        if datatype == 'ZDR':
+            zdr_field = 'differential_reflectivity'
+        if datatype == 'ZDRc':
+            zdr_field = 'corrected_differential_reflectivity'
+        if datatype == 'RhoHV':
+            rhv_field = 'cross_correlation_ratio'
+        if datatype == 'RhoHVc':
+            rhv_field = 'corrected_cross_correlation_ratio'
+        if datatype == 'TEMP':
+            temp_field = 'temperature'
+        if datatype == 'H_ISO0':
+            iso0_field = 'height_over_iso0'
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    # Check which should be the reference field for temperature
+    if iso0_field is not None and (iso0_field not in radar.fields):
+        warn('Unable to detect melting layer. ' +
+             'Missing height over iso0 field')
+        return None, None
+    else:
+        temp_ref = 'height_over_iso0'
+
+    if temp_field is not None and (temp_field not in radar.fields):
+        warn('Unable to detect melting layer. Missing temperature field')
+        return None, None
+    else:
+        temp_ref = 'temperature'
+        iso0_field = 'height_over_iso0'
+
+    if ((zdr_field not in radar.fields) or
+            (rhv_field not in radar.fields)):
+        warn('Unable to detect melting layer. Missing data')
+        return None, None
+
+    rhohv_min = dscfg.get('rhohv_min', 0.8)
+    zdr_min = dscfg.get('zdr_min', 1.)
+    smooth_window = dscfg.get('smooth_window', 0.)
+    latlon_tol = dscfg.get('latlon_tol', 0.025)  # approx 3x2 km
+    if smooth_window == 0:
+        smooth_window_len = 0
+    else:
+        smooth_window_len = int(
+            smooth_window/(radar.range['data'][1]-radar.range['data'][0]))
+
+    zdr_dict = deepcopy(radar.fields[zdr_field])
+
+    if smooth_window_len > 0:
+        zdr_dict['data'] = pyart.correct.smooth_masked(
+            zdr_dict['data'], wind_len=smooth_window_len, min_valid=1,
+            wind_type='mean')
+
+    zdr_dict['data'][radar.fields[rhv_field]['data'] < rhohv_min] = np.ma.masked
+    zdr_dict['data'][zdr_dict['data'] < zdr_min] = np.ma.masked
+    zdr_dict['data'][radar.fields[temp_field]['data'] > 0.] = np.ma.masked
+    zdr_valid = np.logical_not(np.ma.getmaskarray(zdr_dict['data']))
+
+    hlowerleft, hupperright = pyart.retrieve._get_res_vol_sides(radar)
+    ind_ang_sorted = np.argsort(radar.fixed_angle['data'])
+
+    # get number of suspected ZDR columns
+    lat_cols = np.array([], dtype=int)
+    lon_cols = np.array([], dtype=int)
+    zdr_cols = np.array([], dtype=int)
+
+    g_lat = radar.gate_latitude['data']
+    g_lon = radar.gate_longitude['data']
+    for ind_ray in range(radar.nrays):
+        # Get bins with negative temperatures
+        ind_rngs = np.where(
+            radar.fields[temp_field]['data'][ind_ray, :] < 0.)[0]
+        if ind_rngs.size == 0:
+            continue
+
+        # Segment negative temperatures and get start of each segment
+        cons_list = np.split(ind_rngs, np.where(np.diff(ind_rngs) !=1)[0]+1)
+        for ind_rngs_cell in cons_list:
+            if not zdr_valid[ind_ray, ind_rngs_cell[0]]:
+                continue
+
+            ind_ray_col = ind_ray
+            ind_rng_col = ind_rngs_cell[0]
+
+            # extract data around point:
+            ind_rays, ind_rngs = np.where(np.logical_and.reduce((
+                np.logical_and(
+                    g_lat >= g_lat[ind_ray_col, ind_rng_col]-latlon_tol,
+                    g_lat <= g_lat[ind_ray_col, ind_rng_col]+latlon_tol),
+                np.logical_and(
+                    g_lon >= g_lon[ind_ray_col, ind_rng_col]-latlon_tol,
+                    g_lon <= g_lon[ind_ray_col, ind_rng_col]+latlon_tol),
+                zdr_valid)))
+
+            # get ZDR column height for each radar sweep
+            h_low = np.ma.masked_all(radar.nsweeps)
+            h_high = np.ma.masked_all(radar.nsweeps)
+            for sweep in range(radar.nsweeps):
+                ind = np.where(np.logical_and(
+                    ind_rays >= radar.sweep_start_ray_index['data'][sweep],
+                    ind_rays <= radar.sweep_end_ray_index['data'][sweep]))[0]
+                if ind.size == 0:
+                    continue
+
+                h_low[sweep] = np.min(
+                    hlowerleft[ind_rays[ind], ind_rngs[ind]])
+                h_high[sweep] = np.max(
+                    hupperright[ind_rays[ind], ind_rngs[ind]])
+
+            # order data by elevation angle
+            h_low = h_low[ind_ang_sorted]
+            h_high = h_high[ind_ang_sorted]
+
+            # get the first segment of continuous ZDR valid values
+            ind_valid = np.where(np.ma.getmaskarray(h_low) == 0)[0]
+            ind_valid = np.split(
+                ind_valid, np.where(np.diff(ind_valid) !=1)[0]+1)[0]
+
+            # compute ZDR column
+            zdr_col = h_high[ind_valid[-1]]-h_low[ind_valid[0]]
+
+            # put data in output array
+            lat_cols = np.append(
+                lat_cols, radar.gate_latitude['data'][ind_ray_col, ind_rng_col])
+            lon_cols = np.append(
+                lon_cols, radar.gate_longitude['data'][ind_ray_col, ind_rng_col])
+            zdr_cols = np.append(zdr_cols, zdr_col)
+
+
+    zdr_col_dict = pyart.config.get_metadata(
+        'differential_reflectivity_column_height')
+    zdr_col_dict['data'] = zdr_cols/1000.
+    new_dataset = {
+        'field_limits': [
+            np.min(radar.gate_longitude['data']),
+            np.max(radar.gate_longitude['data']),
+            np.min(radar.gate_latitude['data']),
+            np.max(radar.gate_latitude['data'])],
+        'lat': lat_cols,
+        'lon': lon_cols,
+        'fields': {'differential_reflectivity_column_height': zdr_col_dict}}
 
     return new_dataset, ind_rad
