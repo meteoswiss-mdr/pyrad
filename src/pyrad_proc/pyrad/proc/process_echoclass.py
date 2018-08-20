@@ -960,6 +960,26 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
                 52.6547, 2.7054, 2.5101, 0.9765, -1114.6]  # MH
             mass_centers[8, :] = [
                 46.4998, 0.1978, 0.6431, 0.9845, 1010.1]  # IH/HDG
+        elif dscfg['RADARCENTROIDS'] == 'D':
+            #       Zh      ZDR     kdp   RhoHV   delta_Z
+            mass_centers[0, :] = [
+                12.567, 0.18934, 0.041193, 0.97693, 1328.1]  # DS
+            mass_centers[1, :] = [
+                3.2115, 0.13379, 0.0000, 0.96918, 1406.3]  # CR
+            mass_centers[2, :] = [
+                10.669, 0.18119, 0.0000, 0.97337, -1171.9]  # LR
+            mass_centers[3, :] = [
+                34.941, 0.13301, 0.090056, 0.9979, 898.44]  # GR
+            mass_centers[4, :] = [
+                39.653, 1.1432, 0.35013, 0.98501, -859.38]  # RN
+            mass_centers[5, :] = [
+                2.8874, -0.46363, 0.0000, 0.95653, 1015.6]  # VI
+            mass_centers[6, :] = [
+                34.122, 0.87987 ,0.2281, 0.98003, -234.37]  # WS
+            mass_centers[7, :] = [
+                53.134, 2.0888, 2.0055, 0.96927, -1054.7]  # MH
+            mass_centers[8, :] = [
+                46.715, 0.030477, 0.16994, 0.9969, 976.56]  # IH/HDG
         elif dscfg['RADARCENTROIDS'] == 'P':
             #       Zh      ZDR     kdp   RhoHV   delta_Z
             mass_centers[0, :] = [

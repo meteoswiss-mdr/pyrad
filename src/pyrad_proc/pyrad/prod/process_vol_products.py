@@ -649,6 +649,8 @@ def generate_vol_products(dataset, prdcfg):
         quantity = prdcfg.get('quantity', 'quantiles')
         quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.]))
         nvalid_min = prdcfg.get('nvalid_min', 4)
+        make_linear = prdcfg.get('make_linear', 0)
+        include_nans = prdcfg.get('include_nans', 0)
 
         fixed_span = prdcfg.get('fixed_span', 1)
         vmin = None
@@ -698,7 +700,8 @@ def generate_vol_products(dataset, prdcfg):
         vals, val_valid = compute_profile_stats(
             field['data'], new_dataset.gate_altitude['data'], h_vec,
             heightResolution, quantity=quantity, quantiles=quantiles/100.,
-            nvalid_min=nvalid_min)
+            nvalid_min=nvalid_min, make_linear=make_linear,
+            include_nans=include_nans)
 
         # plot data
         if quantity == 'mean':
@@ -797,6 +800,8 @@ def generate_vol_products(dataset, prdcfg):
         quantity = prdcfg.get('quantity', 'quantiles')
         quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.]))
         nvalid_min = prdcfg.get('nvalid_min', 4)
+        make_linear = prdcfg.get('make_linear', 0)
+        include_nans = prdcfg.get('include_nans', 0)
 
         fixed_span = prdcfg.get('fixed_span', 1)
         vmin = None
@@ -825,9 +830,10 @@ def generate_vol_products(dataset, prdcfg):
 
         h_vec = minheight+np.arange(nlevels)*heightResolution+heightResolution/2.
         vals, val_valid = compute_profile_stats(
-            field, dataset['radar_out'].gate_altitude['data'], h_vec, heightResolution,
-            quantity=quantity, quantiles=quantiles/100.,
-            nvalid_min=nvalid_min)
+            field, dataset['radar_out'].gate_altitude['data'], h_vec,
+            heightResolution, quantity=quantity, quantiles=quantiles/100.,
+            nvalid_min=nvalid_min, make_linear=make_linear,
+            include_nans=include_nans)
 
         # plot data
         if quantity == 'mean':

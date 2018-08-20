@@ -18,6 +18,24 @@ dataSetList STRARR 11
     l8:bird_density
 
 
+
+# # echo type 3 : birds, 2 : clutter, 1 : noise
+# velFilter STRUCT 4
+#     type STRING RAW
+#     datatype STRING CFRADIAL:dBZc,velFilter,SAVEVOL_dBZc
+#     MAKE_GLOBAL INT 1
+#     products STRUCT 1
+#         PROFILE_dBZc_linear_mean STRUCT 7
+#             type STRING PROFILE_STATS
+#             quantity STRING mean
+#             make_linear INT 1
+#             voltype STRING dBZc
+#             heightMin FLOAT 0.
+#             heightMax FLOAT 6000.
+#             heightResolution FLOAT 200.
+
+
+
 # ==========================================================================================
 #                 raw data products
 # ==========================================================================================
@@ -232,7 +250,7 @@ velFilter STRUCT 4
         PROC:dBZc
         PROC:dealVc
     MAKE_GLOBAL INT 1
-    products STRUCT 6
+    products STRUCT 9
         EL001_dBZc STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 2
@@ -259,6 +277,22 @@ velFilter STRUCT 4
             angle FLOAT 270.
             AziTol FLOAT 1.
             voltype STRING dealVc
+        PROFILE_dBZc STRUCT 5
+            type STRING PROFILE_STATS
+            voltype STRING dBZc
+            heightMin FLOAT 0.
+            heightMax FLOAT 6000.
+            heightResolution FLOAT 200.
+        PROFILE_dBZc_mean STRUCT 6
+            type STRING PROFILE_STATS
+            quantity STRING mean
+            voltype STRING dBZc
+            heightMin FLOAT 0.
+            heightMax FLOAT 6000.
+            heightResolution FLOAT 200.
+        SAVEVOL_dBZc STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING dBZc
 
 # ==========================================================================================
 #                 volumetric reflectivity
@@ -269,7 +303,7 @@ vol_refl STRUCT 5
         PROC:dBZc
     kw FLOAT 0.93
     MAKE_GLOBAL INT 1
-    products STRUCT 3
+    products STRUCT 5
         EL001 STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 2
@@ -285,6 +319,16 @@ vol_refl STRUCT 5
             heightMin FLOAT 0.
             heightMax FLOAT 6000.
             heightResolution FLOAT 200.
+        PROFILE_mean STRUCT 6
+            type STRING PROFILE_STATS
+            voltype STRING eta_h
+            quantity STRING mean
+            heightMin FLOAT 0.
+            heightMax FLOAT 6000.
+            heightResolution FLOAT 200.
+        SAVEVOL STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING eta_h
 
 
 # ==========================================================================================
@@ -295,7 +339,7 @@ bird_density STRUCT 4
     datatype STRARR 1
         PROC:eta_h
     sigma_bird FLOAT 11
-    products STRUCT 3
+    products STRUCT 5
         EL001 STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 2
@@ -313,3 +357,15 @@ bird_density STRUCT 4
             heightResolution FLOAT 200.
             vmin FLOAT 0.
             vmax FLOAT 400.
+        PROFILE_mean STRUCT 8
+            type STRING PROFILE_STATS
+            voltype STRING bird_density
+            quantity STRING mean
+            heightMin FLOAT 0.
+            heightMax FLOAT 6000.
+            heightResolution FLOAT 200.
+            vmin FLOAT 0.
+            vmax FLOAT 400.
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING bird_density

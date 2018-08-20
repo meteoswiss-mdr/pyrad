@@ -1141,7 +1141,8 @@ def quantize_field(field, field_name, step):
 def compute_profile_stats(field, gate_altitude, h_vec, h_res,
                           quantity='quantiles',
                           quantiles=np.array([0.25, 0.50, 0.75]),
-                          nvalid_min=4, std_field=None, np_field=None):
+                          nvalid_min=4, std_field=None, np_field=None,
+                          make_linear=False, include_nans=False):
     """
     Compute statistics of vertical profile
 
@@ -1167,6 +1168,11 @@ def compute_profile_stats(field, gate_altitude, h_vec, h_res,
         the standard deviation of the regression at each range gate
     np_field : ndarray
         the number of points used to compute the regression at each range gate
+    make_linear : Boolean
+        If true the data is transformed into linear coordinates before taking
+        the mean
+    include_nans : Boolean
+        If true NaN will be considered as zeros
 
     Returns
     -------
@@ -1198,16 +1204,25 @@ def compute_profile_stats(field, gate_altitude, h_vec, h_res,
     for i, h in enumerate(h_vec):
         data = field[np.logical_and(
             gate_altitude >= h-h_res/2., gate_altitude < h+h_res/2.)]
+        if include_nans:
+            data[np.ma.getmaskarray(data)] = 0.
         if data.size == 0:
             continue
         if quantity == 'mean':
             mask = np.ma.getmaskarray(data)
             nvalid = np.count_nonzero(np.logical_not(mask))
             if nvalid >= nvalid_min:
-                vals[i, 0] = np.ma.mean(data)
-                vals[i, 1] = np.ma.min(data)
-                vals[i, 2] = np.ma.max(data)
+                if make_linear:
+                    data = np.ma.power(10., 0.1*data)
+                    vals[i, 0] = 10.*np.ma.log10(np.ma.mean(data))
+                    vals[i, 1] = 10.*np.ma.log10(np.ma.min(data))
+                    vals[i, 2] = 10.*np.ma.log10(np.ma.max(data))
+                else:
+                    vals[i, 0] = np.ma.mean(data)
+                    vals[i, 1] = np.ma.min(data)
+                    vals[i, 2] = np.ma.max(data)
                 val_valid[i] = nvalid
+
         elif quantity == 'mode':
             mask = np.ma.getmaskarray(data)
             nvalid = np.count_nonzero(np.logical_not(mask))
