@@ -167,6 +167,7 @@ melting_layer = 'melting_layer'
 melting_layer_height = 'melting_layer_height'
 
 bird_density = 'bird_density'
+bird_reflectivity = 'bird_reflectivity'
 
 # attenuation
 specific_attenuation = 'specific_attenuation'
@@ -267,6 +268,7 @@ FILL_VALUE = fill_value
 DEFAULT_FIELD_NAMES = {
     # Internal field name (do not change): field name used (can change)
     'reflectivity': reflectivity,
+    'bird_reflectivity': bird_reflectivity,
     'corrected_reflectivity': corrected_reflectivity,
     'total_power': total_power,
     'unfiltered_reflectivity': unfiltered_reflectivity,
@@ -680,6 +682,12 @@ DEFAULT_METADATA = {
         'units': 'dBZ',
         'standard_name': 'horizontal_reflectivity',
         'long_name': 'Horizontal Reflectivity',
+        'coordinates': 'elevation azimuth range'},
+
+    bird_reflectivity: {
+        'units': 'dBZ',
+        'standard_name': 'bird_reflectivity',
+        'long_name': 'Bird Reflectivity',
         'coordinates': 'elevation azimuth range'},
 
     unfiltered_reflectivity: {
@@ -2007,6 +2015,7 @@ DEFAULT_FIELD_COLORMAP = {
     volumetric_reflectivity: 'pyart_NWSRef',
     volumetric_reflectivity_vv: 'pyart_NWSRef',
     bird_density: 'pyart_NWSRef',
+    bird_reflectivity: 'pyart_NWSRef',
 
     signal_to_noise_ratio: 'pyart_Carbone17',
     signal_to_noise_ratio_hh: 'pyart_Carbone17',
@@ -2136,6 +2145,7 @@ DEFAULT_FIELD_COLORMAP = {
 DEFAULT_FIELD_LIMITS = {
     # field name : limits
     reflectivity: (-30., 75.),
+    bird_reflectivity: (-30., 75.),
     corrected_reflectivity: (-30., 75.),
     total_power: (-30., 75.),
     unfiltered_reflectivity: (-30., 75.),
