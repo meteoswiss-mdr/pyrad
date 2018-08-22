@@ -18,24 +18,6 @@ dataSetList STRARR 11
     l8:bird_density
 
 
-
-# # echo type 3 : birds, 2 : clutter, 1 : noise
-# velFilter STRUCT 4
-#     type STRING RAW
-#     datatype STRING CFRADIAL:dBZc,velFilter,SAVEVOL_dBZc
-#     MAKE_GLOBAL INT 1
-#     products STRUCT 1
-#         PROFILE_dBZc_linear_mean STRUCT 7
-#             type STRING PROFILE_STATS
-#             quantity STRING mean
-#             make_linear INT 1
-#             voltype STRING dBZc
-#             heightMin FLOAT 0.
-#             heightMax FLOAT 6000.
-#             heightResolution FLOAT 200.
-
-
-
 # ==========================================================================================
 #                 raw data products
 # ==========================================================================================
@@ -129,7 +111,7 @@ echoFilter STRUCT 5
         RAD4ALP:V
     echo_type INT 3
     MAKE_GLOBAL INT 1
-    products STRUCT 4
+    products STRUCT 7
         EL001_dBZc STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 2
@@ -148,6 +130,24 @@ echoFilter STRUCT 5
             angle FLOAT 270.
             AziTol FLOAT 1.
             voltype STRING Vc
+        PROFILE_dBZc STRUCT 5
+            type STRING PROFILE_STATS
+            voltype STRING dBZc
+            heightMin FLOAT 0.
+            heightMax FLOAT 6000.
+            heightResolution FLOAT 200.
+        PROFILE_dBZc_linear_mean STRUCT 7
+            type STRING PROFILE_STATS
+            quantity STRING mean
+            make_linear INT 1
+            voltype STRING dBZc
+            heightMin FLOAT 0.
+            heightMax FLOAT 6000.
+            heightResolution FLOAT 200.
+        SAVEVOL_dBZc STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING dBZc
+
 
 
 # ==========================================================================================
@@ -250,7 +250,7 @@ velFilter STRUCT 4
         PROC:dBZc
         PROC:dealVc
     MAKE_GLOBAL INT 1
-    products STRUCT 9
+    products STRUCT 10
         EL001_dBZc STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 2
@@ -286,6 +286,14 @@ velFilter STRUCT 4
         PROFILE_dBZc_mean STRUCT 6
             type STRING PROFILE_STATS
             quantity STRING mean
+            voltype STRING dBZc
+            heightMin FLOAT 0.
+            heightMax FLOAT 6000.
+            heightResolution FLOAT 200.
+        PROFILE_dBZc_linear_mean STRUCT 7
+            type STRING PROFILE_STATS
+            quantity STRING mean
+            make_linear INT 1
             voltype STRING dBZc
             heightMin FLOAT 0.
             heightMax FLOAT 6000.

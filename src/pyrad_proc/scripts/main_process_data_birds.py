@@ -130,6 +130,20 @@ def main():
                 #     '*_rhi_profile_*_dBZc_hres'+str(hres)+'.csv')
                 # labels = [
                 #     'Mean', 'Min', 'Max']
+
+                # dBZ before filtering with fitted velocity
+                # filepath = (
+                #     file_base+time_dir+'/echoFilter/PROFILE_dBZc/' +
+                #     '*_rhi_profile_*_dBZc_hres'+str(hres)+'.csv')
+                # labels = [
+                #     '50.0-percentile', '25.0-percentile', '75.0-percentile']
+                #
+                # dBZ before filtering with fitted velocity. Linear mean
+                # filepath = (
+                #     file_base+time_dir+'/echoFilter/PROFILE_dBZc_linear_mean/' +
+                #     '*_rhi_profile_*_dBZc_hres'+str(hres)+'.csv')
+                # labels = [
+                #     'Mean', 'Min', 'Max']
             elif datatype == 'eta_h':
                 filepath = (
                     file_base+time_dir+'/vol_refl/PROFILE/' +
