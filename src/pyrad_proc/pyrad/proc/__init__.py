@@ -16,14 +16,9 @@ Auxiliary functions
     get_process_func
     process_raw
     process_save_radar
-    process_point_measurement
     process_roi
     process_grid
-    process_qvp
-    process_rqvp
-    process_svp
-    process_evp
-    process_time_height
+    process_azimuthal_average
 
 Echo classification and filtering
 =================================
@@ -154,7 +149,7 @@ COSMO data
 """
 
 from .process_aux import get_process_func, process_raw, process_save_radar
-from .process_aux import process_grid, process_roi
+from .process_aux import process_grid, process_roi, process_azimuthal_average
 
 from .process_timeseries import process_point_measurement, process_qvp
 from .process_timeseries import process_rqvp, process_evp, process_svp
