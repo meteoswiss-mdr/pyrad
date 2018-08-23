@@ -23,6 +23,7 @@ Radar Utilities
     find_nearest_gate
     find_neighbour_gates
     find_colocated_indexes
+    get_target_elevations
     time_avg_range
     get_closest_solar_flux
     create_sun_hits_field
@@ -54,6 +55,7 @@ from .radar_utils import time_series_statistics, join_time_series
 from .radar_utils import rainfall_accumulation, get_ROI, belongs_roi_indices
 from .radar_utils import compute_profile_stats, compute_directional_stats
 from .radar_utils import project_to_vertical, find_neighbour_gates
+from .radar_utils import get_target_elevations
 
 from .stat_utils import quantiles_weighted
 

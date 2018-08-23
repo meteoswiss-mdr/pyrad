@@ -18,6 +18,7 @@ Miscellaneous functions dealing with radar data
     find_nearest_gate
     find_neighbour_gates
     find_colocated_indexes
+    get_target_elevations
     time_avg_range
     get_closest_solar_flux
     create_sun_hits_field
@@ -452,7 +453,7 @@ def find_nearest_gate(radar, lat, lon, latlon_tol=0.0005):
     return ind_ray, ind_rng, azi, rng
 
 
-def find_neighbour_gates(radar, azi, rng, delta_azi=10., delta_rng=15000.):
+def find_neighbour_gates(radar, azi, rng, delta_azi=None, delta_rng=None):
     """
     Find the neighbouring gates within +-delta_azi and +-delta_rng
 
@@ -472,12 +473,29 @@ def find_neighbour_gates(radar, azi, rng, delta_azi=10., delta_rng=15000.):
 
     """
     # find gates close to lat lon point
-    inds_ray = np.where(np.logical_and(
-        radar.azimuth['data'] < azi+delta_azi,
-        radar.azimuth['data'] > azi-delta_azi))[0]
-    inds_rng = np.where(np.logical_and(
-        radar.range['data'] < rng+delta_rng,
-        radar.range['data'] > rng-delta_rng))[0]
+    if delta_azi is None:
+        inds_ray = np.ma.arange(radar.azimuth['data'].size)
+    else:
+        azi_max = azi+delta_azi
+        azi_min = azi-delta_azi
+        if azi_max > 360.:
+            azi_max -= 360.
+        if azi_min < 0.:
+            azi_min += 360.
+        if azi_max > azi_min:
+            inds_ray = np.where(np.logical_and(
+                radar.azimuth['data'] < azi_max,
+                radar.azimuth['data'] > azi_min))[0]
+        else:
+            inds_ray = np.where(np.logical_or(
+                radar.azimuth['data'] > azi_min,
+                radar.azimuth['data'] < azi_max))[0]
+    if delta_rng is None:
+        inds_rng = np.ma.arange(radar.range['data'].size)
+    else:
+        inds_rng = np.where(np.logical_and(
+            radar.range['data'] < rng+delta_rng,
+            radar.range['data'] > rng-delta_rng))[0]
 
     return inds_ray, inds_rng
 
@@ -546,6 +564,31 @@ def find_colocated_indexes(radar1, radar2, rad1_ele, rad1_azi, rad1_rng,
     ind_rng_rad2 = ind_rng_rad2.compressed()
 
     return ind_ray_rad1, ind_rng_rad1, ind_ray_rad2, ind_rng_rad2
+
+
+def get_target_elevations(radar_in):
+    """
+    Gets RHI taget elevations
+
+    Parameters
+    ----------
+    radar_in : Radar object
+        current radar object
+
+    Returns
+    -------
+    target_elevations : 1D-array
+        Azimuth angles
+    el_tol : float
+        azimuth tolerance
+    """
+    sweep_start = radar_in.sweep_start_ray_index['data'][0]
+    sweep_end = radar_in.sweep_end_ray_index['data'][0]
+    target_elevations = np.sort(
+        radar_in.elevation['data'][sweep_start:sweep_end+1])
+    el_tol = np.median(target_elevations[1:]-target_elevations[:-1])
+
+    return target_elevations, el_tol
 
 
 def time_avg_range(timeinfo, avg_starttime, avg_endtime, period):

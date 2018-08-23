@@ -26,6 +26,7 @@ import pyart
 from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 from ..util.radar_utils import find_nearest_gate, find_neighbour_gates
 from ..util.radar_utils import project_to_vertical, compute_directional_stats
+from ..util.radar_utils import get_target_elevations
 
 
 def process_point_measurement(procstatus, dscfg, radar_list=None):
@@ -519,7 +520,7 @@ def process_rqvp(procstatus, dscfg, radar_list=None):
         radar_aux = deepcopy(radar)
         # transform radar into ppi over the required elevation
         if radar_aux.scan_type == 'rhi':
-            target_elevations, el_tol = _get_target_elevations(radar_aux)
+            target_elevations, el_tol = get_target_elevations(radar_aux)
             radar_ppi = pyart.util.cross_section_rhi(
                 radar_aux, target_elevations, el_tol=el_tol)
         elif radar_aux.scan_type == 'ppi':
@@ -764,7 +765,7 @@ def process_evp(procstatus, dscfg, radar_list=None):
         radar_aux = deepcopy(radar)
         # transform radar into ppi over the required elevation
         if radar_aux.scan_type == 'rhi':
-            target_elevations, el_tol = _get_target_elevations(radar_aux)
+            target_elevations, el_tol = get_target_elevations(radar_aux)
             radar_ppi = pyart.util.cross_section_rhi(
                 radar_aux, target_elevations, el_tol=el_tol)
         elif radar_aux.scan_type == 'ppi':
@@ -1201,7 +1202,7 @@ def process_time_height(procstatus, dscfg, radar_list=None):
         radar_aux = deepcopy(radar)
         # transform radar into ppi over the required elevation
         if radar_aux.scan_type == 'rhi':
-            target_elevations, el_tol = _get_target_elevations(radar_aux)
+            target_elevations, el_tol = get_target_elevations(radar_aux)
             radar_ppi = pyart.util.cross_section_rhi(
                 radar_aux, target_elevations, el_tol=el_tol)
         elif radar_aux.scan_type == 'ppi':
@@ -1330,28 +1331,3 @@ def process_time_height(procstatus, dscfg, radar_list=None):
         new_dataset.update({'start_time': dscfg['global_data']['start_time']})
 
         return new_dataset, ind_rad
-
-
-def _get_target_elevations(radar_in):
-    """
-    Gets RHI taget elevations
-
-    Parameters
-    ----------
-    radar_in : Radar object
-        current radar object
-
-    Returns
-    -------
-    target_elevations : 1D-array
-        Azimuth angles
-    el_tol : float
-        azimuth tolerance
-    """
-    sweep_start = radar_in.sweep_start_ray_index['data'][0]
-    sweep_end = radar_in.sweep_end_ray_index['data'][0]
-    target_elevations = np.sort(
-        radar_in.elevation['data'][sweep_start:sweep_end+1])
-    el_tol = np.median(target_elevations[1:]-target_elevations[:-1])
-
-    return target_elevations, el_tol
