@@ -11,6 +11,7 @@ Functions for obtaining Pyrad products from the datasets
     generate_cosmo_coord_products
     generate_sun_hits_products
     generate_qvp_products
+    generate_ml_products
 
 """
 
@@ -27,12 +28,13 @@ from ..io.io_aux import get_fieldname_pyart
 from ..io.io_aux import get_save_dir, make_filename
 
 from ..io.read_data_sun import read_sun_retrieval
+from ..io.read_data_other import read_ml_ts
 
 from ..io.write_data import write_sun_hits, write_sun_retrieval
-from ..io.write_data import write_excess_gates
+from ..io.write_data import write_excess_gates, write_ts_ml
 
 from ..graph.plots import plot_sun_hits
-from ..graph.plots_timeseries import plot_sun_retrieval_ts
+from ..graph.plots_timeseries import plot_sun_retrieval_ts, plot_ml_ts
 
 from ..util.radar_utils import create_sun_hits_field
 from ..util.radar_utils import create_sun_retrieval_field
@@ -67,7 +69,7 @@ def generate_occurrence_products(dataset, prdcfg):
         if not dataset['occu_final']:
             return None
 
-        radar = dataset['radar_obj']
+        radar = dataset['radar_out']
         if (('frequency_of_occurrence' not in radar.fields) or
                 ('occurrence' not in radar.fields) or
                 ('number_of_samples' not in radar.fields)):
@@ -132,7 +134,7 @@ def generate_occurrence_products(dataset, prdcfg):
         if dataset['occu_final']:
             prdcfg['timeinfo'] = dataset['endtime']
 
-        return generate_vol_products(dataset['radar_obj'], prdcfg)
+        return generate_vol_products(dataset, prdcfg)
 
 
 def generate_cosmo_coord_products(dataset, prdcfg):
@@ -154,7 +156,7 @@ def generate_cosmo_coord_products(dataset, prdcfg):
 
     """
     if prdcfg['type'] == 'SAVEVOL':
-        radar_obj = dataset['radar_obj']
+        radar_obj = dataset['radar_out']
         ind_rad = dataset['ind_rad']
 
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -411,8 +413,8 @@ def generate_sun_hits_products(dataset, prdcfg):
         return fname_list
 
     else:
-        if 'radar' in dataset:
-            generate_vol_products(dataset['radar'], prdcfg)
+        if 'radar_out' in dataset:
+            return generate_vol_products(dataset, prdcfg)
 
 
 def generate_qvp_products(dataset, prdcfg):
@@ -443,4 +445,101 @@ def generate_qvp_products(dataset, prdcfg):
         return None
 
     prdcfg['timeinfo'] = dataset['start_time']
-    return generate_vol_products(dataset['radar_obj'], prdcfg)
+    return generate_vol_products(dataset, prdcfg)
+
+
+def generate_ml_products(dataset, prdcfg):
+    """
+    Generates melting layer products.
+
+    Parameters
+    ----------
+    dataset : dict
+        dictionary containing the radar object and a keyword stating the
+        status of the processing
+
+    prdcfg : dictionary of dictionaries
+        product configuration dictionary of dictionaries
+
+    Returns
+    -------
+    filename : str
+        the name of the file created. None otherwise
+
+    """
+
+    dssavedir = prdcfg['dsname']
+    if 'dssavename' in prdcfg:
+        dssavedir = prdcfg['dssavename']
+
+    if prdcfg['type'] == 'ML_TS':
+        dpi = prdcfg.get('dpi', 72)
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        csvfname = make_filename(
+            'ts', prdcfg['dstype'], 'ml', ['csv'],
+            timeinfo=prdcfg['timeinfo'], timeformat='%Y%m%d')[0]
+
+        csvfname = savedir+csvfname
+
+        ml_bottom = dataset['ml_obj'].fields['melting_layer_height']['data'][:, 0]
+        ml_top = dataset['ml_obj'].fields['melting_layer_height']['data'][:, 1]
+
+        ml_top_avg = np.ma.asarray(np.ma.mean(ml_top))
+        ml_top_std = np.ma.asarray(np.ma.std(ml_top))
+        thick = ml_top-ml_bottom
+        thick_avg = np.ma.asarray(np.ma.mean(thick))
+        thick_std = np.ma.asarray(np.ma.std(thick))
+        nrays_valid = thick.compressed().size
+        nrays_total = thick.size
+
+        write_ts_ml(
+            prdcfg['timeinfo'], ml_top_avg, ml_top_std, thick_avg, thick_std,
+            nrays_valid, nrays_total, csvfname)
+
+        print('saved CSV file: '+csvfname)
+
+        (dt_ml_arr, ml_top_avg_arr, ml_top_std_arr, thick_avg_arr,
+         thick_std_arr, nrays_valid_arr, nrays_total_arr) = (
+             read_ml_ts(csvfname))
+
+        if dt_ml_arr is None:
+            warn(
+                'Unable to plot time series. No valid data')
+            return None
+
+        figfname_list = make_filename(
+            'ts', prdcfg['dstype'], 'ml', prdcfg['imgformat'],
+            timeinfo=dt_ml_arr[0], timeformat='%Y%m%d')
+
+        for i, figfname in enumerate(figfname_list):
+            figfname_list[i] = savedir+figfname
+
+        titl = dt_ml_arr[0].strftime('%Y-%m-%d')+' melting layer time series'
+
+        plot_ml_ts(
+            dt_ml_arr, ml_top_avg_arr, ml_top_std_arr, thick_avg_arr,
+            thick_std_arr, nrays_valid_arr, nrays_total_arr, figfname_list,
+            labelx='Time UTC', titl=titl, dpi=dpi)
+        print('----- save to '+' '.join(figfname_list))
+
+        return figfname_list
+    elif prdcfg['type'] == 'SAVE_ML':
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'saveml', prdcfg['dstype'], 'ml_h', ['nc'],
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])[0]
+
+        fname = savedir+fname
+        pyart.io.cfradial.write_cfradial(fname, dataset['ml_obj'])
+        print('saved file: '+fname)
+
+        return fname
+    else:
+        return generate_vol_products(dataset, prdcfg)

@@ -356,6 +356,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'differential_reflectivity_in_precipitation'
     elif datatype == 'ZDR_snow':
         field_name = 'differential_reflectivity_in_snow'
+    elif datatype == 'ZDR_col':
+        field_name = 'differential_reflectivity_column_height'
 
     elif datatype == 'dBm':
         field_name = 'signal_power_hh'
@@ -477,6 +479,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'cosmo_index'
     elif datatype == 'hzt_index':
         field_name = 'hzt_index'
+    elif datatype == 'ml':
+        field_name = 'melting_layer'
 
     elif datatype == 'VIS':
         field_name = 'visibility'
@@ -501,6 +505,40 @@ def get_fieldname_pyart(datatype):
         field_name = 'number_of_samples'
     elif datatype == 'bird_density':
         field_name = 'bird_density'
+
+    # vol2bird field names
+    elif datatype == 'ff':
+        field_name = 'wind_speed'
+    elif datatype == 'dd':
+        field_name = 'wind_direction'
+    elif datatype == 'u':
+        field_name = 'eastward_wind_component'
+    elif datatype == 'v':
+        field_name = 'northward_wind_component'
+    elif datatype == 'w':
+        field_name = 'vertical_wind_component'
+    elif datatype == 'width':
+        field_name = 'height_resolution'
+    elif datatype == 'gap':
+        field_name = 'gap'
+    elif datatype == 'dbz':
+        field_name = 'bird_reflectivity'
+    elif datatype == 'eta':
+        field_name = 'volumetric_reflectivity'
+    elif datatype == 'dens':
+        field_name = 'bird_density'
+    elif datatype == 'n':
+        field_name = 'number_of_samples_velocity'
+    elif datatype == 'n_dbz':
+        field_name = 'number_of_samples_reflectivity'
+    elif datatype == 'sd_vvp':
+        field_name = 'retrieved_velocity_std'
+    elif datatype == 'DBZH':
+        field_name = 'reflectivity'
+    elif datatype == 'n_all':
+        field_name = 'number_of_samples_velocity_all'
+    elif datatype == 'n_dbz_all':
+        field_name = 'number_of_samples_reflectivity_all'
     else:
         raise ValueError('ERROR: Unknown data type '+datatype)
 
@@ -781,8 +819,7 @@ def get_new_rainbow_file_name(master_fname, master_datadescriptor, datatype):
         the new file name
 
     """
-    radarnr, datagroup, master_datatype, dataset, product = (
-        get_datatype_fields(master_datadescriptor))
+    _, _, master_datatype, _, _ = get_datatype_fields(master_datadescriptor)
     datapath = os.path.dirname(master_fname)
     voltime = get_datetime(master_fname, master_datatype)
     voltype = os.path.basename(master_fname).split('.')[1]
@@ -912,8 +949,7 @@ def get_datetime(fname, datadescriptor):
         date and time in file name
 
     """
-    radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-        datadescriptor)
+    _, datagroup, _, _, _ = get_datatype_fields(datadescriptor)
 
     return _get_datetime(fname, datagroup)
 

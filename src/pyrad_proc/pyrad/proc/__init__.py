@@ -16,11 +16,9 @@ Auxiliary functions
     get_process_func
     process_raw
     process_save_radar
-    process_point_measurement
     process_roi
     process_grid
-    process_qvp
-    process_time_height
+    process_azimuthal_average
 
 Echo classification and filtering
 =================================
@@ -39,6 +37,7 @@ Echo classification and filtering
     process_hydroclass
     process_melting_layer
     process_filter_vel_diff
+    process_zdr_column
 
 Phase processing and attenuation correction
 ===========================================
@@ -110,6 +109,19 @@ Doppler processing
     process_windshear
     process_vad
 
+Time series functions
+====================
+
+.. autosummary::
+    :toctree: generated/
+
+    process_point_measurement
+    process_qvp
+    process_rqvp
+    process_svp
+    process_evp
+    process_time_height
+
 Trajectory functions
 ====================
 
@@ -137,8 +149,12 @@ COSMO data
 """
 
 from .process_aux import get_process_func, process_raw, process_save_radar
-from .process_aux import process_point_measurement, process_grid, process_qvp
-from .process_aux import process_time_height, process_roi
+from .process_aux import process_grid, process_roi, process_azimuthal_average
+
+from .process_timeseries import process_point_measurement, process_qvp
+from .process_timeseries import process_rqvp, process_evp, process_svp
+from .process_timeseries import process_time_height
+
 from .process_traj import process_trajectory, process_traj_atplane
 from .process_traj import process_traj_antenna_pattern
 
@@ -147,7 +163,7 @@ from .process_echoclass import process_echo_filter, process_clt_to_echo_id
 from .process_echoclass import process_filter_snr, process_filter_visibility
 from .process_echoclass import process_outlier_filter, process_hydroclass
 from .process_echoclass import process_cdf, process_melting_layer
-from .process_echoclass import process_filter_vel_diff
+from .process_echoclass import process_filter_vel_diff, process_zdr_column
 
 from .process_phase import process_correct_phidp0
 from .process_phase import process_smooth_phidp_single_window

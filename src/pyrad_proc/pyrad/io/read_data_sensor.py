@@ -15,6 +15,7 @@ Functions for reading data from other sensors
     read_smn
     read_smn2
     read_disdro_scattering
+    read_disdro
 
 """
 
@@ -23,6 +24,7 @@ import datetime
 import csv
 from warnings import warn
 from copy import deepcopy
+import re
 
 import numpy as np
 
@@ -154,9 +156,8 @@ def read_trt_data(fname):
                     'Dvel_y'],
                 restkey='cell_contour_lon-lat',
                 delimiter=';')
-            i = 0
             cell_contour = []
-            for row in reader:
+            for i, row in enumerate(reader):
                 traj_ID[i] = int(row['traj_ID'])
                 yyyymmddHHMM[i] = datetime.datetime.strptime(
                     row['yyyymmddHHMM'].strip(), '%Y%m%d%H%M')
@@ -197,8 +198,6 @@ def read_trt_data(fname):
                     'lat': cell_contour_list[1::2]
                 }
                 cell_contour.append(cell_contour_dict)
-
-                i += 1
 
             csvfile.close()
 
@@ -470,9 +469,9 @@ def read_lightning(fname, filter_data=True):
                 csvfile, fieldnames=['flashnr', 'time', 'time_in_flash',
                                      'lat', 'lon', 'alt', 'dBm'],
                 delimiter=' ')
-            i = 0
+
             time_data = list()
-            for row in reader:
+            for i, row in enumerate(reader):
                 flashnr[i] = int(row['flashnr'])
                 time_data.append(fdatetime+datetime.timedelta(
                     seconds=float(row['time'])))
@@ -481,8 +480,6 @@ def read_lightning(fname, filter_data=True):
                 lon[i] = float(row['lon'])
                 alt[i] = float(row['alt'])
                 dBm[i] = float(row['dBm'])
-
-                i += 1
 
             time_data = np.array(time_data)
 
@@ -557,8 +554,8 @@ def read_lightning_traj(fname):
                 fieldnames=['Date', 'UTC', 'flashnr', 'dBm', 'at_flash',
                             'mean', 'min', 'max', 'nvalid'],
                 delimiter=',')
-            i = 0
-            for row in reader:
+
+            for i, row in enumerate(reader):
                 date_flash_aux = datetime.datetime.strptime(
                     row['Date'], '%d-%b-%Y')
                 time_flash_aux = float(row['UTC'])
@@ -572,8 +569,6 @@ def read_lightning_traj(fname):
                 val_min[i] = float(row['min'])
                 val_max[i] = float(row['max'])
                 nval[i] = int(float(row['nvalid']))
-
-                i += 1
 
             csvfile.close()
 
@@ -615,28 +610,33 @@ def get_sensor_data(date, datatype, cfg):
     if cfg['sensor'] == 'rgage':
         datapath = cfg['smnpath']+date.strftime('%Y%m')+'/'
         datafile = date.strftime('%Y%m%d')+'_' + cfg['sensorid']+'.csv'
-        (sensor_id, sensordate, pressure, temp,
-         rh, sensorvalue, wspeed, wdir) = read_smn(datapath+datafile)
+        _, sensordate, _, _, _, sensorvalue, _, _ = read_smn(
+            datapath+datafile)
         if sensordate is None:
             return None, None, None, None
         label = 'RG'
         period = (sensordate[1]-sensordate[0]).total_seconds()
     elif cfg['sensor'] == 'disdro':
-        datapath = cfg['disdropath']
-        datafile = ('DSDfiltpolvar-'+cfg['sensorid']+'_' +
-                    date.strftime('%Y%m%d')+'_Xband_temp' + cfg['temp'] +
-                    '_elev'+cfg['elev']+'.txt')
-        (sensordate, prectype, lwc, rr, zh, zv, zdr, ldr, ah, av,
-         adiff, kdp, detaco, rhohv) = read_disdro_scattering(
-             datapath+datafile)
+        if (datatype == 'dBZ') or (datatype == 'dBZc'):
+            sensor_datatype = 'dBZ'
+        else:
+            sensor_datatype = datatype
+
+        datapath = (
+            cfg['disdropath']+cfg['sensorid']+'/scattering/' +
+            date.strftime('%Y')+'/'+date.strftime('%Y%m')+'/')
+        datafile = (
+            date.strftime('%Y%m%d')+'_'+cfg['sensorid']+'_'+cfg['location'] +
+            '_'+str(cfg['freq'])+'GHz_'+sensor_datatype+'_el'+str(cfg['ele']) +
+            '.csv')
+
+        (sensordate, prectype, sensorvalue, temp) = read_disdro(
+            datapath+datafile)
         if sensordate is None:
             return None, None, None, None
         label = 'Disdro'
         period = (sensordate[1]-sensordate[0]).total_seconds()
-        if datatype == 'RR':
-            sensorvalue = rr
-        elif (datatype == 'dBZ') or (datatype == 'dBZc'):
-            sensorvalue = zh
+
     else:
         warn('Unknown sensor: '+cfg['sensor'])
         return None, None, None, None
@@ -676,9 +676,8 @@ def read_smn(fname):
             # now read the data
             csvfile.seek(0)
             reader = csv.DictReader(csvfile)
-            i = 0
             date = list()
-            for row in reader:
+            for i, row in enumerate(reader):
                 smn_id[i] = float(row['StationID'])
                 date.append(datetime.datetime.strptime(
                     row['DateTime'], '%Y%m%d%H%M%S'))
@@ -688,7 +687,6 @@ def read_smn(fname):
                 precip[i] = float(row['Precipitation'])
                 wspeed[i] = float(row['Windspeed'])
                 wdir[i] = float(row['Winddirection'])
-                i += 1
 
             pressure = np.ma.masked_values(pressure, fill_value)
             temp = np.ma.masked_values(temp, fill_value)
@@ -751,14 +749,12 @@ def read_smn2(fname):
 
             reader = csv.DictReader(
                 csvfile, fieldnames=['StationID', 'DateTime', 'Value'])
-            i = 0
             date = list()
-            for row in reader:
+            for i, row in enumerate(reader):
                 smn_id[i] = float(row['StationID'])
                 date.append(datetime.datetime.strptime(
                     row['DateTime'], '%Y%m%d%H%M%S'))
                 value[i] = float(row['Value'])
-                i += 1
 
             csvfile.close()
 
@@ -823,9 +819,8 @@ def read_disdro_scattering(fname):
                                      'zv', 'zdr', 'ldr', 'ah', 'av', 'adiff',
                                      'kdp', 'deltaco', 'rhohv'],
                 dialect='excel-tab')
-            i = 0
             date = list()
-            for row in reader:
+            for i, row in enumerate(reader):
                 date.append(datetime.datetime.strptime(
                     row['date'], '%Y-%m-%d %H:%M:%S'))
                 preciptype[i] = float(row['preciptype'])
@@ -841,7 +836,6 @@ def read_disdro_scattering(fname):
                 kdp[i] = float(row['kdp'])
                 deltaco[i] = float(row['deltaco'])
                 rhohv[i] = float(row['rhohv'])
-                i += 1
 
             csvfile.close()
 
@@ -852,3 +846,61 @@ def read_disdro_scattering(fname):
         warn('Unable to read file '+fname)
         return (None, None, None, None, None, None, None, None, None, None,
                 None, None, None)
+
+
+def read_disdro(fname):
+    """
+    Reads scattering parameters computed from disdrometer data contained in a
+    text file
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    date, preciptype, variable, scattering temperature: tuple
+        The read values
+
+    """
+    try:
+        var = re.search('GHz_(.{,7})_el', fname).group(1)
+    except AttributeError:
+        # AAA, ZZZ not found in the original string
+        var = '' # apply your error handling
+    try:
+        with open(fname, 'r', newline='', encoding='utf-8', errors='ignore') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                (row for row in csvfile if not row.startswith('#')),
+                delimiter=',')
+            nrows = sum(1 for row in reader)
+
+            variable = np.ma.empty(nrows, dtype='float32')
+            scatt_temp = np.ma.empty(nrows, dtype='float32')
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                (row for row in csvfile if not row.startswith('#')),
+                delimiter=',')
+            i = 0
+            date = list()
+            preciptype = list()
+            for row in reader:
+                date.append(datetime.datetime.strptime(
+                    row['date'], '%Y-%m-%d %H:%M:%S'))
+                preciptype.append(row['Precip Code'])
+                variable[i] = float(row[var])
+                scatt_temp[i] = float(row['Scattering Temp [deg C]'])
+                i += 1
+            variable = np.ma.masked_where(variable == -9999.0, variable)
+            np.ma.set_fill_value(variable, -9999.0)
+            csvfile.close()
+
+            return (date, preciptype, variable, scatt_temp)
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return (None, None, None, None)

@@ -15,7 +15,10 @@ Miscellaneous functions dealing with radar data
     belongs_roi_indices
     find_ray_index
     find_rng_index
+    find_nearest_gate
+    find_neighbour_gates
     find_colocated_indexes
+    get_target_elevations
     time_avg_range
     get_closest_solar_flux
     create_sun_hits_field
@@ -31,6 +34,8 @@ Miscellaneous functions dealing with radar data
     compute_2d_hist
     quantize_field
     compute_profile_stats
+    compute_directional_stats
+    project_to_vertical
 
 """
 from warnings import warn
@@ -399,6 +404,102 @@ def find_rng_index(rng_vec, rng, rng_tol=0.):
     return ind_rng
 
 
+def find_nearest_gate(radar, lat, lon, latlon_tol=0.0005):
+    """
+    Find the radar gate closest to a lat,lon point
+
+    Parameters
+    ----------
+    radar : radar object
+        the radar object
+    lat, lon : float
+        The position of the point
+    latlon_tol : float
+        The tolerance around this point
+
+    Returns
+    -------
+    ind_ray, ind_rng : int
+        The ray and range index
+    azi, rng : float
+        the range and azimuth position of the gate
+
+    """
+    # find gates close to lat lon point
+    inds_ray_aux, inds_rng_aux = np.where(np.logical_and(
+        np.logical_and(
+            radar.gate_latitude['data'] < lat+latlon_tol,
+            radar.gate_latitude['data'] > lat-latlon_tol),
+        np.logical_and(
+            radar.gate_longitude['data'] < lon+latlon_tol,
+            radar.gate_longitude['data'] > lon-latlon_tol)))
+
+    if inds_ray_aux.size == 0:
+        warn('No data found at point lat '+str(lat)+' +- ' +
+             str(latlon_tol)+' lon '+str(lon)+' +- ' +
+             str(latlon_tol)+' deg')
+
+        return None, None, None, None
+
+    # find closest latitude
+    ind_min = np.argmin(np.abs(
+        radar.gate_latitude['data'][inds_ray_aux, inds_rng_aux]-lat))
+    ind_ray = inds_ray_aux[ind_min]
+    ind_rng = inds_rng_aux[ind_min]
+
+    azi = radar.azimuth['data'][ind_ray]
+    rng = radar.range['data'][ind_rng]
+
+    return ind_ray, ind_rng, azi, rng
+
+
+def find_neighbour_gates(radar, azi, rng, delta_azi=None, delta_rng=None):
+    """
+    Find the neighbouring gates within +-delta_azi and +-delta_rng
+
+    Parameters
+    ----------
+    radar : radar object
+        the radar object
+    azi, rng : float
+        The azimuth [deg] and range [m] of the central gate
+    delta_azi, delta_rng : float
+        The extend where to look for
+
+    Returns
+    -------
+    inds_ray_aux, ind_rng_aux : int
+        The indices (ray, rng) of the neighbouring gates
+
+    """
+    # find gates close to lat lon point
+    if delta_azi is None:
+        inds_ray = np.ma.arange(radar.azimuth['data'].size)
+    else:
+        azi_max = azi+delta_azi
+        azi_min = azi-delta_azi
+        if azi_max > 360.:
+            azi_max -= 360.
+        if azi_min < 0.:
+            azi_min += 360.
+        if azi_max > azi_min:
+            inds_ray = np.where(np.logical_and(
+                radar.azimuth['data'] < azi_max,
+                radar.azimuth['data'] > azi_min))[0]
+        else:
+            inds_ray = np.where(np.logical_or(
+                radar.azimuth['data'] > azi_min,
+                radar.azimuth['data'] < azi_max))[0]
+    if delta_rng is None:
+        inds_rng = np.ma.arange(radar.range['data'].size)
+    else:
+        inds_rng = np.where(np.logical_and(
+            radar.range['data'] < rng+delta_rng,
+            radar.range['data'] > rng-delta_rng))[0]
+
+    return inds_ray, inds_rng
+
+
 def find_colocated_indexes(radar1, radar2, rad1_ele, rad1_azi, rad1_rng,
                            rad2_ele, rad2_azi, rad2_rng, ele_tol=0.5,
                            azi_tol=0.5, rng_tol=50.):
@@ -427,14 +528,10 @@ def find_colocated_indexes(radar1, radar2, rad1_ele, rad1_azi, rad1_rng,
 
     """
     ngates = len(rad1_ele)
-    ind_ray_rad1 = np.ma.empty(ngates, dtype=int)
-    ind_ray_rad1[:] = np.ma.masked
-    ind_rng_rad1 = np.ma.empty(ngates, dtype=int)
-    ind_rng_rad1[:] = np.ma.masked
-    ind_ray_rad2 = np.ma.empty(ngates, dtype=int)
-    ind_ray_rad2[:] = np.ma.masked
-    ind_rng_rad2 = np.ma.empty(ngates, dtype=int)
-    ind_rng_rad2[:] = np.ma.masked
+    ind_ray_rad1 = np.ma.masked_all(ngates, dtype=int)
+    ind_rng_rad1 = np.ma.masked_all(ngates, dtype=int)
+    ind_ray_rad2 = np.ma.masked_all(ngates, dtype=int)
+    ind_rng_rad2 = np.ma.masked_all(ngates, dtype=int)
     for i in range(ngates):
         ind_ray_rad1_aux = find_ray_index(
             radar1.elevation['data'], radar1.azimuth['data'], rad1_ele[i],
@@ -467,6 +564,31 @@ def find_colocated_indexes(radar1, radar2, rad1_ele, rad1_azi, rad1_rng,
     ind_rng_rad2 = ind_rng_rad2.compressed()
 
     return ind_ray_rad1, ind_rng_rad1, ind_ray_rad2, ind_rng_rad2
+
+
+def get_target_elevations(radar_in):
+    """
+    Gets RHI taget elevations
+
+    Parameters
+    ----------
+    radar_in : Radar object
+        current radar object
+
+    Returns
+    -------
+    target_elevations : 1D-array
+        Azimuth angles
+    el_tol : float
+        azimuth tolerance
+    """
+    sweep_start = radar_in.sweep_start_ray_index['data'][0]
+    sweep_end = radar_in.sweep_end_ray_index['data'][0]
+    target_elevations = np.sort(
+        radar_in.elevation['data'][sweep_start:sweep_end+1])
+    el_tol = np.median(target_elevations[1:]-target_elevations[:-1])
+
+    return target_elevations, el_tol
 
 
 def time_avg_range(timeinfo, avg_starttime, avg_endtime, period):
@@ -529,8 +651,7 @@ def get_closest_solar_flux(hit_datetime_list, flux_datetime_list,
 
     """
     flux_datetime_closest_list = list()
-    flux_value_closest_list = np.ma.empty(len(hit_datetime_list))
-    flux_value_closest_list[:] = np.ma.masked
+    flux_value_closest_list = np.ma.masked_all(len(hit_datetime_list))
 
     i = 0
     for hit_dt in hit_datetime_list:
@@ -594,8 +715,7 @@ def create_sun_hits_field(rad_el, rad_az, sun_el, sun_az, data, imgcfg):
 
     npix_az = int((azmax-azmin)/azres)
     npix_el = int((elmax-elmin)/elres)
-    field = np.ma.zeros((npix_az, npix_el))
-    field[:] = np.ma.masked
+    field = np.ma.masked_all((npix_az, npix_el))
 
     ind_az = ((d_az+azmin)/azres).astype(int)
     ind_el = ((d_el+elmin)/elres).astype(int)
@@ -633,8 +753,7 @@ def create_sun_retrieval_field(par, field_name, imgcfg, lant=0.):
     npix_az = int((azmax-azmin)/azres)
     npix_el = int((elmax-elmin)/elres)
 
-    field = np.ma.zeros((npix_az, npix_el))
-    field[:] = np.ma.masked
+    field = np.ma.masked_all((npix_az, npix_el))
 
     d_az = np.array(np.array(range(npix_az))*azres+azmin)
     d_el = np.array(np.array(range(npix_el))*elres+elmin)
@@ -677,8 +796,7 @@ def compute_quantiles(field, quantiles=None):
         warn('No quantiles have been defined. Default ' + str(quantiles) +
              ' will be used')
     nquantiles = len(quantiles)
-    values = np.ma.zeros(nquantiles)
-    values[:] = np.ma.masked
+    values = np.ma.masked_all(nquantiles)
 
     data_valid = field.compressed()
     if np.size(data_valid) < 10:
@@ -717,8 +835,7 @@ def compute_quantiles_from_hist(bin_centers, hist, quantiles=None):
         warn('No quantiles have been defined. Default ' + str(quantiles) +
              ' will be used')
     nquantiles = len(quantiles)
-    values = np.ma.empty(nquantiles)
-    values[:] = np.ma.masked
+    values = np.ma.masked_all(nquantiles)
 
     # check if all elements in histogram are masked values
     mask = np.ma.getmaskarray(hist)
@@ -765,8 +882,7 @@ def compute_quantiles_sweep(field, ray_start, ray_end, quantiles=None):
         warn('No quantiles have been defined. Default ' + str(quantiles) +
              ' will be used')
     nquantiles = len(quantiles)
-    values = np.ma.zeros(nquantiles)
-    values[:] = np.ma.masked
+    values = np.ma.masked_all(nquantiles)
 
     data_valid = field[ray_start:ray_end+1, :].compressed()
     if np.size(data_valid) < 10:
@@ -929,7 +1045,7 @@ def compute_2d_stats(field1, field2, field_name1, field_name2, step1=None,
     quant75bias = np.percentile((field2-field1).compressed(), 75.)
     ind_max_val1, ind_max_val2 = np.where(hist_2d == np.ma.amax(hist_2d))
     modebias = bin_centers2[ind_max_val2[0]]-bin_centers1[ind_max_val1[0]]
-    slope, intercep, corr, pval, stderr = scipy.stats.linregress(
+    slope, intercep, corr, _, _ = scipy.stats.linregress(
         field1, y=field2)
     intercep_slope_1 = np.ma.mean(field2-field1)
 
@@ -979,8 +1095,7 @@ def compute_1d_stats(field1, field2):
     mean1 = np.ma.mean(field1)
     mean2 = np.ma.mean(field2)
     nb = mean2/mean1-1
-    slope, intercep, corr, pval, stderr = scipy.stats.linregress(
-        field1, y=field2)
+    _, _, corr, _, _ = scipy.stats.linregress(field1, y=field2)
     rms = np.ma.sqrt(np.ma.sum(np.ma.power(field2-field1, 2.))/npoints)
     nash = (1.-np.ma.sum(np.ma.power(field2-field1, 2.)) /
             np.ma.sum(np.ma.power(field1-mean1, 2.)))
@@ -1069,7 +1184,8 @@ def quantize_field(field, field_name, step):
 def compute_profile_stats(field, gate_altitude, h_vec, h_res,
                           quantity='quantiles',
                           quantiles=np.array([0.25, 0.50, 0.75]),
-                          nvalid_min=4, std_field=None, np_field=None):
+                          nvalid_min=4, std_field=None, np_field=None,
+                          make_linear=False, include_nans=False):
     """
     Compute statistics of vertical profile
 
@@ -1095,6 +1211,11 @@ def compute_profile_stats(field, gate_altitude, h_vec, h_res,
         the standard deviation of the regression at each range gate
     np_field : ndarray
         the number of points used to compute the regression at each range gate
+    make_linear : Boolean
+        If true the data is transformed into linear coordinates before taking
+        the mean
+    include_nans : Boolean
+        If true NaN will be considered as zeros
 
     Returns
     -------
@@ -1118,24 +1239,33 @@ def compute_profile_stats(field, gate_altitude, h_vec, h_res,
         vals[:, 3] = 0
         vals[:, 5] = 0
     elif quantity == 'regression_mean':
-        vals = np.ma.empty((nh, 2), dtype=float)
-        vals[:] = np.ma.masked
+        vals = np.ma.masked_all((nh, 2), dtype=float)
     else:
-        vals = np.ma.empty((nh, quantiles.size), dtype=float)
-        vals[:] = np.ma.masked
+        vals = np.ma.masked_all((nh, quantiles.size), dtype=float)
 
     val_valid = np.zeros(nh, dtype=int)
     for i, h in enumerate(h_vec):
         data = field[np.logical_and(
             gate_altitude >= h-h_res/2., gate_altitude < h+h_res/2.)]
+        if include_nans:
+            data[np.ma.getmaskarray(data)] = 0.
+        if data.size == 0:
+            continue
         if quantity == 'mean':
             mask = np.ma.getmaskarray(data)
             nvalid = np.count_nonzero(np.logical_not(mask))
             if nvalid >= nvalid_min:
-                vals[i, 0] = np.ma.mean(data)
-                vals[i, 1] = np.ma.min(data)
-                vals[i, 2] = np.ma.max(data)
+                if make_linear:
+                    data = np.ma.power(10., 0.1*data)
+                    vals[i, 0] = 10.*np.ma.log10(np.ma.mean(data))
+                    vals[i, 1] = 10.*np.ma.log10(np.ma.min(data))
+                    vals[i, 2] = 10.*np.ma.log10(np.ma.max(data))
+                else:
+                    vals[i, 0] = np.ma.mean(data)
+                    vals[i, 1] = np.ma.min(data)
+                    vals[i, 2] = np.ma.max(data)
                 val_valid[i] = nvalid
+
         elif quantity == 'mode':
             mask = np.ma.getmaskarray(data)
             nvalid = np.count_nonzero(np.logical_not(mask))
@@ -1187,7 +1317,7 @@ def compute_profile_stats(field, gate_altitude, h_vec, h_res,
             vals[i, 1] = np.ma.sqrt(
                 np.ma.sum((data_np-1)*data_var)/np.ma.sum(data_np-1))
         else:
-            avg, quants, nvalid = quantiles_weighted(
+            _, quants, nvalid = quantiles_weighted(
                 data, quantiles=quantiles)
             if nvalid is not None:
                 if nvalid >= nvalid_min:
@@ -1195,3 +1325,93 @@ def compute_profile_stats(field, gate_altitude, h_vec, h_res,
                     val_valid[i] = nvalid
 
     return vals, val_valid
+
+
+def compute_directional_stats(field, avg_type='mean', nvalid_min=1, axis=0):
+    """
+    Computes the mean or the median along one of the axis (ray or range)
+
+    Parameters
+    ----------
+    field : ndarray
+        the radar field
+    avg_type :str
+        the type of average: 'mean' or 'median'
+    nvalid_min : int
+        the minimum number of points to consider the stats valid. Default 1
+    axis : int
+        the axis along which to compute (0=ray, 1=range)
+
+    Returns
+    -------
+    values : ndarray 1D
+        The resultant statistics
+    nvalid : ndarray 1D
+        The number of valid points used in the computation
+
+    """
+    if avg_type == 'mean':
+        values = np.ma.mean(field, axis=axis)
+    else:
+        values = np.ma.median(field, axis=axis)
+
+    # Set to non-valid if there is not a minimum number of valid gates
+    valid = np.logical_not(np.ma.getmaskarray(field))
+    nvalid = np.sum(valid, axis=0, dtype=int)
+    values[nvalid < nvalid_min] = np.ma.masked
+
+    return values, nvalid
+
+
+def project_to_vertical(data_in, data_height, grid_height, interp_kind='none',
+                        fill_value=-9999.):
+    """
+    Projects radar data to a regular vertical grid
+
+    Parameters
+    ----------
+    data_in : ndarray 1D
+        the radar data to project
+    data_height : ndarray 1D
+        the height of each radar point
+    grid_height : ndarray 1D
+        the regular vertical grid to project to
+    interp_kind : str
+        The type of interpolation to use: 'none' or 'nearest'
+    fill_value : float
+        The fill value used for interpolation
+
+    Returns
+    -------
+    data_out : ndarray 1D
+        The projected data
+
+    """
+    if data_in.size == 0:
+        data_out = np.ma.masked_all(grid_height.size)
+        return data_out
+
+    if interp_kind == 'none':
+        hres = grid_height[1]-grid_height[0]
+        data_out = np.ma.masked_all(grid_height.size)
+        for ind_r, h in enumerate(grid_height):
+            ind_h = find_rng_index(data_height, h, rng_tol=hres/2.)
+            if ind_h is None:
+                continue
+            data_out[ind_r] = data_in[ind_h]
+    elif interp_kind == 'nearest':
+        data_filled = data_in.filled(fill_value=fill_value)
+        f = scipy.interpolate.interp1d(
+            data_height, data_filled, kind=interp_kind, bounds_error=False,
+            fill_value=fill_value)
+        data_out = np.ma.masked_values(f(grid_height), fill_value)
+    else:
+        valid = np.logical_not(np.ma.getmaskarray(data_in))
+        height_valid = data_height[valid]
+        data_valid = data_in[valid]
+        f = scipy.interpolate.interp1d(
+            height_valid, data_valid, kind=interp_kind, bounds_error=False,
+            fill_value=fill_value)
+        data_out = np.ma.masked_values(f(grid_height), fill_value)
+
+    return data_out

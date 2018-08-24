@@ -18,7 +18,6 @@ Functions to manage COSMO data
 
 from copy import deepcopy
 from warnings import warn
-import time
 import glob
 
 import numpy as np
@@ -66,8 +65,8 @@ def process_cosmo(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -79,8 +78,7 @@ def process_cosmo(procstatus, dscfg, radar_list=None):
     # start_time = time.time()
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, _, _, _ = get_datatype_fields(datatypedescr)
         break
 
     ind_rad = int(radarnr[5:8])-1
@@ -189,12 +187,12 @@ def process_cosmo(procstatus, dscfg, radar_list=None):
             return None, None
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
 
     for field in cosmo_fields:
         for field_name in field:
-            new_dataset.add_field(field_name, field[field_name])
+            new_dataset['radar_out'].add_field(field_name, field[field_name])
 
     return new_dataset, ind_rad
 
@@ -229,8 +227,8 @@ def process_hzt(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -242,8 +240,7 @@ def process_hzt(procstatus, dscfg, radar_list=None):
     # start_time = time.time()
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, _, _, _ = get_datatype_fields(datatypedescr)
         break
 
     ind_rad = int(radarnr[5:8])-1
@@ -326,9 +323,9 @@ def process_hzt(procstatus, dscfg, radar_list=None):
             return None, None
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
-    new_dataset.add_field('height_over_iso0', iso0_field)
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field('height_over_iso0', iso0_field)
 
     return new_dataset, ind_rad
 
@@ -365,8 +362,8 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -378,8 +375,7 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
     # start_time = time.time()
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, _, _, _ = get_datatype_fields(datatypedescr)
         break
 
     ind_rad = int(radarnr[5:8])-1
@@ -488,8 +484,8 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
     dscfg['global_data']['cosmo_fname'] = fname
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
 
     if not regular_grid:
         radar_aux = deepcopy(dscfg['global_data']['cosmo_radar'])
@@ -499,13 +495,15 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
         for field_name in field:
             try:
                 if regular_grid:
-                    new_dataset.add_field(field_name, field[field_name])
+                    new_dataset['radar_out'].add_field(
+                        field_name, field[field_name])
                 else:
                     # interpolate to current radar grid
                     radar_aux.add_field(field_name, field[field_name])
                     cosmo_field_interp = interpol_field(
                         radar, radar_aux, field_name)
-                    new_dataset.add_field(field_name, cosmo_field_interp)
+                    new_dataset['radar_out'].add_field(
+                        field_name, cosmo_field_interp)
             except Exception as ee:
                 warn(str(ee))
                 warn('Unable to add COSMO '+field_name +
@@ -543,8 +541,8 @@ def process_hzt_lookup_table(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -556,8 +554,7 @@ def process_hzt_lookup_table(procstatus, dscfg, radar_list=None):
     # start_time = time.time()
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, _, _, _ = get_datatype_fields(datatypedescr)
         break
 
     ind_rad = int(radarnr[5:8])-1
@@ -641,8 +638,8 @@ def process_hzt_lookup_table(procstatus, dscfg, radar_list=None):
     dscfg['global_data']['hzt_fname'] = fname
 
     # prepare for exit
-    new_dataset = deepcopy(radar)
-    new_dataset.fields = dict()
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
 
     if not regular_grid:
         radar_aux = deepcopy(dscfg['global_data']['hzt_radar'])
@@ -650,13 +647,15 @@ def process_hzt_lookup_table(procstatus, dscfg, radar_list=None):
 
     try:
         if regular_grid:
-            new_dataset.add_field('height_over_iso0', iso0_field)
+            new_dataset['radar_out'].add_field(
+                'height_over_iso0', iso0_field)
         else:
             # interpolate to current radar grid
             radar_aux.add_field('height_over_iso0', iso0_field)
             hzt_field_interp = interpol_field(
                 radar, radar_aux, 'height_over_iso0')
-            new_dataset.add_field('height_over_iso0', hzt_field_interp)
+            new_dataset['radar_out'].add_field(
+                'height_over_iso0', hzt_field_interp)
     except Exception as ee:
         warn(str(ee))
         warn('Unable to add height_over_iso0 ' +
@@ -687,8 +686,8 @@ def process_cosmo_coord(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -696,14 +695,11 @@ def process_cosmo_coord(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
-    start_time = time.time()
-
     if dscfg['initialized'] == 1:
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, _, _, _ = get_datatype_fields(datatypedescr)
         break
 
     ind_rad = int(radarnr[5:8])-1
@@ -729,7 +725,7 @@ def process_cosmo_coord(procstatus, dscfg, radar_list=None):
 
     new_dataset = {
         'ind_rad': ind_rad,
-        'radar_obj': radar_obj}
+        'radar_out': radar_obj}
 
     dscfg['initialized'] = 1
 
@@ -757,8 +753,8 @@ def process_hzt_coord(procstatus, dscfg, radar_list=None):
 
     Returns
     -------
-    new_dataset : Radar
-        radar object
+    new_dataset : dict
+        dictionary containing the output
     ind_rad : int
         radar index
 
@@ -766,14 +762,11 @@ def process_hzt_coord(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
-    start_time = time.time()
-
     if dscfg['initialized'] == 1:
         return None, None
 
     for datatypedescr in dscfg['datatype']:
-        radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
-            datatypedescr)
+        radarnr, _, _, _, _ = get_datatype_fields(datatypedescr)
         break
 
     ind_rad = int(radarnr[5:8])-1
@@ -802,7 +795,7 @@ def process_hzt_coord(procstatus, dscfg, radar_list=None):
 
     new_dataset = {
         'ind_rad': ind_rad,
-        'radar_obj': radar_obj}
+        'radar_out': radar_obj}
 
     dscfg['initialized'] = 1
 

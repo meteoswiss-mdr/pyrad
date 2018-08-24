@@ -33,6 +33,7 @@ Product generation
     generate_monitoring_products
     generate_grid_products
     generate_traj_product
+    generate_ml_products
 
 """
 
@@ -42,6 +43,7 @@ from .process_product import generate_sun_hits_products
 from .process_product import generate_cosmo_coord_products
 from .process_product import generate_qvp_products
 from .process_product import generate_occurrence_products
+from .process_product import generate_ml_products
 
 from .process_vol_products import generate_vol_products
 from .process_grid_products import generate_grid_products

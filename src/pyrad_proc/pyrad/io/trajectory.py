@@ -490,10 +490,9 @@ class Trajectory(object):
         ----------
 
         """
-        (traj_ID, yyyymmddHHMM, lon, lat, ell_L, ell_S, ell_or, area,
-         vel_x, vel_y, det, RANKr, CG_n, CG_p, CG, CG_percent_p, ET45,
-         ET45m, ET15, ET15m, VIL, maxH, maxHm, POH, RANK, Dvel_x,
-         Dvel_y, cell_contours) = read_trt_traj_data(self.filename)
+        (traj_ID, yyyymmddHHMM, lon, lat, _, _, _, _, _, _, _, _, _, _, _, _,
+         _, _, _, _, _, _, _, _, _, _, _, cell_contours) = read_trt_traj_data(
+             self.filename)
 
         if traj_ID is None:
             raise Exception("ERROR: Could not find|open trajectory file '" +

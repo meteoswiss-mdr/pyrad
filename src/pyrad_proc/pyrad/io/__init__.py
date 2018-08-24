@@ -76,6 +76,7 @@ Reading other data
     read_profile_ts
     read_histogram_ts
     read_quantiles_ts
+    read_ml_ts
 
 Writing data
 ==================
@@ -168,7 +169,7 @@ from .read_data_other import read_colocated_data, read_antenna_pattern
 from .read_data_other import read_last_state, read_rhi_profile
 from .read_data_other import read_excess_gates, read_histogram
 from .read_data_other import read_profile_ts, read_histogram_ts
-from .read_data_other import read_quantiles_ts
+from .read_data_other import read_quantiles_ts, read_ml_ts
 
 from .read_data_sensor import read_lightning, read_lightning_traj
 from .read_data_sensor import get_sensor_data, read_smn, read_smn2
