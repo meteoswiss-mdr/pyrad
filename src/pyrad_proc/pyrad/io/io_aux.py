@@ -495,8 +495,30 @@ def get_fieldname_pyart(datatype):
         field_name = 'frequency_of_occurrence'
     elif datatype == 'RR':
         field_name = 'radar_estimated_rain_rate'
+
     elif datatype == 'hydro':
         field_name = 'radar_echo_classification'
+    elif datatype == 'entropy':
+        field_name = 'hydroclass_entropy'
+    elif datatype == 'propDS':
+        field_name = 'proportion_DS'
+    elif datatype == 'propCR':
+        field_name = 'proportion_CR'
+    elif datatype == 'propLR':
+        field_name = 'proportion_LR'
+    elif datatype == 'propGR':
+        field_name = 'proportion_GR'
+    elif datatype == 'propRN':
+        field_name = 'proportion_RN'
+    elif datatype == 'propVI':
+        field_name = 'proportion_VI'
+    elif datatype == 'propWS':
+        field_name = 'proportion_WS'
+    elif datatype == 'propMH':
+        field_name = 'proportion_MH'
+    elif datatype == 'propIH':
+        field_name = 'proportion_IH'
+
     elif datatype == 'time_avg_flag':
         field_name = 'time_avg_flag'
     elif datatype == 'colocated_gates':
