@@ -151,6 +151,19 @@ signal_quality_index_vv = 'signal_quality_index_vv'
 unfiltered_signal_quality_index = 'unfiltered_signal_quality_index'
 unfiltered_signal_quality_index_vv = 'unfiltered_signal_quality_index_vv'
 
+# hydroclass
+radar_echo_classification = 'radar_echo_classification'
+hydroclass_entropy = 'hydroclass_entropy'
+probability_DS = 'probability_DS'
+probability_CR = 'probability_CR'
+probability_LR = 'probability_LR'
+probability_GR = 'probability_GR'
+probability_RN = 'probability_RN'
+probability_VI = 'probability_VI'
+probability_WS = 'probability_WS'
+probability_MH = 'probability_MH'
+probability_IH = 'probability_IH'
+
 # Misc fields
 signal_to_noise_ratio = 'signal_to_noise_ratio'
 signal_to_noise_ratio_hh = 'signal_to_noise_ratio_hh'
@@ -160,7 +173,6 @@ noisedBZ_vv = 'noisedBZ_vv'
 
 rain_rate = 'rain_rate'
 radar_estimated_rain_rate = 'radar_estimated_rain_rate'
-radar_echo_classification = 'radar_echo_classification'
 radar_echo_id = 'radar_echo_id'
 clutter_exit_code = 'clutter_exit_code'
 melting_layer = 'melting_layer'
@@ -352,6 +364,16 @@ DEFAULT_FIELD_NAMES = {
     'sun_hit_zdr': sun_hit_zdr,
     'radar_estimated_rain_rate': radar_estimated_rain_rate,
     'radar_echo_classification': radar_echo_classification,
+    'hydroclass_entropy': hydroclass_entropy,
+    'probability_DS': probability_DS,
+    'probability_CR': probability_CR,
+    'probability_LR': probability_LR,
+    'probability_GR': probability_GR,
+    'probability_RN': probability_RN,
+    'probability_VI': probability_VI,
+    'probability_WS': probability_WS,
+    'probability_MH': probability_MH,
+    'probability_IH': probability_IH,
     'radar_echo_id': radar_echo_id,
     'clutter_exit_code': clutter_exit_code,
     'melting_layer': melting_layer,
@@ -1090,6 +1112,66 @@ DEFAULT_METADATA = {
                    'IH/HDG'],
         'ticks': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
         'boundaries': [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5],
+        'coordinates': 'elevation azimuth range'},
+
+    hydroclass_entropy: {
+        'units': '-',
+        'standard_name': 'hydroclass_entropy',
+        'long_name': 'Semi-supervised hydrometeor classification entropy',
+        'coordinates': 'elevation azimuth range'},
+
+    probability_DS: {
+        'units': '-',
+        'standard_name': 'probability_DS',
+        'long_name': 'Dry Snow probability',
+        'coordinates': 'elevation azimuth range'},
+
+    probability_CR: {
+        'units': '-',
+        'standard_name': 'probability_CR',
+        'long_name': 'Crystals probability',
+        'coordinates': 'elevation azimuth range'},
+
+    probability_LR: {
+        'units': '-',
+        'standard_name': 'probability_LR',
+        'long_name': 'Light Rain probability',
+        'coordinates': 'elevation azimuth range'},
+
+    probability_GR: {
+        'units': '-',
+        'standard_name': 'probability_GR',
+        'long_name': 'Graupel probability',
+        'coordinates': 'elevation azimuth range'},
+
+    probability_RN: {
+        'units': '-',
+        'standard_name': 'probability_RN',
+        'long_name': 'Rain probability',
+        'coordinates': 'elevation azimuth range'},
+
+    probability_VI: {
+        'units': '-',
+        'standard_name': 'probability_VI',
+        'long_name': 'Vertical Ice Crystals probability',
+        'coordinates': 'elevation azimuth range'},
+
+    probability_WS: {
+        'units': '-',
+        'standard_name': 'probability_WS',
+        'long_name': 'Wet Snow probability',
+        'coordinates': 'elevation azimuth range'},
+
+    probability_MH: {
+        'units': '-',
+        'standard_name': 'probability_MH',
+        'long_name': 'Melting Hail probability',
+        'coordinates': 'elevation azimuth range'},
+
+    probability_IH: {
+        'units': '-',
+        'standard_name': 'probability_IH',
+        'long_name': 'Ice Hail probability',
         'coordinates': 'elevation azimuth range'},
 
     radar_echo_id: {
@@ -2104,6 +2186,17 @@ DEFAULT_FIELD_COLORMAP = {
     sun_hit_zdr: 'pyart_LangRainbow12',
 
     radar_echo_classification: 'pyart_LangRainbow12',
+    hydroclass_entropy: 'pyart_LangRainbow12',
+    probability_DS:  'pyart_LangRainbow12',
+    probability_CR:  'pyart_LangRainbow12',
+    probability_LR:  'pyart_LangRainbow12',
+    probability_GR:  'pyart_LangRainbow12',
+    probability_RN:  'pyart_LangRainbow12',
+    probability_VI:  'pyart_LangRainbow12',
+    probability_WS:  'pyart_LangRainbow12',
+    probability_MH:  'pyart_LangRainbow12',
+    probability_IH:  'pyart_LangRainbow12',
+
     radar_echo_id: 'pyart_LangRainbow12',
     clutter_exit_code: 'pyart_LangRainbow12',
     melting_layer: 'pyart_LangRainbow12',
@@ -2236,6 +2329,16 @@ DEFAULT_FIELD_LIMITS = {
     radar_estimated_rain_rate: (0., 10.),
 
     radar_echo_classification: (0., 9.),
+    hydroclass_entropy: (0., 1.),
+    probability_DS: (0., 1.),
+    probability_CR: (0., 1.),
+    probability_LR: (0., 1.),
+    probability_GR: (0., 1.),
+    probability_RN: (0., 1.),
+    probability_VI: (0., 1.),
+    probability_WS: (0., 1.),
+    probability_MH: (0., 1.),
+    probability_IH: (0., 1.),
     radar_echo_id: (0, 3),
     melting_layer: (0, 5),
     clutter_exit_code: (0, 200),
