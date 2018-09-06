@@ -154,15 +154,15 @@ unfiltered_signal_quality_index_vv = 'unfiltered_signal_quality_index_vv'
 # hydroclass
 radar_echo_classification = 'radar_echo_classification'
 hydroclass_entropy = 'hydroclass_entropy'
-probability_DS = 'probability_DS'
-probability_CR = 'probability_CR'
-probability_LR = 'probability_LR'
-probability_GR = 'probability_GR'
-probability_RN = 'probability_RN'
-probability_VI = 'probability_VI'
-probability_WS = 'probability_WS'
-probability_MH = 'probability_MH'
-probability_IH = 'probability_IH'
+proportion_DS = 'proportion_DS'
+proportion_CR = 'proportion_CR'
+proportion_LR = 'proportion_LR'
+proportion_GR = 'proportion_GR'
+proportion_RN = 'proportion_RN'
+proportion_VI = 'proportion_VI'
+proportion_WS = 'proportion_WS'
+proportion_MH = 'proportion_MH'
+proportion_IH = 'proportion_IH'
 
 # Misc fields
 signal_to_noise_ratio = 'signal_to_noise_ratio'
@@ -365,15 +365,15 @@ DEFAULT_FIELD_NAMES = {
     'radar_estimated_rain_rate': radar_estimated_rain_rate,
     'radar_echo_classification': radar_echo_classification,
     'hydroclass_entropy': hydroclass_entropy,
-    'probability_DS': probability_DS,
-    'probability_CR': probability_CR,
-    'probability_LR': probability_LR,
-    'probability_GR': probability_GR,
-    'probability_RN': probability_RN,
-    'probability_VI': probability_VI,
-    'probability_WS': probability_WS,
-    'probability_MH': probability_MH,
-    'probability_IH': probability_IH,
+    'proportion_DS': proportion_DS,
+    'proportion_CR': proportion_CR,
+    'proportion_LR': proportion_LR,
+    'proportion_GR': proportion_GR,
+    'proportion_RN': proportion_RN,
+    'proportion_VI': proportion_VI,
+    'proportion_WS': proportion_WS,
+    'proportion_MH': proportion_MH,
+    'proportion_IH': proportion_IH,
     'radar_echo_id': radar_echo_id,
     'clutter_exit_code': clutter_exit_code,
     'melting_layer': melting_layer,
@@ -1120,58 +1120,58 @@ DEFAULT_METADATA = {
         'long_name': 'Semi-supervised hydrometeor classification entropy',
         'coordinates': 'elevation azimuth range'},
 
-    probability_DS: {
-        'units': '-',
-        'standard_name': 'probability_DS',
-        'long_name': 'Dry Snow probability',
+    proportion_DS: {
+        'units': 'percent',
+        'standard_name': 'proportion_DS',
+        'long_name': 'Dry Snow proportion',
         'coordinates': 'elevation azimuth range'},
 
-    probability_CR: {
-        'units': '-',
-        'standard_name': 'probability_CR',
-        'long_name': 'Crystals probability',
+    proportion_CR: {
+        'units': 'percent',
+        'standard_name': 'proportion_CR',
+        'long_name': 'Crystals proportion',
         'coordinates': 'elevation azimuth range'},
 
-    probability_LR: {
-        'units': '-',
-        'standard_name': 'probability_LR',
-        'long_name': 'Light Rain probability',
+    proportion_LR: {
+        'units': 'percent',
+        'standard_name': 'proportion_LR',
+        'long_name': 'Light Rain proportion',
         'coordinates': 'elevation azimuth range'},
 
-    probability_GR: {
-        'units': '-',
-        'standard_name': 'probability_GR',
-        'long_name': 'Graupel probability',
+    proportion_GR: {
+        'units': 'percent',
+        'standard_name': 'proportion_GR',
+        'long_name': 'Graupel proportion',
         'coordinates': 'elevation azimuth range'},
 
-    probability_RN: {
-        'units': '-',
-        'standard_name': 'probability_RN',
-        'long_name': 'Rain probability',
+    proportion_RN: {
+        'units': 'percent',
+        'standard_name': 'proportion_RN',
+        'long_name': 'Rain proportion',
         'coordinates': 'elevation azimuth range'},
 
-    probability_VI: {
-        'units': '-',
-        'standard_name': 'probability_VI',
-        'long_name': 'Vertical Ice Crystals probability',
+    proportion_VI: {
+        'units': 'percent',
+        'standard_name': 'proportion_VI',
+        'long_name': 'Vertical Ice Crystals proportion',
         'coordinates': 'elevation azimuth range'},
 
-    probability_WS: {
-        'units': '-',
-        'standard_name': 'probability_WS',
-        'long_name': 'Wet Snow probability',
+    proportion_WS: {
+        'units': 'percent',
+        'standard_name': 'proportion_WS',
+        'long_name': 'Wet Snow proportion',
         'coordinates': 'elevation azimuth range'},
 
-    probability_MH: {
-        'units': '-',
-        'standard_name': 'probability_MH',
-        'long_name': 'Melting Hail probability',
+    proportion_MH: {
+        'units': 'percent',
+        'standard_name': 'proportion_MH',
+        'long_name': 'Melting Hail proportion',
         'coordinates': 'elevation azimuth range'},
 
-    probability_IH: {
-        'units': '-',
-        'standard_name': 'probability_IH',
-        'long_name': 'Ice Hail probability',
+    proportion_IH: {
+        'units': 'percent',
+        'standard_name': 'proportion_IH',
+        'long_name': 'Ice Hail proportion',
         'coordinates': 'elevation azimuth range'},
 
     radar_echo_id: {
@@ -2187,15 +2187,15 @@ DEFAULT_FIELD_COLORMAP = {
 
     radar_echo_classification: 'pyart_LangRainbow12',
     hydroclass_entropy: 'pyart_LangRainbow12',
-    probability_DS:  'pyart_LangRainbow12',
-    probability_CR:  'pyart_LangRainbow12',
-    probability_LR:  'pyart_LangRainbow12',
-    probability_GR:  'pyart_LangRainbow12',
-    probability_RN:  'pyart_LangRainbow12',
-    probability_VI:  'pyart_LangRainbow12',
-    probability_WS:  'pyart_LangRainbow12',
-    probability_MH:  'pyart_LangRainbow12',
-    probability_IH:  'pyart_LangRainbow12',
+    proportion_DS:  'pyart_LangRainbow12',
+    proportion_CR:  'pyart_LangRainbow12',
+    proportion_LR:  'pyart_LangRainbow12',
+    proportion_GR:  'pyart_LangRainbow12',
+    proportion_RN:  'pyart_LangRainbow12',
+    proportion_VI:  'pyart_LangRainbow12',
+    proportion_WS:  'pyart_LangRainbow12',
+    proportion_MH:  'pyart_LangRainbow12',
+    proportion_IH:  'pyart_LangRainbow12',
 
     radar_echo_id: 'pyart_LangRainbow12',
     clutter_exit_code: 'pyart_LangRainbow12',
@@ -2330,15 +2330,15 @@ DEFAULT_FIELD_LIMITS = {
 
     radar_echo_classification: (0., 9.),
     hydroclass_entropy: (0., 1.),
-    probability_DS: (0., 1.),
-    probability_CR: (0., 1.),
-    probability_LR: (0., 1.),
-    probability_GR: (0., 1.),
-    probability_RN: (0., 1.),
-    probability_VI: (0., 1.),
-    probability_WS: (0., 1.),
-    probability_MH: (0., 1.),
-    probability_IH: (0., 1.),
+    proportion_DS: (0., 100.),
+    proportion_CR: (0., 100.),
+    proportion_LR: (0., 100.),
+    proportion_GR: (0., 100.),
+    proportion_RN: (0., 100.),
+    proportion_VI: (0., 100.),
+    proportion_WS: (0., 100.),
+    proportion_MH: (0., 100.),
+    proportion_IH: (0., 100.),
     radar_echo_id: (0, 3),
     melting_layer: (0, 5),
     clutter_exit_code: (0, 200),

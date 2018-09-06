@@ -1074,23 +1074,23 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
 
         if output_distances:
             new_dataset['radar_out'].add_field(
-                'probability_DS', fields_dict['prob_DS'])
+                'proportion_DS', fields_dict['prop_DS'])
             new_dataset['radar_out'].add_field(
-                'probability_CR', fields_dict['prob_CR'])
+                'proportion_CR', fields_dict['prop_CR'])
             new_dataset['radar_out'].add_field(
-                'probability_LR', fields_dict['prob_LR'])
+                'proportion_LR', fields_dict['prop_LR'])
             new_dataset['radar_out'].add_field(
-                'probability_GR', fields_dict['prob_GR'])
+                'proportion_GR', fields_dict['prop_GR'])
             new_dataset['radar_out'].add_field(
-                'probability_RN', fields_dict['prob_RN'])
+                'proportion_RN', fields_dict['prop_RN'])
             new_dataset['radar_out'].add_field(
-                'probability_VI', fields_dict['prob_VI'])
+                'proportion_VI', fields_dict['prop_VI'])
             new_dataset['radar_out'].add_field(
-                'probability_WS', fields_dict['prob_WS'])
+                'proportion_WS', fields_dict['prop_WS'])
             new_dataset['radar_out'].add_field(
-                'probability_MH', fields_dict['prob_MH'])
+                'proportion_MH', fields_dict['prop_MH'])
             new_dataset['radar_out'].add_field(
-                'probability_IH', fields_dict['prob_IH'])
+                'proportion_IH', fields_dict['prop_IH'])
 
     return new_dataset, ind_rad
 
