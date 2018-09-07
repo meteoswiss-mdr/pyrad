@@ -59,7 +59,7 @@ from ..io.read_data_other import read_last_state
 from ..proc.process_aux import get_process_func
 from ..prod.product_aux import get_prodgen_func
 
-#from memory_profiler import profile
+# from memory_profiler import profile
 
 MULTIPROCESSING_PROD = False
 MULTIPROCESSING_DSET = False
@@ -106,7 +106,7 @@ def _user_input_listener(input_queue):
             break
         time.sleep(1)
 
-#@profile
+# @profile
 def _get_times_and_traj(trajfile, starttime, endtime, scan_period,
                         last_state_file=None, trajtype='plane',
                         flashnr=0):
@@ -242,12 +242,14 @@ def _initialize_datasets(dataset_levels, cfg, traj=None, infostr=None):
                     radar_list=None, voltime=None, trajectory=traj,
                     runinfo=infostr)
 
+                gc.collect()
+
     # manual garbage collection after initial processing
     gc.collect()
 
     return dscfg, traj
 
-
+# @profile
 def _process_datasets(dataset_levels, cfg, dscfg, radar_list, master_voltime,
                       traj=None, infostr=None):
     """
@@ -325,6 +327,11 @@ def _process_datasets(dataset_levels, cfg, dscfg, radar_list, master_voltime,
                 if jobs_ds:
                     jobs_prod.extend(jobs_ds)
 
+                del new_dataset
+                del jobs_ds
+
+                gc.collect()
+
     # wait until all the products on this time stamp are generated
     for job in jobs_prod:
         job.join()
@@ -389,6 +396,8 @@ def _postprocess_datasets(dataset_levels, cfg, dscfg, traj=None, infostr=None):
                     dataset, cfg, dscfg[dataset], proc_status=2,
                     radar_list=None, voltime=None, trajectory=traj,
                     runinfo=infostr)
+
+                gc.collect()
 
     # manual garbage collection after post-processing
     gc.collect()
@@ -593,7 +602,7 @@ def _wait_for_rainbow_datatypes(rainbow_files, period=30):
     return found_all
 
 
-#@profile
+# @profile
 def _get_radars_data(master_voltime, datatypesdescr_list, datacfg,
                      num_radars=1):
     """
@@ -655,7 +664,7 @@ def _get_radars_data(master_voltime, datatypesdescr_list, datacfg,
     return radar_list
 
 
-#@profile
+# @profile
 def _generate_dataset(dsname, cfg, dscfg, proc_status=0, radar_list=None,
                       voltime=None, trajectory=None, runinfo=None):
     """
@@ -836,10 +845,12 @@ def _process_dataset(cfg, dscfg, proc_status=0, radar_list=None, voltime=None,
             for product in dscfg['products']:
                 _generate_prod(new_dataset, cfg, product, prod_func,
                                dscfg['dsname'], voltime, runinfo=runinfo)
+
+                gc.collect()
     return new_dataset, ind_rad, jobs
 
 
-#@profile
+# @profile
 def _generate_prod(dataset, cfg, prdname, prdfunc, dsname, voltime,
                    runinfo=None):
     """
@@ -880,7 +891,7 @@ def _generate_prod(dataset, cfg, prdname, prdfunc, dsname, voltime,
         return 1
 
 
-#@profile
+# @profile
 def _create_cfg_dict(cfgfile):
     """
     creates a configuration dictionary
@@ -1010,7 +1021,7 @@ def _create_cfg_dict(cfgfile):
     return cfg
 
 
-#@profile
+# @profile
 def _create_datacfg_dict(cfg):
     """
     creates a data configuration dictionary from a config dictionary
@@ -1050,7 +1061,7 @@ def _create_datacfg_dict(cfg):
     return datacfg
 
 
-#@profile
+# @profile
 def _create_dscfg_dict(cfg, dataset):
     """
     creates a dataset configuration dictionary
@@ -1121,7 +1132,7 @@ def _create_dscfg_dict(cfg, dataset):
     return dscfg
 
 
-#@profile
+# @profile
 def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
     """
     creates a product configuration dictionary
@@ -1176,7 +1187,7 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
     return prdcfg
 
 
-#@profile
+# @profile
 def _get_datatype_list(cfg, radarnr='RADAR001'):
     """
     get list of unique input data types
@@ -1231,7 +1242,7 @@ def _get_datatype_list(cfg, radarnr='RADAR001'):
     return datatypesdescr
 
 
-#@profile
+# @profile
 def _get_datasets_list(cfg):
     """
     get list of dataset at each processing level
@@ -1258,7 +1269,7 @@ def _get_datasets_list(cfg):
     return dataset_levels
 
 
-#@profile
+# @profile
 def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
                          scan_list=None):
     """
@@ -1338,7 +1349,7 @@ def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
     return masterfilelist, masterdatatypedescr, masterscan
 
 
-#@profile
+# @profile
 def _add_dataset(new_dataset, radar_list, ind_rad, make_global=True):
     """
     adds a new field to an existing radar object

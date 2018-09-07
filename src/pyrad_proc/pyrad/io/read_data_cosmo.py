@@ -31,6 +31,8 @@ from pyart.config import get_metadata, get_field_name
 
 from ..io.io_aux import get_fieldname_cosmo
 
+# from memory_profiler import profile
+
 # import time
 
 
@@ -89,6 +91,8 @@ def cosmo2radar_data(radar, cosmo_coord, cosmo_data, time_index=0,
             interp_func = NearestNDInterpolator(
                 (z_cosmo, y_cosmo, x_cosmo), values)
 
+            del values
+
             # interpolate
             data_interp = interp_func((z_radar, y_radar, x_radar))
 
@@ -96,6 +100,8 @@ def cosmo2radar_data(radar, cosmo_coord, cosmo_data, time_index=0,
             field_dict = get_metadata(field)
             field_dict['data'] = data_interp
             cosmo_fields.append({field: field_dict})
+
+            del data_interp
 
     if not cosmo_fields:
         warn('COSMO data not available')
@@ -214,7 +220,7 @@ def get_cosmo_fields(cosmo_data, cosmo_ind, time_index=0,
 
     return cosmo_fields
 
-
+# @profile
 def read_cosmo_data(fname, field_names=['temperature'], celsius=True):
     """
     Reads COSMO data from a netcdf file
@@ -250,7 +256,7 @@ def read_cosmo_data(fname, field_names=['temperature'], celsius=True):
         if cosmo_name not in ncvars:
             warn(field+' data not present in COSMO file '+fname)
         else:
-            var_data = _ncvar_to_dict(ncvars[cosmo_name])
+            var_data = _ncvar_to_dict(ncvars[cosmo_name], dtype='float16')
             if field == 'temperature' and celsius:
                 var_data['data'] -= 273.15
                 var_data['units'] = 'degrees Celsius'
@@ -259,6 +265,7 @@ def read_cosmo_data(fname, field_names=['temperature'], celsius=True):
                 var_data['units'] = 'meters_per_second_per_km'
             cosmo_data.update({field: var_data})
             found = True
+            del var_data
     if not found:
         warn('No field available in COSMO file '+fname)
         ncobj.close()
@@ -350,16 +357,16 @@ def read_cosmo_coord(fname, zmin=None):
         return None
 
 
-def _ncvar_to_dict(ncvar):
+def _ncvar_to_dict(ncvar, dtype='float64'):
     """ Convert a NetCDF Dataset variable to a dictionary. """
     # copy all attributes
     d = dict((k, getattr(ncvar, k)) for k in ncvar.ncattrs())
     d.update({'data': ncvar[:]})
     if '_FillValue' in d:
-        d['data'] = np.ma.asarray(d['data'])
+        d['data'] = np.ma.asarray(d['data'], dtype=dtype)
         d['data'] = np.ma.masked_values(d['data'], float(d['_FillValue']))
     else:
-        d['data'] = np.asarray(d['data'])
+        d['data'] = np.asarray(d['data'], dtype=dtype)
 
     return d
 

@@ -90,7 +90,7 @@ def process_echo_id(procstatus, dscfg, radar_list=None):
         warn('Unable to create radar_echo_id dataset. Missing data')
         return None, None
 
-    echo_id = np.zeros((radar.nrays, radar.ngates), dtype='int32')+3
+    echo_id = np.zeros((radar.nrays, radar.ngates), dtype=np.uint8)+3
 
     # look for clutter
     gatefilter = pyart.filters.moment_and_texture_based_gate_filter(
@@ -182,7 +182,7 @@ def process_birds_id(procstatus, dscfg, radar_list=None):
     rmax = dscfg.get('rmax', 25000.)
     elmin = dscfg.get('elmin', 1.5)
     elmax = dscfg.get('elmax', 85.)
-    echo_id = np.zeros((radar.nrays, radar.ngates), dtype='int32')+3
+    echo_id = np.zeros((radar.nrays, radar.ngates), dtype=np.uint8)+3
 
     # look for clutter
     gatefilter = pyart.filters.birds_gate_filter(
@@ -254,7 +254,7 @@ def process_clt_to_echo_id(procstatus, dscfg, radar_list=None):
         warn('rad4alp clutter exit code not present. Unable to obtain echoID')
         return None, None
 
-    echo_id = np.zeros((radar.nrays, radar.ngates), dtype='int32')+3
+    echo_id = np.zeros((radar.nrays, radar.ngates), dtype=np.uint8)+3
     clt = radar.fields[clt_field]['data']
     echo_id[clt == 1] = 1
     echo_id[clt >= 100] = 2

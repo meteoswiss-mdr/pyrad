@@ -34,6 +34,8 @@ from ..io.read_data_radar import interpol_field
 from ..io.read_data_hzt import read_hzt_data, hzt2radar_data, hzt2radar_coord
 from ..io.read_data_hzt import get_iso0_field
 
+# from memory_profiler import profile
+
 
 def process_cosmo(procstatus, dscfg, radar_list=None):
     """
@@ -329,7 +331,7 @@ def process_hzt(procstatus, dscfg, radar_list=None):
 
     return new_dataset, ind_rad
 
-
+# @profile
 def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
     """
     Gets COSMO data and put it in radar coordinates
