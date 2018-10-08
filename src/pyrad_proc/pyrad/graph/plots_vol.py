@@ -935,7 +935,8 @@ def plot_ppi_contour(radar, field_name, ind_el, prdcfg, fname_list,
 
 def plot_pos(lat, lon, alt, fname_list, ax=None, fig=None, save_fig=True,
              sort_altitude='No', dpi=72, alpha=1., cb_label='height [m MSL]',
-             titl='Position', limits=None, vmin=None, vmax=None):
+             titl='Position', xlabel='Lon [Deg]', ylabel='Lat [Deg]',
+             limits=None, vmin=None, vmax=None):
     """
     plots a trajectory on a Cartesian surface
 
@@ -1008,8 +1009,8 @@ def plot_pos(lat, lon, alt, fname_list, ax=None, fig=None, save_fig=True,
     cb.set_label(cb_label)
 
     plt.title(titl)
-    plt.xlabel('Lon [Deg]')
-    plt.ylabel('Lat [Deg]')
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
 
     # Turn on the grid
     ax.grid()
@@ -1232,8 +1233,9 @@ def plot_field_coverage(xval_list, yval_list, fname_list,
 
 
 def _plot_time_range(rad_time, rad_range, rad_data, field_name, fname_list,
-                     titl='Time-Range plot', ylabel='range (Km)', vmin=None,
-                     vmax=None, figsize=[10, 8], dpi=72):
+                     titl='Time-Range plot',
+                     xlabel='time (s from start time)', ylabel='range (Km)',
+                     vmin=None, vmax=None, figsize=[10, 8], dpi=72):
     """
     plots a time-range plot
 
@@ -1251,8 +1253,8 @@ def _plot_time_range(rad_time, rad_range, rad_data, field_name, fname_list,
         list of names of the files where to store the plot
     titl : str
         Plot title
-    ylabel : str
-        y-axis label
+    xlabel, ylabel : str
+        x- and y-axis labels
     vmin, vmax : float
         min and max values of the color bar
     Norm : array
@@ -1268,9 +1270,6 @@ def _plot_time_range(rad_time, rad_range, rad_data, field_name, fname_list,
         list of names of the created plots
 
     """
-    time_min = rad_time[0]
-    time_max = rad_time[-1]
-
     # display data
     field_dict = pyart.config.get_metadata(field_name)
     label = get_colobar_label(field_dict, field_name)
@@ -1287,13 +1286,11 @@ def _plot_time_range(rad_time, rad_range, rad_data, field_name, fname_list,
     else:
         norm = None
 
-    rmin = rad_range[0]
-    rmax = rad_range[-1]
-    cax = ax.imshow(
-        np.ma.transpose(rad_data), origin='lower', cmap=cmap, vmin=vmin,
-        vmax=vmax, norm=norm, extent=(time_min, time_max, rmin, rmax),
-        aspect='auto', interpolation='none')
-    plt.xlabel('time (s from start time)')
+    T, R = np.meshgrid(rad_time, rad_range)
+    cax = ax.pcolormesh(
+        T, R, np.ma.transpose(rad_data), cmap=cmap, vmin=vmin, vmax=vmax,
+        norm=norm)
+    plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.title(titl)
 

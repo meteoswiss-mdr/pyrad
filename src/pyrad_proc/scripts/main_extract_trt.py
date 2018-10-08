@@ -3,10 +3,11 @@
 
 """
 ================================================
-main_trt
+main_extract_trt
 ================================================
 
-This program processes TRT data
+This program extracts individual TRT cell data from the original files
+and puts it in a separate file for each cell
 
 """
 
@@ -14,6 +15,7 @@ This program processes TRT data
 # License: BSD 3 clause
 
 import datetime
+import argparse
 import atexit
 import os
 
@@ -27,18 +29,42 @@ print(__doc__)
 def main():
     """
     """
-    database_path = '/store/msrad/radar/trt/'
+    # parse the arguments
+    parser = argparse.ArgumentParser(
+        description='Entry to Pyrad processing framework')
 
-    start_time_list = [
-        '20170719000000', '20170730000000', '20170801000000']
-    end_time_list = [
-        '20170719235900', '20170730235900', '20170801235900']
-    nsteps_min = 3
+    # positional arguments
+    parser.add_argument(
+        'start_times', type=str,
+        help=('Start times of the data to process. Format YYYYMMDDhhmmss.' +
+              'Coma separated'))
 
-    print("====== TRT cell processing started: %s" %
+    parser.add_argument(
+        'end_times', type=str,
+        help=('End times of the data to process. Format YYYYMMDDhhmmss.' +
+              'Coma separated'))
+
+    # keyword arguments
+    parser.add_argument(
+        '--trtbase', type=str,
+        default='/store/msrad/radar/trt/',
+        help='name of folder containing the TRT cell data')
+
+    parser.add_argument(
+        '--nsteps_min', type=int,
+        default=3,
+        help=('Minimum number of time steps to consider the TRT cell ' +
+              'worth processing'))
+
+    args = parser.parse_args()
+
+    print("====== TRT cell extraction started: %s" %
           datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
     atexit.register(_print_end_msg,
-                    "====== comparison finished: ")
+                    "====== TRT cell extraction finished: ")
+
+    start_time_list = args.start_times.split(',')
+    end_time_list = args.end_times.split(',')
 
     for i, start_time_str in enumerate(start_time_list):
         end_time_str = end_time_list[i]
@@ -47,9 +73,9 @@ def main():
         endtime = datetime.datetime.strptime(end_time_str, '%Y%m%d%H%M%S')
 
         data_input_path = (
-            database_path+starttime.strftime('%Y-%m-%d')+'/TRTC/')
+            args.trtbase+starttime.strftime('%Y-%m-%d')+'/TRTC/')
         data_output_path = (
-            database_path+starttime.strftime('%Y-%m-%d')+'/TRTC_cell/')
+            args.trtbase+starttime.strftime('%Y-%m-%d')+'/TRTC_cell/')
         if not os.path.isdir(data_output_path):
             os.makedirs(data_output_path)
 
@@ -137,7 +163,7 @@ def main():
         for traj_ID_unique in traj_ID_unique_list:
             ind = np.where(traj_ID == traj_ID_unique)[0]
 
-            if ind.size < nsteps_min:
+            if ind.size < args.nsteps_min:
                 continue
 
             traj_ID_cell = traj_ID[ind]
@@ -185,7 +211,7 @@ def main():
             print('Written individual TRT cell file '+fname)
             ncells += 1
 
-        print('Number of cells with '+str(nsteps_min) +
+        print('Number of cells with '+str(args.nsteps_min) +
               ' or more time steps: '+str(ncells))
 
 
