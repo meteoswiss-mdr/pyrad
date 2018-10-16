@@ -1208,6 +1208,10 @@ def _get_datatype_list(cfg, radarnr='RADAR001'):
                 if ((dataset_save is None) and (product_save is None)):
                     datatypesdescr.add(
                         radarnr_descr+":"+datagroup+":"+datatype_aux)
+                elif ((dataset_save is not None) and (product_save is None)):
+                    datatypesdescr.add(
+                        radarnr_descr+":"+datagroup+":"+datatype_aux+"," +
+                        dataset_save)
                 else:
                     datatypesdescr.add(
                         radarnr_descr+":"+datagroup+":"+datatype_aux+"," +
@@ -1221,6 +1225,10 @@ def _get_datatype_list(cfg, radarnr='RADAR001'):
                     if ((dataset_save is None) and (product_save is None)):
                         datatypesdescr.add(
                             radarnr_descr+":"+datagroup+":"+datatype_aux)
+                    elif ((dataset_save is not None) and (product_save is None)):
+                        datatypesdescr.add(
+                            radarnr_descr+":"+datagroup+":"+datatype_aux+"," +
+                            dataset_save)
                     else:
                         datatypesdescr.add(
                             radarnr_descr+":"+datagroup+":"+datatype_aux +

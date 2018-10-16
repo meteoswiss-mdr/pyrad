@@ -21,8 +21,8 @@ import gc
 import queue
 import time
 
-from pyrad import version as pyrad_version
 from pyart import version as pyart_version
+from pyrad import version as pyrad_version
 
 from .flow_aux import _warning_format, _initialize_listener
 from .flow_aux import _create_cfg_dict, _create_datacfg_dict
@@ -134,6 +134,7 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
                 pass
 
         print('\n- master file: ' + os.path.basename(masterfile))
+
         master_voltime = get_datetime(masterfile, masterdatatypedescr)
 
         radar_list = _get_radars_data(
