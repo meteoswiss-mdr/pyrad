@@ -154,10 +154,10 @@ unfiltered_signal_quality_index_vv = 'unfiltered_signal_quality_index_vv'
 # hydroclass
 radar_echo_classification = 'radar_echo_classification'
 hydroclass_entropy = 'hydroclass_entropy'
-proportion_DS = 'proportion_DS'
+proportion_AG = 'proportion_AG'
 proportion_CR = 'proportion_CR'
 proportion_LR = 'proportion_LR'
-proportion_GR = 'proportion_GR'
+proportion_RP = 'proportion_RP'
 proportion_RN = 'proportion_RN'
 proportion_VI = 'proportion_VI'
 proportion_WS = 'proportion_WS'
@@ -365,10 +365,10 @@ DEFAULT_FIELD_NAMES = {
     'radar_estimated_rain_rate': radar_estimated_rain_rate,
     'radar_echo_classification': radar_echo_classification,
     'hydroclass_entropy': hydroclass_entropy,
-    'proportion_DS': proportion_DS,
+    'proportion_AG': proportion_AG,
     'proportion_CR': proportion_CR,
     'proportion_LR': proportion_LR,
-    'proportion_GR': proportion_GR,
+    'proportion_RP': proportion_RP,
     'proportion_RN': proportion_RN,
     'proportion_VI': proportion_VI,
     'proportion_WS': proportion_WS,
@@ -1120,10 +1120,10 @@ DEFAULT_METADATA = {
         'long_name': 'Semi-supervised hydrometeor classification entropy',
         'coordinates': 'elevation azimuth range'},
 
-    proportion_DS: {
+    proportion_AG: {
         'units': 'percent',
-        'standard_name': 'proportion_DS',
-        'long_name': 'Dry Snow proportion',
+        'standard_name': 'proportion_AG',
+        'long_name': 'Aggregates proportion',
         'coordinates': 'elevation azimuth range'},
 
     proportion_CR: {
@@ -1138,10 +1138,10 @@ DEFAULT_METADATA = {
         'long_name': 'Light Rain proportion',
         'coordinates': 'elevation azimuth range'},
 
-    proportion_GR: {
+    proportion_RP: {
         'units': 'percent',
-        'standard_name': 'proportion_GR',
-        'long_name': 'Graupel proportion',
+        'standard_name': 'proportion_RP',
+        'long_name': 'Rimed particles proportion',
         'coordinates': 'elevation azimuth range'},
 
     proportion_RN: {
@@ -2187,10 +2187,10 @@ DEFAULT_FIELD_COLORMAP = {
 
     radar_echo_classification: 'pyart_LangRainbow12',
     hydroclass_entropy: 'pyart_LangRainbow12',
-    proportion_DS:  'pyart_LangRainbow12',
+    proportion_AG:  'pyart_LangRainbow12',
     proportion_CR:  'pyart_LangRainbow12',
     proportion_LR:  'pyart_LangRainbow12',
-    proportion_GR:  'pyart_LangRainbow12',
+    proportion_RP:  'pyart_LangRainbow12',
     proportion_RN:  'pyart_LangRainbow12',
     proportion_VI:  'pyart_LangRainbow12',
     proportion_WS:  'pyart_LangRainbow12',
@@ -2330,10 +2330,10 @@ DEFAULT_FIELD_LIMITS = {
 
     radar_echo_classification: (0., 9.),
     hydroclass_entropy: (0., 1.),
-    proportion_DS: (0., 100.),
+    proportion_AG: (0., 100.),
     proportion_CR: (0., 100.),
     proportion_LR: (0., 100.),
-    proportion_GR: (0., 100.),
+    proportion_RP: (0., 100.),
     proportion_RN: (0., 100.),
     proportion_VI: (0., 100.),
     proportion_WS: (0., 100.),

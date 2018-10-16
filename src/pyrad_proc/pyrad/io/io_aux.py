@@ -580,14 +580,14 @@ def get_fieldname_pyart(datatype):
         field_name = 'radar_echo_classification'
     elif datatype == 'entropy':
         field_name = 'hydroclass_entropy'
-    elif datatype == 'propDS':
-        field_name = 'proportion_DS'
+    elif datatype == 'propAG':
+        field_name = 'proportion_AG'
     elif datatype == 'propCR':
         field_name = 'proportion_CR'
     elif datatype == 'propLR':
         field_name = 'proportion_LR'
-    elif datatype == 'propGR':
-        field_name = 'proportion_GR'
+    elif datatype == 'propRP':
+        field_name = 'proportion_RP'
     elif datatype == 'propRN':
         field_name = 'proportion_RN'
     elif datatype == 'propVI':
