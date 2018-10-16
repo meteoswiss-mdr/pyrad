@@ -1108,7 +1108,7 @@ DEFAULT_METADATA = {
         'units': '-',
         'standard_name': 'radar_echo_classification',
         'long_name': 'Radar echo classification',
-        'labels': ['NC', 'DS', 'CR', 'LR', 'GR', 'RN', 'VI', 'WS', 'MH',
+        'labels': ['NC', 'AG', 'CR', 'LR', 'RP', 'RN', 'VI', 'WS', 'MH',
                    'IH/HDG'],
         'ticks': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
         'boundaries': [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5],
