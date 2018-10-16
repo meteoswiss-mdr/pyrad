@@ -10,8 +10,8 @@ Functions to obtain time series of radar data
     process_point_measurement
     process_qvp
     process_rqvp
-    process_svp
     process_evp
+    process_svp
     process_time_height
 """
 
@@ -26,6 +26,7 @@ import pyart
 from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 from ..util.radar_utils import find_nearest_gate, find_neighbour_gates
 from ..util.radar_utils import project_to_vertical, compute_directional_stats
+from ..util.radar_utils import get_target_elevations
 
 
 def process_point_measurement(procstatus, dscfg, radar_list=None):
@@ -229,9 +230,13 @@ def process_qvp(procstatus, dscfg, radar_list=None):
 
         datatype : string. Dataset keyword
             The data type where we want to extract the point measurement
-        anglenr : int
-            The sweep number to use. It assumes the radar volume consists on
-            PPI scans. Default 0.
+        angle : int or float
+            If the radar object contains a PPI volume, the sweep number to
+            use, if it contains an RHI volume the elevation angle.
+            Default 0.
+        ang_tol : float
+            If the radar object contains an RHI volume, the tolerance in the
+            elevation angle for the conversion into PPI
         hmax : float
             The maximum height to plot [m]. Default 10000.
         hres : float
@@ -291,7 +296,8 @@ def process_qvp(procstatus, dscfg, radar_list=None):
             return None, None
 
         # default parameters
-        anglenr = dscfg.get('anglenr', 0)
+        angle = dscfg.get('angle', 0)
+        ang_tol = dscfg.get('ang_tol', 1.)
         hmax = dscfg.get('hmax', 10000.)
         hres = dscfg.get('hres', 50.)
         avg_type = dscfg.get('avg_type', 'mean')
@@ -303,7 +309,15 @@ def process_qvp(procstatus, dscfg, radar_list=None):
             return None, None
 
         radar_aux = deepcopy(radar)
-        radar_aux = radar_aux.extract_sweeps([anglenr])
+        # transform radar into ppi over the required elevation
+        if radar_aux.scan_type == 'rhi':
+            radar_aux = pyart.util.cross_section_rhi(
+                radar_aux, [angle], el_tol=ang_tol)
+        elif radar_aux.scan_type == 'ppi':
+            radar_aux = radar_aux.extract_sweeps([int(angle)])
+        else:
+            warn('Error: unsupported scan type.')
+            return None, None
 
         # initialize dataset
         if dscfg['initialized'] == 0:
@@ -504,7 +518,18 @@ def process_rqvp(procstatus, dscfg, radar_list=None):
             return None, None
 
         radar_aux = deepcopy(radar)
-        radar_aux = radar_aux.extract_sweeps([0])
+        # transform radar into ppi over the required elevation
+        if radar_aux.scan_type == 'rhi':
+            target_elevations, el_tol = get_target_elevations(radar_aux)
+            radar_ppi = pyart.util.cross_section_rhi(
+                radar_aux, target_elevations, el_tol=el_tol)
+        elif radar_aux.scan_type == 'ppi':
+            radar_ppi = radar_aux
+        else:
+            warn('Error: unsupported scan type.')
+            return None, None
+
+        radar_aux = radar_ppi.extract_sweeps([0])
 
         # initialize dataset
         if dscfg['initialized'] == 0:
@@ -566,10 +591,10 @@ def process_rqvp(procstatus, dscfg, radar_list=None):
             qvp.range['data'], (qvp.nrays, qvp.ngates))
 
         # compute rQVP data
-        val_interp = np.ma.masked_all((radar.nsweeps, qvp.ngates))
-        grng_interp = np.ma.masked_all((radar.nsweeps, qvp.ngates))
-        for sweep in range(radar.nsweeps):
-            radar_aux = deepcopy(radar)
+        val_interp = np.ma.masked_all((radar_ppi.nsweeps, qvp.ngates))
+        grng_interp = np.ma.masked_all((radar_ppi.nsweeps, qvp.ngates))
+        for sweep in range(radar_ppi.nsweeps):
+            radar_aux = deepcopy(radar_ppi)
             radar_aux = radar_aux.extract_sweeps([sweep])
 
             # Compute QVP for this sweep
@@ -738,7 +763,18 @@ def process_evp(procstatus, dscfg, radar_list=None):
             return None, None
 
         radar_aux = deepcopy(radar)
-        radar_aux = radar_aux.extract_sweeps([0])
+        # transform radar into ppi over the required elevation
+        if radar_aux.scan_type == 'rhi':
+            target_elevations, el_tol = get_target_elevations(radar_aux)
+            radar_ppi = pyart.util.cross_section_rhi(
+                radar_aux, target_elevations, el_tol=el_tol)
+        elif radar_aux.scan_type == 'ppi':
+            radar_ppi = radar_aux
+        else:
+            warn('Error: unsupported scan type.')
+            return None, None
+
+        radar_aux = radar_ppi.extract_sweeps([0])
 
         # initialize dataset
         if dscfg['initialized'] == 0:
@@ -797,8 +833,8 @@ def process_evp(procstatus, dscfg, radar_list=None):
 
         values = np.ma.array([], dtype=float)
         height = np.array([], dtype=float)
-        for sweep in range(radar.nsweeps):
-            radar_aux = deepcopy(radar)
+        for sweep in range(radar_ppi.nsweeps):
+            radar_aux = deepcopy(radar_ppi)
             radar_aux = radar_aux.extract_sweeps([sweep])
 
             # find nearest gate to lat lon point
@@ -877,6 +913,13 @@ def process_svp(procstatus, dscfg, radar_list=None):
 
         datatype : string. Dataset keyword
             The data type where we want to extract the point measurement
+        angle : int or float
+            If the radar object contains a PPI volume, the sweep number to
+            use, if it contains an RHI volume the elevation angle.
+            Default 0.
+        ang_tol : float
+            If the radar object contains an RHI volume, the tolerance in the
+            elevation angle for the conversion into PPI
         lat, lon : float
             latitude and longitude of the point of interest [deg]
         latlon_tol : float
@@ -939,7 +982,8 @@ def process_svp(procstatus, dscfg, radar_list=None):
             return None, None
 
         # default parameters
-        anglenr = dscfg.get('anglenr', 0)
+        angle = dscfg.get('angle', 0)
+        ang_tol = dscfg.get('ang_tol', 1.)
         lon = dscfg['lon']
         lat = dscfg['lat']
         latlon_tol = dscfg.get('latlon_tol', 0.0005)
@@ -955,7 +999,15 @@ def process_svp(procstatus, dscfg, radar_list=None):
             return None, None
 
         radar_aux = deepcopy(radar)
-        radar_aux = radar_aux.extract_sweeps([anglenr])
+        # transform radar into ppi over the required elevation
+        if radar_aux.scan_type == 'rhi':
+            radar_aux = pyart.util.cross_section_rhi(
+                radar_aux, [angle], el_tol=ang_tol)
+        elif radar_aux.scan_type == 'ppi':
+            radar_aux = radar_aux.extract_sweeps([int(angle)])
+        else:
+            warn('Error: unsupported scan type.')
+            return None, None
 
         # initialize dataset
         if dscfg['initialized'] == 0:
@@ -1148,6 +1200,16 @@ def process_time_height(procstatus, dscfg, radar_list=None):
         interp_kind = dscfg.get('interp_kind', 'none')
 
         radar_aux = deepcopy(radar)
+        # transform radar into ppi over the required elevation
+        if radar_aux.scan_type == 'rhi':
+            target_elevations, el_tol = get_target_elevations(radar_aux)
+            radar_ppi = pyart.util.cross_section_rhi(
+                radar_aux, target_elevations, el_tol=el_tol)
+        elif radar_aux.scan_type == 'ppi':
+            radar_ppi = radar_aux
+        else:
+            warn('Error: unsupported scan type.')
+            return None, None
 
         # initialize dataset
         if dscfg['initialized'] == 0:
@@ -1216,8 +1278,8 @@ def process_time_height(procstatus, dscfg, radar_list=None):
 
         values = np.ma.array([], dtype=float)
         height = np.array([], dtype=float)
-        for sweep in range(radar.nsweeps):
-            radar_aux = deepcopy(radar.extract_sweeps([sweep]))
+        for sweep in range(radar_ppi.nsweeps):
+            radar_aux = deepcopy(radar_ppi.extract_sweeps([sweep]))
 
             # find nearest gate to lat lon point
             ind_ray, ind_rng, _, _ = find_nearest_gate(

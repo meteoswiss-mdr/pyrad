@@ -36,8 +36,6 @@ from ..io.io_aux import get_datetime
 from ..io.read_data_other import read_last_state
 from ..io.write_data import write_last_state
 
-#from memory_profiler import profile
-
 ALLOW_USER_BREAK = False
 
 

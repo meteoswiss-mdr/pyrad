@@ -14,6 +14,7 @@ determined points or regions of interest.
     process_save_radar
     process_roi
     process_grid
+    process_azimuthal_average
 
 """
 
@@ -25,7 +26,8 @@ import pyart
 
 from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 from ..io.read_data_sensor import read_trt_traj_data
-from ..util.radar_utils import belongs_roi_indices
+from ..util.radar_utils import belongs_roi_indices, get_target_elevations
+from ..util.radar_utils import find_neighbour_gates, compute_directional_stats
 
 
 def get_process_func(dataset_type, dsname):
@@ -52,6 +54,8 @@ def get_process_func(dataset_type, dsname):
     dsformat = 'VOL'
     if dataset_type == 'RAW':
         func_name = process_raw
+    elif dataset_type == 'AZI_AVG':
+        func_name = process_azimuthal_average
     elif dataset_type == 'GRID':
         func_name = process_grid
         dsformat = 'GRID'
@@ -614,3 +618,151 @@ def process_grid(procstatus, dscfg, radar_list=None):
         fields=[field_name])
 
     return grid, ind_rad
+
+
+def process_azimuthal_average(procstatus, dscfg, radar_list=None):
+    """
+    Averages radar data in azimuth obtaining and RHI as a result
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : string. Dataset keyword
+            The data type where we want to extract the point measurement
+        gridconfig : dictionary. Dataset keyword
+            Dictionary containing some or all of this keywords:
+            xmin, xmax, ymin, ymax, zmin, zmax : floats
+                minimum and maximum horizontal distance from grid origin [km]
+                and minimum and maximum vertical distance from grid origin [m]
+                Defaults -40, 40, -40, 40, 0., 10000.
+            hres, vres : floats
+                horizontal and vertical grid resolution [m]
+                Defaults 1000., 500.
+            latorig, lonorig, altorig : floats
+                latitude and longitude of grid origin [deg] and altitude of
+                grid origin [m MSL]
+                Defaults the latitude, longitude and altitude of the radar
+        wfunc : str
+            the weighting function used to combine the radar gates close to a
+            grid point. Possible values BARNES, CRESSMAN, NEAREST_NEIGHBOUR
+            Default NEAREST_NEIGHBOUR
+        roif_func : str
+            the function used to compute the region of interest.
+            Possible values: dist_beam, constant
+        roi : float
+             the (minimum) radius of the region of interest in m. Default half
+             the largest resolution
+
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the gridded data
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+        break
+    field_name = get_fieldname_pyart(datatype)
+    ind_rad = int(radarnr[5:8])-1
+
+    if (radar_list is None) or (radar_list[ind_rad] is None):
+        warn('ERROR: No valid radar')
+        return None, None
+
+    radar = radar_list[ind_rad]
+
+    if field_name not in radar.fields:
+        warn('Field name '+field_name+' not available in radar object')
+        return None, None
+
+    # default parameters
+    angle = dscfg.get('angle', None)
+    delta_azi = dscfg.get('delta_azi', None)
+    avg_type = dscfg.get('avg_type', 'mean')
+    nvalid_min = dscfg.get('nvalid_min', 1)
+    if avg_type != 'mean' and avg_type != 'median':
+        warn('Unsuported statistics '+avg_type)
+        return None, None
+
+    if delta_azi == -1:
+        delta_azi = None
+    if angle == -1:
+        angle = None
+
+    radar_aux = deepcopy(radar)
+    # transform radar into ppi over the required elevation
+    if radar_aux.scan_type == 'rhi':
+        target_elevations, el_tol = get_target_elevations(radar_aux)
+        radar_ppi = pyart.util.cross_section_rhi(
+            radar_aux, target_elevations, el_tol=el_tol)
+    elif radar_aux.scan_type == 'ppi':
+        radar_ppi = radar_aux
+    else:
+        warn('Error: unsupported scan type.')
+        return None, None
+
+    # range, metadata, radar position are the same as the original
+    # time
+    radar_rhi = deepcopy(radar)
+    radar_rhi.fields = dict()
+    radar_rhi.scan_type = 'rhi'
+    radar_rhi.sweep_number['data'] = np.array([0])
+    radar_rhi.sweep_mode['data'] = np.array(['rhi'])
+    radar_rhi.fixed_angle['data'] = np.array([0])
+    radar_rhi.sweep_start_ray_index['data'] = np.array([0])
+    radar_rhi.sweep_end_ray_index['data'] = np.array([radar_ppi.nsweeps-1])
+    radar_rhi.rays_per_sweep['data'] = np.array([radar_ppi.nsweeps])
+    radar_rhi.azimuth['data'] = np.ones(radar_ppi.nsweeps)
+    radar_rhi.elevation['data'] = radar_ppi.fixed_angle['data']
+    radar_rhi.nrays = radar_ppi.fixed_angle['data'].size
+    radar_rhi.nsweeps = 1
+    radar_rhi.rays_are_indexed = None
+    radar_rhi.ray_angle_res = None
+
+    # average radar data
+    field_dict = pyart.config.get_metadata(field_name)
+    field_dict['data'] = np.ma.masked_all((radar_ppi.nsweeps, radar_ppi.ngates))
+    if angle is None:
+        fixed_angle = np.zeros(radar_ppi.nsweeps)
+    for sweep in range(radar_ppi.nsweeps):
+        radar_aux = deepcopy(radar_ppi)
+        radar_aux = radar_aux.extract_sweeps([sweep])
+
+        # find neighbouring gates to be selected
+        inds_ray, inds_rng = find_neighbour_gates(
+            radar_aux, angle, None, delta_azi=delta_azi, delta_rng=None)
+
+        # keep only data we are interested in
+        field_aux = radar_aux.fields[field_name]['data'][:, inds_rng]
+        field_aux = field_aux[inds_ray, :]
+
+        vals, _ = compute_directional_stats(
+            field_aux, avg_type=avg_type, nvalid_min=nvalid_min, axis=0)
+
+        field_dict['data'][sweep, :] = vals
+        if angle is None:
+            fixed_angle[sweep] = np.median(radar_aux.azimuth['data'][inds_ray])
+    if angle is None:
+        radar_rhi.fixed_angle['data'] = np.array([np.mean(fixed_angle)])
+    else:
+        radar_rhi.fixed_angle['data'] = np.array([angle])
+    radar_rhi.azimuth['data'] *= radar_rhi.fixed_angle['data'][0]
+    radar_rhi.add_field(field_name, field_dict)
+
+    # prepare for exit
+    new_dataset = {'radar_out': radar_rhi}
+
+    return new_dataset, ind_rad

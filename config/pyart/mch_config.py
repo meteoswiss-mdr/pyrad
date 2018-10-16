@@ -151,6 +151,19 @@ signal_quality_index_vv = 'signal_quality_index_vv'
 unfiltered_signal_quality_index = 'unfiltered_signal_quality_index'
 unfiltered_signal_quality_index_vv = 'unfiltered_signal_quality_index_vv'
 
+# hydroclass
+radar_echo_classification = 'radar_echo_classification'
+hydroclass_entropy = 'hydroclass_entropy'
+proportion_DS = 'proportion_DS'
+proportion_CR = 'proportion_CR'
+proportion_LR = 'proportion_LR'
+proportion_GR = 'proportion_GR'
+proportion_RN = 'proportion_RN'
+proportion_VI = 'proportion_VI'
+proportion_WS = 'proportion_WS'
+proportion_MH = 'proportion_MH'
+proportion_IH = 'proportion_IH'
+
 # Misc fields
 signal_to_noise_ratio = 'signal_to_noise_ratio'
 signal_to_noise_ratio_hh = 'signal_to_noise_ratio_hh'
@@ -160,13 +173,13 @@ noisedBZ_vv = 'noisedBZ_vv'
 
 rain_rate = 'rain_rate'
 radar_estimated_rain_rate = 'radar_estimated_rain_rate'
-radar_echo_classification = 'radar_echo_classification'
 radar_echo_id = 'radar_echo_id'
 clutter_exit_code = 'clutter_exit_code'
 melting_layer = 'melting_layer'
 melting_layer_height = 'melting_layer_height'
 
 bird_density = 'bird_density'
+bird_reflectivity = 'bird_reflectivity'
 
 # attenuation
 specific_attenuation = 'specific_attenuation'
@@ -267,6 +280,7 @@ FILL_VALUE = fill_value
 DEFAULT_FIELD_NAMES = {
     # Internal field name (do not change): field name used (can change)
     'reflectivity': reflectivity,
+    'bird_reflectivity': bird_reflectivity,
     'corrected_reflectivity': corrected_reflectivity,
     'total_power': total_power,
     'unfiltered_reflectivity': unfiltered_reflectivity,
@@ -350,6 +364,16 @@ DEFAULT_FIELD_NAMES = {
     'sun_hit_zdr': sun_hit_zdr,
     'radar_estimated_rain_rate': radar_estimated_rain_rate,
     'radar_echo_classification': radar_echo_classification,
+    'hydroclass_entropy': hydroclass_entropy,
+    'proportion_DS': proportion_DS,
+    'proportion_CR': proportion_CR,
+    'proportion_LR': proportion_LR,
+    'proportion_GR': proportion_GR,
+    'proportion_RN': proportion_RN,
+    'proportion_VI': proportion_VI,
+    'proportion_WS': proportion_WS,
+    'proportion_MH': proportion_MH,
+    'proportion_IH': proportion_IH,
     'radar_echo_id': radar_echo_id,
     'clutter_exit_code': clutter_exit_code,
     'melting_layer': melting_layer,
@@ -680,6 +704,12 @@ DEFAULT_METADATA = {
         'units': 'dBZ',
         'standard_name': 'horizontal_reflectivity',
         'long_name': 'Horizontal Reflectivity',
+        'coordinates': 'elevation azimuth range'},
+
+    bird_reflectivity: {
+        'units': 'dBZ',
+        'standard_name': 'bird_reflectivity',
+        'long_name': 'Bird Reflectivity',
         'coordinates': 'elevation azimuth range'},
 
     unfiltered_reflectivity: {
@@ -1082,6 +1112,66 @@ DEFAULT_METADATA = {
                    'IH/HDG'],
         'ticks': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
         'boundaries': [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5],
+        'coordinates': 'elevation azimuth range'},
+
+    hydroclass_entropy: {
+        'units': '-',
+        'standard_name': 'hydroclass_entropy',
+        'long_name': 'Semi-supervised hydrometeor classification entropy',
+        'coordinates': 'elevation azimuth range'},
+
+    proportion_DS: {
+        'units': 'percent',
+        'standard_name': 'proportion_DS',
+        'long_name': 'Dry Snow proportion',
+        'coordinates': 'elevation azimuth range'},
+
+    proportion_CR: {
+        'units': 'percent',
+        'standard_name': 'proportion_CR',
+        'long_name': 'Crystals proportion',
+        'coordinates': 'elevation azimuth range'},
+
+    proportion_LR: {
+        'units': 'percent',
+        'standard_name': 'proportion_LR',
+        'long_name': 'Light Rain proportion',
+        'coordinates': 'elevation azimuth range'},
+
+    proportion_GR: {
+        'units': 'percent',
+        'standard_name': 'proportion_GR',
+        'long_name': 'Graupel proportion',
+        'coordinates': 'elevation azimuth range'},
+
+    proportion_RN: {
+        'units': 'percent',
+        'standard_name': 'proportion_RN',
+        'long_name': 'Rain proportion',
+        'coordinates': 'elevation azimuth range'},
+
+    proportion_VI: {
+        'units': 'percent',
+        'standard_name': 'proportion_VI',
+        'long_name': 'Vertical Ice Crystals proportion',
+        'coordinates': 'elevation azimuth range'},
+
+    proportion_WS: {
+        'units': 'percent',
+        'standard_name': 'proportion_WS',
+        'long_name': 'Wet Snow proportion',
+        'coordinates': 'elevation azimuth range'},
+
+    proportion_MH: {
+        'units': 'percent',
+        'standard_name': 'proportion_MH',
+        'long_name': 'Melting Hail proportion',
+        'coordinates': 'elevation azimuth range'},
+
+    proportion_IH: {
+        'units': 'percent',
+        'standard_name': 'proportion_IH',
+        'long_name': 'Ice Hail proportion',
         'coordinates': 'elevation azimuth range'},
 
     radar_echo_id: {
@@ -2007,6 +2097,7 @@ DEFAULT_FIELD_COLORMAP = {
     volumetric_reflectivity: 'pyart_NWSRef',
     volumetric_reflectivity_vv: 'pyart_NWSRef',
     bird_density: 'pyart_NWSRef',
+    bird_reflectivity: 'pyart_NWSRef',
 
     signal_to_noise_ratio: 'pyart_Carbone17',
     signal_to_noise_ratio_hh: 'pyart_Carbone17',
@@ -2095,6 +2186,17 @@ DEFAULT_FIELD_COLORMAP = {
     sun_hit_zdr: 'pyart_LangRainbow12',
 
     radar_echo_classification: 'pyart_LangRainbow12',
+    hydroclass_entropy: 'pyart_LangRainbow12',
+    proportion_DS:  'pyart_LangRainbow12',
+    proportion_CR:  'pyart_LangRainbow12',
+    proportion_LR:  'pyart_LangRainbow12',
+    proportion_GR:  'pyart_LangRainbow12',
+    proportion_RN:  'pyart_LangRainbow12',
+    proportion_VI:  'pyart_LangRainbow12',
+    proportion_WS:  'pyart_LangRainbow12',
+    proportion_MH:  'pyart_LangRainbow12',
+    proportion_IH:  'pyart_LangRainbow12',
+
     radar_echo_id: 'pyart_LangRainbow12',
     clutter_exit_code: 'pyart_LangRainbow12',
     melting_layer: 'pyart_LangRainbow12',
@@ -2136,6 +2238,7 @@ DEFAULT_FIELD_COLORMAP = {
 DEFAULT_FIELD_LIMITS = {
     # field name : limits
     reflectivity: (-30., 75.),
+    bird_reflectivity: (-30., 75.),
     corrected_reflectivity: (-30., 75.),
     total_power: (-30., 75.),
     unfiltered_reflectivity: (-30., 75.),
@@ -2226,6 +2329,16 @@ DEFAULT_FIELD_LIMITS = {
     radar_estimated_rain_rate: (0., 10.),
 
     radar_echo_classification: (0., 9.),
+    hydroclass_entropy: (0., 1.),
+    proportion_DS: (0., 100.),
+    proportion_CR: (0., 100.),
+    proportion_LR: (0., 100.),
+    proportion_GR: (0., 100.),
+    proportion_RN: (0., 100.),
+    proportion_VI: (0., 100.),
+    proportion_WS: (0., 100.),
+    proportion_MH: (0., 100.),
+    proportion_IH: (0., 100.),
     radar_echo_id: (0, 3),
     melting_layer: (0, 5),
     clutter_exit_code: (0, 200),

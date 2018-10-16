@@ -7,10 +7,13 @@ Functions for reading data from other sensors
 .. autosummary::
     :toctree: generated/
 
+    read_trt_scores
+    read_trt_cell_lightning
     read_trt_data
     read_trt_traj_data
     read_lightning
     read_lightning_traj
+    read_lightning_all
     get_sensor_data
     read_smn
     read_smn2
@@ -27,6 +30,159 @@ from copy import deepcopy
 import re
 
 import numpy as np
+
+from pyart.config import get_fillvalue
+
+
+def read_trt_scores(fname):
+    """
+    Reads the TRT scores contained in a text file. The file has the following
+    fields:
+        traj ID
+        max flash density time
+        max flash density rank
+        max flash density
+        max rank time
+        max rank
+
+    Parameters
+    ----------
+    fname : str
+        path of the TRT data file
+
+    Returns
+    -------
+    A tupple containing the read values. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                (row for row in csvfile if not row.startswith('#')),
+                delimiter=',')
+            nrows = sum(1 for row in reader)
+
+            if nrows == 0:
+                warn('No data in file '+fname)
+                return None, None, None, None, None, None, None, None
+
+            traj_ID = np.empty(nrows, dtype=int)
+            time_flash_density_max = np.empty(nrows, dtype=datetime.datetime)
+            flash_density_max_rank = np.empty(nrows, dtype=float)
+            flash_density_max_nflashes = np.empty(nrows, dtype=int)
+            flash_density_max_area = np.empty(nrows, dtype=float)
+            flash_density_max = np.empty(nrows, dtype=float)
+            time_rank_max = np.empty(nrows, dtype=datetime.datetime)
+            rank_max = np.empty(nrows, dtype=float)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                (row for row in csvfile if not row.startswith('#')),
+                delimiter=',')
+            for i, row in enumerate(reader):
+                traj_ID[i] = int(row['traj ID'])
+                time_flash_density_max[i] = datetime.datetime.strptime(
+                    row['max flash density time'], '%Y-%m-%d %H:%M:%S')
+                flash_density_max_rank[i] = float(
+                    row['max flash density rank'])
+                flash_density_max_nflashes[i] = int(
+                    row['max flash density flashes'])
+                flash_density_max_area[i] = float(
+                    row['max flash density area'])
+                flash_density_max[i] = float(
+                    row['max flash density'])
+                time_rank_max[i] = datetime.datetime.strptime(
+                    row['max rank time'], '%Y-%m-%d %H:%M:%S')
+                rank_max[i] = row['max rank']
+
+            csvfile.close()
+
+            return (
+                traj_ID, time_flash_density_max, flash_density_max_rank,
+                flash_density_max_nflashes, flash_density_max_area,
+                flash_density_max, time_rank_max, rank_max)
+
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return None, None, None, None, None, None, None, None
+
+
+def read_trt_cell_lightning(fname):
+    """
+    Reads the lightning data of a TRT cell. The file has the following
+    fields:
+        traj_ID
+        yyyymmddHHMM
+        lon
+        lat
+        area
+        RANKr
+        nflashes
+        flash_dens
+
+    Parameters
+    ----------
+    fname : str
+        path of the TRT data file
+
+    Returns
+    -------
+    A tupple containing the read values. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                (row for row in csvfile if not row.startswith('#')),
+                delimiter=',')
+            nrows = sum(1 for row in reader)
+
+            if nrows == 0:
+                warn('No data in file '+fname)
+                return None, None, None, None, None, None, None, None
+
+            traj_ID = np.empty(nrows, dtype=int)
+            time_cell = np.empty(nrows, dtype=datetime.datetime)
+            lon_cell = np.empty(nrows, dtype=float)
+            lat_cell = np.empty(nrows, dtype=float)
+            area_cell = np.empty(nrows, dtype=float)
+            rank_cell = np.empty(nrows, dtype=float)
+            nflashes_cell = np.ma.empty(nrows, dtype=float)
+            flash_dens_cell = np.ma.empty(nrows, dtype=float)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                (row for row in csvfile if not row.startswith('#')),
+                delimiter=',')
+            for i, row in enumerate(reader):
+                traj_ID[i] = int(row['traj_ID'])
+                time_cell[i] = datetime.datetime.strptime(
+                    row['yyyymmddHHMM'], '%Y%m%d%H%M')
+                lon_cell[i] = float(row['lon'])
+                lat_cell[i] = float(row['lat'])
+                area_cell[i] = float(row['area'])
+                rank_cell[i] = float(row['RANKr'])
+                nflashes_cell[i] = float(row['nflashes'])
+                flash_dens_cell[i] = float(row['flash_dens'])
+
+            csvfile.close()
+
+            nflashes_cell = np.ma.masked_values(nflashes_cell, get_fillvalue())
+            flash_dens_cell = np.ma.masked_values(flash_dens_cell, get_fillvalue())
+
+            return (
+                traj_ID, time_cell, lon_cell, lat_cell, area_cell, rank_cell,
+                nflashes_cell, flash_dens_cell)
+
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return None, None, None, None, None, None, None, None
 
 
 def read_trt_data(fname):
@@ -586,6 +742,82 @@ def read_lightning_traj(fname):
         return None, None, None, None, None, None, None, None
 
 
+def read_lightning_all(fname,
+                       labels=['hydro [-]', 'KDPc [deg/Km]', 'dBZc [dBZ]',
+                               'RhoHVc [-]', 'TEMP [deg C]', 'ZDRc [dB]']):
+    """
+    Reads a file containing lightning data and co-located polarimetric data.
+    fields:
+        flashnr
+        time data
+        Time within flash (in seconds)
+        Latitude (decimal degrees)
+        Longitude (decimal degrees)
+        Altitude (m MSL)
+        Power (dBm)
+        Polarimetric values at flash position
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+    labels : list of str
+        The polarimetric variables labels
+
+    Returns
+    -------
+    flashnr, time_data, time_in_flash, lat, lon, alt, dBm,
+    pol_vals_dict : tupple
+        A tupple containing the read values. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            nrows = sum(1 for row in reader)
+
+            flashnr = np.ma.empty(nrows, dtype=int)
+            time_data = np.ma.empty(nrows, dtype=datetime.datetime)
+            time_in_flash = np.ma.empty(nrows, dtype=float)
+            lat = np.ma.empty(nrows, dtype=float)
+            lon = np.ma.empty(nrows, dtype=float)
+            alt = np.ma.empty(nrows, dtype=float)
+            dBm = np.ma.empty(nrows, dtype=float)
+            pol_vals_dict = dict()
+            for label in labels:
+                pol_vals_dict.update({label: np.ma.empty(nrows, dtype=float)})
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+
+            for i, row in enumerate(reader):
+                flashnr[i] = int(row['flashnr'])
+                time_data[i] = datetime.datetime.strptime(row['time_data'], '%Y-%m-%d %H:%M:%S.%f')
+                time_in_flash[i] = float(row['time_in_flash'])
+                lat[i] = float(row['lat'])
+                lon[i] = float(row['lon'])
+                alt[i] = float(row['alt'])
+                dBm[i] = float(row['dBm'])
+
+                for label in labels:
+                    pol_vals_dict[label][i] = float(row[label])
+
+            csvfile.close()
+
+            for label in labels:
+                pol_vals_dict[label] = np.ma.masked_values(pol_vals_dict[label], get_fillvalue())
+
+            return flashnr, time_data, time_in_flash, lat, lon, alt, dBm, pol_vals_dict
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return None, None, None, None, None, None, None, None
+
+
 def get_sensor_data(date, datatype, cfg):
     """
     Gets data from a point measurement sensor (rain gauge or disdrometer)
@@ -630,8 +862,7 @@ def get_sensor_data(date, datatype, cfg):
             '_'+str(cfg['freq'])+'GHz_'+sensor_datatype+'_el'+str(cfg['ele']) +
             '.csv')
 
-        (sensordate, prectype, sensorvalue, temp) = read_disdro(
-            datapath+datafile)
+        sensordate, _, sensorvalue, _ = read_disdro(datapath+datafile)
         if sensordate is None:
             return None, None, None, None
         label = 'Disdro'
@@ -895,8 +1126,8 @@ def read_disdro(fname):
                 variable[i] = float(row[var])
                 scatt_temp[i] = float(row['Scattering Temp [deg C]'])
                 i += 1
-            variable = np.ma.masked_where(variable == -9999.0, variable)
-            np.ma.set_fill_value(variable, -9999.0)
+            variable = np.ma.masked_values(variable, get_fillvalue())
+            np.ma.set_fill_value(variable, get_fillvalue())
             csvfile.close()
 
             return (date, preciptype, variable, scatt_temp)

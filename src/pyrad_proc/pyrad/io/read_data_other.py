@@ -51,72 +51,81 @@ from pyart.config import get_fillvalue, get_metadata
 from .io_aux import get_fieldname_pyart, _get_datetime
 
 
-def read_profile_ts(fname_list, labels, hres=None, label_nr=0):
+def read_profile_ts(fname_list, labels, hres=None, label_nr=0, t_res=300.):
     """
     Reads a colection of profile data file and creates a time series
 
     Parameters
     ----------
     fname_list : str
-        path of time series file
+        list of files to read
     labels : list of str
         The data labels
     hres : float
         Height resolution
     label_nr : int
         the label nr of the data that will be used in the time series
+    t_res : float
+        time resolution [s]. If None the time resolution is taken as the
+        median
 
     Returns
     -------
-    tbin_edges, hbin_edges, data_ma : tupple
+    tbin_edges, hbin_edges, np_ma, data_ma, datetime_arr[0] : tupple
         The read data. None otherwise
 
     """
     data_ma = []
+    np_ma = []
     datetime_arr = np.ma.array([], dtype=datetime.datetime)
     for fname in fname_list:
         datetime_arr = np.append(
             datetime_arr, _get_datetime(fname, 'RAINBOW'))
-        height, _, vals = read_rhi_profile(fname, labels)
+        height, np_t, vals = read_rhi_profile(fname, labels)
         if hres is None:
             hres = np.mean(height[1:]-height[:-1])
         hbin_edges = np.append(height-hres/2, height[-1]+hres/2)
         val = vals[:, label_nr]
         data_ma.append(val)
+        np_ma.append(np_t)
     data_ma = np.ma.asarray(data_ma)
+    np_ma = np.asarray(np_ma, dtype=int)
 
     # sort data as a function of time
     ind = np.argsort(datetime_arr)
     datetime_arr = datetime_arr[ind]
     data_ma = data_ma[ind, :]
+    np_ma = np_ma[ind, :]
 
     # put date time array as seconds from start of TRT cell
     dt_s = np.empty(datetime_arr.size, dtype=float)
     for j, dt in enumerate(datetime_arr):
         dt_s[j] = (dt-datetime_arr[0]).total_seconds()
 
-    t_res = 300.
-    if dt_s.size > 1:
-        t_res = np.mean(dt_s[1:]-dt_s[:-1])
+    if t_res is None:
+        t_res = np.median(dt_s[1:]-dt_s[:-1])
     tbin_edges = np.append(dt_s-t_res, dt_s[-1])
 
-    return tbin_edges, hbin_edges, data_ma
+    return tbin_edges, hbin_edges, np_ma, data_ma, datetime_arr[0]
 
 
-def read_histogram_ts(fname_list, datatype):
+def read_histogram_ts(fname_list, datatype, t_res=300.):
     """
     Reads a colection of histogram data file and creates a time series
 
     Parameters
     ----------
     fname_list : str
-        path of time series file
+        list of files to read
     datatype : str
         The data type (dBZ, ZDR, etc.)
+    t_res : float
+        time resolution [s]. If None the time resolution is taken as the
+        median
 
     Returns
     -------
-    tbin_edges, bin_edges, data_ma : tupple
+    tbin_edges, bin_edges, data_ma, datetime_arr[0] : tupple
         The read data. None otherwise
 
     """
@@ -148,28 +157,30 @@ def read_histogram_ts(fname_list, datatype):
     for j, dt in enumerate(datetime_arr):
         dt_s[j] = (dt-datetime_arr[0]).total_seconds()
 
-    t_res = 300.
-    if dt_s.size > 1:
-        t_res = np.mean(dt_s[1:]-dt_s[:-1])
+    if t_res is None:
+        t_res = np.median(dt_s[1:]-dt_s[:-1])
     tbin_edges = np.append(dt_s-t_res, dt_s[-1])
 
-    return tbin_edges, bin_edges, data_ma
+    return tbin_edges, bin_edges, data_ma, datetime_arr[0]
 
 
-def read_quantiles_ts(fname_list, step=5., qmin=0., qmax=100.):
+def read_quantiles_ts(fname_list, step=5., qmin=0., qmax=100., t_res=300.):
     """
-    Reads a colection of profile data file and creates a time series
+    Reads a colection of quantiles data file and creates a time series
 
     Parameters
     ----------
-    fname : str
-        path of time series file
-    datatype : str
-        The data type (dBZ, ZDR, etc.)
+    fname_list : str
+        list of files to read
+    step, qmin, qmax : float
+        The minimum, maximum and step quantiles
+    t_res : float
+        time resolution [s]. If None the time resolution is taken as the
+        median
 
     Returns
     -------
-    tbin_edges, qbin_edges, data_ma : tupple
+    tbin_edges, qbin_edges, data_ma, datetime_arr[0] : tupple
         The read data. None otherwise
 
     """
@@ -200,12 +211,11 @@ def read_quantiles_ts(fname_list, step=5., qmin=0., qmax=100.):
     for j, dt in enumerate(datetime_arr):
         dt_s[j] = (dt-datetime_arr[0]).total_seconds()
 
-    t_res = 300.
-    if dt_s.size > 1:
-        t_res = np.mean(dt_s[1:]-dt_s[:-1])
+    if t_res is None:
+        t_res = np.median(dt_s[1:]-dt_s[:-1])
     tbin_edges = np.append(dt_s-t_res, dt_s[-1])
 
-    return tbin_edges, qbin_edges, data_ma
+    return tbin_edges, qbin_edges, data_ma, datetime_arr[0]
 
 
 def read_rhi_profile(fname, labels=['50.0-percentile', '25.0-percentile',

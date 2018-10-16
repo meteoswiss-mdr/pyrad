@@ -90,7 +90,7 @@ def process_echo_id(procstatus, dscfg, radar_list=None):
         warn('Unable to create radar_echo_id dataset. Missing data')
         return None, None
 
-    echo_id = np.zeros((radar.nrays, radar.ngates), dtype='int32')+3
+    echo_id = np.zeros((radar.nrays, radar.ngates), dtype=np.uint8)+3
 
     # look for clutter
     gatefilter = pyart.filters.moment_and_texture_based_gate_filter(
@@ -182,7 +182,7 @@ def process_birds_id(procstatus, dscfg, radar_list=None):
     rmax = dscfg.get('rmax', 25000.)
     elmin = dscfg.get('elmin', 1.5)
     elmax = dscfg.get('elmax', 85.)
-    echo_id = np.zeros((radar.nrays, radar.ngates), dtype='int32')+3
+    echo_id = np.zeros((radar.nrays, radar.ngates), dtype=np.uint8)+3
 
     # look for clutter
     gatefilter = pyart.filters.birds_gate_filter(
@@ -254,7 +254,7 @@ def process_clt_to_echo_id(procstatus, dscfg, radar_list=None):
         warn('rad4alp clutter exit code not present. Unable to obtain echoID')
         return None, None
 
-    echo_id = np.zeros((radar.nrays, radar.ngates), dtype='int32')+3
+    echo_id = np.zeros((radar.nrays, radar.ngates), dtype=np.uint8)+3
     clt = radar.fields[clt_field]['data']
     echo_id[clt == 1] = 1
     echo_id[clt >= 100] = 2
@@ -960,6 +960,26 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
                 52.6547, 2.7054, 2.5101, 0.9765, -1114.6]  # MH
             mass_centers[8, :] = [
                 46.4998, 0.1978, 0.6431, 0.9845, 1010.1]  # IH/HDG
+        elif dscfg['RADARCENTROIDS'] == 'D':
+            #       Zh      ZDR     kdp   RhoHV   delta_Z
+            mass_centers[0, :] = [
+                12.567, 0.18934, 0.041193, 0.97693, 1328.1]  # DS
+            mass_centers[1, :] = [
+                3.2115, 0.13379, 0.0000, 0.96918, 1406.3]  # CR
+            mass_centers[2, :] = [
+                10.669, 0.18119, 0.0000, 0.97337, -1171.9]  # LR
+            mass_centers[3, :] = [
+                34.941, 0.13301, 0.090056, 0.9979, 898.44]  # GR
+            mass_centers[4, :] = [
+                39.653, 1.1432, 0.35013, 0.98501, -859.38]  # RN
+            mass_centers[5, :] = [
+                2.8874, -0.46363, 0.0000, 0.95653, 1015.6]  # VI
+            mass_centers[6, :] = [
+                34.122, 0.87987, 0.2281, 0.98003, -234.37]  # WS
+            mass_centers[7, :] = [
+                53.134, 2.0888, 2.0055, 0.96927, -1054.7]  # MH
+            mass_centers[8, :] = [
+                46.715, 0.030477, 0.16994, 0.9969, 976.56]  # IH/HDG
         elif dscfg['RADARCENTROIDS'] == 'P':
             #       Zh      ZDR     kdp   RhoHV   delta_Z
             mass_centers[0, :] = [
@@ -1026,12 +1046,17 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
                 'Default centroids will be used in classification.')
             mass_centers = None
 
-        hydro = pyart.retrieve.hydroclass_semisupervised(
+        compute_entropy = dscfg.get('compute_entropy', False)
+        output_distances = dscfg.get('output_distances', False)
+
+        fields_dict = pyart.retrieve.hydroclass_semisupervised(
             radar, mass_centers=mass_centers,
             weights=np.array([1., 1., 1., 0.75, 0.5]), refl_field=refl_field,
             zdr_field=zdr_field, rhv_field=rhv_field, kdp_field=kdp_field,
             temp_field=temp_field, iso0_field=iso0_field, hydro_field=None,
-            temp_ref=temp_ref)
+            entropy_field=None, temp_ref=temp_ref,
+            compute_entropy=compute_entropy, output_distances=output_distances
+            )
     else:
         raise Exception(
             "ERROR: Unknown hydrometeor classification method " +
@@ -1040,7 +1065,32 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
     # prepare for exit
     new_dataset = {'radar_out': deepcopy(radar)}
     new_dataset['radar_out'].fields = dict()
-    new_dataset['radar_out'].add_field('radar_echo_classification', hydro)
+    new_dataset['radar_out'].add_field(
+        'radar_echo_classification', fields_dict['hydro'])
+
+    if compute_entropy:
+        new_dataset['radar_out'].add_field(
+            'hydroclass_entropy', fields_dict['entropy'])
+
+        if output_distances:
+            new_dataset['radar_out'].add_field(
+                'proportion_DS', fields_dict['prop_DS'])
+            new_dataset['radar_out'].add_field(
+                'proportion_CR', fields_dict['prop_CR'])
+            new_dataset['radar_out'].add_field(
+                'proportion_LR', fields_dict['prop_LR'])
+            new_dataset['radar_out'].add_field(
+                'proportion_GR', fields_dict['prop_GR'])
+            new_dataset['radar_out'].add_field(
+                'proportion_RN', fields_dict['prop_RN'])
+            new_dataset['radar_out'].add_field(
+                'proportion_VI', fields_dict['prop_VI'])
+            new_dataset['radar_out'].add_field(
+                'proportion_WS', fields_dict['prop_WS'])
+            new_dataset['radar_out'].add_field(
+                'proportion_MH', fields_dict['prop_MH'])
+            new_dataset['radar_out'].add_field(
+                'proportion_IH', fields_dict['prop_IH'])
 
     return new_dataset, ind_rad
 
@@ -1400,7 +1450,7 @@ def process_zdr_column(procstatus, dscfg, radar_list=None):
             continue
 
         # Segment negative temperatures and get start of each segment
-        cons_list = np.split(ind_rngs, np.where(np.diff(ind_rngs) !=1)[0]+1)
+        cons_list = np.split(ind_rngs, np.where(np.diff(ind_rngs) != 1)[0]+1)
         for ind_rngs_cell in cons_list:
             if not zdr_valid[ind_ray, ind_rngs_cell[0]]:
                 continue
@@ -1440,7 +1490,7 @@ def process_zdr_column(procstatus, dscfg, radar_list=None):
             # get the first segment of continuous ZDR valid values
             ind_valid = np.where(np.ma.getmaskarray(h_low) == 0)[0]
             ind_valid = np.split(
-                ind_valid, np.where(np.diff(ind_valid) !=1)[0]+1)[0]
+                ind_valid, np.where(np.diff(ind_valid) != 1)[0]+1)[0]
 
             # compute ZDR column
             zdr_col = h_high[ind_valid[-1]]-h_low[ind_valid[0]]
