@@ -51,11 +51,6 @@ def main():
         help='name of folder containing the TRT cell data')
 
     parser.add_argument(
-        '--trtbase', type=str,
-        default='/store/msrad/radar/trt/',
-        help='name of folder containing the TRT cell data')
-
-    parser.add_argument(
         '--lon', type=str,
         default='8.9000010,9.2000000,9.4999970,9.4999970,8.9000010',
         help=('longitude of the points defining the perimeter of the area ' +
@@ -106,14 +101,14 @@ def main():
     time_rank_max_list = []
 
     # List for collection of flashes data
-    cell_ID_list = np.asarray([], dtype=int)
-    time_list = np.asarray([], dtype=datetime.datetime)
-    lon_list = np.asarray([], dtype=float)
-    lat_list = np.asarray([], dtype=float)
-    flash_density_list = np.asarray([], dtype=float)
-    rank_flash_density_list = np.asarray([], dtype=float)
-    area_list = np.asarray([], dtype=float)
-    nflash_list = np.asarray([], dtype=int)
+    cell_ID_list = np.ma.asarray([], dtype=int)
+    time_list = np.ma.asarray([], dtype=datetime.datetime)
+    lon_list = np.ma.asarray([], dtype=float)
+    lat_list = np.ma.asarray([], dtype=float)
+    flash_density_list = np.ma.asarray([], dtype=float)
+    rank_flash_density_list = np.ma.asarray([], dtype=float)
+    area_list = np.ma.asarray([], dtype=float)
+    nflash_list = np.ma.asarray([], dtype=int)
 
     for i, time_dir in enumerate(time_dir_list):
         data_input_path = args.trtbase+time_dir+'/TRTC_cell/'

@@ -21,7 +21,7 @@ import atexit
 import numpy as np
 
 from pyrad.io import read_lightning, write_histogram
-from pyrad.graph import plot_histogram, plot_pos
+from pyrad.graph import plot_histogram, plot_pos, _plot_time_range
 
 print(__doc__)
 
@@ -63,6 +63,10 @@ def main():
     alt = np.asarray([], dtype=float)
     dBm = np.asarray([], dtype=float)
 
+    # define histogram bin edges
+    bin_edges_alt = np.arange(-50., 14150., 100.)
+    bin_edges_dBm = np.arange(-17., 47., 1.)
+
     flash_cnt = 0
     for day in day_vec:
         day_str = day.strftime('%y%m%d')
@@ -73,6 +77,10 @@ def main():
          alt_aux, dBm_aux) = read_lightning(fname)
 
         print('N sources: '+str(flashnr_aux.size))
+        print('Min alt: '+str(alt_aux.min()))
+        print('Max alt: '+str(alt_aux.max()))
+        print('Min power: '+str(dBm_aux.min()))
+        print('Max power: '+str(dBm_aux.max()))
 
         flashnr = np.append(flashnr, flashnr_aux+flash_cnt)
         flash_cnt += flashnr_aux.max()
@@ -92,47 +100,31 @@ def main():
 
         print('N flashes: '+str(alt_first.size))
 
-        # Get bins altitude
-        alt_min = alt_aux.min()
-        alt_max = alt_aux.max()
-        step = 100.
-        bins = np.linspace(
-            alt_min-step/2., alt_max+step/2.,
-            num=int((alt_max-alt_min)/step)+2)
-
         # Plot histogram altitude all sources
         fname_hist = args.basepath+day_str+'_hist_alt.png'
         fname_hist = plot_histogram(
-            bins, alt_aux, [fname_hist], labelx='Altitude [m MSL]',
+            bin_edges_alt, alt_aux, [fname_hist], labelx='Altitude [m MSL]',
             titl=day_str+' Flash sources altitude')
         print('Plotted '+' '.join(fname_hist))
 
         # Plot histogram altitude first sources
         fname_hist = args.basepath+day_str+'_hist_alt_first_source.png'
         fname_hist = plot_histogram(
-            bins, alt_first, [fname_hist], labelx='Altitude [m MSL]',
+            bin_edges_alt, alt_first, [fname_hist], labelx='Altitude [m MSL]',
             titl=day_str+' Flash first source altitude')
         print('Plotted '+' '.join(fname_hist))
-
-        # Get bins dBm
-        dBm_min = dBm_aux.min()
-        dBm_max = dBm_aux.max()
-        step = 1.
-        bins = np.linspace(
-            dBm_min-step/2., dBm_max+step/2.,
-            num=int((dBm_max-dBm_min)/step)+2)
 
         # Plot histogram power all sources
         fname_hist = args.basepath+day_str+'_hist_dBm.png'
         fname_hist = plot_histogram(
-            bins, dBm_aux, [fname_hist], labelx='Power [dBm]',
+            bin_edges_dBm, dBm_aux, [fname_hist], labelx='Power [dBm]',
             titl=day_str+' Flash sources power')
         print('Plotted '+' '.join(fname_hist))
 
         # Plot histogram power first sources
         fname_hist = args.basepath+day_str+'_hist_dBm_first_source.png'
         fname_hist = plot_histogram(
-            bins, dBm_first, [fname_hist], labelx='Power [dBm]',
+            bin_edges_dBm, dBm_first, [fname_hist], labelx='Power [dBm]',
             titl=day_str+' Flash first source power')
         print('Plotted '+' '.join(fname_hist))
 
@@ -168,7 +160,46 @@ def main():
             titl=day_str+' first flash source position. Lowest on top')
         print('Plotted '+' '.join(figfname))
 
+        # Plot 2D histogram all sources
+        H, _, _ = np.histogram2d(
+            alt_aux, dBm_aux, bins=[bin_edges_alt, bin_edges_dBm])
+
+        # set 0 values to blank
+        H = np.ma.asarray(H)
+        H[H == 0] = np.ma.masked
+
+        fname_hist = args.basepath+day_str+'_Santis_2Dhist_alt_dBm.png'
+        fname_hist = _plot_time_range(
+            bin_edges_alt, bin_edges_dBm, H, None, [fname_hist],
+            titl='LMA sources Altitude-Power histogram',
+            xlabel='Altitude [m MSL]', ylabel='Power [dBm]',
+            clabel='Occurrence',
+            vmin=0, vmax=None, figsize=[10, 8], dpi=72)
+        print('Plotted '+' '.join(fname_hist))
+
+        # Plot 2D histogram first sources
+        H, _, _ = np.histogram2d(
+            alt_first, dBm_first, bins=[bin_edges_alt, bin_edges_dBm])
+
+        # set 0 values to blank
+        H = np.ma.asarray(H)
+        H[H == 0] = np.ma.masked
+
+        fname_hist = (
+            args.basepath+day_str+'_Santis_2Dhist_alt_dBm_first_source.png')
+        fname_hist = _plot_time_range(
+            bin_edges_alt, bin_edges_dBm, H, None, [fname_hist],
+            titl='LMA first sources Altitude-Power histogram',
+            xlabel='Altitude [m MSL]', ylabel='Power [dBm]',
+            clabel='Occurrence',
+            vmin=0, vmax=None, figsize=[10, 8], dpi=72)
+        print('Plotted '+' '.join(fname_hist))
+
     print('N sources total: '+str(alt.size))
+    print('Min alt: '+str(alt.min()))
+    print('Max alt: '+str(alt.max()))
+    print('Min power: '+str(dBm.min()))
+    print('Max power: '+str(dBm.max()))
 
     # Get first sources
     _, unique_ind = np.unique(flashnr, return_index=True)
@@ -211,66 +242,85 @@ def main():
         titl='First flash source position. Lowest on top')
     print('Plotted '+' '.join(figfname))
 
-    # Get bins altitude
-    alt_min = alt.min()
-    alt_max = alt.max()
-    step = 100.
-    bins = np.linspace(
-        alt_min-step/2., alt_max+step/2., num=int((alt_max-alt_min)/step)+2)
-
     # Plot histogram altitude all sources
     fname_hist = args.basepath+'Santis_hist_alt.png'
     fname_hist = plot_histogram(
-        bins, alt, [fname_hist], labelx='Altitude [m MSL]',
+        bin_edges_alt, alt, [fname_hist], labelx='Altitude [m MSL]',
         titl='Flash sources altitude')
     print('Plotted '+' '.join(fname_hist))
 
     fname_hist = args.basepath+'Santis_hist_alt.csv'
-    hist_alt, _ = np.histogram(alt, bins=bins)
-    fname_hist = write_histogram(bins, hist_alt, fname_hist)
-    print('Written '+' '.join(fname_hist))
+    hist_alt, _ = np.histogram(alt, bins=bin_edges_alt)
+    fname_hist = write_histogram(bin_edges_alt, hist_alt, fname_hist)
+    print('Written '+fname_hist)
 
     # Plot histogram altitude first sources
     fname_hist = args.basepath+'Santis_hist_alt_first_source.png'
     fname_hist = plot_histogram(
-        bins, alt_first, [fname_hist], labelx='Altitude [m MSL]',
+        bin_edges_alt, alt_first, [fname_hist], labelx='Altitude [m MSL]',
         titl='Flash first source altitude')
     print('Plotted '+' '.join(fname_hist))
 
-    fname_hist = args.basepath+'Santis_hist_alt_fist_source.csv'
-    hist_alt_fist, _ = np.histogram(alt_first, bins=bins)
-    fname_hist = write_histogram(bins, hist_alt_fist, fname_hist)
-    print('Written '+' '.join(fname_hist))
-
-    # Get bins dBm
-    dBm_min = dBm.min()
-    dBm_max = dBm.max()
-    step = 1.
-    bins = np.linspace(
-        dBm_min-step/2., dBm_max+step/2., num=int((dBm_max-dBm_min)/step)+2)
+    fname_hist = args.basepath+'Santis_hist_alt_first_source.csv'
+    hist_alt_first, _ = np.histogram(alt_first, bins=bin_edges_alt)
+    fname_hist = write_histogram(bin_edges_alt, hist_alt_first, fname_hist)
+    print('Written '+fname_hist)
 
     fname_hist = args.basepath+'Santis_hist_dBm.png'
     fname_hist = plot_histogram(
-        bins, dBm, [fname_hist], labelx='Power [dBm]',
+        bin_edges_dBm, dBm, [fname_hist], labelx='Power [dBm]',
         titl='Flash sources power')
     print('Plotted '+' '.join(fname_hist))
 
     fname_hist = args.basepath+'Santis_hist_dBm.csv'
-    hist_dBm, _ = np.histogram(dBm, bins=bins)
-    fname_hist = write_histogram(bins, hist_dBm, fname_hist)
-    print('Written '+' '.join(fname_hist))
+    hist_dBm, _ = np.histogram(dBm, bins=bin_edges_dBm)
+    fname_hist = write_histogram(bin_edges_dBm, hist_dBm, fname_hist)
+    print('Written '+fname_hist)
 
     # Plot histogram power first sources
     fname_hist = args.basepath+'Santis_hist_dBm_first_source.png'
     fname_hist = plot_histogram(
-        bins, dBm_first, [fname_hist], labelx='Power [dBm]',
+        bin_edges_dBm, dBm_first, [fname_hist], labelx='Power [dBm]',
         titl='Flash first source power')
     print('Plotted '+' '.join(fname_hist))
 
     fname_hist = args.basepath+'Santis_hist_dBm_first_source.csv'
-    hist_dBm_first, _ = np.histogram(dBm_first, bins=bins)
-    fname_hist = write_histogram(bins, hist_dBm_first, fname_hist)
-    print('Written '+' '.join(fname_hist))
+    hist_dBm_first, _ = np.histogram(dBm_first, bins=bin_edges_dBm)
+    fname_hist = write_histogram(bin_edges_dBm, hist_dBm_first, fname_hist)
+    print('Written '+fname_hist)
+
+    # Plot 2D histogram all sources
+    H, _, _ = np.histogram2d(alt, dBm, bins=[bin_edges_alt, bin_edges_dBm])
+
+    # set 0 values to blank
+    H = np.ma.asarray(H)
+    H[H == 0] = np.ma.masked
+
+    fname_hist = args.basepath+'Santis_2Dhist_alt_dBm.png'
+    fname_hist = _plot_time_range(
+        bin_edges_alt, bin_edges_dBm, H, None, [fname_hist],
+        titl='LMA sources Altitude-Power histogram',
+        xlabel='Altitude [m MSL]', ylabel='Power [dBm]',
+        clabel='Occurrence',
+        vmin=0, vmax=None, figsize=[10, 8], dpi=72)
+    print('Plotted '+' '.join(fname_hist))
+
+    # Plot 2D histogram first sources
+    H, _, _ = np.histogram2d(
+        alt_first, dBm_first, bins=[bin_edges_alt, bin_edges_dBm])
+
+    # set 0 values to blank
+    H = np.ma.asarray(H)
+    H[H == 0] = np.ma.masked
+
+    fname_hist = args.basepath+'Santis_2Dhist_alt_dBm_first_source.png'
+    fname_hist = _plot_time_range(
+        bin_edges_alt, bin_edges_dBm, H, None, [fname_hist],
+        titl='LMA first sources Altitude-Power histogram',
+        xlabel='Altitude [m MSL]', ylabel='Power [dBm]',
+        clabel='Occurrence',
+        vmin=0, vmax=None, figsize=[10, 8], dpi=72)
+    print('Plotted '+' '.join(fname_hist))
 
 
 def _print_end_msg(text):

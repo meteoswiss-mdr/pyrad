@@ -47,11 +47,11 @@ def main():
     parser.add_argument(
         'proc_cfgfile', type=str, help='name of main configuration file')
 
-    # keyword arguments
     parser.add_argument(
         'days', nargs='+', type=str,
         help='Dates to process. Format YYYY-MM-DD')
 
+    # keyword arguments
     parser.add_argument(
         '--trtbase', type=str,
         default='/store/msrad/radar/trt/',
@@ -130,14 +130,15 @@ def main():
             print(ValueError)
 
     # plot time series and get altitude of graupel column
-    cell_ID_list = np.asarray([], dtype=int)
-    time_list = np.asarray([], dtype=datetime.datetime)
-    lon_list = np.asarray([], dtype=float)
-    lat_list = np.asarray([], dtype=float)
-    area_list = np.asarray([], dtype=float)
-    rank_list = np.asarray([], dtype=float)
-    rm_hmin_list = np.ma.asarray([], dtype=float)
-    rm_hmax_list = np.ma.asarray([], dtype=float)
+    if 'hydro' in datatype_list:
+        cell_ID_list = np.asarray([], dtype=int)
+        time_list = np.asarray([], dtype=datetime.datetime)
+        lon_list = np.asarray([], dtype=float)
+        lat_list = np.asarray([], dtype=float)
+        area_list = np.asarray([], dtype=float)
+        rank_list = np.asarray([], dtype=float)
+        rm_hmin_list = np.ma.asarray([], dtype=float)
+        rm_hmax_list = np.ma.asarray([], dtype=float)
 
     for i, trt_cell_id in enumerate(trt_cell_id_list):
         print('\n\nPost-processing cell: '+trt_cell_id)
@@ -173,6 +174,9 @@ def main():
                         'Mode', '2nd most common', '3rd most common',
                         '% points mode', '% points 2nd most common',
                         '% points 3rd most common']
+                elif datatype == 'entropy' or 'prop' in datatype:
+                    labels = ['Mean', 'Min', 'Max']
+
                 tbin_edges, hbin_edges, _, data_ma, start_time = (
                     read_profile_ts(flist, labels, hres=args.hres))
 
@@ -276,12 +280,13 @@ def main():
 
             print("----- plot to '%s'" % fname)
 
-    fname = args.trtbase+'cell_rimmed_particles_column.csv'
-    write_trt_cell_lightning(
-        cell_ID_list, time_list, lon_list, lat_list, area_list,
-        rank_list, rm_hmin_list, rm_hmax_list, fname)
+    if 'hydro' in datatype_list:
+        fname = args.trtbase+'cell_rimmed_particles_column.csv'
+        write_trt_cell_lightning(
+            cell_ID_list, time_list, lon_list, lat_list, area_list,
+            rank_list, rm_hmin_list, rm_hmax_list, fname)
 
-    print("----- written to '%s'" % fname)
+        print("----- written to '%s'" % fname)
 
 
 def get_graupel_column(tbin_edges, hbin_edges, data_ma, start_time,

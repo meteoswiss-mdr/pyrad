@@ -54,7 +54,8 @@ from .io_aux import generate_field_name_str
 def write_ts_lightning(flashnr, time_data, time_in_flash, lat, lon, alt, dBm,
                        vals_list, fname, pol_vals_labels):
     """
-    sends the content of a text file by email
+    writes the LMA sources data and the value of the colocated polarimetric
+    variables
 
     Parameters
     ----------
@@ -89,10 +90,11 @@ def write_ts_lightning(flashnr, time_data, time_in_flash, lat, lon, alt, dBm,
 
         csvfile.write("# Weather radar timeseries data file\n")
         csvfile.write("# Project: MALSplus\n")
-        csvfile.write("# Start : %s UTC\n" %
-                      time_data[0].strftime("%Y-%m-%d %H:%M:%S"))
-        csvfile.write("# End   : %s UTC\n" %
-                      time_data[-1].strftime("%Y-%m-%d %H:%M:%S"))
+        if time_data.size > 0:
+            csvfile.write("# Start : %s UTC\n" %
+                          time_data[0].strftime("%Y-%m-%d %H:%M:%S"))
+            csvfile.write("# End   : %s UTC\n" %
+                          time_data[-1].strftime("%Y-%m-%d %H:%M:%S"))
         csvfile.write("# Header lines with comments are preceded by '#'\n")
         csvfile.write("#\n")
 
@@ -103,6 +105,11 @@ def write_ts_lightning(flashnr, time_data, time_in_flash, lat, lon, alt, dBm,
 
         writer = csv.DictWriter(csvfile, field_names)
         writer.writeheader()
+
+        if flashnr.size == 0.:
+            warn('No data to write in file '+fname)
+            csvfile.close()
+            return fname
 
         for i, flash in enumerate(flashnr):
             dict_row = {
