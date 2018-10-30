@@ -89,6 +89,7 @@ Retrievals
     :toctree: generated/
 
     process_signal_power
+    process_rcs
     process_snr
     process_l
     process_cdr
@@ -195,7 +196,7 @@ from .process_monitoring import process_monitoring
 
 from .process_retrieve import process_signal_power, process_snr
 from .process_retrieve import process_l, process_cdr, process_bird_density
-from .process_retrieve import process_rainrate, process_vol_refl
+from .process_retrieve import process_rainrate, process_vol_refl, process_rcs
 
 from .process_Doppler import process_wind_vel, process_windshear
 from .process_Doppler import process_dealias_fourdd

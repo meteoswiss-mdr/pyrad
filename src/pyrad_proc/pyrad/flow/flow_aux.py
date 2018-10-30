@@ -976,6 +976,14 @@ def _create_cfg_dict(cfgfile):
         cfg.update({'lrxh': None})
     if 'lrxv' not in cfg:
         cfg.update({'lrxv': None})
+    if 'ltxh' not in cfg:
+        cfg.update({'ltxh': None})
+    if 'ltxv' not in cfg:
+        cfg.update({'ltxv': None})
+    if 'txpwrh' not in cfg:
+        cfg.update({'txpwrh': None})
+    if 'txpwrv' not in cfg:
+        cfg.update({'txpwrv': None})
     if 'lradomeh' not in cfg:
         cfg.update({'lradomeh': None})
     if 'lradomev' not in cfg:
@@ -1096,6 +1104,10 @@ def _create_dscfg_dict(cfg, dataset):
     dscfg.update({'radconstv': cfg['radconstv']})
     dscfg.update({'lrxh': cfg['lrxh']})
     dscfg.update({'lrxv': cfg['lrxv']})
+    dscfg.update({'ltxh': cfg['ltxh']})
+    dscfg.update({'ltxv': cfg['ltxv']})
+    dscfg.update({'txpwrh': cfg['txpwrh']})
+    dscfg.update({'txpwrv': cfg['txpwrv']})
     dscfg.update({'lradomeh': cfg['lradomeh']})
     dscfg.update({'lradomev': cfg['lradomev']})
     dscfg.update({'AntennaGain': cfg['AntennaGain']})

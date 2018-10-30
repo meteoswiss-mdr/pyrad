@@ -423,6 +423,10 @@ def get_fieldname_pyart(datatype):
         field_name = 'volumetric_reflectivity'
     elif datatype == 'eta_v':
         field_name = 'volumetric_reflectivity_vv'
+    elif datatype == 'rcs_h':
+        field_name = 'radar_cross_section_hh'
+    elif datatype == 'rcs_v':
+        field_name = 'radar_cross_section_vv'
 
     elif datatype == 'ZDR':
         field_name = 'differential_reflectivity'

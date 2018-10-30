@@ -66,6 +66,9 @@ sun_est_differential_reflectivity = 'sun_est_differential_reflectivity'
 volumetric_reflectivity = 'volumetric_reflectivity'
 volumetric_reflectivity_vv = 'volumetric_reflectivity_vv'
 
+radar_cross_section_hh = 'radar_cross_section_hh'
+radar_cross_section_vv = 'radar_cross_section_vv'
+
 # Mean Doppler velocity fields, VEL
 velocity = 'velocity'
 corrected_velocity = 'corrected_velocity'
@@ -293,6 +296,8 @@ DEFAULT_FIELD_NAMES = {
     'signal_power_vv': signal_power_vv,
     'volumetric_reflectivity': volumetric_reflectivity,
     'volumetric_reflectivity_vv': volumetric_reflectivity_vv,
+    'radar_cross_section_hh': radar_cross_section_hh,
+    'radar_cross_section_vv': radar_cross_section_vv,
     'sun_hit_power_h': sun_hit_power_h,
     'sun_hit_power_v': sun_hit_power_v,
     'sun_hit_differential_reflectivity': sun_hit_differential_reflectivity,
@@ -752,6 +757,18 @@ DEFAULT_METADATA = {
         'units': '10log10(cm2/km3)',
         'standard_name': 'volumetric_reflectivity_vv',
         'long_name': 'Vertical Volumetric Reflectivity',
+        'coordinates': 'elevation azimuth range'},
+
+    radar_cross_section_hh: {
+        'units': 'dBsm',
+        'standard_name': 'radar_cross_section_hh',
+        'long_name': 'Horizontal Radar Cross-Section',
+        'coordinates': 'elevation azimuth range'},
+
+    radar_cross_section_vv: {
+        'units': 'dBsm',
+        'standard_name': 'radar_cross_section_vv',
+        'long_name': 'Vertical Radar Cross-Section',
         'coordinates': 'elevation azimuth range'},
 
     total_power: {
@@ -2098,6 +2115,8 @@ DEFAULT_FIELD_COLORMAP = {
     volumetric_reflectivity_vv: 'pyart_NWSRef',
     bird_density: 'pyart_NWSRef',
     bird_reflectivity: 'pyart_NWSRef',
+    radar_cross_section_hh: 'pyart_NWSRef',
+    radar_cross_section_vv: 'pyart_NWSRef',
 
     signal_to_noise_ratio: 'pyart_Carbone17',
     signal_to_noise_ratio_hh: 'pyart_Carbone17',
@@ -2255,6 +2274,8 @@ DEFAULT_FIELD_LIMITS = {
     volumetric_reflectivity: (20., 60.),
     volumetric_reflectivity_vv: (20., 60.),
     bird_density: (0., 400.),
+    radar_cross_section_hh: (0., 80.),
+    radar_cross_section_vv: (0., 80.),
 
     signal_power_hh: (-130., 0.),
     signal_power_vv: (-130., 0.),
