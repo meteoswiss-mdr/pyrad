@@ -44,6 +44,10 @@ def main():
         default='/store/msrad/lightning/LMA/Santis/',
         help='name of folder containing the LMA lightning data')
 
+    parser.add_argument(
+        '--nsources_min', type=int, default=10,
+        help='Minimum number of sources to consider the LMA flash valid')
+
     args = parser.parse_args()
 
     print("====== LMA data processing started: %s" %
@@ -76,12 +80,37 @@ def main():
         (flashnr_aux, _, _, lat_aux, lon_aux,
          alt_aux, dBm_aux) = read_lightning(fname)
 
+        # Filter data with less than nsources_min sources
+        unique_flashnr = np.unique(flashnr_aux, return_index=False)
+
+        ind = []
+        for flash in unique_flashnr:
+            ind_flash = np.where(flashnr_aux == flash)[0]
+            if ind_flash.size < args.nsources_min:
+                continue
+            ind.extend(ind_flash)
+
+        flashnr_aux = flashnr_aux[ind]
+        lat_aux = lat_aux[ind]
+        lon_aux = lon_aux[ind]
+        alt_aux = alt_aux[ind]
+        dBm_aux = dBm_aux[ind]
+
+        # get first flash
+        _, unique_ind = np.unique(flashnr_aux, return_index=True)
+        lat_first = lat_aux[unique_ind]
+        lon_first = lon_aux[unique_ind]
+        alt_first = alt_aux[unique_ind]
+        dBm_first = dBm_aux[unique_ind]
+
         print('N sources: '+str(flashnr_aux.size))
         print('Min alt: '+str(alt_aux.min()))
         print('Max alt: '+str(alt_aux.max()))
         print('Min power: '+str(dBm_aux.min()))
         print('Max power: '+str(dBm_aux.max()))
+        print('N flashes: '+str(alt_first.size))
 
+        # put data in global list
         flashnr = np.append(flashnr, flashnr_aux+flash_cnt)
         flash_cnt += flashnr_aux.max()
         # time_data = np.append(time_data, time_data_aux)
@@ -90,15 +119,6 @@ def main():
         lon = np.append(lon, lon_aux)
         alt = np.append(alt, alt_aux)
         dBm = np.append(dBm, dBm_aux)
-
-        # Get first sources data
-        _, unique_ind = np.unique(flashnr_aux, return_index=True)
-        lat_first = lat_aux[unique_ind]
-        lon_first = lon_aux[unique_ind]
-        alt_first = alt_aux[unique_ind]
-        dBm_first = dBm_aux[unique_ind]
-
-        print('N flashes: '+str(alt_first.size))
 
         # Plot histogram altitude all sources
         fname_hist = args.basepath+day_str+'_hist_alt.png'

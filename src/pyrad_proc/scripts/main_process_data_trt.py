@@ -157,7 +157,7 @@ def main():
             # plot time-height
             flist = glob.glob(
                 file_base2+'PROFILE/*_'+trt_cell_id+'_rhi_profile_*_' +
-                datatype+'_hres'+str(args.hres)+'.csv')
+                datatype+'_hres'+str(int(args.hres))+'.csv')
             if not flist:
                 warn('No profile files found in '+file_base2 +
                      'PROFILE/ for TRT cell ' +

@@ -50,8 +50,13 @@ def main():
 
     parser.add_argument(
         '--lma_basepath', type=str,
-        default='/store/msrad/radar/pyrad_products/rad4alp_hydro_PHA/data_analysis/',
-        help='name of folder containing the EUCLID lightning data')
+        default='/store/msrad/radar/pyrad_products/rad4alp_hydro_PHA/',
+        help='name of folder containing the LMA lightning data')
+
+    parser.add_argument(
+        '--lma_basename', type=str,
+        default='Santis_data',
+        help='base name of the files containing the LMA lightning data')
 
     parser.add_argument(
         '--datatypes', type=str,
@@ -65,13 +70,25 @@ def main():
         help='Labels in the csv file for each polarimetric variable')
 
     parser.add_argument(
-        '--scale_factor', type=float, default=1.2,
+        '--nsources_min', type=int, default=10,
+        help='Minimum number of sources to consider the LMA flash valid')
+
+    parser.add_argument(
+        '--scale_factor', type=float, default=2.,
         help='Factor by which the area covered by the LMA flash has to be ' +
              'enlarged to find EUCLID strokes')
 
     parser.add_argument(
-        '--delay', type=float, default=1000.,
+        '--delay', type=float, default=1000000.,
         help='delay after end of LMA flash where to look for EUCLID strokes [micros]')
+
+    parser.add_argument(
+        '--anticipation', type=float, default=1000000.,
+        help='anticipation of the start of an LMA flash where to look for EUCLID strokes [micros]')
+
+    parser.add_argument(
+        '--min_area', type=float, default=100.,
+        help='Minimum size of the area where to look for an EUCLID stroke [km]')
 
     parser.add_argument(
         '--euclidtype', type=str, default='CGt',
@@ -100,7 +117,7 @@ def main():
 
     for day in day_vec:
         day_str = day.strftime('%Y%m%d')
-        fname_lma = args.lma_basepath+day_str+'_Santis_data.csv'
+        fname_lma = args.lma_basepath+day_str+'_'+args.lma_basename+'.csv'
         fname_euclid = args.euclid_basepath+'THX/THX'+day.strftime('%y%j0000')+'.prd'
 
         print('Reading EUCLID data file '+fname_euclid)
@@ -150,16 +167,15 @@ def main():
         lon_filt = np.asarray([], dtype=float)
         alt_filt = np.asarray([], dtype=float)
         dBm_filt = np.asarray([], dtype=float)
-        pol_vals_dict_filt = {
-            'hydro [-]': np.ma.asarray([], dtype=np.int16),
-            'KDPc [deg/Km]': np.ma.asarray([], dtype=float),
-            'dBZc [dBZ]': np.ma.asarray([], dtype=float),
-            'RhoHVc [-]': np.ma.asarray([], dtype=float),
-            'TEMP [deg C]': np.ma.asarray([], dtype=float),
-            'ZDRc [dB]': np.ma.asarray([], dtype=float)
-        }
+
+        pol_vals_dict_filt = dict()
+        for label in pol_vals_labels:
+            pol_vals_dict_filt.update({label: np.ma.asarray([])})
         nflashes_time_rejected = 0
         nflashes_area_rejected = 0
+        nflashes_insufficient_sources = 0
+        nflashes_small_area_rejected = 0
+        nstrokes_accepted = 0
         for flash_ID in flashnr_first:
             # get LMA data of flash
             flashnr_flash = flashnr[flashnr == flash_ID]
@@ -173,11 +189,16 @@ def main():
             for key in pol_vals_dict.keys():
                 pol_vals_dict_flash.update({key: pol_vals_dict[key][flashnr == flash_ID]})
 
+            if flashnr_flash.size < args.nsources_min:
+                print('Not enough sources for flash '+str(flash_ID))
+                nflashes_insufficient_sources +=1
+                continue
+
             chy_flash = chy_lma[flashnr == flash_ID]
             chx_flash = chx_lma[flashnr == flash_ID]
 
             # check if there are EUCLID strokes within LMA time
-            t_start = time_data_flash[0]
+            t_start = time_data_flash[0]-datetime.timedelta(microseconds=args.anticipation)
             t_end = time_data_flash[-1]+datetime.timedelta(microseconds=args.delay)
             ind = np.where(np.logical_and(
                 time_EU_filt >= t_start, time_EU_filt <=t_end))[0]
@@ -197,13 +218,56 @@ def main():
                 list(zip(chy_flash, chx_flash)))
             points_EU = shapely.geometry.MultiPoint(
                 list(zip(chy_EU_flash, chx_EU_flash)))
+
+            rectangle_lma = points_flash_lma.minimum_rotated_rectangle
+            print('LMA area before scaling : '+str(rectangle_lma.area*1e-6))
+
+            if rectangle_lma.area*1e-6 == 0:
+                print('LMA area too small for flash '+str(flash_ID))
+                nflashes_small_area_rejected += 1
+
+                # Plot position of LMA sources AND EUCLID stroke
+                types = np.zeros(lat_flash.size)
+
+                figfname = args.lma_basepath+'rejected_'+day_str+'_'+str(flash_ID)+'_LMA_EUCLID_'+args.euclidtype+'_pos.png'
+                figfname = plot_pos(
+                    lat_flash, lon_flash, types, [figfname],
+                    cb_label='Type of detection 0: LMA, 1: EUCLID',
+                    titl=day_str+' '+str(flash_ID)+' rejected LMA flash\nLMA and EUCLID '+args.euclidtype+' positions')
+                print('Plotted '+' '.join(figfname))
+
+                continue
+
             roi_lma = shapely.affinity.scale(
-                points_flash_lma.minimum_rotated_rectangle,
-                xfact=args.scale_factor, yfact=args.scale_factor)
+                rectangle_lma, xfact=args.scale_factor, yfact=args.scale_factor)
+
+            area_roi = roi_lma.area*1e-6
+            if area_roi < args.min_area:
+                scale_factor = args.scale_factor
+                while area_roi < args.min_area:
+                    scale_factor += 0.1
+                    roi_lma = shapely.affinity.scale(
+                        rectangle_lma, xfact=scale_factor, yfact=scale_factor)
+                    area_roi = roi_lma.area*1e-6
+                print('scale_factor: '+str(scale_factor))
+            print('LMA area after scaling : '+str(roi_lma.area*1e-6))
 
             if roi_lma.disjoint(points_EU):
                 print('No EUCLID '+args.euclidtype+' flashes within area of LMA flash '+str(flash_ID))
                 nflashes_area_rejected += 1
+
+#                # Plot position of LMA sources AND EUCLID stroke
+#                lats = np.append(lat_flash, lat_EU_flash)
+#                lons = np.append(lon_flash, lon_EU_flash)
+#                types = np.append(np.zeros(lat_flash.size), np.ones(lat_EU_flash.size))
+#
+#                figfname = args.lma_basepath+'rejected_'+day_str+'_'+str(flash_ID)+'_LMA_EUCLID_'+args.euclidtype+'_pos.png'
+#                figfname = plot_pos(
+#                    lats, lons, types, [figfname],
+#                    cb_label='Type of detection 0: LMA, 1: EUCLID',
+#                    titl=day_str+' '+str(flash_ID)+' rejected LMA flash\nLMA and EUCLID '+args.euclidtype+' positions')
+#                print('Plotted '+' '.join(figfname))
+
                 continue
 
             flashnr_filt = np.append(flashnr_filt, flashnr_flash)
@@ -217,38 +281,53 @@ def main():
                 pol_vals_dict_filt[key] = np.ma.append(
                     pol_vals_dict_filt[key], pol_vals_dict_flash[key])
 
-            if roi_lma.contains(points_EU):
-                print(str(lon_EU_flash.size)+' EUCLID '+args.euclidtype+' flashes for LMA flash '+str(flash_ID))
-                continue
+            if not roi_lma.contains(points_EU):
+                points_EU = points_EU.intersection(roi_lma)
 
-            points_EU = points_EU.intersection(roi_lma)
-
-            inds = []
-            if points_EU.geom_type == 'Point':
-                ind = np.where(np.logical_and(
-                    chy_EU_flash == points_EU.x, chx_EU_flash == points_EU.y))
-                if len(ind) == 1:
-                    ind = ind[0]
-                inds.extend(ind)
-            else:
-                points_EU_list = list(points_EU)
-                for point in points_EU_list:
+                inds = []
+                if points_EU.geom_type == 'Point':
                     ind = np.where(np.logical_and(
-                        chy_EU_flash == point.x, chx_EU_flash == point.y))
+                        chy_EU_flash == points_EU.x, chx_EU_flash == points_EU.y))
                     if len(ind) == 1:
                         ind = ind[0]
                     inds.extend(ind)
-            lon_EU_flash = lon_EU_flash[inds]
-            lat_EU_flash = lat_EU_flash[inds]
+                else:
+                    points_EU_list = list(points_EU)
+                    for point in points_EU_list:
+                        ind = np.where(np.logical_and(
+                            chy_EU_flash == point.x, chx_EU_flash == point.y))
+                        if len(ind) == 1:
+                            ind = ind[0]
+                        inds.extend(ind)
+                lon_EU_flash = lon_EU_flash[inds]
+                lat_EU_flash = lat_EU_flash[inds]
 
             print(str(lon_EU_flash.size)+' EUCLID '+args.euclidtype+' flashes for LMA flash '+str(flash_ID))
+            nstrokes_accepted += lon_EU_flash.size
 
-        flashnr_first = np.unique(flashnr_filt, return_index=False)
+#            # Plot position of LMA sources AND EUCLID stroke
+#            lats = np.append(lat_flash, lat_EU_flash)
+#            lons = np.append(lon_flash, lon_EU_flash)
+#            types = np.append(np.zeros(lat_flash.size), np.ones(lat_EU_flash.size))
+#
+#            figfname = args.lma_basepath+day_str+'_'+str(flash_ID)+'_LMA_EUCLID_'+args.euclidtype+'_pos.png'
+#            figfname = plot_pos(
+#                lats, lons, types, [figfname],
+#                cb_label='Type of detection 0: LMA, 1: EUCLID',
+#                titl=day_str+' '+str(flash_ID)+' LMA flash\nLMA and EUCLID '+args.euclidtype+' positions')
+#            print('Plotted '+' '.join(figfname))
+
+        flashnr_filt_first = np.unique(flashnr_filt, return_index=False)
         print('N EUCLID strokes: '+str(time_EU_filt.size))
-        print('N LMA flashes time rejected: '+str(nflashes_time_rejected))
-        print('N LMA flashes area rejected: '+str(nflashes_area_rejected))
+        print('N EUCLID strokes in LMA flashes accepted: '+str(nstrokes_accepted)+'\n')
+
         print('N LMA flashes: '+str(flashnr_first.size))
-        print('N LMA sources: '+str(flashnr_filt.size))
+        print('N LMA flashes insufficient sources: '+str(nflashes_insufficient_sources))
+        print('N LMA flashes time rejected: '+str(nflashes_time_rejected))
+        print('N LMA flashes small area rejected: '+str(nflashes_small_area_rejected))
+        print('N LMA flashes area rejected: '+str(nflashes_area_rejected))
+        print('N LMA flashes accepted: '+str(flashnr_filt_first.size))
+        print('N LMA sources accepted: '+str(flashnr_filt.size)+'\n\n\n')
 
 
         # write the results in a file
@@ -256,12 +335,12 @@ def main():
         for label in pol_vals_labels:
             vals_list.append(pol_vals_dict_filt[label])
 
-        fname = args.lma_basepath+day_str+'_Santis_data_'+args.euclidtype+'.csv'
+        fname = args.lma_basepath+day_str+'_'+args.lma_basename+'_'+args.euclidtype+'.csv'
         write_ts_lightning(
             flashnr_filt, time_data_filt, time_in_flash_filt, lat_filt, lon_filt,
             alt_filt, dBm_filt, vals_list, fname, pol_vals_labels)
         print('written to '+fname)
-        
+
 
 def _print_end_msg(text):
     """

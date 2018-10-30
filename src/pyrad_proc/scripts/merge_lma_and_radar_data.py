@@ -57,6 +57,11 @@ def main():
         help='Name of the polarimetric moments to process. Coma separated')
 
     parser.add_argument(
+        '--datasets', type=str,
+        default='hydroclass,KDPc,reflectivity,RhoHVc,temperature,ZDRc',
+        help='Name of the datasets (directories where the data is stored. Coma separated')
+
+    parser.add_argument(
         '--labels', type=str,
         default=('hydro [-],KDPc [deg/Km],dBZc [dBZ],RhoHVc [-],' +
                  'TEMP [deg C],ZDRc [dB]'),
@@ -74,13 +79,15 @@ def main():
         day_vec.append(datetime.datetime.strptime(day, '%Y%m%d'))
 
     datatype_vec = args.datatypes.split(',')
+    dataset_vec = args.datasets.split(',')
     pol_vals_labels = args.labels.split(',')
 
-    if np.size(datatype_vec) != np.size(pol_vals_labels):
+    if (np.size(datatype_vec) != np.size(pol_vals_labels) or
+            np.size(datatype_vec) != np.size(dataset_vec)):
         warn(
             str(np.size(datatype_vec))+' datatypes but ' +
-            str(np.size(pol_vals_labels)) +
-            ' labels. Their number must be equal')
+            str(np.size(pol_vals_labels))+' labels and '+
+            str(np.size(dataset_vec))+' datasets. Their number must be equal')
         return
 
     for day in day_vec:
@@ -97,12 +104,12 @@ def main():
         flashnrs_first = np.unique(flashnrs)
 
         vals_list = []
-        for datatype in datatype_vec:
+        for datatype, dataset in zip(datatype_vec, dataset_vec):
             day_dir = day.strftime('%Y-%m-%d')
             day_str = day.strftime('%Y%m%d')
 
             fname_test = (
-                args.basepath+day_dir+'/*_traj/AT_FLASH/'+day_str +
+                args.basepath+day_dir+'/'+dataset+'_traj/AT_FLASH/'+day_str +
                 '*_allflash_ts_trajlightning_'+datatype+'.csv')
             fname_list = glob.glob(fname_test)
             if not fname_list:

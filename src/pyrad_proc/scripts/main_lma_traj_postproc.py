@@ -16,13 +16,14 @@ This program post-processes lightning trajectories
 import datetime
 import atexit
 from copy import deepcopy
+from warnings import warn
 
 import numpy as np
 
 from pyrad.io import read_lightning_all, get_fieldname_pyart, write_histogram
 from pyrad.io import write_ts_lightning
 from pyrad.graph import plot_histogram, plot_pos, get_colobar_label
-from pyrad.graph import _plot_time_range
+from pyrad.graph import _plot_time_range, plot_histogram2
 from pyrad.util import compute_histogram
 
 from pyart.config import get_metadata
@@ -46,6 +47,9 @@ def main():
         datetime.datetime(2017, 7, 30),
         datetime.datetime(2017, 8, 1)]
 
+#    day_vec = [
+#        datetime.datetime(2017, 7, 14)]
+#
 #    pol_vals_labels = [
 #        'hydro [-]', 'KDPc [deg/Km]', 'dBZc [dBZ]', 'RhoHVc [-]',
 #        'TEMP [deg C]', 'ZDRc [dB]']
@@ -67,16 +71,24 @@ def main():
 #        0.1]
 
     pol_vals_labels = [
-        'entropy', 'propAG', 'propCR', 'propIH', 'propLR', 'propMH', 'propRN',
+        'hydro', 'entropy', 'propAG', 'propCR', 'propIH', 'propLR', 'propMH', 'propRN',
         'propRP', 'propVI', 'propWS']
 
     datatype_vec = [
-        'entropy', 'propAG', 'propCR', 'propIH', 'propLR', 'propMH', 'propRN',
+        'hydro', 'entropy', 'propAG', 'propCR', 'propIH', 'propLR', 'propMH', 'propRN',
         'propRP', 'propVI', 'propWS']
 
-    step_list = [0.1, 1., 1., 1., 1., 1., 1., 1., 1., 1.]
+    step_list = [None, 0.1, 1., 1., 1., 1., 1., 1., 1., 1., 1.]
 
-    basename = 'Santis_data_entropy'
+    basename = 'Santis_data_entropy_IC'
+
+    filt_type = 'keep_all'
+    nsources_min = 10
+
+    for label in pol_vals_labels:
+        if 'hydro' in label:
+            hydro_label = label
+            break
 
     print("====== Lightning post-processing started: %s" %
           datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
@@ -90,13 +102,21 @@ def main():
             pol_vals_labels=pol_vals_labels))
 
     # Get indices of data to keep
-    ind, data_ID, subtitl = get_indices_all_data(flashnr)
-#    ind, data_ID, subtitl = get_indices_solid_phase(
-#        flashnr, pol_vals_dict['hydro [-]'])
-#    ind, data_ID, subtitl = get_indices_liquid_phase(
-#        flashnr, pol_vals_dict['hydro [-]'])
-#    ind, data_ID, subtitl = get_indices_liquid_phase_origin(
-#        flashnr, pol_vals_dict['hydro [-]'])
+    if filt_type == 'keep_all':
+        ind, data_ID, subtitl = get_indices_all_data(
+            flashnr, nsources_min=nsources_min)
+    elif filt_type == 'keep_solid':
+        ind, data_ID, subtitl = get_indices_solid_phase(
+            flashnr, pol_vals_dict[hydro_label], nsources_min=nsources_min)
+    elif filt_type == 'keep_liquid':
+        ind, data_ID, subtitl = get_indices_liquid_phase(
+            flashnr, pol_vals_dict[hydro_label], nsources_min=nsources_min)
+    elif filt_type == 'keep_liquid_origin':
+        ind, data_ID, subtitl = get_indices_liquid_phase_origin(
+            flashnr, pol_vals_dict[hydro_label], nsources_min=nsources_min)
+    else:
+        warn('Unknown filter type '+filt_type)
+        return
 
     flashnr_filt = flashnr[ind]
     time_data_filt = time_data[ind]
@@ -137,6 +157,77 @@ def main():
     print('N sources: '+str(flashnr_filt.size))
 
     # Analyse the data
+
+    # create histogram of hydrometeor proportions
+    if 'propAG' in pol_vals_dict_filt:
+        hydro_hist = np.zeros(10)
+        bins_centers = np.arange(0, 10, 1)
+        bins_edges = np.arange(-0.5, 10.5, 1)
+
+        # Plot all sources histogram
+        nradar_bins = pol_vals_dict_filt['propAG'].size
+
+        # look for empty gates
+        ind = np.ma.where(pol_vals_dict_filt['hydro'] == 0)[0]
+
+        hydro_hist[0] = ind.size/nradar_bins*100.
+        hydro_hist[1] = np.ma.sum(pol_vals_dict_filt['propAG'])/nradar_bins
+        hydro_hist[2] = np.ma.sum(pol_vals_dict_filt['propCR'])/nradar_bins
+        hydro_hist[3] = np.ma.sum(pol_vals_dict_filt['propLR'])/nradar_bins
+        hydro_hist[4] = np.ma.sum(pol_vals_dict_filt['propRP'])/nradar_bins
+        hydro_hist[5] = np.ma.sum(pol_vals_dict_filt['propRN'])/nradar_bins
+        hydro_hist[6] = np.ma.sum(pol_vals_dict_filt['propVI'])/nradar_bins
+        hydro_hist[7] = np.ma.sum(pol_vals_dict_filt['propWS'])/nradar_bins
+        hydro_hist[8] = np.ma.sum(pol_vals_dict_filt['propMH'])/nradar_bins
+        hydro_hist[9] = np.ma.sum(pol_vals_dict_filt['propIH'])/nradar_bins
+
+        fname = (
+            basepath+data_ID+'_allsources_ts_trajlightning_hydro_prop.png')
+        plot_histogram2(
+            bins_centers, hydro_hist, [fname],
+            labelx='radar echo classification (-)', labely='percentage',
+            titl='Trajectory Histogram All Sources'+subtitl)
+
+        print("----- plot to '%s'" % fname)
+
+        # store histogram
+        fname = (
+            basepath+data_ID+'_allsources_ts_trajlightning_hydro_prop.csv')
+        write_histogram(bins_edges, hydro_hist, fname)
+        print('Written '+fname)
+
+        # Plot first sources histogram
+        nradar_bins = pol_vals_dict_first['propAG'].size
+
+        # look for empty gates
+        ind = np.ma.where(pol_vals_dict_first['hydro'] == 0)[0]
+
+        hydro_hist[0] = ind.size/nradar_bins*100.
+        hydro_hist[1] = np.ma.sum(pol_vals_dict_first['propAG'])/nradar_bins
+        hydro_hist[2] = np.ma.sum(pol_vals_dict_first['propCR'])/nradar_bins
+        hydro_hist[3] = np.ma.sum(pol_vals_dict_first['propLR'])/nradar_bins
+        hydro_hist[4] = np.ma.sum(pol_vals_dict_first['propRP'])/nradar_bins
+        hydro_hist[5] = np.ma.sum(pol_vals_dict_first['propRN'])/nradar_bins
+        hydro_hist[6] = np.ma.sum(pol_vals_dict_first['propVI'])/nradar_bins
+        hydro_hist[7] = np.ma.sum(pol_vals_dict_first['propWS'])/nradar_bins
+        hydro_hist[8] = np.ma.sum(pol_vals_dict_first['propMH'])/nradar_bins
+        hydro_hist[9] = np.ma.sum(pol_vals_dict_first['propIH'])/nradar_bins
+
+        fname = (
+            basepath+data_ID+'_firstsource_ts_trajlightning_hydro_prop.png')
+        plot_histogram2(
+            bins_centers, hydro_hist, [fname],
+            labelx='radar echo classification (-)', labely='percentage',
+            titl='Trajectory Histogram First Sources'+subtitl)
+
+        print("----- plot to '%s'" % fname)
+
+        # store histogram
+        fname = (
+            basepath+data_ID+'_firstsource_ts_trajlightning_hydro_prop.csv')
+        write_histogram(bins_edges, hydro_hist, fname)
+        print('Written '+fname)
+
     for i, key in enumerate(pol_vals_labels):
         step = step_list[i]
         datatype = datatype_vec[i]
@@ -495,7 +586,7 @@ def read_data_two_sources(basepath, day_vec, basename1='Santis_data',
     return flashnr, time_data, time_in_flash, lat, lon, alt, dBm, pol_vals_dict
 
 
-def get_indices_all_data(flashnr):
+def get_indices_all_data(flashnr, nsources_min=0):
     """
     Get indices of all flash sources
 
@@ -514,15 +605,27 @@ def get_indices_all_data(flashnr):
         the subtitle to add to the plots generated
 
     """
-    data_ID = 'All'
-    subtitl = ''
+#    data_ID = 'All'
+#    subtitl = ''
 
-    ind = np.arange(flashnr.size)
+    data_ID = 'IC'
+    subtitl = '\nLMA flashes with associated '+data_ID+' EUCLID flashes'
+
+    # Get unique flashes
+    unique_flashnr = np.unique(flashnr, return_index=False)
+
+    # get sources of each flashes
+    ind = []
+    for flash in unique_flashnr:
+        ind_flash = np.where(flashnr == flash)[0]
+        if ind_flash.size < nsources_min:
+            continue
+        ind.extend(ind_flash)
 
     return ind, data_ID, subtitl
 
 
-def get_indices_solid_phase(flashnr, hydro):
+def get_indices_solid_phase(flashnr, hydro, nsources_min=0):
     """
     Get indices of flash sources of flashes propagating exclusively within the
     solid phase
@@ -533,6 +636,8 @@ def get_indices_solid_phase(flashnr, hydro):
         The flash number of each source
     hydro : 1D array
         The dominant hydrometeor class in the region of each source
+    nsources_min : float
+        Minimum number of sources to accept the flash
 
     Returns
     -------
@@ -563,12 +668,15 @@ def get_indices_solid_phase(flashnr, hydro):
 
     ind = []
     for flash in unique_flashnr_filt:
-        ind.extend(np.where(flashnr == flash)[0])
+        ind_flash = np.where(flashnr == flash)[0]
+        if ind_flash.size < nsources_min:
+            continue
+        ind.extend(ind_flash)
 
     return ind, data_ID, subtitl
 
 
-def get_indices_liquid_phase(flashnr, hydro):
+def get_indices_liquid_phase(flashnr, hydro, nsources_min=0):
     """
     Get indices of flash sources of flashes propagating into the liquid phase
 
@@ -578,6 +686,8 @@ def get_indices_liquid_phase(flashnr, hydro):
         The flash number of each source
     hydro : 1D array
         The dominant hydrometeor class in the region of each source
+    nsources_min : float
+        Minimum number of sources to accept the flash
 
     Returns
     -------
@@ -600,12 +710,15 @@ def get_indices_liquid_phase(flashnr, hydro):
     # get sources of those flashes
     ind = []
     for flash in unique_flashnr_filt:
-        ind.extend(np.where(flashnr == flash)[0])
+        ind_flash = np.where(flashnr == flash)[0]
+        if ind_flash.size < nsources_min:
+            continue
+        ind.extend(ind_flash)
 
     return ind, data_ID, subtitl
 
 
-def get_indices_liquid_phase_origin(flashnr, hydro):
+def get_indices_liquid_phase_origin(flashnr, hydro, nsources_min=0):
     """
     Get indices of flash sources of flashes generated in the liquid phase
 
@@ -615,6 +728,8 @@ def get_indices_liquid_phase_origin(flashnr, hydro):
         The flash number of each source
     hydro : 1D array
         The dominant hydrometeor class in the region of each source
+    nsources_min : float
+        Minimum number of sources to accept the flash
 
     Returns
     -------
@@ -637,8 +752,13 @@ def get_indices_liquid_phase_origin(flashnr, hydro):
     ind = []
     for i, flash in enumerate(unique_flashnr):
         orig_hydro = hydro[unique_ind[i]]
-        if orig_hydro == 3. or orig_hydro == 5. or orig_hydro == 8.:
-            ind.extend(np.where(flashnr == flash)[0])
+        if orig_hydro != 3. and orig_hydro != 5. and orig_hydro != 8.:
+            continue
+
+        ind_flash = np.where(flashnr == flash)[0]
+        if ind_flash.size < nsources_min:
+            continue
+        ind.extend(ind_flash)
 
     return ind, data_ID, subtitl
 

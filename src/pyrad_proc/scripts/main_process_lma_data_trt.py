@@ -48,6 +48,10 @@ def main():
 
     # keyword arguments
     parser.add_argument(
+        '--nsources_min', type=int, default=10,
+        help='Minimum number of sources to consider the LMA flash valid')
+
+    parser.add_argument(
         '--trtbase', type=str,
         default='/store/msrad/radar/trt/',
         help='name of folder containing the TRT cell data')
@@ -82,16 +86,16 @@ def main():
         trt_list.extend(glob.glob(
             args.trtbase+time_dir+'/TRTC_cell_plots/Some/*.trt'))
 
-    cell_ID_list = np.asarray([], dtype=int)
-    time_list = np.asarray([], dtype=datetime.datetime)
-    lon_list = np.asarray([], dtype=float)
-    lat_list = np.asarray([], dtype=float)
-    flash_density_list = np.asarray([], dtype=float)
-    sources_density_list = np.asarray([], dtype=float)
-    rank_flash_density_list = np.asarray([], dtype=float)
-    area_list = np.asarray([], dtype=float)
-    nflash_list = np.asarray([], dtype=int)
-    nsources_list = np.asarray([], dtype=int)
+    cell_ID_list = np.ma.asarray([], dtype=int)
+    time_list = np.ma.asarray([], dtype=datetime.datetime)
+    lon_list = np.ma.asarray([], dtype=float)
+    lat_list = np.ma.asarray([], dtype=float)
+    flash_density_list = np.ma.asarray([], dtype=float)
+    sources_density_list = np.ma.asarray([], dtype=float)
+    rank_flash_density_list = np.ma.asarray([], dtype=float)
+    area_list = np.ma.asarray([], dtype=float)
+    nflash_list = np.ma.asarray([], dtype=int)
+    nsources_list = np.ma.asarray([], dtype=int)
     for trt_fname in trt_list:
         print('processing TRT cell file '+trt_fname)
         trtpath = os.path.dirname(trt_fname)+'/'
@@ -111,6 +115,25 @@ def main():
 
         if flashnr is None:
             continue
+
+        # Filter data with less than nsources_min sources
+        unique_flashnr = np.unique(flashnr, return_index=False)
+
+        ind = []
+        for flash in unique_flashnr:
+            ind_flash = np.where(flashnr == flash)[0]
+            if ind_flash.size < args.nsources_min:
+                continue
+            ind.extend(ind_flash)
+
+        if np.size(ind) == 0:
+            continue
+
+        flashnr = flashnr[ind]
+        time_data = time_data[ind]
+        lat = lat[ind]
+        lon = lon[ind]
+        alt = alt[ind]
 
         # Get first sources data
         _, unique_ind = np.unique(flashnr, return_index=True)
@@ -258,15 +281,15 @@ def main():
                 print("----- plot to '%s'" % fname_hist)
 
         # Append flash data
-        cell_ID_list = np.append(cell_ID_list, traj_ID)
-        time_list = np.append(time_list, yyyymmddHHMM)
-        lon_list = np.append(lon_list, lon_trt)
-        lat_list = np.append(lat_list, lat_trt)
-        flash_density_list = np.append(flash_density_list, nflashes/area)
-        rank_flash_density_list = np.append(
+        cell_ID_list = np.ma.append(cell_ID_list, traj_ID)
+        time_list = np.ma.append(time_list, yyyymmddHHMM)
+        lon_list = np.ma.append(lon_list, lon_trt)
+        lat_list = np.ma.append(lat_list, lat_trt)
+        flash_density_list = np.ma.append(flash_density_list, nflashes/area)
+        rank_flash_density_list = np.ma.append(
             rank_flash_density_list, RANKr)
-        area_list = np.append(area_list, area)
-        nflash_list = np.append(nflash_list, nflashes)
+        area_list = np.ma.append(area_list, area)
+        nflash_list = np.ma.append(nflash_list, nflashes)
 
         # analyze all flashes
         print('\n\n--- Processing all sources ----')
@@ -400,8 +423,8 @@ def main():
                 print("----- plot to '%s'" % fname_hist)
 
         # Append sources data
-        sources_density_list = np.append(sources_density_list, nflashes/area)
-        nsources_list = np.append(nsources_list, nflashes)
+        sources_density_list = np.ma.append(sources_density_list, nflashes/area)
+        nsources_list = np.ma.append(nsources_list, nflashes)
 
     fname = args.trtbase+'cell_LMA_flashes.csv'
     write_trt_cell_lightning(
