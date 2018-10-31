@@ -649,6 +649,18 @@ DEFAULT_METADATA = {
         'long_name': ' radar calibration constant V polarization',
     },
 
+    'transmit_power_h': {
+        'units': 'dBm',
+        'meta_group': 'radar_calibration',
+        'long_name': ' transmit power H channel',
+    },
+
+    'transmit_power_v': {
+        'units': 'dBm',
+        'meta_group': 'radar_calibration',
+        'long_name': ' transmit power V channel',
+    },
+
     # non-standard parameter for specifying the PRF high/low for each ray
     'prf_flag': {
         'units': 'unitless',
@@ -2274,8 +2286,8 @@ DEFAULT_FIELD_LIMITS = {
     volumetric_reflectivity: (20., 60.),
     volumetric_reflectivity_vv: (20., 60.),
     bird_density: (0., 400.),
-    radar_cross_section_hh: (0., 80.),
-    radar_cross_section_vv: (0., 80.),
+    radar_cross_section_hh: (-50., 55.),
+    radar_cross_section_vv: (-50., 55.),
 
     signal_power_hh: (-130., 0.),
     signal_power_vv: (-130., 0.),

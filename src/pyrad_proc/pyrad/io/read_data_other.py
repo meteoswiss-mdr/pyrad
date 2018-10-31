@@ -186,18 +186,20 @@ def read_quantiles_ts(fname_list, step=5., qmin=0., qmax=100., t_res=300.):
     """
     data_ma = []
     datetime_arr = np.ma.array([], dtype=datetime.datetime)
+    qbin_edges = np.arange(
+        qmin-step/2, qmax+step/2+step/2, step=step, dtype=float)
+    qbin_centers = np.arange(qmin, qmax+step/2, step=step)
     for fname in fname_list:
+        values_aux = np.ma.masked_all(qbin_edges.size-1, dtype=float)
         datetime_arr = np.append(
             datetime_arr, _get_datetime(fname, 'RAINBOW'))
+
         quantiles, values = read_quantiles(fname)
-        qbin_edges = np.arange(
-            qmin-step/2, qmax+step/2+step/2, step=step, dtype=float)
-        values_aux = np.ma.masked_all(qbin_edges.size-1, dtype=float)
-        qbin_centers = np.arange(qmin, qmax+step/2, step=step)
-        for i, qbin_center in enumerate(qbin_centers):
-            val_aux = values[quantiles == qbin_center]
-            if val_aux.size > 0:
-                values_aux[i] = val_aux
+        if quantiles is not None:
+            for i, qbin_center in enumerate(qbin_centers):
+                val_aux = values[quantiles == qbin_center]
+                if val_aux.size > 0:
+                    values_aux[i] = val_aux
         data_ma.append(values_aux)
     data_ma = np.ma.asarray(data_ma)
 
@@ -538,7 +540,7 @@ def read_quantiles(fname):
                 values[i] = float(row['value'])
 
             return quantiles, values
-    except EnvironmentError as ee:
+    except (EnvironmentError, ValueError) as ee:
         warn(str(ee))
         warn('Unable to read file '+fname)
         return None, None

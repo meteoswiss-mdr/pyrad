@@ -8,6 +8,7 @@ Functions for retrieving new moments and products
     :toctree: generated/
 
     process_signal_power
+    process_rcs_pr
     process_rcs
     process_vol_refl
     process_snr
@@ -140,9 +141,11 @@ def process_signal_power(procstatus, dscfg, radar_list=None):
     return new_dataset, ind_rad
 
 
-def process_rcs(procstatus, dscfg, radar_list=None):
+def process_rcs_pr(procstatus, dscfg, radar_list=None):
     """
-    Computes the radar cross-section [dBsm]
+    Computes the radar cross-section (assuming a point target) from radar
+    reflectivity by first computing the received power and then the RCS from
+    it.
 
     Parameters
     ----------
@@ -157,7 +160,7 @@ def process_rcs(procstatus, dscfg, radar_list=None):
         antenna_gain : float. Global keyword
             The antenna gain [dB]
         txpwrv : float. Global keyword
-            The transmitted power of the vertical channel [W]. Used if input
+            The transmitted power of the vertical channel [dBm]. Used if input
             is vertical reflectivity
         mflossv : float. Global keyword
             The matching filter losses of the vertical channel. Used if input
@@ -178,7 +181,7 @@ def process_rcs(procstatus, dscfg, radar_list=None):
             The 1-way dry radome losses [dB] positive value.
             Used if input is vertical reflectivity
         txpwrh : float. Global keyword
-            The transmitted power of the horizontal channel [W]. Used if input
+            The transmitted power of the horizontal channel [dBm]. Used if input
             is horizontal reflectivity
         mflossh : float. Global keyword
             The matching filter losses of the vertical channel. Used if input
@@ -264,10 +267,101 @@ def process_rcs(procstatus, dscfg, radar_list=None):
     antenna_gain = dscfg.get('AntennaGain', None)
     attg = dscfg.get('attg', None)
 
-    rcs_dict = pyart.retrieve.compute_rcs(
+    rcs_dict = pyart.retrieve.compute_rcs_from_pr(
         radar, lmf=lmf, attg=attg, radconst=radconst, tx_pwr=tx_pwr,
         antenna_gain=antenna_gain, lrx=lrx, ltx=ltx,
         lradome=lradome, refl_field=refl_field, rcs_field=rcs_field)
+
+    # prepare for exit
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field(rcs_field, rcs_dict)
+
+    return new_dataset, ind_rad
+
+
+def process_rcs(procstatus, dscfg, radar_list=None):
+    """
+    Computes the radar cross-section (assuming a point target) from radar
+    reflectivity.
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        kw2 : float. Dataset keyowrd
+            The water constant
+        pulse_width : float. Dataset keyowrd
+            The pulse width [s]
+        beamwidthv : float. Global keyword
+            The vertical polarization antenna beamwidth [deg]. Used if input
+            is vertical reflectivity
+        beamwidthh : float. Global keyword
+            The horizontal polarization antenna beamwidth [deg]. Used if input
+            is horizontal reflectivity
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the output
+    ind_rad : int
+        radar index
+
+    """
+
+    if procstatus != 1:
+        return None, None
+
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+        if datatype == 'dBZ':
+            refl_field = 'reflectivity'
+        if datatype == 'dBuZ':
+            refl_field = 'unfiltered_reflectivity'
+        if datatype == 'dBZc':
+            refl_field = 'corrected_reflectivity'
+        if datatype == 'dBuZc':
+            refl_field = 'corrected_unfiltered_reflectivity'
+        if datatype == 'dBZv':
+            refl_field = 'reflectivity_vv'
+        if datatype == 'dBuZv':
+            refl_field = 'unfiltered_reflectivity_vv'
+        if datatype == 'dBuZvc':
+            refl_field = 'corrected_unfiltered_reflectivity_vv'
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if refl_field not in radar.fields:
+        warn('Unable to obtain RCS. Missing field '+refl_field)
+        return None, None
+
+    if refl_field.endswith('_vv'):
+        rcs_field = 'radar_cross_section_vv'
+
+        beamwidth = dscfg.get('beamwidthv', None)
+    else:
+        rcs_field = 'radar_cross_section_hh'
+
+        beamwidth = dscfg.get('beamwidthh', None)
+
+    pulse_width = dscfg.get('PulseWidth', None)
+    kw2 = dscfg.get('kw2', 0.93)
+
+    rcs_dict = pyart.retrieve.compute_rcs(
+        radar, kw2=kw2, pulse_width=pulse_width, beamwidth=beamwidth,
+        refl_field=refl_field, rcs_field=rcs_field)
 
     # prepare for exit
     new_dataset = {'radar_out': deepcopy(radar)}
