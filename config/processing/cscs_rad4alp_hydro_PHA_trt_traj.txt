@@ -9,13 +9,13 @@ name STRING rad4alp_hydro_PHA
 # Base path of the raw data.
 # Note: Must have a trailing '/'
 # ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
-datapath STRING /data/DX50/rawdata/
+datapath STRING /store/msrad/radar/rad4alp/rawdata/
 
 # Base path for cosmo data
-cosmopath STRING /data/cosmo/
+cosmopath STRING /store/msrad/cosmo/cosmo1/
 
 # Loading of saved datasets
-loadbasepath STRING /data/pyrad_products/
+loadbasepath STRING /store/msrad/radar/pyrad_products/
 loadname STRING  rad4alp_hydro_PHA
 
 # ------------------------------------------------------------
@@ -30,7 +30,7 @@ disdropath STRING /data/scattering/dsd_ts/
 # --------------------------------------------
 # Output data
 # --------------------------------------------
-saveimgbasepath STRING /data/pyrad_products/
+saveimgbasepath STRING /store/msrad/radar/pyrad_products/
 # Supported formats: eps, jpeg, jpg, pdf, pgf, png, ps, raw, rgba, svg, svgz, tif, tiff
 imgformat STRING png
 
@@ -42,8 +42,8 @@ imgformat STRING png
 configpath STRING $HOME/pyrad/config/
 
 # Configuration of the radar location and approach direction
-locationConfigFile STRING $HOME/pyrad/config/processing/rad4alp_hydro_PHA_postproc_loc.txt
+locationConfigFile STRING $HOME/pyrad/config/processing/rad4alp_hydro_PHA_trt_traj_loc.txt
 
 # Configuration of the product generation
-productConfigFile STRING $HOME/pyrad/config/processing/rad4alp_hydro_PHA_postproc_prod.txt
+productConfigFile STRING $HOME/pyrad/config/processing/rad4alp_hydro_PHA_trt_traj_prod.txt
 

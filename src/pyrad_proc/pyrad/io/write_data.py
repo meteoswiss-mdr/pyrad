@@ -7,11 +7,14 @@ Functions for writing pyrad output data
 .. autosummary::
     :toctree: generated/
 
+    write_ts_lightning
     send_msg
     write_alarm_msg
     write_last_state
     write_smn
     write_trt_cell_data
+    write_trt_cell_scores
+    write_trt_cell_lightning
     write_rhi_profile
     write_field_coverage
     write_cdf
@@ -28,7 +31,6 @@ Functions for writing pyrad output data
     write_colocated_data_time_avg
     write_sun_hits
     write_sun_retrieval
-    generate_field_name_str
 
 """
 
@@ -47,6 +49,86 @@ import numpy as np
 from pyart.config import get_fillvalue
 
 from .io_aux import generate_field_name_str
+
+
+def write_ts_lightning(flashnr, time_data, time_in_flash, lat, lon, alt, dBm,
+                       vals_list, fname, pol_vals_labels):
+    """
+    writes the LMA sources data and the value of the colocated polarimetric
+    variables
+
+    Parameters
+    ----------
+    flashnr : int
+        flash number
+    time_data : datetime object
+        flash source time
+    time_in_flash : float
+        seconds since start of flash
+    lat, lon, alt : float
+        latitude, longitude [deg] and altitude [m MSL] of the flash source
+    dBm : float
+        flash power
+    vals_list : list of arrays
+        List containing the data for each polarimetric variable
+    fname : str
+        the name of the file containing the content
+    pol_values_labels : list of strings
+        List containing strings identifying each polarimetric variable
+
+    Returns
+    -------
+    fname : str
+        the name of the file containing the content
+
+    """
+    with open(fname, 'w', newline='') as csvfile:
+        vals_list_aux = []
+        for j, label in enumerate(pol_vals_labels):
+            vals_list_aux.append(
+                vals_list[j].filled(fill_value=get_fillvalue()))
+
+        csvfile.write("# Weather radar timeseries data file\n")
+        csvfile.write("# Project: MALSplus\n")
+        if time_data.size > 0:
+            csvfile.write("# Start : %s UTC\n" %
+                          time_data[0].strftime("%Y-%m-%d %H:%M:%S"))
+            csvfile.write("# End   : %s UTC\n" %
+                          time_data[-1].strftime("%Y-%m-%d %H:%M:%S"))
+        csvfile.write("# Header lines with comments are preceded by '#'\n")
+        csvfile.write("#\n")
+
+        field_names = [
+            'flashnr', 'time_data', 'time_in_flash', 'lat', 'lon', 'alt',
+            'dBm']
+        field_names.extend(pol_vals_labels)
+
+        writer = csv.DictWriter(csvfile, field_names)
+        writer.writeheader()
+
+        if flashnr.size == 0.:
+            warn('No data to write in file '+fname)
+            csvfile.close()
+            return fname
+
+        for i, flash in enumerate(flashnr):
+            dict_row = {
+                'flashnr': int(flash),
+                'time_data': time_data[i].strftime('%Y-%m-%d %H:%M:%S.%f'),
+                'time_in_flash': time_in_flash[i],
+                'lat': lat[i],
+                'lon': lon[i],
+                'alt': alt[i],
+                'dBm': dBm[i],
+            }
+            for j, label in enumerate(pol_vals_labels):
+                dict_row.update(
+                    {label: vals_list_aux[j][i]})
+
+            writer.writerow(dict_row)
+        csvfile.close()
+
+    return fname
 
 
 def send_msg(sender, receiver_list, subject, fname):
@@ -223,7 +305,11 @@ def write_trt_cell_data(
 
     Parameters
     ----------
-
+    traj_ID, yyyymmddHHMM, lon, lat, ell_L, ell_S, ell_or, area,
+    vel_x, vel_y, det, RANKr, CG_n, CG_p, CG, CG_percent_p, ET45,
+    ET45m, ET15, ET15m, VIL, maxH, maxHm, POH, RANK, Dvel_x,
+    Dvel_y, cell_contour:
+        the cell parameters
     fname : str
         file name where to store the data
 
@@ -281,6 +367,123 @@ def write_trt_cell_data(
                 'Dvel_x': Dvel_x[i],
                 'Dvel_y': Dvel_y[i],
                 'cell_contour_lon-lat': cell_contour_str
+            })
+
+        csvfile.close()
+
+    return fname
+
+
+def write_trt_cell_scores(
+        traj_ID, flash_density_max_time, flash_density_max_rank,
+        nflashes_max_list, area_flash_max_list, flash_density_max,
+        rank_max_time, rank_max, fname):
+    """
+    writes TRT cells scores
+
+    Parameters
+    ----------
+    traj_ID : array of ints
+        The ID of the cells
+    flash_density_max_time : array of date times
+        The time at which the maximum flash density was reached for each cell
+    flash_density_max_rank : array of floats
+        The rank when the maximum flash density was reached for each cell
+    nflashes_max_list : array of ints
+        the number of flashes when the max flash density was reached
+    area_flash_max_list : array of floats
+        The area when the max flash density was reached
+    flash_density_max : array of floats
+        The maximum flash density for each cell
+    rank_max_time : array of datetime
+        the time at wich the maximum rank of each cell was reached
+    rank_max : array of float
+        the rank when the maximum rank of each cell was reached
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    with open(fname, 'w', newline='') as csvfile:
+        fieldnames = [
+            'traj ID', 'max flash density time',
+            'max flash density rank', 'max flash density flashes',
+            'max flash density area', 'max flash density', 'max rank time',
+            'max rank']
+        writer = csv.DictWriter(csvfile, fieldnames)
+        writer.writeheader()
+        for i, traj_ID_el in enumerate(traj_ID):
+            writer.writerow({
+                'traj ID': traj_ID_el,
+                'max flash density time': flash_density_max_time[i].strftime(
+                    '%Y-%m-%d %H:%M:%S'),
+                'max flash density rank': flash_density_max_rank[i],
+                'max flash density flashes': nflashes_max_list[i],
+                'max flash density area': area_flash_max_list[i],
+                'max flash density': flash_density_max[i],
+                'max rank time': rank_max_time[i].strftime(
+                    '%Y-%m-%d %H:%M:%S'),
+                'max rank': rank_max[i],
+            })
+
+        csvfile.close()
+
+    return fname
+
+
+def write_trt_cell_lightning(
+        cell_ID, cell_time, lon, lat, area, rank, nflash, flash_density,
+        fname):
+    """
+    writes the lightning data for each TRT cell
+
+    Parameters
+    ----------
+    cell_ID : array of ints
+        the cell ID
+    cell_time : array of datetime
+        the time step
+    lon, lat : array of floats
+        the latitude and longitude of the center of the cell
+    area : array of floats
+        the area of the cell
+    rank : array of floats
+        the rank of the cell
+    nflash : array of ints
+        the number of flashes/sources within the cell
+    flash_density : array of floats
+        the flash/source density
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    nflash = nflash.filled(fill_value=get_fillvalue())
+    flash_density = flash_density.filled(fill_value=get_fillvalue())
+    with open(fname, 'w', newline='') as csvfile:
+        fieldnames = [
+            'traj_ID', 'yyyymmddHHMM', 'lon', 'lat', 'area', 'RANKr',
+            'nflashes', 'flash_dens']
+        writer = csv.DictWriter(csvfile, fieldnames)
+        writer.writeheader()
+        for i, traj_ID_el in enumerate(cell_ID):
+            writer.writerow({
+                'traj_ID': traj_ID_el,
+                'yyyymmddHHMM': cell_time[i].strftime('%Y%m%d%H%M'),
+                'lon': lon[i],
+                'lat': lat[i],
+                'area': area[i],
+                'RANKr': rank[i],
+                'nflashes': nflash[i],
+                'flash_dens': flash_density[i],
             })
 
         csvfile.close()
@@ -624,6 +827,7 @@ def write_quantiles(quantiles, values, fname, datatype='undefined'):
         the name of the file where data has written
 
     """
+    values_aux = values.filled(fill_value=get_fillvalue())
     with open(fname, 'w', newline='') as csvfile:
         csvfile.write(
             '# Weather radar data histogram file\n' +
@@ -638,7 +842,7 @@ def write_quantiles(quantiles, values, fname, datatype='undefined'):
         for i, quant in enumerate(quantiles):
             writer.writerow({
                 'quantile': quant,
-                'value': values[i]})
+                'value': values_aux[i]})
         csvfile.close()
 
     return fname

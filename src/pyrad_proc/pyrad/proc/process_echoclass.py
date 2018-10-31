@@ -90,7 +90,7 @@ def process_echo_id(procstatus, dscfg, radar_list=None):
         warn('Unable to create radar_echo_id dataset. Missing data')
         return None, None
 
-    echo_id = np.zeros((radar.nrays, radar.ngates), dtype='int32')+3
+    echo_id = np.zeros((radar.nrays, radar.ngates), dtype=np.uint8)+3
 
     # look for clutter
     gatefilter = pyart.filters.moment_and_texture_based_gate_filter(
@@ -182,7 +182,7 @@ def process_birds_id(procstatus, dscfg, radar_list=None):
     rmax = dscfg.get('rmax', 25000.)
     elmin = dscfg.get('elmin', 1.5)
     elmax = dscfg.get('elmax', 85.)
-    echo_id = np.zeros((radar.nrays, radar.ngates), dtype='int32')+3
+    echo_id = np.zeros((radar.nrays, radar.ngates), dtype=np.uint8)+3
 
     # look for clutter
     gatefilter = pyart.filters.birds_gate_filter(
@@ -254,7 +254,7 @@ def process_clt_to_echo_id(procstatus, dscfg, radar_list=None):
         warn('rad4alp clutter exit code not present. Unable to obtain echoID')
         return None, None
 
-    echo_id = np.zeros((radar.nrays, radar.ngates), dtype='int32')+3
+    echo_id = np.zeros((radar.nrays, radar.ngates), dtype=np.uint8)+3
     clt = radar.fields[clt_field]['data']
     echo_id[clt == 1] = 1
     echo_id[clt >= 100] = 2
@@ -923,13 +923,13 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
         if dscfg['RADARCENTROIDS'] == 'A':
             #      Zh      ZDR     kdp   RhoHV   delta_Z
             mass_centers[0, :] = [
-                13.5829, 0.4063, 0.0497, 0.9868, 1330.3]  # DS
+                13.5829, 0.4063, 0.0497, 0.9868, 1330.3]  # AG
             mass_centers[1, :] = [
                 02.8453, 0.2457, 0.0000, 0.9798, 0653.8]  # CR
             mass_centers[2, :] = [
                 07.6597, 0.2180, 0.0019, 0.9799, -1426.5]  # LR
             mass_centers[3, :] = [
-                31.6815, 0.3926, 0.0828, 0.9978, 0535.3]  # GR
+                31.6815, 0.3926, 0.0828, 0.9978, 0535.3]  # RP
             mass_centers[4, :] = [
                 39.4703, 1.0734, 0.4919, 0.9876, -1036.3]  # RN
             mass_centers[5, :] = [
@@ -943,13 +943,13 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
         elif dscfg['RADARCENTROIDS'] == 'L':
             #       Zh      ZDR     kdp   RhoHV   delta_Z
             mass_centers[0, :] = [
-                13.8231, 0.2514, 0.0644, 0.9861, 1380.6]  # DS
+                13.8231, 0.2514, 0.0644, 0.9861, 1380.6]  # AG
             mass_centers[1, :] = [
                 03.0239, 0.1971, 0.0000, 0.9661, 1464.1]  # CR
             mass_centers[2, :] = [
                 04.9447, 0.1142, 0.0000, 0.9787, -0974.7]  # LR
             mass_centers[3, :] = [
-                34.2450, 0.5540, 0.1459, 0.9937, 0945.3]  # GR
+                34.2450, 0.5540, 0.1459, 0.9937, 0945.3]  # RP
             mass_centers[4, :] = [
                 40.9432, 1.0110, 0.5141, 0.9928, -0993.5]  # RN
             mass_centers[5, :] = [
@@ -963,13 +963,13 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
         elif dscfg['RADARCENTROIDS'] == 'D':
             #       Zh      ZDR     kdp   RhoHV   delta_Z
             mass_centers[0, :] = [
-                12.567, 0.18934, 0.041193, 0.97693, 1328.1]  # DS
+                12.567, 0.18934, 0.041193, 0.97693, 1328.1]  # AG
             mass_centers[1, :] = [
                 3.2115, 0.13379, 0.0000, 0.96918, 1406.3]  # CR
             mass_centers[2, :] = [
                 10.669, 0.18119, 0.0000, 0.97337, -1171.9]  # LR
             mass_centers[3, :] = [
-                34.941, 0.13301, 0.090056, 0.9979, 898.44]  # GR
+                34.941, 0.13301, 0.090056, 0.9979, 898.44]  # RP
             mass_centers[4, :] = [
                 39.653, 1.1432, 0.35013, 0.98501, -859.38]  # RN
             mass_centers[5, :] = [
@@ -983,13 +983,13 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
         elif dscfg['RADARCENTROIDS'] == 'P':
             #       Zh      ZDR     kdp   RhoHV   delta_Z
             mass_centers[0, :] = [
-                13.9882, 0.2470, 0.0690, 0.9939, 1418.1]  # DS
+                13.9882, 0.2470, 0.0690, 0.9939, 1418.1]  # AG
             mass_centers[1, :] = [
                 00.9834, 0.4830, 0.0043, 0.9834, 0950.6]  # CR
             mass_centers[2, :] = [
                 05.3962, 0.2689, 0.0000, 0.9831, -0479.5]  # LR
             mass_centers[3, :] = [
-                35.3411, 0.1502, 0.0940, 0.9974, 0920.9]  # GR
+                35.3411, 0.1502, 0.0940, 0.9974, 0920.9]  # RP
             mass_centers[4, :] = [
                 35.0114, 0.9681, 0.1106, 0.9785, -0374.0]  # RN
             mass_centers[5, :] = [
@@ -1003,13 +1003,13 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
         elif dscfg['RADARCENTROIDS'] == 'W':
             #       Zh      ZDR     kdp   RhoHV   delta_Z
             mass_centers[0, :] = [
-                16.7650, 0.3754, 0.0442, 0.9866, 1409.0]  # DS
+                16.7650, 0.3754, 0.0442, 0.9866, 1409.0]  # AG
             mass_centers[1, :] = [
                 01.4418, 0.3786, 0.0000, 0.9490, 1415.8]  # CR
             mass_centers[2, :] = [
                 16.0987, 0.3238, 0.0000, 0.9871, -0818.7]  # LR
             mass_centers[3, :] = [
-                36.5465, 0.2041, 0.0731, 0.9952, 0745.4]  # GR
+                36.5465, 0.2041, 0.0731, 0.9952, 0745.4]  # RP
             mass_centers[4, :] = [
                 43.4011, 0.6658, 0.3241, 0.9894, -0778.5]  # RN
             mass_centers[5, :] = [
@@ -1023,13 +1023,13 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
         elif dscfg['RADARCENTROIDS'] == 'DX50':
             #       Zh      ZDR     kdp   RhoHV   delta_Z
             mass_centers[0, :] = [
-                19.0770, 0.4139, 0.0099, 0.9841, 1061.7]  # DS
+                19.0770, 0.4139, 0.0099, 0.9841, 1061.7]  # AG
             mass_centers[1, :] = [
                 03.9877, 0.5040, 0.0000, 0.9642, 0856.6]  # CR
             mass_centers[2, :] = [
                 20.7982, 0.3177, 0.0004, 0.9858, -1375.1]  # LR
             mass_centers[3, :] = [
-                34.7124, -0.3748, 0.0988, 0.9828, 1224.2]  # GR
+                34.7124, -0.3748, 0.0988, 0.9828, 1224.2]  # RP
             mass_centers[4, :] = [
                 33.0134, 0.6614, 0.0819, 0.9802, -1169.8]  # RN
             mass_centers[5, :] = [
@@ -1074,13 +1074,13 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
 
         if output_distances:
             new_dataset['radar_out'].add_field(
-                'proportion_DS', fields_dict['prop_DS'])
+                'proportion_AG', fields_dict['prop_AG'])
             new_dataset['radar_out'].add_field(
                 'proportion_CR', fields_dict['prop_CR'])
             new_dataset['radar_out'].add_field(
                 'proportion_LR', fields_dict['prop_LR'])
             new_dataset['radar_out'].add_field(
-                'proportion_GR', fields_dict['prop_GR'])
+                'proportion_RP', fields_dict['prop_RP'])
             new_dataset['radar_out'].add_field(
                 'proportion_RN', fields_dict['prop_RN'])
             new_dataset['radar_out'].add_field(

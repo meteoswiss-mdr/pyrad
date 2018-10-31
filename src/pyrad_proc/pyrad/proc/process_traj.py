@@ -453,7 +453,9 @@ def process_traj_trt(procstatus, dscfg, radar_list=None, trajectory=None):
     field_dict['data'][0, :] = radar.fields[field_name]['data'][inds_ray, inds_rng]
     radar_roi.add_field(field_name, field_dict)
 
-    return radar_roi, ind_rad
+    new_dataset = {'radar_out': radar_roi}
+
+    return new_dataset, ind_rad
 
 
 def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):

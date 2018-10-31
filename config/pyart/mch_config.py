@@ -66,6 +66,9 @@ sun_est_differential_reflectivity = 'sun_est_differential_reflectivity'
 volumetric_reflectivity = 'volumetric_reflectivity'
 volumetric_reflectivity_vv = 'volumetric_reflectivity_vv'
 
+radar_cross_section_hh = 'radar_cross_section_hh'
+radar_cross_section_vv = 'radar_cross_section_vv'
+
 # Mean Doppler velocity fields, VEL
 velocity = 'velocity'
 corrected_velocity = 'corrected_velocity'
@@ -154,10 +157,10 @@ unfiltered_signal_quality_index_vv = 'unfiltered_signal_quality_index_vv'
 # hydroclass
 radar_echo_classification = 'radar_echo_classification'
 hydroclass_entropy = 'hydroclass_entropy'
-proportion_DS = 'proportion_DS'
+proportion_AG = 'proportion_AG'
 proportion_CR = 'proportion_CR'
 proportion_LR = 'proportion_LR'
-proportion_GR = 'proportion_GR'
+proportion_RP = 'proportion_RP'
 proportion_RN = 'proportion_RN'
 proportion_VI = 'proportion_VI'
 proportion_WS = 'proportion_WS'
@@ -293,6 +296,8 @@ DEFAULT_FIELD_NAMES = {
     'signal_power_vv': signal_power_vv,
     'volumetric_reflectivity': volumetric_reflectivity,
     'volumetric_reflectivity_vv': volumetric_reflectivity_vv,
+    'radar_cross_section_hh': radar_cross_section_hh,
+    'radar_cross_section_vv': radar_cross_section_vv,
     'sun_hit_power_h': sun_hit_power_h,
     'sun_hit_power_v': sun_hit_power_v,
     'sun_hit_differential_reflectivity': sun_hit_differential_reflectivity,
@@ -365,10 +370,10 @@ DEFAULT_FIELD_NAMES = {
     'radar_estimated_rain_rate': radar_estimated_rain_rate,
     'radar_echo_classification': radar_echo_classification,
     'hydroclass_entropy': hydroclass_entropy,
-    'proportion_DS': proportion_DS,
+    'proportion_AG': proportion_AG,
     'proportion_CR': proportion_CR,
     'proportion_LR': proportion_LR,
-    'proportion_GR': proportion_GR,
+    'proportion_RP': proportion_RP,
     'proportion_RN': proportion_RN,
     'proportion_VI': proportion_VI,
     'proportion_WS': proportion_WS,
@@ -644,6 +649,18 @@ DEFAULT_METADATA = {
         'long_name': ' radar calibration constant V polarization',
     },
 
+    'transmit_power_h': {
+        'units': 'dBm',
+        'meta_group': 'radar_calibration',
+        'long_name': ' transmit power H channel',
+    },
+
+    'transmit_power_v': {
+        'units': 'dBm',
+        'meta_group': 'radar_calibration',
+        'long_name': ' transmit power V channel',
+    },
+
     # non-standard parameter for specifying the PRF high/low for each ray
     'prf_flag': {
         'units': 'unitless',
@@ -752,6 +769,18 @@ DEFAULT_METADATA = {
         'units': '10log10(cm2/km3)',
         'standard_name': 'volumetric_reflectivity_vv',
         'long_name': 'Vertical Volumetric Reflectivity',
+        'coordinates': 'elevation azimuth range'},
+
+    radar_cross_section_hh: {
+        'units': 'dBsm',
+        'standard_name': 'radar_cross_section_hh',
+        'long_name': 'Horizontal Radar Cross-Section',
+        'coordinates': 'elevation azimuth range'},
+
+    radar_cross_section_vv: {
+        'units': 'dBsm',
+        'standard_name': 'radar_cross_section_vv',
+        'long_name': 'Vertical Radar Cross-Section',
         'coordinates': 'elevation azimuth range'},
 
     total_power: {
@@ -1108,7 +1137,7 @@ DEFAULT_METADATA = {
         'units': '-',
         'standard_name': 'radar_echo_classification',
         'long_name': 'Radar echo classification',
-        'labels': ['NC', 'DS', 'CR', 'LR', 'GR', 'RN', 'VI', 'WS', 'MH',
+        'labels': ['NC', 'AG', 'CR', 'LR', 'RP', 'RN', 'VI', 'WS', 'MH',
                    'IH/HDG'],
         'ticks': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
         'boundaries': [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5],
@@ -1120,10 +1149,10 @@ DEFAULT_METADATA = {
         'long_name': 'Semi-supervised hydrometeor classification entropy',
         'coordinates': 'elevation azimuth range'},
 
-    proportion_DS: {
+    proportion_AG: {
         'units': 'percent',
-        'standard_name': 'proportion_DS',
-        'long_name': 'Dry Snow proportion',
+        'standard_name': 'proportion_AG',
+        'long_name': 'Aggregates proportion',
         'coordinates': 'elevation azimuth range'},
 
     proportion_CR: {
@@ -1138,10 +1167,10 @@ DEFAULT_METADATA = {
         'long_name': 'Light Rain proportion',
         'coordinates': 'elevation azimuth range'},
 
-    proportion_GR: {
+    proportion_RP: {
         'units': 'percent',
-        'standard_name': 'proportion_GR',
-        'long_name': 'Graupel proportion',
+        'standard_name': 'proportion_RP',
+        'long_name': 'Rimed particles proportion',
         'coordinates': 'elevation azimuth range'},
 
     proportion_RN: {
@@ -2098,6 +2127,8 @@ DEFAULT_FIELD_COLORMAP = {
     volumetric_reflectivity_vv: 'pyart_NWSRef',
     bird_density: 'pyart_NWSRef',
     bird_reflectivity: 'pyart_NWSRef',
+    radar_cross_section_hh: 'pyart_NWSRef',
+    radar_cross_section_vv: 'pyart_NWSRef',
 
     signal_to_noise_ratio: 'pyart_Carbone17',
     signal_to_noise_ratio_hh: 'pyart_Carbone17',
@@ -2187,10 +2218,10 @@ DEFAULT_FIELD_COLORMAP = {
 
     radar_echo_classification: 'pyart_LangRainbow12',
     hydroclass_entropy: 'pyart_LangRainbow12',
-    proportion_DS:  'pyart_LangRainbow12',
+    proportion_AG:  'pyart_LangRainbow12',
     proportion_CR:  'pyart_LangRainbow12',
     proportion_LR:  'pyart_LangRainbow12',
-    proportion_GR:  'pyart_LangRainbow12',
+    proportion_RP:  'pyart_LangRainbow12',
     proportion_RN:  'pyart_LangRainbow12',
     proportion_VI:  'pyart_LangRainbow12',
     proportion_WS:  'pyart_LangRainbow12',
@@ -2255,6 +2286,8 @@ DEFAULT_FIELD_LIMITS = {
     volumetric_reflectivity: (20., 60.),
     volumetric_reflectivity_vv: (20., 60.),
     bird_density: (0., 400.),
+    radar_cross_section_hh: (-50., 55.),
+    radar_cross_section_vv: (-50., 55.),
 
     signal_power_hh: (-130., 0.),
     signal_power_vv: (-130., 0.),
@@ -2330,10 +2363,10 @@ DEFAULT_FIELD_LIMITS = {
 
     radar_echo_classification: (0., 9.),
     hydroclass_entropy: (0., 1.),
-    proportion_DS: (0., 100.),
+    proportion_AG: (0., 100.),
     proportion_CR: (0., 100.),
     proportion_LR: (0., 100.),
-    proportion_GR: (0., 100.),
+    proportion_RP: (0., 100.),
     proportion_RN: (0., 100.),
     proportion_VI: (0., 100.),
     proportion_WS: (0., 100.),
