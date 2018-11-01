@@ -13,6 +13,7 @@ Auxiliary functions for reading/writing files
     make_filename
     generate_field_name_str
     get_datatype_metranet
+    get_datatype_odim
     get_fieldname_pyart
     get_fieldname_cosmo
     get_field_unit
@@ -36,11 +37,12 @@ import os
 import glob
 import re
 import datetime
+
 from warnings import warn
 from copy import deepcopy
+import numpy as np
 
 from pyart.config import get_metadata
-
 
 def map_hydro(hydro_data_op):
     """
@@ -305,6 +307,84 @@ def get_datatype_metranet(datatype):
     return {datatype_metranet: field_name}
 
 
+def get_datatype_odim(datatype):
+    """
+    maps the config file radar data type name into the corresponding odim
+    data type name and Py-ART field name
+
+    Parameters
+    ----------
+    datatype : str
+        config file radar data type name
+
+    Returns
+    -------
+    metranet type : dict
+        dictionary containing the odim data type name and its
+        corresponding Py-ART field name
+
+    """
+    if datatype == 'udBZ':
+        datatype_odim = 'TH'
+        field_name = 'uncorrected_reflectivity'
+    elif datatype == 'udBZv':
+        datatype_odim = 'TV'
+        field_name = 'uncorrected_reflectivity_vv'
+    elif datatype == 'dBZ':
+        datatype_odim = 'DBZH'
+        field_name = 'reflectivity'
+    elif datatype == 'dBZv':
+        datatype_odim = 'DBZV'
+        field_name = 'reflectivity_vv'
+    elif datatype == 'dBZc':
+        datatype_odim = 'DBZH'
+        field_name = 'corrected_reflectivity'
+    elif datatype == 'dBZvc':
+        datatype_odim = 'DBZV'
+        field_name = 'corrected_reflectivity_vv'
+    elif datatype == 'ZDR':
+        datatype_odim = 'ZDR'
+        field_name = 'differential_reflectivity'
+    elif datatype == 'RhoHV':
+        datatype_odim = 'RHOHV'
+        field_name = 'cross_correlation_ratio'
+    elif datatype == 'LDR':
+        datatype_odim = 'LDR'
+        field_name = 'linear_polarization_ratio'
+    elif datatype == 'PhiDP':
+        datatype_odim = 'PHIDP'
+        field_name = 'differential_phase'
+    elif datatype == 'KDP':
+        datatype_odim = 'KDP'
+        field_name = 'specific_differential_phase'
+    elif datatype == 'SQI':
+        datatype_odim = 'SQI'
+        field_name = 'normalized_coherent_power'
+    elif datatype == 'SNR':
+        datatype_odim = 'SNR'
+        field_name = 'signal_to_noise_ratio'
+    elif datatype == 'V':
+        datatype_odim = 'VRAD'
+        field_name = 'velocity'
+    elif datatype == 'Vh':
+        datatype_odim = 'VRADH'
+        field_name = 'velocity'
+    elif datatype == 'Vv':
+        datatype_odim = 'VRADV'
+        field_name = 'velocity_vv'
+    elif datatype == 'W':
+        datatype_odim = 'WRAD'
+        field_name = 'spectrum_width'
+    elif datatype == 'QIND':
+        datatype_odim = 'QIND'
+        field_name = 'signal_quality_index'
+    else:
+        raise ValueError(
+            'ERROR: ODIM fields do not contain datatype '+datatype)
+
+    return {datatype_odim: field_name}
+
+
 def get_fieldname_pyart(datatype):
     """
     maps the config file radar data type name into the corresponding rainbow
@@ -343,6 +423,10 @@ def get_fieldname_pyart(datatype):
         field_name = 'volumetric_reflectivity'
     elif datatype == 'eta_v':
         field_name = 'volumetric_reflectivity_vv'
+    elif datatype == 'rcs_h':
+        field_name = 'radar_cross_section_hh'
+    elif datatype == 'rcs_v':
+        field_name = 'radar_cross_section_vv'
 
     elif datatype == 'ZDR':
         field_name = 'differential_reflectivity'
@@ -495,8 +579,30 @@ def get_fieldname_pyart(datatype):
         field_name = 'frequency_of_occurrence'
     elif datatype == 'RR':
         field_name = 'radar_estimated_rain_rate'
+
     elif datatype == 'hydro':
         field_name = 'radar_echo_classification'
+    elif datatype == 'entropy':
+        field_name = 'hydroclass_entropy'
+    elif datatype == 'propAG':
+        field_name = 'proportion_AG'
+    elif datatype == 'propCR':
+        field_name = 'proportion_CR'
+    elif datatype == 'propLR':
+        field_name = 'proportion_LR'
+    elif datatype == 'propRP':
+        field_name = 'proportion_RP'
+    elif datatype == 'propRN':
+        field_name = 'proportion_RN'
+    elif datatype == 'propVI':
+        field_name = 'proportion_VI'
+    elif datatype == 'propWS':
+        field_name = 'proportion_WS'
+    elif datatype == 'propMH':
+        field_name = 'proportion_MH'
+    elif datatype == 'propIH':
+        field_name = 'proportion_IH'
+
     elif datatype == 'time_avg_flag':
         field_name = 'time_avg_flag'
     elif datatype == 'colocated_gates':
@@ -676,6 +782,55 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
             dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
             for filename in dayfilelist:
                 t_filelist.append(filename)
+        elif datagroup == 'ODIM':
+            if scan is None:
+                warn('Unknown scan name')
+                return None
+            if cfg['path_convention'] == 'MCH':
+                dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%y%j')
+                basename = ('M'+cfg['RadarRes'][ind_rad] +
+                            cfg['RadarName'][ind_rad]+dayinfo)
+                datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
+
+                # check that M files exist. if not search P files
+                dayfilelist = glob.glob(datapath+basename+'*'+scan+'*')
+                if not dayfilelist:
+                    basename = ('P'+cfg['RadarRes'][ind_rad] +
+                                cfg['RadarName'][ind_rad]+dayinfo)
+                    datapath = (cfg['datapath'][ind_rad]+dayinfo+'/' +
+                                basename+'/')
+            elif cfg['path_convention'] == 'ODIM':
+                try:
+                    fpath_strf = dataset[dataset.find("D")+2:dataset.find("F")-2]
+                except AttributeError:
+                    warn('Unknown ODIM directory and/or date convention, check product config file')
+                daydir = (
+                    starttime+datetime.timedelta(days=i)).strftime(
+                        fpath_strf)
+                datapath = (cfg['datapath'][ind_rad] + daydir+'/')
+                dayfilelist = glob.glob(datapath+'*'+scan)
+            else:
+                dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%y%j')
+                basename = ('M'+cfg['RadarRes'][ind_rad] +
+                            cfg['RadarName'][ind_rad]+dayinfo)
+                datapath = (
+                    cfg['datapath'][ind_rad]+'M'+cfg['RadarRes'][ind_rad] +
+                    cfg['RadarName'][ind_rad]+'/')
+
+                # check that M files exist. if not search P files
+                dayfilelist = glob.glob(datapath+basename+'*'+scan+'*')
+                if not dayfilelist:
+                    basename = ('P'+cfg['RadarRes'][ind_rad] +
+                                cfg['RadarName'][ind_rad]+dayinfo)
+                    datapath = (
+                        cfg['datapath'][ind_rad]+'P'+cfg['RadarRes'][ind_rad] +
+                        cfg['RadarName'][ind_rad]+'/')
+
+            if not os.path.isdir(datapath):
+                warn("WARNING: Unknown datapath '%s'" % datapath)
+                continue
+            for filename in dayfilelist:
+                t_filelist.append(filename)
         elif datagroup == 'CFRADIAL':
             daydir = (
                 starttime+datetime.timedelta(days=i)).strftime('%Y-%m-%d')
@@ -842,7 +997,7 @@ def get_datatype_fields(datadescriptor):
     radarnr : str
         radar number, i.e. RADAR1, RADAR2, ...
     datagroup : str
-        data type group, i.e. RAINBOW, RAD4ALP, CFRADIAL, COSMO, MXPOL ...
+        data type group, i.e. RAINBOW, RAD4ALP, ODIM, CFRADIAL, COSMO, MXPOL ...
     datatype : str
         data type, i.e. dBZ, ZDR, ISO0, ...
     dataset : str
@@ -877,6 +1032,13 @@ def get_datatype_fields(datadescriptor):
                 datatype = descrfields[2]
                 dataset = None
                 product = None
+            elif datagroup == 'ODIM':
+                descrfields2 = descrfields[2].split(',')
+                datatype = descrfields2[0]
+                product = None
+                dataset = None
+                if np.size(descrfields2) == 2:
+                    dataset = descrfields2[1]
             else:
                 datatype = descrfields[2]
                 dataset = None
@@ -893,11 +1055,23 @@ def get_datatype_fields(datadescriptor):
             datatype = descrfields[1]
             dataset = None
             product = None
+        elif datagroup == 'ODIM':
+            descrfields2 = descrfields[1].split(',')
+            #warn(" descrfields2:  '%s'" % descrfields2[1])
+            if len(descrfields2) == 2:
+                datatype = descrfields2[0]
+                dataset = descrfields2[1]
+                product = None
+                #warn(" dataset:  '%s'" % dataset)
+            else:
+                datatype = descrfields[1]
+                dataset = None
+                product = None
         else:
             datatype = descrfields[1]
             dataset = None
             product = None
-
+    #warn(" dataset:  '%s'" % dataset)
     return radarnr, datagroup, datatype, dataset, product
 
 
@@ -949,9 +1123,9 @@ def get_datetime(fname, datadescriptor):
         date and time in file name
 
     """
-    _, datagroup, _, _, _ = get_datatype_fields(datadescriptor)
+    _, datagroup, _, dataset, _ = get_datatype_fields(datadescriptor)
 
-    return _get_datetime(fname, datagroup)
+    return _get_datetime(fname, datagroup, ftime_format=dataset)
 
 
 def find_cosmo_file(voltime, datatype, cfg, scanid, ind_rad=0):
@@ -1175,7 +1349,7 @@ def find_rad4alpcosmo_file(voltime, datatype, cfg, scanid, ind_rad=0):
     return fname[0]
 
 
-def _get_datetime(fname, datagroup):
+def _get_datetime(fname, datagroup, ftime_format=None):
     """
     Given a data group gets date and time from file name
 
@@ -1185,6 +1359,8 @@ def _get_datetime(fname, datagroup):
         file name
     datadescriptor : str
         radar field type. Format : [radar file type]:[datatype]
+    ftime_format : str or None
+        if the file is of type ODIM this contain the file time format
 
     Returns
     -------
@@ -1199,6 +1375,25 @@ def _get_datetime(fname, datagroup):
     elif datagroup == 'RAD4ALP':
         datetimestr = bfile[3:12]
         fdatetime = datetime.datetime.strptime(datetimestr, '%y%j%H%M')
+    elif datagroup == 'ODIM':
+        if ftime_format is None:
+            # we assume is rad4alp format
+            datetimestr = bfile[3:12]
+            fdatetime = datetime.datetime.strptime(datetimestr, '%y%j%H%M')
+        else:
+            fdate_strf = ftime_format[ftime_format.find("F")+2:-1]
+            today = datetime.datetime.now()
+            len_datestr = len(today.strftime(fdate_strf))
+            count = 0
+            while True:
+                try:
+                    fdatetime = datetime.datetime.strptime(
+                        os.path.basename(bfile)[count:count+len_datestr], fdate_strf)
+                except ValueError:
+                    count = count + 1
+                else:
+                    # No error, stop the loop
+                    break
     elif datagroup == 'MXPOL':
         datetimestr = re.findall(r"([0-9]{8}-[0-9]{6})", bfile)[0]
         fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d-%H%M%S')

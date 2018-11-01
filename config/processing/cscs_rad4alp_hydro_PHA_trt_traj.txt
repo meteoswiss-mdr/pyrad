@@ -1,6 +1,6 @@
 # Name of this configuration:
 # Will be used in product generation save path
-name STRING rad4alp_birds_PHD
+name STRING rad4alp_hydro_PHA
 
 # ---------------------------------------------------------
 #  Raw data pathes
@@ -9,33 +9,30 @@ name STRING rad4alp_birds_PHD
 # Base path of the raw data.
 # Note: Must have a trailing '/'
 # ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
-datapath STRING /srn/data/
+datapath STRING /store/msrad/radar/rad4alp/rawdata/
 
 # Base path for cosmo data
-# cosmopath STRING /srn/analysis/cosmo/
+cosmopath STRING /store/msrad/cosmo/cosmo1/
 
-# Base path for dem data
-# dempath STRING /opt/ccs4/lookuptables/
-
+# Loading of saved datasets
+loadbasepath STRING /store/msrad/radar/pyrad_products/
+loadname STRING  rad4alp_hydro_PHA
 
 # ------------------------------------------------------------
 # Auxiliary data pathes
 # ------------------------------------------------------------
 # Base path for swissmetnet data
-#smnpath STRING /data/meteo_products/SMNRetrieve/
+smnpath STRING /data/meteo_products/SMNRetrieve/
 
 # Base path for disdrometer data
-#disdropath STRING /data/scattering/dsd_ts/
-
-# Base path for solar flux data
-# solarfluxpath STRING /srn/analysis/solar_flux/
+disdropath STRING /data/scattering/dsd_ts/
 
 # --------------------------------------------
 # Output data
 # --------------------------------------------
-saveimgbasepath STRING /srn/analysis/pyrad_products/
+saveimgbasepath STRING /store/msrad/radar/pyrad_products/
 # Supported formats: eps, jpeg, jpg, pdf, pgf, png, ps, raw, rgba, svg, svgz, tif, tiff
-imgformat STRING png	
+imgformat STRING png
 
 # --------------------------------------------------------
 # configuration files pathes
@@ -45,7 +42,8 @@ imgformat STRING png
 configpath STRING $HOME/pyrad/config/
 
 # Configuration of the radar location and approach direction
-locationConfigFile STRING $HOME/pyrad/config/processing/rad4alp_birds_PHD_rt_loc.txt
+locationConfigFile STRING $HOME/pyrad/config/processing/rad4alp_hydro_PHA_trt_traj_loc.txt
 
 # Configuration of the product generation
-productConfigFile STRING $HOME/pyrad/config/processing/rad4alp_birds_PHD_prod.txt
+productConfigFile STRING $HOME/pyrad/config/processing/rad4alp_hydro_PHA_trt_traj_prod.txt
+

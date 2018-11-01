@@ -11,6 +11,7 @@ Functions for reading radar data files
     merge_scans_rainbow
     merge_scans_dem
     merge_scans_rad4alp
+	merge_scans_odim
     merge_scans_cosmo
     merge_scans_cosmo_rad4alp
     merge_scans_dem_rad4alp
@@ -21,6 +22,7 @@ Functions for reading radar data files
     merge_fields_cosmo
     get_data_rainbow
     get_data_rad4alp
+    get_data_odim
     add_field
     interpol_field
 
@@ -35,17 +37,20 @@ from copy import deepcopy
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 
-import pyart
 try:
     import wradlib as wrl
     _WRADLIB_AVAILABLE = True
 except Exception:
     _WRADLIB_AVAILABLE = False
 
+import pyart
+from pyart.aux_io.odim_h5 import read_odim_h5 as read_odim
+
 from .read_data_other import read_status, read_rad4alp_cosmo, read_rad4alp_vis
 from .read_data_mxpol import pyrad_MXPOL, pyrad_MCH
 
 from .io_aux import get_datatype_metranet, get_fieldname_pyart, get_file_list
+from .io_aux import get_datatype_odim
 from .io_aux import get_datatype_fields, get_datetime, map_hydro, map_Doppler
 from .io_aux import find_cosmo_file, find_rad4alpcosmo_file
 
@@ -72,6 +77,8 @@ def get_data(voltime, datatypesdescr, cfg):
     """
     datatype_rainbow = list()
     datatype_rad4alp = list()
+    datatype_odim = list()
+    dataset_odim = list()
     datatype_cfradial = list()
     dataset_cfradial = list()
     product_cfradial = list()
@@ -89,6 +96,9 @@ def get_data(voltime, datatypesdescr, cfg):
             datatype_rainbow.append(datatype)
         elif datagroup == 'RAD4ALP':
             datatype_rad4alp.append(datatype)
+        elif datagroup == 'ODIM':
+            datatype_odim.append(datatype)
+            dataset_odim.append(dataset)
         elif datagroup == 'CFRADIAL':
             datatype_cfradial.append(datatype)
             dataset_cfradial.append(dataset)
@@ -112,6 +122,7 @@ def get_data(voltime, datatypesdescr, cfg):
 
     ndatatypes_rainbow = len(datatype_rainbow)
     ndatatypes_rad4alp = len(datatype_rad4alp)
+    ndatatypes_odim = len(datatype_odim)
     ndatatypes_cfradial = len(datatype_cfradial)
     ndatatypes_cosmo = len(datatype_cosmo)
     ndatatypes_rad4alpcosmo = len(datatype_rad4alpcosmo)
@@ -132,6 +143,17 @@ def get_data(voltime, datatypesdescr, cfg):
             cfg['datapath'][ind_rad], cfg['ScanList'][ind_rad],
             cfg['RadarName'][ind_rad], cfg['RadarRes'][ind_rad], voltime,
             datatype_rad4alp, cfg, ind_rad=ind_rad)
+
+    elif ndatatypes_odim > 0:
+        try:
+            radar_name = cfg['RadarName'][ind_rad]
+            radar_res = cfg['RadarRes'][ind_rad]
+        except TypeError:
+            radar_name = None
+            radar_res = None
+        radar = merge_scans_odim(
+            cfg['datapath'][ind_rad], cfg['ScanList'][ind_rad], radar_name, radar_res,
+            voltime, datatype_odim, dataset_odim, cfg, ind_rad=ind_rad)
 
     elif ndatatypes_mxpol > 0:
         radar = merge_scans_mxpol(
@@ -480,6 +502,100 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
 
     return radar
 
+def merge_scans_odim(basepath, scan_list, radar_name, radar_res, voltime,
+                     datatype_list, dataset_list, cfg, ind_rad=0):
+    """
+    merge odim data.
+
+    Parameters
+    ----------
+    basepath : str
+        base path of odim radar data
+    scan_list : list
+        list of scans (h5)
+    voltime: datetime object
+        reference time of the scan
+    datatype_list : list
+        lists of data types to get
+    dataset_list : list
+        list of datasets. Used to get path
+    cfg : dict
+        configuration dictionary
+    ind_rad : int
+        radar index
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+
+    radar = None
+    dayinfo = voltime.strftime('%y%j')
+    timeinfo = voltime.strftime('%H%M')
+    if (radar_name != None) or (radar_res != None):
+        basename = 'M'+radar_res+radar_name+dayinfo
+    if cfg['path_convention'] == 'LTE':
+        yy = dayinfo[0:2]
+        dy = dayinfo[2:]
+        subf = 'M'+radar_res+radar_name+yy+'hdf'+dy
+        datapath = basepath+subf+'/'
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*'+scan_list[0] + '*')
+        if not filename:
+            basename = 'P'+radar_res+radar_name+dayinfo
+            subf = 'P'+radar_res+radar_name+yy+'hdf'+dy
+            datapath = basepath+subf+'/'
+    elif cfg['path_convention'] == 'MCH':
+        datapath = basepath+dayinfo+'/'+basename+'/'
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*'+scan_list[0] + '*')
+        if not filename:
+            basename = 'P'+radar_res+radar_name+dayinfo
+            datapath = basepath+dayinfo+'/'+basename+'/'
+    elif cfg['path_convention'] == 'ODIM':
+        fpath_strf = dataset_list[0][dataset_list[0].find("D")+2:dataset_list[0].find("F")-2]
+        fdate_strf = dataset_list[0][dataset_list[0].find("F")+2:-1]
+        datapath = (basepath+voltime.strftime(fpath_strf)+'/')
+        filename = glob.glob(datapath+'*'+scan_list[0]+'*')
+    else:
+        datapath = basepath+'M'+radar_res+radar_name+'/'
+        filename = glob.glob(
+            datapath+basename+timeinfo+'*'+scan_list[0] + '*')
+        if not filename:
+            basename = 'P'+radar_res+radar_name+dayinfo
+            datapath = basepath+'P'+radar_res+radar_name+'/'
+            filename = glob.glob(datapath+basename+timeinfo+'*'+scan_list[0] + '*')
+    if not filename:
+        warn('No file found in '+datapath[0]+basename+timeinfo+'*.h5')
+    else:
+        radar = get_data_odim(
+            filename[0], datatype_list, scan_list[0], cfg, ind_rad=ind_rad)
+
+    if len(scan_list) == 1:
+        return radar
+
+    # merge the elevations into a single radar instance
+    for scan in scan_list[1:]:
+        if cfg['path_convention'] == 'ODIM':
+            filename = glob.glob(datapath+'*'+scan+'*')
+        else:
+            filename = glob.glob(datapath+basename+timeinfo+'*'+scan+'*')
+        if not filename:
+            warn('No file found in '+datapath+basename+timeinfo+'*.'+scan)
+        else:
+            radar_aux = get_data_odim(
+                filename[0], datatype_list, scan, cfg, ind_rad=ind_rad)
+            if radar_aux is None:
+                continue
+
+            if radar is None:
+                radar = radar_aux
+            else:
+                radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
+
+    return radar
 
 def merge_scans_mxpol(basepath, scan_list, voltime, datatype_list, cfg):
     """
@@ -1489,6 +1605,114 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
     # create noise moments
     # read radar information in status file
     voltime = get_datetime(filename, 'RAD4ALP:dBZ')
+    root = read_status(voltime, cfg, ind_rad=ind_rad)
+    if root is None:
+        return radar
+
+    sweep_number = int(scan_name)-1
+    if 'Nh' in datatype_list:
+        found = False
+        for sweep in root.findall('sweep'):
+            sweep_number_file = (
+                int(sweep.attrib['name'].split('.')[1])-1)
+            if sweep_number_file == sweep_number:
+                noise_h = sweep.find(
+                    "./RADAR/STAT/CALIB/noisepower_frontend_h_inuse")
+                rconst_h = sweep.find("./RADAR/STAT/CALIB/rconst_h")
+                if noise_h is None or rconst_h is None:
+                    warn('Horizontal channel noise power not ' +
+                         'available for sweep '+scan_name)
+                    break
+
+                noisedBADU_h = 10.*np.log10(
+                    float(noise_h.attrib['value']))
+                rconst_h = float(rconst_h.attrib['value'])
+
+                noisedBZ_h = pyart.retrieve.compute_noisedBZ(
+                    radar.nrays, noisedBADU_h+rconst_h,
+                    radar.range['data'], 100.,
+                    noise_field='noisedBZ_hh')
+
+                radar.add_field('noisedBZ_hh', noisedBZ_h)
+
+                found = True
+        if not found:
+            warn('Horizontal channel noise power not ' +
+                 'available for sweep '+scan_name)
+
+    if 'Nv' in datatype_list:
+        found = False
+        for sweep in root.findall('sweep'):
+            sweep_number_file = (
+                int(sweep.attrib['name'].split('.')[1])-1)
+            if sweep_number_file == sweep_number:
+                noise_v = sweep.find(
+                    "./RADAR/STAT/CALIB/noisepower_frontend_v_inuse")
+                rconst_v = sweep.find("./RADAR/STAT/CALIB/rconst_v")
+                if noise_v is None or rconst_v is None:
+                    warn('Vertical channel noise power not ' +
+                         'available for sweep '+scan_name)
+                    break
+
+                noisedBADU_v = 10.*np.log10(
+                    float(noise_v.attrib['value']))
+                rconst_v = float(rconst_v.attrib['value'])
+
+                noisedBZ_v = pyart.retrieve.compute_noisedBZ(
+                    radar.nrays, noisedBADU_v+rconst_v,
+                    radar.range['data'], 100.,
+                    noise_field='noisedBZ_vv')
+
+                radar.add_field('noisedBZ_vv', noisedBZ_v)
+
+                found = True
+        if not found:
+            warn('Horizontal channel noise power not ' +
+                 'available for sweep '+scan_name)
+
+    return radar
+
+
+def get_data_odim(filename, datatype_list, scan_name, cfg, ind_rad=0):
+    """
+    gets ODIM radar data
+
+    Parameters
+    ----------
+    filename : str
+        name of file containing odim data
+    datatype_list : list of strings
+        list of data fields to get
+    scan_name : str
+        name of the elevation (001 to 020)
+    cfg : dict
+        configuration dictionary
+    ind_rad : int
+        radar index
+
+    Returns
+    -------
+    radar : Radar
+        radar object. None if the reading has not been successful
+
+    """
+    odim_field_names = dict()
+    for datatype in datatype_list:
+        if (datatype != 'Nh') and (datatype != 'Nv'):
+            odim_field_names.update(get_datatype_odim(datatype))
+        try:
+            radar = read_odim(
+                filename, field_names=odim_field_names)
+        except ValueError as ee:
+            warn("Unable to read file '"+filename+": (%s)" % str(ee))
+            return None
+
+    if ('Nh' not in datatype_list) and ('Nv' not in datatype_list):
+        return radar
+
+    # create noise moments
+    # read radar information in status file
+    voltime = get_datetime(filename, 'ODIM:dBZ')
     root = read_status(voltime, cfg, ind_rad=ind_rad)
     if root is None:
         return radar

@@ -392,7 +392,9 @@ def plot_histogram(bin_edges, values, fname_list, labelx='bins',
 
 
 def plot_histogram2(bin_centers, hist, fname_list, labelx='bins',
-                    labely='Number of Samples', titl='histogram', dpi=72):
+                    labely='Number of Samples', titl='histogram', dpi=72,
+                    ax=None, fig=None, save_fig=True, color=None, alpha=None,
+                    invert_xaxis=False):
     """
     plots histogram
 
@@ -412,27 +414,50 @@ def plot_histogram2(bin_centers, hist, fname_list, labelx='bins',
         The figure title
     dpi : int
         dots per inch
+    fig : Figure
+        Figure to add the colorbar to. If none a new figure will be created
+    ax : Axis
+        Axis to plot on. if fig is None a new axis will be created
+    save_fig : bool
+        if true save the figure. If false it does not close the plot and
+        returns the handle to the figure
+    color : str
+        color of the bars
+    alpha : float
+        parameter controling the transparency
+    invert_xaxis : bool
+        If true inverts the x axis
 
     Returns
     -------
-    fname_list : list of str
+    fname_list or fig, ax: list of str
         list of names of the created plots
 
     """
-    fig = plt.figure(figsize=[10, 6], dpi=dpi)
-    plt.bar(bin_centers, hist, width=bin_centers[1]-bin_centers[0])
+    if fig is None:
+        fig = plt.figure(figsize=[10, 6], dpi=dpi)
+        ax = fig.add_subplot(111)
+    else:
+        ax.autoscale(False)
+
+    ax.bar(
+        bin_centers, hist, width=bin_centers[1]-bin_centers[0], color=color,
+        alpha=alpha)
+    if invert_xaxis:
+        ax.invert_xaxis()
+
     plt.xlabel(labelx)
     plt.ylabel(labely)
     plt.title(titl)
 
-    # Make a tight layout
-    fig.tight_layout()
+    if save_fig:
+        for fname in fname_list:
+            fig.savefig(fname, dpi=dpi)
+        plt.close()
 
-    for fname in fname_list:
-        fig.savefig(fname, dpi=dpi)
-    plt.close()
+        return fname_list
 
-    return fname_list
+    return (fig, ax)
 
 
 def plot_antenna_pattern(antpattern, fname_list, labelx='Angle [Deg]',

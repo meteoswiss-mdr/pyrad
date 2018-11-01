@@ -21,8 +21,8 @@ import gc
 import queue
 import time
 
-from pyrad import version as pyrad_version
 from pyart import version as pyart_version
+from pyrad import version as pyrad_version
 
 from .flow_aux import _warning_format, _initialize_listener
 from .flow_aux import _create_cfg_dict, _create_datacfg_dict
@@ -35,8 +35,6 @@ from .flow_aux import _process_datasets, _postprocess_datasets
 from ..io.io_aux import get_datetime
 from ..io.read_data_other import read_last_state
 from ..io.write_data import write_last_state
-
-#from memory_profiler import profile
 
 ALLOW_USER_BREAK = False
 
@@ -134,6 +132,7 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
                 pass
 
         print('\n- master file: ' + os.path.basename(masterfile))
+
         master_voltime = get_datetime(masterfile, masterdatatypedescr)
 
         radar_list = _get_radars_data(

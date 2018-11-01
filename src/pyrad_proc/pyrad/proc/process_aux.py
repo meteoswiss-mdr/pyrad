@@ -80,6 +80,10 @@ def get_process_func(dataset_type, dsname):
         func_name = process_save_radar
     elif dataset_type == 'PWR':
         func_name = 'process_signal_power'
+    elif dataset_type == 'RCS_PR':
+        func_name = 'process_rcs_pr'
+    elif dataset_type == 'RCS':
+        func_name = 'process_rcs'
     elif dataset_type == 'SNR':
         func_name = 'process_snr'
     elif dataset_type == 'VOL_REFL':

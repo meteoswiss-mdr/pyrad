@@ -8,7 +8,7 @@ NumRadars INT 1
 TimeTol FLOAT 3600.
 
 # rad4alp radar name
-RadarName STRING D
+RadarName STRING A
 
 # rad4alp radar range resolution L:Low H:High
 RadarRes STRING	H
