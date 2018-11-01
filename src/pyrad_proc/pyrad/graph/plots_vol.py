@@ -397,7 +397,7 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
         labely = 'ray number'
 
     # display data
-    titl = pyart.graph.common.generate_title(radar_aux, field_name, ind_sweep)
+    titl = pyart.graph.common.generate_title(radar_aux, field_name, 0)
     label = get_colobar_label(radar_aux.fields[field_name], field_name)
 
     dpi = prdcfg['ppiImageConfig'].get('dpi', 72)

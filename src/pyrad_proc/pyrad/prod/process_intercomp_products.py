@@ -300,7 +300,7 @@ def generate_colocated_gates_products(dataset, prdcfg):
     else:
         if prdcfg['radar'] not in dataset:
             return None
-        if 'radar' not in dataset[prdcfg['radar']]:
+        if 'radar_out' not in dataset[prdcfg['radar']]:
             return None
 
         prdcfg['timeinfo'] = None
