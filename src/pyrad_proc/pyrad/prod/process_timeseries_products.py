@@ -263,6 +263,9 @@ def generate_timeseries_products(dataset, prdcfg):
                 'No valid sensor data')
             return None
 
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
+
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=radardate[0])
