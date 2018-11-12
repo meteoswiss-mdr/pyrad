@@ -4,7 +4,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --mem-per-cpu=20g
+#SBATCH --mem-per-cpu=32g
 #SBATCH --partition=normal
 #SBATCH --account=msrad
 

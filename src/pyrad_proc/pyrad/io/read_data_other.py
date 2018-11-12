@@ -489,7 +489,7 @@ def read_histogram(fname):
                 row for row in csvfile if not row.startswith('#'))
             nrows = sum(1 for row in reader)
             bin_edges = np.zeros(nrows+1, dtype=float)
-            hist = np.zeros(nrows, dtype=int)
+            hist = np.zeros(nrows, dtype=float)
 
             # now read the data
             csvfile.seek(0)
@@ -498,7 +498,7 @@ def read_histogram(fname):
             for i, row in enumerate(reader):
                 bin_edges[i] = float(row['bin_edge_left'])
                 bin_edges[i+1] = float(row['bin_edge_right'])
-                hist[i] = int(row['value'])
+                hist[i] = float(row['value'])
 
             return hist, bin_edges
     except EnvironmentError as ee:

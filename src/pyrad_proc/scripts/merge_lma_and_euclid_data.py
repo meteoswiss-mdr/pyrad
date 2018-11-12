@@ -22,7 +22,8 @@ import numpy as np
 import shapely
 
 from pyrad.io import read_meteorage, read_lightning_all, write_ts_lightning
-from pyrad.util import belongs_roi_indices
+from pyrad.io import write_histogram
+from pyrad.util import belongs_roi_indices, compute_histogram
 from pyrad.graph import plot_pos, plot_histogram
 
 from pyart.core import wgs84_to_swissCH1903
@@ -74,20 +75,20 @@ def main():
         help='Minimum number of sources to consider the LMA flash valid')
 
     parser.add_argument(
-        '--scale_factor', type=float, default=2.,
+        '--scale_factor', type=float, default=1.2,
         help='Factor by which the area covered by the LMA flash has to be ' +
              'enlarged to find EUCLID strokes')
 
     parser.add_argument(
-        '--delay', type=float, default=1000000.,
+        '--delay', type=float, default=100000.,
         help='delay after end of LMA flash where to look for EUCLID strokes [micros]')
 
     parser.add_argument(
-        '--anticipation', type=float, default=1000000.,
+        '--anticipation', type=float, default=100000.,
         help='anticipation of the start of an LMA flash where to look for EUCLID strokes [micros]')
 
     parser.add_argument(
-        '--min_area', type=float, default=100.,
+        '--min_area', type=float, default=25.,
         help='Minimum size of the area where to look for an EUCLID stroke [km]')
 
     parser.add_argument(
@@ -114,6 +115,12 @@ def main():
             str(np.size(pol_vals_labels)) +
             ' labels. Their number must be equal')
         return
+
+    flashnr_sel_all = np.ma.asarray([], dtype=int)
+    t_start_sel_all = np.ma.asarray([], dtype=datetime.datetime)
+    t_end_sel_all = np.ma.asarray([], dtype=datetime.datetime)
+    area_sel_all = np.ma.asarray([])
+    neuclid_sel_all = np.ma.asarray([], dtype=int)
 
     for day in day_vec:
         day_str = day.strftime('%Y%m%d')
@@ -176,6 +183,13 @@ def main():
         nflashes_insufficient_sources = 0
         nflashes_small_area_rejected = 0
         nstrokes_accepted = 0
+
+        flashnr_sel = np.ma.asarray([], dtype=int)
+        t_start_sel = np.ma.asarray([], dtype=datetime.datetime)
+        t_end_sel = np.ma.asarray([], dtype=datetime.datetime)
+        area_sel = np.ma.asarray([])
+        neuclid_sel = np.ma.asarray([], dtype=int)
+
         for flash_ID in flashnr_first:
             # get LMA data of flash
             flashnr_flash = flashnr[flashnr == flash_ID]
@@ -190,7 +204,7 @@ def main():
                 pol_vals_dict_flash.update({key: pol_vals_dict[key][flashnr == flash_ID]})
 
             if flashnr_flash.size < args.nsources_min:
-                print('Not enough sources for flash '+str(flash_ID))
+                # print('Not enough sources for flash '+str(flash_ID))
                 nflashes_insufficient_sources +=1
                 continue
 
@@ -203,7 +217,7 @@ def main():
             ind = np.where(np.logical_and(
                 time_EU_filt >= t_start, time_EU_filt <=t_end))[0]
             if ind.size == 0:
-                print('No EUCLID '+args.euclidtype+' flashes within time of LMA flash '+str(flash_ID))
+                # print('No EUCLID '+args.euclidtype+' flashes within time of LMA flash '+str(flash_ID))
                 nflashes_time_rejected += 1
                 continue
 
@@ -220,10 +234,10 @@ def main():
                 list(zip(chy_EU_flash, chx_EU_flash)))
 
             rectangle_lma = points_flash_lma.minimum_rotated_rectangle
-            print('LMA area before scaling : '+str(rectangle_lma.area*1e-6))
+            # print('LMA area before scaling : '+str(rectangle_lma.area*1e-6))
 
             if rectangle_lma.area*1e-6 == 0:
-                print('LMA area too small for flash '+str(flash_ID))
+                # print('LMA area too small for flash '+str(flash_ID))
                 nflashes_small_area_rejected += 1
 
                 # Plot position of LMA sources AND EUCLID stroke
@@ -249,11 +263,11 @@ def main():
                     roi_lma = shapely.affinity.scale(
                         rectangle_lma, xfact=scale_factor, yfact=scale_factor)
                     area_roi = roi_lma.area*1e-6
-                print('scale_factor: '+str(scale_factor))
-            print('LMA area after scaling : '+str(roi_lma.area*1e-6))
+                # print('scale_factor: '+str(scale_factor))
+            # print('LMA area after scaling : '+str(roi_lma.area*1e-6))
 
             if roi_lma.disjoint(points_EU):
-                print('No EUCLID '+args.euclidtype+' flashes within area of LMA flash '+str(flash_ID))
+                # print('No EUCLID '+args.euclidtype+' flashes within area of LMA flash '+str(flash_ID))
                 nflashes_area_rejected += 1
 
 #                # Plot position of LMA sources AND EUCLID stroke
@@ -317,6 +331,59 @@ def main():
 #                titl=day_str+' '+str(flash_ID)+' LMA flash\nLMA and EUCLID '+args.euclidtype+' positions')
 #            print('Plotted '+' '.join(figfname))
 
+            flashnr_sel = np.append(flashnr_sel, flash_ID)
+            t_start_sel = np.append(t_start_sel, time_data_flash[0])
+            t_end_sel = np.append(t_end_sel, time_data_flash[-1])
+            area_sel = np.append(area_sel, rectangle_lma.area*1e-6)
+            neuclid_sel = np.append(neuclid_sel, lon_EU_flash.size)
+
+        # Plot histogram of number of EUCLID strokes
+        bins_edges = np.arange(-0.5, 21.5, 1)
+        fname_hist = args.lma_basepath+day_str+'_'+args.lma_basename+'_n'+args.euclidtype+'_hist.png'
+        fname_hist = plot_histogram(
+            bins_edges, neuclid_sel, [fname_hist], labelx='Number of EUCLID strokes per LMA flash',
+            titl=day_str+' EUCLID '+args.euclidtype+' strokes per LMA flash')
+        print('Plotted '+' '.join(fname_hist))
+
+        fname_hist = args.lma_basepath+day_str+'_'+args.lma_basename+'_n'+args.euclidtype+'_hist.csv'
+        _, hist_neuclid = compute_histogram(neuclid_sel, None, bin_edges=bins_edges)
+        hist_neuclid, _ = np.histogram(hist_neuclid, bins=bins_edges)
+        fname_hist = write_histogram(bins_edges, hist_neuclid, fname_hist)
+        print('Written '+fname_hist)
+
+        # Plot histogram of LMA flash area
+        bins_edges = np.arange(0., 2010., 10.)
+        fname_hist = args.lma_basepath+day_str+'_'+args.lma_basename+'_'+args.euclidtype+'_LMA_area_hist.png'
+        fname_hist = plot_histogram(
+            bins_edges, area_sel, [fname_hist], labelx='Area of LMA flash [km2]',
+            titl=day_str+' area of LMA flash with associated EUCLID '+args.euclidtype+' strokes')
+        print('Plotted '+' '.join(fname_hist))
+
+        fname_hist = args.lma_basepath+day_str+'_'+args.lma_basename+'_'+args.euclidtype+'_LMA_area_hist.csv'
+        _, hist_area = compute_histogram(area_sel, None, bin_edges=bins_edges)
+        hist_area, _ = np.histogram(hist_area, bins=bins_edges)
+        fname_hist = write_histogram(bins_edges, hist_area, fname_hist)
+        print('Written '+fname_hist)
+
+        # Plot histogram of LMA flash duration [milliseconds]
+        duration = np.ma.zeros(t_end_sel.size)
+        for i in range(t_end_sel.size):
+            duration[i] = 1e3*(t_end_sel[i]-t_start_sel[i]).total_seconds()
+
+        bins_edges = np.arange(0., 1010., 10.)
+        fname_hist = args.lma_basepath+day_str+'_'+args.lma_basename+'_'+args.euclidtype+'_LMA_duration_hist.png'
+        fname_hist = plot_histogram(
+            bins_edges, duration, [fname_hist], labelx='Duration of LMA flash [ms]',
+            titl=day_str+' Duration of LMA flash with associated EUCLID '+args.euclidtype+' strokes')
+        print('Plotted '+' '.join(fname_hist))
+
+        fname_hist = args.lma_basepath+day_str+'_'+args.lma_basename+'_'+args.euclidtype+'_LMA_duration_hist.csv'
+        _, hist_duration = compute_histogram(duration, None, bin_edges=bins_edges)
+        hist_duration, _ = np.histogram(hist_duration, bins=bins_edges)
+        fname_hist = write_histogram(bins_edges, hist_duration, fname_hist)
+        print('Written '+fname_hist)
+
+
         flashnr_filt_first = np.unique(flashnr_filt, return_index=False)
         print('N EUCLID strokes: '+str(time_EU_filt.size))
         print('N EUCLID strokes in LMA flashes accepted: '+str(nstrokes_accepted)+'\n')
@@ -340,6 +407,58 @@ def main():
             flashnr_filt, time_data_filt, time_in_flash_filt, lat_filt, lon_filt,
             alt_filt, dBm_filt, vals_list, fname, pol_vals_labels)
         print('written to '+fname)
+
+        flashnr_sel_all = np.append(flashnr_sel_all, flashnr_sel)
+        t_start_sel_all = np.append(t_start_sel_all, t_start_sel)
+        t_end_sel_all = np.append(t_end_sel_all, t_end_sel)
+        area_sel_all = np.append(area_sel_all, area_sel)
+        neuclid_sel_all = np.append(neuclid_sel_all, neuclid_sel)
+
+    # Plot histogram of number of EUCLID strokes
+    bins_edges = np.arange(-0.5, 21.5, 1)
+    fname_hist = args.lma_basepath+args.lma_basename+'_n'+args.euclidtype+'_hist.png'
+    fname_hist = plot_histogram(
+        bins_edges, neuclid_sel_all, [fname_hist], labelx='Number of EUCLID strokes per LMA flash',
+        titl='EUCLID '+args.euclidtype+' strokes per LMA flash')
+    print('Plotted '+' '.join(fname_hist))
+
+    fname_hist = args.lma_basepath+args.lma_basename+'_n'+args.euclidtype+'_hist.csv'
+    _, hist_neuclid = compute_histogram(neuclid_sel_all, None, bin_edges=bins_edges)
+    hist_neuclid, _ = np.histogram(hist_neuclid, bins=bins_edges)
+    fname_hist = write_histogram(bins_edges, hist_neuclid, fname_hist)
+    print('Written '+fname_hist)
+
+    # Plot histogram of LMA flash area
+    bins_edges = np.arange(0., 2010., 10.)
+    fname_hist = args.lma_basepath+args.lma_basename+'_'+args.euclidtype+'_LMA_area_hist.png'
+    fname_hist = plot_histogram(
+        bins_edges, area_sel_all, [fname_hist], labelx='Area of LMA flash [km2]',
+        titl='area of LMA flash with associated EUCLID '+args.euclidtype+' strokes')
+    print('Plotted '+' '.join(fname_hist))
+
+    fname_hist = args.lma_basepath+args.lma_basename+'_'+args.euclidtype+'_LMA_area_hist.csv'
+    _, hist_area = compute_histogram(area_sel_all, None, bin_edges=bins_edges)
+    hist_area, _ = np.histogram(hist_area, bins=bins_edges)
+    fname_hist = write_histogram(bins_edges, hist_area, fname_hist)
+    print('Written '+fname_hist)
+
+    # Plot histogram of LMA flash duration [milliseconds]
+    duration = np.ma.zeros(t_end_sel.size)
+    for i in range(t_end_sel.size):
+        duration[i] = 1e3*(t_end_sel_all[i]-t_start_sel_all[i]).total_seconds()
+    print(duration[i])
+    bins_edges = np.arange(0., 1010., 10.)
+    fname_hist = args.lma_basepath+args.lma_basename+'_'+args.euclidtype+'_LMA_duration_hist.png'
+    fname_hist = plot_histogram(
+        bins_edges, duration, [fname_hist], labelx='Duration of LMA flash [ms]',
+        titl='Duration of LMA flash with associated EUCLID '+args.euclidtype+' strokes')
+    print('Plotted '+' '.join(fname_hist))
+
+    fname_hist = args.lma_basepath+args.lma_basename+'_'+args.euclidtype+'_LMA_duration_hist.csv'
+    _, hist_duration = compute_histogram(duration, None, bin_edges=bins_edges)
+    hist_duration, _ = np.histogram(hist_duration, bins=bins_edges)
+    fname_hist = write_histogram(bins_edges, hist_duration, fname_hist)
+    print('Written '+fname_hist)
 
 
 def _print_end_msg(text):
