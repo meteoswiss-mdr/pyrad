@@ -49,10 +49,13 @@ def generate_timeseries_products(dataset, prdcfg):
     no return
 
     """
-
     dssavedir = prdcfg['dsname']
     if 'dssavename' in prdcfg:
         dssavedir = prdcfg['dssavename']
+
+    prdsavedir = prdcfg['prdname']
+    if 'prdsavedir' in prdcfg:
+        prdsavedir = prdcfg['prdsavedir']
 
     if prdcfg['type'] == 'PLOT_AND_WRITE_POINT':
         if dataset['final']:
@@ -67,7 +70,7 @@ def generate_timeseries_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         csvfname = make_filename(
             'ts', prdcfg['dstype'], dataset['datatype'], ['csv'],
@@ -85,7 +88,7 @@ def generate_timeseries_products(dataset, prdcfg):
             warn(
                 'Unable to plot time series. No valid data')
             return None
-            
+
         vmin = prdcfg.get('vmin', None)
         vmax = prdcfg.get('vmax', None)
 
@@ -197,13 +200,13 @@ def generate_timeseries_products(dataset, prdcfg):
                 'Unable to plot sensor comparison at point of interest. ' +
                 'No valid sensor data')
             return None
-            
+
         vmin = prdcfg.get('vmin', None)
         vmax = prdcfg.get('vmax', None)
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=radardate[0])
+            prdsavedir, timeinfo=radardate[0])
 
         figfname_list = make_filename(
             'ts_comp', prdcfg['dstype'], dataset['datatype'],
@@ -268,7 +271,7 @@ def generate_timeseries_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=radardate[0])
+            prdsavedir, timeinfo=radardate[0])
 
         figfname_list = make_filename(
             'ts_cumcomp', prdcfg['dstype'], dataset['datatype'],
@@ -354,7 +357,7 @@ def generate_timeseries_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=radardate[0])
+            prdsavedir, timeinfo=radardate[0])
 
         fname = make_filename(
             str(cum_time)+'s_acc_ts_comp', prdcfg['dstype'],
@@ -403,22 +406,31 @@ def generate_timeseries_products(dataset, prdcfg):
         if not dataset['final']:
             return None
 
-        timeinfo = dataset['ts'].time_vector[0]
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['ts_dict']:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        ts = dataset['ts_dict'][field_name]
+        timeinfo = ts.time_vector[0]
 
         savedir = get_save_dir(prdcfg['basepath'], prdcfg['procname'],
-                               dssavedir, prdcfg['prdname'],
+                               dssavedir, prdsavedir,
                                timeinfo=timeinfo)
 
         dstype_str = prdcfg['dstype'].lower().replace('_', '')
-        fname = make_filename('ts', dstype_str, dataset['ts'].datatype,
+        fname = make_filename('ts', dstype_str, ts.datatype,
                               ['csv'],
                               prdcfginfo=None, timeinfo=timeinfo,
                               timeformat='%Y%m%d%H%M%S',
                               runinfo=prdcfg['runinfo'])
 
-        dataset['ts'].write(savedir + fname[0])
+        ts.write(savedir + fname[0])
 
-        fname = make_filename('ts', dstype_str, dataset['ts'].datatype,
+        fname = make_filename('ts', dstype_str, ts.datatype,
                               prdcfg['imgformat'],
                               prdcfginfo=None, timeinfo=timeinfo,
                               timeformat='%Y%m%d%H%M%S',
@@ -428,7 +440,7 @@ def generate_timeseries_products(dataset, prdcfg):
         ymin = prdcfg.get('ymin', None)
         ymax = prdcfg.get('ymax', None)
 
-        dataset['ts'].plot(savedir + fname[0], ymin=ymin, ymax=ymax)
+        ts.plot(savedir + fname[0], ymin=ymin, ymax=ymax)
 
         return None
 
@@ -436,15 +448,24 @@ def generate_timeseries_products(dataset, prdcfg):
         if not dataset['final']:
             return None
 
-        timeinfo = dataset['ts'].time_vector[0]
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['ts_dict']:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        ts = dataset['ts_dict'][field_name]
+        timeinfo = ts.time_vector[0]
 
         savedir = get_save_dir(prdcfg['basepath'], prdcfg['procname'],
-                               dssavedir, prdcfg['prdname'],
+                               dssavedir, prdsavedir,
                                timeinfo=timeinfo)
 
         dstype_str = prdcfg['dstype'].lower().replace('_', '')
 
-        fname = make_filename('hist', dstype_str, dataset['ts'].datatype,
+        fname = make_filename('hist', dstype_str, ts.datatype,
                               prdcfg['imgformat'],
                               prdcfginfo=None, timeinfo=timeinfo,
                               timeformat='%Y%m%d%H%M%S',
@@ -452,7 +473,7 @@ def generate_timeseries_products(dataset, prdcfg):
 
         step = prdcfg.get('step', None)
 
-        dataset['ts'].plot_hist(savedir + fname[0], step=step)
+        ts.plot_hist(savedir + fname[0], step=step)
 
         return None
 
@@ -469,7 +490,7 @@ def generate_timeseries_products(dataset, prdcfg):
             return None
 
         savedir = get_save_dir(prdcfg['basepath'], prdcfg['procname'],
-                               dssavedir, prdcfg['prdname'],
+                               dssavedir, prdsavedir,
                                timeinfo=prdcfg['timeinfo'])
 
         color_ref = prdcfg.get('color_ref', 'None')

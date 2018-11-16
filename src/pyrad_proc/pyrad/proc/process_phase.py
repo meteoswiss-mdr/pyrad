@@ -682,10 +682,11 @@ def process_kdp_leastsquare_single_window(procstatus, dscfg, radar_list=None):
     wind_len = int(dscfg['rwind']/r_res)
     min_valid = int(wind_len/2+1)
     kdp_field = 'corrected_specific_differential_phase'
+    vectorize = dscfg.get('vectorize', False)
 
     kdp = pyart.retrieve.kdp_leastsquare_single_window(
         radar, wind_len=wind_len, min_valid=min_valid, phidp_field=phidp_field,
-        kdp_field=kdp_field)
+        kdp_field=kdp_field, vectorize=vectorize)
 
     # prepare for exit
     new_dataset = {'radar_out': deepcopy(radar)}
@@ -758,13 +759,15 @@ def process_kdp_leastsquare_double_window(procstatus, dscfg, radar_list=None):
     smin_valid = int(swind_len/2+1)
     lwind_len = int(dscfg['rwindl']/r_res)
     lmin_valid = int(lwind_len/2+1)
+    vectorize = dscfg.get('vectorize', False)
 
     kdp_field = 'corrected_specific_differential_phase'
 
     kdp = pyart.retrieve.kdp_leastsquare_double_window(
         radar, swind_len=swind_len, smin_valid=smin_valid,
         lwind_len=lwind_len, lmin_valid=lmin_valid, zthr=dscfg['Zthr'],
-        phidp_field=phidp_field, refl_field=refl_field, kdp_field=kdp_field)
+        phidp_field=phidp_field, refl_field=refl_field, kdp_field=kdp_field,
+        vectorize=vectorize)
 
     # prepare for exit
     new_dataset = {'radar_out': deepcopy(radar)}

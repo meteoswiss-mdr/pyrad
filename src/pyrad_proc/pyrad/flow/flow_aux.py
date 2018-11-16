@@ -46,6 +46,8 @@ import threading
 import glob
 from copy import deepcopy
 
+from memory_profiler import profile as mprofile
+
 from pyrad import proc
 
 from ..io.config import read_config
@@ -59,10 +61,69 @@ from ..io.read_data_other import read_last_state
 from ..proc.process_aux import get_process_func
 from ..prod.product_aux import get_prodgen_func
 
-# from memory_profiler import profile
-
 MULTIPROCESSING_PROD = False
 MULTIPROCESSING_DSET = False
+PROFILE_LEVEL = 0
+
+
+def profiler(level=1):
+    """
+    Function to be used as decorator for memory debugging. The function will
+    be profiled or not according to its level respect to the global variable
+    PROFILE_LEVEL
+
+    Parameters
+    ----------
+    level : int
+        profiling level
+
+    Returns
+    -------
+    func or func wrapper : function
+        The function or its wrapper for profiling
+
+    """
+    def profile_real_decorator(func):
+        """
+        real decorator
+
+        Parameters
+        ----------
+        func : function
+            function to profile
+
+        Returns
+        -------
+        wrapper : function
+            The function wrapper
+
+        """
+        def wrapper(*args, **kwargs):
+            """
+            wrapper
+
+            Parameters
+            ----------
+            args, kwargs : arguments
+                The arguments of the function
+
+            Returns
+            -------
+            func : function
+                The original function if no profiling has to be performed or
+                the function decorated with the memory decorator
+
+            """
+            if ((PROFILE_LEVEL == 1 and level == 1) or
+                    (PROFILE_LEVEL == 2 and (level == 1 or level == 2)) or
+                    PROFILE_LEVEL == 3):
+                print('profiling '+str(func))
+                func2 = mprofile(func)
+                return func2(*args, **kwargs)
+            return func(*args, **kwargs)
+        return wrapper
+    return profile_real_decorator
+
 
 def _initialize_listener():
     """
@@ -106,7 +167,8 @@ def _user_input_listener(input_queue):
             break
         time.sleep(1)
 
-# @profile
+
+@profiler(level=3)
 def _get_times_and_traj(trajfile, starttime, endtime, scan_period,
                         last_state_file=None, trajtype='plane',
                         flashnr=0):
@@ -249,7 +311,9 @@ def _initialize_datasets(dataset_levels, cfg, traj=None, infostr=None):
 
     return dscfg, traj
 
+
 # @profile
+@profiler(level=1)
 def _process_datasets(dataset_levels, cfg, dscfg, radar_list, master_voltime,
                       traj=None, infostr=None):
     """
@@ -602,7 +666,7 @@ def _wait_for_rainbow_datatypes(rainbow_files, period=30):
     return found_all
 
 
-# @profile
+@profiler(level=2)
 def _get_radars_data(master_voltime, datatypesdescr_list, datacfg,
                      num_radars=1):
     """
@@ -664,7 +728,7 @@ def _get_radars_data(master_voltime, datatypesdescr_list, datacfg,
     return radar_list
 
 
-# @profile
+@profiler(level=2)
 def _generate_dataset(dsname, cfg, dscfg, proc_status=0, radar_list=None,
                       voltime=None, trajectory=None, runinfo=None):
     """
@@ -850,7 +914,7 @@ def _process_dataset(cfg, dscfg, proc_status=0, radar_list=None, voltime=None,
     return new_dataset, ind_rad, jobs
 
 
-# @profile
+@profiler(level=3)
 def _generate_prod(dataset, cfg, prdname, prdfunc, dsname, voltime,
                    runinfo=None):
     """
@@ -891,7 +955,7 @@ def _generate_prod(dataset, cfg, prdname, prdfunc, dsname, voltime,
         return 1
 
 
-# @profile
+@profiler(level=3)
 def _create_cfg_dict(cfgfile):
     """
     creates a configuration dictionary
@@ -1029,7 +1093,7 @@ def _create_cfg_dict(cfgfile):
     return cfg
 
 
-# @profile
+@profiler(level=3)
 def _create_datacfg_dict(cfg):
     """
     creates a data configuration dictionary from a config dictionary
@@ -1069,7 +1133,7 @@ def _create_datacfg_dict(cfg):
     return datacfg
 
 
-# @profile
+@profiler(level=3)
 def _create_dscfg_dict(cfg, dataset):
     """
     creates a dataset configuration dictionary
@@ -1144,7 +1208,7 @@ def _create_dscfg_dict(cfg, dataset):
     return dscfg
 
 
-# @profile
+@profiler(level=3)
 def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
     """
     creates a product configuration dictionary
@@ -1199,7 +1263,7 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
     return prdcfg
 
 
-# @profile
+@profiler(level=3)
 def _get_datatype_list(cfg, radarnr='RADAR001'):
     """
     get list of unique input data types
@@ -1262,7 +1326,7 @@ def _get_datatype_list(cfg, radarnr='RADAR001'):
     return datatypesdescr
 
 
-# @profile
+@profiler(level=3)
 def _get_datasets_list(cfg):
     """
     get list of dataset at each processing level
@@ -1289,7 +1353,7 @@ def _get_datasets_list(cfg):
     return dataset_levels
 
 
-# @profile
+@profiler(level=3)
 def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
                          scan_list=None):
     """
@@ -1369,7 +1433,7 @@ def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
     return masterfilelist, masterdatatypedescr, masterscan
 
 
-# @profile
+@profiler(level=3)
 def _add_dataset(new_dataset, radar_list, ind_rad, make_global=True):
     """
     adds a new field to an existing radar object
