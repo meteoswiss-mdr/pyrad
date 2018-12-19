@@ -895,7 +895,8 @@ def compute_quantiles_sweep(field, ray_start, ray_end, quantiles=None):
     return quantiles, values
 
 
-def compute_histogram(field, field_name, step=None):
+def compute_histogram(field, field_name, bin_edges=None, step=None,
+                      vmin=None, vmax=None):
     """
     computes histogram of the data
 
@@ -903,10 +904,14 @@ def compute_histogram(field, field_name, step=None):
     ----------
     field : ndarray 2D
         the radar field
-    field_name: str
+    field_name: str or none
         name of the field
+    bins_edges :ndarray 1D
+        the bin edges
     step : float
         size of bin
+    vmin, vmax : float
+        The minimum and maximum value of the histogram
 
     Returns
     -------
@@ -916,7 +921,18 @@ def compute_histogram(field, field_name, step=None):
         values at each bin
 
     """
-    bin_edges = get_histogram_bins(field_name, step=step)
+    if bin_edges is None:
+        if field_name is not None:
+            bin_edges = get_histogram_bins(field_name, step=step)
+        else:
+            if vmin is None:
+                vmin = np.ma.min(field)
+            if vmax is None:
+                vmax = np.ma.max(field)
+            if step is None:
+                step = (vmax-vmin)/100.
+            bin_edges = np.arange(vmin, vmax+step, step)
+
     step_aux = bin_edges[1]-bin_edges[0]
     bin_centers = bin_edges[0:-1]+step_aux/2.
     values = field.compressed()

@@ -129,7 +129,7 @@ def plot_timeseries(tvec, data_list, fname_list, labelx='Time [UTC]',
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)
 
     return fname_list
 
@@ -189,21 +189,19 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname_list,
         value2 *= (period2/3600.)
         value2 = np.ma.cumsum(value2)
 
-    fig = plt.figure(figsize=[10, 6.5], dpi=dpi)
-    plt.plot(date1, value1, 'b', label=label1, linestyle='--', marker='o')
-    plt.plot(date2, value2, 'r', label=label2, linestyle='--', marker='s')
-    plt.legend(loc='best')
-    plt.xlabel(labelx)
-    plt.ylabel(labely)
-    plt.title(titl)
+    fig, ax = plt.subplots(figsize=[10, 6.5], dpi=dpi)
+    ax.plot(date1, value1, 'b', label=label1, linestyle='--', marker='o')
+    ax.plot(date2, value2, 'r', label=label2, linestyle='--', marker='s')
+    ax.legend(loc='best')
+    ax.set_xlabel(labelx)
+    ax.set_ylabel(labely)
+    ax.set_title(titl)
 
-    # Get the axis and turn on the grid
-    ax = plt.gca()
     ax.grid()
-    
+
     ax.set_ylim(bottom=ymin, top=ymax)
     ax.set_xlim([date2[0], date2[-1]])
-    
+
     # rotates and right aligns the x labels, and moves the bottom of the
     # axes up to make room for them
     fig.autofmt_xdate()
@@ -213,7 +211,7 @@ def plot_timeseries_comp(date1, value1, date2, value2, fname_list,
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)
 
     return fname_list
 
@@ -288,41 +286,39 @@ def plot_monitoring_ts(date, np_t, cquant, lquant, hquant, field_name,
 
     fig = plt.figure(figsize=[15, 13], dpi=dpi)
 
-    fig.add_subplot(2, 1, 1)
-    plt.plot(date_plt, cquant_plt, 'x-')
-    plt.plot(date_plt, lquant_plt, 'rx-')
-    plt.plot(date_plt, hquant_plt, 'rx-')
+    ax = fig.add_subplot(2, 1, 1)
+    ax.plot(date_plt, cquant_plt, 'x-')
+    ax.plot(date_plt, lquant_plt, 'rx-')
+    ax.plot(date_plt, hquant_plt, 'rx-')
     if ref_value is not None:
-        plt.plot(date_plt, np.zeros(len(date_plt))+ref_value, 'k--')
-    plt.ylabel(labely)
-    plt.title(titl)
-
-    axes = plt.gca()
-    axes.set_ylim([vmin, vmax])
+        ax.plot(date_plt, np.zeros(len(date_plt))+ref_value, 'k--')
+    ax.set_ylabel(labely)
+    ax.set_title(titl)
+    ax.set_ylim([vmin, vmax])
 
     # tight x axis
-    plt.autoscale(enable=True, axis='x', tight=True)
-    plt.grid(True)
+    ax.autoscale(enable=True, axis='x', tight=True)
+    ax.grid(True)
 
-    fig.add_subplot(2, 1, 2)
-    plt.plot(date, np_t, 'x-')
+    ax = fig.add_subplot(2, 1, 2)
+    ax.plot(date, np_t, 'x-')
 
     if np_min is not None:
-        plt.plot(date, np.zeros(len(date))+np_min, 'k--')
+        ax.plot(date, np.zeros(len(date))+np_min, 'k--')
 
-    plt.ylabel('Number of Samples')
-    plt.xlabel(labelx)
+    ax.set_ylabel('Number of Samples')
+    ax.set_xlabel(labelx)
 
     # rotates and right aligns the x labels, and moves the bottom of the
     # axes up to make room for them
     fig.autofmt_xdate()
 
     # tight x axis
-    plt.autoscale(enable=True, axis='x', tight=True)
+    ax.autoscale(enable=True, axis='x', tight=True)
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)
 
     return fname_list
 
@@ -416,66 +412,60 @@ def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
 
     fig = plt.figure(figsize=[10, 20], dpi=dpi)
 
-    fig.add_subplot(4, 1, 1)
-    plt.plot(date_plt, medianbias_plt, 'bx-', label='median')
-    plt.plot(date_plt, meanbias_plt, 'rx-', label='mean')
-    plt.plot(date_plt, modebias_plt, 'gx-', label='mode')
-    plt.plot(date_plt, intercep_plt, 'yx-',
-             label='intercep of slope 1 LR')
+    ax = fig.add_subplot(4, 1, 1)
+    ax.plot(date_plt, medianbias_plt, 'bx-', label='median')
+    ax.plot(date_plt, meanbias_plt, 'rx-', label='mean')
+    ax.plot(date_plt, modebias_plt, 'gx-', label='mode')
+    ax.plot(date_plt, intercep_plt, 'yx-', label='intercep of slope 1 LR')
     if ref_value is not None:
-        plt.plot(date_plt, np.zeros(len(date_plt))+ref_value, 'k--')
+        ax.plot(date_plt, np.zeros(len(date_plt))+ref_value, 'k--')
     # plt.legend(loc='best')
-    plt.ylabel('bias [dB]')
-    plt.title(titl)
-
-    axes = plt.gca()
-    axes.set_ylim([-5., 5.])
+    ax.set_ylabel('bias [dB]')
+    ax.set_title(titl)
+    ax.set_ylim([-5., 5.])
 
     # tight x axis
-    plt.autoscale(enable=True, axis='x', tight=True)
-    plt.grid(True)
+    ax.autoscale(enable=True, axis='x', tight=True)
+    ax.grid(True)
 
-    fig.add_subplot(4, 1, 2)
-    plt.plot(date_plt, medianbias_plt, 'bx-', label='median')
-    plt.plot(date_plt, quant25bias_plt, 'rx-', label='25-percentile')
-    plt.plot(date_plt, quant75bias_plt, 'rx-', label='75-percentile')
+    ax = fig.add_subplot(4, 1, 2)
+    ax.plot(date_plt, medianbias_plt, 'bx-', label='median')
+    ax.plot(date_plt, quant25bias_plt, 'rx-', label='25-percentile')
+    ax.plot(date_plt, quant75bias_plt, 'rx-', label='75-percentile')
     if ref_value is not None:
-        plt.plot(date_plt, np.zeros(len(date_plt))+ref_value, 'k--')
+        ax.plot(date_plt, np.zeros(len(date_plt))+ref_value, 'k--')
     # plt.legend(loc='best')
-    plt.ylabel('bias [dB]')
-
-    axes = plt.gca()
-    axes.set_ylim([-5., 5.])
+    ax.set_ylabel('bias [dB]')
+    ax.set_ylim([-5., 5.])
 
     # tight x axis
-    plt.autoscale(enable=True, axis='x', tight=True)
-    plt.grid(True)
+    ax.autoscale(enable=True, axis='x', tight=True)
+    ax.grid(True)
 
-    fig.add_subplot(4, 1, 3)
-    plt.plot(date_corr, corr_plt, 'bx-')
+    ax = fig.add_subplot(4, 1, 3)
+    ax.plot(date_corr, corr_plt, 'bx-')
 
     if corr_min > 0:
-        plt.plot(date_corr, np.zeros(len(date_corr))+corr_min, 'k--')
+        ax.plot(date_corr, np.zeros(len(date_corr))+corr_min, 'k--')
 
-    plt.ylabel('correlation')
-    axes = plt.gca()
-    axes.set_ylim([0., 1.])
+    ax.set_ylabel('correlation')
+    ax.set_ylim([0., 1.])
 
     # tight x axis
-    plt.autoscale(enable=True, axis='x', tight=True)
-    plt.grid(True)
+    ax.autoscale(enable=True, axis='x', tight=True)
+    ax.grid(True)
 
-    fig.add_subplot(4, 1, 4)
-    plt.plot(date2, np_vec, 'bx-')
+    ax = fig.add_subplot(4, 1, 4)
+    ax.plot(date2, np_vec, 'bx-')
 
     if np_min > 0:
-        plt.plot(date2, np.zeros(len(date2))+np_min, 'k--')
+        ax.plot(date2, np.zeros(len(date2))+np_min, 'k--')
 
-    plt.ylabel('Number of Samples')
-    plt.xlabel(labelx)
+    ax.set_ylabel('Number of Samples')
+    ax.set_xlabel(labelx)
 
     # tight x axis
-    plt.autoscale(enable=True, axis='x', tight=True)
+    ax.autoscale(enable=True, axis='x', tight=True)
 
     # rotates and right aligns the x labels, and moves the bottom of the
     # axes up to make room for them
@@ -483,7 +473,7 @@ def plot_intercomp_scores_ts(date_vec, np_vec, meanbias_vec, medianbias_vec,
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)
 
     return fname_list
 
@@ -528,51 +518,45 @@ def plot_ml_ts(dt_ml_arr, ml_top_avg_arr, ml_top_std_arr, thick_avg_arr,
     """
     fig = plt.figure(figsize=[10, 15], dpi=dpi)
 
-    fig.add_subplot(3, 1, 1)
-    plt.plot(dt_ml_arr, ml_top_avg_arr, 'bx-', label='avg')
-    plt.plot(dt_ml_arr, ml_top_avg_arr+ml_top_std_arr, 'rx-', label='avg+std')
-    plt.plot(dt_ml_arr, ml_top_avg_arr-ml_top_std_arr, 'rx-', label='avg-std')
+    ax = fig.add_subplot(3, 1, 1)
+    ax.plot(dt_ml_arr, ml_top_avg_arr, 'bx-', label='avg')
+    ax.plot(dt_ml_arr, ml_top_avg_arr+ml_top_std_arr, 'rx-', label='avg+std')
+    ax.plot(dt_ml_arr, ml_top_avg_arr-ml_top_std_arr, 'rx-', label='avg-std')
     # plt.legend(loc='best')
-    plt.ylabel('Top height [m MSL]')
-    plt.title(titl)
-
-    axes = plt.gca()
-    axes.set_ylim([0., 6000.])
-    axes.set_xlim([dt_ml_arr[0], dt_ml_arr[-1]])
+    ax.set_ylabel('Top height [m MSL]')
+    ax.set_title(titl)
+    ax.set_ylim([0., 6000.])
+    ax.set_xlim([dt_ml_arr[0], dt_ml_arr[-1]])
 
     # tight x axis
-    plt.autoscale(enable=True, axis='x', tight=True)
-    plt.grid(True)
+    ax.autoscale(enable=True, axis='x', tight=True)
+    ax.grid(True)
 
-    fig.add_subplot(3, 1, 2)
-    plt.plot(dt_ml_arr, thick_avg_arr, 'bx-', label='avg')
-    plt.plot(dt_ml_arr, thick_avg_arr+thick_std_arr, 'rx-', label='avg+std')
-    plt.plot(dt_ml_arr, thick_avg_arr-thick_std_arr, 'rx-', label='avg-std')
+    ax = fig.add_subplot(3, 1, 2)
+    ax.plot(dt_ml_arr, thick_avg_arr, 'bx-', label='avg')
+    ax.plot(dt_ml_arr, thick_avg_arr+thick_std_arr, 'rx-', label='avg+std')
+    ax.plot(dt_ml_arr, thick_avg_arr-thick_std_arr, 'rx-', label='avg-std')
     # plt.legend(loc='best')
-    plt.ylabel('Thickness [m]')
-
-    axes = plt.gca()
-    axes.set_ylim([0., 3000.])
-    axes.set_xlim([dt_ml_arr[0], dt_ml_arr[-1]])
+    ax.ylabel('Thickness [m]')
+    ax.set_ylim([0., 3000.])
+    ax.set_xlim([dt_ml_arr[0], dt_ml_arr[-1]])
 
     # tight x axis
-    plt.autoscale(enable=True, axis='x', tight=True)
-    plt.grid(True)
+    ax.autoscale(enable=True, axis='x', tight=True)
+    ax.grid(True)
 
-    fig.add_subplot(3, 1, 3)
-    plt.plot(dt_ml_arr, nrays_valid_arr, 'bx-', label='N valid rays')
-    plt.plot(dt_ml_arr, nrays_total_arr, 'rx-', label='rays total')
+    ax = fig.add_subplot(3, 1, 3)
+    ax.plot(dt_ml_arr, nrays_valid_arr, 'bx-', label='N valid rays')
+    ax.plot(dt_ml_arr, nrays_total_arr, 'rx-', label='rays total')
     # plt.legend(loc='best')
-    plt.ylabel('Rays')
-    plt.xlabel(labelx)
-
-    axes = plt.gca()
-    axes.set_ylim([0, np.max(nrays_total_arr)+5])
-    axes.set_xlim([dt_ml_arr[0], dt_ml_arr[-1]])
+    ax.set_ylabel('Rays')
+    ax.set_xlabel(labelx)
+    ax.set_ylim([0, np.max(nrays_total_arr)+5])
+    ax.set_xlim([dt_ml_arr[0], dt_ml_arr[-1]])
 
     # tight x axis
-    plt.autoscale(enable=True, axis='x', tight=True)
-    plt.grid(True)
+    ax.autoscale(enable=True, axis='x', tight=True)
+    ax.grid(True)
 
     # rotates and right aligns the x labels, and moves the bottom of the
     # axes up to make room for them
@@ -580,7 +564,7 @@ def plot_ml_ts(dt_ml_arr, ml_top_avg_arr, ml_top_std_arr, thick_avg_arr,
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)
 
     return fname_list
 
@@ -742,8 +726,8 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list, labelx='Date',
         value_plt = np.ma.append(value_plt, np.ma.masked)
         date_plt = np.ma.append(date_plt, date2[-1])
 
-    fig = plt.figure(figsize=[10, 6], dpi=dpi)
-    plt.plot(date_plt, value_plt, 'x-')
+    fig, ax = plt.subplots(figsize=[10, 6], dpi=dpi)
+    ax.plot(date_plt, value_plt, 'x-')
     if value_std is not None:
         value_std_plt = value_std[isvalid]
         if not isvalid[0]:
@@ -751,25 +735,23 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list, labelx='Date',
         if not isvalid[-1]:
             value_std_plt = np.ma.append(value_std_plt, np.ma.masked)
 
-        plt.plot(date_plt, value_plt+value_std_plt, 'rx-')
-        plt.plot(date_plt, value_plt-value_std_plt, 'rx-')
+        ax.plot(date_plt, value_plt+value_std_plt, 'rx-')
+        ax.plot(date_plt, value_plt-value_std_plt, 'rx-')
     if ref is not None:
         ref_plt = ref[isvalid]
         if not isvalid[0]:
             ref_plt = np.ma.append(ref[0], ref_plt)
         if not isvalid[-1]:
             ref_plt = np.ma.append(ref_plt, ref[-1])
-        plt.plot(date_plt, ref_plt, 'k--')
-    plt.xlabel(labelx)
-    plt.ylabel(labely)
-    plt.title(titl)
-
-    axes = plt.gca()
-    axes.set_ylim([vmin, vmax])
-    axes.set_xlim([date_plt[0], date_plt[-1]])
+        ax.plot(date_plt, ref_plt, 'k--')
+    ax.set_xlabel(labelx)
+    ax.set_ylabel(labely)
+    ax.set_title(titl)
+    ax.set_ylim([vmin, vmax])
+    ax.set_xlim([date_plt[0], date_plt[-1]])
     # tight x axis
-    plt.autoscale(enable=True, axis='x', tight=True)
-    plt.grid(True)
+    ax.autoscale(enable=True, axis='x', tight=True)
+    ax.grid(True)
 
     # rotates and right aligns the x labels, and moves the bottom of the
     # axes up to make room for them
@@ -777,6 +759,6 @@ def plot_sun_retrieval_ts(sun_retrieval, data_type, fname_list, labelx='Date',
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)
 
     return fname_list

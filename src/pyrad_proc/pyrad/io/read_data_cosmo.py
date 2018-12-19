@@ -9,7 +9,6 @@ Functions for reading COSMO data
 
     cosmo2radar_data
     cosmo2radar_coord
-    hzt2radar_data
     get_cosmo_fields
     read_cosmo_data
     read_cosmo_coord
@@ -98,7 +97,7 @@ def cosmo2radar_data(radar, cosmo_coord, cosmo_data, time_index=0,
 
             # put field
             field_dict = get_metadata(field)
-            field_dict['data'] = data_interp
+            field_dict['data'] = data_interp.astype(float)
             cosmo_fields.append({field: field_dict})
 
             del data_interp
@@ -211,7 +210,7 @@ def get_cosmo_fields(cosmo_data, cosmo_ind, time_index=0,
             # put field
             field_dict = get_metadata(field)
             field_dict['data'] = values[cosmo_ind['data'].flatten()].reshape(
-                nrays, ngates)
+                nrays, ngates).astype(float)
             cosmo_fields.append({field: field_dict})
 
     if not cosmo_fields:

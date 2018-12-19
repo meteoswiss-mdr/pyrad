@@ -69,6 +69,13 @@ def main():
     ntasks = ndays
     partition = 'postproc'
     cpu_time = '24:00:00'
+
+    # Parallelization commands. Set to 1 if you want it true
+    MP_DSET = 0
+    MP_PROD = 0
+    MP_PROF = 0
+
+    # add CPUs per task if task is parallelized
     cpus_per_task = 1
 
     cpus_per_node = 24
@@ -161,7 +168,9 @@ def main():
                 ' --get_cosmo '+str(get_cosmo)+' --rm_cosmo '+str(rm_cosmo) +
                 ' --cosmo_destbase '+cosmo_destbase +
                 ' --get_hzt '+str(get_hzt)+' --rm_hzt '+str(rm_hzt) +
-                ' -h '+hour+' --hzt_destbase '+hzt_destbase+'\n')
+                ' -h '+hour+' --hzt_destbase '+hzt_destbase +
+                ' --MP_DSET '+MP_DSET+' --MP_PROD '+MP_PROD +
+                ' --MP_PROF '+MP_PROF+'\n')
 
         txtfile.close()
 
