@@ -52,8 +52,8 @@ def main():
 #    day_vec = [
 #        datetime.datetime(2017, 7, 14)]
 
-    basename = 'Santis_data_entropy_CGpn'
-    filt_type = 'keep_all'
+    basename = 'Santis_data_entropy'
+    filt_type = 'keep_non_solid_phase_origin'
     nsources_min = 10
 
     if 'entropy' in basename:
@@ -111,6 +111,12 @@ def main():
             flashnr, pol_vals_dict[hydro_label], nsources_min=nsources_min)
     elif filt_type == 'keep_liquid_origin':
         ind, data_ID, subtitl = get_indices_liquid_phase_origin(
+            flashnr, pol_vals_dict[hydro_label], nsources_min=nsources_min)
+    elif filt_type == 'keep_mixed_phase_origin':
+        ind, data_ID, subtitl = get_indices_mixed_phase_origin(
+            flashnr, pol_vals_dict[hydro_label], nsources_min=nsources_min)
+    elif filt_type == 'keep_non_solid_phase_origin':
+        ind, data_ID, subtitl = get_indices_non_solid_phase_origin(
             flashnr, pol_vals_dict[hydro_label], nsources_min=nsources_min)
     else:
         warn('Unknown filter type '+filt_type)
@@ -180,7 +186,7 @@ def main():
         bins_centers = np.arange(0, 10, 1)
         bins_edges = np.arange(-0.5, 10.5, 1)
 
-        # Create histogram of number of differnt hydrometeors types in each
+        # Create histogram of number of different hydrometeors types in each
         # radar range gate. All sources
         nhydros_hist = hist_nhydros_gate(pol_vals_dict_filt, percent_min=10.)
 
@@ -218,8 +224,6 @@ def main():
             basepath+data_ID+'_firstsource_ts_trajlightning_nhydro.csv')
         write_histogram(bins_edges, nhydros_hist, fname)
         print('Written '+fname)
-
-        return
 
         # Create histograms of dominant hydrometeors all sources
         hydro_hist2 = hist_dominant_hydrometeors(
@@ -794,11 +798,11 @@ def get_indices_all_data(flashnr, nsources_min=0):
     data_ID = 'All'
     subtitl = ''
 
-    data_ID = 'CGpn'
+    data_ID = 'CGp'
     subtitl = '\nLMA flashes with associated '+data_ID+' EUCLID flashes'
 
-#    data_ID = 'no_CG'
-#    subtitl = '\nLMA flashes without associated CG EUCLID flashes'
+    data_ID = 'no_CG'
+    subtitl = '\nLMA flashes without associated CG EUCLID flashes'
 
     # Get unique flashes
     unique_flashnr = np.unique(flashnr, return_index=False)
@@ -907,6 +911,56 @@ def get_indices_liquid_phase(flashnr, hydro, nsources_min=0):
     return ind, data_ID, subtitl
 
 
+def get_indices_non_solid_phase_origin(flashnr, hydro, nsources_min=0):
+    """
+    Get indices of flash sources of flashes generated in the liquid and mixed
+    phases
+
+    Parameters
+    ----------
+    flashnr: 1D array
+        The flash number of each source
+    hydro : 1D array
+        The dominant hydrometeor class in the region of each source
+    nsources_min : float
+        Minimum number of sources to accept the flash
+
+    Returns
+    -------
+    ind : 1D array
+        the indices corresponding to the data to keep
+    data_ID : str
+        an identifier of the type of data kept
+    subtitl : str
+        the subtitle to add to the plots generated
+
+    """
+    data_ID = 'non_solid_origin'
+    subtitl = '\nFlashes with origin in the liquid and mixed phases'
+
+    # Get unique flashes origin
+    unique_flashnr, unique_ind = np.unique(
+        flashnr, return_index=True)
+
+    # Get indices of flashes with origin in liquid and mixed phase layer
+    ind = np.ma.where(np.logical_or.reduce((
+        hydro[unique_ind] == 3., hydro[unique_ind] == 5.,
+        hydro[unique_ind] == 7., hydro[unique_ind] == 8.)))[0]
+
+    # Get unique flashes that contain these sources
+    unique_flashnr_filt = np.unique(unique_flashnr[ind], return_index=False)
+
+    # get sources of those flashes
+    ind = []
+    for flash in unique_flashnr_filt:
+        ind_flash = np.where(flashnr == flash)[0]
+        if ind_flash.size < nsources_min:
+            continue
+        ind.extend(ind_flash)
+
+    return ind, data_ID, subtitl
+
+
 def get_indices_liquid_phase_origin(flashnr, hydro, nsources_min=0):
     """
     Get indices of flash sources of flashes generated in the liquid phase
@@ -937,13 +991,64 @@ def get_indices_liquid_phase_origin(flashnr, hydro, nsources_min=0):
     unique_flashnr, unique_ind = np.unique(
         flashnr, return_index=True)
 
-    # get sources with origin in liquid phase
-    ind = []
-    for i, flash in enumerate(unique_flashnr):
-        orig_hydro = hydro[unique_ind[i]]
-        if orig_hydro != 3. and orig_hydro != 5. and orig_hydro != 8.:
-            continue
+    # Get indices of flashes with origin in liquid layer
+    ind = np.ma.where(np.logical_or.reduce((
+        hydro[unique_ind] == 3., hydro[unique_ind] == 5.,
+        hydro[unique_ind] == 8.)))[0]
 
+    # Get unique flashes that contain these sources
+    unique_flashnr_filt = np.unique(unique_flashnr[ind], return_index=False)
+
+    # get sources of those flashes
+    ind = []
+    for flash in unique_flashnr_filt:
+        ind_flash = np.where(flashnr == flash)[0]
+        if ind_flash.size < nsources_min:
+            continue
+        ind.extend(ind_flash)
+
+    return ind, data_ID, subtitl
+
+
+def get_indices_mixed_phase_origin(flashnr, hydro, nsources_min=0):
+    """
+    Get indices of flash sources of flashes generated in the mixed phase
+
+    Parameters
+    ----------
+    flashnr: 1D array
+        The flash number of each source
+    hydro : 1D array
+        The dominant hydrometeor class in the region of each source
+    nsources_min : float
+        Minimum number of sources to accept the flash
+
+    Returns
+    -------
+    ind : 1D array
+        the indices corresponding to the data to keep
+    data_ID : str
+        an identifier of the type of data kept
+    subtitl : str
+        the subtitle to add to the plots generated
+
+    """
+    data_ID = 'mixed_phase_origin'
+    subtitl = '\nFlashes with origin in the mixed phase'
+
+    # Get unique flashes origin
+    unique_flashnr, unique_ind = np.unique(
+        flashnr, return_index=True)
+
+    # Get indices of flashes with origin in wet snow
+    ind = np.ma.where(hydro[unique_ind] == 7.)[0]
+
+    # Get unique flashes that contain these sources
+    unique_flashnr_filt = np.unique(unique_flashnr[ind], return_index=False)
+
+    # get sources of those flashes
+    ind = []
+    for flash in unique_flashnr_filt:
         ind_flash = np.where(flashnr == flash)[0]
         if ind_flash.size < nsources_min:
             continue
@@ -954,7 +1059,7 @@ def get_indices_liquid_phase_origin(flashnr, hydro, nsources_min=0):
 
 def hist_dominant_hydrometeors(pol_vals_dict, percent_min=10.):
     """
-    Computes a 2D histogram with of the dominant and second dominant
+    Computes a 2D histogram with the dominant and second dominant
     hydrometeor
 
     Parameters
@@ -973,20 +1078,34 @@ def hist_dominant_hydrometeors(pol_vals_dict, percent_min=10.):
         the 2D histogram
 
     """
-    nradar_bins = pol_vals_dict['propAG'].size
-    ind = np.ma.where(pol_vals_dict['hydro'] == 0)[0]
+    # keep only data that has been classified by the hydrometeor classification
+    valid = np.logical_not(np.ma.getmaskarray(pol_vals_dict['hydro']))
+    propAG = pol_vals_dict['propAG'][valid]
+    propCR = pol_vals_dict['propCR'][valid]
+    propLR = pol_vals_dict['propLR'][valid]
+    propRP = pol_vals_dict['propRP'][valid]
+    propRN = pol_vals_dict['propRN'][valid]
+    propVI = pol_vals_dict['propVI'][valid]
+    propWS = pol_vals_dict['propWS'][valid]
+    propMH = pol_vals_dict['propMH'][valid]
+    propIH = pol_vals_dict['propIH'][valid]
+    hydro = pol_vals_dict['hydro'][valid]
+
+    nradar_bins = propAG.size
+    ind_nc = np.ma.where(hydro == 0)[0]
+    ind_c = np.ma.where(hydro != 0)[0]
 
     values = np.ma.masked_all((10, nradar_bins))
-    values[0, ind] = 100.
-    values[1, :] = pol_vals_dict['propAG']
-    values[2, :] = pol_vals_dict['propCR']
-    values[3, :] = pol_vals_dict['propLR']
-    values[4, :] = pol_vals_dict['propRP']
-    values[5, :] = pol_vals_dict['propRN']
-    values[6, :] = pol_vals_dict['propVI']
-    values[7, :] = pol_vals_dict['propWS']
-    values[8, :] = pol_vals_dict['propMH']
-    values[9, :] = pol_vals_dict['propIH']
+    values[0, ind_nc] = 100.
+    values[1, ind_c] = propAG[ind_c]
+    values[2, ind_c] = propCR[ind_c]
+    values[3, ind_c] = propLR[ind_c]
+    values[4, ind_c] = propRP[ind_c]
+    values[5, ind_c] = propRN[ind_c]
+    values[6, ind_c] = propVI[ind_c]
+    values[7, ind_c] = propWS[ind_c]
+    values[8, ind_c] = propMH[ind_c]
+    values[9, ind_c] = propIH[ind_c]
 
     inds_sorted = np.ma.argsort(values, endwith=False, axis=0)
     values_sorted = np.ma.sort(values, endwith=False, axis=0)
@@ -1026,20 +1145,34 @@ def hist_hydrometeor_mixtures(pol_vals_dict):
         the histogram
 
     """
-    nradar_bins = pol_vals_dict['propAG'].size
-    ind = np.ma.where(pol_vals_dict['hydro'] == 0)[0]
+    # keep only data that has been classified by the hydrometeor classification
+    valid = np.logical_not(np.ma.getmaskarray(pol_vals_dict['hydro']))
+    propAG = pol_vals_dict['propAG'][valid]
+    propCR = pol_vals_dict['propCR'][valid]
+    propLR = pol_vals_dict['propLR'][valid]
+    propRP = pol_vals_dict['propRP'][valid]
+    propRN = pol_vals_dict['propRN'][valid]
+    propVI = pol_vals_dict['propVI'][valid]
+    propWS = pol_vals_dict['propWS'][valid]
+    propMH = pol_vals_dict['propMH'][valid]
+    propIH = pol_vals_dict['propIH'][valid]
+    hydro = pol_vals_dict['hydro'][valid]
+
+    nradar_bins = propAG.size
+    ind_nc = np.ma.where(hydro == 0)[0]
+    ind_c = np.ma.where(hydro != 0)[0]
 
     hydro_hist = np.ma.zeros(10)
-    hydro_hist[0] = ind.size/nradar_bins*100.
-    hydro_hist[1] = np.ma.sum(pol_vals_dict['propAG'])/nradar_bins
-    hydro_hist[2] = np.ma.sum(pol_vals_dict['propCR'])/nradar_bins
-    hydro_hist[3] = np.ma.sum(pol_vals_dict['propLR'])/nradar_bins
-    hydro_hist[4] = np.ma.sum(pol_vals_dict['propRP'])/nradar_bins
-    hydro_hist[5] = np.ma.sum(pol_vals_dict['propRN'])/nradar_bins
-    hydro_hist[6] = np.ma.sum(pol_vals_dict['propVI'])/nradar_bins
-    hydro_hist[7] = np.ma.sum(pol_vals_dict['propWS'])/nradar_bins
-    hydro_hist[8] = np.ma.sum(pol_vals_dict['propMH'])/nradar_bins
-    hydro_hist[9] = np.ma.sum(pol_vals_dict['propIH'])/nradar_bins
+    hydro_hist[0] = ind_nc.size/nradar_bins*100.
+    hydro_hist[1] = np.ma.sum(propAG[ind_c])/nradar_bins
+    hydro_hist[2] = np.ma.sum(propCR[ind_c])/nradar_bins
+    hydro_hist[3] = np.ma.sum(propLR[ind_c])/nradar_bins
+    hydro_hist[4] = np.ma.sum(propRP[ind_c])/nradar_bins
+    hydro_hist[5] = np.ma.sum(propRN[ind_c])/nradar_bins
+    hydro_hist[6] = np.ma.sum(propVI[ind_c])/nradar_bins
+    hydro_hist[7] = np.ma.sum(propWS[ind_c])/nradar_bins
+    hydro_hist[8] = np.ma.sum(propMH[ind_c])/nradar_bins
+    hydro_hist[9] = np.ma.sum(propIH[ind_c])/nradar_bins
 
     return hydro_hist
 
@@ -1062,35 +1195,55 @@ def hist_nhydros_gate(pol_vals_dict, percent_min=10.):
         the histogram
 
     """
-    nradar_bins = pol_vals_dict['propAG'].size
-    ind = np.ma.where(pol_vals_dict['hydro'] == 0)[0]
+    # keep only data that has been classified by the hydrometeor classification
+    valid = np.logical_not(np.ma.getmaskarray(pol_vals_dict['hydro']))
+    propAG = pol_vals_dict['propAG'][valid]
+    propCR = pol_vals_dict['propCR'][valid]
+    propLR = pol_vals_dict['propLR'][valid]
+    propRP = pol_vals_dict['propRP'][valid]
+    propRN = pol_vals_dict['propRN'][valid]
+    propVI = pol_vals_dict['propVI'][valid]
+    propWS = pol_vals_dict['propWS'][valid]
+    propMH = pol_vals_dict['propMH'][valid]
+    propIH = pol_vals_dict['propIH'][valid]
+    hydro = pol_vals_dict['hydro'][valid]
 
-    values = np.ma.masked_all((10, nradar_bins))
-    values[0, ind] = 100.
-    values[1, :] = pol_vals_dict['propAG']
-    values[2, :] = pol_vals_dict['propCR']
-    values[3, :] = pol_vals_dict['propLR']
-    values[4, :] = pol_vals_dict['propRP']
-    values[5, :] = pol_vals_dict['propRN']
-    values[6, :] = pol_vals_dict['propVI']
-    values[7, :] = pol_vals_dict['propWS']
-    values[8, :] = pol_vals_dict['propMH']
-    values[9, :] = pol_vals_dict['propIH']
+    nradar_bins = propAG.size
+    ind_nc = np.ma.where(hydro == 0)[0]
+    ind_c = np.ma.where(hydro != 0)[0]
+
+    print(ind_c.size)
+    print(ind_nc.size)
+
+    values = np.ma.zeros((10, nradar_bins))
+    values[0, ind_nc] = 100.
+    values[1, ind_c] = propAG[ind_c]
+    values[2, ind_c] = propCR[ind_c]
+    values[3, ind_c] = propLR[ind_c]
+    values[4, ind_c] = propRP[ind_c]
+    values[5, ind_c] = propRN[ind_c]
+    values[6, ind_c] = propVI[ind_c]
+    values[7, ind_c] = propWS[ind_c]
+    values[8, ind_c] = propMH[ind_c]
+    values[9, ind_c] = propIH[ind_c]
 
     # Mask with presence of each hydrometeor in each gates
     mask = np.ma.ones((9, nradar_bins), dtype=int)
 
-    # If proportion less than percent_min consider the presence as residual
+    # If proportion more than percent_min consider hydrometeor as present
     mask[values[1:, :] < percent_min] = 0
 
     # Number of hydrometeors present in each gate
     nhydros = np.ma.sum(mask, axis=0)
 
     nhydros_hist = np.ma.zeros(10)
-    nhydros_hist[0] = ind.size
+    nhydros_hist[0] = ind_nc.size
 
     for i in range(nradar_bins):
-        nhydros_hist[nhydros[i]] += 1
+        if nhydros[i] > 0:
+            nhydros_hist[nhydros[i]] += 1
+
+    print(np.ma.sum(nhydros_hist))
 
     return nhydros_hist
 

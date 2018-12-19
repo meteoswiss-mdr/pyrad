@@ -426,9 +426,12 @@ def process_traj_lightning(procstatus, dscfg, radar_list=None,
 
             # Compute statistics and get number of valid data
             if data_is_log[field_name]:
-                vals_lin = np.ma.power(10., cell_vals/10.)
-                val_mean = np.ma.mean(vals_lin)
-                val_mean = 10. * np.ma.log10(val_mean)
+                val_mean = np.ma.masked
+                cell_vals_valid = cell_vals.compressed()
+                if cell_vals_valid.size > 0:
+                    vals_lin = np.ma.power(10., cell_vals_valid/10.)
+                    val_mean = np.ma.mean(vals_lin)
+                    val_mean = 10. * np.ma.log10(val_mean)
             else:
                 val_mean = np.ma.mean(cell_vals)
             val_min = np.ma.min(cell_vals)
@@ -656,9 +659,12 @@ def process_traj_atplane(procstatus, dscfg, radar_list=None, trajectory=None):
 
             # Compute statistics and get number of valid data
             if data_is_log[field_name]:
-                vals_lin = np.ma.power(10., cell_vals/10.)
-                val_mean = np.ma.mean(vals_lin)
-                val_mean = 10. * np.ma.log10(val_mean)
+                val_mean = np.ma.masked
+                cell_vals_valid = cell_vals.compressed()
+                if cell_vals_valid.size > 0:
+                    vals_lin = np.ma.power(10., cell_vals_valid/10.)
+                    val_mean = np.ma.mean(vals_lin)
+                    val_mean = 10. * np.ma.log10(val_mean)
             else:
                 val_mean = np.ma.mean(cell_vals)
             val_min = np.ma.min(cell_vals)
@@ -1330,8 +1336,8 @@ def _get_gates(radar, az, el, rr, tt, trajdict, ang_tol=1.2):
         return None, None, None, None, None, None
 
     # Get indices of gates surrounding the cell (3x3 box)
-    el_res = np.median(np.diff(el_vec_rnd))
-    az_res = np.median(np.diff(az_vec_rnd))
+    el_res = np.ma.median(np.ma.diff(el_vec_rnd))
+    az_res = np.ma.median(np.ma.diff(az_vec_rnd))
 
     d_el = np.abs(radar_sel.elevation['data'] -
                   radar_sel.elevation['data'][ray_sel])

@@ -74,6 +74,15 @@ def main():
                         "to the filenames of the product files.",
                         default="")
 
+    parser.add_argument("--MULTIPROCESSING_DSET", type=int, default=0,
+                        help="If 1 the generation of the datasets at the "
+                        "same processing level will be parallelized")
+    parser.add_argument("--MULTIPROCESSING_PROD", type=int, default=0,
+                        help="If 1 the generation of the products of each "
+                        "dataset will be parallelized")
+    parser.add_argument("--PROFILE_MULTIPROCESSING", type=int, default=0,
+                        help="If 1 the multiprocessing is profiled")
+
     parser.add_argument(
         '--postproc_cfgfile', type=str, default=None,
         help='name of main post-processing configuration file')
@@ -96,6 +105,12 @@ def main():
     print('end date: '+args.enddate)
     print('start time each day: '+args.starttime)
     print('end time each day: '+args.endtime)
+    if args.MULTIPROCESSING_DSET:
+        print('Dataset generation will be parallelized')
+    if args.MULTIPROCESSING_PROD:
+        print('Product generation will be parallelized')
+    if args.PROFILE_MULTIPROCESSING:
+        print('Parallel processing performance will be profiled')
 
     proc_startdate = datetime.datetime.strptime(
         args.startdate, '%Y%m%d')
@@ -126,10 +141,16 @@ def main():
         proc_enddatetime = current_date + proc_endtime
         try:
             pyrad_main(cfgfile_proc, starttime=proc_startdatetime,
-                       endtime=proc_enddatetime, infostr=infostr)
+                       endtime=proc_enddatetime, infostr=infostr,
+                       MULTIPROCESSING_DSET=args.MULTIPROCESSING_DSET,
+                       MULTIPROCESSING_PROD=args.MULTIPROCESSING_PROD,
+                       PROFILE_MULTIPROCESSING=args.PROFILE_MULTIPROCESSING)
             if args.postproc_cfgfile is not None:
                 pyrad_main(cfgfile_postproc, starttime=proc_startdatetime,
-                           endtime=proc_enddatetime, infostr=infostr)
+                           endtime=proc_enddatetime, infostr=infostr,
+                           MULTIPROCESSING_DSET=args.MULTIPROCESSING_DSET,
+                           MULTIPROCESSING_PROD=args.MULTIPROCESSING_PROD,
+                           PROFILE_MULTIPROCESSING=args.PROFILE_MULTIPROCESSING)
         except ValueError:
             print(ValueError)
 
