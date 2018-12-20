@@ -1,6 +1,6 @@
 """
-pyrad.graph.plots
-=================
+pyrad.graph.plots_vol
+=====================
 
 Functions to plot radar volume data
 
