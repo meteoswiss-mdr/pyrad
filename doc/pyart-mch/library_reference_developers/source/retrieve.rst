@@ -29,7 +29,21 @@
    :special-members:
    :inherited-members:
    :show-inheritance:
+.. automodule:: pyart.retrieve.ml
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
 .. automodule:: pyart.retrieve.simple_moment_calculations
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
+.. automodule:: pyart.retrieve.wind
    :members:
    :undoc-members:
    :private-members:

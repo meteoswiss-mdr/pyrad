@@ -1,6 +1,6 @@
 """
-pyrad.graph.plots
-=================
+pyrad.graph.plot_timeseries
+===========================
 
 Functions to plot Pyrad datasets
 
