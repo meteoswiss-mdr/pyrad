@@ -510,6 +510,8 @@ def process_phidp_kdp_lp(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
+    temp_field = None
+    iso0_field = None
     for datatypedescr in dscfg['datatype']:
         radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'PhiDP':
@@ -582,6 +584,9 @@ def process_phidp_kdp_lp(procstatus, dscfg, radar_list=None):
 
     radar_aux = deepcopy(radar)
 
+    # user config
+    LP_solver = dscfg.get('LP_solver', 'cvxopt')
+
     # filter out data in an above the melting layer
     mask = np.ma.getmaskarray(radar_aux.fields[psidp_field]['data'])
     if 'radar_beam_width_h' in radar_aux.instrument_parameters:
@@ -612,7 +617,7 @@ def process_phidp_kdp_lp(procstatus, dscfg, radar_list=None):
         low_z=10.0, high_z=53.0, min_phidp=0.01, min_ncp=10.,
         min_rhv=0.6, fzl=4000.0, sys_phase=0.0,
         overide_sys_phase=True, nowrap=None, really_verbose=False,
-        LP_solver='cvxopt', refl_field=refl_field, ncp_field=snr_field,
+        LP_solver=LP_solver, refl_field=refl_field, ncp_field=snr_field,
         rhv_field=rhv_field, phidp_field=psidp_field, kdp_field=kdp_field,
         unf_field=phidp_field, window_len=35, proc=1)
 
@@ -644,6 +649,8 @@ def process_kdp_leastsquare_single_window(procstatus, dscfg, radar_list=None):
             The input data types
         rwind : float. Dataset keyword
             The length of the segment for the least square method [m]
+        vectorize : bool. Dataset keyword
+            Whether to vectorize the KDP processing. Default false
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -716,6 +723,8 @@ def process_kdp_leastsquare_double_window(procstatus, dscfg, radar_list=None):
             The length of the long segment for the least square method [m]
         Zthr : float. Dataset keyword
             The threshold defining which estimated data to use [dBZ]
+        vectorize : Bool. Dataset keyword
+            Whether to vectorize the KDP processing. Default false
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -955,15 +964,9 @@ def process_phidp_kdp_Kalman(procstatus, dscfg, radar_list=None):
              'Missing data')
         return None, None
 
-    # parallel computing?
-    parallel = 1
-    if 'parallel' in dscfg:
-        parallel = dscfg['parallel']
-
-    # get PhiDP computed from KDP?
-    get_phidp = 0
-    if 'get_phidp' in dscfg:
-        get_phidp = dscfg['get_phidp']
+    # User defined options
+    parallel = dscfg.get('parallel', 1)
+    get_phidp = dscfg.get('get_phidp', 0)
 
     # get band from radar object metadata
     band = 'C'
@@ -1099,7 +1102,7 @@ def process_attenuation(procstatus, dscfg, radar_list=None):
                  str(fzl)+' m')
 
     att_method = dscfg.get('ATT_METHOD', 'ZPhi')
-    if (att_method != 'ZPhi') and (att_method != 'Philin'):
+    if att_method not in ('ZPhi', 'Philin'):
         raise ValueError(
             'Unknown attenuation correction method. ' +
             'Must be one of the following: [ZPhi, Philin]')
