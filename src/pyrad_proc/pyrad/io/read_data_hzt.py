@@ -68,7 +68,7 @@ def hzt2radar_data(radar, hzt_coord, hzt_data, slice_xy=True,
 
     # put field
     field_dict = get_metadata(field_name)
-    field_dict['data'] = z_radar-data_interp
+    field_dict['data'] = (z_radar-data_interp).astype(float)
 
     return field_dict
 
@@ -151,7 +151,7 @@ def get_iso0_field(hzt_data, hzt_ind, z_radar, field_name='height_over_iso0'):
     values = hzt_data['HZT']['data'][:, :].flatten()
     field_dict = get_metadata(field_name)
     field_dict['data'] = z_radar-values[hzt_ind['data'].flatten()].reshape(
-        nrays, ngates)
+        nrays, ngates).astype(float)
 
     return field_dict
 

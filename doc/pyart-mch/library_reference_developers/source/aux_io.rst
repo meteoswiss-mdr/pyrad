@@ -43,6 +43,13 @@
    :special-members:
    :inherited-members:
    :show-inheritance:
+.. automodule:: pyart.aux_io.metranet_reader
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
 .. automodule:: pyart.aux_io.noxp_iphex_nc
    :members:
    :undoc-members:

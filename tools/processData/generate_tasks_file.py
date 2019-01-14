@@ -69,6 +69,13 @@ def main():
     ntasks = ndays
     partition = 'postproc'
     cpu_time = '24:00:00'
+
+    # Parallelization commands. Set to 1 if you want it true
+    MP_DSET = 0
+    MP_PROD = 0
+    MP_PROF = 0
+
+    # add CPUs per task if task is parallelized
     cpus_per_task = 1
 
     cpus_per_node = 24
@@ -103,8 +110,7 @@ def main():
             '#SBATCH --cpus-per-task='+str(cpus_per_task)+'\n' +
             '#SBATCH --partition='+str(partition)+'\n' +
             '#SBATCH --account=msrad\n\n' +
-            'module use /apps/escha/UES/RH7.3_PE17.02/sandbox/hvictor/' +
-            'easybuild/modules/all\n' +
+            'module use /users/jfigui/easybuild/kesch/modules/all\n' +
             'module load greasy/2.1-cscs-gmvolf-17.02\n\n' +
             'export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK\n' +
             'greasy -f '+ftasks_name)
@@ -136,11 +142,11 @@ def main():
     get_data = 1
     rm_data = 1
     ele = '001,002,003'
-    data_destbase = '/store/msrad/radar/rad4alp/tmp/'
+    data_destbase = '/store/msrad/radar/rad4alp/raw/'
 
     get_cosmo = 0
     rm_cosmo = 0
-    cosmo_destbase = '/store/msrad/cosmo/tmp/TEMP/raw1/'
+    cosmo_destbase = '/store/msrad/cosmo/cosmo1/TEMP/raw1/'
 
     # hour: hours from run time format 00 to 06
     # if more than one separate by a comma
@@ -161,7 +167,9 @@ def main():
                 ' --get_cosmo '+str(get_cosmo)+' --rm_cosmo '+str(rm_cosmo) +
                 ' --cosmo_destbase '+cosmo_destbase +
                 ' --get_hzt '+str(get_hzt)+' --rm_hzt '+str(rm_hzt) +
-                ' -h '+hour+' --hzt_destbase '+hzt_destbase+'\n')
+                ' -h '+hour+' --hzt_destbase '+hzt_destbase +
+                ' --MP_DSET '+MP_DSET+' --MP_PROD '+MP_PROD +
+                ' --MP_PROF '+MP_PROF+'\n')
 
         txtfile.close()
 

@@ -67,7 +67,7 @@ def plot_surface(grid, field_name, level, prdcfg, fname_list):
     xsize = prdcfg['ppiImageConfig']['xsize']
     ysize = prdcfg['ppiImageConfig']['ysize']
     fig = plt.figure(figsize=[xsize, ysize], dpi=dpi)
-    fig.add_subplot(111, aspect='equal')
+    ax = fig.add_subplot(111, aspect='equal')
     lon_lines = np.arange(np.floor(prdcfg['ppiMapImageConfig']['lonmin']),
                           np.ceil(prdcfg['ppiMapImageConfig']['lonmax'])+1,
                           0.5)
@@ -75,14 +75,14 @@ def plot_surface(grid, field_name, level, prdcfg, fname_list):
                           np.ceil(prdcfg['ppiMapImageConfig']['latmax'])+1,
                           0.5)
     display = pyart.graph.GridMapDisplay(grid)
-    display.plot_basemap(lat_lines=lat_lines, lon_lines=lon_lines)
+    display.plot_basemap(lat_lines=lat_lines, lon_lines=lon_lines, ax=ax)
     display.plot_grid(field_name, level=level, norm=norm, ticks=ticks,
-                      ticklabs=ticklabs)
+                      ticklabs=ticklabs, ax=ax, fig=fig)
     # display.plot_crosshairs(lon=lon, lat=lat)
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)
 
 
 def plot_latitude_slice(grid, field_name, lon, lat, prdcfg, fname_list):
@@ -126,7 +126,7 @@ def plot_latitude_slice(grid, field_name, lon, lat, prdcfg, fname_list):
     display = pyart.graph.GridMapDisplay(grid)
     display.plot_latitude_slice(
         field_name, lon=lon, lat=lat, norm=norm, colorbar_orient='horizontal',
-        ticks=ticks, ticklabs=ticklabs)
+        ticks=ticks, ticklabs=ticklabs, ax=ax, fig=fig)
     ax.set_xlim(
         [prdcfg['rhiImageConfig']['xmin'], prdcfg['rhiImageConfig']['xmax']])
     ax.set_ylim(
@@ -134,7 +134,7 @@ def plot_latitude_slice(grid, field_name, lon, lat, prdcfg, fname_list):
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)
 
 
 def plot_longitude_slice(grid, field_name, lon, lat, prdcfg, fname_list):
@@ -178,7 +178,7 @@ def plot_longitude_slice(grid, field_name, lon, lat, prdcfg, fname_list):
     display = pyart.graph.GridMapDisplay(grid)
     display.plot_longitude_slice(
         field_name, lon=lon, lat=lat, norm=norm, colorbar_orient='horizontal',
-        ticks=ticks, ticklabs=ticklabs)
+        ticks=ticks, ticklabs=ticklabs, ax=ax, fig=fig)
     ax.set_xlim(
         [prdcfg['rhiImageConfig']['xmin'], prdcfg['rhiImageConfig']['xmax']])
     ax.set_ylim(
@@ -186,7 +186,7 @@ def plot_longitude_slice(grid, field_name, lon, lat, prdcfg, fname_list):
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)
 
 
 def plot_latlon_slice(grid, field_name, coord1, coord2, prdcfg, fname_list):
@@ -237,4 +237,4 @@ def plot_latlon_slice(grid, field_name, coord1, coord2, prdcfg, fname_list):
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)

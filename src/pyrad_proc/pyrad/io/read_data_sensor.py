@@ -1,6 +1,6 @@
 """
-pyrad.io.read_data_other
-========================
+pyrad.io.read_data_sensor
+=========================
 
 Functions for reading data from other sensors
 

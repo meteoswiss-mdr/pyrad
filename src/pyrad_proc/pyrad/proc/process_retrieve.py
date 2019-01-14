@@ -661,6 +661,32 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
         RR_METHOD : string. Dataset keyword
             The rainfall rate estimation method. One of the following:
             Z, ZPoly, KDP, A, ZKDP, ZA, hydro
+        alpha, beta : float
+            factor and exponent of the R-Var power law R = alpha*Var^Beta.
+            Default value depending on RR_METHOD. Z (0.0376, 0.6112),
+            KDP (None, None), A (None, None)
+        alphaz, betaz : float
+            factor and exponent of the R-Z power law R = alpha*Z^Beta.
+            Default value (0.0376, 0.6112)
+        alphazr, betazr : float
+            factor and exponent of the R-Z power law R = alpha*Z^Beta applied
+            to rain in method hydro. Default value (0.0376, 0.6112)
+        alphazs, betazs : float
+            factor and exponent of the R-Z power law R = alpha*Z^Beta applied
+            to solid precipitation in method hydro. Default value (0.1, 0.5)
+        alphakdp, betakdp : float
+            factor and exponent of the R-KDP power law R = alpha*KDP^Beta.
+            Default value (None, None)
+        alphaa, betaa : float
+            factor and exponent of the R-Ah power law R = alpha*Ah^Beta.
+            Default value (None, None)
+        thresh : float
+            In hybrid methods, Rainfall rate threshold at which the retrieval
+            method used changes [mm/h]. Default value depending on RR_METHOD.
+            ZKDP 10, ZA 10, hydro 10
+        mp_factor : float
+            Factor by which the Z-R relation is multiplied in the melting layer
+            in method hydro. Default 0.6
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -854,10 +880,10 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
         radar = radar_list[ind_rad]
 
         # user defined parameters
-        alphazr = dscfg.get('alphaz', 0.0376)
-        betazr = dscfg.get('betaz', 0.6112)
-        alphazs = dscfg.get('alphaz', 0.1)
-        betazs = dscfg.get('betaz', 0.5)
+        alphazr = dscfg.get('alphazr', 0.0376)
+        betazr = dscfg.get('betazr', 0.6112)
+        alphazs = dscfg.get('alphazs', 0.1)
+        betazs = dscfg.get('betazs', 0.5)
         alphaa = dscfg.get('alphaa', None)
         betaa = dscfg.get('betaa', None)
         thresh = dscfg.get('thresh', 5.)

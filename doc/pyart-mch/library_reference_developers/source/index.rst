@@ -9,19 +9,23 @@ Welcome to pyart-mch's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 2
    
-   io
-   aux_io
-   core
-   bridge
-   filters
-   correct
-   retrieve
-   map
-   graph
-   util
-   testing
+    core
+    io
+    aux_io
+    config
+    correct
+    exceptions
+    retrieve
+    graph
+    filters
+    lazydict
+    map
+    util
+    bridge
+    testing
+    _debug_info
 
 
 

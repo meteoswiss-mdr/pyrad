@@ -1048,6 +1048,7 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
 
         compute_entropy = dscfg.get('compute_entropy', False)
         output_distances = dscfg.get('output_distances', False)
+        vectorize = dscfg.get('vectorize', False)
 
         fields_dict = pyart.retrieve.hydroclass_semisupervised(
             radar, mass_centers=mass_centers,
@@ -1055,8 +1056,8 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
             zdr_field=zdr_field, rhv_field=rhv_field, kdp_field=kdp_field,
             temp_field=temp_field, iso0_field=iso0_field, hydro_field=None,
             entropy_field=None, temp_ref=temp_ref,
-            compute_entropy=compute_entropy, output_distances=output_distances
-            )
+            compute_entropy=compute_entropy,
+            output_distances=output_distances, vectorize=vectorize)
     else:
         raise Exception(
             "ERROR: Unknown hydrometeor classification method " +

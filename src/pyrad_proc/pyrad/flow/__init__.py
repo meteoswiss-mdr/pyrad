@@ -11,6 +11,7 @@ Functions to control the Pyrad data processing flow
     :toctree: generated/
 
     main
+    main_rt
 
 """
 
