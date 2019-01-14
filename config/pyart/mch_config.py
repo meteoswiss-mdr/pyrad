@@ -1104,6 +1104,12 @@ DEFAULT_METADATA = {
         'units': 'mm/h',
         'standard_name': 'radar_estimated_rain_rate',
         'long_name': 'Radar estimated rain rate',
+        'labels': ['0.', '0.4', '0.63', '1.', '1.6', '2.5', '4.0', '6.3',
+                   '10.', '16.', '25.', '40.', '63.', '100.', '160.', '250.'],
+        'ticks': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
+                  40., 63., 100., 160., 250.],
+        'boundaries': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
+                       40., 63., 100., 160., 250., 500.],
         'coordinates': 'elevation azimuth range'},
 
     sun_hit_h: {
