@@ -304,98 +304,36 @@ def process_qvp(procstatus, dscfg, radar_list=None):
         nvalid_min = dscfg.get('nvalid_min', 30)
         interp_kind = dscfg.get('interp_kind', 'none')
 
-        if avg_type != 'mean' and avg_type != 'median':
-            warn('Unsuported statistics '+avg_type)
-            return None, None
-
-        radar_aux = deepcopy(radar)
-        # transform radar into ppi over the required elevation
-        if radar_aux.scan_type == 'rhi':
-            radar_aux = pyart.util.cross_section_rhi(
-                radar_aux, [angle], el_tol=ang_tol)
-        elif radar_aux.scan_type == 'ppi':
-            radar_aux = radar_aux.extract_sweeps([int(angle)])
-        else:
-            warn('Error: unsupported scan type.')
-            return None, None
-
         # initialize dataset
-        if dscfg['initialized'] == 0:
-            qvp_aux = deepcopy(radar_aux)
-            # prepare space for field
-            qvp_aux.fields = dict()
-            qvp_aux.add_field(
-                field_name, deepcopy(radar_aux.fields[field_name]))
-            qvp_aux.fields[field_name]['data'] = np.array([], dtype='float64')
+        if not dscfg['initialized']:
+            qvp = pyart.retrieve.compute_qvp(
+                radar, [field_name], ref_time=dscfg['timeinfo'],
+                angle=angle, ang_tol=ang_tol, hmax=hmax, hres=hres,
+                avg_type=avg_type, nvalid_min=nvalid_min,
+                interp_kind=interp_kind, qvp=None)
 
-            # fixed radar objects parameters
-            qvp_aux.range['data'] = np.arange(hmax/hres)*hres+hres/2.
-            qvp_aux.ngates = len(qvp_aux.range['data'])
-
-            qvp_aux.time['units'] = pyart.io.make_time_unit_str(
-                dscfg['timeinfo'])
-            qvp_aux.time['data'] = np.array([], dtype='float64')
-            qvp_aux.scan_type = 'qvp'
-            qvp_aux.sweep_mode['data'] = np.array(['qvp'])
-            qvp_aux.sweep_start_ray_index['data'] = np.array(
-                [0], dtype='int32')
-
-            # ray dependent radar objects parameters
-            qvp_aux.sweep_end_ray_index['data'] = np.array([-1], dtype='int32')
-            qvp_aux.rays_per_sweep = np.array([0], dtype='int32')
-            qvp_aux.azimuth['data'] = np.array([], dtype='float64')
-            qvp_aux.elevation['data'] = np.array([], dtype='float64')
-            qvp_aux.nrays = 0
+            if qvp is None:
+                warn('Unable to compute QVP')
+                return None, None
 
             global_dict = dict()
             global_dict.update({'start_time': dscfg['timeinfo']})
-            global_dict.update({'radar_out': qvp_aux})
+            global_dict.update({'radar_out': qvp})
             dscfg['global_data'] = global_dict
             dscfg['initialized'] = 1
-
-        # modify metadata
-        qvp = dscfg['global_data']['radar_out']
-
-        start_time = num2date(0, qvp.time['units'], qvp.time['calendar'])
-        qvp.time['data'] = np.append(
-            qvp.time['data'], (dscfg['timeinfo'] - start_time).total_seconds())
-        qvp.sweep_end_ray_index['data'][0] += 1
-        qvp.rays_per_sweep[0] += 1
-        qvp.nrays += 1
-
-        qvp.azimuth['data'] = np.ones((qvp.nrays, ), dtype='float64')*0.
-        qvp.elevation['data'] = (
-            np.ones((qvp.nrays, ), dtype='float64') *
-            qvp.fixed_angle['data'][0])
-
-        qvp.gate_longitude['data'] = (
-            np.ones((qvp.nrays, qvp.ngates), dtype='float64') *
-            qvp.longitude['data'][0])
-        qvp.gate_latitude['data'] = (
-            np.ones((qvp.nrays, qvp.ngates), dtype='float64') *
-            qvp.latitude['data'][0])
-        qvp.gate_altitude['data'] = np.broadcast_to(
-            qvp.range['data'], (qvp.nrays, qvp.ngates))
-
-        # compute QVP data
-        values, _ = compute_directional_stats(
-            radar_aux.fields[field_name]['data'], avg_type=avg_type,
-            nvalid_min=nvalid_min, axis=0)
-
-        # Project to vertical grid:
-        qvp_data = project_to_vertical(
-            values, radar_aux.gate_altitude['data'][0, :], qvp.range['data'],
-            interp_kind=interp_kind)
-
-        # Put data in radar object
-        if np.size(qvp.fields[field_name]['data']) == 0:
-            qvp.fields[field_name]['data'] = qvp_data.reshape(1, qvp.ngates)
         else:
-            qvp.fields[field_name]['data'] = np.ma.concatenate(
-                (qvp.fields[field_name]['data'],
-                 qvp_data.reshape(1, qvp.ngates)))
+            qvp = pyart.retrieve.compute_qvp(
+                radar, [field_name], ref_time=dscfg['timeinfo'],
+                angle=angle, ang_tol=ang_tol, hmax=hmax, hres=hres,
+                avg_type=avg_type, nvalid_min=nvalid_min,
+                interp_kind=interp_kind,
+                qvp=dscfg['global_data']['radar_out'])
 
-        dscfg['global_data']['radar_out'] = qvp
+            if qvp is None:
+                warn('Unable to compute QVP')
+                return None, None
+
+            dscfg['global_data']['radar_out'] = qvp
 
         new_dataset = dict()
         new_dataset.update({'radar_out': qvp})
@@ -410,6 +348,8 @@ def process_qvp(procstatus, dscfg, radar_list=None):
             break
 
         ind_rad = int(radarnr[5:8])-1
+
+        print(dscfg['global_data'])
 
         qvp = dscfg['global_data']['radar_out']
 
@@ -479,9 +419,9 @@ def process_rqvp(procstatus, dscfg, radar_list=None):
 
     Reference
     ---------
-    Ryzhkov A., Zhang P., Reeves H., Kumjian M., Tschallener T., Trömel S.,
-    Simmer C. 2016: Quasi-Vertical Profiles: A New Way to Look at Polarimetric
-    Radar Data. JTECH vol. 33 pp 551-562
+    Tobin D.M., Kumjian M.R. 2017: Polarimetric Radar and Surface-Based
+    Precipitation-Type Observations of ice Pellet to Freezing Rain
+    Transitions. Weather and Forecasting vol. 32 pp 2065-2082
 
     """
     if procstatus == 0:
@@ -513,139 +453,36 @@ def process_rqvp(procstatus, dscfg, radar_list=None):
         rmax = dscfg.get('rmax', 50000.)/1000.  # [Km]
         weight_power = dscfg.get('weight_power', 2.)
 
-        if avg_type != 'mean' and avg_type != 'median':
-            warn('Unsuported statistics '+avg_type)
-            return None, None
-
-        radar_aux = deepcopy(radar)
-        # transform radar into ppi over the required elevation
-        if radar_aux.scan_type == 'rhi':
-            target_elevations, el_tol = get_target_elevations(radar_aux)
-            radar_ppi = pyart.util.cross_section_rhi(
-                radar_aux, target_elevations, el_tol=el_tol)
-        elif radar_aux.scan_type == 'ppi':
-            radar_ppi = radar_aux
-        else:
-            warn('Error: unsupported scan type.')
-            return None, None
-
-        radar_aux = radar_ppi.extract_sweeps([0])
-
         # initialize dataset
-        if dscfg['initialized'] == 0:
-            qvp_aux = deepcopy(radar_aux)
-            # prepare space for field
-            qvp_aux.fields = dict()
-            qvp_aux.add_field(
-                field_name, deepcopy(radar_aux.fields[field_name]))
-            qvp_aux.fields[field_name]['data'] = np.array([], dtype='float64')
+        if not dscfg['initialized']:
+            qvp = pyart.retrieve.compute_rqvp(
+                radar, [field_name], ref_time=dscfg['timeinfo'],
+                hmax=hmax, hres=hres, avg_type=avg_type,
+                nvalid_min=nvalid_min, interp_kind=interp_kind, rmax=rmax,
+                weight_power=weight_power, qvp=None)
 
-            # fixed radar objects parameters
-            qvp_aux.range['data'] = np.arange(hmax/hres)*hres+hres/2.
-            qvp_aux.ngates = len(qvp_aux.range['data'])
-
-            qvp_aux.time['units'] = pyart.io.make_time_unit_str(
-                dscfg['timeinfo'])
-            qvp_aux.time['data'] = np.array([], dtype='float64')
-            qvp_aux.scan_type = 'rqvp'
-            qvp_aux.sweep_mode['data'] = np.array(['qvp'])
-            qvp_aux.sweep_start_ray_index['data'] = np.array(
-                [0], dtype='int32')
-            qvp_aux.fixed_angle['data'] = np.array([90.], dtype='float64')
-
-            # ray dependent radar objects parameters
-            qvp_aux.sweep_end_ray_index['data'] = np.array([-1], dtype='int32')
-            qvp_aux.rays_per_sweep = np.array([0], dtype='int32')
-            qvp_aux.azimuth['data'] = np.array([], dtype='float64')
-            qvp_aux.elevation['data'] = np.array([], dtype='float64')
-            qvp_aux.nrays = 0
+            if qvp is None:
+                warn('Unable to compute QVP')
+                return None, None
 
             global_dict = dict()
             global_dict.update({'start_time': dscfg['timeinfo']})
             global_dict.update({'radar_out': qvp_aux})
             dscfg['global_data'] = global_dict
             dscfg['initialized'] = 1
-
-        # modify metadata
-        qvp = dscfg['global_data']['radar_out']
-
-        start_time = num2date(0, qvp.time['units'], qvp.time['calendar'])
-        qvp.time['data'] = np.append(
-            qvp.time['data'], (dscfg['timeinfo'] - start_time).total_seconds())
-        qvp.sweep_end_ray_index['data'][0] += 1
-        qvp.rays_per_sweep[0] += 1
-        qvp.nrays += 1
-
-        qvp.azimuth['data'] = np.ones((qvp.nrays, ), dtype='float64')*0.
-        qvp.elevation['data'] = (
-            np.ones((qvp.nrays, ), dtype='float64') *
-            qvp.fixed_angle['data'][0])
-
-        qvp.gate_longitude['data'] = (
-            np.ones((qvp.nrays, qvp.ngates), dtype='float64') *
-            qvp.longitude['data'][0])
-        qvp.gate_latitude['data'] = (
-            np.ones((qvp.nrays, qvp.ngates), dtype='float64') *
-            qvp.latitude['data'][0])
-        qvp.gate_altitude['data'] = np.broadcast_to(
-            qvp.range['data'], (qvp.nrays, qvp.ngates))
-
-        # compute rQVP data
-        val_interp = np.ma.masked_all((radar_ppi.nsweeps, qvp.ngates))
-        grng_interp = np.ma.masked_all((radar_ppi.nsweeps, qvp.ngates))
-        for sweep in range(radar_ppi.nsweeps):
-            radar_aux = deepcopy(radar_ppi)
-            radar_aux = radar_aux.extract_sweeps([sweep])
-
-            # Compute QVP for this sweep
-            values, _ = compute_directional_stats(
-                radar_aux.fields[field_name]['data'], avg_type=avg_type,
-                nvalid_min=nvalid_min, axis=0)
-
-            height = radar_aux.gate_altitude['data'][0, :]
-
-            # Project to grid
-            val_interp[sweep, :] = project_to_vertical(
-                values, height, qvp.range['data'], interp_kind=interp_kind)
-
-            # compute ground range [Km]
-            grng = np.sqrt(
-                np.power(radar_aux.gate_x['data'][0, :], 2.) +
-                np.power(radar_aux.gate_y['data'][0, :], 2.))/1000.
-
-            # Project ground range to grid
-            f = interp1d(
-                height, grng, kind=interp_kind, bounds_error=False,
-                fill_value='extrapolate')
-            grng_interp[sweep, :] = f(qvp.range['data'])
-
-        # Compute weight
-        weight = np.ma.abs(grng_interp-(rmax-1.))
-        weight[grng_interp <= rmax-1.] = 1./np.power(
-            weight[grng_interp <= rmax-1.], 0.)
-
-        if weight_power == -1:
-            weight[grng_interp > rmax-1.] = 0.
         else:
-            weight[grng_interp > rmax-1.] = 1./np.power(
-                weight[grng_interp > rmax-1.], weight_power)
+            qvp = pyart.retrieve.compute_rqvp(
+                radar, [field_name], ref_time=dscfg['timeinfo'],
+                hmax=hmax, hres=hres, avg_type=avg_type,
+                nvalid_min=nvalid_min, interp_kind=interp_kind, rmax=rmax,
+                weight_power=weight_power,
+                qvp=dscfg['global_data']['radar_out'])
 
-        # mask weights where there is no data
-        mask = np.ma.getmaskarray(val_interp)
-        weight = np.ma.masked_where(mask, weight)
+            if qvp is None:
+                warn('Unable to compute QVP')
+                return None, None
 
-        # Weighted average
-        qvp_data = (
-            np.ma.sum(val_interp*weight, axis=0)/np.ma.sum(weight, axis=0))
-
-        if np.size(qvp.fields[field_name]['data']) == 0:
-            qvp.fields[field_name]['data'] = qvp_data.reshape(1, qvp.ngates)
-        else:
-            qvp.fields[field_name]['data'] = np.ma.concatenate(
-                (qvp.fields[field_name]['data'],
-                 qvp_data.reshape(1, qvp.ngates)))
-
-        dscfg['global_data']['radar_out'] = qvp
+            dscfg['global_data']['radar_out'] = qvp
 
         new_dataset = dict()
         new_dataset.update({'radar_out': qvp})
@@ -778,32 +615,9 @@ def process_evp(procstatus, dscfg, radar_list=None):
 
         # initialize dataset
         if dscfg['initialized'] == 0:
-            evp_aux = deepcopy(radar_aux)
-            # prepare space for field
-            evp_aux.fields = dict()
-            evp_aux.add_field(
-                field_name, deepcopy(radar_aux.fields[field_name]))
-            evp_aux.fields[field_name]['data'] = np.array([], dtype='float64')
-
-            # fixed radar objects parameters
-            evp_aux.range['data'] = np.arange(hmax/hres)*hres+hres/2.
-            evp_aux.ngates = len(evp_aux.range['data'])
-
-            evp_aux.time['units'] = pyart.io.make_time_unit_str(
-                dscfg['timeinfo'])
-            evp_aux.time['data'] = np.array([], dtype='float64')
-            evp_aux.scan_type = 'evp'
-            evp_aux.sweep_mode['data'] = np.array(['evp'])
-            evp_aux.sweep_start_ray_index['data'] = np.array(
-                [0], dtype='int32')
-            evp_aux.fixed_angle['data'] = np.array([90.], dtype='float64')
-
-            # ray dependent radar objects parameters
-            evp_aux.sweep_end_ray_index['data'] = np.array([-1], dtype='int32')
-            evp_aux.rays_per_sweep = np.array([0], dtype='int32')
-            evp_aux.azimuth['data'] = np.array([], dtype='float64')
-            evp_aux.elevation['data'] = np.array([], dtype='float64')
-            evp_aux.nrays = 0
+            evp_aux = pyart.retrieve._create_qvp_object(
+                radar_aux, [field_name], qvp_type='evp',
+                start_time=dscfg['timeinfo'], hmax=hmax, hres=hres)
 
             global_dict = dict()
             global_dict.update({'start_time': dscfg['timeinfo']})
@@ -1011,31 +825,9 @@ def process_svp(procstatus, dscfg, radar_list=None):
 
         # initialize dataset
         if dscfg['initialized'] == 0:
-            svp_aux = deepcopy(radar_aux)
-            # prepare space for field
-            svp_aux.fields = dict()
-            svp_aux.add_field(
-                field_name, deepcopy(radar_aux.fields[field_name]))
-            svp_aux.fields[field_name]['data'] = np.array([], dtype='float64')
-
-            # fixed radar objects parameters
-            svp_aux.range['data'] = np.arange(hmax/hres)*hres+hres/2.
-            svp_aux.ngates = len(svp_aux.range['data'])
-
-            svp_aux.time['units'] = pyart.io.make_time_unit_str(
-                dscfg['timeinfo'])
-            svp_aux.time['data'] = np.array([], dtype='float64')
-            svp_aux.scan_type = 'svp'
-            svp_aux.sweep_mode['data'] = np.array(['svp'])
-            svp_aux.sweep_start_ray_index['data'] = np.array(
-                [0], dtype='int32')
-
-            # ray dependent radar objects parameters
-            svp_aux.sweep_end_ray_index['data'] = np.array([-1], dtype='int32')
-            svp_aux.rays_per_sweep = np.array([0], dtype='int32')
-            svp_aux.azimuth['data'] = np.array([], dtype='float64')
-            svp_aux.elevation['data'] = np.array([], dtype='float64')
-            svp_aux.nrays = 0
+            svp_aux = pyart.retrieve._create_qvp_object(
+                radar_aux, [field_name], qvp_type='svp',
+                start_time=dscfg['timeinfo'], hmax=hmax, hres=hres)
 
             global_dict = dict()
             global_dict.update({'start_time': dscfg['timeinfo']})
@@ -1213,25 +1005,10 @@ def process_time_height(procstatus, dscfg, radar_list=None):
 
         # initialize dataset
         if dscfg['initialized'] == 0:
-            th_aux = deepcopy(radar_aux)
-            # prepare space for field
-            th_aux.fields = dict()
-            th_aux.add_field(
-                field_name, deepcopy(radar_aux.fields[field_name]))
-            th_aux.fields[field_name]['data'] = np.array([], dtype='float64')
+            th_aux = pyart.retrieve._create_qvp_object(
+                radar_aux, [field_name], qvp_type='time_height',
+                start_time=dscfg['timeinfo'], hmax=hmax, hres=hres)
 
-            # fixed radar objects parameters
-            th_aux.range['data'] = np.arange(hmax/hres)*hres+hres/2.
-            th_aux.ngates = len(th_aux.range['data'])
-
-            th_aux.time['units'] = pyart.io.make_time_unit_str(
-                dscfg['timeinfo'])
-            th_aux.time['data'] = np.array([], dtype='float64')
-            th_aux.scan_type = 'time_height'
-            th_aux.sweep_mode['data'] = np.array(['time_height'])
-            th_aux.sweep_start_ray_index['data'] = np.array(
-                [0], dtype='int32')
-            th_aux.fixed_angle['data'] = np.array([90.], dtype='float64')
             th_aux.sweep_number['data'] = np.array([0], dtype='int32')
             th_aux.nsweeps = 1
 
@@ -1242,13 +1019,6 @@ def process_time_height(procstatus, dscfg, radar_list=None):
             if radar_aux.ray_angle_res is not None:
                 th_aux.ray_angle_res['data'] = np.array(
                     [radar_aux.ray_angle_res['data'][0]])
-
-            # ray dependent radar objects parameters
-            th_aux.sweep_end_ray_index['data'] = np.array([-1], dtype='int32')
-            th_aux.rays_per_sweep = np.array([0], dtype='int32')
-            th_aux.azimuth['data'] = np.array([], dtype='float64')
-            th_aux.elevation['data'] = np.array([], dtype='float64')
-            th_aux.nrays = 0
 
             global_dict = dict()
             global_dict.update({'start_time': dscfg['timeinfo']})
