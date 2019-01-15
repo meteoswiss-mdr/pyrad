@@ -121,6 +121,7 @@ def main():
     t_end_sel_all = np.ma.asarray([], dtype=datetime.datetime)
     area_sel_all = np.ma.asarray([])
     neuclid_sel_all = np.ma.asarray([], dtype=int)
+    intens_EU_sel_all = np.ma.asarray([])
 
     for day in day_vec:
         day_str = day.strftime('%Y%m%d')
@@ -142,20 +143,20 @@ def main():
             time_EU_filt = stroke_time[intra == 0]
             lon_EU_filt = lon_euclid[intra == 0]
             lat_EU_filt = lat_euclid[intra == 0]
+            intens_EU_filt = intens[intra == 0]
 
             if args.euclidtype == 'CGp':
-                intens_EU_filt = intens[intra == 0]
-
                 time_EU_filt = time_EU_filt[intens_EU_filt > 0.]
                 lon_EU_filt = lon_EU_filt[intens_EU_filt > 0.]
                 lat_EU_filt = lat_EU_filt[intens_EU_filt > 0.]
+                intens_EU_filt = intens_EU_filt[intens_EU_filt > 0.]
             elif args.euclidtype == 'CGn':
-                intens_EU_filt = intens[intra == 0]
-
                 time_EU_filt = time_EU_filt[intens_EU_filt < 0.]
                 lon_EU_filt = lon_EU_filt[intens_EU_filt < 0.]
                 lat_EU_filt = lat_EU_filt[intens_EU_filt < 0.]
+                intens_EU_filt = intens_EU_filt[intens_EU_filt < 0.]
         else:
+            intens_EU_filt = intens[intra == 1]
             time_EU_filt = stroke_time[intra == 1]
             lon_EU_filt = lon_euclid[intra == 1]
             lat_EU_filt = lat_euclid[intra == 1]
@@ -189,6 +190,7 @@ def main():
         t_end_sel = np.ma.asarray([], dtype=datetime.datetime)
         area_sel = np.ma.asarray([])
         neuclid_sel = np.ma.asarray([], dtype=int)
+        intens_EU_sel = np.ma.asarray([])
 
         for flash_ID in flashnr_first:
             # get LMA data of flash
@@ -224,6 +226,7 @@ def main():
             # check if there are EUCLID strokes within LMA area
             lon_EU_flash = lon_EU_filt[ind]
             lat_EU_flash = lat_EU_filt[ind]
+            intens_EU_flash = intens_EU_filt[ind]
 
             chy_EU_flash = chy_EU[ind]
             chx_EU_flash = chx_EU[ind]
@@ -315,6 +318,7 @@ def main():
                         inds.extend(ind)
                 lon_EU_flash = lon_EU_flash[inds]
                 lat_EU_flash = lat_EU_flash[inds]
+                intens_EU_flash = intens_EU_flash[inds]
 
             print(str(lon_EU_flash.size)+' EUCLID '+args.euclidtype+' flashes for LMA flash '+str(flash_ID))
             nstrokes_accepted += lon_EU_flash.size
@@ -336,6 +340,7 @@ def main():
             t_end_sel = np.append(t_end_sel, time_data_flash[-1])
             area_sel = np.append(area_sel, rectangle_lma.area*1e-6)
             neuclid_sel = np.append(neuclid_sel, lon_EU_flash.size)
+            intens_EU_sel = np.append(intens_EU_sel, intens_EU_flash)
 
         # Plot histogram of number of EUCLID strokes
         bins_edges = np.arange(-0.5, 21.5, 1)
@@ -383,6 +388,20 @@ def main():
         fname_hist = write_histogram(bins_edges, hist_duration, fname_hist)
         print('Written '+fname_hist)
 
+        # Plot histogram of intensity of strokes [kA]
+        bins_edges = np.arange(-100., 101., 1.)
+        fname_hist = args.lma_basepath+day_str+'_'+args.lma_basename+'_'+args.euclidtype+'_EUCLID_intensity_hist.png'
+        fname_hist = plot_histogram(
+            bins_edges, intens_EU_sel, [fname_hist], labelx='Intensity of EUCLID strokes [kA]',
+            titl=day_str+' Intensity of EUCLID '+args.euclidtype+' strokes')
+        print('Plotted '+' '.join(fname_hist))
+
+        fname_hist = args.lma_basepath+day_str+'_'+args.lma_basename+'_'+args.euclidtype+'_EUCLID_intensity_hist.csv'
+        _, hist_intensity = compute_histogram(intens_EU_sel, None, bin_edges=bins_edges)
+        hist_intensity, _ = np.histogram(hist_intensity, bins=bins_edges)
+        fname_hist = write_histogram(bins_edges, hist_intensity, fname_hist)
+        print('Written '+fname_hist)
+
 
         flashnr_filt_first = np.unique(flashnr_filt, return_index=False)
         print('N EUCLID strokes: '+str(time_EU_filt.size))
@@ -397,22 +416,23 @@ def main():
         print('N LMA sources accepted: '+str(flashnr_filt.size)+'\n\n\n')
 
 
-        # write the results in a file
-        vals_list = []
-        for label in pol_vals_labels:
-            vals_list.append(pol_vals_dict_filt[label])
-
-        fname = args.lma_basepath+day_str+'_'+args.lma_basename+'_'+args.euclidtype+'.csv'
-        write_ts_lightning(
-            flashnr_filt, time_data_filt, time_in_flash_filt, lat_filt, lon_filt,
-            alt_filt, dBm_filt, vals_list, fname, pol_vals_labels)
-        print('written to '+fname)
+    #    # write the results in a file
+    #    vals_list = []
+    #    for label in pol_vals_labels:
+    #        vals_list.append(pol_vals_dict_filt[label])
+    #
+    #    fname = args.lma_basepath+day_str+'_'+args.lma_basename+'_'+args.euclidtype+'.csv'
+    #    write_ts_lightning(
+    #        flashnr_filt, time_data_filt, time_in_flash_filt, lat_filt, lon_filt,
+    #        alt_filt, dBm_filt, vals_list, fname, pol_vals_labels)
+    #    print('written to '+fname)
 
         flashnr_sel_all = np.append(flashnr_sel_all, flashnr_sel)
         t_start_sel_all = np.append(t_start_sel_all, t_start_sel)
         t_end_sel_all = np.append(t_end_sel_all, t_end_sel)
         area_sel_all = np.append(area_sel_all, area_sel)
         neuclid_sel_all = np.append(neuclid_sel_all, neuclid_sel)
+        intens_EU_sel_all = np.append(intens_EU_sel_all, intens_EU_sel)
 
     # Plot histogram of number of EUCLID strokes
     bins_edges = np.arange(-0.5, 21.5, 1)
@@ -458,6 +478,20 @@ def main():
     _, hist_duration = compute_histogram(duration, None, bin_edges=bins_edges)
     hist_duration, _ = np.histogram(hist_duration, bins=bins_edges)
     fname_hist = write_histogram(bins_edges, hist_duration, fname_hist)
+    print('Written '+fname_hist)
+
+    # Plot histogram of intensity of strokes [kA]
+    bins_edges = np.arange(-100., 101., 1.)
+    fname_hist = args.lma_basepath+args.lma_basename+'_'+args.euclidtype+'_EUCLID_intensity_hist.png'
+    fname_hist = plot_histogram(
+        bins_edges, intens_EU_sel_all, [fname_hist], labelx='Intensity of EUCLID strokes [kA]',
+        titl='Intensity of EUCLID '+args.euclidtype+' strokes')
+    print('Plotted '+' '.join(fname_hist))
+
+    fname_hist = args.lma_basepath+args.lma_basename+'_'+args.euclidtype+'_EUCLID_intensity_hist.csv'
+    _, hist_intensity = compute_histogram(intens_EU_sel_all, None, bin_edges=bins_edges)
+    hist_intensity, _ = np.histogram(hist_intensity, bins=bins_edges)
+    fname_hist = write_histogram(bins_edges, hist_intensity, fname_hist)
     print('Written '+fname_hist)
 
 
