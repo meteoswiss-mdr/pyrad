@@ -369,7 +369,7 @@ def _process_datasets(dataset_levels, cfg, dscfg, radar_list, master_voltime,
             for dataset in dataset_levels[level]:
                 print('--- Processing dataset: '+dataset)
                 try:
-                    new_dataset, ind_rad, _, _ = _generate_dataset(
+                    new_dataset, ind_rad, _, dscfg[dataset] = _generate_dataset(
                         dataset, cfg, dscfg[dataset], proc_status=1,
                         radar_list=radar_list, voltime=master_voltime,
                         trajectory=traj, runinfo=infostr,

@@ -37,7 +37,7 @@ def main():
                     "====== Lightning post-processing finished: ")
 
 
-    set_type = 'non_solid_origin'
+    set_type = 'All'
     dataset_type = 'radar'
 
     if set_type == 'All':

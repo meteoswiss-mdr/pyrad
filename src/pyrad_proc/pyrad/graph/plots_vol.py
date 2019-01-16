@@ -204,7 +204,7 @@ def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
                           np.ceil(prdcfg['ppiMapImageConfig']['latmax'])+1,
                           0.5)
 
-    display_map = pyart.graph.RadarMapDisplayCartopy(radar)
+    display_map = pyart.graph.RadarMapDisplay(radar)
     display_map.plot_ppi_map(
         field_name, sweep=ind_el, norm=norm, ticks=ticks,
         ticklabs=ticklabs, min_lon=prdcfg['ppiMapImageConfig']['lonmin'],

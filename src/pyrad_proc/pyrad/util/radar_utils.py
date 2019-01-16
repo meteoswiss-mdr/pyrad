@@ -568,7 +568,7 @@ def find_colocated_indexes(radar1, radar2, rad1_ele, rad1_azi, rad1_rng,
 
 def get_target_elevations(radar_in):
     """
-    Gets RHI taget elevations
+    Gets RHI target elevations
 
     Parameters
     ----------
