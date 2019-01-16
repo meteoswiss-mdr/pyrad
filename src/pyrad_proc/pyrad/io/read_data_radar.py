@@ -357,7 +357,16 @@ def merge_scans_rainbow(basepath, scan_list, voltime, scan_period,
             radar_aux = merge_fields_rainbow(
                 basepath, scan, scantime, datatype_list)
 
-            radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
+            if radar_aux is None:
+                continue
+
+            if radar is None:
+                radar = radar_aux
+            else:
+                radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
+
+    if radar is None:
+        return radar
 
     # keep only PPIs within elevation limits
     if cfg['elmin'] != -600. or cfg['elmax'] != 600.:
@@ -1324,6 +1333,9 @@ def merge_fields_rainbow(basepath, scan_name, voltime, datatype_list):
             warn('No file found in '+datapath+fdatetime+datatype+'.*')
         else:
             radar_aux = get_data_rainbow(filename[0], datatype)
+            if radar_aux is None:
+                continue
+
             if radar is None:
                 radar = radar_aux
             else:
@@ -1499,14 +1511,29 @@ def merge_fields_cosmo(filename_list):
         radar object
 
     """
-    radar = pyart.aux_io.read_rainbow_wrl(filename_list[0])
+    try:
+        radar = pyart.aux_io.read_rainbow_wrl(filename_list[0])
+    except OSError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+filename_list[0])
+        return None
+
+    if radar is None:
+        return None
 
     if len(filename_list) == 1:
         return radar
 
     # add other COSMO fields in the same scan
     for filename in filename_list:
-        radar_aux = pyart.aux_io.read_rainbow_wrl(filename)
+        try:
+            radar_aux = pyart.aux_io.read_rainbow_wrl(filename)
+        except OSError as ee:
+            warn(str(ee))
+            warn('Unable to read file '+filename)
+            continue
+        if radar_aux is None:
+            continue
         for field_name in radar_aux.fields.keys():
             break
         radar.add_field(field_name, radar_aux.fields[field_name])
@@ -1527,15 +1554,30 @@ def get_data_rainbow(filename, datatype):
 
     Returns
     -------
-    radar : Radar
-        radar object
+    radar : Radar or None
+        radar object if the reading of the data has been successful.
+        None otherwise
 
     """
-    radar = pyart.aux_io.read_rainbow_wrl(filename)
+    try:
+        radar = pyart.aux_io.read_rainbow_wrl(filename)
+    except OSError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+filename)
+        return None
+    if radar is None:
+        return None
+
     if (datatype == 'Nh') or (datatype == 'Nv'):
-        with open(filename, 'rb') as fid:
-            rbf = wrl.io.read_rainbow(fid, loaddata=True)
-            fid.close()
+        try:
+            with open(filename, 'rb') as fid:
+                rbf = wrl.io.read_rainbow(fid, loaddata=True)
+                fid.close()
+        except OSError as ee:
+            warn(str(ee))
+            warn('Unable to read file '+filename)
+            return None
+
         # check the number of slices
         nslices = int(rbf['volume']['scan']['pargroup']['numele'])
         if nslices > 1:
