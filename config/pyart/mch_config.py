@@ -203,6 +203,9 @@ sun_hit_v = 'sun_hit_v'
 sun_hit_zdr = 'sun_hit_zdr'
 
 number_of_samples = 'number_of_samples'
+sum = 'sum'
+sum_squared = 'sum_squared'
+standard_deviation = 'standard_deviation'
 time_avg_flag = 'time_avg_flag'
 colocated_gates = 'colocated_gates'
 occurrence = 'occurrence'
@@ -223,7 +226,6 @@ differential_phase_texture = 'differential_phase_texture'
 cross_correlation_ratio_texture = 'cross_correlation_ratio_texture'
 differential_reflectivity_texture = 'differential_reflectivity_texture'
 reflectivity_texture = 'reflectivity_texture'
-
 
 # Wind retrieval fields
 eastward_wind_component = 'eastward_wind_component'
@@ -415,6 +417,9 @@ DEFAULT_FIELD_NAMES = {
     'wind_direction': wind_direction,
     'height': height,
     'number_of_samples': number_of_samples,
+    'standard_deviation': standard_deviation,
+    'sum': sum,
+    'sum_squared': sum_squared,
     'colocated_gates': colocated_gates,
     'time_avg_flag': time_avg_flag,
     'occurrence': occurrence,
@@ -1295,6 +1300,25 @@ DEFAULT_METADATA = {
         'standard_name': 'number_of_samples',
         'long_name': 'Number of samples',
         'valid_min': 0,
+        'coordinates': 'elevation azimuth range'},
+
+    standard_deviation: {
+        'units': '-',
+        'standard_name': 'standard_deviation',
+        'long_name': 'Standard deviation',
+        'valid_min': 0,
+        'coordinates': 'elevation azimuth range'},
+
+    sum: {
+        'units': '-',
+        'standard_name': 'sum',
+        'long_name': 'Sum',
+        'coordinates': 'elevation azimuth range'},
+
+    sum_squared: {
+        'units': '-',
+        'standard_name': 'sum_squared',
+        'long_name': 'Sum squared',
         'coordinates': 'elevation azimuth range'},
 
     occurrence: {

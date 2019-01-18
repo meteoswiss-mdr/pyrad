@@ -129,9 +129,9 @@ def main():
         print('processing TRT cell file '+fname)
         try:
             infostr = os.path.basename(fname).split('.')[0]
-#            pyrad_main(
-#                cfgfile_proc, trajfile=fname, infostr=infostr,
-#                trajtype=trajtype)
+            pyrad_main(
+                cfgfile_proc, trajfile=fname, infostr=infostr,
+                trajtype=trajtype)
             trt_cell_id_list.append(infostr)
             trt_file_list.append(fname)
         except ValueError:

@@ -611,6 +611,12 @@ def get_fieldname_pyart(datatype):
         field_name = 'number_of_samples'
     elif datatype == 'bird_density':
         field_name = 'bird_density'
+    elif datatype == 'std':
+        field_name = 'standard_deviation'
+    elif datatype == 'sum':
+        field_name = 'sum'
+    elif datatype == 'sum2':
+        field_name = 'sum_squared'
 
     # vol2bird field names
     elif datatype == 'ff':
@@ -711,7 +717,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
         datadescriptor)
     ind_rad = int(radarnr[5:8])-1
 
-    if (datatype == 'Nh') or (datatype == 'Nv'):
+    if datatype in ('Nh', 'Nv'):
         datatype = 'dBZ'
 
     t_filelist = []
@@ -1369,7 +1375,7 @@ def _get_datetime(fname, datagroup, ftime_format=None):
 
     """
     bfile = os.path.basename(fname)
-    if datagroup == 'RAINBOW' or datagroup == 'CFRADIAL':
+    if datagroup in ('RAINBOW', 'CFRADIAL'):
         datetimestr = bfile[0:14]
         fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d%H%M%S')
     elif datagroup == 'RAD4ALP':

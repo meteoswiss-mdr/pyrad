@@ -209,6 +209,9 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'OCCURRENCE':
         func_name = 'process_occurrence'
         dsformat = 'OCCURRENCE'
+    elif dataset_type == 'TIMEAVG_STD':
+        func_name = 'process_time_avg_std'
+        dsformat = 'OCCURRENCE'
     elif dataset_type == 'OCCURRENCE_PERIOD':
         func_name = 'process_occurrence_period'
         dsformat = 'OCCURRENCE'
@@ -697,7 +700,7 @@ def process_azimuthal_average(procstatus, dscfg, radar_list=None):
     delta_azi = dscfg.get('delta_azi', None)
     avg_type = dscfg.get('avg_type', 'mean')
     nvalid_min = dscfg.get('nvalid_min', 1)
-    if avg_type != 'mean' and avg_type != 'median':
+    if avg_type not in ('mean', 'median'):
         warn('Unsuported statistics '+avg_type)
         return None, None
 
