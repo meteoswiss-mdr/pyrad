@@ -80,6 +80,10 @@ def main():
     parser.add_argument(
         '--hres', type=float, default=250., help='Height resolution')
 
+    parser.add_argument(
+        '--center', type=int, default=0,
+        help='If true the data is at the cell center')
+
     args = parser.parse_args()
 
     print("====== PYRAD TRT data processing started: %s" %
@@ -114,6 +118,10 @@ def main():
         trt_list.extend(glob.glob(
             args.trtbase+time_dir+'/TRTC_cell_plots/Some/*.trt'))
 
+    if len(trt_list) == 0:
+        warn('No valid TRT files found in '+args.trtbase)
+        return
+
     # Pyrad data processing
     trt_cell_id_list = []
     trt_file_list = []
@@ -121,9 +129,9 @@ def main():
         print('processing TRT cell file '+fname)
         try:
             infostr = os.path.basename(fname).split('.')[0]
-            pyrad_main(
-                cfgfile_proc, trajfile=fname, infostr=infostr,
-                trajtype=trajtype)
+#            pyrad_main(
+#                cfgfile_proc, trajfile=fname, infostr=infostr,
+#                trajtype=trajtype)
             trt_cell_id_list.append(infostr)
             trt_file_list.append(fname)
         except ValueError:
@@ -147,7 +155,10 @@ def main():
         time_dir = dt_cell.strftime("%Y-%m-%d")
         for j, datatype in enumerate(datatype_list):
             dataset = dataset_list[j]
-            file_base2 = args.radarbase+time_dir+'/'+dataset+'_trt_traj/'
+            if args.center:
+                file_base2 = args.radarbase+time_dir+'/'+dataset+'_trt_center_traj/'
+            else:
+                file_base2 = args.radarbase+time_dir+'/'+dataset+'_trt_traj/'
 
             field_name = get_fieldname_pyart(datatype)
             field_dict = get_metadata(field_name)
@@ -158,24 +169,28 @@ def main():
             flist = glob.glob(
                 file_base2+'PROFILE/*_'+trt_cell_id+'_rhi_profile_*_' +
                 datatype+'_hres'+str(int(args.hres))+'.csv')
+
             if not flist:
                 warn('No profile files found in '+file_base2 +
                      'PROFILE/ for TRT cell ' +
                      trt_cell_id+' with resolution '+str(args.hres))
             else:
-                labels = [
-                    '50.0-percentile', '25.0-percentile', '75.0-percentile']
-                if datatype == 'RhoHVc':
-                    labels = [
-                        '80.0-percentile', '65.0-percentile',
-                        '95.0-percentile']
-                elif datatype == 'hydro':
-                    labels = [
-                        'Mode', '2nd most common', '3rd most common',
-                        '% points mode', '% points 2nd most common',
-                        '% points 3rd most common']
-                elif datatype == 'entropy' or 'prop' in datatype:
+                if args.center:
                     labels = ['Mean', 'Min', 'Max']
+                else:
+                    labels = [
+                        '50.0-percentile', '25.0-percentile', '75.0-percentile']
+                    if datatype == 'RhoHVc':
+                        labels = [
+                            '80.0-percentile', '65.0-percentile',
+                            '95.0-percentile']
+                    elif datatype == 'hydro':
+                        labels = [
+                            'Mode', '2nd most common', '3rd most common',
+                            '% points mode', '% points 2nd most common',
+                            '% points 3rd most common']
+                    elif datatype == 'entropy' or 'prop' in datatype:
+                        labels = ['Mean', 'Min', 'Max']
 
                 tbin_edges, hbin_edges, _, data_ma, start_time = (
                     read_profile_ts(flist, labels, hres=args.hres))

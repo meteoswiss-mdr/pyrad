@@ -39,7 +39,7 @@ from ..io.timeseries import TimeSeries
 from ..io.read_data_other import read_antenna_pattern
 
 from ..util.stat_utils import quantiles_weighted
-from ..util.radar_utils import belongs_roi_indices
+from ..util.radar_utils import belongs_roi_indices, find_nearest_gate
 
 
 def process_trajectory(procstatus, dscfg, radar_list=None, trajectory=None):
@@ -160,10 +160,13 @@ def process_traj_trt(procstatus, dscfg, radar_list=None, trajectory=None):
     time_tol = dscfg.get('TimeTol', 100.)
     alt_min = dscfg.get('alt_min', None)
     alt_max = dscfg.get('alt_max', None)
+    cell_center = dscfg.get('cell_center', False)
+    latlon_tol = dscfg.get('latlon_tol', 0.01)  # aprox. 1 km
 
     inds_ray, inds_rng, lat, lon, alt = _get_gates_trt(
         radar, trajectory, dscfg['timeinfo'], time_tol=time_tol,
-        alt_min=alt_min, alt_max=alt_max)
+        alt_min=alt_min, alt_max=alt_max, cell_center=cell_center,
+        latlon_tol=latlon_tol)
 
     if inds_ray is None:
         return None, None
@@ -1353,7 +1356,7 @@ def _get_gates(radar, az, el, rr, tt, trajdict, ang_tol=1.2):
 
 
 def _get_gates_trt(radar, trajectory, voltime, time_tol=100., alt_min=None,
-                   alt_max=None):
+                   alt_max=None, cell_center=False, latlon_tol=0.0005):
     """
     Find the gates of the radar object that belong to a TRT cell
 
@@ -1381,55 +1384,105 @@ def _get_gates_trt(radar, trajectory, voltime, time_tol=100., alt_min=None,
         dt[i] = np.abs((voltime - time_traj).total_seconds())
     if dt.min() > time_tol:
         warn('No TRT data for radar volume time')
-        return None, None
+        return None, None, None, None, None
     ind = np.argmin(dt)
-    lon_roi = trajectory.cell_contour[ind]['lon']
-    lat_roi = trajectory.cell_contour[ind]['lat']
 
-    roi_dict = {
-        'lon': lon_roi,
-        'lat': lat_roi,
-        'alt_min': alt_min,
-        'alt_max': alt_max}
+    if not cell_center:
+        lon_roi = trajectory.cell_contour[ind]['lon']
+        lat_roi = trajectory.cell_contour[ind]['lat']
 
-    # extract the data within the ROI boundaries
-    inds_ray, inds_rng = np.indices(np.shape(radar.gate_longitude['data']))
+        roi_dict = {
+            'lon': lon_roi,
+            'lat': lat_roi,
+            'alt_min': alt_min,
+            'alt_max': alt_max}
 
-    mask = np.logical_and(
-        np.logical_and(
-            radar.gate_latitude['data'] >= roi_dict['lat'].min(),
-            radar.gate_latitude['data'] <= roi_dict['lat'].max()),
-        np.logical_and(
-            radar.gate_longitude['data'] >= roi_dict['lon'].min(),
-            radar.gate_longitude['data'] <= roi_dict['lon'].max()))
+        # extract the data within the ROI boundaries
+        inds_ray, inds_rng = np.indices(np.shape(radar.gate_longitude['data']))
 
-    if alt_min is not None:
-        mask[radar.gate_altitude['data'] < alt_min] = 0
-    if alt_max is not None:
-        mask[radar.gate_altitude['data'] > alt_max] = 0
+        mask = np.logical_and(
+            np.logical_and(
+                radar.gate_latitude['data'] >= roi_dict['lat'].min(),
+                radar.gate_latitude['data'] <= roi_dict['lat'].max()),
+            np.logical_and(
+                radar.gate_longitude['data'] >= roi_dict['lon'].min(),
+                radar.gate_longitude['data'] <= roi_dict['lon'].max()))
 
-    if np.all(mask == 0):
-        warn('No values within ROI')
-        return None, None, None, None, None
+        if alt_min is not None:
+            mask[radar.gate_altitude['data'] < alt_min] = 0
+        if alt_max is not None:
+            mask[radar.gate_altitude['data'] > alt_max] = 0
 
-    inds_ray = inds_ray[mask]
-    inds_rng = inds_rng[mask]
+        if np.all(mask == 0):
+            warn('No values within ROI')
+            return None, None, None, None, None
 
-    # extract the data inside the ROI
-    lat = radar.gate_latitude['data'][mask]
-    lon = radar.gate_longitude['data'][mask]
-    inds, is_roi = belongs_roi_indices(lat, lon, roi_dict)
+        inds_ray = inds_ray[mask]
+        inds_rng = inds_rng[mask]
 
-    if is_roi == 'None':
-        warn('No values within ROI')
-        return None, None, None, None, None
+        # extract the data inside the ROI
+        lat = radar.gate_latitude['data'][mask]
+        lon = radar.gate_longitude['data'][mask]
+        inds, is_roi = belongs_roi_indices(lat, lon, roi_dict)
 
-    inds_ray = inds_ray[inds]
-    inds_rng = inds_rng[inds]
+        if is_roi == 'None':
+            warn('No values within ROI')
+            return None, None, None, None, None
 
-    lat = lat[inds]
-    lon = lon[inds]
-    alt = radar.gate_altitude['data'][inds_ray, inds_rng]
+        inds_ray = inds_ray[inds]
+        inds_rng = inds_rng[inds]
+
+        lat = lat[inds]
+        lon = lon[inds]
+        alt = radar.gate_altitude['data'][inds_ray, inds_rng]
+    else:
+        radar_aux = deepcopy(radar)
+        # transform radar into ppi over the required elevation
+        if radar_aux.scan_type == 'rhi':
+            target_elevations, el_tol = get_target_elevations(radar_aux)
+            radar_ppi = cross_section_rhi(
+                radar_aux, target_elevations, el_tol=el_tol)
+        elif radar_aux.scan_type == 'ppi':
+            radar_ppi = radar_aux
+        else:
+            warn('Error: unsupported scan type.')
+            return None, None, None, None, None
+
+        inds_ray = np.array([], dtype=int)
+        inds_rng = np.array([], dtype=int)
+        lat = np.array([])
+        lon = np.array([])
+        alt = np.array([])
+        for sweep in range(radar_ppi.nsweeps):
+            radar_aux = deepcopy(radar_ppi.extract_sweeps([sweep]))
+
+            # find nearest gate to lat lon point
+            ind_ray, ind_rng, _, _ = find_nearest_gate(
+                radar_aux, trajectory.wgs84_lat_deg[ind],
+                trajectory.wgs84_lon_deg[ind], latlon_tol=latlon_tol)
+
+            if ind_ray is None:
+                continue
+
+            if alt_min is not None:
+                if radar_aux.gate_altitude['data'][ind_ray][ind_rng] < alt_min:
+                    continue
+            if alt_max is not None:
+                if radar_aux.gate_altitude['data'][ind_ray][ind_rng] > alt_max:
+                    continue
+
+            inds_ray = np.append(inds_ray, ind_ray)
+            inds_rng = np.append(inds_rng, ind_rng)
+            lat = np.append(
+                lat, radar_aux.gate_latitude['data'][ind_ray][ind_rng])
+            lon = np.append(
+                lon, radar_aux.gate_longitude['data'][ind_ray][ind_rng])
+            alt = np.append(
+                alt, radar_aux.gate_altitude['data'][ind_ray][ind_rng])
+
+        if inds_ray.size == 0:
+            warn('No values in center of cell')
+            return None, None, None, None, None
 
     return inds_ray, inds_rng, lat, lon, alt
 
