@@ -168,8 +168,8 @@ def main():
                 ' --cosmo_destbase '+cosmo_destbase +
                 ' --get_hzt '+str(get_hzt)+' --rm_hzt '+str(rm_hzt) +
                 ' -h '+hour+' --hzt_destbase '+hzt_destbase +
-                ' --MP_DSET '+MP_DSET+' --MP_PROD '+MP_PROD +
-                ' --MP_PROF '+MP_PROF+'\n')
+                ' --MP_DSET '+str(MP_DSET)+' --MP_PROD '+str(MP_PROD) +
+                ' --MP_PROF '+str(MP_PROF)+'\n')
 
         txtfile.close()
 

@@ -468,7 +468,7 @@ def process_filter_snr(procstatus, dscfg, radar_list=None):
 
     for datatypedescr in dscfg['datatype']:
         radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
-        if (datatype == 'SNRh') or (datatype == 'SNRv'):
+        if datatype in ('SNRh', 'SNRv'):
             snr_field = get_fieldname_pyart(datatype)
             break
 
@@ -492,7 +492,7 @@ def process_filter_snr(procstatus, dscfg, radar_list=None):
     for datatypedescr in dscfg['datatype']:
         radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
 
-        if (datatype == 'SNRh') or (datatype == 'SNRv'):
+        if datatype in ('SNRh', 'SNRv'):
             continue
 
         field_name = get_fieldname_pyart(datatype)
@@ -676,9 +676,7 @@ def process_filter_visibility(procstatus, dscfg, radar_list=None):
         radar_aux.fields[field_name]['data'] = np.ma.masked_where(
             is_lowVIS, radar_aux.fields[field_name]['data'])
 
-        if ((datatype == 'dBZ') or (datatype == 'dBZc') or
-                (datatype == 'dBuZ') or (datatype == 'dBZv') or
-                (datatype == 'dBZvc') or (datatype == 'dBuZv')):
+        if datatype in ('dBZ', 'dBZc', 'dBuZ', 'dBZv', 'dBZvc', 'dBuZv'):
             radar_field = pyart.correct.correct_visibility(
                 radar_aux, vis_field=vis_field, field_name=field_name)
         else:
@@ -875,6 +873,8 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
                 zdr_field = 'corrected_differential_reflectivity'
             if datatype == 'RhoHV':
                 rhv_field = 'cross_correlation_ratio'
+            if datatype == 'uRhoHV':
+                rhv_field = 'uncorrected_cross_correlation_ratio'
             if datatype == 'RhoHVc':
                 rhv_field = 'corrected_cross_correlation_ratio'
             if datatype == 'KDP':
@@ -1160,17 +1160,18 @@ def process_melting_layer(procstatus, dscfg, radar_list=None):
         radar = radar_list[ind_rad]
 
         # Check which should be the reference field for temperature
-        if iso0_field is not None and (iso0_field not in radar.fields):
-            warn('Unable to detect melting layer. ' +
-                 'Missing height over iso0 field')
-            return None, None
-        else:
+        if iso0_field is not None:
+            if iso0_field not in radar.fields:
+                warn('Unable to detect melting layer. ' +
+                     'Missing height over iso0 field')
+                return None, None
             temp_ref = 'height_over_iso0'
 
-        if temp_field is not None and (temp_field not in radar.fields):
-            warn('Unable to detect melting layer. Missing temperature field')
-            return None, None
-        else:
+        if temp_field is not None:
+            if temp_field not in radar.fields:
+                warn('Unable to detect melting layer. ' +
+                     'Missing temperature field')
+                return None, None
             temp_ref = 'temperature'
             iso0_field = 'height_over_iso0'
 
@@ -1367,7 +1368,6 @@ def process_zdr_column(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
-    temp_ref = None
     temp_field = None
     iso0_field = None
     for datatypedescr in dscfg['datatype']:
@@ -1396,15 +1396,13 @@ def process_zdr_column(procstatus, dscfg, radar_list=None):
         warn('Unable to detect melting layer. ' +
              'Missing height over iso0 field')
         return None, None
-    else:
-        temp_ref = 'height_over_iso0'
+    temp_ref = 'height_over_iso0'
 
     if temp_field is not None and (temp_field not in radar.fields):
         warn('Unable to detect melting layer. Missing temperature field')
         return None, None
-    else:
-        temp_ref = 'temperature'
-        iso0_field = 'height_over_iso0'
+    temp_ref = 'temperature'
+    iso0_field = 'height_over_iso0'
 
     if ((zdr_field not in radar.fields) or
             (rhv_field not in radar.fields)):

@@ -924,7 +924,6 @@ def process_zdr_snow(procstatus, dscfg, radar_list=None):
             (rhohv_field not in radar.fields) or
             (zdr_field not in radar.fields) or
             (phidp_field not in radar.fields) or
-            (snr_field not in radar.fields) or
             (hydro_field not in radar.fields)):
         warn('Unable to estimate ZDR in snow. Missing data')
         return None, None

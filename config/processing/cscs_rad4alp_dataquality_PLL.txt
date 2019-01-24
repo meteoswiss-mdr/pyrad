@@ -48,4 +48,4 @@ configpath STRING $HOME/pyrad/config/
 locationConfigFile STRING $HOME/pyrad/config/processing/rad4alp_dataquality_PLL_loc.txt
 
 # Configuration of the product generation
-productConfigFile STRING $HOME/pyrad/config/processing/rad4alp_dataquality_PLL_prod.txt
+productConfigFile STRING $HOME/pyrad/config/processing/rad4alp_dataquality_PLL_5min_prod.txt
