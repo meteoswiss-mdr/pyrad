@@ -38,12 +38,24 @@ def main():
     """
     basepath = '/store/msrad/radar/trt/'
 
-    # read EUCLID flashes file
-    fname = basepath+'cell_euclid_lightning.csv'
-    (traj_ID, time_cell, lon_cell, lat_cell, area_cell, rank_cell,
-     nflashes_cell, flash_dens_cell) = read_trt_cell_lightning(fname)
+    roi = {
+        'lon': [8.9000010, 9.2000000, 9.4999970, 9.4999970, 8.9000010],
+        'lat': [47.0000030, 47.0000030, 47.0000030, 47.5999930, 47.5999930]
+    }
 
-    print('Cell steps: ', rank_cell.size)
+    # plot_rimed_column_EUCLID(basepath, 'cell_rimed_particles_column.csv', 'Santis_cell_euclid_lightning.csv', roi)
+    # plot_rimed_column_LMA(basepath, 'cell_rimed_particles_column.csv', 'cell_LMA_flashes.csv', roi)
+    # plot_max_LMA_rank(basepath, 'cell_LMA_flashes.csv')
+    # plot_time_diff_max_EUCLID_density_max_rank(basepath, 'Santis_cell_scores.csv')
+    plot_time_diff_max_LMA_max_rank(basepath, 'cell_LMA_flashes.csv', roi= roi)
+    # plot_time_diff_max_EUCLID_strokes_max_rank(basepath, 'Santis_cell_euclid_lightning.csv')
+    # read_general_scores(basepath, 'Santis_cell_scores.csv')
+    # plot_rank_LMA_flashes(basepath, 'cell_LMA_flashes.csv', roi=roi)
+    # plot_rank_LMA_sources(basepath, 'cell_LMA_sources.csv', roi=roi)
+    # plot_LMA_EUCLID(basepath, 'cell_LMA_flashes.csv', 'Santis_cell_euclid_lightning.csv', roi)
+
+
+    return
 
     traj_ID_uniques = np.unique(traj_ID, return_index=False)
 
@@ -68,12 +80,12 @@ def main():
 
         if flash_dens_aux.max() > 0:
             continue
-            
+
         max_rank = rank_aux.max()
-        
+
         print('Cell '+str(traj_ID_unique)+' max rank: '+str(max_rank))
 
-        
+
 
 #        # keep only time steps within LMA domain
 #        _, is_roi = belongs_roi_indices(lat_cell[inds], lon_cell[inds], roi)
@@ -112,7 +124,7 @@ def main():
 #        tdiff_dens = np.append(tdiff_dens, (time_cell[inds][np.argmax(rank_cell[inds])]- time_cell[inds][np.argmax(flash_dens_cell[inds])]).total_seconds())
 #        tdiff_flash = np.append(tdiff_flash, (time_cell[inds][np.argmax(rank_cell[inds])]- time_cell[inds][np.argmax(nflashes_cell[inds])]).total_seconds())
 
-        
+
     return
 
 
@@ -124,264 +136,7 @@ def main():
     print(np.size(tdiff_flash[tdiff_flash == 0.]))
     print(np.size(tdiff_flash[tdiff_flash < 0.]))
 
-    # plot data
-    fname = basepath+'max_Euclid_flashes_density-rank'
-    plot_scatter_comp(
-        max_flash_dens, max_flash_dens_rank/10., [fname],
-        labelx='max flash density [flashes/Km2]', labely='rank',
-        titl='Rank when max Euclid CG flash density', axis=None, metadata=None, dpi=72)
 
-    print("----- plot to '%s'" % fname)
-
-    fname = basepath+'max_Euclid_flashes-rank'
-    plot_scatter_comp(
-        max_nflashes, max_nflashes_rank/10., [fname],
-        labelx='max flashes', labely='rank',
-        titl='Rank when max Euclid CG flashes', axis=None, metadata=None, dpi=72)
-
-    print("----- plot to '%s'" % fname)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    return
-
-    basepath = '/store/msrad/radar/trt/'
-
-    roi = {
-        'lon': [8.9000010, 9.2000000, 9.4999970, 9.4999970, 8.9000010],
-        'lat': [47.0000030, 47.0000030, 47.0000030, 47.5999930, 47.5999930]
-    }
-
-    # read EUCLID flashes file
-    fname = basepath+'cell_euclid_lightning.csv'
-    (traj_ID, time_cell, lon_cell, lat_cell, area_cell, rank_cell,
-     nflashes_cell, flash_dens_cell) = read_trt_cell_lightning(fname)
-
-    print('Cell steps: ', rank_cell.size)
-
-    # keep only time steps within LMA domain
-    inds, is_roi = belongs_roi_indices(lat_cell, lon_cell, roi)
-
-    traj_ID = traj_ID[inds]
-    time_cell = time_cell[inds]
-    rank_cell = rank_cell[inds]
-    nflashes_cell = nflashes_cell[inds]
-    flash_dens_cell = flash_dens_cell[inds]
-
-    print('Cell steps within LMA domain: ', rank_cell.size)
-
-
-    # read LMA particles column file
-    fname = basepath+'cell_LMA_flashes.csv'
-    (traj_ID_LMA, time_cell_LMA, lon_cell_LMA, lat_cell_LMA, area_cell_LMA, rank_cell_LMA,
-     nflashes_cell_LMA, flash_dens_cell_LMA) = read_trt_cell_lightning(fname)
-
-    print('Cell steps: ', rank_cell_LMA.size)
-
-    # keep only time steps within LMA domain
-    inds, is_roi = belongs_roi_indices(lat_cell_LMA, lon_cell_LMA, roi)
-
-    traj_ID_LMA = traj_ID_LMA[inds]
-    time_cell_LMA = time_cell_LMA[inds]
-    rank_cell_LMA = rank_cell_LMA[inds]
-    nflashes_cell_LMA = nflashes_cell_LMA[inds]
-    flash_dens_cell_LMA = flash_dens_cell_LMA[inds]
-
-    print('Cell steps within LMA domain: ', rank_cell_LMA.size)
-
-    # Get data from common TRT cells and time steps
-    flash_dens_common = np.asarray([])
-    nflashes_cell_common = np.asarray([])
-
-    flash_dens_LMA_common = np.ma.asarray([])
-    nflashes_LMA_common = np.ma.asarray([])
-
-    for i, time_cell_LMA_el in enumerate(time_cell_LMA):
-        ind = np.ma.where(np.logical_and(
-            time_cell == time_cell_LMA_el,
-            traj_ID == traj_ID_LMA[i]))[0]
-        if ind.size == 0:
-            continue
-        flash_dens_common = np.append(flash_dens_common, flash_dens_cell[ind])
-        nflashes_cell_common = np.append(nflashes_cell_common, nflashes_cell[ind])
-
-        flash_dens_LMA_common = np.append(flash_dens_LMA_common, flash_dens_cell_LMA[i])
-        nflashes_LMA_common = np.append(nflashes_LMA_common, nflashes_cell_LMA[i])
-
-
-    print('Common cell steps: ', flash_dens_common.size)
-
-    # plot data
-    fname = basepath+'LMA_domain_LMA_flashes-Euclid_flashes'
-    plot_scatter_comp(
-        nflashes_LMA_common, nflashes_cell_common, [fname],
-        labelx='LMA flashes', labely='Euclid CG flashes',
-        titl='LMA flashes vs Euclid CG flashes\nReduced LMA domain only', axis=None, metadata=None, dpi=72)
-
-    print("----- plot to '%s'" % fname)
-
-    return
-
-
-
-
-
-
-
-
-    # -------------------- LMA flashes ------------------------------------
-    # read file
-    fname = basepath+'cell_LMA_flashes.csv'
-    (traj_ID, time_cell, lon_cell, lat_cell, area_cell, rank_cell,
-     nflashes_cell, flash_dens_cell) = read_trt_cell_lightning(fname)
-
-    print('Cell steps: ', rank_cell.size)
-
-    # plot data
-    fname = basepath+'rank-LMA_flashes_density'
-    plot_scatter_comp(
-        rank_cell/10., flash_dens_cell, [fname],
-        labelx='rank', labely='flash density [flashes/km2]',
-        titl='Cell rank vs LMA flash density', axis=None, metadata=None, dpi=72)
-
-    print("----- plot to '%s'" % fname)
-
-    fname = basepath+'rank-LMA_flashes'
-    plot_scatter_comp(
-        rank_cell/10., nflashes_cell, [fname],
-        labelx='rank', labely='Flashes',
-        titl='Cell rank vs LMA flashes', axis=None, metadata=None, dpi=72)
-
-    print("----- plot to '%s'" % fname)
-
-    # keep only time steps within LMA domain
-    inds, is_roi = belongs_roi_indices(lat_cell, lon_cell, roi)
-
-    nflashes_cell = nflashes_cell[inds]
-    flash_dens_cell = flash_dens_cell[inds]
-    rank_cell = rank_cell[inds]
-
-    print('Cell steps: ', rank_cell.size)
-
-    # plot data
-    fname = basepath+'LMA_domain_rank-LMA_flashes_density'
-    plot_scatter_comp(
-        rank_cell/10., flash_dens_cell, [fname],
-        labelx='rank', labely='flash density [flashes/km2]',
-        titl='Cell rank vs LMA flash density\nReduced LMA domain only', axis=None, metadata=None, dpi=72)
-
-    print("----- plot to '%s'" % fname)
-
-    fname = basepath+'LMA_domain_rank-LMA_flashes'
-    plot_scatter_comp(
-        rank_cell/10., nflashes_cell, [fname],
-        labelx='rank', labely='Flashes',
-        titl='Cell rank vs LMA flashes\nReduced LMA domain only', axis=None, metadata=None, dpi=72)
-
-    print("----- plot to '%s'" % fname)
-
-
-    # -------------------------- LMA sources
-    # read file
-    fname = basepath+'cell_LMA_sources.csv'
-    (traj_ID, time_cell, lon_cell, lat_cell, area_cell, rank_cell,
-     nflashes_cell, flash_dens_cell) = read_trt_cell_lightning(fname)
-
-    print('Cell steps: ', rank_cell.size)
-
-    # plot data
-    fname = basepath+'rank-LMA_sources_density'
-    plot_scatter_comp(
-        rank_cell/10., flash_dens_cell, [fname],
-        labelx='rank', labely='sources density [sources/km2]',
-        titl='Cell rank vs LMA sources density', axis=None, metadata=None, dpi=72)
-
-    print("----- plot to '%s'" % fname)
-
-    fname = basepath+'rank-LMA_sources'
-    plot_scatter_comp(
-        rank_cell/10., nflashes_cell, [fname],
-        labelx='rank', labely='Sources',
-        titl='Cell rank vs LMA sources', axis=None, metadata=None, dpi=72)
-
-    print("----- plot to '%s'" % fname)
-
-    # keep only time steps within LMA domain
-    inds, is_roi = belongs_roi_indices(lat_cell, lon_cell, roi)
-
-    nflashes_cell = nflashes_cell[inds]
-    flash_dens_cell = flash_dens_cell[inds]
-    rank_cell = rank_cell[inds]
-
-    print('Cell steps: ', rank_cell.size)
-
-    # plot data
-    fname = basepath+'LMA_domain_rank-LMA_sources_density'
-    plot_scatter_comp(
-        rank_cell/10., flash_dens_cell, [fname],
-        labelx='rank', labely='sources density [sources/km2]',
-        titl='Cell rank vs LMA sources density\nReduced LMA domain only', axis=None, metadata=None, dpi=72)
-
-    print("----- plot to '%s'" % fname)
-
-    fname = basepath+'LMA_domain_rank-LMA_sources'
-    plot_scatter_comp(
-        rank_cell/10., nflashes_cell, [fname],
-        labelx='rank', labely='sources',
-        titl='Cell rank vs LMA sources\nReduced LMA domain only', axis=None, metadata=None, dpi=72)
-
-    print("----- plot to '%s'" % fname)
-
-
-    return
-
-
-
-
-
-
-    fname = basepath+'cell_scores.csv'
-    (traj_ID, time_flash_density_max, flash_density_max_rank,
-     flash_density_max_nflashes, flash_density_max_area, flash_density_max,
-     time_rank_max, rank_max) = read_trt_scores(fname)
-
-    traj_ID_unique = np.unique(traj_ID, return_index=False)
-    print('Number of TRT cells in analysis: '+str(traj_ID_unique.size))
-
-    very_weak = rank_max[rank_max < 12].size
-    developing = rank_max[np.logical_and(rank_max >= 12, rank_max < 15)].size
-    moderate = rank_max[np.logical_and(rank_max >= 15, rank_max < 25)].size
-    severe = rank_max[np.logical_and(rank_max >= 25, rank_max < 35)].size
-    very_severe = rank_max[rank_max >= 35].size
-
-    print('very_weak:', very_weak)
-    print('developing:', developing)
-    print('moderate:', moderate)
-    print('severe:', severe)
-    print('very_severe:', very_severe)
 
     return
 
@@ -605,6 +360,654 @@ def main():
 #
 #    traj_ID_sorted = traj_ID[np.argsort(flash_density_max)]
 #    print(traj_ID_sorted[::-1])
+
+
+def plot_rank_EUCLID_CG(basepath, fname):
+    (traj_ID, time_cell, lon_cell, lat_cell, area_cell, rank_cell,
+     nflashes_cell, flash_dens_cell) = read_trt_cell_lightning(basepath+fname)
+
+    print('Cell steps: ', rank_cell.size)
+
+    # plot data
+    fname = basepath+'rank-EUCLID_CG_number.png'
+    plot_scatter_comp(
+        rank_cell/10., nflashes_cell, [fname],
+        labelx='rank', labely='N Strokes',
+        titl='Cell rank vs EUCLID CG strokes', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+    fname = basepath+'rank-EUCLID_CG_density.png'
+    plot_scatter_comp(
+        rank_cell/10., flash_dens_cell, [fname],
+        labelx='rank', labely='Strokes density [strokes/km^2]',
+        titl='Cell rank vs EUCLID CG strokes density', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+
+def plot_rimed_column_LMA(basepath, fname_rimed, fname_LMA, roi):
+    # read rimed particles file
+    (traj_ID, time_cell, lon_cell, lat_cell, area_cell, rank_cell,
+     rm_hmin, rm_hmax) = read_trt_cell_lightning(basepath+fname_rimed)
+
+    print('Cell steps: ', rank_cell.size)
+
+    # keep only time steps within LMA domain
+    inds, is_roi = belongs_roi_indices(lat_cell, lon_cell, roi)
+
+    traj_ID = traj_ID[inds]
+    time_cell = time_cell[inds]
+    rank_cell = rank_cell[inds]
+    rm_hmin = rm_hmin[inds]
+    rm_hmax = rm_hmax[inds]
+
+    # put non-valid min and max to 0
+    rm_hmin = rm_hmin.filled(0.)
+    rm_hmax = rm_hmax.filled(0.)
+
+
+#    # keep only valid time steps
+#    valid = np.logical_not(np.logical_or(
+#        np.ma.getmaskarray(rm_hmin), np.ma.getmaskarray(rm_hmax)))
+#
+#    traj_ID = traj_ID[valid]
+#    time_cell = time_cell[valid]
+#    rank_cell = rank_cell[valid]
+#    rm_hmax = rm_hmax[valid]
+#    rm_hmin = rm_hmin[valid]
+
+    print('Cell steps within LMA domain: ', rank_cell.size)
+
+    # read LMA particles column file
+    (traj_ID_LMA, time_cell_LMA, lon_cell_LMA, lat_cell_LMA, area_cell_LMA, rank_cell_LMA,
+     nflashes_cell_LMA, flash_dens_cell_LMA) = read_trt_cell_lightning(
+        basepath+fname_LMA)
+
+    print('Cell steps: ', rank_cell_LMA.size)
+
+    # keep only time steps within LMA domain
+    inds, is_roi = belongs_roi_indices(lat_cell_LMA, lon_cell_LMA, roi)
+
+    traj_ID_LMA = traj_ID_LMA[inds]
+    time_cell_LMA = time_cell_LMA[inds]
+    rank_cell_LMA = rank_cell_LMA[inds]
+    nflashes_cell_LMA = nflashes_cell_LMA[inds]
+    flash_dens_cell_LMA = flash_dens_cell_LMA[inds]
+
+    print('Cell steps within LMA domain: ', rank_cell_LMA.size)
+
+    # Get data from common TRT cells and time steps
+    rm_hmin_common = np.asarray([])
+    rm_hmax_common = np.asarray([])
+
+    flash_dens_LMA_common = np.ma.asarray([])
+    nflashes_LMA_common = np.ma.asarray([])
+
+    for i, time_cell_LMA_el in enumerate(time_cell_LMA):
+        ind = np.ma.where(np.logical_and(
+            time_cell == time_cell_LMA_el,
+            traj_ID == traj_ID_LMA[i]))[0]
+        if ind.size == 0:
+            continue
+        rm_hmin_common = np.append(rm_hmin_common, rm_hmin[ind])
+        rm_hmax_common = np.append(rm_hmax_common, rm_hmax[ind])
+
+        flash_dens_LMA_common = np.append(flash_dens_LMA_common, flash_dens_cell_LMA[i])
+        nflashes_LMA_common = np.append(nflashes_LMA_common, nflashes_cell_LMA[i])
+
+
+    print('Common cell steps: ', rm_hmin_common.size)
+
+    # plot data
+    fname = basepath+'LMA_domain_rpc_min_height_vs_LMA_flashes.png'
+    plot_scatter_comp(
+        rm_hmin_common, nflashes_LMA_common, [fname],
+        labelx='RPC base height [m MSL]', labely='N flashes',
+        titl='RPC base height vs LMA flashes', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+    fname = basepath+'LMA_domain_rpc_min_height_vs_LMA_flashes_density.png'
+    plot_scatter_comp(
+        rm_hmin_common, flash_dens_LMA_common, [fname],
+        labelx='RPC base height [m MSL]', labely='Flash density [flashes/km^2]',
+        titl='RPC base height vs LMA flashes density', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+    # plot data
+    fname = basepath+'LMA_domain_rpc_thickness_vs_LMA_flashes.png'
+    plot_scatter_comp(
+        rm_hmax_common-rm_hmin_common, nflashes_LMA_common, [fname],
+        labelx='RPC length [m]', labely='N flashes',
+        titl='RPC length vs LMA flashes', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+    fname = basepath+'LMA_domain_rpc_thickness_vs_LMA_flashes_density.png'
+    plot_scatter_comp(
+        rm_hmax_common-rm_hmin_common, flash_dens_LMA_common, [fname],
+        labelx='RPC length [m]', labely='Flash density [flashes/km^2]',
+        titl='RPC length vs LMA flashes density', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+
+def plot_rimed_column_EUCLID(basepath, fname_rimed, fname_EUCLID, roi):
+    # read rimed particles file
+    (traj_ID, time_cell, lon_cell, lat_cell, area_cell, rank_cell,
+     rm_hmin, rm_hmax) = read_trt_cell_lightning(basepath+fname_rimed)
+
+    print('Cell steps: ', rank_cell.size)
+
+    # keep only time steps within EUCLID domain
+    inds, is_roi = belongs_roi_indices(lat_cell, lon_cell, roi)
+
+    traj_ID = traj_ID[inds]
+    time_cell = time_cell[inds]
+    rank_cell = rank_cell[inds]
+    rm_hmin = rm_hmin[inds]
+    rm_hmax = rm_hmax[inds]
+
+    # put non-valid min and max to 0
+    rm_hmin = rm_hmin.filled(0.)
+    rm_hmax = rm_hmax.filled(0.)
+
+
+#    # keep only valid time steps
+#    valid = np.logical_not(np.logical_or(
+#        np.ma.getmaskarray(rm_hmin), np.ma.getmaskarray(rm_hmax)))
+#
+#    traj_ID = traj_ID[valid]
+#    time_cell = time_cell[valid]
+#    rank_cell = rank_cell[valid]
+#    rm_hmax = rm_hmax[valid]
+#    rm_hmin = rm_hmin[valid]
+
+    print('Cell steps within LMA domain: ', rank_cell.size)
+
+    # read EUCLID particles column file
+    (traj_ID_EUCLID, time_cell_EUCLID, lon_cell_EUCLID, lat_cell_EUCLID, area_cell_EUCLID, rank_cell_EUCLID,
+     nflashes_cell_EUCLID, flash_dens_cell_EUCLID) = read_trt_cell_lightning(
+        basepath+fname_EUCLID)
+
+    print('Cell steps: ', rank_cell_EUCLID.size)
+
+    # keep only time steps within EUCLID domain
+    inds, is_roi = belongs_roi_indices(lat_cell_EUCLID, lon_cell_EUCLID, roi)
+
+    traj_ID_EUCLID = traj_ID_EUCLID[inds]
+    time_cell_EUCLID = time_cell_EUCLID[inds]
+    rank_cell_EUCLID = rank_cell_EUCLID[inds]
+    nflashes_cell_EUCLID = nflashes_cell_EUCLID[inds]
+    flash_dens_cell_EUCLID = flash_dens_cell_EUCLID[inds]
+
+    print('Cell steps within LMA domain: ', rank_cell_EUCLID.size)
+
+    # Get data from common TRT cells and time steps
+    rm_hmin_common = np.asarray([])
+    rm_hmax_common = np.asarray([])
+
+    flash_dens_EUCLID_common = np.ma.asarray([])
+    nflashes_EUCLID_common = np.ma.asarray([])
+
+    for i, time_cell_EUCLID_el in enumerate(time_cell_EUCLID):
+        ind = np.ma.where(np.logical_and(
+            time_cell == time_cell_EUCLID_el,
+            traj_ID == traj_ID_EUCLID[i]))[0]
+        if ind.size == 0:
+            continue
+        rm_hmin_common = np.append(rm_hmin_common, rm_hmin[ind])
+        rm_hmax_common = np.append(rm_hmax_common, rm_hmax[ind])
+
+        flash_dens_EUCLID_common = np.append(flash_dens_EUCLID_common, flash_dens_cell_EUCLID[i])
+        nflashes_EUCLID_common = np.append(nflashes_EUCLID_common, nflashes_cell_EUCLID[i])
+
+
+    print('Common cell steps: ', rm_hmin_common.size)
+
+    # plot data
+    fname = basepath+'LMA_domain_rpc_min_height_vs_EUCLID_flashes.png'
+    plot_scatter_comp(
+        rm_hmin_common, nflashes_EUCLID_common, [fname],
+        labelx='RPC base height [m MSL]', labely='N strokes',
+        titl='RPC base height vs EUCLID strokes', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+    fname = basepath+'LMA_domain_rpc_min_height_vs_EUCLID_flashes_density.png'
+    plot_scatter_comp(
+        rm_hmin_common, flash_dens_EUCLID_common, [fname],
+        labelx='RPC base height [m MSL]', labely='Stroke density [strokes/km^2]',
+        titl='RPC base height vs EUCLID stroke density', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+    # plot data
+    fname = basepath+'LMA_domain_rpc_thickness_vs_EUCLID_flashes.png'
+    plot_scatter_comp(
+        rm_hmax_common-rm_hmin_common, nflashes_EUCLID_common, [fname],
+        labelx='RPC length [m]', labely='N strokes',
+        titl='RPC length vs EUCLID strokes', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+    fname = basepath+'LMA_domain_rpc_thickness_vs_EUCLID_flashes_density.png'
+    plot_scatter_comp(
+        rm_hmax_common-rm_hmin_common, flash_dens_EUCLID_common, [fname],
+        labelx='RPC length [m]', labely='Strokes density [strokes/km^2]',
+        titl='RPC length vs EUCLID strokes density', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+
+def plot_rank_LMA_flashes(basepath, fname, roi=None):
+    (traj_ID, time_cell, lon_cell, lat_cell, area_cell, rank_cell,
+     nflashes_cell, flash_dens_cell) = read_trt_cell_lightning(basepath+fname)
+
+    print('Cell steps: ', rank_cell.size)
+
+    # plot data
+    fname = basepath+'rank-LMA_flashes_density'
+    plot_scatter_comp(
+        rank_cell/10., flash_dens_cell, [fname],
+        labelx='rank', labely='flash density [flashes/km2]',
+        titl='Cell rank vs LMA flash density', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+    fname = basepath+'rank-LMA_flashes'
+    plot_scatter_comp(
+        rank_cell/10., nflashes_cell, [fname],
+        labelx='rank', labely='Flashes',
+        titl='Cell rank vs LMA flashes', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+    if roi is None:
+        return
+
+    # keep only time steps within LMA domain
+    inds, is_roi = belongs_roi_indices(lat_cell, lon_cell, roi)
+
+    nflashes_cell = nflashes_cell[inds]
+    flash_dens_cell = flash_dens_cell[inds]
+    rank_cell = rank_cell[inds]
+
+    print('Cell steps: ', rank_cell.size)
+
+    # plot data
+    fname = basepath+'LMA_domain_rank-LMA_flashes_density'
+    plot_scatter_comp(
+        rank_cell/10., flash_dens_cell, [fname],
+        labelx='rank', labely='flash density [flashes/km2]',
+        titl='Cell rank vs LMA flash density\nReduced LMA domain only', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+    fname = basepath+'LMA_domain_rank-LMA_flashes'
+    plot_scatter_comp(
+        rank_cell/10., nflashes_cell, [fname],
+        labelx='rank', labely='Flashes',
+        titl='Cell rank vs LMA flashes\nReduced LMA domain only', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+
+def plot_rank_LMA_sources(basepath, fname, roi=None):
+    (traj_ID, time_cell, lon_cell, lat_cell, area_cell, rank_cell,
+     nflashes_cell, flash_dens_cell) = read_trt_cell_lightning(basepath+fname)
+
+    print('Cell steps: ', rank_cell.size)
+
+    # plot data
+    fname = basepath+'rank-LMA_sources_density'
+    plot_scatter_comp(
+        rank_cell/10., flash_dens_cell, [fname],
+        labelx='rank', labely='sources density [sources/km2]',
+        titl='Cell rank vs LMA sources density', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+    fname = basepath+'rank-LMA_sources'
+    plot_scatter_comp(
+        rank_cell/10., nflashes_cell, [fname],
+        labelx='rank', labely='Sources',
+        titl='Cell rank vs LMA sources', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+    if roi is None:
+        return
+
+    # keep only time steps within LMA domain
+    inds, is_roi = belongs_roi_indices(lat_cell, lon_cell, roi)
+
+    nflashes_cell = nflashes_cell[inds]
+    flash_dens_cell = flash_dens_cell[inds]
+    rank_cell = rank_cell[inds]
+
+    print('Cell steps: ', rank_cell.size)
+
+    # plot data
+    fname = basepath+'LMA_domain_rank-LMA_sources_density'
+    plot_scatter_comp(
+        rank_cell/10., flash_dens_cell, [fname],
+        labelx='rank', labely='sources density [sources/km2]',
+        titl='Cell rank vs LMA sources density\nReduced LMA domain only', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+    fname = basepath+'LMA_domain_rank-LMA_sources'
+    plot_scatter_comp(
+        rank_cell/10., nflashes_cell, [fname],
+        labelx='rank', labely='sources',
+        titl='Cell rank vs LMA sources\nReduced LMA domain only', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+
+def read_general_scores(basepath, fname):
+    (traj_ID, time_flash_density_max, flash_density_max_rank,
+     flash_density_max_nflashes, flash_density_max_area,
+     flash_density_max, time_rank_max, rank_max) = read_trt_scores(basepath+fname)
+
+    print('Total number of cells: '+str(traj_ID.size))
+    print('weak: '+str(rank_max[rank_max<12].size))
+    print('developing: '+str(rank_max[np.logical_and(rank_max >=12, rank_max <15)].size))
+    print('moderate: '+str(rank_max[np.logical_and(rank_max >=15, rank_max <25)].size))
+    print('severe: '+str(rank_max[np.logical_and(rank_max >=25, rank_max <35)].size))
+    print('very severe: '+str(rank_max[rank_max>=35].size))
+
+    print('cells without EUCLID flashes '+str(rank_max[flash_density_max_nflashes == 0].size))
+    print('Max rank without EUCLID flashes '+str(np.max(rank_max[flash_density_max_nflashes == 0])))
+
+    # plot data
+    fname = basepath+'max_Euclid_flashes_density-rank'
+    plot_scatter_comp(
+        flash_density_max, flash_density_max_rank/10., [fname],
+        labelx='max strokes density [strokes/km^2]', labely='rank',
+        titl='Rank when max Euclid CG strokes density', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+    fname = basepath+'max_Euclid_flashes-rank'
+    plot_scatter_comp(
+        flash_density_max_nflashes, flash_density_max_rank/10., [fname],
+        labelx='max N strokes', labely='rank',
+        titl='Rank when max Euclid CG strokes', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+
+def plot_time_diff_max_EUCLID_density_max_rank(basepath, fname):
+    (traj_ID, time_flash_density_max, flash_density_max_rank,
+     flash_density_max_nflashes, flash_density_max_area,
+     flash_density_max, time_rank_max, rank_max) = read_trt_scores(basepath+fname)
+
+    #filter to data with flashes
+    time_rank_max = time_rank_max[flash_density_max > 0.]
+    time_flash_density_max = time_flash_density_max[flash_density_max > 0.]
+    flash_density_max = flash_density_max[flash_density_max > 0.]
+
+    tdiff = np.empty(flash_density_max.size)
+    for i, tmax_rank in enumerate(time_rank_max):
+        tdiff[i] = (tmax_rank-time_flash_density_max[i]).total_seconds()
+
+    print('Max rank after max stroke density', np.size(tdiff[tdiff > 0.]))
+    print('Max rank together max stroke density', np.size(tdiff[tdiff == 0.]))
+    print('Max rank before max stroke density', np.size(tdiff[tdiff < 0.]))
+
+    fname = basepath+'max_EUCLID_flashes_density-time_diff_rank_max.png'
+    plot_scatter_comp(
+        flash_density_max, tdiff, [fname],
+        labelx='max stroke density [strokes/km^2]', labely='Time diff [s]',
+        titl='Max EUCLID CG stroke density vs\nTime max rank - Time max stroke density',
+        axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+
+def plot_time_diff_max_EUCLID_strokes_max_rank(basepath, fname):
+    # read EUCLID flashes file
+    (traj_ID, time_cell, lon_cell, lat_cell, area_cell, rank_cell,
+     nflashes_cell, flash_dens_cell) = read_trt_cell_lightning(basepath+fname)
+
+    traj_ID_uniques = np.unique(traj_ID, return_index=False)
+
+    time_rank_max = np.array([])
+    time_nflashes_max = np.array([])
+    max_nflashes = np.array([])
+
+    tdiff = np.array([])
+    for traj_ID_unique in traj_ID_uniques:
+        inds = np.where(traj_ID == traj_ID_unique)[0]
+
+        time_aux = time_cell[inds]
+        nflashes_aux = nflashes_cell[inds]
+        rank_aux = rank_cell[inds]
+
+        if nflashes_aux.max() == 0:
+            continue
+
+        time_rank_max_aux = time_aux[np.argmax(rank_aux)]
+        time_nflashes_max_aux = time_aux[np.argmax(nflashes_aux)]
+
+        time_rank_max = np.append(time_rank_max, time_rank_max_aux)
+        time_nflashes_max = np.append(time_nflashes_max, time_nflashes_max_aux)
+        max_nflashes = np.append(max_nflashes, nflashes_aux.max())
+        tdiff = np.append(tdiff, (time_rank_max_aux-time_nflashes_max_aux).total_seconds())
+
+    print('Max rank after max stroke number', np.size(tdiff[tdiff > 0.]))
+    print('Max rank together max stroke number', np.size(tdiff[tdiff == 0.]))
+    print('Max rank before max stroke number', np.size(tdiff[tdiff < 0.]))
+
+    fname = basepath+'max_EUCLID_flashes-time_diff_rank_max.png'
+    plot_scatter_comp(
+        max_nflashes, tdiff, [fname],
+        labelx='max number of strokes', labely='Time diff [s]',
+        titl='Max EUCLID CG stroke number vs\nTime max rank - Time max stroke number',
+        axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+
+def plot_time_diff_max_LMA_max_rank(basepath, fname, roi=None):
+    # read LMA flashes file
+    (traj_ID, time_cell, lon_cell, lat_cell, area_cell, rank_cell,
+     nflashes_cell, flash_dens_cell) = read_trt_cell_lightning(basepath+fname)
+
+    traj_ID_uniques = np.unique(traj_ID, return_index=False)
+
+    time_rank_max = np.array([])
+    time_nflashes_max = np.array([])
+    time_density_max = np.array([])
+
+    max_nflashes = np.array([])
+    max_density = np.array([])
+
+    tdiff_flashes = np.array([])
+    tdiff_density = np.array([])
+    for traj_ID_unique in traj_ID_uniques:
+        inds = np.where(traj_ID == traj_ID_unique)[0]
+
+        time_aux = time_cell[inds]
+        nflashes_aux = nflashes_cell[inds]
+        density_aux = flash_dens_cell[inds]
+        rank_aux = rank_cell[inds]
+
+        if nflashes_aux.max() == 0:
+            continue
+
+        if roi is not None:
+            lat_cell_aux = lat_cell[inds]
+            lon_cell_aux = lon_cell[inds]
+            _, is_roi = belongs_roi_indices(lat_cell_aux, lon_cell_aux, roi)
+
+            if is_roi in ('None', 'Some'):
+                continue
+
+        time_rank_max_aux = time_aux[np.argmax(rank_aux)]
+        time_nflashes_max_aux = time_aux[np.argmax(nflashes_aux)]
+        time_density_max_aux = time_aux[np.argmax(density_aux)]
+
+        time_rank_max = np.append(time_rank_max, time_rank_max_aux)
+        time_nflashes_max = np.append(time_nflashes_max, time_nflashes_max_aux)
+        time_density_max = np.append(time_density_max, time_density_max_aux)
+
+        max_nflashes = np.append(max_nflashes, nflashes_aux.max())
+        max_density = np.append(max_density, density_aux.max())
+
+        tdiff_flashes = np.append(tdiff_flashes, (time_rank_max_aux-time_nflashes_max_aux).total_seconds())
+        tdiff_density = np.append(tdiff_density, (time_rank_max_aux-time_density_max_aux).total_seconds())
+
+    print('Max rank after max stroke number', np.size(tdiff_flashes[tdiff_flashes > 0.]))
+    print('Max rank together max stroke number', np.size(tdiff_flashes[tdiff_flashes == 0.]))
+    print('Max rank before max stroke number', np.size(tdiff_flashes[tdiff_flashes < 0.]))
+
+    print('Max rank after max stroke density', np.size(tdiff_density[tdiff_density > 0.]))
+    print('Max rank together max stroke density', np.size(tdiff_density[tdiff_density == 0.]))
+    print('Max rank before max stroke density', np.size(tdiff_density[tdiff_density < 0.]))
+
+    if roi is not None:
+        fname = basepath+'LMA_domain_max_LMA_flashes-time_diff_rank_max.png'
+    else:
+        fname = basepath+'max_LMA_flashes-time_diff_rank_max.png'
+    plot_scatter_comp(
+        max_nflashes, tdiff_flashes, [fname],
+        labelx='max number of flashes', labely='Time diff [s]',
+        titl='Max LMA flashes vs\nTime max rank - Time max flashes',
+        axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+    if roi is not None:
+        fname = basepath+'LMA_domain_max_LMA_flashes_density-time_diff_rank_max.png'
+    else:
+        fname = basepath+'max_LMA_flashes_density-time_diff_rank_max.png'
+    plot_scatter_comp(
+        max_density, tdiff_density, [fname],
+        labelx='max flash density', labely='Time diff [s]',
+        titl='Max LMA flashes vs\nTime max rank - Time max flash density',
+        axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+
+def plot_max_LMA_rank(basepath, fname):
+    # read LMA flashes file
+    (traj_ID, time_cell, lon_cell, lat_cell, area_cell, rank_cell,
+     nflashes_cell, flash_dens_cell) = read_trt_cell_lightning(basepath+fname)
+
+    traj_ID_uniques = np.unique(traj_ID, return_index=False)
+
+    max_nflashes = np.array([])
+    max_density = np.array([])
+    max_nflashes_rank = np.array([])
+    max_density_rank = np.array([])
+
+    tdiff_flashes = np.array([])
+    tdiff_density = np.array([])
+    for traj_ID_unique in traj_ID_uniques:
+        inds = np.where(traj_ID == traj_ID_unique)[0]
+
+        nflashes_aux = nflashes_cell[inds]
+        density_aux = flash_dens_cell[inds]
+        rank_aux = rank_cell[inds]
+
+        max_nflashes = np.append(max_nflashes, nflashes_aux.max())
+        max_nflashes_rank = np.append(max_nflashes_rank, rank_aux[np.argmax(nflashes_aux)])
+
+        max_density = np.append(max_density, density_aux.max())
+        max_density_rank = np.append(max_density_rank, rank_aux[np.argmax(density_aux)])
+
+    fname = basepath+'max_LMA_flashes-rank.png'
+    plot_scatter_comp(
+        max_nflashes, max_nflashes_rank/10., [fname],
+        labelx='max number of flashes', labely='rank',
+        titl='Rank when max LMA flashes reached',
+        axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+    fname = basepath+'max_LMA_flashes_density-rank.png'
+    plot_scatter_comp(
+        max_density, max_density_rank/10., [fname],
+        labelx='max flash density', labely='rank',
+        titl='Rank when max LMA flashes density reached',
+        axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+
+def plot_LMA_EUCLID(basepath, fname_LMA, fname_EUCLID, roi):
+    # read EUCLID flashes file
+    (traj_ID, time_cell, lon_cell, lat_cell, area_cell, rank_cell,
+     nflashes_cell, flash_dens_cell) = read_trt_cell_lightning(basepath+fname_EUCLID)
+
+    print('Cell steps: ', rank_cell.size)
+
+    # keep only time steps within LMA domain
+    inds, is_roi = belongs_roi_indices(lat_cell, lon_cell, roi)
+
+    traj_ID = traj_ID[inds]
+    time_cell = time_cell[inds]
+    rank_cell = rank_cell[inds]
+    nflashes_cell = nflashes_cell[inds]
+    flash_dens_cell = flash_dens_cell[inds]
+
+    print('Cell steps within LMA domain: ', rank_cell.size)
+
+
+    # read LMA particles column file
+    (traj_ID_LMA, time_cell_LMA, lon_cell_LMA, lat_cell_LMA, area_cell_LMA, rank_cell_LMA,
+     nflashes_cell_LMA, flash_dens_cell_LMA) = read_trt_cell_lightning(basepath+fname_LMA)
+
+    print('Cell steps: ', rank_cell_LMA.size)
+
+    # keep only time steps within LMA domain
+    inds, is_roi = belongs_roi_indices(lat_cell_LMA, lon_cell_LMA, roi)
+
+    traj_ID_LMA = traj_ID_LMA[inds]
+    time_cell_LMA = time_cell_LMA[inds]
+    rank_cell_LMA = rank_cell_LMA[inds]
+    nflashes_cell_LMA = nflashes_cell_LMA[inds]
+    flash_dens_cell_LMA = flash_dens_cell_LMA[inds]
+
+    print('Cell steps within LMA domain: ', rank_cell_LMA.size)
+
+    # Get data from common TRT cells and time steps
+    flash_dens_common = np.asarray([])
+    nflashes_cell_common = np.asarray([])
+
+    flash_dens_LMA_common = np.ma.asarray([])
+    nflashes_LMA_common = np.ma.asarray([])
+
+    for i, time_cell_LMA_el in enumerate(time_cell_LMA):
+        ind = np.ma.where(np.logical_and(
+            time_cell == time_cell_LMA_el,
+            traj_ID == traj_ID_LMA[i]))[0]
+        if ind.size == 0:
+            continue
+        flash_dens_common = np.append(flash_dens_common, flash_dens_cell[ind])
+        nflashes_cell_common = np.append(nflashes_cell_common, nflashes_cell[ind])
+
+        flash_dens_LMA_common = np.append(flash_dens_LMA_common, flash_dens_cell_LMA[i])
+        nflashes_LMA_common = np.append(nflashes_LMA_common, nflashes_cell_LMA[i])
+
+
+    print('Common cell steps: ', flash_dens_common.size)
+
+    # plot data
+    fname = basepath+'LMA_domain_LMA_flashes-Euclid_flashes'
+    plot_scatter_comp(
+        nflashes_LMA_common, nflashes_cell_common, [fname],
+        labelx='LMA flashes', labely='Euclid CG flashes',
+        titl='LMA flashes vs Euclid CG flashes\nReduced LMA domain only', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
 
 def _print_end_msg(text):
     """
