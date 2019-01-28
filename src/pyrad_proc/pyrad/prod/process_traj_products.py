@@ -13,6 +13,7 @@ Functions for obtaining Pyrad products from the datasets
 
 from ..io.io_aux import get_save_dir, make_filename
 from ..io.timeseries import TimeSeries
+from ..graph.plots_vol import plot_pos
 
 
 def generate_traj_product(traj, prdcfg):
@@ -121,6 +122,40 @@ def generate_traj_product(traj, prdcfg):
         ts.write(savedir + fname[0])
 
         return None
+
+    elif prdcfg['type'] == 'TRAJ_MAP': #Trajectory on a map
+    
+        timeinfo = traj.time_vector[0]
+
+        savedir = get_save_dir(prdcfg['basepath'], prdcfg['procname'],
+                               dssavedir, prdcfg['prdname'],
+                               timeinfo=timeinfo)
+
+        
+        fname = make_filename('ts', prdcfg['dstype'], 'TRAJ',
+                                  prdcfg['imgformat'],
+                                  prdcfginfo="MAP", timeinfo=timeinfo,
+                                  timeformat='%Y%m%d%H%M%S',
+                                  runinfo=prdcfg['runinfo'])
+
+        title = "Trajectory Starting at  %s" % \
+                traj.time_vector[0].strftime("%Y-%m-%d")
+
+        fname_list=fname
+        for i,fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        # Get traj
+        lat=traj.wgs84_lat_deg
+        lon=traj.wgs84_lon_deg
+        alt=traj.wgs84_alt_m
+
+        fig=plot_pos(
+            lat, lon,
+            alt,
+            fname_list,cb_label='Altitude [m]',
+            titl=title,save_fig=True)
+
 
     else:
         raise Exception("ERROR: Unsupported product type: '%s' of dataset '%s'"
