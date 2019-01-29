@@ -16,6 +16,9 @@ RadarRes STRARR 1
 	H
 
 # Names of the radar scans in the specified sector
+# ScanList STRARR 1
+# 	  dBZ/SAVEVOL_dBZ/*.h5
+
 ScanList STRARR 20
 	  001  # masterscan: first scan of a volume
 	  002
@@ -102,4 +105,3 @@ rhiImageConfig STRUCT 7
    ymin       FLOAT   0.0   # Min distance on vertical axis [km]
    ymax       FLOAT  12.0   # Max distance on vertical axis [km]
    dpi        INT    300     # dots per inch (72 web quality, 300 print quality)
-   

@@ -336,12 +336,12 @@ def get_datatype_odim(datatype):
     elif datatype == 'dBZv':
         datatype_odim = 'DBZV'
         field_name = 'reflectivity_vv'
-    elif datatype == 'dBZc':
-        datatype_odim = 'DBZH'
-        field_name = 'corrected_reflectivity'
-    elif datatype == 'dBZvc':
-        datatype_odim = 'DBZV'
-        field_name = 'corrected_reflectivity_vv'
+#    elif datatype == 'dBZc':
+#        datatype_odim = 'DBZH'
+#        field_name = 'corrected_reflectivity'
+#    elif datatype == 'dBZvc':
+#        datatype_odim = 'DBZV'
+#        field_name = 'corrected_reflectivity_vv'
     elif datatype == 'ZDR':
         datatype_odim = 'ZDR'
         field_name = 'differential_reflectivity'
@@ -815,6 +815,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
                         fpath_strf)
                 datapath = (cfg['datapath'][ind_rad] + daydir+'/')
                 dayfilelist = glob.glob(datapath+'*'+scan)
+                print(datapath+'*'+scan)
             else:
                 dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%y%j')
                 basename = ('M'+cfg['RadarRes'][ind_rad] +
@@ -837,7 +838,11 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
                 continue
             for filename in dayfilelist:
                 t_filelist.append(filename)
-        elif datagroup == 'CFRADIAL':
+        elif datagroup in ('CFRADIAL', 'ODIMPYRAD'):
+            termination = '.nc'
+            if datagroup == 'ODIMPYRAD':
+                termination = '.h5'
+
             daydir = (
                 starttime+datetime.timedelta(days=i)).strftime('%Y-%m-%d')
             dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%Y%m%d')
@@ -847,7 +852,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
             if not os.path.isdir(datapath):
                 warn("WARNING: Unknown datapath '%s'" % datapath)
                 continue
-            dayfilelist = glob.glob(datapath+dayinfo+'*'+datatype+'.nc')
+            dayfilelist = glob.glob(datapath+dayinfo+'*'+datatype+termination)
             for filename in dayfilelist:
                 t_filelist.append(filename)
         elif datagroup == 'MXPOL':
@@ -1029,7 +1034,7 @@ def get_datatype_fields(datadescriptor):
             product = None
         else:
             datagroup = descrfields[1]
-            if datagroup == 'CFRADIAL':
+            if datagroup in ('CFRADIAL', 'ODIMPYRAD'):
                 descrfields2 = descrfields[2].split(',')
                 datatype = descrfields2[0]
                 dataset = descrfields2[1]
@@ -1052,7 +1057,7 @@ def get_datatype_fields(datadescriptor):
     else:
         radarnr = 'RADAR001'
         datagroup = descrfields[0]
-        if datagroup == 'CFRADIAL':
+        if datagroup in ('CFRADIAL', 'ODIMPYRAD'):
             descrfields2 = descrfields[1].split(',')
             datatype = descrfields2[0]
             dataset = descrfields2[1]
@@ -1375,7 +1380,7 @@ def _get_datetime(fname, datagroup, ftime_format=None):
 
     """
     bfile = os.path.basename(fname)
-    if datagroup in ('RAINBOW', 'CFRADIAL'):
+    if datagroup in ('RAINBOW', 'CFRADIAL', 'ODIMPYRAD'):
         datetimestr = bfile[0:14]
         fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d%H%M%S')
     elif datagroup == 'RAD4ALP':

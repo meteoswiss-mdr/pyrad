@@ -95,7 +95,7 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'PSEUDOPPI_IMAGE':
+    if prdcfg['type'] == 'PSEUDOPPI_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -228,7 +228,7 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'PSEUDOPPI_CONTOUR_OVERPLOT':
+    if prdcfg['type'] == 'PSEUDOPPI_CONTOUR_OVERPLOT':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -322,7 +322,7 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'PSEUDOPPI_CONTOUR':
+    if prdcfg['type'] == 'PSEUDOPPI_CONTOUR':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -364,7 +364,7 @@ def generate_vol_products(dataset, prdcfg):
 
             return None
 
-    elif prdcfg['type'] == 'RHI_IMAGE':
+    if prdcfg['type'] == 'RHI_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -400,7 +400,7 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'PSEUDORHI_IMAGE':
+    if prdcfg['type'] == 'PSEUDORHI_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -443,7 +443,7 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfg['type'])
             return None
 
-    elif prdcfg['type'] == 'RHI_CONTOUR_OVERPLOT':
+    if prdcfg['type'] == 'RHI_CONTOUR_OVERPLOT':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -495,7 +495,7 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'PSEUDORHI_CONTOUR_OVERPLOT':
+    if prdcfg['type'] == 'PSEUDORHI_CONTOUR_OVERPLOT':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -554,7 +554,7 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfg['type'])
             return None
 
-    elif prdcfg['type'] == 'RHI_CONTOUR':
+    if prdcfg['type'] == 'RHI_CONTOUR':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -589,7 +589,7 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'PSEUDORHI_CONTOUR':
+    if prdcfg['type'] == 'PSEUDORHI_CONTOUR':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -631,7 +631,7 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfg['type'])
             return None
 
-    elif prdcfg['type'] == 'RHI_PROFILE':
+    if prdcfg['type'] == 'RHI_PROFILE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -779,7 +779,7 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname
 
-    elif prdcfg['type'] == 'PROFILE_STATS':
+    if prdcfg['type'] == 'PROFILE_STATS':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -907,7 +907,7 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname
 
-    elif prdcfg['type'] == 'WIND_PROFILE':
+    if prdcfg['type'] == 'WIND_PROFILE':
         # user defined parameters
         heightResolution = prdcfg.get('heightResolution', 100.)
         hmin_user = prdcfg.get('heightMin', None)
@@ -1232,7 +1232,7 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname
 
-    elif prdcfg['type'] == 'PSEUDOPPI_MAP':
+    if prdcfg['type'] == 'PSEUDOPPI_MAP':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -1271,7 +1271,7 @@ def generate_vol_products(dataset, prdcfg):
 
             return None
 
-    elif prdcfg['type'] == 'CAPPI_IMAGE':
+    if prdcfg['type'] == 'CAPPI_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -1300,7 +1300,7 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'PLOT_ALONG_COORD':
+    if prdcfg['type'] == 'PLOT_ALONG_COORD':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -1568,7 +1568,7 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'BSCOPE_IMAGE':
+    if prdcfg['type'] == 'BSCOPE_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -1601,7 +1601,7 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'TIME_RANGE':
+    if prdcfg['type'] == 'TIME_RANGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -1634,7 +1634,7 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'HISTOGRAM':
+    if prdcfg['type'] == 'HISTOGRAM':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -1691,7 +1691,7 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'QUANTILES':
+    if prdcfg['type'] == 'QUANTILES':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -1761,7 +1761,7 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'FIELD_COVERAGE':
+    if prdcfg['type'] == 'FIELD_COVERAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -1921,7 +1921,7 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname
 
-    elif prdcfg['type'] == 'CDF':
+    if prdcfg['type'] == 'CDF':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -2106,7 +2106,7 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname
 
-    elif prdcfg['type'] == 'SAVEVOL':
+    if prdcfg['type'] == 'SAVEVOL':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -2114,6 +2114,8 @@ def generate_vol_products(dataset, prdcfg):
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
             return None
+
+        file_type = prdcfg.get('file_type', 'nc')
 
         new_dataset = deepcopy(dataset['radar_out'])
         new_dataset.fields = dict()
@@ -2125,33 +2127,50 @@ def generate_vol_products(dataset, prdcfg):
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname = make_filename(
-            'savevol', prdcfg['dstype'], prdcfg['voltype'], ['nc'],
+            'savevol', prdcfg['dstype'], prdcfg['voltype'], [file_type],
             timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])[0]
 
         fname = savedir+fname
 
-        pyart.io.cfradial.write_cfradial(fname, new_dataset)
+        if file_type == 'nc':
+            pyart.io.cfradial.write_cfradial(fname, new_dataset)
+        elif file_type == 'h5':
+            pyart.aux_io.write_odim_h5(fname, new_dataset)
+        else:
+            warn('Data could not be saved. ' +
+                 'Unknown saving file type '+file_type)
+            return None
+
         print('saved file: '+fname)
 
         return fname
 
-    elif prdcfg['type'] == 'SAVEALL':
+    if prdcfg['type'] == 'SAVEALL':
+        file_type = prdcfg.get('file_type', 'nc')
+
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname = make_filename(
-            'savevol', prdcfg['dstype'], 'all_fields', ['nc'],
+            'savevol', prdcfg['dstype'], 'all_fields', [file_type],
             timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])[0]
 
         fname = savedir+fname
 
-        pyart.io.cfradial.write_cfradial(fname, dataset['radar_out'])
+        if file_type == 'nc':
+            pyart.io.cfradial.write_cfradial(fname, dataset['radar_out'])
+        elif file_type == 'h5':
+            pyart.aux_io.write_odim_h5(fname, dataset['radar_out'])
+        else:
+            warn('Data could not be saved. ' +
+                 'Unknown saving file type '+file_type)
+
         print('saved file: '+fname)
 
         return fname
 
-    elif prdcfg['type'] == 'SAVESTATE':
+    if prdcfg['type'] == 'SAVESTATE':
         if prdcfg['lastStateFile'] is None:
             warn('Unable to save last state file. File name not specified')
             return None
@@ -2174,6 +2193,5 @@ def generate_vol_products(dataset, prdcfg):
 
         return prdcfg['lastStateFile']
 
-    else:
-        warn(' Unsupported product type: ' + prdcfg['type'])
-        return None
+    warn(' Unsupported product type: ' + prdcfg['type'])
+    return None
