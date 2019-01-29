@@ -30,6 +30,8 @@ Auxiliary functions for reading/writing files
     find_hzt_file
     find_rad4alpcosmo_file
     _get_datetime
+    find_date_in_file_name
+
 
 """
 
@@ -814,8 +816,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
                     starttime+datetime.timedelta(days=i)).strftime(
                         fpath_strf)
                 datapath = (cfg['datapath'][ind_rad] + daydir+'/')
-                dayfilelist = glob.glob(datapath+'*'+scan)
-                print(datapath+'*'+scan)
+                dayfilelist = glob.glob(datapath+'*'+scan+'*.h5')
             else:
                 dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%y%j')
                 basename = ('M'+cfg['RadarRes'][ind_rad] +
@@ -885,8 +886,9 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
     for filename in t_filelist:
         filenamestr = str(filename)
         fdatetime = get_datetime(filenamestr, datadescriptor)
-        if (fdatetime >= starttime) and (fdatetime <= endtime):
-            filelist.append(filenamestr)
+        if fdatetime is not None:
+            if (fdatetime >= starttime) and (fdatetime <= endtime):
+                filelist.append(filenamestr)
 
     return sorted(filelist)
 
@@ -1392,24 +1394,53 @@ def _get_datetime(fname, datagroup, ftime_format=None):
             datetimestr = bfile[3:12]
             fdatetime = datetime.datetime.strptime(datetimestr, '%y%j%H%M')
         else:
-            fdate_strf = ftime_format[ftime_format.find("F")+2:-1]
-            today = datetime.datetime.now()
-            len_datestr = len(today.strftime(fdate_strf))
-            count = 0
-            while True:
-                try:
-                    fdatetime = datetime.datetime.strptime(
-                        os.path.basename(bfile)[count:count+len_datestr], fdate_strf)
-                except ValueError:
-                    count = count + 1
-                else:
-                    # No error, stop the loop
-                    break
+            return find_date_in_file_name(
+                bfile, date_format=ftime_format[ftime_format.find("F")+2:-1])
     elif datagroup == 'MXPOL':
         datetimestr = re.findall(r"([0-9]{8}-[0-9]{6})", bfile)[0]
         fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d-%H%M%S')
     else:
         warn('unknown data group')
         return None
+
+    return fdatetime
+
+
+def find_date_in_file_name(filename, date_format='%Y%m%d%H%M%S'):
+    """
+    Find a date with date format defined in date_format in a file name.
+    If no date is found returns None
+
+    Parameters
+    ----------
+    filename : str
+        file name
+    date_format : str
+        The time format
+
+    Returns
+    -------
+    fdatetime : datetime object
+        date and time in file name
+
+    """
+    today = datetime.datetime.now()
+    len_datestr = len(today.strftime(date_format))
+    count = 0
+    bfile = os.path.basename(filename)
+    while True:
+        try:
+            fdatetime = datetime.datetime.strptime(
+                bfile[count:count+len_datestr], date_format)
+        except ValueError:
+            count = count + 1
+            if count+len_datestr >= len(bfile):
+                warn('Unable to find date from string name. ' +
+                     'date format '+date_format+'. File name ' +
+                     bfile)
+                return None
+        else:
+            # No error, stop the loop
+            break
 
     return fdatetime

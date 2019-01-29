@@ -44,13 +44,12 @@ except Exception:
     _WRADLIB_AVAILABLE = False
 
 import pyart
-from pyart.aux_io.odim_h5 import read_odim_h5 as read_odim
 
 from .read_data_other import read_status, read_rad4alp_cosmo, read_rad4alp_vis
 from .read_data_mxpol import pyrad_MXPOL, pyrad_MCH
 
 from .io_aux import get_datatype_metranet, get_fieldname_pyart, get_file_list
-from .io_aux import get_datatype_odim
+from .io_aux import get_datatype_odim, find_date_in_file_name
 from .io_aux import get_datatype_fields, get_datetime, map_hydro, map_Doppler
 from .io_aux import find_cosmo_file, find_rad4alpcosmo_file
 
@@ -162,8 +161,6 @@ def get_data(voltime, datatypesdescr, cfg):
         radar = merge_scans_odim(
             cfg['datapath'][ind_rad], cfg['ScanList'][ind_rad], radar_name, radar_res,
             voltime, datatype_odim, dataset_odim, cfg, ind_rad=ind_rad)
-
-        print(radar.fields)
 
     elif ndatatypes_mxpol > 0:
         radar = merge_scans_mxpol(
@@ -581,9 +578,15 @@ def merge_scans_odim(basepath, scan_list, radar_name, radar_res, voltime,
             datapath = basepath+dayinfo+'/'+basename+'/'
     elif cfg['path_convention'] == 'ODIM':
         fpath_strf = dataset_list[0][dataset_list[0].find("D")+2:dataset_list[0].find("F")-2]
-        # fdate_strf = dataset_list[0][dataset_list[0].find("F")+2:-1]
+        fdate_strf = dataset_list[0][dataset_list[0].find("F")+2:-1]
         datapath = (basepath+voltime.strftime(fpath_strf)+'/')
-        filename = glob.glob(datapath+'*'+scan_list[0]+'*')
+        filenames = glob.glob(datapath+'*'+scan_list[0]+'*')
+        filename = []
+        for filename_aux in filenames:
+            fdatetime = find_date_in_file_name(
+                filename_aux, date_format=fdate_strf)
+            if fdatetime == voltime:
+                filename = [filename_aux]
     else:
         datapath = basepath+'M'+radar_res+radar_name+'/'
         filename = glob.glob(
@@ -604,7 +607,14 @@ def merge_scans_odim(basepath, scan_list, radar_name, radar_res, voltime,
     # merge the elevations into a single radar instance
     for scan in scan_list[1:]:
         if cfg['path_convention'] == 'ODIM':
-            filename = glob.glob(datapath+'*'+scan+'*')
+            filenames = glob.glob(datapath+'*'+scan+'*')
+            filename = []
+            for filename_aux in filenames:
+                fdatetime = find_date_in_file_name(
+                    filename_aux, date_format=fdate_strf)
+                if fdatetime == voltime:
+                    filename = [filename_aux]
+                    break
         else:
             filename = glob.glob(datapath+basename+timeinfo+'*'+scan+'*')
         if not filename:
@@ -621,6 +631,7 @@ def merge_scans_odim(basepath, scan_list, radar_name, radar_res, voltime,
                 radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
 
     return radar
+
 
 def merge_scans_mxpol(basepath, scan_list, voltime, datatype_list, cfg):
     """
@@ -1769,12 +1780,8 @@ def get_data_odim(filename, datatype_list, scan_name, cfg, ind_rad=0):
         if datatype not in ('Nh', 'Nv'):
             odim_field_names.update(get_datatype_odim(datatype))
         try:
-            radar = read_odim(
+            radar = pyart.aux_io.read_odim_h5(
                 filename, field_names=odim_field_names)
-
-            print(filename)
-            print(odim_field_names)
-            print(radar)
         except ValueError as ee:
             warn("Unable to read file '"+filename+": (%s)" % str(ee))
             return None
