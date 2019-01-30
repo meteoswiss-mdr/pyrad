@@ -37,7 +37,7 @@ install:
   - pip install --trusted-host pypi.python.org xmltodict
 
   # Pyrad required dependencies
-  -conda install pandas shapely
+  - conda install pandas shapely
 
   # Pyrad optional dependencies
   - conda install dask bokeh
