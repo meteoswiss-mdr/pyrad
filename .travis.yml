@@ -33,7 +33,7 @@ install:
   # installation of pyart and pyrad
   - cd src/pyart
   - python setup.py install --user
-  - cd ../pyrad
+  - cd ../pyrad_proc
   - python setup.py install --user
 
 # command to run tests
