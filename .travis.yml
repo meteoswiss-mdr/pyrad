@@ -1,5 +1,5 @@
 language: python
-python:  
+python:
   - "3.5"
   - "3.6"
 # command to install dependencies
