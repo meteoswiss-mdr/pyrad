@@ -30,10 +30,8 @@ install:
   # - export PYART_CONFIG="$HOME/pyrad/config/pyart/mch_config.py"
   # - export METRANETLIB_PATH=""
 
-  - git clone --depth=3 --branch=pyart-mch --recursive https://github.com/meteoswiss-mdr/pyrad.git
-
   # installation of pyart and pyrad
-  - cd $HOME/pyrad/src/
+  - cd $HOME/meteoswiss-mdr/pyrad/src/
   - make_all.sh
 
 # command to run tests
