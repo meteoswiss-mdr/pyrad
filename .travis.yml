@@ -4,9 +4,6 @@ python:
   - "3.6"
 # command to install dependencies
 install:
-  - ls
-  - pwd
-
   - sudo apt-get update
   - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
 
@@ -34,9 +31,9 @@ install:
   # - export METRANETLIB_PATH=""
 
   # installation of pyart and pyrad
-  - cd $HOME/meteoswiss-mdr/pyrad/src/pyart
+  - cd src/pyart
   - python setup.py install --user
-  - cd $HOME/meteoswiss-mdr/pyrad/src/pyrad
+  - cd ../pyrad
   - python setup.py install --user
 
 # command to run tests
