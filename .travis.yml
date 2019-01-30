@@ -2,6 +2,12 @@ language: python
 python:
   - "3.5"
   - "3.6"
+  
+addons:
+    apt:
+        packages:
+        - gfortran
+        
 # command to install dependencies
 install:
   - sudo apt-get update
@@ -35,7 +41,10 @@ install:
   - python setup.py install --user
   - cd ../pyrad_proc
   - python setup.py install --user
+  - cd
 
 # command to run tests
-#script:
+script:
+   - python -c "import pyart; pyart._debug_info()"
+   - python -c "import pyrad"   
 #  - pytest # or py.test for Python versions 3.5 and below
