@@ -39,29 +39,21 @@ fill_value = -9999.0
 # and retrieval algorithms. The comments in this section provide additional
 # information about the fields in that section.
 
-# Radar reflectivity fields, DZ
-reflectivity = 'reflectivity'
-corrected_reflectivity = 'corrected_reflectivity'
+# Radar reflectivity fields
 total_power = 'total_power'
 
 unfiltered_reflectivity = 'unfiltered_reflectivity'
-corrected_unfiltered_reflectivity = 'corrected_unfiltered_reflectivity'
-reflectivity_vv = 'reflectivity_vv'
-corrected_reflectivity_vv = 'corrected_reflectivity_vv'
 unfiltered_reflectivity_vv = 'unfiltered_reflectivity_vv'
 
+reflectivity = 'reflectivity'
+reflectivity_vv = 'reflectivity_vv'
+
+corrected_unfiltered_reflectivity = 'corrected_unfiltered_reflectivity'
+
+corrected_reflectivity = 'corrected_reflectivity'
+corrected_reflectivity_vv = 'corrected_reflectivity_vv'
+
 reflectivity_bias = 'reflectivity_bias'
-
-signal_power_hh = 'signal_power_hh'
-signal_power_vv = 'signal_power_vv'
-
-sun_hit_power_h = 'sun_hit_power_h'
-sun_hit_power_v = 'sun_hit_power_v'
-sun_hit_differential_reflectivity = 'sun_hit_differential_reflectivity'
-
-sun_est_power_h = 'sun_est_power_h'
-sun_est_power_v = 'sun_est_power_v'
-sun_est_differential_reflectivity = 'sun_est_differential_reflectivity'
 
 volumetric_reflectivity = 'volumetric_reflectivity'
 volumetric_reflectivity_vv = 'volumetric_reflectivity_vv'
@@ -69,11 +61,21 @@ volumetric_reflectivity_vv = 'volumetric_reflectivity_vv'
 radar_cross_section_hh = 'radar_cross_section_hh'
 radar_cross_section_vv = 'radar_cross_section_vv'
 
+signal_power_hh = 'signal_power_hh'
+signal_power_vv = 'signal_power_vv'
+
+signal_to_noise_ratio = 'signal_to_noise_ratio'
+signal_to_noise_ratio_hh = 'signal_to_noise_ratio_hh'
+signal_to_noise_ratio_vv = 'signal_to_noise_ratio_vv'
+
+noisedBZ_hh = 'noisedBZ_hh'
+noisedBZ_vv = 'noisedBZ_vv'
+
 # Mean Doppler velocity fields, VEL
 velocity = 'velocity'
 corrected_velocity = 'corrected_velocity'
-
 unfiltered_velocity = 'unfiltered_velocity'
+
 velocity_vv = 'velocity_vv'
 unfiltered_velocity_vv = 'unfiltered_velocity_vv'
 
@@ -87,11 +89,11 @@ velocity_difference = 'velocity_difference'
 
 # Spectral width fields, SW
 spectrum_width = 'spectrum_width'
+unfiltered_spectrum_width = 'unfiltered_spectrum_width'
 corrected_spectrum_width = 'corrected_spectrum_width'
 
-unfiltered_spectrum_width = 'unfiltered_spectrum_width'
-spectrum_width_vv = 'spectrum_width_vv'
 unfiltered_spectrum_width_vv = 'unfiltered_spectrum_width_vv'
+spectrum_width_vv = 'spectrum_width_vv'
 
 # Differential reflectivity fields, ZDR
 differential_reflectivity = 'differential_reflectivity'
@@ -119,6 +121,12 @@ cross_correlation_ratio_in_rain = 'cross_correlation_ratio_in_rain'
 
 # Normalized coherent power, signal quality index, SQI, NCP
 normalized_coherent_power = 'normalized_coherent_power'
+
+signal_quality_index = 'signal_quality_index'
+signal_quality_index_vv = 'signal_quality_index_vv'
+unfiltered_signal_quality_index = 'unfiltered_signal_quality_index'
+unfiltered_signal_quality_index_vv = 'unfiltered_signal_quality_index_vv'
+
 
 # Differential phase shift, PhiDP
 differential_phase = 'differential_phase'
@@ -148,42 +156,6 @@ linear_depolarization_ratio_v = 'linear_depolarization_ratio_v'
 
 circular_depolarization_ratio = 'circular_depolarization_ratio'
 
-# signal quality index
-signal_quality_index = 'signal_quality_index'
-signal_quality_index_vv = 'signal_quality_index_vv'
-unfiltered_signal_quality_index = 'unfiltered_signal_quality_index'
-unfiltered_signal_quality_index_vv = 'unfiltered_signal_quality_index_vv'
-
-# hydroclass
-radar_echo_classification = 'radar_echo_classification'
-hydroclass_entropy = 'hydroclass_entropy'
-proportion_AG = 'proportion_AG'
-proportion_CR = 'proportion_CR'
-proportion_LR = 'proportion_LR'
-proportion_RP = 'proportion_RP'
-proportion_RN = 'proportion_RN'
-proportion_VI = 'proportion_VI'
-proportion_WS = 'proportion_WS'
-proportion_MH = 'proportion_MH'
-proportion_IH = 'proportion_IH'
-
-# Misc fields
-signal_to_noise_ratio = 'signal_to_noise_ratio'
-signal_to_noise_ratio_hh = 'signal_to_noise_ratio_hh'
-signal_to_noise_ratio_vv = 'signal_to_noise_ratio_vv'
-noisedBZ_hh = 'noisedBZ_hh'
-noisedBZ_vv = 'noisedBZ_vv'
-
-rain_rate = 'rain_rate'
-radar_estimated_rain_rate = 'radar_estimated_rain_rate'
-radar_echo_id = 'radar_echo_id'
-clutter_exit_code = 'clutter_exit_code'
-melting_layer = 'melting_layer'
-melting_layer_height = 'melting_layer_height'
-
-bird_density = 'bird_density'
-bird_reflectivity = 'bird_reflectivity'
-
 # attenuation
 specific_attenuation = 'specific_attenuation'
 corrected_specific_attenuation = 'corrected_specific_attenuation'
@@ -197,11 +169,16 @@ path_integrated_differential_attenuation = (
     'path_integrated_differential_attenuation')
 corrected_path_integrated_differential_attenuation = (
     'corrected_path_integrated_differential_attenuation')
+    
+# Textures
+differential_phase_texture = 'differential_phase_texture'
+cross_correlation_ratio_texture = 'cross_correlation_ratio_texture'
+differential_reflectivity_texture = 'differential_reflectivity_texture'
+reflectivity_texture = 'reflectivity_texture'
 
-sun_hit_h = 'sun_hit_h'
-sun_hit_v = 'sun_hit_v'
-sun_hit_zdr = 'sun_hit_zdr'
-
+# Misc fields
+radar_echo_id = 'radar_echo_id'
+clutter_exit_code = 'clutter_exit_code'
 number_of_samples = 'number_of_samples'
 sum = 'sum'
 sum_squared = 'sum_squared'
@@ -221,11 +198,26 @@ hzt_index = 'hzt_index'
 # DEM fields
 visibility = 'visibility'
 
-# Textures
-differential_phase_texture = 'differential_phase_texture'
-cross_correlation_ratio_texture = 'cross_correlation_ratio_texture'
-differential_reflectivity_texture = 'differential_reflectivity_texture'
-reflectivity_texture = 'reflectivity_texture'
+# precipitation
+rain_rate = 'rain_rate'
+radar_estimated_rain_rate = 'radar_estimated_rain_rate'
+
+# melting layer
+melting_layer = 'melting_layer'
+melting_layer_height = 'melting_layer_height'
+
+# hydroclass
+radar_echo_classification = 'radar_echo_classification'
+hydroclass_entropy = 'hydroclass_entropy'
+proportion_AG = 'proportion_AG'
+proportion_CR = 'proportion_CR'
+proportion_LR = 'proportion_LR'
+proportion_RP = 'proportion_RP'
+proportion_RN = 'proportion_RN'
+proportion_VI = 'proportion_VI'
+proportion_WS = 'proportion_WS'
+proportion_MH = 'proportion_MH'
+proportion_IH = 'proportion_IH'
 
 # Wind retrieval fields
 eastward_wind_component = 'eastward_wind_component'
@@ -235,6 +227,23 @@ azimuthal_horizontal_wind_component = 'azimuthal_horizontal_wind_component'
 vertical_wind_shear = 'vertical_wind_shear'
 wind_speed = 'wind_speed'
 wind_direction = 'wind_direction'
+
+# Sun signal fields
+sun_hit_power_h = 'sun_hit_power_h'
+sun_hit_power_v = 'sun_hit_power_v'
+sun_hit_differential_reflectivity = 'sun_hit_differential_reflectivity'
+
+sun_est_power_h = 'sun_est_power_h'
+sun_est_power_v = 'sun_est_power_v'
+sun_est_differential_reflectivity = 'sun_est_differential_reflectivity'
+
+sun_hit_h = 'sun_hit_h'
+sun_hit_v = 'sun_hit_v'
+sun_hit_zdr = 'sun_hit_zdr'
+
+# birds signal
+bird_density = 'bird_density'
+bird_reflectivity = 'bird_reflectivity'
 
 # profile variables
 height = 'height'
