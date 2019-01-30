@@ -44,7 +44,7 @@ install:
   - conda install -c conda-forge memory_profiler
 
   # export global variables
-  - export RSL_PATH="$HOME/miniconda"
+  - export RSL_PATH="$HOME/miniconda/envs/pyrad"
   - export GDAL_DATA="$HOME/miniconda/share/gdal"
   # - export PYART_CONFIG="$HOME/pyrad/config/pyart/mch_config.py"
   # - export METRANETLIB_PATH=""
@@ -59,5 +59,6 @@ install:
 # command to run tests
 script:
    - python -c "import pyart; pyart._debug_info()"
+   - pyhton -c "import wradlib; wradlib.__version__"
    - python -c "import pyrad"
 #  - pytest # or py.test for Python versions 3.5 and below
