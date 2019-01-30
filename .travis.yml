@@ -34,7 +34,8 @@ install:
   - conda install -c conda-forge basemap cartopy gdal
   - conda install -c https://conda.binstar.org/jjhelmus trmm_rsl
   - conda install -c conda-forge wradlib
-  - pip install --trusted-host pypi.python.org xmltodict
+  - conda install "poppler<0.61"
+  - pip install --trusted-host pypi.python.org xmltodict  
 
   # Pyrad required dependencies
   - conda install pandas shapely
@@ -44,7 +45,7 @@ install:
   - conda install -c conda-forge memory_profiler
 
   # export global variables
-  - export RSL_PATH="$HOME/miniconda/envs/pyrad"
+  - export RSL_PATH="$HOME/miniconda/envs/test-environment"
   - export GDAL_DATA="$HOME/miniconda/share/gdal"
   # - export PYART_CONFIG="$HOME/pyrad/config/pyart/mch_config.py"
   # - export METRANETLIB_PATH=""

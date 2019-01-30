@@ -5,104 +5,37 @@
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
 dataSetList STRARR 1
-    l0:dBZ_h5
-#     l0:ZDR
-#    l0:uPhiDP
-#    l0:uRhoHV
-#    l0:SNRh
-#    l1:RhoHV
-#    l0:TEMP
-#    l2:echoID
-#    l3:echoFilter
-#    l4:SNRFilter
-#    l5:KDPc_Vulpiani
-#    l6:Att_ZPhi_Vulpiani
+    l0:TEMP
+    l0:SNRh
+    l1:RhoHV    
+    l2:echoID
+    l3:echoFilter
+    l4:SNRFilter
+    l5:PhiDPc_smooth2w
+    l6:KDPc_leastsquare2w
 
-
+         
 # ==========================================================================================
-#                 raw data products
+#                 COSMO products
 # ==========================================================================================
-#dBZ STRUCT 3
-#    type STRING RAW
+#RAD2COSMO STRUCT 3
+#    type STRING COSMO_COORD
 #    datatype STRARR 1
-#        RAD4ALP:dBZ
-#    products STRUCT 3
-#        EL001 STRUCT 3
-#            type  STRING PPI_IMAGE
-#            anglenr INT 2
-#            voltype STRING dBZ
-#        AZ093 STRUCT 4
-#            type  STRING PSEUDORHI_IMAGE
-#            angle FLOAT 93.
-#            AziTol FLOAT 1.
-#            voltype STRING dBZ
-#        SAVEVOL_dBZ STRUCT 3
-#            type STRING SAVEVOL
-#            voltype STRING dBZ
-#            file_type STRING h5
+#        dBZ
+#    products STRUCT 1
+#        rad2cosmo STRUCT 2
+#            type  STRING SAVEVOL
+#            voltype STRING cosmo_index
 #
-#
-dBZ_h5 STRUCT 3
-    type STRING RAW
+TEMP STRUCT 6
+    type STRING COSMO_LOOKUP
     datatype STRARR 1
-        ODIMPYRAD:dBZ,dBZ,SAVEVOL_dBZ
-    products STRUCT 2
-        EL001 STRUCT 3
-            type  STRING PPI_IMAGE
-            anglenr INT 2
-            voltype STRING dBZ
-        AZ093 STRUCT 4
-            type  STRING PSEUDORHI_IMAGE
-            angle FLOAT 93.
-            AziTol FLOAT 1.
-            voltype STRING dBZ
-
-
-ZDR STRUCT 3
-    type STRING RAW
-    datatype STRARR 1
-       RAD4ALP:ZDR
-    products STRUCT 2
-      EL001 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 2
-         voltype STRING ZDR
-      AZ093 STRUCT 4
-         type  STRING PSEUDORHI_IMAGE
-         angle FLOAT 93.
-         AziTol FLOAT 1.
-         voltype STRING ZDR
-
-uPhiDP STRUCT 3
-    type STRING RAW
-    datatype STRARR 1
-       RAD4ALP:uPhiDP
-    products STRUCT 2
-      EL001 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 2
-         voltype STRING uPhiDP
-      AZ093 STRUCT 4
-         type  STRING PSEUDORHI_IMAGE
-         angle FLOAT 93.
-         AziTol FLOAT 1.
-         voltype STRING uPhiDP
-
-uRhoHV STRUCT 3
-    type STRING RAW
-    datatype STRARR 1
-       RAD4ALP:uRhoHV
-    products STRUCT 2
-      EL001 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 2
-         voltype STRING uRhoHV
-      AZ093 STRUCT 4
-         type  STRING PSEUDORHI_IMAGE
-         angle FLOAT 93.
-         AziTol FLOAT 1.
-         voltype STRING uRhoHV
-
+        RAD4ALP:dBZ
+    cosmo_type STRING TEMP
+    regular_grid INT 1
+    lookup_table INT 1
+    MAKE_GLOBAL INT 1    
+            
 
 # ==========================================================================================
 #                 secondary moments products
@@ -135,37 +68,6 @@ RhoHV STRUCT 4
          AziTol FLOAT 1.
          voltype STRING RhoHV
 
-
-# ==========================================================================================
-#                 COSMO products
-# ==========================================================================================
-#RAD2COSMO STRUCT 3
-#    type STRING COSMO_COORD
-#    datatype STRARR 1
-#        dBZ
-#    products STRUCT 1
-#        rad2cosmo STRUCT 2
-#            type  STRING SAVEVOL
-#            voltype STRING cosmo_index
-#
-TEMP STRUCT 7
-    type STRING COSMO_LOOKUP
-    datatype STRARR 1
-        RAD4ALP:dBZ
-    cosmo_type STRING TEMP
-    regular_grid INT 1
-    lookup_table INT 1
-    MAKE_GLOBAL INT 1
-    products STRUCT 2
-        EL001 STRUCT 3
-            type  STRING PPI_IMAGE
-            anglenr INT 2
-            voltype STRING TEMP
-        AZ093 STRUCT 4
-            type  STRING PSEUDORHI_IMAGE
-            angle FLOAT 93.
-            AziTol FLOAT 1.
-            voltype STRING TEMP
 
 # ==========================================================================================
 #                 echo identification
@@ -205,20 +107,6 @@ echoFilter STRUCT 5
             AziTol FLOAT 1.
             voltype STRING RhoHVc
 
-## echo type 3 : precip, 2 : clutter, 1 : noise
-#echoFilter_Ah STRUCT 5
-#   type STRING ECHO_FILTER
-#   datatype STRARR 2
-#      PROC:echoID
-#	  PROC:Ah
-#   echo_type INT 3
-#   MAKE_GLOBAL INT 1
-#   products STRUCT 1
-#      SAVEVOL_Ahc STRUCT 2
-#         type  STRING SAVEVOL
-#         voltype STRING Ahc
-#
-#
 # ==========================================================================================
 #                 filtration based on SNR
 # ==========================================================================================
@@ -232,82 +120,84 @@ SNRFilter STRUCT 4
 
 
 # ==========================================================================================
-#                 PHIDP/KDP processing
+#                 PHIDP processing
 # ==========================================================================================
-#PhiDPc_smooth2w STRUCT 12
-#    type STRING PHIDP_SMOOTH_2W
-#    datatype STRARR 2
-#        PROC:PhiDPc
-#        PROC:dBZc
-#    rmin FLOAT 1000.
-#    rmax FLOAT 50000.
-#    rcell FLOAT 1000.
-#    Zmin FLOAT 20.
-#    Zmax FLOAT 40.
-#    rwinds FLOAT 1000.
-#    rwindl FLOAT 3000.
-#    Zthr FLOAT 40.
-#    MAKE_GLOBAL INT 1
-#	products STRUCT 2
-#      EL001 STRUCT 3
-#         type  STRING PPI_IMAGE
-#         anglenr INT 2
-#         voltype STRING PhiDPc
-#      AZ093 STRUCT 4
-#         type  STRING PSEUDORHI_IMAGE
-#         angle FLOAT 93.
-#         AziTol FLOAT 1.
-#         voltype STRING PhiDPc
-#
-#KDPc_leastsquare2w STRUCT 7
-#    type STRING KDP_LEASTSQUARE_2W
-#    datatype STRARR 2
-#        PROC:PhiDPc
-#        PROC:dBZc
-#    rwinds FLOAT 1000.
-#    rwindl FLOAT 3000.
-#    Zthr FLOAT 40.
-#    MAKE_GLOBAL INT 1
-#    products STRUCT 2
-#      EL001 STRUCT 3
-#         type  STRING PPI_IMAGE
-#         anglenr INT 2
-#         voltype STRING KDPc
-#      AZ093 STRUCT 4
-#         type  STRING PSEUDORHI_IMAGE
-#         angle FLOAT 93.
-#         AziTol FLOAT 1.
-#         voltype STRING KDPc
-#
-KDPc_Vulpiani STRUCT 9
-    type STRING PHIDP_KDP_VULPIANI
-    datatype STRARR 1
+PhiDPc_smooth2w STRUCT 12
+    type STRING PHIDP_SMOOTH_2W
+    datatype STRARR 2
         PROC:PhiDPc
-    rwind FLOAT 2000.
-    n_iter INT 6
-    interp INT 0
-    parallel INT 0
-    get_phidp INT 1
+        PROC:dBZc
+    rmin FLOAT 1000.
+    rmax FLOAT 50000.
+    rcell FLOAT 1000.
+    Zmin FLOAT 20.
+    Zmax FLOAT 40.
+    rwinds FLOAT 1000.
+    rwindl FLOAT 3000.
+    Zthr FLOAT 40.
     MAKE_GLOBAL INT 1
-    products STRUCT 4
-      EL001_KDPc STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 2
-         voltype STRING KDPc
-      AZ093_KDPc STRUCT 4
-         type  STRING PSEUDORHI_IMAGE
-         angle FLOAT 93.
-         AziTol FLOAT 1.
-         voltype STRING KDPc
-      EL001_PhiDPc STRUCT 3
+    products STRUCT 3
+      EL001 STRUCT 3
          type  STRING PPI_IMAGE
          anglenr INT 2
          voltype STRING PhiDPc
-      AZ093_PhiDPc STRUCT 4
+      AZ093 STRUCT 4
          type  STRING PSEUDORHI_IMAGE
          angle FLOAT 93.
          AziTol FLOAT 1.
          voltype STRING PhiDPc
+      SAVEVOL_PhiDPc STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING PhiDPc
+
+
+# ==========================================================================================
+#                 KDP processing
+# ==========================================================================================
+KDPc_leastsquare2w STRUCT 7
+    type STRING KDP_LEASTSQUARE_2W
+    datatype STRARR 2
+        PROC:PhiDPc
+        PROC:dBZc
+    rwinds FLOAT 1000.
+    rwindl FLOAT 3000.
+    Zthr FLOAT 40.
+    MAKE_GLOBAL INT 1
+    products STRUCT 2
+      EL001 STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 2
+         voltype STRING KDPc
+      AZ093 STRUCT 4
+         type  STRING PSEUDORHI_IMAGE
+         angle FLOAT 93.
+         AziTol FLOAT 1.
+         voltype STRING KDPc
+
+#KDPc_Vulpiani STRUCT 9
+#    type STRING PHIDP_KDP_VULPIANI
+#    datatype STRARR 1
+#        PROC:PhiDPc
+#    rwind FLOAT 1000.
+#    n_iter INT 6
+#    interp INT 0
+#    parallel INT 0
+#    get_phidp INT 0
+#    MAKE_GLOBAL INT 1
+#    products STRUCT 3
+#      EL001 STRUCT 3
+#         type  STRING PPI_IMAGE
+#         anglenr INT 2
+#         voltype STRING KDPc
+#      AZ093 STRUCT 4
+#         type  STRING PSEUDORHI_IMAGE
+#         angle FLOAT 93.
+#         AziTol FLOAT 1.
+#         voltype STRING KDPc
+#      SAVEVOL_KDPc STRUCT 2
+#            type   STRING SAVEVOL
+#            voltype STRING KDPc
+#
 
 # ==========================================================================================
 #                 Attenuation
@@ -390,35 +280,5 @@ hydroclass STRUCT 6
       RHI_220_0 STRUCT 4
          type STRING PSEUDORHI_IMAGE
          voltype STRING hydro
-         angle FLOAT 220.
-         AziTol FLOAT 0.5
-
-
-# ==========================================================================================
-#                 rainfall rate products
-# ==========================================================================================
-RR_hydro STRUCT 4
-    type STRING RAINRATE
-    datatype STRARR 3
-       PROC:dBZc
-       PROC:Ahc
-       PROC:hydro
-    RR_METHOD STRING hydro
-    products STRUCT 4
-      SAVEVOL_RR_hydro STRUCT 2
-         type  STRING SAVEVOL
-         voltype STRING RR
- 	  EL001_0 STRUCT 3
-         type STRING PPI_IMAGE
-         anglenr INT 2
-         voltype STRING RR
-      RHI_040_0 STRUCT 4
-         type STRING PSEUDORHI_IMAGE
-         voltype STRING RR
-         angle FLOAT 40.
-         AziTol FLOAT 0.5
-      RHI_220_0 STRUCT 4
-         type STRING PSEUDORHI_IMAGE
-         voltype STRING RR
          angle FLOAT 220.
          AziTol FLOAT 0.5
