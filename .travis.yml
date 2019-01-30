@@ -2,12 +2,12 @@ language: python
 python:
   - "3.5"
   - "3.6"
-  
+
 addons:
     apt:
         packages:
         - gfortran
-        
+
 # command to install dependencies
 install:
   - sudo apt-get update
@@ -24,11 +24,24 @@ install:
   # creation of conda environment and installation of dependencies
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
-  - conda install netcdf4 h5py nose pandas
+
+  # Dependencies installation:
+  # Py-ART required dependencies
+  - conda install netcdf4
+
+  # Py-ART optional dependencies
+  - conda install h5py pytest
   - conda install -c conda-forge basemap cartopy gdal
   - conda install -c https://conda.binstar.org/jjhelmus trmm_rsl
   - conda install -c conda-forge wradlib
   - pip install --trusted-host pypi.python.org xmltodict
+
+  # Pyrad required dependencies
+  -conda install pandas, shapely
+
+  # Pyrad optional dependencies
+  - conda install dask, bokeh
+  - conda install -c conda-forge memory_profiler
 
   # export global variables
   - export RSL_PATH="$HOME/miniconda"
@@ -46,5 +59,5 @@ install:
 # command to run tests
 script:
    - python -c "import pyart; pyart._debug_info()"
-   - python -c "import pyrad"   
+   - python -c "import pyrad"
 #  - pytest # or py.test for Python versions 3.5 and below
