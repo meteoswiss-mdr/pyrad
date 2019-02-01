@@ -90,7 +90,7 @@ def process_echo_id(procstatus, dscfg, radar_list=None):
         warn('Unable to create radar_echo_id dataset. Missing data')
         return None, None
 
-    echo_id = np.zeros((radar.nrays, radar.ngates), dtype=np.uint8)+3
+    echo_id = np.ma.zeros((radar.nrays, radar.ngates), dtype=np.uint8)+3
 
     # look for clutter
     gatefilter = pyart.filters.moment_and_texture_based_gate_filter(
@@ -110,6 +110,7 @@ def process_echo_id(procstatus, dscfg, radar_list=None):
 
     id_field = pyart.config.get_metadata('radar_echo_id')
     id_field['data'] = echo_id
+    id_field.update({'_FillValue': 0})
 
     # prepare for exit
     new_dataset = {'radar_out': deepcopy(radar)}

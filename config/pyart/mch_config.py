@@ -169,7 +169,7 @@ path_integrated_differential_attenuation = (
     'path_integrated_differential_attenuation')
 corrected_path_integrated_differential_attenuation = (
     'corrected_path_integrated_differential_attenuation')
-    
+
 # Textures
 differential_phase_texture = 'differential_phase_texture'
 cross_correlation_ratio_texture = 'cross_correlation_ratio_texture'
@@ -735,7 +735,10 @@ DEFAULT_METADATA = {
         'units': 'dBZ',
         'standard_name': 'horizontal_reflectivity',
         'long_name': 'Horizontal Reflectivity',
-        'coordinates': 'elevation azimuth range'},
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 0.5,
+        'add_offset': -32.,
+        '_Write_as_dtype': 'uint8'},
 
     bird_reflectivity: {
         'units': 'dBZ',
@@ -918,7 +921,10 @@ DEFAULT_METADATA = {
         'units': 'dB',
         'standard_name': 'differential_reflectivity',
         'long_name': 'Differential reflectivity',
-        'coordinates': 'elevation azimuth range'},
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 0.062254902,
+        'add_offset': -7.9375,
+        '_Write_as_dtype': 'uint8'},
 
     corrected_differential_reflectivity: {
         'units': 'dB',
@@ -1131,27 +1137,39 @@ DEFAULT_METADATA = {
         'standard_name': 'sun_hit_h',
         'long_name': 'sun hit radar bins horizontal polarization',
         'labels': ['OTHER', 'SUN'],
-        'ticks': [0, 1],
-        'boundaries': [-0.5, 0.5, 1.5],
-        'coordinates': 'elevation azimuth range'},
+        'ticks': [1, 2],
+        'boundaries': [0.5, 1.5, 2.5],
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 1,
+        'add_offset': 0,
+        '_FillValue': 0,
+        '_Write_as_dtype': 'uint8'},
 
     sun_hit_v: {
         'units': '-',
         'standard_name': 'sun_hit_v',
         'long_name': 'sun hit radar bins vertical polarization',
         'labels': ['OTHER', 'SUN'],
-        'ticks': [0, 1],
-        'boundaries': [-0.5, 0.5, 1.5],
-        'coordinates': 'elevation azimuth range'},
+        'ticks': [1, 2],
+        'boundaries': [0.5, 1.5, 2.5],
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 1,
+        'add_offset': 0,
+        '_FillValue': 0,
+        '_Write_as_dtype': 'uint8'},
 
     sun_hit_zdr: {
         'units': '-',
         'standard_name': 'sun_hit_zdr',
         'long_name': 'sun hit radar bins differential reflectivity',
         'labels': ['OTHER', 'SUN'],
-        'ticks': [0, 1],
-        'boundaries': [-0.5, 0.5, 1.5],
-        'coordinates': 'elevation azimuth range'},
+        'ticks': [1, 2],
+        'boundaries': [0.5, 1.5, 2.5],
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 1,
+        'add_offset': 0,
+        '_FillValue': 0,
+        '_Write_as_dtype': 'uint8'},
 
     radar_echo_classification: {
         'units': '-',
@@ -1159,9 +1177,13 @@ DEFAULT_METADATA = {
         'long_name': 'Radar echo classification',
         'labels': ['NC', 'AG', 'CR', 'LR', 'RP', 'RN', 'VI', 'WS', 'MH',
                    'IH/HDG'],
-        'ticks': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-        'boundaries': [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5],
-        'coordinates': 'elevation azimuth range'},
+        'ticks': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        'boundaries': [0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5],
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 1,
+        'add_offset': 0,
+        '_FillValue': 0,
+        '_Write_as_dtype': 'uint8'},
 
     hydroclass_entropy: {
         'units': '-',
@@ -1230,7 +1252,11 @@ DEFAULT_METADATA = {
         'labels': ['NOISE', 'CLT', 'PREC'],
         'ticks': [1, 2, 3],
         'boundaries': [0.5, 1.5, 2.5, 3.5],
-        'coordinates': 'elevation azimuth range'},
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 1,
+        'add_offset': 0,
+        '_FillValue': 0,
+        '_Write_as_dtype': 'uint8'},
 
     clutter_exit_code: {
         'units': '-',
@@ -1248,7 +1274,11 @@ DEFAULT_METADATA = {
         'labels': ['BELOW', 'ENTERING', 'INSIDE', 'EXITING', 'ABOVE'],
         'ticks': [1, 2, 3, 4, 5],
         'boundaries': [0.5, 1.5, 2.5, 3.5, 4.5, 5.5],
-        'coordinates': 'elevation azimuth range'},
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 1,
+        'add_offset': 0,
+        '_FillValue': 0,
+        '_Write_as_dtype': 'uint8'},
 
     melting_layer_height: {
         'units': 'm MSL',
@@ -1353,9 +1383,13 @@ DEFAULT_METADATA = {
         'standard_name': 'colocated_gates',
         'long_name': 'Colocated gates',
         'labels': ['FALSE', 'TRUE'],
-        'ticks': [0, 1],
-        'boundaries': [-0.5, 0.5, 1.5],
-        'coordinates': 'elevation azimuth range'},
+        'ticks': [1, 2],
+        'boundaries': [0.5, 1.5, 2.5],
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 1,
+        'add_offset': 0,
+        '_FillValue': 0,
+        '_Write_as_dtype': 'uint8'},
 
     # COSMO model data
     temperature: {
@@ -1371,7 +1405,11 @@ DEFAULT_METADATA = {
         'labels': ['BELOW', 'INSIDE', 'ABOVE'],
         'ticks': [1, 2, 3],
         'boundaries': [0.5, 1.5, 2.5, 3.5],
-        'coordinates': 'elevation azimuth range'},
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 1,
+        'add_offset': 0,
+        '_FillValue': 0,
+        '_Write_as_dtype': 'uint8'},
 
     height_over_iso0: {
         'units': 'm',

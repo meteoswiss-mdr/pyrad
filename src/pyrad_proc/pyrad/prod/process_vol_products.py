@@ -791,7 +791,7 @@ def generate_vol_products(dataset, prdcfg):
         # mask unclassified data
         field = deepcopy(dataset['radar_out'].fields[field_name]['data'])
         if prdcfg['voltype'] == 'hydro':
-            field = np.ma.masked_equal(field, 0)
+            field = np.ma.masked_equal(field, 1)
 
         # user defined parameters
         heightResolution = prdcfg.get('heightResolution', 100.)
@@ -1703,7 +1703,7 @@ def generate_vol_products(dataset, prdcfg):
         # mask unclassified data
         field = deepcopy(dataset['radar_out'].fields[field_name]['data'])
         if prdcfg['voltype'] == 'hydro':
-            field = np.ma.masked_equal(field, 0)
+            field = np.ma.masked_equal(field, 1)
 
         # user defined variables
         quantiles = prdcfg.get('quantiles', None)
@@ -2116,6 +2116,9 @@ def generate_vol_products(dataset, prdcfg):
             return None
 
         file_type = prdcfg.get('file_type', 'nc')
+        physical = prdcfg.get('physical', True)
+        compression = prdcfg.get('compression', 'gzip')
+        compression_opts = prdcfg.get('compression_opts', 6)
 
         new_dataset = deepcopy(dataset['radar_out'])
         new_dataset.fields = dict()
@@ -2133,9 +2136,11 @@ def generate_vol_products(dataset, prdcfg):
         fname = savedir+fname
 
         if file_type == 'nc':
-            pyart.io.cfradial.write_cfradial(fname, new_dataset)
+            pyart.io.write_cfradial(fname, new_dataset, physical=physical)
         elif file_type == 'h5':
-            pyart.aux_io.write_odim_h5(fname, new_dataset)
+            pyart.aux_io.write_odim_h5(
+                fname, new_dataset, physical=physical,
+                compression=compression, compression_opts=compression_opts)
         else:
             warn('Data could not be saved. ' +
                  'Unknown saving file type '+file_type)
@@ -2147,6 +2152,10 @@ def generate_vol_products(dataset, prdcfg):
 
     if prdcfg['type'] == 'SAVEALL':
         file_type = prdcfg.get('file_type', 'nc')
+        datatypes = prdcfg.get('datatypes', None)
+        physical = prdcfg.get('physical', True)
+        compression = prdcfg.get('compression', 'gzip')
+        compression_opts = prdcfg.get('compression_opts', 6)
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -2158,10 +2167,31 @@ def generate_vol_products(dataset, prdcfg):
 
         fname = savedir+fname
 
+        field_names = None
+        if datatypes is not None:
+            field_names = []
+            for datatype in datatypes:
+                field_names.append(get_fieldname_pyart(datatype))
+
         if file_type == 'nc':
-            pyart.io.cfradial.write_cfradial(fname, dataset['radar_out'])
+            if field_names is not None:
+                radar_aux = deepcopy(dataset['radar_out'])
+                radar_aux.fields = dict()
+                for field_name in field_names:
+                    if field_name not in dataset['radar_out'].fields:
+                        warn(field_name+' not in radar object')
+                    else:
+                        radar_aux.add_field(
+                            field_name,
+                            dataset['radar_out'].fields[field_name])
+            else:
+                radar_aux = dataset['radar_out']
+            pyart.io.write_cfradial(fname, radar_aux, physical=physical)
         elif file_type == 'h5':
-            pyart.aux_io.write_odim_h5(fname, dataset['radar_out'])
+            pyart.aux_io.write_odim_h5(
+                fname, dataset['radar_out'], field_names=field_names,
+                physical=physical, compression=compression,
+                compression_opts=compression_opts)
         else:
             warn('Data could not be saved. ' +
                  'Unknown saving file type '+file_type)

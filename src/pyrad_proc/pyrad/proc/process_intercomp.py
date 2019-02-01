@@ -474,7 +474,7 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
                 hydro_field = radar.fields[hydro_name]
                 # check where is no rain
                 is_not_rain = np.logical_and(
-                    hydro_field['data'] != 3, hydro_field['data'] != 5)
+                    hydro_field['data'] != 4, hydro_field['data'] != 6)
                 # where is no rain should be precip
                 is_not_rain = np.logical_and(
                     is_not_rain, echo_field['data'] == 3)
