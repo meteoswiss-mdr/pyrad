@@ -57,8 +57,8 @@ install:
 
 # command to run tests
 script:
-   - python -c "import pyart; pyart._debug_info()"
-   - python -c "import wradlib; wradlib.__version__"
-   - python -c "import pyrad"
    - conda list
+   - python -c "import pyart; pyart._debug_info()"
+   - python -c "import pyrad"   
+   - python -c "import wradlib; wradlib.__version__"   
 #  - pytest # or py.test for Python versions 3.5 and below
