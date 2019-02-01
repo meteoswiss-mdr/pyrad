@@ -30,7 +30,8 @@ install:
   - conda install -c conda-forge netcdf4
 
   # Py-ART optional dependencies
-  - conda install -c conda-forge h5py pytest basemap cartopy gdal
+  - conda install -c conda-forge wradlib
+  - conda install -c conda-forge h5py pytest basemap cartopy
   - conda install -c https://conda.binstar.org/jjhelmus trmm_rsl
   # - conda install -c conda-forge "poppler<0.61"
   - conda install -c conda-forge xmltodict
@@ -40,9 +41,9 @@ install:
 
   # Pyrad optional dependencies
   - conda install -c conda-forge dask bokeh memory_profiler
-  
-  # install wradlib last
-  - conda install -c conda-forge wradlib
+
+  # install gdal last to avoid issues
+  - conda install -c conda-forge gdal
 
   # export global variables
   - export RSL_PATH="$HOME/miniconda/envs/test-environment"
