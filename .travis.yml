@@ -26,14 +26,23 @@ install:
   - source activate test-environment
 
   # Dependencies installation:
-  # Py-ART required dependencies
+  # Py-ART required dependencies:
+  # - netcdf4
+  # Py-ART optional dependencies:
+  # - h5py pytest basemap cartopy gdal trmm_rsl wradlib
+  # wradlib optional dependencies:
+  # - xmltodict
+  # pyrad required dependencies:
+  # - pandas shapely
+  # pyrad optional dependencies:
+  # - dask bokeh memory_profiler
   - conda install -c conda-forge netcdf4
 
   # Py-ART optional dependencies
-  - conda install -c conda-forge wradlib
-  - conda install -c conda-forge h5py pytest basemap cartopy
+  - conda install -c conda-forge h5py pytest basemap cartopy gdal
   - conda install -c https://conda.binstar.org/jjhelmus trmm_rsl
-  # - conda install -c conda-forge "poppler<0.61"
+  - conda install -c conda-forge wradlib
+  - conda install -c conda-forge "poppler<0.61"
   - conda install -c conda-forge xmltodict
 
   # Pyrad required dependencies
@@ -41,9 +50,6 @@ install:
 
   # Pyrad optional dependencies
   - conda install -c conda-forge dask bokeh memory_profiler
-
-  # install gdal last to avoid issues
-  - conda install -c conda-forge gdal
 
   # export global variables
   - export RSL_PATH="$HOME/miniconda/envs/test-environment"
