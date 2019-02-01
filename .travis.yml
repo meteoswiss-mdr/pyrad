@@ -25,9 +25,6 @@ install:
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
 
-  # install wradlib first to superseed packages later
-  - conda install -c conda-forge wradlib
-
   # Dependencies installation:
   # Py-ART required dependencies
   - conda install -c conda-forge netcdf4
@@ -43,6 +40,9 @@ install:
 
   # Pyrad optional dependencies
   - conda install -c conda-forge dask bokeh memory_profiler
+  
+  # install wradlib last
+  - conda install -c conda-forge wradlib
 
   # export global variables
   - export RSL_PATH="$HOME/miniconda/envs/test-environment"
