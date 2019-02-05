@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# use next line to debug this script
+set -x
+
 sudo apt-get update
 wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
     -O miniconda.sh;
@@ -31,8 +34,7 @@ fi
 # pyrad optional dependencies:
 # - pandas shapely dask bokeh memory_profiler
 conda install -c https://conda.binstar.org/jjhelmus trmm_rsl
-conda install -c conda-forge netcdf4 h5py pytest basemap cartopy gdal \
-    wradlib xmltodict pandas shapely dask bokeh memory_profiler
+conda install -c conda-forge netcdf4 h5py pytest basemap cartopy gdal wradlib xmltodict pandas shapely dask bokeh memory_profiler
 
 # export global variables
 export RSL_PATH="$HOME/miniconda/envs/test-environment"
