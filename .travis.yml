@@ -20,7 +20,8 @@ matrix:
         - PYTHON_VERSION="3.7"
 
 # command to install dependencies
-install: source src/pyrad_proc/continuous_integration/install.sh
+install:
+   - bash src/pyrad_proc/continuous_integration/install.sh
 
 # command to run tests
 script:
