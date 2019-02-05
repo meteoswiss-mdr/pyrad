@@ -17,13 +17,13 @@ conda update -q conda
 conda info -a
 
 # creation of conda environment and installation of dependencies
-conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
+conda create -q -n test-environment python=$PYTHON_VERSION
 source activate test-environment
 
 # This should solve problems with the geos library on Python 3.5
-# if [[ "$PYTHON_VERSION" == "3.5" ]]; then
-#    export DYLD_FALLBACK_LIBRARY_PATH=$(HOME)/lib:/usr/local/lib:/lib:/usr/lib
-# fi
+if [[ "$PYTHON_VERSION" == "3.5" ]]; then
+    export DYLD_FALLBACK_LIBRARY_PATH=$(HOME)/lib:/usr/local/lib:/lib:/usr/lib
+fi
 
 # Dependencies installation:
 # Py-ART required dependencies:
