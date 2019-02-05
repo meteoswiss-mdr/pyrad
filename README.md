@@ -1,3 +1,6 @@
+### Status
+[![Build Status](https://travis-ci.org/meteoswiss-mdr/pyrad.svg?branch=master)](https://travis-ci.org/meteoswiss-mdr/pyrad)
+
 # pyrad
 Python Radar Processing
 
