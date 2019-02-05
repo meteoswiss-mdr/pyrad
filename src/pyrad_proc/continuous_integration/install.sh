@@ -20,11 +20,6 @@ conda info -a
 conda create -q -n test-environment python=$PYTHON_VERSION
 source activate test-environment
 
-# This should solve problems with the geos library on Python 3.5
-if [[ "$PYTHON_VERSION" == "3.5" ]]; then
-    export DYLD_FALLBACK_LIBRARY_PATH=$(HOME)/lib:/usr/local/lib:/lib:/usr/lib
-fi
-
 # Dependencies installation:
 # Py-ART required dependencies:
 # - netcdf4
@@ -35,7 +30,12 @@ fi
 # pyrad optional dependencies:
 # - pandas shapely dask bokeh memory_profiler
 conda install -c https://conda.binstar.org/jjhelmus trmm_rsl
-conda install -c conda-forge netcdf4 h5py pytest basemap cartopy gdal wradlib xmltodict pandas shapely dask bokeh memory_profiler
+if [[ "$PYTHON_VERSION" == "3.5" ]]; then
+    # This should solve problems with the geos library on Python 3.5
+    conda install -c conda-forge geos netcdf4 h5py pytest basemap cartopy gdal wradlib xmltodict pandas shapely dask bokeh memory_profiler
+else
+    conda install -c conda-forge netcdf4 h5py pytest basemap cartopy gdal wradlib xmltodict pandas shapely dask bokeh memory_profiler
+fi
 
 # export global variables
 export RSL_PATH="$HOME/miniconda/envs/test-environment"

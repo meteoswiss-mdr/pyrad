@@ -29,11 +29,9 @@ script:
    - python -c "import pyrad"
    - python -c "import wradlib; wradlib.__version__"
 #  - pytest # or py.test for Python versions 3.5 and below
-after_failure:
-   - set
+after_failure:   
    - conda info
    - conda list
-after_success:
-   - set
+after_success:   
    - conda info
    - conda list
