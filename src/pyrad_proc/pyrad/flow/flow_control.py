@@ -39,7 +39,6 @@ from ..io.write_data import write_last_state
 ALLOW_USER_BREAK = False
 
 try:
-    import dask
     from dask.diagnostics import Profiler, ResourceProfiler, CacheProfiler
     from dask.diagnostics import visualize
     from distributed import Client
@@ -47,7 +46,7 @@ try:
     _DASK_AVAILABLE = True
 except ImportError:
     warn('dask not available: The processing will not be parallelized')
-    _DASK_AVAILABLE = True
+    _DASK_AVAILABLE = False
 
 
 def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
