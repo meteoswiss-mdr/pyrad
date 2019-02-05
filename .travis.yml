@@ -21,7 +21,7 @@ matrix:
 
 # command to install dependencies
 install:
-   - ./src/pyrad_proc/continuous_integration/install.sh
+   - source src/pyrad_proc/continuous_integration/install.sh
 
 # command to run tests
 script:
