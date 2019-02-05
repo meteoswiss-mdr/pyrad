@@ -51,7 +51,6 @@ try:
 except ImportError:
     warn('shapely not available')
     _SHAPELY_AVAILABLE = False
-import shapely
 
 try:
     import pandas as pd
