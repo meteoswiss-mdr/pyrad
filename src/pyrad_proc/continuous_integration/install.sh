@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+# set -e
 # use next line to debug this script
 # set -x
 
@@ -31,9 +31,8 @@ source activate test-environment
 # - pandas shapely dask bokeh memory_profiler
 conda install -c https://conda.binstar.org/jjhelmus trmm_rsl
 if [[ "$PYTHON_VERSION" == "3.5" ]]; then
-    # This should solve problems with the geos library on Python 3.5
-    conda install -c conda-forge geos netcdf4 h5py pytest basemap cartopy gdal wradlib xmltodict pandas shapely dask bokeh memory_profiler
-    sudo apt-get install libgeos-c1 libgeos-3.4.2
+    # There are problems with the geos library so do not install anything that uses it
+    conda install -c conda-forge netcdf4 h5py pytest pandas dask bokeh memory_profiler
 else
     conda install -c conda-forge netcdf4 h5py pytest basemap cartopy gdal wradlib xmltodict pandas shapely dask bokeh memory_profiler
 fi

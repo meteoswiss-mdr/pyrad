@@ -24,11 +24,10 @@ install:
    - source src/pyrad_proc/continuous_integration/install.sh
 
 # command to run tests
-script:
-   - conda info
+script:   
    - python -c "import pyart; pyart._debug_info()"
    - python -c "import pyrad"
-   - python -c "import wradlib; wradlib.__version__"
+   - if [[ "$PYTHON_VERSION" != "3.5" ]]; then python -c "import wradlib; wradlib.__version__"; fi
 #  - pytest # or py.test for Python versions 3.5 and below
 after_failure:
    - conda info
