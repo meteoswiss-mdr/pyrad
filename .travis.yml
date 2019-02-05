@@ -25,13 +25,14 @@ install:
 
 # command to run tests
 script:
+   - conda info
    - python -c "import pyart; pyart._debug_info()"
    - python -c "import pyrad"
    - python -c "import wradlib; wradlib.__version__"
 #  - pytest # or py.test for Python versions 3.5 and below
-after_failure:   
+after_failure:
    - conda info
    - conda list
-after_success:   
+after_success:
    - conda info
    - conda list

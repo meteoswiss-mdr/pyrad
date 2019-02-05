@@ -33,6 +33,7 @@ conda install -c https://conda.binstar.org/jjhelmus trmm_rsl
 if [[ "$PYTHON_VERSION" == "3.5" ]]; then
     # This should solve problems with the geos library on Python 3.5
     conda install -c conda-forge geos netcdf4 h5py pytest basemap cartopy gdal wradlib xmltodict pandas shapely dask bokeh memory_profiler
+    apt-get install libgeos-c1 libgeos-3.4.2
 else
     conda install -c conda-forge netcdf4 h5py pytest basemap cartopy gdal wradlib xmltodict pandas shapely dask bokeh memory_profiler
 fi
