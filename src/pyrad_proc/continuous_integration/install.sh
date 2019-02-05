@@ -4,8 +4,7 @@
 set -x
 
 sudo apt-get update
-wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
-    -O miniconda.sh;
+wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
 
 bash miniconda.sh -b -p $HOME/miniconda
 export PATH="$HOME/miniconda/bin:$PATH"
@@ -20,9 +19,9 @@ conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
 source activate test-environment
 
 # This should solve problems with the geos library on Python 3.5
-if [[ "$PYTHON_VERSION" == "3.5" ]]; then
-    export DYLD_FALLBACK_LIBRARY_PATH=$(HOME)/lib:/usr/local/lib:/lib:/usr/lib
-fi
+# if [[ "$PYTHON_VERSION" == "3.5" ]]; then
+#    export DYLD_FALLBACK_LIBRARY_PATH=$(HOME)/lib:/usr/local/lib:/lib:/usr/lib
+# fi
 
 # Dependencies installation:
 # Py-ART required dependencies:
