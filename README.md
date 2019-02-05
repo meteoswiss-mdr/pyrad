@@ -1,4 +1,3 @@
-### Status
 [![Build Status](https://travis-ci.org/meteoswiss-mdr/pyrad.svg?branch=master)](https://travis-ci.org/meteoswiss-mdr/pyrad)
 
 # pyrad
@@ -60,7 +59,7 @@ We welcome contributions, suggestions of developments and bug reports.
 The process to contribute by partners external to MeteoSwiss is described in pyrad/doc/pyrad_user_manual.pdf
 
 # Disclaimer
-The software is still in a development stage. Please let us know if you would like to test it. 
+The software is still in a development stage. Please let us know if you would like to test it.
 
 MeteoSwiss cannot be held responsible for errors in the code or problems that could arise from its use.
 
