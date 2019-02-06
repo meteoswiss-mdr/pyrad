@@ -7,16 +7,19 @@
 rm -f ../pyrad_library_reference_dev.pdf
 cd library_reference_developers
 make clean
-make latexpdf
-cp build/latex/*.pdf ../../.
-rm -rf build/*
-cd ..
 
-# library reference for users
-rm -f ../pyrad_library_reference_users.pdf
-cd library_reference_users
-make clean
-make latexpdf
-cp build/latex/*.pdf ../../.
-rm -rf build/*
-cd ..
+# make pdf
+# make latexpdf
+# cp build/latex/*.pdf ../../.
+# rm -rf build/*
+# cd ..
+make html
+
+# # library reference for users
+# rm -f ../pyrad_library_reference_users.pdf
+# cd library_reference_users
+# make clean
+# make latexpdf
+# cp build/latex/*.pdf ../../.
+# rm -rf build/*
+# cd ..
