@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/meteoswiss-mdr/pyrad.svg?branch=master)](https://travis-ci.org/meteoswiss-mdr/pyrad)
-[Ref doc](https://meteoswiss-mdr.github.io/pyrad/)
+[![Ref doc](https://img.shields.io/badge/docs-users-4088b8.svg)](https://meteoswiss-mdr.github.io/pyrad/)
 
 # pyrad
 Python Radar Processing
