@@ -39,3 +39,4 @@ sphinx:
 
 submodules:
    include: all
+   recursive: true
