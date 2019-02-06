@@ -27,14 +27,14 @@ python:
 
 conda:
    # The path to the Conda environment file from the root of the project
-   environment: ./src/pyrad_proc/continuous_integration/conda_environment-basic.yml
+   environment: src/pyrad_proc/continuous_integration/conda_environment-basic.yml
 
 build:
    image: latest
 
 sphinx:
    builder: html
-   configuration: ./doc/pyrad/library_reference_users/source/conf.py
+   configuration: doc/pyrad/library_reference_users/source/conf.py
    fail_on_warning: false
 
 submodules:

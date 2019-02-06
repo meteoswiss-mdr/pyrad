@@ -9,3 +9,4 @@ dependencies:
   - scipy
   - matplotlib
   - netcdf4
+  - sphinx
