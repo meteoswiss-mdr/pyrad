@@ -14,7 +14,8 @@ make clean
 # rm -rf build/*
 # cd ..
 make html
-mv build/html/* ../../. 
+rm -r ../../../docs/*
+mv build/html/* ../../../docs
 
 # # library reference for users
 # rm -f ../pyrad_library_reference_users.pdf
