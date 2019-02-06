@@ -1,0 +1,474 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pyrad.prod.process_intercomp_products &#8212; pyrad 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pyrad.prod.process_intercomp_products</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">pyrad.prod.process_intercomp_products</span>
+<span class="sd">=====================================</span>
+
+<span class="sd">Functions for obtaining Pyrad products from datasets used in the</span>
+<span class="sd">intercomparison process</span>
+
+<span class="sd">.. autosummary::</span>
+<span class="sd">    :toctree: generated/</span>
+
+<span class="sd">    generate_intercomp_products</span>
+<span class="sd">    generate_colocated_gates_products</span>
+<span class="sd">    generate_time_avg_products</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">.process_vol_products</span> <span class="k">import</span> <span class="n">generate_vol_products</span>
+
+<span class="kn">from</span> <span class="nn">..io.io_aux</span> <span class="k">import</span> <span class="n">get_fieldname_pyart</span>
+<span class="kn">from</span> <span class="nn">..io.io_aux</span> <span class="k">import</span> <span class="n">get_save_dir</span><span class="p">,</span> <span class="n">make_filename</span>
+
+<span class="kn">from</span> <span class="nn">..io.read_data_other</span> <span class="k">import</span> <span class="n">read_intercomp_scores_ts</span>
+
+<span class="kn">from</span> <span class="nn">..io.write_data</span> <span class="k">import</span> <span class="n">write_colocated_gates</span><span class="p">,</span> <span class="n">write_colocated_data</span>
+<span class="kn">from</span> <span class="nn">..io.write_data</span> <span class="k">import</span> <span class="n">write_colocated_data_time_avg</span>
+<span class="kn">from</span> <span class="nn">..io.write_data</span> <span class="k">import</span> <span class="n">write_intercomp_scores_ts</span>
+
+<span class="kn">from</span> <span class="nn">..graph.plots</span> <span class="k">import</span> <span class="n">plot_scatter</span>
+<span class="kn">from</span> <span class="nn">..graph.plots_timeseries</span> <span class="k">import</span> <span class="n">plot_intercomp_scores_ts</span>
+
+<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">compute_2d_stats</span>
+
+
+<div class="viewcode-block" id="generate_intercomp_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.process_intercomp_products.generate_intercomp_products">[docs]</a><span class="k">def</span> <span class="nf">generate_intercomp_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates radar intercomparison products.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dataset : tuple</span>
+<span class="sd">        values of colocated gates dictionary</span>
+
+<span class="sd">    prdcfg : dictionary of dictionaries</span>
+<span class="sd">        product configuration dictionary of dictionaries</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        the name of the file created. None otherwise</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">dssavedir</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dsname&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s1">&#39;dssavename&#39;</span> <span class="ow">in</span> <span class="n">prdcfg</span><span class="p">:</span>
+        <span class="n">dssavedir</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dssavename&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;WRITE_INTERCOMP&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;final&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">savedir</span> <span class="o">=</span> <span class="n">get_save_dir</span><span class="p">(</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;basepath&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;procname&#39;</span><span class="p">],</span> <span class="n">dssavedir</span><span class="p">,</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;prdname&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
+            <span class="s1">&#39;colocated_data&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
+            <span class="p">[</span><span class="s1">&#39;csv&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span>
+            <span class="n">timeformat</span><span class="o">=</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">write_colocated_data</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;intercomp_dict&#39;</span><span class="p">],</span> <span class="n">fname</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;saved colocated data file: &#39;</span><span class="o">+</span><span class="n">fname</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fname</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;WRITE_INTERCOMP_TIME_AVG&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;final&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">savedir</span> <span class="o">=</span> <span class="n">get_save_dir</span><span class="p">(</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;basepath&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;procname&#39;</span><span class="p">],</span> <span class="n">dssavedir</span><span class="p">,</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;prdname&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
+            <span class="s1">&#39;colocated_data&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
+            <span class="p">[</span><span class="s1">&#39;csv&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span>
+            <span class="n">timeformat</span><span class="o">=</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">write_colocated_data_time_avg</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;intercomp_dict&#39;</span><span class="p">],</span> <span class="n">fname</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;saved colocated time averaged data file: &#39;</span><span class="o">+</span><span class="n">fname</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fname</span>
+    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PLOT_SCATTER_INTERCOMP&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;final&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
+        <span class="n">savedir</span> <span class="o">=</span> <span class="n">get_save_dir</span><span class="p">(</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;basepath&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;procname&#39;</span><span class="p">],</span> <span class="n">dssavedir</span><span class="p">,</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;prdname&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+
+        <span class="n">fname_list</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
+            <span class="s1">&#39;scatter&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span>
+            <span class="n">timeformat</span><span class="o">=</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
+            <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
+
+        <span class="n">step</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;step&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">hist_2d</span><span class="p">,</span> <span class="n">bin_edges1</span><span class="p">,</span> <span class="n">bin_edges2</span><span class="p">,</span> <span class="n">stats</span> <span class="o">=</span> <span class="n">compute_2d_stats</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;intercomp_dict&#39;</span><span class="p">][</span><span class="s1">&#39;rad1_val&#39;</span><span class="p">]),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;intercomp_dict&#39;</span><span class="p">][</span><span class="s1">&#39;rad2_val&#39;</span><span class="p">]),</span>
+            <span class="n">field_name</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">step1</span><span class="o">=</span><span class="n">step</span><span class="p">,</span> <span class="n">step2</span><span class="o">=</span><span class="n">step</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">hist_2d</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">metadata</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39;npoints: &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;npoints&#39;</span><span class="p">])</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+            <span class="s1">&#39;mode bias: &#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;modebias&#39;</span><span class="p">]))</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+            <span class="s1">&#39;median bias: &#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;medianbias&#39;</span><span class="p">]))</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+            <span class="s1">&#39;mean bias: &#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;meanbias&#39;</span><span class="p">]))</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+            <span class="s1">&#39;intercep slope 1: &#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="nb">float</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;intercep_slope_1&#39;</span><span class="p">]))</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+            <span class="s1">&#39;corr: &#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;corr&#39;</span><span class="p">]))</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+            <span class="s1">&#39;slope: &#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">]))</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+            <span class="s1">&#39;intercep: &#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;intercep&#39;</span><span class="p">]))</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">plot_scatter</span><span class="p">(</span><span class="n">bin_edges1</span><span class="p">,</span> <span class="n">bin_edges2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">hist_2d</span><span class="p">),</span> <span class="n">field_name</span><span class="p">,</span>
+                     <span class="n">field_name</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
+                     <span class="n">lin_regr</span><span class="o">=</span><span class="p">[</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">],</span> <span class="n">stats</span><span class="p">[</span><span class="s1">&#39;intercep&#39;</span><span class="p">]],</span>
+                     <span class="n">lin_regr_slope1</span><span class="o">=</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;intercep_slope_1&#39;</span><span class="p">],</span>
+                     <span class="n">rad1_name</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;intercomp_dict&#39;</span><span class="p">][</span><span class="s1">&#39;rad1_name&#39;</span><span class="p">],</span>
+                     <span class="n">rad2_name</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;intercomp_dict&#39;</span><span class="p">][</span><span class="s1">&#39;rad2_name&#39;</span><span class="p">])</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----- save to &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fname_list</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">fname_list</span>
+    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PLOT_AND_WRITE_INTERCOMP_TS&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;final&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;step&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">rad1_name</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;intercomp_dict&#39;</span><span class="p">][</span><span class="s1">&#39;rad1_name&#39;</span><span class="p">]</span>
+        <span class="n">rad2_name</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;intercomp_dict&#39;</span><span class="p">][</span><span class="s1">&#39;rad2_name&#39;</span><span class="p">]</span>
+
+        <span class="n">hist_2d</span><span class="p">,</span> <span class="n">bin_edges1</span><span class="p">,</span> <span class="n">bin_edges2</span><span class="p">,</span> <span class="n">stats</span> <span class="o">=</span> <span class="n">compute_2d_stats</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;intercomp_dict&#39;</span><span class="p">][</span><span class="s1">&#39;rad1_val&#39;</span><span class="p">]),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;intercomp_dict&#39;</span><span class="p">][</span><span class="s1">&#39;rad2_val&#39;</span><span class="p">]),</span>
+            <span class="n">field_name</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">step1</span><span class="o">=</span><span class="n">step</span><span class="p">,</span> <span class="n">step2</span><span class="o">=</span><span class="n">step</span><span class="p">)</span>
+
+        <span class="c1"># put time info in file path and name</span>
+        <span class="n">csvtimeinfo_file</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">timeformat</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">sort_by_date</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">rewrite</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s1">&#39;add_date_in_fname&#39;</span> <span class="ow">in</span> <span class="n">prdcfg</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;add_date_in_fname&#39;</span><span class="p">]:</span>
+                <span class="n">csvtimeinfo_file</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">]</span>
+                <span class="n">timeformat</span> <span class="o">=</span> <span class="s1">&#39;%Y&#39;</span>
+        <span class="k">if</span> <span class="s1">&#39;sort_by_date&#39;</span> <span class="ow">in</span> <span class="n">prdcfg</span><span class="p">:</span>
+            <span class="n">sort_by_date</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;sort_by_date&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;rewrite&#39;</span> <span class="ow">in</span> <span class="n">prdcfg</span><span class="p">:</span>
+            <span class="n">rewrite</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;rewrite&#39;</span><span class="p">]</span>
+
+        <span class="n">savedir</span> <span class="o">=</span> <span class="n">get_save_dir</span><span class="p">(</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;basepath&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;procname&#39;</span><span class="p">],</span> <span class="n">dssavedir</span><span class="p">,</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;prdname&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">csvfname</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
+            <span class="s1">&#39;ts&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;csv&#39;</span><span class="p">],</span>
+            <span class="n">prdcfginfo</span><span class="o">=</span><span class="n">rad1_name</span><span class="o">+</span><span class="s1">&#39;-&#39;</span><span class="o">+</span><span class="n">rad2_name</span><span class="p">,</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">csvtimeinfo_file</span><span class="p">,</span> <span class="n">timeformat</span><span class="o">=</span><span class="n">timeformat</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">csvfname</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">csvfname</span>
+
+        <span class="n">write_intercomp_scores_ts</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">stats</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">csvfname</span><span class="p">,</span>
+            <span class="n">rad1_name</span><span class="o">=</span><span class="n">rad1_name</span><span class="p">,</span> <span class="n">rad2_name</span><span class="o">=</span><span class="n">rad2_name</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;saved CSV file: &#39;</span><span class="o">+</span><span class="n">csvfname</span><span class="p">)</span>
+
+        <span class="p">(</span><span class="n">date_vec</span><span class="p">,</span> <span class="n">np_vec</span><span class="p">,</span> <span class="n">meanbias_vec</span><span class="p">,</span> <span class="n">medianbias_vec</span><span class="p">,</span> <span class="n">quant25bias_vec</span><span class="p">,</span>
+         <span class="n">quant75bias_vec</span><span class="p">,</span> <span class="n">modebias_vec</span><span class="p">,</span> <span class="n">corr_vec</span><span class="p">,</span> <span class="n">slope_vec</span><span class="p">,</span> <span class="n">intercep_vec</span><span class="p">,</span>
+         <span class="n">intercep_slope1_vec</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span>
+             <span class="n">read_intercomp_scores_ts</span><span class="p">(</span><span class="n">csvfname</span><span class="p">,</span> <span class="n">sort_by_date</span><span class="o">=</span><span class="n">sort_by_date</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">date_vec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="s1">&#39;Unable to plot time series. No valid data&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">date_vec</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="s1">&#39;Unable to plot time series. Not enough points&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">rewrite</span><span class="p">:</span>
+            <span class="n">stats</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;npoints&#39;</span><span class="p">:</span> <span class="n">np_vec</span><span class="p">,</span>
+                <span class="s1">&#39;meanbias&#39;</span><span class="p">:</span> <span class="n">meanbias_vec</span><span class="p">,</span>
+                <span class="s1">&#39;medianbias&#39;</span><span class="p">:</span> <span class="n">medianbias_vec</span><span class="p">,</span>
+                <span class="s1">&#39;quant25bias&#39;</span><span class="p">:</span> <span class="n">quant25bias_vec</span><span class="p">,</span>
+                <span class="s1">&#39;quant75bias&#39;</span><span class="p">:</span> <span class="n">quant75bias_vec</span><span class="p">,</span>
+                <span class="s1">&#39;modebias&#39;</span><span class="p">:</span> <span class="n">modebias_vec</span><span class="p">,</span>
+                <span class="s1">&#39;corr&#39;</span><span class="p">:</span> <span class="n">corr_vec</span><span class="p">,</span>
+                <span class="s1">&#39;slope&#39;</span><span class="p">:</span> <span class="n">slope_vec</span><span class="p">,</span>
+                <span class="s1">&#39;intercep&#39;</span><span class="p">:</span> <span class="n">intercep_vec</span><span class="p">,</span>
+                <span class="s1">&#39;intercep_slope_1&#39;</span><span class="p">:</span> <span class="n">intercep_slope1_vec</span>
+            <span class="p">}</span>
+            <span class="n">write_intercomp_scores_ts</span><span class="p">(</span>
+                <span class="n">date_vec</span><span class="p">,</span> <span class="n">stats</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">csvfname</span><span class="p">,</span>
+                <span class="n">rad1_name</span><span class="o">=</span><span class="n">rad1_name</span><span class="p">,</span> <span class="n">rad2_name</span><span class="o">=</span><span class="n">rad2_name</span><span class="p">)</span>
+
+        <span class="n">figtimeinfo</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">titldate</span> <span class="o">=</span> <span class="p">(</span><span class="n">date_vec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;-&#39;</span> <span class="o">+</span>
+                    <span class="n">date_vec</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="s1">&#39;add_date_in_fname&#39;</span> <span class="ow">in</span> <span class="n">prdcfg</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;add_date_in_fname&#39;</span><span class="p">]:</span>
+                <span class="n">figtimeinfo</span> <span class="o">=</span> <span class="n">date_vec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">timeformat</span> <span class="o">=</span> <span class="s1">&#39;%Y&#39;</span>
+
+        <span class="n">figfname_list</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
+            <span class="s1">&#39;ts&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="n">rad1_name</span><span class="o">+</span><span class="s1">&#39;-&#39;</span><span class="o">+</span><span class="n">rad2_name</span><span class="p">,</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">figtimeinfo</span><span class="p">,</span> <span class="n">timeformat</span><span class="o">=</span><span class="n">timeformat</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">figfname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">figfname_list</span><span class="p">):</span>
+            <span class="n">figfname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">figfname</span>
+
+        <span class="n">np_min</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;npoints_min&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">corr_min</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;corr_min&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span>
+
+        <span class="n">titl</span> <span class="o">=</span> <span class="p">(</span><span class="n">rad1_name</span><span class="o">+</span><span class="s1">&#39;-&#39;</span><span class="o">+</span><span class="n">rad2_name</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">+</span><span class="n">field_name</span><span class="o">+</span><span class="s1">&#39; intercomparison &#39;</span> <span class="o">+</span>
+                <span class="n">titldate</span><span class="p">)</span>
+        <span class="n">plot_intercomp_scores_ts</span><span class="p">(</span>
+            <span class="n">date_vec</span><span class="p">,</span> <span class="n">np_vec</span><span class="p">,</span> <span class="n">meanbias_vec</span><span class="p">,</span> <span class="n">medianbias_vec</span><span class="p">,</span> <span class="n">quant25bias_vec</span><span class="p">,</span>
+            <span class="n">quant75bias_vec</span><span class="p">,</span> <span class="n">modebias_vec</span><span class="p">,</span> <span class="n">corr_vec</span><span class="p">,</span> <span class="n">slope_vec</span><span class="p">,</span> <span class="n">intercep_vec</span><span class="p">,</span>
+            <span class="n">intercep_slope1_vec</span><span class="p">,</span> <span class="n">figfname_list</span><span class="p">,</span> <span class="n">ref_value</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">np_min</span><span class="o">=</span><span class="n">np_min</span><span class="p">,</span>
+            <span class="n">corr_min</span><span class="o">=</span><span class="n">corr_min</span><span class="p">,</span> <span class="n">labelx</span><span class="o">=</span><span class="s1">&#39;Time UTC&#39;</span><span class="p">,</span> <span class="n">titl</span><span class="o">=</span><span class="n">titl</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----- save to &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">figfname_list</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">figfname_list</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39; Unsupported product type: &#39;</span> <span class="o">+</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="generate_colocated_gates_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.process_intercomp_products.generate_colocated_gates_products">[docs]</a><span class="k">def</span> <span class="nf">generate_colocated_gates_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates colocated gates products</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dataset : tuple</span>
+<span class="sd">        radar objects and colocated gates dictionary</span>
+
+<span class="sd">    prdcfg : dictionary of dictionaries</span>
+<span class="sd">        product configuration dictionary of dictionaries</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        the name of the file created. None otherwise</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;WRITE_COLOCATED_GATES&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;radar&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s1">&#39;coloc_dict&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;radar&#39;</span><span class="p">]]:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">savedir</span> <span class="o">=</span> <span class="n">get_save_dir</span><span class="p">(</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;basepath&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;procname&#39;</span><span class="p">],</span> <span class="s1">&#39;colocated_gates&#39;</span><span class="p">,</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;prdname&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
+            <span class="s1">&#39;info&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;prdname&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;csv&#39;</span><span class="p">],</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">write_colocated_gates</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="p">[</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;radar&#39;</span><span class="p">]][</span><span class="s1">&#39;coloc_dict&#39;</span><span class="p">],</span> <span class="n">fname</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;saved colocated gates file: &#39;</span><span class="o">+</span><span class="n">fname</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fname</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;radar&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s1">&#39;radar_out&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;radar&#39;</span><span class="p">]]:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">generate_vol_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;radar&#39;</span><span class="p">]],</span> <span class="n">prdcfg</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="generate_time_avg_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.process_intercomp_products.generate_time_avg_products">[docs]</a><span class="k">def</span> <span class="nf">generate_time_avg_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    generates time average products</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dataset : tuple</span>
+<span class="sd">        radar objects and colocated gates dictionary</span>
+
+<span class="sd">    prdcfg : dictionary of dictionaries</span>
+<span class="sd">        product configuration dictionary of dictionaries</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        the name of the file created. None otherwise</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">generate_vol_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">pyrad</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../flow.html">pyrad.flow.flow_aux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../flow.html#pyrad-flow-flow-control">pyrad.flow.flow_control</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../proc.html">pyrad.proc.process_aux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-calib">pyrad.proc.process_calib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-cosmo">pyrad.proc.process_cosmo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-doppler">pyrad.proc.process_Doppler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-echoclass">pyrad.proc.process_echoclass</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-intercomp">pyrad.proc.process_intercomp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-monitoring">pyrad.proc.process_monitoring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-phase">pyrad.proc.process_phase</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-retrieve">pyrad.proc.process_retrieve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-timeseries">pyrad.proc.process_timeseries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-traj">pyrad.proc.process_traj</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../prod.html">pyrad.prod.product_aux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-product">pyrad.prod.process_product</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-vol-products">pyrad.prod.process_vol_products</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-grid-products">pyrad.prod.process_grid_products</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-timeseries-products">pyrad.prod.process_timeseries_products</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-monitoring-products">pyrad.prod.process_monitoring_products</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-intercomp-products">pyrad.prod.process_intercomp_products</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#id1">pyrad.prod.process_product</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html">pyrad.io.io_aux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-config">pyrad.io.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-radar">pyrad.io.read_data_radar</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-mxpol">pyrad.io.read_data_mxpol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-cosmo">pyrad.io.read_data_cosmo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-hzt">pyrad.io.read_data_hzt</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-sensor">pyrad.io.read_data_sensor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-sun">pyrad.io.read_data_sun</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-other">pyrad.io.read_data_other</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-write-data">pyrad.io.write_data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-timeseries">pyrad.io.timeseries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-trajectory">pyrad.io.trajectory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../graph.html">pyrad.graph.plots_aux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots">pyrad.graph.plots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots-vol">pyrad.graph.plots_vol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots-grid">pyrad.graph.plots_grid</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plot-timeseries">pyrad.graph.plot_timeseries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../util.html">pyrad.util.radar_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../util.html#pyrad-util-stat-utils">pyrad.util.stat_utils</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, meteoswiss-mdr.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

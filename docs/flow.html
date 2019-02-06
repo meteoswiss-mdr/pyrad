@@ -1,0 +1,905 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pyrad.flow.flow_aux &#8212; pyrad 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome to pyrad’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <hr class="docutils" />
+<span class="target" id="module-pyrad.flow.flow_aux"></span><div class="section" id="pyrad-flow-flow-aux">
+<h1>pyrad.flow.flow_aux<a class="headerlink" href="#pyrad-flow-flow-aux" title="Permalink to this headline">¶</a></h1>
+<p>Auxiliary functions to control the Pyrad data processing flow</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.flow.flow_aux._initialize_listener" title="pyrad.flow.flow_aux._initialize_listener"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_initialize_listener</span></code></a>()</td>
+<td>initialize the input listener</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.flow.flow_aux._user_input_listener" title="pyrad.flow.flow_aux._user_input_listener"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_user_input_listener</span></code></a>(input_queue)</td>
+<td>Permanently listens to the keyword input until the user types “Return”</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.flow.flow_aux._get_times_and_traj" title="pyrad.flow.flow_aux._get_times_and_traj"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_times_and_traj</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>wrapper</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.flow.flow_aux._initialize_datasets" title="pyrad.flow.flow_aux._initialize_datasets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_initialize_datasets</span></code></a>(dataset_levels,&nbsp;cfg[,&nbsp;…])</td>
+<td>Initializes datasets.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.flow.flow_aux._process_datasets" title="pyrad.flow.flow_aux._process_datasets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_process_datasets</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>wrapper</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.flow.flow_aux._postprocess_datasets" title="pyrad.flow.flow_aux._postprocess_datasets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_postprocess_datasets</span></code></a>(dataset_levels,&nbsp;cfg,&nbsp;dscfg)</td>
+<td>Processes the radar volumes for a particular time stamp.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.flow.flow_aux._wait_for_files" title="pyrad.flow.flow_aux._wait_for_files"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_wait_for_files</span></code></a>(nowtime,&nbsp;datacfg,&nbsp;datatype_list)</td>
+<td>Waits for the master file and all files in a volume scan to be present returns the masterfile if the volume scan can be processed.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.flow.flow_aux._get_radars_data" title="pyrad.flow.flow_aux._get_radars_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_radars_data</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>wrapper</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.flow.flow_aux._generate_dataset" title="pyrad.flow.flow_aux._generate_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_generate_dataset</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>wrapper</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.flow.flow_aux._generate_prod" title="pyrad.flow.flow_aux._generate_prod"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_generate_prod</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>wrapper</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.flow.flow_aux._create_cfg_dict" title="pyrad.flow.flow_aux._create_cfg_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_create_cfg_dict</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>wrapper</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.flow.flow_aux._create_datacfg_dict" title="pyrad.flow.flow_aux._create_datacfg_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_create_datacfg_dict</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>wrapper</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.flow.flow_aux._create_dscfg_dict" title="pyrad.flow.flow_aux._create_dscfg_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_create_dscfg_dict</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>wrapper</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.flow.flow_aux._create_prdcfg_dict" title="pyrad.flow.flow_aux._create_prdcfg_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_create_prdcfg_dict</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>wrapper</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.flow.flow_aux._get_datatype_list" title="pyrad.flow.flow_aux._get_datatype_list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_datatype_list</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>wrapper</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.flow.flow_aux._get_datasets_list" title="pyrad.flow.flow_aux._get_datasets_list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_datasets_list</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>wrapper</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.flow.flow_aux._get_masterfile_list" title="pyrad.flow.flow_aux._get_masterfile_list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_masterfile_list</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>wrapper</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.flow.flow_aux._add_dataset" title="pyrad.flow.flow_aux._add_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_add_dataset</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>wrapper</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.flow.flow_aux._warning_format" title="pyrad.flow.flow_aux._warning_format"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_warning_format</span></code></a>(message,&nbsp;category,&nbsp;filename,&nbsp;…)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="pyrad.flow.flow_aux._add_dataset">
+<code class="descclassname">pyrad.flow.flow_aux.</code><code class="descname">_add_dataset</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_aux.html#_add_dataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_aux._add_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>wrapper</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>args, kwargs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">arguments</span></dt>
+<dd><p class="first last">The arguments of the function</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
+<dd><p class="first last">The original function if no profiling has to be performed or
+the function decorated with the memory decorator</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.flow.flow_aux._create_cfg_dict">
+<code class="descclassname">pyrad.flow.flow_aux.</code><code class="descname">_create_cfg_dict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_aux.html#_create_cfg_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_aux._create_cfg_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>wrapper</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>args, kwargs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">arguments</span></dt>
+<dd><p class="first last">The arguments of the function</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
+<dd><p class="first last">The original function if no profiling has to be performed or
+the function decorated with the memory decorator</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.flow.flow_aux._create_datacfg_dict">
+<code class="descclassname">pyrad.flow.flow_aux.</code><code class="descname">_create_datacfg_dict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_aux.html#_create_datacfg_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_aux._create_datacfg_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>wrapper</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>args, kwargs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">arguments</span></dt>
+<dd><p class="first last">The arguments of the function</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
+<dd><p class="first last">The original function if no profiling has to be performed or
+the function decorated with the memory decorator</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.flow.flow_aux._create_dscfg_dict">
+<code class="descclassname">pyrad.flow.flow_aux.</code><code class="descname">_create_dscfg_dict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_aux.html#_create_dscfg_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_aux._create_dscfg_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>wrapper</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>args, kwargs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">arguments</span></dt>
+<dd><p class="first last">The arguments of the function</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
+<dd><p class="first last">The original function if no profiling has to be performed or
+the function decorated with the memory decorator</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.flow.flow_aux._create_prdcfg_dict">
+<code class="descclassname">pyrad.flow.flow_aux.</code><code class="descname">_create_prdcfg_dict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_aux.html#_create_prdcfg_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_aux._create_prdcfg_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>wrapper</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>args, kwargs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">arguments</span></dt>
+<dd><p class="first last">The arguments of the function</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
+<dd><p class="first last">The original function if no profiling has to be performed or
+the function decorated with the memory decorator</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.flow.flow_aux._generate_dataset">
+<code class="descclassname">pyrad.flow.flow_aux.</code><code class="descname">_generate_dataset</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_aux.html#_generate_dataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_aux._generate_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>wrapper</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>args, kwargs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">arguments</span></dt>
+<dd><p class="first last">The arguments of the function</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
+<dd><p class="first last">The original function if no profiling has to be performed or
+the function decorated with the memory decorator</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.flow.flow_aux._generate_prod">
+<code class="descclassname">pyrad.flow.flow_aux.</code><code class="descname">_generate_prod</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_aux.html#_generate_prod"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_aux._generate_prod" title="Permalink to this definition">¶</a></dt>
+<dd><p>wrapper</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>args, kwargs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">arguments</span></dt>
+<dd><p class="first last">The arguments of the function</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
+<dd><p class="first last">The original function if no profiling has to be performed or
+the function decorated with the memory decorator</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.flow.flow_aux._get_datasets_list">
+<code class="descclassname">pyrad.flow.flow_aux.</code><code class="descname">_get_datasets_list</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_aux.html#_get_datasets_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_aux._get_datasets_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>wrapper</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>args, kwargs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">arguments</span></dt>
+<dd><p class="first last">The arguments of the function</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
+<dd><p class="first last">The original function if no profiling has to be performed or
+the function decorated with the memory decorator</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.flow.flow_aux._get_datatype_list">
+<code class="descclassname">pyrad.flow.flow_aux.</code><code class="descname">_get_datatype_list</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_aux.html#_get_datatype_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_aux._get_datatype_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>wrapper</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>args, kwargs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">arguments</span></dt>
+<dd><p class="first last">The arguments of the function</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
+<dd><p class="first last">The original function if no profiling has to be performed or
+the function decorated with the memory decorator</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.flow.flow_aux._get_masterfile_list">
+<code class="descclassname">pyrad.flow.flow_aux.</code><code class="descname">_get_masterfile_list</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_aux.html#_get_masterfile_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_aux._get_masterfile_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>wrapper</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>args, kwargs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">arguments</span></dt>
+<dd><p class="first last">The arguments of the function</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
+<dd><p class="first last">The original function if no profiling has to be performed or
+the function decorated with the memory decorator</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.flow.flow_aux._get_radars_data">
+<code class="descclassname">pyrad.flow.flow_aux.</code><code class="descname">_get_radars_data</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_aux.html#_get_radars_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_aux._get_radars_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>wrapper</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>args, kwargs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">arguments</span></dt>
+<dd><p class="first last">The arguments of the function</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
+<dd><p class="first last">The original function if no profiling has to be performed or
+the function decorated with the memory decorator</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.flow.flow_aux._get_times_and_traj">
+<code class="descclassname">pyrad.flow.flow_aux.</code><code class="descname">_get_times_and_traj</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_aux.html#_get_times_and_traj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_aux._get_times_and_traj" title="Permalink to this definition">¶</a></dt>
+<dd><p>wrapper</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>args, kwargs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">arguments</span></dt>
+<dd><p class="first last">The arguments of the function</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
+<dd><p class="first last">The original function if no profiling has to be performed or
+the function decorated with the memory decorator</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.flow.flow_aux._initialize_datasets">
+<code class="descclassname">pyrad.flow.flow_aux.</code><code class="descname">_initialize_datasets</code><span class="sig-paren">(</span><em>dataset_levels</em>, <em>cfg</em>, <em>traj=None</em>, <em>infostr=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_aux.html#_initialize_datasets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_aux._initialize_datasets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes datasets. Creates the data set configuration dictionary</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>dataset_levels</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the list of data sets to be generated at each
+processing level</p>
+</dd>
+<dt><strong>cfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">processing configuration dictionary</p>
+</dd>
+<dt><strong>traj</strong> <span class="classifier-delimiter">:</span> <span class="classifier">trajectory object</span></dt>
+<dd><p class="first last">object containing the trajectory</p>
+</dd>
+<dt><strong>infostr</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">Information string about the actual data processing
+(e.g. ‘RUN57’). This string is added to product files.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the configuration data for each dataset</p>
+</dd>
+<dt><strong>traj</strong> <span class="classifier-delimiter">:</span> <span class="classifier">trajectory object</span></dt>
+<dd><p class="first last">the modified trajectory object</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.flow.flow_aux._initialize_listener">
+<code class="descclassname">pyrad.flow.flow_aux.</code><code class="descname">_initialize_listener</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_aux.html#_initialize_listener"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_aux._initialize_listener" title="Permalink to this definition">¶</a></dt>
+<dd><p>initialize the input listener</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>input_queue</strong> <span class="classifier-delimiter">:</span> <span class="classifier">queue object</span></dt>
+<dd><p class="first last">the queue object where to put the quit signal</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.flow.flow_aux._postprocess_datasets">
+<code class="descclassname">pyrad.flow.flow_aux.</code><code class="descname">_postprocess_datasets</code><span class="sig-paren">(</span><em>dataset_levels</em>, <em>cfg</em>, <em>dscfg</em>, <em>traj=None</em>, <em>infostr=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_aux.html#_postprocess_datasets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_aux._postprocess_datasets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Processes the radar volumes for a particular time stamp.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>dataset_levels</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the list of data sets to be generated at each
+processing level</p>
+</dd>
+<dt><strong>cfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">processing configuration dictionary</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the configuration data for each dataset</p>
+</dd>
+<dt><strong>traj</strong> <span class="classifier-delimiter">:</span> <span class="classifier">trajectory object</span></dt>
+<dd><p class="first last">and object containing the trajectory</p>
+</dd>
+<dt><strong>infostr</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">Information string about the actual data processing
+(e.g. ‘RUN57’). This string is added to product files.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">the modified configuration dictionary</p>
+</dd>
+<dt><strong>traj</strong> <span class="classifier-delimiter">:</span> <span class="classifier">trajectory object</span></dt>
+<dd><p class="first last">the modified trajectory object</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.flow.flow_aux._process_datasets">
+<code class="descclassname">pyrad.flow.flow_aux.</code><code class="descname">_process_datasets</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_aux.html#_process_datasets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_aux._process_datasets" title="Permalink to this definition">¶</a></dt>
+<dd><p>wrapper</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>args, kwargs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">arguments</span></dt>
+<dd><p class="first last">The arguments of the function</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
+<dd><p class="first last">The original function if no profiling has to be performed or
+the function decorated with the memory decorator</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.flow.flow_aux._user_input_listener">
+<code class="descclassname">pyrad.flow.flow_aux.</code><code class="descname">_user_input_listener</code><span class="sig-paren">(</span><em>input_queue</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_aux.html#_user_input_listener"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_aux._user_input_listener" title="Permalink to this definition">¶</a></dt>
+<dd><p>Permanently listens to the keyword input until the user types “Return”</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>input_queue</strong> <span class="classifier-delimiter">:</span> <span class="classifier">queue object</span></dt>
+<dd><p class="first last">the queue object where to put the quit signal</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.flow.flow_aux._wait_for_files">
+<code class="descclassname">pyrad.flow.flow_aux.</code><code class="descname">_wait_for_files</code><span class="sig-paren">(</span><em>nowtime</em>, <em>datacfg</em>, <em>datatype_list</em>, <em>last_processed=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_aux.html#_wait_for_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_aux._wait_for_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Waits for the master file and all files in a volume scan to be present
+returns the masterfile if the volume scan can be processed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>nowtime</strong> <span class="classifier-delimiter">:</span> <span class="classifier">datetime object</span></dt>
+<dd><p class="first last">the current time</p>
+</dd>
+<dt><strong>datacfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the parameters to get the radar data</p>
+</dd>
+<dt><strong>last_processed</strong> <span class="classifier-delimiter">:</span> <span class="classifier">datetime or None</span></dt>
+<dd><p class="first last">The end time of the previously processed radar volume</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>masterfile</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str or None</span></dt>
+<dd><p class="first last">name of the master file. None if the volume was not complete</p>
+</dd>
+<dt><strong>masterdatatypedescr</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">the description of the master data type</p>
+</dd>
+<dt><strong>last_processed</strong> <span class="classifier-delimiter">:</span> <span class="classifier">datetime</span></dt>
+<dd><p class="first last">True of all scans found</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.flow.flow_aux._wait_for_rainbow_datatypes">
+<code class="descclassname">pyrad.flow.flow_aux.</code><code class="descname">_wait_for_rainbow_datatypes</code><span class="sig-paren">(</span><em>rainbow_files</em>, <em>period=30</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_aux.html#_wait_for_rainbow_datatypes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_aux._wait_for_rainbow_datatypes" title="Permalink to this definition">¶</a></dt>
+<dd><p>waits until the files for all rainbow data types are present.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>rainbow_files</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of strings</span></dt>
+<dd><p class="first last">a list containing the names of all the rainbow files to wait for</p>
+</dd>
+<dt><strong>period</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">the time it has to wait (s)</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>found_all</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first last">True if all files were present. False otherwise</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.flow.flow_aux._warning_format">
+<code class="descclassname">pyrad.flow.flow_aux.</code><code class="descname">_warning_format</code><span class="sig-paren">(</span><em>message</em>, <em>category</em>, <em>filename</em>, <em>lineno</em>, <em>file=None</em>, <em>line=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_aux.html#_warning_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_aux._warning_format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pyrad.flow.flow_aux.profiler">
+<code class="descclassname">pyrad.flow.flow_aux.</code><code class="descname">profiler</code><span class="sig-paren">(</span><em>level=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_aux.html#profiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_aux.profiler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to be used as decorator for memory debugging. The function will
+be profiled or not according to its level respect to the global variable
+PROFILE_LEVEL</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>level</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">profiling level</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>func or func wrapper</strong> <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
+<dd><p class="first last">The function or its wrapper for profiling</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<span class="target" id="module-pyrad.flow.flow_control"></span><div class="section" id="pyrad-flow-flow-control">
+<h1>pyrad.flow.flow_control<a class="headerlink" href="#pyrad-flow-flow-control" title="Permalink to this headline">¶</a></h1>
+<p>functions to control the Pyrad data processing flow</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.flow.flow_control.main" title="pyrad.flow.flow_control.main"><code class="xref py py-obj docutils literal notranslate"><span class="pre">main</span></code></a>(cfgfile[,&nbsp;starttime,&nbsp;endtime,&nbsp;…])</td>
+<td>Main flow control.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.flow.flow_control.main_rt" title="pyrad.flow.flow_control.main_rt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">main_rt</span></code></a>(cfgfile_list[,&nbsp;starttime,&nbsp;endtime,&nbsp;…])</td>
+<td>main flow control.</td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="pyrad.flow.flow_control.main">
+<code class="descclassname">pyrad.flow.flow_control.</code><code class="descname">main</code><span class="sig-paren">(</span><em>cfgfile</em>, <em>starttime=None</em>, <em>endtime=None</em>, <em>trajfile=''</em>, <em>trajtype='plane'</em>, <em>flashnr=0</em>, <em>infostr=''</em>, <em>MULTIPROCESSING_DSET=False</em>, <em>MULTIPROCESSING_PROD=False</em>, <em>PROFILE_MULTIPROCESSING=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_control.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_control.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main flow control. Processes radar data off-line over a period of time
+given either by the user, a trajectory file, or determined by the last
+volume processed and the current time. Multiple radars can be processed
+simultaneously</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>cfgfile</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">path of the main config file</p>
+</dd>
+<dt><strong>starttime, endtime</strong> <span class="classifier-delimiter">:</span> <span class="classifier">datetime object</span></dt>
+<dd><p class="first last">start and end time of the data to be processed</p>
+</dd>
+<dt><strong>trajfile</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">path to file describing the trajectory</p>
+</dd>
+<dt><strong>trajtype</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">type of trajectory file. Can be either ‘plane’ or ‘lightning’</p>
+</dd>
+<dt><strong>flashnr</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">If larger than 0 will select a flash in a lightning trajectory file.
+If 0 the data corresponding to the trajectory of all flashes will be
+plotted</p>
+</dd>
+<dt><strong>infostr</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">Information string about the actual data processing
+(e.g. ‘RUN57’). This string is added to product files.</p>
+</dd>
+<dt><strong>MULTIPROCESSING_DSET</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Bool</span></dt>
+<dd><p class="first last">If true the generation of datasets at the same processing level will
+be parallelized</p>
+</dd>
+<dt><strong>MULTIPROCESSING_PROD</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Bool</span></dt>
+<dd><p class="first last">If true the generation of products from each dataset will be
+parallelized</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.flow.flow_control.main_rt">
+<code class="descclassname">pyrad.flow.flow_control.</code><code class="descname">main_rt</code><span class="sig-paren">(</span><em>cfgfile_list</em>, <em>starttime=None</em>, <em>endtime=None</em>, <em>infostr_list=None</em>, <em>proc_period=60</em>, <em>proc_finish=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_control.html#main_rt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.flow_control.main_rt" title="Permalink to this definition">¶</a></dt>
+<dd><p>main flow control. Processes radar data in real time. The start and end
+processing times can be determined by the user. This function is inteded
+for a single radar</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>cfgfile_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd><p class="first last">path of the main config files</p>
+</dd>
+<dt><strong>starttime, endtime</strong> <span class="classifier-delimiter">:</span> <span class="classifier">datetime object</span></dt>
+<dd><p class="first last">start and end time of the data to be processed</p>
+</dd>
+<dt><strong>infostr_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd><p class="first last">Information string about the actual data processing
+(e.g. ‘RUN57’). This string is added to product files.</p>
+</dd>
+<dt><strong>proc_period</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">period of time before starting a new processing round (seconds)</p>
+</dd>
+<dt><strong>cronjob_controlled</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first last">If True means that the program is started periodically from a cronjob
+and therefore finishes execution after processing</p>
+</dd>
+<dt><strong>proc_finish</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int or None</span></dt>
+<dd><p class="first last">if set to a value the program will be forced to shut down after the
+value (in seconds) from start time has been exceeded</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>end_proc</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first last">If true the program has ended successfully</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">pyrad</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">pyrad.flow.flow_aux</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#pyrad-flow-flow-control">pyrad.flow.flow_control</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="proc.html">pyrad.proc.process_aux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-calib">pyrad.proc.process_calib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-cosmo">pyrad.proc.process_cosmo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-doppler">pyrad.proc.process_Doppler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-echoclass">pyrad.proc.process_echoclass</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-intercomp">pyrad.proc.process_intercomp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-monitoring">pyrad.proc.process_monitoring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-phase">pyrad.proc.process_phase</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-retrieve">pyrad.proc.process_retrieve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-timeseries">pyrad.proc.process_timeseries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-traj">pyrad.proc.process_traj</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prod.html">pyrad.prod.product_aux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prod.html#pyrad-prod-process-product">pyrad.prod.process_product</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prod.html#pyrad-prod-process-vol-products">pyrad.prod.process_vol_products</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prod.html#pyrad-prod-process-grid-products">pyrad.prod.process_grid_products</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prod.html#pyrad-prod-process-timeseries-products">pyrad.prod.process_timeseries_products</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prod.html#pyrad-prod-process-monitoring-products">pyrad.prod.process_monitoring_products</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prod.html#pyrad-prod-process-intercomp-products">pyrad.prod.process_intercomp_products</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prod.html#id1">pyrad.prod.process_product</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html">pyrad.io.io_aux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-config">pyrad.io.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-read-data-radar">pyrad.io.read_data_radar</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-read-data-mxpol">pyrad.io.read_data_mxpol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-read-data-cosmo">pyrad.io.read_data_cosmo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-read-data-hzt">pyrad.io.read_data_hzt</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-read-data-sensor">pyrad.io.read_data_sensor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-read-data-sun">pyrad.io.read_data_sun</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-read-data-other">pyrad.io.read_data_other</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-write-data">pyrad.io.write_data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-timeseries">pyrad.io.timeseries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-trajectory">pyrad.io.trajectory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graph.html">pyrad.graph.plots_aux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graph.html#pyrad-graph-plots">pyrad.graph.plots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graph.html#pyrad-graph-plots-vol">pyrad.graph.plots_vol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graph.html#pyrad-graph-plots-grid">pyrad.graph.plots_grid</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graph.html#pyrad-graph-plot-timeseries">pyrad.graph.plot_timeseries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util.html">pyrad.util.radar_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util.html#pyrad-util-stat-utils">pyrad.util.stat_utils</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to pyrad’s documentation!</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, meteoswiss-mdr.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/flow.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
