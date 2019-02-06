@@ -7,30 +7,35 @@
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Input and output (pyrad.io) &#8212; pyrad 0.1.0 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-   
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
+    <link rel="search" title="Search" href="search.html" /> 
   </head><body>
-  
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyrad 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          
-
           <div class="body" role="main">
             
   <hr class="docutils" />
@@ -455,7 +460,7 @@
 
 <dl class="attribute">
 <dt id="pyrad.io.TimeSeries.__dict__">
-<code class="descname">__dict__</code><em class="property"> = mappingproxy({'__dict__': &lt;attribute '__dict__' of 'TimeSeries' objects&gt;, 'add_timesample': &lt;function TimeSeries.add_timesample&gt;, 'plot_hist': &lt;function TimeSeries.plot_hist&gt;, '__init__': &lt;function TimeSeries.__init__&gt;, '__doc__': &quot;\n    Holding timeseries data and metadata.\n\n    Attributes\n    ----------\n    description : array of str\n        Description of the data of the time series.\n    time_vector : array of datetime objects\n    timeformat : how to print the time (default:\n                 'Date, UTC [seconds since midnight]'\n    dataseries : List of _dataSeries object holding the\n                 data\n\n    Methods:\n    --------\n    add_dataseries : Add a data series to the object\n    write : Write time series to a file\n    plot : Plot a figure of a time series\n\n    &quot;, '__module__': 'pyrad.io.timeseries', '__weakref__': &lt;attribute '__weakref__' of 'TimeSeries' objects&gt;, 'add_dataseries': &lt;function TimeSeries.add_dataseries&gt;, 'plot': &lt;function TimeSeries.plot&gt;, 'write': &lt;function TimeSeries.write&gt;})</em><a class="headerlink" href="#pyrad.io.TimeSeries.__dict__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__dict__</code><em class="property"> = mappingproxy({'__dict__': &lt;attribute '__dict__' of 'TimeSeries' objects&gt;, 'add_timesample': &lt;function TimeSeries.add_timesample&gt;, '__weakref__': &lt;attribute '__weakref__' of 'TimeSeries' objects&gt;, '__doc__': &quot;\n    Holding timeseries data and metadata.\n\n    Attributes\n    ----------\n    description : array of str\n        Description of the data of the time series.\n    time_vector : array of datetime objects\n    timeformat : how to print the time (default:\n                 'Date, UTC [seconds since midnight]'\n    dataseries : List of _dataSeries object holding the\n                 data\n\n    Methods:\n    --------\n    add_dataseries : Add a data series to the object\n    write : Write time series to a file\n    plot : Plot a figure of a time series\n\n    &quot;, 'plot_hist': &lt;function TimeSeries.plot_hist&gt;, 'write': &lt;function TimeSeries.write&gt;, '__init__': &lt;function TimeSeries.__init__&gt;, 'plot': &lt;function TimeSeries.plot&gt;, '__module__': 'pyrad.io.timeseries', 'add_dataseries': &lt;function TimeSeries.add_dataseries&gt;})</em><a class="headerlink" href="#pyrad.io.TimeSeries.__dict__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -746,7 +751,7 @@ considered.</p>
 
 <dl class="attribute">
 <dt id="pyrad.io.Trajectory.__dict__">
-<code class="descname">__dict__</code><em class="property"> = mappingproxy({'_read_traj': &lt;function Trajectory._read_traj&gt;, '_read_traj_lightning': &lt;function Trajectory._read_traj_lightning&gt;, 'get_start_time': &lt;function Trajectory.get_start_time&gt;, '__init__': &lt;function Trajectory.__init__&gt;, 'get_end_time': &lt;function Trajectory.get_end_time&gt;, 'calculate_velocities': &lt;function Trajectory.calculate_velocities&gt;, '__doc__': &quot;\n    A class for reading and handling trajectory data from a file.\n\n    Attributes\n    ----------\n    filename : str\n        Path and name of the trajectory definition file\n    starttime : datetime\n        Start time of trajectory processing.\n    endtime : datetime\n        End time of trajectory processing.\n    trajtype : str\n    Type of trajectory. Can be 'plane' or 'lightning'\n    time_vector : Array of datetime objects\n        Array containing the trajectory time samples\n    wgs84_lat_deg : Array of floats\n        WGS84 latitude samples in radian\n    wgs84_lon_deg : Array of floats\n        WGS84 longitude samples in radian\n    wgs84_alt_m : Array of floats\n        WGS84 altitude samples in m\n    nsamples : int\n    Number of samples in the trajectory\n    _swiss_grid_done : Bool\n        Indicates that convertion to Swiss coordinates has been performed\n    swiss_chy, swiss_chx, swiss_chh : Array of floats\n        Swiss coordinates in m\n    radar_list : list\n          List of radars for which trajectories are going to be computed\n    flashnr : int\n          For 'lightning' only. Number of flash for which trajectory data\n          is going to be computed. If 0 all all flashes are going to be\n          considered.\n    time_in_flash : array of floats\n          For 'lightning' only. Time within flash (sec)\n    flashnr_vec : array of ints\n          For 'lightning' only. Flash number of each data sample\n    dBm : array of floats\n          For 'lightning' only. Lightning power (dBm)\n\n\n    Methods:\n    --------\n    add_radar : Add a radar\n    calculate_velocities : Computes velocities\n    get_start_time : Return time of first trajectory sample\n    get_end_time : Return time of last trajectory sample\n    get_samples_in_period : Get indices of samples within period\n    _convert_traj_to_swissgrid : convert data from WGS84 to Swiss coordinates\n    _read_traj : Read plane trajectory from file\n    _read_traj_lightning : Read lightning trajectory from file\n    _get_total_seconds : Get the total time of the trajectory in seconds\n\n    &quot;, '__module__': 'pyrad.io.trajectory', 'get_samples_in_period': &lt;function Trajectory.get_samples_in_period&gt;, '_get_total_seconds': &lt;function Trajectory._get_total_seconds&gt;, 'add_radar': &lt;function Trajectory.add_radar&gt;, '__dict__': &lt;attribute '__dict__' of 'Trajectory' objects&gt;, '_convert_traj_to_swissgrid': &lt;function Trajectory._convert_traj_to_swissgrid&gt;, '__weakref__': &lt;attribute '__weakref__' of 'Trajectory' objects&gt;, '_read_traj_trt': &lt;function Trajectory._read_traj_trt&gt;})</em><a class="headerlink" href="#pyrad.io.Trajectory.__dict__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__dict__</code><em class="property"> = mappingproxy({'__dict__': &lt;attribute '__dict__' of 'Trajectory' objects&gt;, '_convert_traj_to_swissgrid': &lt;function Trajectory._convert_traj_to_swissgrid&gt;, '_read_traj_lightning': &lt;function Trajectory._read_traj_lightning&gt;, '_read_traj': &lt;function Trajectory._read_traj&gt;, 'get_samples_in_period': &lt;function Trajectory.get_samples_in_period&gt;, '__doc__': &quot;\n    A class for reading and handling trajectory data from a file.\n\n    Attributes\n    ----------\n    filename : str\n        Path and name of the trajectory definition file\n    starttime : datetime\n        Start time of trajectory processing.\n    endtime : datetime\n        End time of trajectory processing.\n    trajtype : str\n    Type of trajectory. Can be 'plane' or 'lightning'\n    time_vector : Array of datetime objects\n        Array containing the trajectory time samples\n    wgs84_lat_deg : Array of floats\n        WGS84 latitude samples in radian\n    wgs84_lon_deg : Array of floats\n        WGS84 longitude samples in radian\n    wgs84_alt_m : Array of floats\n        WGS84 altitude samples in m\n    nsamples : int\n    Number of samples in the trajectory\n    _swiss_grid_done : Bool\n        Indicates that convertion to Swiss coordinates has been performed\n    swiss_chy, swiss_chx, swiss_chh : Array of floats\n        Swiss coordinates in m\n    radar_list : list\n          List of radars for which trajectories are going to be computed\n    flashnr : int\n          For 'lightning' only. Number of flash for which trajectory data\n          is going to be computed. If 0 all all flashes are going to be\n          considered.\n    time_in_flash : array of floats\n          For 'lightning' only. Time within flash (sec)\n    flashnr_vec : array of ints\n          For 'lightning' only. Flash number of each data sample\n    dBm : array of floats\n          For 'lightning' only. Lightning power (dBm)\n\n\n    Methods:\n    --------\n    add_radar : Add a radar\n    calculate_velocities : Computes velocities\n    get_start_time : Return time of first trajectory sample\n    get_end_time : Return time of last trajectory sample\n    get_samples_in_period : Get indices of samples within period\n    _convert_traj_to_swissgrid : convert data from WGS84 to Swiss coordinates\n    _read_traj : Read plane trajectory from file\n    _read_traj_lightning : Read lightning trajectory from file\n    _get_total_seconds : Get the total time of the trajectory in seconds\n\n    &quot;, 'add_radar': &lt;function Trajectory.add_radar&gt;, 'get_end_time': &lt;function Trajectory.get_end_time&gt;, '__init__': &lt;function Trajectory.__init__&gt;, 'get_start_time': &lt;function Trajectory.get_start_time&gt;, '__weakref__': &lt;attribute '__weakref__' of 'Trajectory' objects&gt;, '_read_traj_trt': &lt;function Trajectory._read_traj_trt&gt;, '__module__': 'pyrad.io.trajectory', 'calculate_velocities': &lt;function Trajectory.calculate_velocities&gt;, '_get_total_seconds': &lt;function Trajectory._get_total_seconds&gt;})</em><a class="headerlink" href="#pyrad.io.Trajectory.__dict__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -4021,47 +4026,34 @@ variables</p>
 
 
           </div>
-          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="index.html">pyrad</a></h1>
-
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="flow.html">processing flow control (<code class="docutils literal notranslate"><span class="pre">pyrad.flow</span></code>)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html">Dataset processing (<code class="docutils literal notranslate"><span class="pre">pyrad.proc</span></code>)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="prod.html">Products generation (<code class="docutils literal notranslate"><span class="pre">pyrad.prod</span></code>)</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Input and output (<code class="docutils literal notranslate"><span class="pre">pyrad.io</span></code>)</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#reading-configuration-files">Reading configuration files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#reading-radar-data">Reading radar data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#reading-cosmo-data">Reading cosmo data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#reading-other-data">Reading other data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#writing-data">Writing data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#auxiliary-functions">Auxiliary functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#trajectory">Trajectory</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#timeseries">TimeSeries</a></li>
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Input and output (<code class="docutils literal notranslate"><span class="pre">pyrad.io</span></code>)</a><ul>
+<li><a class="reference internal" href="#reading-configuration-files">Reading configuration files</a></li>
+<li><a class="reference internal" href="#reading-radar-data">Reading radar data</a></li>
+<li><a class="reference internal" href="#reading-cosmo-data">Reading cosmo data</a></li>
+<li><a class="reference internal" href="#reading-other-data">Reading other data</a></li>
+<li><a class="reference internal" href="#writing-data">Writing data</a></li>
+<li><a class="reference internal" href="#auxiliary-functions">Auxiliary functions</a></li>
+<li><a class="reference internal" href="#trajectory">Trajectory</a></li>
+<li><a class="reference internal" href="#timeseries">TimeSeries</a><ul>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="graph.html">Plotting (<code class="docutils literal notranslate"><span class="pre">pyrad.graph</span></code>)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="util.html">Utilities (<code class="docutils literal notranslate"><span class="pre">pyrad.util</span></code>)</a></li>
+</ul>
+</li>
 </ul>
 
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-  </ul></li>
-</ul>
-</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/io.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <div class="searchformwrapper">
@@ -4074,32 +4066,25 @@ variables</p>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
-      &copy;2019, meteoswiss-mdr.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="_sources/io.rst.txt"
-          rel="nofollow">Page source</a>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyrad 0.1.0 documentation</a> &#187;</li> 
+      </ul>
     </div>
-
-    
-
-    
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, meteoswiss-mdr.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+    </div>
   </body>
 </html>
