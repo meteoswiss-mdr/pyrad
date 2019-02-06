@@ -7,32 +7,34 @@
 rm -f ../pyrad_library_reference_dev.pdf
 cd library_reference_developers
 
-# make pdf
-make clean
-make latexpdf
-cp build/latex/*.pdf ../../.
-rm -rf build/*
+# # make pdf
+# make clean
+# make latexpdf
+# cp build/latex/*.pdf ../../.
+# rm -rf build/*
 
 # make html for github pages
 # make clean
 # make html
 # rm -r ../../../docs/*
 # mv build/html/* ../../../docs
+# rm -rf build/*
 cd ..
 
 # library reference for users
 rm -f ../pyrad_library_reference_users.pdf
 cd library_reference_users
 
-# make pdf
-make clean
-make latexpdf
-cp build/latex/*.pdf ../../.
-rm -rf build/*
+## make pdf
+#make clean
+#make latexpdf
+#cp build/latex/*.pdf ../../.
+#rm -rf build/*
 
 # make html for github pages
 make clean
 make html
 rm -r ../../../docs/*
 mv build/html/* ../../../docs
+rm -rf build/*
 cd ..
