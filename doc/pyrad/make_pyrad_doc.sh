@@ -34,7 +34,7 @@ cd library_reference_users
 # make html for github pages
 make clean
 make html
-rm -r ../../../docs/*
+git rm -r ../../../docs/*
 mv build/html/* ../../../docs
 rm -rf build/*
 touch ../../../docs/.nojekyll
