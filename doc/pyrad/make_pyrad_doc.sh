@@ -37,5 +37,5 @@ make html
 rm -r ../../../docs/*
 mv build/html/* ../../../docs
 rm -rf build/*
-touch ../../docs/.nojekyll
+touch ../../../docs/.nojekyll
 cd ..
