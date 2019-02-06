@@ -87,7 +87,7 @@
 <span class="kn">from</span> <span class="nn">.io_aux</span> <span class="k">import</span> <span class="n">get_fieldname_pyart</span><span class="p">,</span> <span class="n">_get_datetime</span>
 
 
-<div class="viewcode-block" id="read_profile_ts"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_profile_ts">[docs]</a><span class="k">def</span> <span class="nf">read_profile_ts</span><span class="p">(</span><span class="n">fname_list</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">hres</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label_nr</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">t_res</span><span class="o">=</span><span class="mf">300.</span><span class="p">):</span>
+<div class="viewcode-block" id="read_profile_ts"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_profile_ts">[docs]</a><span class="k">def</span> <span class="nf">read_profile_ts</span><span class="p">(</span><span class="n">fname_list</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">hres</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label_nr</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">t_res</span><span class="o">=</span><span class="mf">300.</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads a colection of profile data file and creates a time series</span>
 
@@ -145,7 +145,7 @@
     <span class="k">return</span> <span class="n">tbin_edges</span><span class="p">,</span> <span class="n">hbin_edges</span><span class="p">,</span> <span class="n">np_ma</span><span class="p">,</span> <span class="n">data_ma</span><span class="p">,</span> <span class="n">datetime_arr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="read_histogram_ts"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_histogram_ts">[docs]</a><span class="k">def</span> <span class="nf">read_histogram_ts</span><span class="p">(</span><span class="n">fname_list</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">t_res</span><span class="o">=</span><span class="mf">300.</span><span class="p">):</span>
+<div class="viewcode-block" id="read_histogram_ts"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_histogram_ts">[docs]</a><span class="k">def</span> <span class="nf">read_histogram_ts</span><span class="p">(</span><span class="n">fname_list</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">t_res</span><span class="o">=</span><span class="mf">300.</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads a colection of histogram data file and creates a time series</span>
 
@@ -200,7 +200,7 @@
     <span class="k">return</span> <span class="n">tbin_edges</span><span class="p">,</span> <span class="n">bin_edges</span><span class="p">,</span> <span class="n">data_ma</span><span class="p">,</span> <span class="n">datetime_arr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="read_quantiles_ts"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_quantiles_ts">[docs]</a><span class="k">def</span> <span class="nf">read_quantiles_ts</span><span class="p">(</span><span class="n">fname_list</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span> <span class="n">qmin</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">qmax</span><span class="o">=</span><span class="mf">100.</span><span class="p">,</span> <span class="n">t_res</span><span class="o">=</span><span class="mf">300.</span><span class="p">):</span>
+<div class="viewcode-block" id="read_quantiles_ts"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_quantiles_ts">[docs]</a><span class="k">def</span> <span class="nf">read_quantiles_ts</span><span class="p">(</span><span class="n">fname_list</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span> <span class="n">qmin</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">qmax</span><span class="o">=</span><span class="mf">100.</span><span class="p">,</span> <span class="n">t_res</span><span class="o">=</span><span class="mf">300.</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads a colection of quantiles data file and creates a time series</span>
 
@@ -256,7 +256,7 @@
     <span class="k">return</span> <span class="n">tbin_edges</span><span class="p">,</span> <span class="n">qbin_edges</span><span class="p">,</span> <span class="n">data_ma</span><span class="p">,</span> <span class="n">datetime_arr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="read_rhi_profile"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_rhi_profile">[docs]</a><span class="k">def</span> <span class="nf">read_rhi_profile</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;50.0-percentile&#39;</span><span class="p">,</span> <span class="s1">&#39;25.0-percentile&#39;</span><span class="p">,</span>
+<div class="viewcode-block" id="read_rhi_profile"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_rhi_profile">[docs]</a><span class="k">def</span> <span class="nf">read_rhi_profile</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;50.0-percentile&#39;</span><span class="p">,</span> <span class="s1">&#39;25.0-percentile&#39;</span><span class="p">,</span>
                                     <span class="s1">&#39;75.0-percentile&#39;</span><span class="p">]):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads a monitoring time series contained in a csv file</span>
@@ -306,7 +306,7 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="read_last_state"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_last_state">[docs]</a><span class="k">def</span> <span class="nf">read_last_state</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="read_last_state"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_last_state">[docs]</a><span class="k">def</span> <span class="nf">read_last_state</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads a file containing the date of acquisition of the last volume</span>
 <span class="sd">    processed</span>
@@ -342,7 +342,7 @@
         <span class="k">return</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="read_status"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_status">[docs]</a><span class="k">def</span> <span class="nf">read_status</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="read_status"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_status">[docs]</a><span class="k">def</span> <span class="nf">read_status</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads rad4alp xml status file.</span>
 
@@ -389,7 +389,7 @@
         <span class="k">return</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="read_rad4alp_cosmo"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_rad4alp_cosmo">[docs]</a><span class="k">def</span> <span class="nf">read_rad4alp_cosmo</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">ngates</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="read_rad4alp_cosmo"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_rad4alp_cosmo">[docs]</a><span class="k">def</span> <span class="nf">read_rad4alp_cosmo</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">ngates</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads rad4alp COSMO data binary file.</span>
 
@@ -445,7 +445,7 @@
         <span class="k">return</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="read_rad4alp_vis"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_rad4alp_vis">[docs]</a><span class="k">def</span> <span class="nf">read_rad4alp_vis</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">datatype</span><span class="p">):</span>
+<div class="viewcode-block" id="read_rad4alp_vis"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_rad4alp_vis">[docs]</a><span class="k">def</span> <span class="nf">read_rad4alp_vis</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">datatype</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads rad4alp visibility data binary file.</span>
 
@@ -503,7 +503,7 @@
         <span class="k">return</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="read_histogram"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_histogram">[docs]</a><span class="k">def</span> <span class="nf">read_histogram</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="read_histogram"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_histogram">[docs]</a><span class="k">def</span> <span class="nf">read_histogram</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads a histogram contained in a csv file</span>
 
@@ -543,7 +543,7 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="read_quantiles"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_quantiles">[docs]</a><span class="k">def</span> <span class="nf">read_quantiles</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="read_quantiles"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_quantiles">[docs]</a><span class="k">def</span> <span class="nf">read_quantiles</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads quantiles contained in a csv file</span>
 
@@ -581,7 +581,7 @@
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read file &#39;</span><span class="o">+</span><span class="n">fname</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="read_excess_gates"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_excess_gates">[docs]</a><span class="k">def</span> <span class="nf">read_excess_gates</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="read_excess_gates"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_excess_gates">[docs]</a><span class="k">def</span> <span class="nf">read_excess_gates</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads a csv files containing the position of gates exceeding</span>
 <span class="sd">    a given percentile of frequency of occurrence</span>
@@ -637,7 +637,7 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="read_colocated_gates"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_colocated_gates">[docs]</a><span class="k">def</span> <span class="nf">read_colocated_gates</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="read_colocated_gates"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_colocated_gates">[docs]</a><span class="k">def</span> <span class="nf">read_colocated_gates</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads a csv files containing the position of colocated gates</span>
 
@@ -696,7 +696,7 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="read_colocated_data"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_colocated_data">[docs]</a><span class="k">def</span> <span class="nf">read_colocated_data</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="read_colocated_data"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_colocated_data">[docs]</a><span class="k">def</span> <span class="nf">read_colocated_data</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads a csv files containing colocated data</span>
 
@@ -768,7 +768,7 @@
                 <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="read_colocated_data_time_avg"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_colocated_data_time_avg">[docs]</a><span class="k">def</span> <span class="nf">read_colocated_data_time_avg</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">read_colocated_data_time_avg</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads a csv files containing time averaged colocated data</span>
 
@@ -846,10 +846,10 @@
         <span class="n">warn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read file &#39;</span><span class="o">+</span><span class="n">fname</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
-                <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+                <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="read_timeseries"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_timeseries">[docs]</a><span class="k">def</span> <span class="nf">read_timeseries</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="read_timeseries"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_timeseries">[docs]</a><span class="k">def</span> <span class="nf">read_timeseries</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads a time series contained in a csv file</span>
 
@@ -894,7 +894,7 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="read_ts_cum"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_ts_cum">[docs]</a><span class="k">def</span> <span class="nf">read_ts_cum</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="read_ts_cum"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_ts_cum">[docs]</a><span class="k">def</span> <span class="nf">read_ts_cum</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads a time series of precipitation accumulation contained in a csv file</span>
 
@@ -945,7 +945,7 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="read_ml_ts"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_ml_ts">[docs]</a><span class="k">def</span> <span class="nf">read_ml_ts</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="read_ml_ts"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_ml_ts">[docs]</a><span class="k">def</span> <span class="nf">read_ml_ts</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads a melting layer time series contained in a csv file</span>
 
@@ -1004,7 +1004,7 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="read_monitoring_ts"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_monitoring_ts">[docs]</a><span class="k">def</span> <span class="nf">read_monitoring_ts</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">sort_by_date</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="read_monitoring_ts"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_monitoring_ts">[docs]</a><span class="k">def</span> <span class="nf">read_monitoring_ts</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">sort_by_date</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads a monitoring time series contained in a csv file</span>
 
@@ -1080,7 +1080,7 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="read_monitoring_ts_old"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_monitoring_ts_old">[docs]</a><span class="k">def</span> <span class="nf">read_monitoring_ts_old</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">read_monitoring_ts_old</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads an old format of the monitoring time series contained in a text file</span>
 
@@ -1128,10 +1128,10 @@
     <span class="k">except</span> <span class="ne">EnvironmentError</span> <span class="k">as</span> <span class="n">ee</span><span class="p">:</span>
         <span class="n">warn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read file &#39;</span><span class="o">+</span><span class="n">fname</span><span class="p">)</span>
-        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
 
-<div class="viewcode-block" id="read_intercomp_scores_ts"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_intercomp_scores_ts">[docs]</a><span class="k">def</span> <span class="nf">read_intercomp_scores_ts</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">sort_by_date</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="read_intercomp_scores_ts"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_intercomp_scores_ts">[docs]</a><span class="k">def</span> <span class="nf">read_intercomp_scores_ts</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">sort_by_date</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads a radar intercomparison scores csv file</span>
 
@@ -1243,7 +1243,7 @@
                 <span class="kc">None</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="read_intercomp_scores_ts_old"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_intercomp_scores_ts_old">[docs]</a><span class="k">def</span> <span class="nf">read_intercomp_scores_ts_old</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">read_intercomp_scores_ts_old</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads a radar intercomparison scores csv file in old format</span>
 
@@ -1318,10 +1318,10 @@
         <span class="n">warn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read file &#39;</span><span class="o">+</span><span class="n">fname</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
-                <span class="kc">None</span><span class="p">)</span></div>
+                <span class="kc">None</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="read_intercomp_scores_ts_old_v0"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_intercomp_scores_ts_old_v0">[docs]</a><span class="k">def</span> <span class="nf">read_intercomp_scores_ts_old_v0</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">corr_min</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">np_min</span><span class="o">=</span><span class="mi">9</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">read_intercomp_scores_ts_old_v0</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">corr_min</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">np_min</span><span class="o">=</span><span class="mi">9</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads a radar intercomparison scores csv file in the oldest format</span>
 
@@ -1426,10 +1426,10 @@
         <span class="n">warn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read file &#39;</span><span class="o">+</span><span class="n">fname</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
-                <span class="kc">None</span><span class="p">)</span></div>
+                <span class="kc">None</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="read_selfconsistency"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_selfconsistency">[docs]</a><span class="k">def</span> <span class="nf">read_selfconsistency</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="read_selfconsistency"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_selfconsistency">[docs]</a><span class="k">def</span> <span class="nf">read_selfconsistency</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads a self-consistency table with Zdr, Kdp/Zh columns</span>
 
@@ -1471,7 +1471,7 @@
         <span class="k">return</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="read_antenna_pattern"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_other.read_antenna_pattern">[docs]</a><span class="k">def</span> <span class="nf">read_antenna_pattern</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">linear</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">twoway</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="read_antenna_pattern"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_antenna_pattern">[docs]</a><span class="k">def</span> <span class="nf">read_antenna_pattern</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">linear</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">twoway</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read antenna pattern from file</span>
 
@@ -1549,46 +1549,12 @@
 
 <h3>Navigation</h3>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../flow.html">pyrad.flow.flow_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../flow.html#pyrad-flow-flow-control">pyrad.flow.flow_control</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html">pyrad.proc.process_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-calib">pyrad.proc.process_calib</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-cosmo">pyrad.proc.process_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-doppler">pyrad.proc.process_Doppler</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-echoclass">pyrad.proc.process_echoclass</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-intercomp">pyrad.proc.process_intercomp</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-monitoring">pyrad.proc.process_monitoring</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-phase">pyrad.proc.process_phase</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-retrieve">pyrad.proc.process_retrieve</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-timeseries">pyrad.proc.process_timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-traj">pyrad.proc.process_traj</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html">pyrad.prod.product_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-product">pyrad.prod.process_product</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-vol-products">pyrad.prod.process_vol_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-grid-products">pyrad.prod.process_grid_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-timeseries-products">pyrad.prod.process_timeseries_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-monitoring-products">pyrad.prod.process_monitoring_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-intercomp-products">pyrad.prod.process_intercomp_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#id1">pyrad.prod.process_product</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html">pyrad.io.io_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-config">pyrad.io.config</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-radar">pyrad.io.read_data_radar</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-mxpol">pyrad.io.read_data_mxpol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-cosmo">pyrad.io.read_data_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-hzt">pyrad.io.read_data_hzt</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-sensor">pyrad.io.read_data_sensor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-sun">pyrad.io.read_data_sun</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-other">pyrad.io.read_data_other</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-write-data">pyrad.io.write_data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-timeseries">pyrad.io.timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-trajectory">pyrad.io.trajectory</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html">pyrad.graph.plots_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots">pyrad.graph.plots</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots-vol">pyrad.graph.plots_vol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots-grid">pyrad.graph.plots_grid</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plot-timeseries">pyrad.graph.plot_timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../util.html">pyrad.util.radar_utils</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../util.html#pyrad-util-stat-utils">pyrad.util.stat_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../flow.html">processing flow control (<code class="docutils literal notranslate"><span class="pre">pyrad.flow</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../proc.html">Dataset processing (<code class="docutils literal notranslate"><span class="pre">pyrad.proc</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../prod.html">Products generation (<code class="docutils literal notranslate"><span class="pre">pyrad.prod</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html">Input and output (<code class="docutils literal notranslate"><span class="pre">pyrad.io</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../graph.html">Plotting (<code class="docutils literal notranslate"><span class="pre">pyrad.graph</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../util.html">Utilities (<code class="docutils literal notranslate"><span class="pre">pyrad.util</span></code>)</a></li>
 </ul>
 
 <div class="relations">

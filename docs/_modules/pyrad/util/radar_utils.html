@@ -88,7 +88,7 @@
 <span class="kn">from</span> <span class="nn">.stat_utils</span> <span class="k">import</span> <span class="n">quantiles_weighted</span>
 
 
-<div class="viewcode-block" id="get_ROI"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.get_ROI">[docs]</a><span class="k">def</span> <span class="nf">get_ROI</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">fieldname</span><span class="p">,</span> <span class="n">sector</span><span class="p">):</span>
+<div class="viewcode-block" id="get_ROI"><a class="viewcode-back" href="../../../util.html#pyrad.util.get_ROI">[docs]</a><span class="k">def</span> <span class="nf">get_ROI</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">fieldname</span><span class="p">,</span> <span class="n">sector</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    filter out any data outside the region of interest defined by sector</span>
 
@@ -144,7 +144,7 @@
     <span class="k">return</span> <span class="n">roi_flag</span></div>
 
 
-<div class="viewcode-block" id="rainfall_accumulation"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.rainfall_accumulation">[docs]</a><span class="k">def</span> <span class="nf">rainfall_accumulation</span><span class="p">(</span><span class="n">t_in_vec</span><span class="p">,</span> <span class="n">val_in_vec</span><span class="p">,</span> <span class="n">cum_time</span><span class="o">=</span><span class="mf">3600.</span><span class="p">,</span>
+<div class="viewcode-block" id="rainfall_accumulation"><a class="viewcode-back" href="../../../util.html#pyrad.util.rainfall_accumulation">[docs]</a><span class="k">def</span> <span class="nf">rainfall_accumulation</span><span class="p">(</span><span class="n">t_in_vec</span><span class="p">,</span> <span class="n">val_in_vec</span><span class="p">,</span> <span class="n">cum_time</span><span class="o">=</span><span class="mf">3600.</span><span class="p">,</span>
                           <span class="n">base_time</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">dropnan</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes the rainfall accumulation of a time series over a given period</span>
@@ -193,7 +193,7 @@
     <span class="k">return</span> <span class="n">t_out_vec</span><span class="p">,</span> <span class="n">val_out_vec</span><span class="p">,</span> <span class="n">np_vec</span></div>
 
 
-<div class="viewcode-block" id="time_series_statistics"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.time_series_statistics">[docs]</a><span class="k">def</span> <span class="nf">time_series_statistics</span><span class="p">(</span><span class="n">t_in_vec</span><span class="p">,</span> <span class="n">val_in_vec</span><span class="p">,</span> <span class="n">avg_time</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span>
+<div class="viewcode-block" id="time_series_statistics"><a class="viewcode-back" href="../../../util.html#pyrad.util.time_series_statistics">[docs]</a><span class="k">def</span> <span class="nf">time_series_statistics</span><span class="p">(</span><span class="n">t_in_vec</span><span class="p">,</span> <span class="n">val_in_vec</span><span class="p">,</span> <span class="n">avg_time</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span>
                            <span class="n">base_time</span><span class="o">=</span><span class="mi">1800</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">dropnan</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes statistics over a time-averaged series</span>
@@ -233,7 +233,7 @@
     <span class="k">return</span> <span class="n">t_out_vec</span><span class="p">,</span> <span class="n">val_out_vec</span></div>
 
 
-<div class="viewcode-block" id="join_time_series"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.join_time_series">[docs]</a><span class="k">def</span> <span class="nf">join_time_series</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">val1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">val2</span><span class="p">,</span> <span class="n">dropnan</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="join_time_series"><a class="viewcode-back" href="../../../util.html#pyrad.util.join_time_series">[docs]</a><span class="k">def</span> <span class="nf">join_time_series</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">val1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">val2</span><span class="p">,</span> <span class="n">dropnan</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    joins time_series</span>
 
@@ -272,7 +272,7 @@
     <span class="k">return</span> <span class="n">t_out_vec</span><span class="p">,</span> <span class="n">val1_out_vec</span><span class="p">,</span> <span class="n">val2_out_vec</span></div>
 
 
-<div class="viewcode-block" id="get_range_bins_to_avg"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.get_range_bins_to_avg">[docs]</a><span class="k">def</span> <span class="nf">get_range_bins_to_avg</span><span class="p">(</span><span class="n">rad1_rng</span><span class="p">,</span> <span class="n">rad2_rng</span><span class="p">):</span>
+<div class="viewcode-block" id="get_range_bins_to_avg"><a class="viewcode-back" href="../../../util.html#pyrad.util.get_range_bins_to_avg">[docs]</a><span class="k">def</span> <span class="nf">get_range_bins_to_avg</span><span class="p">(</span><span class="n">rad1_rng</span><span class="p">,</span> <span class="n">rad2_rng</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compares the resolution of two radars and determines if and which radar</span>
 <span class="sd">    has to be averaged and the length of the averaging window</span>
@@ -317,7 +317,7 @@
     <span class="k">return</span> <span class="n">avg_rad1</span><span class="p">,</span> <span class="n">avg_rad2</span><span class="p">,</span> <span class="n">avg_rad_lim</span></div>
 
 
-<div class="viewcode-block" id="belongs_roi_indices"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.belongs_roi_indices">[docs]</a><span class="k">def</span> <span class="nf">belongs_roi_indices</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">roi</span><span class="p">):</span>
+<div class="viewcode-block" id="belongs_roi_indices"><a class="viewcode-back" href="../../../util.html#pyrad.util.belongs_roi_indices">[docs]</a><span class="k">def</span> <span class="nf">belongs_roi_indices</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">roi</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get the indices of points that belong to roi in a list of points</span>
 
@@ -373,7 +373,7 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">inds</span><span class="p">),</span> <span class="n">is_roi</span></div>
 
 
-<div class="viewcode-block" id="find_ray_index"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.find_ray_index">[docs]</a><span class="k">def</span> <span class="nf">find_ray_index</span><span class="p">(</span><span class="n">ele_vec</span><span class="p">,</span> <span class="n">azi_vec</span><span class="p">,</span> <span class="n">ele</span><span class="p">,</span> <span class="n">azi</span><span class="p">,</span> <span class="n">ele_tol</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">azi_tol</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+<div class="viewcode-block" id="find_ray_index"><a class="viewcode-back" href="../../../util.html#pyrad.util.find_ray_index">[docs]</a><span class="k">def</span> <span class="nf">find_ray_index</span><span class="p">(</span><span class="n">ele_vec</span><span class="p">,</span> <span class="n">azi_vec</span><span class="p">,</span> <span class="n">ele</span><span class="p">,</span> <span class="n">azi</span><span class="p">,</span> <span class="n">ele_tol</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">azi_tol</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
                    <span class="n">nearest</span><span class="o">=</span><span class="s1">&#39;azi&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find the ray index corresponding to a particular elevation and azimuth</span>
@@ -413,7 +413,7 @@
     <span class="k">return</span> <span class="n">ind_ray</span><span class="p">[</span><span class="n">ind_min</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="find_rng_index"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.find_rng_index">[docs]</a><span class="k">def</span> <span class="nf">find_rng_index</span><span class="p">(</span><span class="n">rng_vec</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">rng_tol</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
+<div class="viewcode-block" id="find_rng_index"><a class="viewcode-back" href="../../../util.html#pyrad.util.find_rng_index">[docs]</a><span class="k">def</span> <span class="nf">find_rng_index</span><span class="p">(</span><span class="n">rng_vec</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">rng_tol</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find the range index corresponding to a particular range</span>
 
@@ -440,7 +440,7 @@
     <span class="k">return</span> <span class="n">ind_rng</span></div>
 
 
-<div class="viewcode-block" id="find_nearest_gate"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.find_nearest_gate">[docs]</a><span class="k">def</span> <span class="nf">find_nearest_gate</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">latlon_tol</span><span class="o">=</span><span class="mf">0.0005</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">find_nearest_gate</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">latlon_tol</span><span class="o">=</span><span class="mf">0.0005</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find the radar gate closest to a lat,lon point</span>
 
@@ -486,10 +486,10 @@
     <span class="n">azi</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">]</span>
     <span class="n">rng</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rng</span><span class="p">]</span>
 
-    <span class="k">return</span> <span class="n">ind_ray</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">,</span> <span class="n">azi</span><span class="p">,</span> <span class="n">rng</span></div>
+    <span class="k">return</span> <span class="n">ind_ray</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">,</span> <span class="n">azi</span><span class="p">,</span> <span class="n">rng</span>
 
 
-<div class="viewcode-block" id="find_neighbour_gates"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.find_neighbour_gates">[docs]</a><span class="k">def</span> <span class="nf">find_neighbour_gates</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">azi</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">delta_azi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">delta_rng</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="find_neighbour_gates"><a class="viewcode-back" href="../../../util.html#pyrad.util.find_neighbour_gates">[docs]</a><span class="k">def</span> <span class="nf">find_neighbour_gates</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">azi</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">delta_azi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">delta_rng</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find the neighbouring gates within +-delta_azi and +-delta_rng</span>
 
@@ -536,7 +536,7 @@
     <span class="k">return</span> <span class="n">inds_ray</span><span class="p">,</span> <span class="n">inds_rng</span></div>
 
 
-<div class="viewcode-block" id="find_colocated_indexes"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.find_colocated_indexes">[docs]</a><span class="k">def</span> <span class="nf">find_colocated_indexes</span><span class="p">(</span><span class="n">radar1</span><span class="p">,</span> <span class="n">radar2</span><span class="p">,</span> <span class="n">rad1_ele</span><span class="p">,</span> <span class="n">rad1_azi</span><span class="p">,</span> <span class="n">rad1_rng</span><span class="p">,</span>
+<div class="viewcode-block" id="find_colocated_indexes"><a class="viewcode-back" href="../../../util.html#pyrad.util.find_colocated_indexes">[docs]</a><span class="k">def</span> <span class="nf">find_colocated_indexes</span><span class="p">(</span><span class="n">radar1</span><span class="p">,</span> <span class="n">radar2</span><span class="p">,</span> <span class="n">rad1_ele</span><span class="p">,</span> <span class="n">rad1_azi</span><span class="p">,</span> <span class="n">rad1_rng</span><span class="p">,</span>
                            <span class="n">rad2_ele</span><span class="p">,</span> <span class="n">rad2_azi</span><span class="p">,</span> <span class="n">rad2_rng</span><span class="p">,</span> <span class="n">ele_tol</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
                            <span class="n">azi_tol</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">rng_tol</span><span class="o">=</span><span class="mf">50.</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -602,7 +602,7 @@
     <span class="k">return</span> <span class="n">ind_ray_rad1</span><span class="p">,</span> <span class="n">ind_rng_rad1</span><span class="p">,</span> <span class="n">ind_ray_rad2</span><span class="p">,</span> <span class="n">ind_rng_rad2</span></div>
 
 
-<div class="viewcode-block" id="get_target_elevations"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.get_target_elevations">[docs]</a><span class="k">def</span> <span class="nf">get_target_elevations</span><span class="p">(</span><span class="n">radar_in</span><span class="p">):</span>
+<div class="viewcode-block" id="get_target_elevations"><a class="viewcode-back" href="../../../util.html#pyrad.util.get_target_elevations">[docs]</a><span class="k">def</span> <span class="nf">get_target_elevations</span><span class="p">(</span><span class="n">radar_in</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Gets RHI target elevations</span>
 
@@ -627,7 +627,7 @@
     <span class="k">return</span> <span class="n">target_elevations</span><span class="p">,</span> <span class="n">el_tol</span></div>
 
 
-<div class="viewcode-block" id="time_avg_range"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.time_avg_range">[docs]</a><span class="k">def</span> <span class="nf">time_avg_range</span><span class="p">(</span><span class="n">timeinfo</span><span class="p">,</span> <span class="n">avg_starttime</span><span class="p">,</span> <span class="n">avg_endtime</span><span class="p">,</span> <span class="n">period</span><span class="p">):</span>
+<div class="viewcode-block" id="time_avg_range"><a class="viewcode-back" href="../../../util.html#pyrad.util.time_avg_range">[docs]</a><span class="k">def</span> <span class="nf">time_avg_range</span><span class="p">(</span><span class="n">timeinfo</span><span class="p">,</span> <span class="n">avg_starttime</span><span class="p">,</span> <span class="n">avg_endtime</span><span class="p">,</span> <span class="n">period</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    finds the new start and end time of an averaging</span>
 
@@ -664,7 +664,7 @@
     <span class="k">return</span> <span class="n">new_starttime</span><span class="p">,</span> <span class="n">new_endtime</span></div>
 
 
-<div class="viewcode-block" id="get_closest_solar_flux"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.get_closest_solar_flux">[docs]</a><span class="k">def</span> <span class="nf">get_closest_solar_flux</span><span class="p">(</span><span class="n">hit_datetime_list</span><span class="p">,</span> <span class="n">flux_datetime_list</span><span class="p">,</span>
+<div class="viewcode-block" id="get_closest_solar_flux"><a class="viewcode-back" href="../../../util.html#pyrad.util.get_closest_solar_flux">[docs]</a><span class="k">def</span> <span class="nf">get_closest_solar_flux</span><span class="p">(</span><span class="n">hit_datetime_list</span><span class="p">,</span> <span class="n">flux_datetime_list</span><span class="p">,</span>
                            <span class="n">flux_value_list</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    finds the solar flux measurement closest to the sun hit</span>
@@ -708,7 +708,7 @@
     <span class="k">return</span> <span class="n">flux_datetime_closest_list</span><span class="p">,</span> <span class="n">flux_value_closest_list</span></div>
 
 
-<div class="viewcode-block" id="create_sun_hits_field"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.create_sun_hits_field">[docs]</a><span class="k">def</span> <span class="nf">create_sun_hits_field</span><span class="p">(</span><span class="n">rad_el</span><span class="p">,</span> <span class="n">rad_az</span><span class="p">,</span> <span class="n">sun_el</span><span class="p">,</span> <span class="n">sun_az</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">imgcfg</span><span class="p">):</span>
+<div class="viewcode-block" id="create_sun_hits_field"><a class="viewcode-back" href="../../../util.html#pyrad.util.create_sun_hits_field">[docs]</a><span class="k">def</span> <span class="nf">create_sun_hits_field</span><span class="p">(</span><span class="n">rad_el</span><span class="p">,</span> <span class="n">rad_az</span><span class="p">,</span> <span class="n">sun_el</span><span class="p">,</span> <span class="n">sun_az</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">imgcfg</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    creates a sun hits field from the position and power of the sun hits</span>
 
@@ -761,7 +761,7 @@
     <span class="k">return</span> <span class="n">field</span></div>
 
 
-<div class="viewcode-block" id="create_sun_retrieval_field"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.create_sun_retrieval_field">[docs]</a><span class="k">def</span> <span class="nf">create_sun_retrieval_field</span><span class="p">(</span><span class="n">par</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">imgcfg</span><span class="p">,</span> <span class="n">lant</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
+<div class="viewcode-block" id="create_sun_retrieval_field"><a class="viewcode-back" href="../../../util.html#pyrad.util.create_sun_retrieval_field">[docs]</a><span class="k">def</span> <span class="nf">create_sun_retrieval_field</span><span class="p">(</span><span class="n">par</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">imgcfg</span><span class="p">,</span> <span class="n">lant</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    creates a sun retrieval field from the retrieval parameters</span>
 
@@ -806,7 +806,7 @@
     <span class="k">return</span> <span class="n">field</span></div>
 
 
-<div class="viewcode-block" id="compute_quantiles"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.compute_quantiles">[docs]</a><span class="k">def</span> <span class="nf">compute_quantiles</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="compute_quantiles"><a class="viewcode-back" href="../../../util.html#pyrad.util.compute_quantiles">[docs]</a><span class="k">def</span> <span class="nf">compute_quantiles</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    computes quantiles</span>
 
@@ -845,7 +845,7 @@
     <span class="k">return</span> <span class="n">quantiles</span><span class="p">,</span> <span class="n">values</span></div>
 
 
-<div class="viewcode-block" id="compute_quantiles_from_hist"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.compute_quantiles_from_hist">[docs]</a><span class="k">def</span> <span class="nf">compute_quantiles_from_hist</span><span class="p">(</span><span class="n">bin_centers</span><span class="p">,</span> <span class="n">hist</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="compute_quantiles_from_hist"><a class="viewcode-back" href="../../../util.html#pyrad.util.compute_quantiles_from_hist">[docs]</a><span class="k">def</span> <span class="nf">compute_quantiles_from_hist</span><span class="p">(</span><span class="n">bin_centers</span><span class="p">,</span> <span class="n">hist</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    computes quantiles from histograms</span>
 
@@ -892,7 +892,7 @@
     <span class="k">return</span> <span class="n">quantiles</span><span class="p">,</span> <span class="n">values</span></div>
 
 
-<div class="viewcode-block" id="compute_quantiles_sweep"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.compute_quantiles_sweep">[docs]</a><span class="k">def</span> <span class="nf">compute_quantiles_sweep</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">ray_start</span><span class="p">,</span> <span class="n">ray_end</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="compute_quantiles_sweep"><a class="viewcode-back" href="../../../util.html#pyrad.util.compute_quantiles_sweep">[docs]</a><span class="k">def</span> <span class="nf">compute_quantiles_sweep</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">ray_start</span><span class="p">,</span> <span class="n">ray_end</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    computes quantiles of a particular sweep</span>
 
@@ -931,7 +931,7 @@
     <span class="k">return</span> <span class="n">quantiles</span><span class="p">,</span> <span class="n">values</span></div>
 
 
-<div class="viewcode-block" id="compute_histogram"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.compute_histogram">[docs]</a><span class="k">def</span> <span class="nf">compute_histogram</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">bin_edges</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<div class="viewcode-block" id="compute_histogram"><a class="viewcode-back" href="../../../util.html#pyrad.util.compute_histogram">[docs]</a><span class="k">def</span> <span class="nf">compute_histogram</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">bin_edges</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                       <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    computes histogram of the data</span>
@@ -978,7 +978,7 @@
     <span class="k">return</span> <span class="n">bin_edges</span><span class="p">,</span> <span class="n">values</span></div>
 
 
-<div class="viewcode-block" id="compute_histogram_sweep"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.compute_histogram_sweep">[docs]</a><span class="k">def</span> <span class="nf">compute_histogram_sweep</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">ray_start</span><span class="p">,</span> <span class="n">ray_end</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="compute_histogram_sweep"><a class="viewcode-back" href="../../../util.html#pyrad.util.compute_histogram_sweep">[docs]</a><span class="k">def</span> <span class="nf">compute_histogram_sweep</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">ray_start</span><span class="p">,</span> <span class="n">ray_end</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    computes histogram of the data in a particular sweep</span>
 
@@ -1011,7 +1011,7 @@
     <span class="k">return</span> <span class="n">bin_edges</span><span class="p">,</span> <span class="n">values</span></div>
 
 
-<div class="viewcode-block" id="get_histogram_bins"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.get_histogram_bins">[docs]</a><span class="k">def</span> <span class="nf">get_histogram_bins</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_histogram_bins</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    gets the histogram bins using the range limits of the field as defined</span>
 <span class="sd">    in the Py-ART config file.</span>
@@ -1039,10 +1039,10 @@
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No step has been defined. Default &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">step</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39; will be used&#39;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
-        <span class="n">vmin</span><span class="o">-</span><span class="n">step</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span> <span class="n">vmax</span><span class="o">+</span><span class="n">step</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="nb">int</span><span class="p">((</span><span class="n">vmax</span><span class="o">-</span><span class="n">vmin</span><span class="p">)</span><span class="o">/</span><span class="n">step</span><span class="p">)</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span></div>
+        <span class="n">vmin</span><span class="o">-</span><span class="n">step</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span> <span class="n">vmax</span><span class="o">+</span><span class="n">step</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="nb">int</span><span class="p">((</span><span class="n">vmax</span><span class="o">-</span><span class="n">vmin</span><span class="p">)</span><span class="o">/</span><span class="n">step</span><span class="p">)</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="compute_2d_stats"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.compute_2d_stats">[docs]</a><span class="k">def</span> <span class="nf">compute_2d_stats</span><span class="p">(</span><span class="n">field1</span><span class="p">,</span> <span class="n">field2</span><span class="p">,</span> <span class="n">field_name1</span><span class="p">,</span> <span class="n">field_name2</span><span class="p">,</span> <span class="n">step1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<div class="viewcode-block" id="compute_2d_stats"><a class="viewcode-back" href="../../../util.html#pyrad.util.compute_2d_stats">[docs]</a><span class="k">def</span> <span class="nf">compute_2d_stats</span><span class="p">(</span><span class="n">field1</span><span class="p">,</span> <span class="n">field2</span><span class="p">,</span> <span class="n">field_name1</span><span class="p">,</span> <span class="n">field_name2</span><span class="p">,</span> <span class="n">step1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                      <span class="n">step2</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    computes a 2D histogram and statistics of the data</span>
@@ -1117,7 +1117,7 @@
     <span class="k">return</span> <span class="n">hist_2d</span><span class="p">,</span> <span class="n">bin_edges1</span><span class="p">,</span> <span class="n">bin_edges2</span><span class="p">,</span> <span class="n">stats</span></div>
 
 
-<div class="viewcode-block" id="compute_1d_stats"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.compute_1d_stats">[docs]</a><span class="k">def</span> <span class="nf">compute_1d_stats</span><span class="p">(</span><span class="n">field1</span><span class="p">,</span> <span class="n">field2</span><span class="p">):</span>
+<div class="viewcode-block" id="compute_1d_stats"><a class="viewcode-back" href="../../../util.html#pyrad.util.compute_1d_stats">[docs]</a><span class="k">def</span> <span class="nf">compute_1d_stats</span><span class="p">(</span><span class="n">field1</span><span class="p">,</span> <span class="n">field2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    returns statistics of data</span>
 
@@ -1163,7 +1163,7 @@
     <span class="k">return</span> <span class="n">stats</span></div>
 
 
-<div class="viewcode-block" id="compute_2d_hist"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.compute_2d_hist">[docs]</a><span class="k">def</span> <span class="nf">compute_2d_hist</span><span class="p">(</span><span class="n">field1</span><span class="p">,</span> <span class="n">field2</span><span class="p">,</span> <span class="n">field_name1</span><span class="p">,</span> <span class="n">field_name2</span><span class="p">,</span> <span class="n">step1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<div class="viewcode-block" id="compute_2d_hist"><a class="viewcode-back" href="../../../util.html#pyrad.util.compute_2d_hist">[docs]</a><span class="k">def</span> <span class="nf">compute_2d_hist</span><span class="p">(</span><span class="n">field1</span><span class="p">,</span> <span class="n">field2</span><span class="p">,</span> <span class="n">field_name1</span><span class="p">,</span> <span class="n">field_name2</span><span class="p">,</span> <span class="n">step1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                     <span class="n">step2</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    computes a 2D histogram of the data</span>
@@ -1204,7 +1204,7 @@
         <span class="n">field2</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">fill_value</span><span class="o">=</span><span class="n">fill_value</span><span class="p">),</span> <span class="n">bins</span><span class="o">=</span><span class="p">[</span><span class="n">bin_edges1</span><span class="p">,</span> <span class="n">bin_edges2</span><span class="p">])</span></div>
 
 
-<div class="viewcode-block" id="quantize_field"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.quantize_field">[docs]</a><span class="k">def</span> <span class="nf">quantize_field</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">quantize_field</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    quantizes data</span>
 
@@ -1230,10 +1230,10 @@
     <span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">&gt;</span> <span class="n">vmax</span><span class="p">]</span> <span class="o">=</span> <span class="n">vmax</span>
     <span class="n">fieldq</span> <span class="o">=</span> <span class="p">((</span><span class="n">field</span><span class="o">+</span><span class="n">vmin</span><span class="p">)</span><span class="o">/</span><span class="n">step</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">fieldq</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">fill_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">fieldq</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">fill_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="compute_profile_stats"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.compute_profile_stats">[docs]</a><span class="k">def</span> <span class="nf">compute_profile_stats</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">gate_altitude</span><span class="p">,</span> <span class="n">h_vec</span><span class="p">,</span> <span class="n">h_res</span><span class="p">,</span>
+<div class="viewcode-block" id="compute_profile_stats"><a class="viewcode-back" href="../../../util.html#pyrad.util.compute_profile_stats">[docs]</a><span class="k">def</span> <span class="nf">compute_profile_stats</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">gate_altitude</span><span class="p">,</span> <span class="n">h_vec</span><span class="p">,</span> <span class="n">h_res</span><span class="p">,</span>
                           <span class="n">quantity</span><span class="o">=</span><span class="s1">&#39;quantiles&#39;</span><span class="p">,</span>
                           <span class="n">quantiles</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.50</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">]),</span>
                           <span class="n">nvalid_min</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">std_field</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">np_field</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1379,7 +1379,7 @@
     <span class="k">return</span> <span class="n">vals</span><span class="p">,</span> <span class="n">val_valid</span></div>
 
 
-<div class="viewcode-block" id="compute_directional_stats"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.compute_directional_stats">[docs]</a><span class="k">def</span> <span class="nf">compute_directional_stats</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">avg_type</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">nvalid_min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="compute_directional_stats"><a class="viewcode-back" href="../../../util.html#pyrad.util.compute_directional_stats">[docs]</a><span class="k">def</span> <span class="nf">compute_directional_stats</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">avg_type</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">nvalid_min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes the mean or the median along one of the axis (ray or range)</span>
 
@@ -1415,7 +1415,7 @@
     <span class="k">return</span> <span class="n">values</span><span class="p">,</span> <span class="n">nvalid</span></div>
 
 
-<div class="viewcode-block" id="project_to_vertical"><a class="viewcode-back" href="../../../util.html#pyrad.util.radar_utils.project_to_vertical">[docs]</a><span class="k">def</span> <span class="nf">project_to_vertical</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span> <span class="n">data_height</span><span class="p">,</span> <span class="n">grid_height</span><span class="p">,</span> <span class="n">interp_kind</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span>
+<div class="viewcode-block" id="project_to_vertical"><a class="viewcode-back" href="../../../util.html#pyrad.util.project_to_vertical">[docs]</a><span class="k">def</span> <span class="nf">project_to_vertical</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span> <span class="n">data_height</span><span class="p">,</span> <span class="n">grid_height</span><span class="p">,</span> <span class="n">interp_kind</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span>
                         <span class="n">fill_value</span><span class="o">=-</span><span class="mf">9999.</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Projects radar data to a regular vertical grid</span>
@@ -1486,46 +1486,12 @@
 
 <h3>Navigation</h3>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../flow.html">pyrad.flow.flow_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../flow.html#pyrad-flow-flow-control">pyrad.flow.flow_control</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html">pyrad.proc.process_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-calib">pyrad.proc.process_calib</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-cosmo">pyrad.proc.process_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-doppler">pyrad.proc.process_Doppler</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-echoclass">pyrad.proc.process_echoclass</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-intercomp">pyrad.proc.process_intercomp</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-monitoring">pyrad.proc.process_monitoring</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-phase">pyrad.proc.process_phase</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-retrieve">pyrad.proc.process_retrieve</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-timeseries">pyrad.proc.process_timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-traj">pyrad.proc.process_traj</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html">pyrad.prod.product_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-product">pyrad.prod.process_product</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-vol-products">pyrad.prod.process_vol_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-grid-products">pyrad.prod.process_grid_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-timeseries-products">pyrad.prod.process_timeseries_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-monitoring-products">pyrad.prod.process_monitoring_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-intercomp-products">pyrad.prod.process_intercomp_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#id1">pyrad.prod.process_product</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html">pyrad.io.io_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-config">pyrad.io.config</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-radar">pyrad.io.read_data_radar</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-mxpol">pyrad.io.read_data_mxpol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-cosmo">pyrad.io.read_data_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-hzt">pyrad.io.read_data_hzt</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-sensor">pyrad.io.read_data_sensor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-sun">pyrad.io.read_data_sun</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-other">pyrad.io.read_data_other</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-write-data">pyrad.io.write_data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-timeseries">pyrad.io.timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-trajectory">pyrad.io.trajectory</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html">pyrad.graph.plots_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots">pyrad.graph.plots</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots-vol">pyrad.graph.plots_vol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots-grid">pyrad.graph.plots_grid</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plot-timeseries">pyrad.graph.plot_timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../util.html">pyrad.util.radar_utils</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../util.html#pyrad-util-stat-utils">pyrad.util.stat_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../flow.html">processing flow control (<code class="docutils literal notranslate"><span class="pre">pyrad.flow</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../proc.html">Dataset processing (<code class="docutils literal notranslate"><span class="pre">pyrad.proc</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../prod.html">Products generation (<code class="docutils literal notranslate"><span class="pre">pyrad.prod</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html">Input and output (<code class="docutils literal notranslate"><span class="pre">pyrad.io</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../graph.html">Plotting (<code class="docutils literal notranslate"><span class="pre">pyrad.graph</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../util.html">Utilities (<code class="docutils literal notranslate"><span class="pre">pyrad.util</span></code>)</a></li>
 </ul>
 
 <div class="relations">

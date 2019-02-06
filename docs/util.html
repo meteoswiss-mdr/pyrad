@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>pyrad.util.radar_utils &#8212; pyrad 0.0.1 documentation</title>
+    <title>Utilities (pyrad.util) &#8212; pyrad 0.0.1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -34,107 +34,106 @@
           <div class="body" role="main">
             
   <hr class="docutils" />
-<span class="target" id="module-pyrad.util.radar_utils"></span><div class="section" id="pyrad-util-radar-utils">
-<h1>pyrad.util.radar_utils<a class="headerlink" href="#pyrad-util-radar-utils" title="Permalink to this headline">¶</a></h1>
-<p>Miscellaneous functions dealing with radar data</p>
+<span class="target" id="module-pyrad.util"></span><div class="section" id="utilities-pyrad-util">
+<h1>Utilities (<a class="reference internal" href="#module-pyrad.util" title="pyrad.util"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyrad.util</span></code></a>)<a class="headerlink" href="#utilities-pyrad-util" title="Permalink to this headline">¶</a></h1>
+<p>Functions to read and write data and configuration files.</p>
+<div class="section" id="radar-utilities">
+<h2>Radar Utilities<a class="headerlink" href="#radar-utilities" title="Permalink to this headline">¶</a></h2>
 <table border="1" class="longtable docutils">
 <colgroup>
 <col width="10%" />
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.radar_utils.get_ROI" title="pyrad.util.radar_utils.get_ROI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_ROI</span></code></a>(radar,&nbsp;fieldname,&nbsp;sector)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.get_ROI" title="pyrad.util.get_ROI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_ROI</span></code></a>(radar,&nbsp;fieldname,&nbsp;sector)</td>
 <td>filter out any data outside the region of interest defined by sector</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.radar_utils.rainfall_accumulation" title="pyrad.util.radar_utils.rainfall_accumulation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rainfall_accumulation</span></code></a>(t_in_vec,&nbsp;val_in_vec)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.rainfall_accumulation" title="pyrad.util.rainfall_accumulation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rainfall_accumulation</span></code></a>(t_in_vec,&nbsp;val_in_vec)</td>
 <td>Computes the rainfall accumulation of a time series over a given period</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.radar_utils.time_series_statistics" title="pyrad.util.radar_utils.time_series_statistics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_series_statistics</span></code></a>(t_in_vec,&nbsp;val_in_vec)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.time_series_statistics" title="pyrad.util.time_series_statistics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_series_statistics</span></code></a>(t_in_vec,&nbsp;val_in_vec)</td>
 <td>Computes statistics over a time-averaged series</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.radar_utils.join_time_series" title="pyrad.util.radar_utils.join_time_series"><code class="xref py py-obj docutils literal notranslate"><span class="pre">join_time_series</span></code></a>(t1,&nbsp;val1,&nbsp;t2,&nbsp;val2[,&nbsp;dropnan])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.join_time_series" title="pyrad.util.join_time_series"><code class="xref py py-obj docutils literal notranslate"><span class="pre">join_time_series</span></code></a>(t1,&nbsp;val1,&nbsp;t2,&nbsp;val2[,&nbsp;dropnan])</td>
 <td>joins time_series</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.radar_utils.get_range_bins_to_avg" title="pyrad.util.radar_utils.get_range_bins_to_avg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_range_bins_to_avg</span></code></a>(rad1_rng,&nbsp;rad2_rng)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.get_range_bins_to_avg" title="pyrad.util.get_range_bins_to_avg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_range_bins_to_avg</span></code></a>(rad1_rng,&nbsp;rad2_rng)</td>
 <td>Compares the resolution of two radars and determines if and which radar has to be averaged and the length of the averaging window</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.radar_utils.belongs_roi_indices" title="pyrad.util.radar_utils.belongs_roi_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">belongs_roi_indices</span></code></a>(lat,&nbsp;lon,&nbsp;roi)</td>
-<td>Get the indices of points that belong to roi in a list of points</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.radar_utils.find_ray_index" title="pyrad.util.radar_utils.find_ray_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_ray_index</span></code></a>(ele_vec,&nbsp;azi_vec,&nbsp;ele,&nbsp;azi[,&nbsp;…])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.find_ray_index" title="pyrad.util.find_ray_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_ray_index</span></code></a>(ele_vec,&nbsp;azi_vec,&nbsp;ele,&nbsp;azi[,&nbsp;…])</td>
 <td>Find the ray index corresponding to a particular elevation and azimuth</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.radar_utils.find_rng_index" title="pyrad.util.radar_utils.find_rng_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_rng_index</span></code></a>(rng_vec,&nbsp;rng[,&nbsp;rng_tol])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.find_rng_index" title="pyrad.util.find_rng_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_rng_index</span></code></a>(rng_vec,&nbsp;rng[,&nbsp;rng_tol])</td>
 <td>Find the range index corresponding to a particular range</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.radar_utils.find_nearest_gate" title="pyrad.util.radar_utils.find_nearest_gate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_nearest_gate</span></code></a>(radar,&nbsp;lat,&nbsp;lon[,&nbsp;latlon_tol])</td>
-<td>Find the radar gate closest to a lat,lon point</td>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_nearest_gate</span></code></td>
+<td></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.radar_utils.find_neighbour_gates" title="pyrad.util.radar_utils.find_neighbour_gates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_neighbour_gates</span></code></a>(radar,&nbsp;azi,&nbsp;rng[,&nbsp;…])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.find_neighbour_gates" title="pyrad.util.find_neighbour_gates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_neighbour_gates</span></code></a>(radar,&nbsp;azi,&nbsp;rng[,&nbsp;…])</td>
 <td>Find the neighbouring gates within +-delta_azi and +-delta_rng</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.radar_utils.find_colocated_indexes" title="pyrad.util.radar_utils.find_colocated_indexes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_colocated_indexes</span></code></a>(radar1,&nbsp;radar2,&nbsp;…)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.find_colocated_indexes" title="pyrad.util.find_colocated_indexes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_colocated_indexes</span></code></a>(radar1,&nbsp;radar2,&nbsp;…)</td>
 <td>Given the theoretical elevation, azimuth and range of the co-located gates of two radars and a given tolerance returns the indices of the gates for the current radars</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.radar_utils.get_target_elevations" title="pyrad.util.radar_utils.get_target_elevations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_target_elevations</span></code></a>(radar_in)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.get_target_elevations" title="pyrad.util.get_target_elevations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_target_elevations</span></code></a>(radar_in)</td>
 <td>Gets RHI target elevations</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.radar_utils.time_avg_range" title="pyrad.util.radar_utils.time_avg_range"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_avg_range</span></code></a>(timeinfo,&nbsp;avg_starttime,&nbsp;…)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.time_avg_range" title="pyrad.util.time_avg_range"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_avg_range</span></code></a>(timeinfo,&nbsp;avg_starttime,&nbsp;…)</td>
 <td>finds the new start and end time of an averaging</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.radar_utils.get_closest_solar_flux" title="pyrad.util.radar_utils.get_closest_solar_flux"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_closest_solar_flux</span></code></a>(hit_datetime_list,&nbsp;…)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.get_closest_solar_flux" title="pyrad.util.get_closest_solar_flux"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_closest_solar_flux</span></code></a>(hit_datetime_list,&nbsp;…)</td>
 <td>finds the solar flux measurement closest to the sun hit</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.radar_utils.create_sun_hits_field" title="pyrad.util.radar_utils.create_sun_hits_field"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_sun_hits_field</span></code></a>(rad_el,&nbsp;rad_az,&nbsp;…)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.create_sun_hits_field" title="pyrad.util.create_sun_hits_field"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_sun_hits_field</span></code></a>(rad_el,&nbsp;rad_az,&nbsp;…)</td>
 <td>creates a sun hits field from the position and power of the sun hits</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.radar_utils.create_sun_retrieval_field" title="pyrad.util.radar_utils.create_sun_retrieval_field"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_sun_retrieval_field</span></code></a>(par,&nbsp;field_name,&nbsp;…)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.create_sun_retrieval_field" title="pyrad.util.create_sun_retrieval_field"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_sun_retrieval_field</span></code></a>(par,&nbsp;field_name,&nbsp;…)</td>
 <td>creates a sun retrieval field from the retrieval parameters</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.radar_utils.compute_quantiles" title="pyrad.util.radar_utils.compute_quantiles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_quantiles</span></code></a>(field[,&nbsp;quantiles])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.compute_quantiles" title="pyrad.util.compute_quantiles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_quantiles</span></code></a>(field[,&nbsp;quantiles])</td>
 <td>computes quantiles</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.radar_utils.compute_quantiles_from_hist" title="pyrad.util.radar_utils.compute_quantiles_from_hist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_quantiles_from_hist</span></code></a>(bin_centers,&nbsp;hist)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.compute_quantiles_from_hist" title="pyrad.util.compute_quantiles_from_hist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_quantiles_from_hist</span></code></a>(bin_centers,&nbsp;hist)</td>
 <td>computes quantiles from histograms</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.radar_utils.compute_quantiles_sweep" title="pyrad.util.radar_utils.compute_quantiles_sweep"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_quantiles_sweep</span></code></a>(field,&nbsp;ray_start,&nbsp;…)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.compute_quantiles_sweep" title="pyrad.util.compute_quantiles_sweep"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_quantiles_sweep</span></code></a>(field,&nbsp;ray_start,&nbsp;…)</td>
 <td>computes quantiles of a particular sweep</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.radar_utils.compute_histogram" title="pyrad.util.radar_utils.compute_histogram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_histogram</span></code></a>(field,&nbsp;field_name[,&nbsp;…])</td>
-<td>computes histogram of the data</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.radar_utils.compute_histogram_sweep" title="pyrad.util.radar_utils.compute_histogram_sweep"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_histogram_sweep</span></code></a>(field,&nbsp;ray_start,&nbsp;…)</td>
-<td>computes histogram of the data in a particular sweep</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.radar_utils.get_histogram_bins" title="pyrad.util.radar_utils.get_histogram_bins"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_histogram_bins</span></code></a>(field_name[,&nbsp;step])</td>
-<td>gets the histogram bins using the range limits of the field as defined in the Py-ART config file.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.radar_utils.compute_2d_stats" title="pyrad.util.radar_utils.compute_2d_stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_2d_stats</span></code></a>(field1,&nbsp;field2,&nbsp;…[,&nbsp;…])</td>
-<td>computes a 2D histogram and statistics of the data</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.radar_utils.compute_1d_stats" title="pyrad.util.radar_utils.compute_1d_stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_1d_stats</span></code></a>(field1,&nbsp;field2)</td>
-<td>returns statistics of data</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.radar_utils.compute_2d_hist" title="pyrad.util.radar_utils.compute_2d_hist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_2d_hist</span></code></a>(field1,&nbsp;field2,&nbsp;field_name1,&nbsp;…)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.compute_2d_hist" title="pyrad.util.compute_2d_hist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_2d_hist</span></code></a>(field1,&nbsp;field2,&nbsp;field_name1,&nbsp;…)</td>
 <td>computes a 2D histogram of the data</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.radar_utils.quantize_field" title="pyrad.util.radar_utils.quantize_field"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quantize_field</span></code></a>(field,&nbsp;field_name,&nbsp;step)</td>
-<td>quantizes data</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.compute_1d_stats" title="pyrad.util.compute_1d_stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_1d_stats</span></code></a>(field1,&nbsp;field2)</td>
+<td>returns statistics of data</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.radar_utils.compute_profile_stats" title="pyrad.util.radar_utils.compute_profile_stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_profile_stats</span></code></a>(field,&nbsp;gate_altitude,&nbsp;…)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.compute_2d_stats" title="pyrad.util.compute_2d_stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_2d_stats</span></code></a>(field1,&nbsp;field2,&nbsp;…[,&nbsp;…])</td>
+<td>computes a 2D histogram and statistics of the data</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.compute_histogram" title="pyrad.util.compute_histogram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_histogram</span></code></a>(field,&nbsp;field_name[,&nbsp;…])</td>
+<td>computes histogram of the data</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.compute_histogram_sweep" title="pyrad.util.compute_histogram_sweep"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_histogram_sweep</span></code></a>(field,&nbsp;ray_start,&nbsp;…)</td>
+<td>computes histogram of the data in a particular sweep</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.belongs_roi_indices" title="pyrad.util.belongs_roi_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">belongs_roi_indices</span></code></a>(lat,&nbsp;lon,&nbsp;roi)</td>
+<td>Get the indices of points that belong to roi in a list of points</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.compute_profile_stats" title="pyrad.util.compute_profile_stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_profile_stats</span></code></a>(field,&nbsp;gate_altitude,&nbsp;…)</td>
 <td>Compute statistics of vertical profile</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.radar_utils.compute_directional_stats" title="pyrad.util.radar_utils.compute_directional_stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_directional_stats</span></code></a>(field[,&nbsp;avg_type,&nbsp;…])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.compute_directional_stats" title="pyrad.util.compute_directional_stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_directional_stats</span></code></a>(field[,&nbsp;avg_type,&nbsp;…])</td>
 <td>Computes the mean or the median along one of the axis (ray or range)</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.radar_utils.project_to_vertical" title="pyrad.util.radar_utils.project_to_vertical"><code class="xref py py-obj docutils literal notranslate"><span class="pre">project_to_vertical</span></code></a>(data_in,&nbsp;data_height,&nbsp;…)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.project_to_vertical" title="pyrad.util.project_to_vertical"><code class="xref py py-obj docutils literal notranslate"><span class="pre">project_to_vertical</span></code></a>(data_in,&nbsp;data_height,&nbsp;…)</td>
 <td>Projects radar data to a regular vertical grid</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.quantiles_weighted" title="pyrad.util.quantiles_weighted"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quantiles_weighted</span></code></a>(values[,&nbsp;weight_vector,&nbsp;…])</td>
+<td>Given a set of values and weights, compute the weighted quantile(s).</td>
 </tr>
 </tbody>
 </table>
 <dl class="function">
-<dt id="pyrad.util.radar_utils.belongs_roi_indices">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">belongs_roi_indices</code><span class="sig-paren">(</span><em>lat</em>, <em>lon</em>, <em>roi</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#belongs_roi_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.belongs_roi_indices" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.belongs_roi_indices">
+<code class="descclassname">pyrad.util.</code><code class="descname">belongs_roi_indices</code><span class="sig-paren">(</span><em>lat</em>, <em>lon</em>, <em>roi</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#belongs_roi_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.belongs_roi_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the indices of points that belong to roi in a list of points</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -166,8 +165,8 @@ Can be ‘All’, ‘None’, ‘Some’</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.compute_1d_stats">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">compute_1d_stats</code><span class="sig-paren">(</span><em>field1</em>, <em>field2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#compute_1d_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.compute_1d_stats" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.compute_1d_stats">
+<code class="descclassname">pyrad.util.</code><code class="descname">compute_1d_stats</code><span class="sig-paren">(</span><em>field1</em>, <em>field2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#compute_1d_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.compute_1d_stats" title="Permalink to this definition">¶</a></dt>
 <dd><p>returns statistics of data</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -192,8 +191,8 @@ Can be ‘All’, ‘None’, ‘Some’</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.compute_2d_hist">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">compute_2d_hist</code><span class="sig-paren">(</span><em>field1</em>, <em>field2</em>, <em>field_name1</em>, <em>field_name2</em>, <em>step1=None</em>, <em>step2=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#compute_2d_hist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.compute_2d_hist" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.compute_2d_hist">
+<code class="descclassname">pyrad.util.</code><code class="descname">compute_2d_hist</code><span class="sig-paren">(</span><em>field1</em>, <em>field2</em>, <em>field_name1</em>, <em>field_name2</em>, <em>step1=None</em>, <em>step2=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#compute_2d_hist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.compute_2d_hist" title="Permalink to this definition">¶</a></dt>
 <dd><p>computes a 2D histogram of the data</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -227,8 +226,8 @@ Can be ‘All’, ‘None’, ‘Some’</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.compute_2d_stats">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">compute_2d_stats</code><span class="sig-paren">(</span><em>field1</em>, <em>field2</em>, <em>field_name1</em>, <em>field_name2</em>, <em>step1=None</em>, <em>step2=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#compute_2d_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.compute_2d_stats" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.compute_2d_stats">
+<code class="descclassname">pyrad.util.</code><code class="descname">compute_2d_stats</code><span class="sig-paren">(</span><em>field1</em>, <em>field2</em>, <em>field_name1</em>, <em>field_name2</em>, <em>step1=None</em>, <em>step2=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#compute_2d_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.compute_2d_stats" title="Permalink to this definition">¶</a></dt>
 <dd><p>computes a 2D histogram and statistics of the data</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -265,8 +264,8 @@ Can be ‘All’, ‘None’, ‘Some’</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.compute_directional_stats">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">compute_directional_stats</code><span class="sig-paren">(</span><em>field</em>, <em>avg_type='mean'</em>, <em>nvalid_min=1</em>, <em>axis=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#compute_directional_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.compute_directional_stats" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.compute_directional_stats">
+<code class="descclassname">pyrad.util.</code><code class="descname">compute_directional_stats</code><span class="sig-paren">(</span><em>field</em>, <em>avg_type='mean'</em>, <em>nvalid_min=1</em>, <em>axis=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#compute_directional_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.compute_directional_stats" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the mean or the median along one of the axis (ray or range)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -303,8 +302,8 @@ Can be ‘All’, ‘None’, ‘Some’</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.compute_histogram">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">compute_histogram</code><span class="sig-paren">(</span><em>field</em>, <em>field_name</em>, <em>bin_edges=None</em>, <em>step=None</em>, <em>vmin=None</em>, <em>vmax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#compute_histogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.compute_histogram" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.compute_histogram">
+<code class="descclassname">pyrad.util.</code><code class="descname">compute_histogram</code><span class="sig-paren">(</span><em>field</em>, <em>field_name</em>, <em>bin_edges=None</em>, <em>step=None</em>, <em>vmin=None</em>, <em>vmax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#compute_histogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.compute_histogram" title="Permalink to this definition">¶</a></dt>
 <dd><p>computes histogram of the data</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -344,8 +343,8 @@ Can be ‘All’, ‘None’, ‘Some’</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.compute_histogram_sweep">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">compute_histogram_sweep</code><span class="sig-paren">(</span><em>field</em>, <em>ray_start</em>, <em>ray_end</em>, <em>field_name</em>, <em>step=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#compute_histogram_sweep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.compute_histogram_sweep" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.compute_histogram_sweep">
+<code class="descclassname">pyrad.util.</code><code class="descname">compute_histogram_sweep</code><span class="sig-paren">(</span><em>field</em>, <em>ray_start</em>, <em>ray_end</em>, <em>field_name</em>, <em>step=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#compute_histogram_sweep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.compute_histogram_sweep" title="Permalink to this definition">¶</a></dt>
 <dd><p>computes histogram of the data in a particular sweep</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -382,8 +381,8 @@ Can be ‘All’, ‘None’, ‘Some’</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.compute_profile_stats">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">compute_profile_stats</code><span class="sig-paren">(</span><em>field</em>, <em>gate_altitude</em>, <em>h_vec</em>, <em>h_res</em>, <em>quantity='quantiles'</em>, <em>quantiles=array([0.25</em>, <em>0.5</em>, <em>0.75])</em>, <em>nvalid_min=4</em>, <em>std_field=None</em>, <em>np_field=None</em>, <em>make_linear=False</em>, <em>include_nans=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#compute_profile_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.compute_profile_stats" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.compute_profile_stats">
+<code class="descclassname">pyrad.util.</code><code class="descname">compute_profile_stats</code><span class="sig-paren">(</span><em>field</em>, <em>gate_altitude</em>, <em>h_vec</em>, <em>h_res</em>, <em>quantity='quantiles'</em>, <em>quantiles=array([0.25</em>, <em>0.5</em>, <em>0.75])</em>, <em>nvalid_min=4</em>, <em>std_field=None</em>, <em>np_field=None</em>, <em>make_linear=False</em>, <em>include_nans=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#compute_profile_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.compute_profile_stats" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute statistics of vertical profile</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -444,8 +443,8 @@ the mean</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.compute_quantiles">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">compute_quantiles</code><span class="sig-paren">(</span><em>field</em>, <em>quantiles=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#compute_quantiles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.compute_quantiles" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.compute_quantiles">
+<code class="descclassname">pyrad.util.</code><code class="descname">compute_quantiles</code><span class="sig-paren">(</span><em>field</em>, <em>quantiles=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#compute_quantiles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.compute_quantiles" title="Permalink to this definition">¶</a></dt>
 <dd><p>computes quantiles</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -479,8 +478,8 @@ the mean</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.compute_quantiles_from_hist">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">compute_quantiles_from_hist</code><span class="sig-paren">(</span><em>bin_centers</em>, <em>hist</em>, <em>quantiles=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#compute_quantiles_from_hist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.compute_quantiles_from_hist" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.compute_quantiles_from_hist">
+<code class="descclassname">pyrad.util.</code><code class="descname">compute_quantiles_from_hist</code><span class="sig-paren">(</span><em>bin_centers</em>, <em>hist</em>, <em>quantiles=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#compute_quantiles_from_hist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.compute_quantiles_from_hist" title="Permalink to this definition">¶</a></dt>
 <dd><p>computes quantiles from histograms</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -514,8 +513,8 @@ the mean</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.compute_quantiles_sweep">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">compute_quantiles_sweep</code><span class="sig-paren">(</span><em>field</em>, <em>ray_start</em>, <em>ray_end</em>, <em>quantiles=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#compute_quantiles_sweep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.compute_quantiles_sweep" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.compute_quantiles_sweep">
+<code class="descclassname">pyrad.util.</code><code class="descname">compute_quantiles_sweep</code><span class="sig-paren">(</span><em>field</em>, <em>ray_start</em>, <em>ray_end</em>, <em>quantiles=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#compute_quantiles_sweep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.compute_quantiles_sweep" title="Permalink to this definition">¶</a></dt>
 <dd><p>computes quantiles of a particular sweep</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -549,8 +548,8 @@ the mean</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.create_sun_hits_field">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">create_sun_hits_field</code><span class="sig-paren">(</span><em>rad_el</em>, <em>rad_az</em>, <em>sun_el</em>, <em>sun_az</em>, <em>data</em>, <em>imgcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#create_sun_hits_field"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.create_sun_hits_field" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.create_sun_hits_field">
+<code class="descclassname">pyrad.util.</code><code class="descname">create_sun_hits_field</code><span class="sig-paren">(</span><em>rad_el</em>, <em>rad_az</em>, <em>sun_el</em>, <em>sun_az</em>, <em>data</em>, <em>imgcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#create_sun_hits_field"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.create_sun_hits_field" title="Permalink to this definition">¶</a></dt>
 <dd><p>creates a sun hits field from the position and power of the sun hits</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -582,8 +581,8 @@ create</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.create_sun_retrieval_field">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">create_sun_retrieval_field</code><span class="sig-paren">(</span><em>par</em>, <em>field_name</em>, <em>imgcfg</em>, <em>lant=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#create_sun_retrieval_field"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.create_sun_retrieval_field" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.create_sun_retrieval_field">
+<code class="descclassname">pyrad.util.</code><code class="descname">create_sun_retrieval_field</code><span class="sig-paren">(</span><em>par</em>, <em>field_name</em>, <em>imgcfg</em>, <em>lant=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#create_sun_retrieval_field"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.create_sun_retrieval_field" title="Permalink to this definition">¶</a></dt>
 <dd><p>creates a sun retrieval field from the retrieval parameters</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -612,8 +611,8 @@ create</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.find_colocated_indexes">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">find_colocated_indexes</code><span class="sig-paren">(</span><em>radar1</em>, <em>radar2</em>, <em>rad1_ele</em>, <em>rad1_azi</em>, <em>rad1_rng</em>, <em>rad2_ele</em>, <em>rad2_azi</em>, <em>rad2_rng</em>, <em>ele_tol=0.5</em>, <em>azi_tol=0.5</em>, <em>rng_tol=50.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#find_colocated_indexes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.find_colocated_indexes" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.find_colocated_indexes">
+<code class="descclassname">pyrad.util.</code><code class="descname">find_colocated_indexes</code><span class="sig-paren">(</span><em>radar1</em>, <em>radar2</em>, <em>rad1_ele</em>, <em>rad1_azi</em>, <em>rad1_rng</em>, <em>rad2_ele</em>, <em>rad2_azi</em>, <em>rad2_rng</em>, <em>ele_tol=0.5</em>, <em>azi_tol=0.5</em>, <em>rng_tol=50.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#find_colocated_indexes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.find_colocated_indexes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given the theoretical elevation, azimuth and range of the co-located gates
 of two radars and a given tolerance returns the indices of the gates for
 the current radars</p>
@@ -652,43 +651,8 @@ the current radars</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.find_nearest_gate">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">find_nearest_gate</code><span class="sig-paren">(</span><em>radar</em>, <em>lat</em>, <em>lon</em>, <em>latlon_tol=0.0005</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#find_nearest_gate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.find_nearest_gate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find the radar gate closest to a lat,lon point</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>radar</strong> <span class="classifier-delimiter">:</span> <span class="classifier">radar object</span></dt>
-<dd><p class="first last">the radar object</p>
-</dd>
-<dt><strong>lat, lon</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd><p class="first last">The position of the point</p>
-</dd>
-<dt><strong>latlon_tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd><p class="first last">The tolerance around this point</p>
-</dd>
-</dl>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>ind_ray, ind_rng</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd><p class="first last">The ray and range index</p>
-</dd>
-<dt><strong>azi, rng</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd><p class="first last">the range and azimuth position of the gate</p>
-</dd>
-</dl>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="pyrad.util.radar_utils.find_neighbour_gates">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">find_neighbour_gates</code><span class="sig-paren">(</span><em>radar</em>, <em>azi</em>, <em>rng</em>, <em>delta_azi=None</em>, <em>delta_rng=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#find_neighbour_gates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.find_neighbour_gates" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.find_neighbour_gates">
+<code class="descclassname">pyrad.util.</code><code class="descname">find_neighbour_gates</code><span class="sig-paren">(</span><em>radar</em>, <em>azi</em>, <em>rng</em>, <em>delta_azi=None</em>, <em>delta_rng=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#find_neighbour_gates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.find_neighbour_gates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the neighbouring gates within +-delta_azi and +-delta_rng</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -719,8 +683,8 @@ the current radars</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.find_ray_index">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">find_ray_index</code><span class="sig-paren">(</span><em>ele_vec</em>, <em>azi_vec</em>, <em>ele</em>, <em>azi</em>, <em>ele_tol=0.0</em>, <em>azi_tol=0.0</em>, <em>nearest='azi'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#find_ray_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.find_ray_index" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.find_ray_index">
+<code class="descclassname">pyrad.util.</code><code class="descname">find_ray_index</code><span class="sig-paren">(</span><em>ele_vec</em>, <em>azi_vec</em>, <em>ele</em>, <em>azi</em>, <em>ele_tol=0.0</em>, <em>azi_tol=0.0</em>, <em>nearest='azi'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#find_ray_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.find_ray_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the ray index corresponding to a particular elevation and azimuth</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -755,8 +719,8 @@ tolerance. azi: nearest azimuth, ele: nearest elevation</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.find_rng_index">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">find_rng_index</code><span class="sig-paren">(</span><em>rng_vec</em>, <em>rng</em>, <em>rng_tol=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#find_rng_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.find_rng_index" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.find_rng_index">
+<code class="descclassname">pyrad.util.</code><code class="descname">find_rng_index</code><span class="sig-paren">(</span><em>rng_vec</em>, <em>rng</em>, <em>rng_tol=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#find_rng_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.find_rng_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the range index corresponding to a particular range</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -787,8 +751,8 @@ tolerance. azi: nearest azimuth, ele: nearest elevation</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.get_ROI">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">get_ROI</code><span class="sig-paren">(</span><em>radar</em>, <em>fieldname</em>, <em>sector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#get_ROI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.get_ROI" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.get_ROI">
+<code class="descclassname">pyrad.util.</code><code class="descname">get_ROI</code><span class="sig-paren">(</span><em>radar</em>, <em>fieldname</em>, <em>sector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#get_ROI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.get_ROI" title="Permalink to this definition">¶</a></dt>
 <dd><p>filter out any data outside the region of interest defined by sector</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -819,8 +783,8 @@ tolerance. azi: nearest azimuth, ele: nearest elevation</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.get_closest_solar_flux">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">get_closest_solar_flux</code><span class="sig-paren">(</span><em>hit_datetime_list</em>, <em>flux_datetime_list</em>, <em>flux_value_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#get_closest_solar_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.get_closest_solar_flux" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.get_closest_solar_flux">
+<code class="descclassname">pyrad.util.</code><code class="descname">get_closest_solar_flux</code><span class="sig-paren">(</span><em>hit_datetime_list</em>, <em>flux_datetime_list</em>, <em>flux_value_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#get_closest_solar_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.get_closest_solar_flux" title="Permalink to this definition">¶</a></dt>
 <dd><p>finds the solar flux measurement closest to the sun hit</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -854,38 +818,8 @@ tolerance. azi: nearest azimuth, ele: nearest elevation</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.get_histogram_bins">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">get_histogram_bins</code><span class="sig-paren">(</span><em>field_name</em>, <em>step=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#get_histogram_bins"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.get_histogram_bins" title="Permalink to this definition">¶</a></dt>
-<dd><p>gets the histogram bins using the range limits of the field as defined
-in the Py-ART config file.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>field_name: str</strong></dt>
-<dd><p class="first last">name of the field</p>
-</dd>
-<dt><strong>step</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd><p class="first last">size of bin</p>
-</dd>
-</dl>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>bin_edges</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float array</span></dt>
-<dd><p class="first last">The bin edges</p>
-</dd>
-</dl>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="pyrad.util.radar_utils.get_range_bins_to_avg">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">get_range_bins_to_avg</code><span class="sig-paren">(</span><em>rad1_rng</em>, <em>rad2_rng</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#get_range_bins_to_avg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.get_range_bins_to_avg" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.get_range_bins_to_avg">
+<code class="descclassname">pyrad.util.</code><code class="descname">get_range_bins_to_avg</code><span class="sig-paren">(</span><em>rad1_rng</em>, <em>rad2_rng</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#get_range_bins_to_avg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.get_range_bins_to_avg" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compares the resolution of two radars and determines if and which radar
 has to be averaged and the length of the averaging window</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -917,8 +851,8 @@ has to be averaged and the length of the averaging window</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.get_target_elevations">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">get_target_elevations</code><span class="sig-paren">(</span><em>radar_in</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#get_target_elevations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.get_target_elevations" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.get_target_elevations">
+<code class="descclassname">pyrad.util.</code><code class="descname">get_target_elevations</code><span class="sig-paren">(</span><em>radar_in</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#get_target_elevations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.get_target_elevations" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets RHI target elevations</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -946,8 +880,8 @@ has to be averaged and the length of the averaging window</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.join_time_series">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">join_time_series</code><span class="sig-paren">(</span><em>t1</em>, <em>val1</em>, <em>t2</em>, <em>val2</em>, <em>dropnan=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#join_time_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.join_time_series" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.join_time_series">
+<code class="descclassname">pyrad.util.</code><code class="descname">join_time_series</code><span class="sig-paren">(</span><em>t1</em>, <em>val1</em>, <em>t2</em>, <em>val2</em>, <em>dropnan=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#join_time_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.join_time_series" title="Permalink to this definition">¶</a></dt>
 <dd><p>joins time_series</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -990,8 +924,8 @@ has to be averaged and the length of the averaging window</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.project_to_vertical">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">project_to_vertical</code><span class="sig-paren">(</span><em>data_in</em>, <em>data_height</em>, <em>grid_height</em>, <em>interp_kind='none'</em>, <em>fill_value=-9999.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#project_to_vertical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.project_to_vertical" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.project_to_vertical">
+<code class="descclassname">pyrad.util.</code><code class="descname">project_to_vertical</code><span class="sig-paren">(</span><em>data_in</em>, <em>data_height</em>, <em>grid_height</em>, <em>interp_kind='none'</em>, <em>fill_value=-9999.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#project_to_vertical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.project_to_vertical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Projects radar data to a regular vertical grid</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1028,43 +962,15 @@ has to be averaged and the length of the averaging window</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.quantize_field">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">quantize_field</code><span class="sig-paren">(</span><em>field</em>, <em>field_name</em>, <em>step</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#quantize_field"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.quantize_field" title="Permalink to this definition">¶</a></dt>
-<dd><p>quantizes data</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>field</strong> <span class="classifier-delimiter">:</span> <span class="classifier">ndarray 2D</span></dt>
-<dd><p class="first last">the radar field</p>
-</dd>
-<dt><strong>field_name: str</strong></dt>
-<dd><p class="first last">name of the field</p>
-</dd>
-<dt><strong>step</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd><p class="first last">size of bin</p>
-</dd>
-</dl>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>fieldq</strong> <span class="classifier-delimiter">:</span> <span class="classifier">ndarray 2D</span></dt>
-<dd><p class="first last">The quantized field</p>
-</dd>
-<dt><strong>values</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float array</span></dt>
-<dd><p class="first last">values at each bin</p>
-</dd>
-</dl>
-</td>
-</tr>
-</tbody>
-</table>
+<dt id="pyrad.util.quantiles_weighted">
+<code class="descclassname">pyrad.util.</code><code class="descname">quantiles_weighted</code><span class="sig-paren">(</span><em>values</em>, <em>weight_vector=None</em>, <em>quantiles=array([0.5])</em>, <em>weight_threshold=None</em>, <em>data_is_log=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/stat_utils.html#quantiles_weighted"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.quantiles_weighted" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a set of values and weights, compute the weighted
+quantile(s).</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.rainfall_accumulation">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">rainfall_accumulation</code><span class="sig-paren">(</span><em>t_in_vec</em>, <em>val_in_vec</em>, <em>cum_time=3600.0</em>, <em>base_time=0.0</em>, <em>dropnan=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#rainfall_accumulation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.rainfall_accumulation" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.rainfall_accumulation">
+<code class="descclassname">pyrad.util.</code><code class="descname">rainfall_accumulation</code><span class="sig-paren">(</span><em>t_in_vec</em>, <em>val_in_vec</em>, <em>cum_time=3600.0</em>, <em>base_time=0.0</em>, <em>dropnan=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#rainfall_accumulation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.rainfall_accumulation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the rainfall accumulation of a time series over a given period</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1107,8 +1013,8 @@ has to be averaged and the length of the averaging window</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.time_avg_range">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">time_avg_range</code><span class="sig-paren">(</span><em>timeinfo</em>, <em>avg_starttime</em>, <em>avg_endtime</em>, <em>period</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#time_avg_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.time_avg_range" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.time_avg_range">
+<code class="descclassname">pyrad.util.</code><code class="descname">time_avg_range</code><span class="sig-paren">(</span><em>timeinfo</em>, <em>avg_starttime</em>, <em>avg_endtime</em>, <em>period</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#time_avg_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.time_avg_range" title="Permalink to this definition">¶</a></dt>
 <dd><p>finds the new start and end time of an averaging</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1145,8 +1051,8 @@ has to be averaged and the length of the averaging window</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.util.radar_utils.time_series_statistics">
-<code class="descclassname">pyrad.util.radar_utils.</code><code class="descname">time_series_statistics</code><span class="sig-paren">(</span><em>t_in_vec</em>, <em>val_in_vec</em>, <em>avg_time=3600</em>, <em>base_time=1800</em>, <em>method='mean'</em>, <em>dropnan=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#time_series_statistics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.radar_utils.time_series_statistics" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.util.time_series_statistics">
+<code class="descclassname">pyrad.util.</code><code class="descname">time_series_statistics</code><span class="sig-paren">(</span><em>t_in_vec</em>, <em>val_in_vec</em>, <em>avg_time=3600</em>, <em>base_time=1800</em>, <em>method='mean'</em>, <em>dropnan=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#time_series_statistics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.time_series_statistics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes statistics over a time-averaged series</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1189,27 +1095,6 @@ has to be averaged and the length of the averaging window</p>
 </dd></dl>
 
 </div>
-<span class="target" id="module-pyrad.util.stat_utils"></span><div class="section" id="pyrad-util-stat-utils">
-<h1>pyrad.util.stat_utils<a class="headerlink" href="#pyrad-util-stat-utils" title="Permalink to this headline">¶</a></h1>
-<p>Miscellaneous functions dealing with statistics</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.stat_utils.quantiles_weighted" title="pyrad.util.stat_utils.quantiles_weighted"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quantiles_weighted</span></code></a>(values[,&nbsp;weight_vector,&nbsp;…])</td>
-<td>Given a set of values and weights, compute the weighted quantile(s).</td>
-</tr>
-</tbody>
-</table>
-<dl class="function">
-<dt id="pyrad.util.stat_utils.quantiles_weighted">
-<code class="descclassname">pyrad.util.stat_utils.</code><code class="descname">quantiles_weighted</code><span class="sig-paren">(</span><em>values</em>, <em>weight_vector=None</em>, <em>quantiles=array([0.5])</em>, <em>weight_threshold=None</em>, <em>data_is_log=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/stat_utils.html#quantiles_weighted"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.stat_utils.quantiles_weighted" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a set of values and weights, compute the weighted
-quantile(s).</p>
-</dd></dl>
-
 </div>
 
 
@@ -1230,48 +1115,13 @@ quantile(s).</p>
 
 <h3>Navigation</h3>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="flow.html">pyrad.flow.flow_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="flow.html#pyrad-flow-flow-control">pyrad.flow.flow_control</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html">pyrad.proc.process_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-calib">pyrad.proc.process_calib</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-cosmo">pyrad.proc.process_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-doppler">pyrad.proc.process_Doppler</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-echoclass">pyrad.proc.process_echoclass</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-intercomp">pyrad.proc.process_intercomp</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-monitoring">pyrad.proc.process_monitoring</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-phase">pyrad.proc.process_phase</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-retrieve">pyrad.proc.process_retrieve</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-timeseries">pyrad.proc.process_timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-traj">pyrad.proc.process_traj</a></li>
-<li class="toctree-l1"><a class="reference internal" href="prod.html">pyrad.prod.product_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="prod.html#pyrad-prod-process-product">pyrad.prod.process_product</a></li>
-<li class="toctree-l1"><a class="reference internal" href="prod.html#pyrad-prod-process-vol-products">pyrad.prod.process_vol_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="prod.html#pyrad-prod-process-grid-products">pyrad.prod.process_grid_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="prod.html#pyrad-prod-process-timeseries-products">pyrad.prod.process_timeseries_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="prod.html#pyrad-prod-process-monitoring-products">pyrad.prod.process_monitoring_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="prod.html#pyrad-prod-process-intercomp-products">pyrad.prod.process_intercomp_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="prod.html#id1">pyrad.prod.process_product</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html">pyrad.io.io_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-config">pyrad.io.config</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-read-data-radar">pyrad.io.read_data_radar</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-read-data-mxpol">pyrad.io.read_data_mxpol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-read-data-cosmo">pyrad.io.read_data_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-read-data-hzt">pyrad.io.read_data_hzt</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-read-data-sensor">pyrad.io.read_data_sensor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-read-data-sun">pyrad.io.read_data_sun</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-read-data-other">pyrad.io.read_data_other</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-write-data">pyrad.io.write_data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-timeseries">pyrad.io.timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-trajectory">pyrad.io.trajectory</a></li>
-<li class="toctree-l1"><a class="reference internal" href="graph.html">pyrad.graph.plots_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="graph.html#pyrad-graph-plots">pyrad.graph.plots</a></li>
-<li class="toctree-l1"><a class="reference internal" href="graph.html#pyrad-graph-plots-vol">pyrad.graph.plots_vol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="graph.html#pyrad-graph-plots-grid">pyrad.graph.plots_grid</a></li>
-<li class="toctree-l1"><a class="reference internal" href="graph.html#pyrad-graph-plot-timeseries">pyrad.graph.plot_timeseries</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">pyrad.util.radar_utils</a><ul class="simple">
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="#pyrad-util-stat-utils">pyrad.util.stat_utils</a><ul class="simple">
+<li class="toctree-l1"><a class="reference internal" href="flow.html">processing flow control (<code class="docutils literal notranslate"><span class="pre">pyrad.flow</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proc.html">Dataset processing (<code class="docutils literal notranslate"><span class="pre">pyrad.proc</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prod.html">Products generation (<code class="docutils literal notranslate"><span class="pre">pyrad.prod</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html">Input and output (<code class="docutils literal notranslate"><span class="pre">pyrad.io</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graph.html">Plotting (<code class="docutils literal notranslate"><span class="pre">pyrad.graph</span></code>)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Utilities (<code class="docutils literal notranslate"><span class="pre">pyrad.util</span></code>)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#radar-utilities">Radar Utilities</a></li>
 </ul>
 </li>
 </ul>

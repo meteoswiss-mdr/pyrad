@@ -63,7 +63,7 @@
 <span class="kn">from</span> <span class="nn">..io.read_data_sensor</span> <span class="k">import</span> <span class="n">read_lightning</span><span class="p">,</span> <span class="n">read_trt_traj_data</span>
 
 
-<div class="viewcode-block" id="Trajectory"><a class="viewcode-back" href="../../../io.html#pyrad.io.trajectory.Trajectory">[docs]</a><span class="k">class</span> <span class="nc">Trajectory</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Trajectory"><a class="viewcode-back" href="../../../io.html#pyrad.io.Trajectory">[docs]</a><span class="k">class</span> <span class="nc">Trajectory</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class for reading and handling trajectory data from a file.</span>
 
@@ -119,7 +119,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Trajectory.__init__"><a class="viewcode-back" href="../../../io.html#pyrad.io.trajectory.Trajectory.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">starttime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">endtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<div class="viewcode-block" id="Trajectory.__init__"><a class="viewcode-back" href="../../../io.html#pyrad.io.Trajectory.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">starttime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">endtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">trajtype</span><span class="o">=</span><span class="s1">&#39;plane&#39;</span><span class="p">,</span> <span class="n">flashnr</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initalize the object.</span>
@@ -180,7 +180,7 @@
                 <span class="s2">&quot;ERROR: Could not load trajectory data from file &#39;&quot;</span> <span class="o">+</span>
                 <span class="n">filename</span><span class="o">+</span><span class="s2">&quot;&#39; into Trajectory object&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Trajectory.add_radar"><a class="viewcode-back" href="../../../io.html#pyrad.io.trajectory.Trajectory.add_radar">[docs]</a>    <span class="k">def</span> <span class="nf">add_radar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radar</span><span class="p">):</span>
+<div class="viewcode-block" id="Trajectory.add_radar"><a class="viewcode-back" href="../../../io.html#pyrad.io.Trajectory.add_radar">[docs]</a>    <span class="k">def</span> <span class="nf">add_radar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radar</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add the coordinates (WGS84 longitude, latitude and non WGS84 altitude)</span>
 <span class="sd">        of a radar to the radar_list.</span>
@@ -225,7 +225,7 @@
 
         <span class="k">return</span> <span class="n">rad</span></div>
 
-<div class="viewcode-block" id="Trajectory.calculate_velocities"><a class="viewcode-back" href="../../../io.html#pyrad.io.trajectory.Trajectory.calculate_velocities">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_velocities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radar</span><span class="p">):</span>
+<div class="viewcode-block" id="Trajectory.calculate_velocities"><a class="viewcode-back" href="../../../io.html#pyrad.io.Trajectory.calculate_velocities">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_velocities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radar</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate velocities.</span>
 
@@ -262,7 +262,7 @@
 
         <span class="n">radar</span><span class="o">.</span><span class="n">assign_velocity_vecs</span><span class="p">(</span><span class="n">v_abs</span><span class="p">,</span> <span class="n">v_r</span><span class="p">,</span> <span class="n">v_el</span><span class="p">,</span> <span class="n">v_az</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Trajectory.get_samples_in_period"><a class="viewcode-back" href="../../../io.html#pyrad.io.trajectory.Trajectory.get_samples_in_period">[docs]</a>    <span class="k">def</span> <span class="nf">get_samples_in_period</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Trajectory.get_samples_in_period"><a class="viewcode-back" href="../../../io.html#pyrad.io.Trajectory.get_samples_in_period">[docs]</a>    <span class="k">def</span> <span class="nf">get_samples_in_period</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;&quot;</span>
 <span class="sd">        Get indices of samples of the trajectory within given time</span>
 <span class="sd">        period.</span>
@@ -278,7 +278,7 @@
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">time_vector</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">)</span> <span class="o">&amp;</span>
                             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_vector</span> <span class="o">&lt;</span> <span class="n">end</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Trajectory.get_start_time"><a class="viewcode-back" href="../../../io.html#pyrad.io.trajectory.Trajectory.get_start_time">[docs]</a>    <span class="k">def</span> <span class="nf">get_start_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Trajectory.get_start_time"><a class="viewcode-back" href="../../../io.html#pyrad.io.Trajectory.get_start_time">[docs]</a>    <span class="k">def</span> <span class="nf">get_start_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get time of first trajectory sample.</span>
 
@@ -289,7 +289,7 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_vector</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="Trajectory.get_end_time"><a class="viewcode-back" href="../../../io.html#pyrad.io.trajectory.Trajectory.get_end_time">[docs]</a>    <span class="k">def</span> <span class="nf">get_end_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Trajectory.get_end_time"><a class="viewcode-back" href="../../../io.html#pyrad.io.Trajectory.get_end_time">[docs]</a>    <span class="k">def</span> <span class="nf">get_end_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get time of last trajectory sample.</span>
 
@@ -300,7 +300,7 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_vector</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="Trajectory._convert_traj_to_swissgrid"><a class="viewcode-back" href="../../../io.html#pyrad.io.trajectory.Trajectory._convert_traj_to_swissgrid">[docs]</a>    <span class="k">def</span> <span class="nf">_convert_traj_to_swissgrid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Trajectory._convert_traj_to_swissgrid"><a class="viewcode-back" href="../../../io.html#pyrad.io.Trajectory._convert_traj_to_swissgrid">[docs]</a>    <span class="k">def</span> <span class="nf">_convert_traj_to_swissgrid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convert trajectory samples from WGS84 to Swiss CH1903 coordinates</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -314,7 +314,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_swiss_grid_done</span> <span class="o">=</span> <span class="kc">True</span></div>
 
-<div class="viewcode-block" id="Trajectory._read_traj"><a class="viewcode-back" href="../../../io.html#pyrad.io.trajectory.Trajectory._read_traj">[docs]</a>    <span class="k">def</span> <span class="nf">_read_traj</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Trajectory._read_traj"><a class="viewcode-back" href="../../../io.html#pyrad.io.Trajectory._read_traj">[docs]</a>    <span class="k">def</span> <span class="nf">_read_traj</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Read trajectory from file</span>
 
@@ -416,7 +416,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">nsamples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_vector</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Trajectory._read_traj_lightning"><a class="viewcode-back" href="../../../io.html#pyrad.io.trajectory.Trajectory._read_traj_lightning">[docs]</a>    <span class="k">def</span> <span class="nf">_read_traj_lightning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flashnr</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="Trajectory._read_traj_lightning"><a class="viewcode-back" href="../../../io.html#pyrad.io.Trajectory._read_traj_lightning">[docs]</a>    <span class="k">def</span> <span class="nf">_read_traj_lightning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flashnr</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Read trajectory from lightning file</span>
 
@@ -486,7 +486,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">nsamples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_vector</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Trajectory._read_traj_trt"><a class="viewcode-back" href="../../../io.html#pyrad.io.trajectory.Trajectory._read_traj_trt">[docs]</a>    <span class="k">def</span> <span class="nf">_read_traj_trt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Trajectory._read_traj_trt"><a class="viewcode-back" href="../../../io.html#pyrad.io.Trajectory._read_traj_trt">[docs]</a>    <span class="k">def</span> <span class="nf">_read_traj_trt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Read trajectory from TRT file</span>
 
@@ -562,12 +562,12 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">nsamples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_vector</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Trajectory._get_total_seconds"><a class="viewcode-back" href="../../../io.html#pyrad.io.trajectory.Trajectory._get_total_seconds">[docs]</a>    <span class="k">def</span> <span class="nf">_get_total_seconds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<div class="viewcode-block" id="Trajectory._get_total_seconds"><a class="viewcode-back" href="../../../io.html#pyrad.io.Trajectory._get_total_seconds">[docs]</a>    <span class="k">def</span> <span class="nf">_get_total_seconds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Return total seconds of timedelta object&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span></div></div>
 
 
-<div class="viewcode-block" id="_Radar_Trajectory"><a class="viewcode-back" href="../../../io.html#pyrad.io.trajectory._Radar_Trajectory">[docs]</a><span class="k">class</span> <span class="nc">_Radar_Trajectory</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">_Radar_Trajectory</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class for holding the trajectory data assigned to a radar.</span>
 
@@ -599,7 +599,7 @@
 <span class="sd">    assign_velocity_vecs</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="_Radar_Trajectory.__init__"><a class="viewcode-back" href="../../../io.html#pyrad.io.trajectory._Radar_Trajectory.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">alt</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">alt</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initalize the object.</span>
 
@@ -631,9 +631,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">v_abs</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">v_r</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">v_el</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">v_az</span> <span class="o">=</span> <span class="kc">None</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_az</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="_Radar_Trajectory.location_is_equal"><a class="viewcode-back" href="../../../io.html#pyrad.io.trajectory._Radar_Trajectory.location_is_equal">[docs]</a>    <span class="k">def</span> <span class="nf">location_is_equal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">alt</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">location_is_equal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">alt</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check if the given coordinates are the same.</span>
 
@@ -655,9 +655,9 @@
                 <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">altitude</span><span class="o">-</span><span class="n">alt</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">alt_tol</span><span class="p">)):</span>
             <span class="k">return</span> <span class="kc">False</span>
 
-        <span class="k">return</span> <span class="kc">True</span></div>
+        <span class="k">return</span> <span class="kc">True</span>
 
-<div class="viewcode-block" id="_Radar_Trajectory.assign_trajectory"><a class="viewcode-back" href="../../../io.html#pyrad.io.trajectory._Radar_Trajectory.assign_trajectory">[docs]</a>    <span class="k">def</span> <span class="nf">assign_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">el</span><span class="p">,</span> <span class="n">az</span><span class="p">,</span> <span class="n">rr</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">assign_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">el</span><span class="p">,</span> <span class="n">az</span><span class="p">,</span> <span class="n">rr</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Assign a trajectory to the radar in polar radar</span>
 <span class="sd">        coordinates.</span>
@@ -675,9 +675,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">elevation_vec</span> <span class="o">=</span> <span class="n">el</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">azimuth_vec</span> <span class="o">=</span> <span class="n">az</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">range_vec</span> <span class="o">=</span> <span class="n">rr</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">traj_assigned</span> <span class="o">=</span> <span class="kc">True</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">traj_assigned</span> <span class="o">=</span> <span class="kc">True</span>
 
-<div class="viewcode-block" id="_Radar_Trajectory.convert_radpos_to_swissgrid"><a class="viewcode-back" href="../../../io.html#pyrad.io.trajectory._Radar_Trajectory.convert_radpos_to_swissgrid">[docs]</a>    <span class="k">def</span> <span class="nf">convert_radpos_to_swissgrid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">convert_radpos_to_swissgrid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convert the radar location (in WGS84 coordinates) to</span>
 <span class="sd">        swiss CH1903 coordinates.</span>
@@ -692,9 +692,9 @@
                                             <span class="bp">self</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span>
                                             <span class="bp">self</span><span class="o">.</span><span class="n">altitude</span><span class="p">,</span>
                                             <span class="n">no_altitude_transform</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_swiss_coords_done</span> <span class="o">=</span> <span class="kc">True</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_swiss_coords_done</span> <span class="o">=</span> <span class="kc">True</span>
 
-<div class="viewcode-block" id="_Radar_Trajectory.assign_velocity_vecs"><a class="viewcode-back" href="../../../io.html#pyrad.io.trajectory._Radar_Trajectory.assign_velocity_vecs">[docs]</a>    <span class="k">def</span> <span class="nf">assign_velocity_vecs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v_abs</span><span class="p">,</span> <span class="n">v_r</span><span class="p">,</span> <span class="n">v_el</span><span class="p">,</span> <span class="n">v_az</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">assign_velocity_vecs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v_abs</span><span class="p">,</span> <span class="n">v_r</span><span class="p">,</span> <span class="n">v_el</span><span class="p">,</span> <span class="n">v_az</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Assign velocity vectors to the radar.</span>
 
@@ -708,7 +708,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">v_r</span> <span class="o">=</span> <span class="n">v_r</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">v_az</span> <span class="o">=</span> <span class="n">v_az</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">v_el</span> <span class="o">=</span> <span class="n">v_el</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_velocity_vecs_assigned</span> <span class="o">=</span> <span class="kc">True</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_velocity_vecs_assigned</span> <span class="o">=</span> <span class="kc">True</span>
 </pre></div>
 
           </div>
@@ -728,46 +728,12 @@
 
 <h3>Navigation</h3>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../flow.html">pyrad.flow.flow_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../flow.html#pyrad-flow-flow-control">pyrad.flow.flow_control</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html">pyrad.proc.process_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-calib">pyrad.proc.process_calib</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-cosmo">pyrad.proc.process_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-doppler">pyrad.proc.process_Doppler</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-echoclass">pyrad.proc.process_echoclass</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-intercomp">pyrad.proc.process_intercomp</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-monitoring">pyrad.proc.process_monitoring</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-phase">pyrad.proc.process_phase</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-retrieve">pyrad.proc.process_retrieve</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-timeseries">pyrad.proc.process_timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-traj">pyrad.proc.process_traj</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html">pyrad.prod.product_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-product">pyrad.prod.process_product</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-vol-products">pyrad.prod.process_vol_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-grid-products">pyrad.prod.process_grid_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-timeseries-products">pyrad.prod.process_timeseries_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-monitoring-products">pyrad.prod.process_monitoring_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-intercomp-products">pyrad.prod.process_intercomp_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#id1">pyrad.prod.process_product</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html">pyrad.io.io_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-config">pyrad.io.config</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-radar">pyrad.io.read_data_radar</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-mxpol">pyrad.io.read_data_mxpol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-cosmo">pyrad.io.read_data_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-hzt">pyrad.io.read_data_hzt</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-sensor">pyrad.io.read_data_sensor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-sun">pyrad.io.read_data_sun</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-other">pyrad.io.read_data_other</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-write-data">pyrad.io.write_data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-timeseries">pyrad.io.timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-trajectory">pyrad.io.trajectory</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html">pyrad.graph.plots_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots">pyrad.graph.plots</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots-vol">pyrad.graph.plots_vol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots-grid">pyrad.graph.plots_grid</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plot-timeseries">pyrad.graph.plot_timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../util.html">pyrad.util.radar_utils</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../util.html#pyrad-util-stat-utils">pyrad.util.stat_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../flow.html">processing flow control (<code class="docutils literal notranslate"><span class="pre">pyrad.flow</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../proc.html">Dataset processing (<code class="docutils literal notranslate"><span class="pre">pyrad.proc</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../prod.html">Products generation (<code class="docutils literal notranslate"><span class="pre">pyrad.prod</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html">Input and output (<code class="docutils literal notranslate"><span class="pre">pyrad.io</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../graph.html">Plotting (<code class="docutils literal notranslate"><span class="pre">pyrad.graph</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../util.html">Utilities (<code class="docutils literal notranslate"><span class="pre">pyrad.util</span></code>)</a></li>
 </ul>
 
 <div class="relations">

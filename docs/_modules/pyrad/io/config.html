@@ -58,7 +58,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 
-<div class="viewcode-block" id="read_config"><a class="viewcode-back" href="../../../io.html#pyrad.io.config.read_config">[docs]</a><span class="k">def</span> <span class="nf">read_config</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="read_config"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_config">[docs]</a><span class="k">def</span> <span class="nf">read_config</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read a pyrad config file.</span>
 
@@ -142,7 +142,7 @@
     <span class="k">return</span> <span class="n">cfg</span></div>
 
 
-<div class="viewcode-block" id="get_num_elements"><a class="viewcode-back" href="../../../io.html#pyrad.io.config.get_num_elements">[docs]</a><span class="k">def</span> <span class="nf">get_num_elements</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">nelstr</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_num_elements</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">nelstr</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Checks if data type is an array or a structure.</span>
 
@@ -173,10 +173,10 @@
     <span class="k">if</span> <span class="p">(</span><span class="n">narr</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">isstruct</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">):</span>
         <span class="n">nel</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nelstr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-    <span class="k">return</span> <span class="n">nel</span><span class="p">,</span> <span class="n">isstruct</span></div>
+    <span class="k">return</span> <span class="n">nel</span><span class="p">,</span> <span class="n">isstruct</span>
 
 
-<div class="viewcode-block" id="string_to_datatype"><a class="viewcode-back" href="../../../io.html#pyrad.io.config.string_to_datatype">[docs]</a><span class="k">def</span> <span class="nf">string_to_datatype</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">strval</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">string_to_datatype</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">strval</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Converts a string containing a value into its Python value</span>
 
@@ -222,10 +222,10 @@
 
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">sval</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ERROR: Unexpected data type &quot;</span><span class="o">+</span><span class="n">uptype</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ERROR: Unexpected data type &quot;</span><span class="o">+</span><span class="n">uptype</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="get_array"><a class="viewcode-back" href="../../../io.html#pyrad.io.config.get_array">[docs]</a><span class="k">def</span> <span class="nf">get_array</span><span class="p">(</span><span class="n">cfgfile</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">nel</span><span class="p">,</span> <span class="n">valtype</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_array</span><span class="p">(</span><span class="n">cfgfile</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">nel</span><span class="p">,</span> <span class="n">valtype</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    reads an array in a config file</span>
 
@@ -279,10 +279,10 @@
             <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
         <span class="n">newpos</span> <span class="o">=</span> <span class="n">cfgfile</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span>
 
-    <span class="k">return</span> <span class="n">arr</span><span class="p">,</span> <span class="n">newpos</span></div>
+    <span class="k">return</span> <span class="n">arr</span><span class="p">,</span> <span class="n">newpos</span>
 
 
-<div class="viewcode-block" id="get_struct"><a class="viewcode-back" href="../../../io.html#pyrad.io.config.get_struct">[docs]</a><span class="k">def</span> <span class="nf">get_struct</span><span class="p">(</span><span class="n">cfgfile</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">nels</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_struct</span><span class="p">(</span><span class="n">cfgfile</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">nels</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    reads an struct in a config file</span>
 
@@ -349,10 +349,10 @@
 
         <span class="n">struct</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">sfieldname</span><span class="p">:</span> <span class="n">sfieldvalue</span><span class="p">})</span>
 
-    <span class="k">return</span> <span class="n">struct</span><span class="p">,</span> <span class="n">newpos</span></div>
+    <span class="k">return</span> <span class="n">struct</span><span class="p">,</span> <span class="n">newpos</span>
 
 
-<div class="viewcode-block" id="get_array_type"><a class="viewcode-back" href="../../../io.html#pyrad.io.config.get_array_type">[docs]</a><span class="k">def</span> <span class="nf">get_array_type</span><span class="p">(</span><span class="n">dtype</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_array_type</span><span class="p">(</span><span class="n">dtype</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Determines Python array type from the config file array type</span>
 
@@ -387,10 +387,10 @@
     <span class="k">elif</span> <span class="n">uptype</span> <span class="o">==</span> <span class="s1">&#39;STRARR&#39;</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;STRING&#39;</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ERROR: Unexpected data type &quot;</span><span class="o">+</span><span class="n">uptype</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ERROR: Unexpected data type &quot;</span><span class="o">+</span><span class="n">uptype</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="init_array"><a class="viewcode-back" href="../../../io.html#pyrad.io.config.init_array">[docs]</a><span class="k">def</span> <span class="nf">init_array</span><span class="p">(</span><span class="n">nel</span><span class="p">,</span> <span class="n">dtype</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">init_array</span><span class="p">(</span><span class="n">nel</span><span class="p">,</span> <span class="n">dtype</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initializes a Python array</span>
 
@@ -427,7 +427,7 @@
     <span class="k">elif</span> <span class="n">uptype</span> <span class="o">==</span> <span class="s1">&#39;STRING&#39;</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">[]</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ERROR: Unexpected array data type &quot;</span><span class="o">+</span><span class="n">uptype</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ERROR: Unexpected array data type &quot;</span><span class="o">+</span><span class="n">uptype</span><span class="p">)</span>
 </pre></div>
 
           </div>
@@ -447,46 +447,12 @@
 
 <h3>Navigation</h3>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../flow.html">pyrad.flow.flow_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../flow.html#pyrad-flow-flow-control">pyrad.flow.flow_control</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html">pyrad.proc.process_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-calib">pyrad.proc.process_calib</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-cosmo">pyrad.proc.process_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-doppler">pyrad.proc.process_Doppler</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-echoclass">pyrad.proc.process_echoclass</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-intercomp">pyrad.proc.process_intercomp</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-monitoring">pyrad.proc.process_monitoring</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-phase">pyrad.proc.process_phase</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-retrieve">pyrad.proc.process_retrieve</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-timeseries">pyrad.proc.process_timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-traj">pyrad.proc.process_traj</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html">pyrad.prod.product_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-product">pyrad.prod.process_product</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-vol-products">pyrad.prod.process_vol_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-grid-products">pyrad.prod.process_grid_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-timeseries-products">pyrad.prod.process_timeseries_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-monitoring-products">pyrad.prod.process_monitoring_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-intercomp-products">pyrad.prod.process_intercomp_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#id1">pyrad.prod.process_product</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html">pyrad.io.io_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-config">pyrad.io.config</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-radar">pyrad.io.read_data_radar</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-mxpol">pyrad.io.read_data_mxpol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-cosmo">pyrad.io.read_data_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-hzt">pyrad.io.read_data_hzt</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-sensor">pyrad.io.read_data_sensor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-sun">pyrad.io.read_data_sun</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-other">pyrad.io.read_data_other</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-write-data">pyrad.io.write_data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-timeseries">pyrad.io.timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-trajectory">pyrad.io.trajectory</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html">pyrad.graph.plots_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots">pyrad.graph.plots</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots-vol">pyrad.graph.plots_vol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots-grid">pyrad.graph.plots_grid</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plot-timeseries">pyrad.graph.plot_timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../util.html">pyrad.util.radar_utils</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../util.html#pyrad-util-stat-utils">pyrad.util.stat_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../flow.html">processing flow control (<code class="docutils literal notranslate"><span class="pre">pyrad.flow</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../proc.html">Dataset processing (<code class="docutils literal notranslate"><span class="pre">pyrad.proc</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../prod.html">Products generation (<code class="docutils literal notranslate"><span class="pre">pyrad.prod</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html">Input and output (<code class="docutils literal notranslate"><span class="pre">pyrad.io</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../graph.html">Plotting (<code class="docutils literal notranslate"><span class="pre">pyrad.graph</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../util.html">Utilities (<code class="docutils literal notranslate"><span class="pre">pyrad.util</span></code>)</a></li>
 </ul>
 
 <div class="relations">

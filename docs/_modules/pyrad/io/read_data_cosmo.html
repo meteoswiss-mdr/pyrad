@@ -71,7 +71,7 @@
 <span class="c1"># import time</span>
 
 
-<div class="viewcode-block" id="cosmo2radar_data"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_cosmo.cosmo2radar_data">[docs]</a><span class="k">def</span> <span class="nf">cosmo2radar_data</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">cosmo_coord</span><span class="p">,</span> <span class="n">cosmo_data</span><span class="p">,</span> <span class="n">time_index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<div class="viewcode-block" id="cosmo2radar_data"><a class="viewcode-back" href="../../../io.html#pyrad.io.cosmo2radar_data">[docs]</a><span class="k">def</span> <span class="nf">cosmo2radar_data</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">cosmo_coord</span><span class="p">,</span> <span class="n">cosmo_data</span><span class="p">,</span> <span class="n">time_index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                      <span class="n">slice_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">slice_z</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                      <span class="n">field_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">]):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -145,7 +145,7 @@
     <span class="k">return</span> <span class="n">cosmo_fields</span></div>
 
 
-<div class="viewcode-block" id="cosmo2radar_coord"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_cosmo.cosmo2radar_coord">[docs]</a><span class="k">def</span> <span class="nf">cosmo2radar_coord</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">cosmo_coord</span><span class="p">,</span> <span class="n">slice_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">slice_z</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<div class="viewcode-block" id="cosmo2radar_coord"><a class="viewcode-back" href="../../../io.html#pyrad.io.cosmo2radar_coord">[docs]</a><span class="k">def</span> <span class="nf">cosmo2radar_coord</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">cosmo_coord</span><span class="p">,</span> <span class="n">slice_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">slice_z</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                       <span class="n">field_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Given the radar coordinates find the nearest COSMO model pixel</span>
@@ -212,7 +212,7 @@
     <span class="k">return</span> <span class="n">cosmo_ind_field</span></div>
 
 
-<div class="viewcode-block" id="get_cosmo_fields"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_cosmo.get_cosmo_fields">[docs]</a><span class="k">def</span> <span class="nf">get_cosmo_fields</span><span class="p">(</span><span class="n">cosmo_data</span><span class="p">,</span> <span class="n">cosmo_ind</span><span class="p">,</span> <span class="n">time_index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<div class="viewcode-block" id="get_cosmo_fields"><a class="viewcode-back" href="../../../io.html#pyrad.io.get_cosmo_fields">[docs]</a><span class="k">def</span> <span class="nf">get_cosmo_fields</span><span class="p">(</span><span class="n">cosmo_data</span><span class="p">,</span> <span class="n">cosmo_ind</span><span class="p">,</span> <span class="n">time_index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                      <span class="n">field_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">]):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get the COSMO data corresponding to each radar gate</span>
@@ -256,7 +256,7 @@
     <span class="k">return</span> <span class="n">cosmo_fields</span></div>
 
 <span class="c1"># @profile</span>
-<div class="viewcode-block" id="read_cosmo_data"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_cosmo.read_cosmo_data">[docs]</a><span class="k">def</span> <span class="nf">read_cosmo_data</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">field_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">],</span> <span class="n">celsius</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="read_cosmo_data"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_cosmo_data">[docs]</a><span class="k">def</span> <span class="nf">read_cosmo_data</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">field_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">],</span> <span class="n">celsius</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads COSMO data from a netcdf file</span>
 
@@ -332,7 +332,7 @@
     <span class="k">return</span> <span class="n">cosmo_data</span></div>
 
 
-<div class="viewcode-block" id="read_cosmo_coord"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_cosmo.read_cosmo_coord">[docs]</a><span class="k">def</span> <span class="nf">read_cosmo_coord</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">zmin</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="read_cosmo_coord"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_cosmo_coord">[docs]</a><span class="k">def</span> <span class="nf">read_cosmo_coord</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">zmin</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads COSMO coordinates from a netcdf file</span>
 
@@ -392,7 +392,7 @@
         <span class="k">return</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="_ncvar_to_dict"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_cosmo._ncvar_to_dict">[docs]</a><span class="k">def</span> <span class="nf">_ncvar_to_dict</span><span class="p">(</span><span class="n">ncvar</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_ncvar_to_dict</span><span class="p">(</span><span class="n">ncvar</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Convert a NetCDF Dataset variable to a dictionary. &quot;&quot;&quot;</span>
     <span class="c1"># copy all attributes</span>
     <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ncvar</span><span class="p">,</span> <span class="n">k</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">ncvar</span><span class="o">.</span><span class="n">ncattrs</span><span class="p">())</span>
@@ -403,10 +403,10 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">d</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">d</span></div>
+    <span class="k">return</span> <span class="n">d</span>
 
 
-<div class="viewcode-block" id="_prepare_for_interpolation"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_cosmo._prepare_for_interpolation">[docs]</a><span class="k">def</span> <span class="nf">_prepare_for_interpolation</span><span class="p">(</span><span class="n">x_radar</span><span class="p">,</span> <span class="n">y_radar</span><span class="p">,</span> <span class="n">z_radar</span><span class="p">,</span> <span class="n">cosmo_coord</span><span class="p">,</span>
+<span class="k">def</span> <span class="nf">_prepare_for_interpolation</span><span class="p">(</span><span class="n">x_radar</span><span class="p">,</span> <span class="n">y_radar</span><span class="p">,</span> <span class="n">z_radar</span><span class="p">,</span> <span class="n">cosmo_coord</span><span class="p">,</span>
                                <span class="n">slice_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">slice_z</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    prepares the COSMO 3D volume for interpolation:</span>
@@ -510,10 +510,10 @@
     <span class="n">z_cosmo</span> <span class="o">=</span> <span class="n">z_cosmo</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="p">(</span><span class="n">x_cosmo</span><span class="p">,</span> <span class="n">y_cosmo</span><span class="p">,</span> <span class="n">z_cosmo</span><span class="p">,</span> <span class="n">ind_xmin</span><span class="p">,</span> <span class="n">ind_ymin</span><span class="p">,</span>
-            <span class="n">ind_zmin</span><span class="p">,</span> <span class="n">ind_xmax</span><span class="p">,</span> <span class="n">ind_ymax</span><span class="p">,</span> <span class="n">ind_zmax</span><span class="p">)</span></div>
+            <span class="n">ind_zmin</span><span class="p">,</span> <span class="n">ind_xmax</span><span class="p">,</span> <span class="n">ind_ymax</span><span class="p">,</span> <span class="n">ind_zmax</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="_put_radar_in_swiss_coord"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_cosmo._put_radar_in_swiss_coord">[docs]</a><span class="k">def</span> <span class="nf">_put_radar_in_swiss_coord</span><span class="p">(</span><span class="n">radar</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_put_radar_in_swiss_coord</span><span class="p">(</span><span class="n">radar</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    puts the Cartesian grid of the radar coordinates in Swiss coordinates</span>
 
@@ -537,7 +537,7 @@
     <span class="n">y_radar</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">gate_y</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">+</span><span class="n">y0</span>
     <span class="n">z_radar</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">gate_altitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
 
-    <span class="k">return</span> <span class="n">x_radar</span><span class="p">,</span> <span class="n">y_radar</span><span class="p">,</span> <span class="n">z_radar</span></div>
+    <span class="k">return</span> <span class="n">x_radar</span><span class="p">,</span> <span class="n">y_radar</span><span class="p">,</span> <span class="n">z_radar</span>
 </pre></div>
 
           </div>
@@ -557,46 +557,12 @@
 
 <h3>Navigation</h3>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../flow.html">pyrad.flow.flow_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../flow.html#pyrad-flow-flow-control">pyrad.flow.flow_control</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html">pyrad.proc.process_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-calib">pyrad.proc.process_calib</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-cosmo">pyrad.proc.process_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-doppler">pyrad.proc.process_Doppler</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-echoclass">pyrad.proc.process_echoclass</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-intercomp">pyrad.proc.process_intercomp</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-monitoring">pyrad.proc.process_monitoring</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-phase">pyrad.proc.process_phase</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-retrieve">pyrad.proc.process_retrieve</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-timeseries">pyrad.proc.process_timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-traj">pyrad.proc.process_traj</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html">pyrad.prod.product_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-product">pyrad.prod.process_product</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-vol-products">pyrad.prod.process_vol_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-grid-products">pyrad.prod.process_grid_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-timeseries-products">pyrad.prod.process_timeseries_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-monitoring-products">pyrad.prod.process_monitoring_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-intercomp-products">pyrad.prod.process_intercomp_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#id1">pyrad.prod.process_product</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html">pyrad.io.io_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-config">pyrad.io.config</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-radar">pyrad.io.read_data_radar</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-mxpol">pyrad.io.read_data_mxpol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-cosmo">pyrad.io.read_data_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-hzt">pyrad.io.read_data_hzt</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-sensor">pyrad.io.read_data_sensor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-sun">pyrad.io.read_data_sun</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-other">pyrad.io.read_data_other</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-write-data">pyrad.io.write_data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-timeseries">pyrad.io.timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-trajectory">pyrad.io.trajectory</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html">pyrad.graph.plots_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots">pyrad.graph.plots</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots-vol">pyrad.graph.plots_vol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots-grid">pyrad.graph.plots_grid</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plot-timeseries">pyrad.graph.plot_timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../util.html">pyrad.util.radar_utils</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../util.html#pyrad-util-stat-utils">pyrad.util.stat_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../flow.html">processing flow control (<code class="docutils literal notranslate"><span class="pre">pyrad.flow</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../proc.html">Dataset processing (<code class="docutils literal notranslate"><span class="pre">pyrad.proc</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../prod.html">Products generation (<code class="docutils literal notranslate"><span class="pre">pyrad.prod</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html">Input and output (<code class="docutils literal notranslate"><span class="pre">pyrad.io</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../graph.html">Plotting (<code class="docutils literal notranslate"><span class="pre">pyrad.graph</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../util.html">Utilities (<code class="docutils literal notranslate"><span class="pre">pyrad.util</span></code>)</a></li>
 </ul>
 
 <div class="relations">

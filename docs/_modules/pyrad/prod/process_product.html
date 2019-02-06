@@ -76,7 +76,7 @@
 <span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">create_sun_retrieval_field</span>
 
 
-<div class="viewcode-block" id="generate_occurrence_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.process_product.generate_occurrence_products">[docs]</a><span class="k">def</span> <span class="nf">generate_occurrence_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
+<div class="viewcode-block" id="generate_occurrence_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.generate_occurrence_products">[docs]</a><span class="k">def</span> <span class="nf">generate_occurrence_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    generates occurrence products</span>
 
@@ -173,7 +173,7 @@
         <span class="k">return</span> <span class="n">generate_vol_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="generate_cosmo_coord_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.process_product.generate_cosmo_coord_products">[docs]</a><span class="k">def</span> <span class="nf">generate_cosmo_coord_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
+<div class="viewcode-block" id="generate_cosmo_coord_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.generate_cosmo_coord_products">[docs]</a><span class="k">def</span> <span class="nf">generate_cosmo_coord_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    generates COSMO coordinates products</span>
 
@@ -220,7 +220,7 @@
         <span class="k">return</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="generate_sun_hits_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.process_product.generate_sun_hits_products">[docs]</a><span class="k">def</span> <span class="nf">generate_sun_hits_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
+<div class="viewcode-block" id="generate_sun_hits_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.generate_sun_hits_products">[docs]</a><span class="k">def</span> <span class="nf">generate_sun_hits_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    generates sun hits products</span>
 
@@ -453,7 +453,7 @@
             <span class="k">return</span> <span class="n">generate_vol_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="generate_qvp_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.process_product.generate_qvp_products">[docs]</a><span class="k">def</span> <span class="nf">generate_qvp_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
+<div class="viewcode-block" id="generate_qvp_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.generate_qvp_products">[docs]</a><span class="k">def</span> <span class="nf">generate_qvp_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generates quasi vertical profile products. Quasi vertical profiles</span>
 <span class="sd">    come from azimuthal averaging of polarimetric radar data.</span>
@@ -484,7 +484,7 @@
     <span class="k">return</span> <span class="n">generate_vol_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="generate_ml_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.process_product.generate_ml_products">[docs]</a><span class="k">def</span> <span class="nf">generate_ml_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
+<div class="viewcode-block" id="generate_ml_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.generate_ml_products">[docs]</a><span class="k">def</span> <span class="nf">generate_ml_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generates melting layer products.</span>
 
@@ -598,46 +598,12 @@
 
 <h3>Navigation</h3>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../flow.html">pyrad.flow.flow_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../flow.html#pyrad-flow-flow-control">pyrad.flow.flow_control</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html">pyrad.proc.process_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-calib">pyrad.proc.process_calib</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-cosmo">pyrad.proc.process_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-doppler">pyrad.proc.process_Doppler</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-echoclass">pyrad.proc.process_echoclass</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-intercomp">pyrad.proc.process_intercomp</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-monitoring">pyrad.proc.process_monitoring</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-phase">pyrad.proc.process_phase</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-retrieve">pyrad.proc.process_retrieve</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-timeseries">pyrad.proc.process_timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-traj">pyrad.proc.process_traj</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html">pyrad.prod.product_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-product">pyrad.prod.process_product</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-vol-products">pyrad.prod.process_vol_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-grid-products">pyrad.prod.process_grid_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-timeseries-products">pyrad.prod.process_timeseries_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-monitoring-products">pyrad.prod.process_monitoring_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-intercomp-products">pyrad.prod.process_intercomp_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#id1">pyrad.prod.process_product</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html">pyrad.io.io_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-config">pyrad.io.config</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-radar">pyrad.io.read_data_radar</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-mxpol">pyrad.io.read_data_mxpol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-cosmo">pyrad.io.read_data_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-hzt">pyrad.io.read_data_hzt</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-sensor">pyrad.io.read_data_sensor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-sun">pyrad.io.read_data_sun</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-other">pyrad.io.read_data_other</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-write-data">pyrad.io.write_data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-timeseries">pyrad.io.timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-trajectory">pyrad.io.trajectory</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html">pyrad.graph.plots_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots">pyrad.graph.plots</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots-vol">pyrad.graph.plots_vol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots-grid">pyrad.graph.plots_grid</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plot-timeseries">pyrad.graph.plot_timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../util.html">pyrad.util.radar_utils</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../util.html#pyrad-util-stat-utils">pyrad.util.stat_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../flow.html">processing flow control (<code class="docutils literal notranslate"><span class="pre">pyrad.flow</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../proc.html">Dataset processing (<code class="docutils literal notranslate"><span class="pre">pyrad.proc</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../prod.html">Products generation (<code class="docutils literal notranslate"><span class="pre">pyrad.prod</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html">Input and output (<code class="docutils literal notranslate"><span class="pre">pyrad.io</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../graph.html">Plotting (<code class="docutils literal notranslate"><span class="pre">pyrad.graph</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../util.html">Utilities (<code class="docutils literal notranslate"><span class="pre">pyrad.util</span></code>)</a></li>
 </ul>
 
 <div class="relations">

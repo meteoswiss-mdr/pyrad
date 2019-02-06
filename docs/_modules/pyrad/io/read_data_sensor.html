@@ -71,7 +71,7 @@
 <span class="kn">from</span> <span class="nn">pyart.config</span> <span class="k">import</span> <span class="n">get_fillvalue</span>
 
 
-<div class="viewcode-block" id="read_trt_scores"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_sensor.read_trt_scores">[docs]</a><span class="k">def</span> <span class="nf">read_trt_scores</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="read_trt_scores"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_trt_scores">[docs]</a><span class="k">def</span> <span class="nf">read_trt_scores</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads the TRT scores contained in a text file. The file has the following</span>
 <span class="sd">    fields:</span>
@@ -147,7 +147,7 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="read_trt_cell_lightning"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_sensor.read_trt_cell_lightning">[docs]</a><span class="k">def</span> <span class="nf">read_trt_cell_lightning</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="read_trt_cell_lightning"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_trt_cell_lightning">[docs]</a><span class="k">def</span> <span class="nf">read_trt_cell_lightning</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads the lightning data of a TRT cell. The file has the following</span>
 <span class="sd">    fields:</span>
@@ -222,7 +222,7 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="read_trt_data"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_sensor.read_trt_data">[docs]</a><span class="k">def</span> <span class="nf">read_trt_data</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="read_trt_data"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_trt_data">[docs]</a><span class="k">def</span> <span class="nf">read_trt_data</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads the TRT data contained in a text file. The file has the following</span>
 <span class="sd">    fields:</span>
@@ -431,7 +431,7 @@
             <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="read_trt_traj_data"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_sensor.read_trt_traj_data">[docs]</a><span class="k">def</span> <span class="nf">read_trt_traj_data</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="read_trt_traj_data"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_trt_traj_data">[docs]</a><span class="k">def</span> <span class="nf">read_trt_traj_data</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads the TRT cell data contained in a text file. The file has the following</span>
 <span class="sd">    fields:</span>
@@ -610,7 +610,7 @@
             <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="read_lightning"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_sensor.read_lightning">[docs]</a><span class="k">def</span> <span class="nf">read_lightning</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">filter_data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="read_lightning"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_lightning">[docs]</a><span class="k">def</span> <span class="nf">read_lightning</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">filter_data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads lightning data contained in a text file. The file has the following</span>
 <span class="sd">    fields:</span>
@@ -695,7 +695,7 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="read_meteorage"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_sensor.read_meteorage">[docs]</a><span class="k">def</span> <span class="nf">read_meteorage</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="read_meteorage"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_meteorage">[docs]</a><span class="k">def</span> <span class="nf">read_meteorage</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads METEORAGE lightning data contained in a text file. The file has the</span>
 <span class="sd">    following fields:</span>
@@ -786,7 +786,7 @@
             <span class="kc">None</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="read_lightning_traj"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_sensor.read_lightning_traj">[docs]</a><span class="k">def</span> <span class="nf">read_lightning_traj</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="read_lightning_traj"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_lightning_traj">[docs]</a><span class="k">def</span> <span class="nf">read_lightning_traj</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads lightning trajectory data contained in a csv file. The file has the following</span>
 <span class="sd">    fields:</span>
@@ -870,7 +870,7 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="read_lightning_all"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_sensor.read_lightning_all">[docs]</a><span class="k">def</span> <span class="nf">read_lightning_all</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span>
+<div class="viewcode-block" id="read_lightning_all"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_lightning_all">[docs]</a><span class="k">def</span> <span class="nf">read_lightning_all</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span>
                        <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;hydro [-]&#39;</span><span class="p">,</span> <span class="s1">&#39;KDPc [deg/Km]&#39;</span><span class="p">,</span> <span class="s1">&#39;dBZc [dBZ]&#39;</span><span class="p">,</span>
                                <span class="s1">&#39;RhoHVc [-]&#39;</span><span class="p">,</span> <span class="s1">&#39;TEMP [deg C]&#39;</span><span class="p">,</span> <span class="s1">&#39;ZDRc [dB]&#39;</span><span class="p">]):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -946,7 +946,7 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="get_sensor_data"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_sensor.get_sensor_data">[docs]</a><span class="k">def</span> <span class="nf">get_sensor_data</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
+<div class="viewcode-block" id="get_sensor_data"><a class="viewcode-back" href="../../../io.html#pyrad.io.get_sensor_data">[docs]</a><span class="k">def</span> <span class="nf">get_sensor_data</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Gets data from a point measurement sensor (rain gauge or disdrometer)</span>
 
@@ -1003,7 +1003,7 @@
     <span class="k">return</span> <span class="n">sensordate</span><span class="p">,</span> <span class="n">sensorvalue</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">period</span></div>
 
 
-<div class="viewcode-block" id="read_smn"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_sensor.read_smn">[docs]</a><span class="k">def</span> <span class="nf">read_smn</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="read_smn"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_smn">[docs]</a><span class="k">def</span> <span class="nf">read_smn</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads SwissMetNet data contained in a csv file</span>
 
@@ -1066,7 +1066,7 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="read_smn2"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_sensor.read_smn2">[docs]</a><span class="k">def</span> <span class="nf">read_smn2</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="read_smn2"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_smn2">[docs]</a><span class="k">def</span> <span class="nf">read_smn2</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads SwissMetNet data contained in a csv file with format</span>
 <span class="sd">    station,time,value</span>
@@ -1124,7 +1124,7 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="read_disdro_scattering"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_sensor.read_disdro_scattering">[docs]</a><span class="k">def</span> <span class="nf">read_disdro_scattering</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="read_disdro_scattering"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_disdro_scattering">[docs]</a><span class="k">def</span> <span class="nf">read_disdro_scattering</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads scattering parameters computed from disdrometer data contained in a</span>
 <span class="sd">    text file</span>
@@ -1207,7 +1207,7 @@
                 <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="read_disdro"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_sensor.read_disdro">[docs]</a><span class="k">def</span> <span class="nf">read_disdro</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">read_disdro</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads scattering parameters computed from disdrometer data contained in a</span>
 <span class="sd">    text file</span>
@@ -1262,7 +1262,7 @@
     <span class="k">except</span> <span class="ne">EnvironmentError</span> <span class="k">as</span> <span class="n">ee</span><span class="p">:</span>
         <span class="n">warn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read file &#39;</span><span class="o">+</span><span class="n">fname</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 </pre></div>
 
           </div>
@@ -1282,46 +1282,12 @@
 
 <h3>Navigation</h3>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../flow.html">pyrad.flow.flow_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../flow.html#pyrad-flow-flow-control">pyrad.flow.flow_control</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html">pyrad.proc.process_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-calib">pyrad.proc.process_calib</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-cosmo">pyrad.proc.process_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-doppler">pyrad.proc.process_Doppler</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-echoclass">pyrad.proc.process_echoclass</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-intercomp">pyrad.proc.process_intercomp</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-monitoring">pyrad.proc.process_monitoring</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-phase">pyrad.proc.process_phase</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-retrieve">pyrad.proc.process_retrieve</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-timeseries">pyrad.proc.process_timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-traj">pyrad.proc.process_traj</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html">pyrad.prod.product_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-product">pyrad.prod.process_product</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-vol-products">pyrad.prod.process_vol_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-grid-products">pyrad.prod.process_grid_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-timeseries-products">pyrad.prod.process_timeseries_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-monitoring-products">pyrad.prod.process_monitoring_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-intercomp-products">pyrad.prod.process_intercomp_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#id1">pyrad.prod.process_product</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html">pyrad.io.io_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-config">pyrad.io.config</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-radar">pyrad.io.read_data_radar</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-mxpol">pyrad.io.read_data_mxpol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-cosmo">pyrad.io.read_data_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-hzt">pyrad.io.read_data_hzt</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-sensor">pyrad.io.read_data_sensor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-sun">pyrad.io.read_data_sun</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-other">pyrad.io.read_data_other</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-write-data">pyrad.io.write_data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-timeseries">pyrad.io.timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-trajectory">pyrad.io.trajectory</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html">pyrad.graph.plots_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots">pyrad.graph.plots</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots-vol">pyrad.graph.plots_vol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots-grid">pyrad.graph.plots_grid</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plot-timeseries">pyrad.graph.plot_timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../util.html">pyrad.util.radar_utils</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../util.html#pyrad-util-stat-utils">pyrad.util.stat_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../flow.html">processing flow control (<code class="docutils literal notranslate"><span class="pre">pyrad.flow</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../proc.html">Dataset processing (<code class="docutils literal notranslate"><span class="pre">pyrad.proc</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../prod.html">Products generation (<code class="docutils literal notranslate"><span class="pre">pyrad.prod</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html">Input and output (<code class="docutils literal notranslate"><span class="pre">pyrad.io</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../graph.html">Plotting (<code class="docutils literal notranslate"><span class="pre">pyrad.graph</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../util.html">Utilities (<code class="docutils literal notranslate"><span class="pre">pyrad.util</span></code>)</a></li>
 </ul>
 
 <div class="relations">

@@ -69,7 +69,7 @@
 <span class="kn">import</span> <span class="nn">pyart</span>
 
 
-<div class="viewcode-block" id="plot_timeseries"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plots_timeseries.plot_timeseries">[docs]</a><span class="k">def</span> <span class="nf">plot_timeseries</span><span class="p">(</span><span class="n">tvec</span><span class="p">,</span> <span class="n">data_list</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">labelx</span><span class="o">=</span><span class="s1">&#39;Time [UTC]&#39;</span><span class="p">,</span>
+<div class="viewcode-block" id="plot_timeseries"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_timeseries">[docs]</a><span class="k">def</span> <span class="nf">plot_timeseries</span><span class="p">(</span><span class="n">tvec</span><span class="p">,</span> <span class="n">data_list</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">labelx</span><span class="o">=</span><span class="s1">&#39;Time [UTC]&#39;</span><span class="p">,</span>
                     <span class="n">labely</span><span class="o">=</span><span class="s1">&#39;Value&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Sensor&#39;</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Time Series&#39;</span><span class="p">,</span>
                     <span class="n">period</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">timeformat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">linestyles</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                     <span class="n">markers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ymin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ymax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">72</span><span class="p">):</span>
@@ -170,7 +170,7 @@
     <span class="k">return</span> <span class="n">fname_list</span></div>
 
 
-<div class="viewcode-block" id="plot_timeseries_comp"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plots_timeseries.plot_timeseries_comp">[docs]</a><span class="k">def</span> <span class="nf">plot_timeseries_comp</span><span class="p">(</span><span class="n">date1</span><span class="p">,</span> <span class="n">value1</span><span class="p">,</span> <span class="n">date2</span><span class="p">,</span> <span class="n">value2</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
+<div class="viewcode-block" id="plot_timeseries_comp"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_timeseries_comp">[docs]</a><span class="k">def</span> <span class="nf">plot_timeseries_comp</span><span class="p">(</span><span class="n">date1</span><span class="p">,</span> <span class="n">value1</span><span class="p">,</span> <span class="n">date2</span><span class="p">,</span> <span class="n">value2</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
                          <span class="n">labelx</span><span class="o">=</span><span class="s1">&#39;Time [UTC]&#39;</span><span class="p">,</span> <span class="n">labely</span><span class="o">=</span><span class="s1">&#39;Value&#39;</span><span class="p">,</span>
                          <span class="n">label1</span><span class="o">=</span><span class="s1">&#39;Sensor 1&#39;</span><span class="p">,</span> <span class="n">label2</span><span class="o">=</span><span class="s1">&#39;Sensor 2&#39;</span><span class="p">,</span>
                          <span class="n">titl</span><span class="o">=</span><span class="s1">&#39;Time Series Comparison&#39;</span><span class="p">,</span> <span class="n">period1</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">period2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
@@ -252,7 +252,7 @@
     <span class="k">return</span> <span class="n">fname_list</span></div>
 
 
-<div class="viewcode-block" id="plot_monitoring_ts"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plots_timeseries.plot_monitoring_ts">[docs]</a><span class="k">def</span> <span class="nf">plot_monitoring_ts</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">np_t</span><span class="p">,</span> <span class="n">cquant</span><span class="p">,</span> <span class="n">lquant</span><span class="p">,</span> <span class="n">hquant</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span>
+<div class="viewcode-block" id="plot_monitoring_ts"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_monitoring_ts">[docs]</a><span class="k">def</span> <span class="nf">plot_monitoring_ts</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">np_t</span><span class="p">,</span> <span class="n">cquant</span><span class="p">,</span> <span class="n">lquant</span><span class="p">,</span> <span class="n">hquant</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span>
                        <span class="n">fname_list</span><span class="p">,</span> <span class="n">ref_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                        <span class="n">np_min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">labelx</span><span class="o">=</span><span class="s1">&#39;Time [UTC]&#39;</span><span class="p">,</span> <span class="n">labely</span><span class="o">=</span><span class="s1">&#39;Value&#39;</span><span class="p">,</span>
                        <span class="n">titl</span><span class="o">=</span><span class="s1">&#39;Time Series&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">72</span><span class="p">):</span>
@@ -359,7 +359,7 @@
     <span class="k">return</span> <span class="n">fname_list</span></div>
 
 
-<div class="viewcode-block" id="plot_intercomp_scores_ts"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plots_timeseries.plot_intercomp_scores_ts">[docs]</a><span class="k">def</span> <span class="nf">plot_intercomp_scores_ts</span><span class="p">(</span><span class="n">date_vec</span><span class="p">,</span> <span class="n">np_vec</span><span class="p">,</span> <span class="n">meanbias_vec</span><span class="p">,</span> <span class="n">medianbias_vec</span><span class="p">,</span>
+<div class="viewcode-block" id="plot_intercomp_scores_ts"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_intercomp_scores_ts">[docs]</a><span class="k">def</span> <span class="nf">plot_intercomp_scores_ts</span><span class="p">(</span><span class="n">date_vec</span><span class="p">,</span> <span class="n">np_vec</span><span class="p">,</span> <span class="n">meanbias_vec</span><span class="p">,</span> <span class="n">medianbias_vec</span><span class="p">,</span>
                              <span class="n">quant25bias_vec</span><span class="p">,</span> <span class="n">quant75bias_vec</span><span class="p">,</span> <span class="n">modebias_vec</span><span class="p">,</span>
                              <span class="n">corr_vec</span><span class="p">,</span> <span class="n">slope_vec</span><span class="p">,</span> <span class="n">intercep_vec</span><span class="p">,</span>
                              <span class="n">intercep_slope1_vec</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">ref_value</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
@@ -514,7 +514,7 @@
     <span class="k">return</span> <span class="n">fname_list</span></div>
 
 
-<div class="viewcode-block" id="plot_ml_ts"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plots_timeseries.plot_ml_ts">[docs]</a><span class="k">def</span> <span class="nf">plot_ml_ts</span><span class="p">(</span><span class="n">dt_ml_arr</span><span class="p">,</span> <span class="n">ml_top_avg_arr</span><span class="p">,</span> <span class="n">ml_top_std_arr</span><span class="p">,</span> <span class="n">thick_avg_arr</span><span class="p">,</span>
+<div class="viewcode-block" id="plot_ml_ts"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_ml_ts">[docs]</a><span class="k">def</span> <span class="nf">plot_ml_ts</span><span class="p">(</span><span class="n">dt_ml_arr</span><span class="p">,</span> <span class="n">ml_top_avg_arr</span><span class="p">,</span> <span class="n">ml_top_std_arr</span><span class="p">,</span> <span class="n">thick_avg_arr</span><span class="p">,</span>
                <span class="n">thick_std_arr</span><span class="p">,</span> <span class="n">nrays_valid_arr</span><span class="p">,</span> <span class="n">nrays_total_arr</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
                <span class="n">labelx</span><span class="o">=</span><span class="s1">&#39;Time UTC&#39;</span><span class="p">,</span> <span class="n">titl</span><span class="o">=</span><span class="s1">&#39;Melting layer time series&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">72</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -605,7 +605,7 @@
     <span class="k">return</span> <span class="n">fname_list</span></div>
 
 
-<div class="viewcode-block" id="plot_sun_retrieval_ts"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plots_timeseries.plot_sun_retrieval_ts">[docs]</a><span class="k">def</span> <span class="nf">plot_sun_retrieval_ts</span><span class="p">(</span><span class="n">sun_retrieval</span><span class="p">,</span> <span class="n">data_type</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">labelx</span><span class="o">=</span><span class="s1">&#39;Date&#39;</span><span class="p">,</span>
+<div class="viewcode-block" id="plot_sun_retrieval_ts"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_sun_retrieval_ts">[docs]</a><span class="k">def</span> <span class="nf">plot_sun_retrieval_ts</span><span class="p">(</span><span class="n">sun_retrieval</span><span class="p">,</span> <span class="n">data_type</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">labelx</span><span class="o">=</span><span class="s1">&#39;Date&#39;</span><span class="p">,</span>
                           <span class="n">titl</span><span class="o">=</span><span class="s1">&#39;Sun retrieval Time Series&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">72</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    plots sun retrieval time series series</span>
@@ -817,46 +817,12 @@
 
 <h3>Navigation</h3>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../flow.html">pyrad.flow.flow_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../flow.html#pyrad-flow-flow-control">pyrad.flow.flow_control</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html">pyrad.proc.process_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-calib">pyrad.proc.process_calib</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-cosmo">pyrad.proc.process_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-doppler">pyrad.proc.process_Doppler</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-echoclass">pyrad.proc.process_echoclass</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-intercomp">pyrad.proc.process_intercomp</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-monitoring">pyrad.proc.process_monitoring</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-phase">pyrad.proc.process_phase</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-retrieve">pyrad.proc.process_retrieve</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-timeseries">pyrad.proc.process_timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-traj">pyrad.proc.process_traj</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html">pyrad.prod.product_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-product">pyrad.prod.process_product</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-vol-products">pyrad.prod.process_vol_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-grid-products">pyrad.prod.process_grid_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-timeseries-products">pyrad.prod.process_timeseries_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-monitoring-products">pyrad.prod.process_monitoring_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-intercomp-products">pyrad.prod.process_intercomp_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#id1">pyrad.prod.process_product</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html">pyrad.io.io_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-config">pyrad.io.config</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-radar">pyrad.io.read_data_radar</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-mxpol">pyrad.io.read_data_mxpol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-cosmo">pyrad.io.read_data_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-hzt">pyrad.io.read_data_hzt</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-sensor">pyrad.io.read_data_sensor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-sun">pyrad.io.read_data_sun</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-other">pyrad.io.read_data_other</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-write-data">pyrad.io.write_data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-timeseries">pyrad.io.timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-trajectory">pyrad.io.trajectory</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html">pyrad.graph.plots_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots">pyrad.graph.plots</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots-vol">pyrad.graph.plots_vol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots-grid">pyrad.graph.plots_grid</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plot-timeseries">pyrad.graph.plot_timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../util.html">pyrad.util.radar_utils</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../util.html#pyrad-util-stat-utils">pyrad.util.stat_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../flow.html">processing flow control (<code class="docutils literal notranslate"><span class="pre">pyrad.flow</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../proc.html">Dataset processing (<code class="docutils literal notranslate"><span class="pre">pyrad.proc</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../prod.html">Products generation (<code class="docutils literal notranslate"><span class="pre">pyrad.prod</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html">Input and output (<code class="docutils literal notranslate"><span class="pre">pyrad.io</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../graph.html">Plotting (<code class="docutils literal notranslate"><span class="pre">pyrad.graph</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../util.html">Utilities (<code class="docutils literal notranslate"><span class="pre">pyrad.util</span></code>)</a></li>
 </ul>
 
 <div class="relations">

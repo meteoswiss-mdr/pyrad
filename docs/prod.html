@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>pyrad.prod.product_aux &#8212; pyrad 0.0.1 documentation</title>
+    <title>Products generation (pyrad.prod) &#8212; pyrad 0.0.1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -34,38 +34,93 @@
           <div class="body" role="main">
             
   <hr class="docutils" />
-<span class="target" id="module-pyrad.prod.product_aux"></span><div class="section" id="pyrad-prod-product-aux">
-<h1>pyrad.prod.product_aux<a class="headerlink" href="#pyrad-prod-product-aux" title="Permalink to this headline">¶</a></h1>
-<p>Auxiliary functions to generate products</p>
+<span class="target" id="module-pyrad.prod"></span><div class="section" id="products-generation-pyrad-prod">
+<h1>Products generation (<a class="reference internal" href="#module-pyrad.prod" title="pyrad.prod"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyrad.prod</span></code></a>)<a class="headerlink" href="#products-generation-pyrad-prod" title="Permalink to this headline">¶</a></h1>
+<p>Initiate the products generation.</p>
+<div class="section" id="auxiliary-functions">
+<h2>Auxiliary functions<a class="headerlink" href="#auxiliary-functions" title="Permalink to this headline">¶</a></h2>
 <table border="1" class="longtable docutils">
 <colgroup>
 <col width="10%" />
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.product_aux.get_prodgen_func" title="pyrad.prod.product_aux.get_prodgen_func"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_prodgen_func</span></code></a>(dsformat,&nbsp;dsname,&nbsp;dstype)</td>
-<td>maps the dataset format into its processing function</td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dsformat_func</span></code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="product-generation">
+<h2>Product generation<a class="headerlink" href="#product-generation" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.generate_occurrence_products" title="pyrad.prod.generate_occurrence_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_occurrence_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
+<td>generates occurrence products</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.prod.generate_cosmo_coord_products" title="pyrad.prod.generate_cosmo_coord_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_cosmo_coord_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
+<td>generates COSMO coordinates products</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.generate_sun_hits_products" title="pyrad.prod.generate_sun_hits_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_sun_hits_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
+<td>generates sun hits products</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.prod.generate_intercomp_products" title="pyrad.prod.generate_intercomp_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_intercomp_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
+<td>Generates radar intercomparison products.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.generate_colocated_gates_products" title="pyrad.prod.generate_colocated_gates_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_colocated_gates_products</span></code></a>(dataset,&nbsp;…)</td>
+<td>Generates colocated gates products</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.prod.generate_time_avg_products" title="pyrad.prod.generate_time_avg_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_time_avg_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
+<td>generates time average products</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.generate_qvp_products" title="pyrad.prod.generate_qvp_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_qvp_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
+<td>Generates quasi vertical profile products.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.prod.generate_vol_products" title="pyrad.prod.generate_vol_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_vol_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
+<td>Generates radar volume products.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.generate_timeseries_products" title="pyrad.prod.generate_timeseries_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_timeseries_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
+<td>Generates time series products</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.prod.generate_monitoring_products" title="pyrad.prod.generate_monitoring_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_monitoring_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
+<td>generates a monitoring product</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.generate_grid_products" title="pyrad.prod.generate_grid_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_grid_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
+<td>generates grid products</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.prod.generate_traj_product" title="pyrad.prod.generate_traj_product"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_traj_product</span></code></a>(traj,&nbsp;prdcfg)</td>
+<td>Generates trajectory products</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.generate_ml_products" title="pyrad.prod.generate_ml_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_ml_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
+<td>Generates melting layer products.</td>
 </tr>
 </tbody>
 </table>
 <dl class="function">
-<dt id="pyrad.prod.product_aux.get_prodgen_func">
-<code class="descclassname">pyrad.prod.product_aux.</code><code class="descname">get_prodgen_func</code><span class="sig-paren">(</span><em>dsformat</em>, <em>dsname</em>, <em>dstype</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/product_aux.html#get_prodgen_func"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.product_aux.get_prodgen_func" title="Permalink to this definition">¶</a></dt>
-<dd><p>maps the dataset format into its processing function</p>
+<dt id="pyrad.prod.generate_colocated_gates_products">
+<code class="descclassname">pyrad.prod.</code><code class="descname">generate_colocated_gates_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_intercomp_products.html#generate_colocated_gates_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.generate_colocated_gates_products" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates colocated gates products</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>dsformat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd><p class="first last">dataset group, i.e. ‘VOL’, etc.</p>
+<dt><strong>dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tuple</span></dt>
+<dd><p class="first last">radar objects and colocated gates dictionary</p>
+</dd>
+<dt><strong>prdcfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first last">product configuration dictionary of dictionaries</p>
 </dd>
 </dl>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
-<dd><p class="first last">pyrad function used to generate the products</p>
+<dt><strong>filename</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">the name of the file created. None otherwise</p>
 </dd>
 </dl>
 </td>
@@ -74,36 +129,9 @@
 </table>
 </dd></dl>
 
-</div>
-<span class="target" id="module-pyrad.prod.process_product"></span><div class="section" id="pyrad-prod-process-product">
-<h1>pyrad.prod.process_product<a class="headerlink" href="#pyrad-prod-process-product" title="Permalink to this headline">¶</a></h1>
-<p>Functions for obtaining Pyrad products from the datasets</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.process_product.generate_occurrence_products" title="pyrad.prod.process_product.generate_occurrence_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_occurrence_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
-<td>generates occurrence products</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.prod.process_product.generate_cosmo_coord_products" title="pyrad.prod.process_product.generate_cosmo_coord_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_cosmo_coord_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
-<td>generates COSMO coordinates products</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.process_product.generate_sun_hits_products" title="pyrad.prod.process_product.generate_sun_hits_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_sun_hits_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
-<td>generates sun hits products</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.prod.process_product.generate_qvp_products" title="pyrad.prod.process_product.generate_qvp_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_qvp_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
-<td>Generates quasi vertical profile products.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.process_product.generate_ml_products" title="pyrad.prod.process_product.generate_ml_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_ml_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
-<td>Generates melting layer products.</td>
-</tr>
-</tbody>
-</table>
 <dl class="function">
-<dt id="pyrad.prod.process_product.generate_cosmo_coord_products">
-<code class="descclassname">pyrad.prod.process_product.</code><code class="descname">generate_cosmo_coord_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_product.html#generate_cosmo_coord_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.process_product.generate_cosmo_coord_products" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.prod.generate_cosmo_coord_products">
+<code class="descclassname">pyrad.prod.</code><code class="descname">generate_cosmo_coord_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_product.html#generate_cosmo_coord_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.generate_cosmo_coord_products" title="Permalink to this definition">¶</a></dt>
 <dd><p>generates COSMO coordinates products</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -131,8 +159,65 @@
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.prod.process_product.generate_ml_products">
-<code class="descclassname">pyrad.prod.process_product.</code><code class="descname">generate_ml_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_product.html#generate_ml_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.process_product.generate_ml_products" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.prod.generate_grid_products">
+<code class="descclassname">pyrad.prod.</code><code class="descname">generate_grid_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_grid_products.html#generate_grid_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.generate_grid_products" title="Permalink to this definition">¶</a></dt>
+<dd><p>generates grid products</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">grid</span></dt>
+<dd><p class="first last">grid object</p>
+</dd>
+<dt><strong>prdcfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first last">product configuration dictionary of dictionaries</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>no return</strong></dt>
+<dd></dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.prod.generate_intercomp_products">
+<code class="descclassname">pyrad.prod.</code><code class="descname">generate_intercomp_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_intercomp_products.html#generate_intercomp_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.generate_intercomp_products" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates radar intercomparison products.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tuple</span></dt>
+<dd><p class="first last">values of colocated gates dictionary</p>
+</dd>
+<dt><strong>prdcfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first last">product configuration dictionary of dictionaries</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>filename</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">the name of the file created. None otherwise</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.prod.generate_ml_products">
+<code class="descclassname">pyrad.prod.</code><code class="descname">generate_ml_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_product.html#generate_ml_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.generate_ml_products" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates melting layer products.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -161,8 +246,37 @@ status of the processing</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.prod.process_product.generate_occurrence_products">
-<code class="descclassname">pyrad.prod.process_product.</code><code class="descname">generate_occurrence_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_product.html#generate_occurrence_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.process_product.generate_occurrence_products" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.prod.generate_monitoring_products">
+<code class="descclassname">pyrad.prod.</code><code class="descname">generate_monitoring_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_monitoring_products.html#generate_monitoring_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.generate_monitoring_products" title="Permalink to this definition">¶</a></dt>
+<dd><p>generates a monitoring product</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary</span></dt>
+<dd><p class="first last">dictionary containing a histogram object and some metadata</p>
+</dd>
+<dt><strong>prdcfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first last">product configuration dictionary of dictionaries</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>filename</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">the name of the file created. None otherwise</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.prod.generate_occurrence_products">
+<code class="descclassname">pyrad.prod.</code><code class="descname">generate_occurrence_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_product.html#generate_occurrence_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.generate_occurrence_products" title="Permalink to this definition">¶</a></dt>
 <dd><p>generates occurrence products</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -190,8 +304,8 @@ status of the processing</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.prod.process_product.generate_qvp_products">
-<code class="descclassname">pyrad.prod.process_product.</code><code class="descname">generate_qvp_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_product.html#generate_qvp_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.process_product.generate_qvp_products" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.prod.generate_qvp_products">
+<code class="descclassname">pyrad.prod.</code><code class="descname">generate_qvp_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_product.html#generate_qvp_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.generate_qvp_products" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates quasi vertical profile products. Quasi vertical profiles
 come from azimuthal averaging of polarimetric radar data.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -221,8 +335,8 @@ status of the processing</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.prod.process_product.generate_sun_hits_products">
-<code class="descclassname">pyrad.prod.process_product.</code><code class="descname">generate_sun_hits_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_product.html#generate_sun_hits_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.process_product.generate_sun_hits_products" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.prod.generate_sun_hits_products">
+<code class="descclassname">pyrad.prod.</code><code class="descname">generate_sun_hits_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_product.html#generate_sun_hits_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.generate_sun_hits_products" title="Permalink to this definition">¶</a></dt>
 <dd><p>generates sun hits products</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -249,289 +363,9 @@ status of the processing</p>
 </table>
 </dd></dl>
 
-</div>
-<span class="target" id="module-pyrad.prod.process_vol_products"></span><div class="section" id="pyrad-prod-process-vol-products">
-<h1>pyrad.prod.process_vol_products<a class="headerlink" href="#pyrad-prod-process-vol-products" title="Permalink to this headline">¶</a></h1>
-<p>Functions for obtaining Pyrad products from a radar volume dataset</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.process_vol_products.generate_vol_products" title="pyrad.prod.process_vol_products.generate_vol_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_vol_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
-<td>Generates radar volume products.</td>
-</tr>
-</tbody>
-</table>
 <dl class="function">
-<dt id="pyrad.prod.process_vol_products.generate_vol_products">
-<code class="descclassname">pyrad.prod.process_vol_products.</code><code class="descname">generate_vol_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_vol_products.html#generate_vol_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.process_vol_products.generate_vol_products" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates radar volume products.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
-<dd><p class="first last">dictionary with key radar_out containing a radar object</p>
-</dd>
-<dt><strong>prdcfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
-<dd><p class="first last">product configuration dictionary of dictionaries</p>
-</dd>
-</dl>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>no return</strong></dt>
-<dd></dd>
-</dl>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</div>
-<span class="target" id="module-pyrad.prod.process_grid_products"></span><div class="section" id="pyrad-prod-process-grid-products">
-<h1>pyrad.prod.process_grid_products<a class="headerlink" href="#pyrad-prod-process-grid-products" title="Permalink to this headline">¶</a></h1>
-<p>Functions for obtaining Pyrad products from gridded datasets</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.process_grid_products.generate_grid_products" title="pyrad.prod.process_grid_products.generate_grid_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_grid_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
-<td>generates grid products</td>
-</tr>
-</tbody>
-</table>
-<dl class="function">
-<dt id="pyrad.prod.process_grid_products.generate_grid_products">
-<code class="descclassname">pyrad.prod.process_grid_products.</code><code class="descname">generate_grid_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_grid_products.html#generate_grid_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.process_grid_products.generate_grid_products" title="Permalink to this definition">¶</a></dt>
-<dd><p>generates grid products</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">grid</span></dt>
-<dd><p class="first last">grid object</p>
-</dd>
-<dt><strong>prdcfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
-<dd><p class="first last">product configuration dictionary of dictionaries</p>
-</dd>
-</dl>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>no return</strong></dt>
-<dd></dd>
-</dl>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="pyrad.prod.process_grid_products.generate_sparse_grid_products">
-<code class="descclassname">pyrad.prod.process_grid_products.</code><code class="descname">generate_sparse_grid_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_grid_products.html#generate_sparse_grid_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.process_grid_products.generate_sparse_grid_products" title="Permalink to this definition">¶</a></dt>
-<dd><p>generates products defined by sparse points</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary containing the points and their values</span></dt>
-<dd></dd>
-<dt><strong>prdcfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
-<dd><p class="first last">product configuration dictionary of dictionaries</p>
-</dd>
-</dl>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>no return</strong></dt>
-<dd></dd>
-</dl>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</div>
-<span class="target" id="module-pyrad.prod.process_timeseries_products"></span><div class="section" id="pyrad-prod-process-timeseries-products">
-<h1>pyrad.prod.process_timeseries_products<a class="headerlink" href="#pyrad-prod-process-timeseries-products" title="Permalink to this headline">¶</a></h1>
-<p>Functions for obtaining Pyrad products from a time series datasets</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.process_timeseries_products.generate_timeseries_products" title="pyrad.prod.process_timeseries_products.generate_timeseries_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_timeseries_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
-<td>Generates time series products</td>
-</tr>
-</tbody>
-</table>
-<dl class="function">
-<dt id="pyrad.prod.process_timeseries_products.generate_timeseries_products">
-<code class="descclassname">pyrad.prod.process_timeseries_products.</code><code class="descname">generate_timeseries_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_timeseries_products.html#generate_timeseries_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.process_timeseries_products.generate_timeseries_products" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates time series products</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary</span></dt>
-<dd><p class="first last">radar object</p>
-</dd>
-<dt><strong>prdcfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
-<dd><p class="first last">product configuration dictionary of dictionaries</p>
-</dd>
-</dl>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>no return</strong></dt>
-<dd></dd>
-</dl>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</div>
-<span class="target" id="module-pyrad.prod.process_monitoring_products"></span><div class="section" id="pyrad-prod-process-monitoring-products">
-<h1>pyrad.prod.process_monitoring_products<a class="headerlink" href="#pyrad-prod-process-monitoring-products" title="Permalink to this headline">¶</a></h1>
-<p>Functions for obtaining Pyrad products from monitoring datasets</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.process_monitoring_products.generate_monitoring_products" title="pyrad.prod.process_monitoring_products.generate_monitoring_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_monitoring_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
-<td>generates a monitoring product</td>
-</tr>
-</tbody>
-</table>
-<dl class="function">
-<dt id="pyrad.prod.process_monitoring_products.generate_monitoring_products">
-<code class="descclassname">pyrad.prod.process_monitoring_products.</code><code class="descname">generate_monitoring_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_monitoring_products.html#generate_monitoring_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.process_monitoring_products.generate_monitoring_products" title="Permalink to this definition">¶</a></dt>
-<dd><p>generates a monitoring product</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary</span></dt>
-<dd><p class="first last">dictionary containing a histogram object and some metadata</p>
-</dd>
-<dt><strong>prdcfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
-<dd><p class="first last">product configuration dictionary of dictionaries</p>
-</dd>
-</dl>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>filename</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd><p class="first last">the name of the file created. None otherwise</p>
-</dd>
-</dl>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</div>
-<span class="target" id="module-pyrad.prod.process_intercomp_products"></span><div class="section" id="pyrad-prod-process-intercomp-products">
-<h1>pyrad.prod.process_intercomp_products<a class="headerlink" href="#pyrad-prod-process-intercomp-products" title="Permalink to this headline">¶</a></h1>
-<p>Functions for obtaining Pyrad products from datasets used in the
-intercomparison process</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.process_intercomp_products.generate_intercomp_products" title="pyrad.prod.process_intercomp_products.generate_intercomp_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_intercomp_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
-<td>Generates radar intercomparison products.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.prod.process_intercomp_products.generate_colocated_gates_products" title="pyrad.prod.process_intercomp_products.generate_colocated_gates_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_colocated_gates_products</span></code></a>(dataset,&nbsp;…)</td>
-<td>Generates colocated gates products</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.process_intercomp_products.generate_time_avg_products" title="pyrad.prod.process_intercomp_products.generate_time_avg_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_time_avg_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
-<td>generates time average products</td>
-</tr>
-</tbody>
-</table>
-<dl class="function">
-<dt id="pyrad.prod.process_intercomp_products.generate_colocated_gates_products">
-<code class="descclassname">pyrad.prod.process_intercomp_products.</code><code class="descname">generate_colocated_gates_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_intercomp_products.html#generate_colocated_gates_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.process_intercomp_products.generate_colocated_gates_products" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates colocated gates products</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tuple</span></dt>
-<dd><p class="first last">radar objects and colocated gates dictionary</p>
-</dd>
-<dt><strong>prdcfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
-<dd><p class="first last">product configuration dictionary of dictionaries</p>
-</dd>
-</dl>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>filename</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd><p class="first last">the name of the file created. None otherwise</p>
-</dd>
-</dl>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="pyrad.prod.process_intercomp_products.generate_intercomp_products">
-<code class="descclassname">pyrad.prod.process_intercomp_products.</code><code class="descname">generate_intercomp_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_intercomp_products.html#generate_intercomp_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.process_intercomp_products.generate_intercomp_products" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates radar intercomparison products.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tuple</span></dt>
-<dd><p class="first last">values of colocated gates dictionary</p>
-</dd>
-<dt><strong>prdcfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
-<dd><p class="first last">product configuration dictionary of dictionaries</p>
-</dd>
-</dl>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>filename</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd><p class="first last">the name of the file created. None otherwise</p>
-</dd>
-</dl>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="pyrad.prod.process_intercomp_products.generate_time_avg_products">
-<code class="descclassname">pyrad.prod.process_intercomp_products.</code><code class="descname">generate_time_avg_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_intercomp_products.html#generate_time_avg_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.process_intercomp_products.generate_time_avg_products" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.prod.generate_time_avg_products">
+<code class="descclassname">pyrad.prod.</code><code class="descname">generate_time_avg_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_intercomp_products.html#generate_time_avg_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.generate_time_avg_products" title="Permalink to this definition">¶</a></dt>
 <dd><p>generates time average products</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -558,24 +392,37 @@ intercomparison process</p>
 </table>
 </dd></dl>
 
-</div>
-<span class="target" id="module-pyrad.prod.process_traj_products"></span><div class="section" id="id1">
-<h1>pyrad.prod.process_product<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
-<p>Functions for obtaining Pyrad products from the datasets</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
+<dl class="function">
+<dt id="pyrad.prod.generate_timeseries_products">
+<code class="descclassname">pyrad.prod.</code><code class="descname">generate_timeseries_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_timeseries_products.html#generate_timeseries_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.generate_timeseries_products" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates time series products</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.process_traj_products.generate_traj_product" title="pyrad.prod.process_traj_products.generate_traj_product"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_traj_product</span></code></a>(traj,&nbsp;prdcfg)</td>
-<td>Generates trajectory products</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary</span></dt>
+<dd><p class="first last">radar object</p>
+</dd>
+<dt><strong>prdcfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first last">product configuration dictionary of dictionaries</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>no return</strong></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
 <dl class="function">
-<dt id="pyrad.prod.process_traj_products.generate_traj_product">
-<code class="descclassname">pyrad.prod.process_traj_products.</code><code class="descname">generate_traj_product</code><span class="sig-paren">(</span><em>traj</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_traj_products.html#generate_traj_product"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.process_traj_products.generate_traj_product" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.prod.generate_traj_product">
+<code class="descclassname">pyrad.prod.</code><code class="descname">generate_traj_product</code><span class="sig-paren">(</span><em>traj</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_traj_products.html#generate_traj_product"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.generate_traj_product" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates trajectory products</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -600,6 +447,61 @@ intercomparison process</p>
 </table>
 </dd></dl>
 
+<dl class="function">
+<dt id="pyrad.prod.generate_vol_products">
+<code class="descclassname">pyrad.prod.</code><code class="descname">generate_vol_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_vol_products.html#generate_vol_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.generate_vol_products" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates radar volume products.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary with key radar_out containing a radar object</p>
+</dd>
+<dt><strong>prdcfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first last">product configuration dictionary of dictionaries</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>no return</strong></dt>
+<dd></dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.prod.get_prodgen_func">
+<code class="descclassname">pyrad.prod.</code><code class="descname">get_prodgen_func</code><span class="sig-paren">(</span><em>dsformat</em>, <em>dsname</em>, <em>dstype</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/product_aux.html#get_prodgen_func"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.get_prodgen_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>maps the dataset format into its processing function</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>dsformat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">dataset group, i.e. ‘VOL’, etc.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
+<dd><p class="first last">pyrad function used to generate the products</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
 </div>
 
 
@@ -620,62 +522,16 @@ intercomparison process</p>
 
 <h3>Navigation</h3>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="flow.html">pyrad.flow.flow_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="flow.html#pyrad-flow-flow-control">pyrad.flow.flow_control</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html">pyrad.proc.process_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-calib">pyrad.proc.process_calib</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-cosmo">pyrad.proc.process_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-doppler">pyrad.proc.process_Doppler</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-echoclass">pyrad.proc.process_echoclass</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-intercomp">pyrad.proc.process_intercomp</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-monitoring">pyrad.proc.process_monitoring</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-phase">pyrad.proc.process_phase</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-retrieve">pyrad.proc.process_retrieve</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-timeseries">pyrad.proc.process_timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proc.html#pyrad-proc-process-traj">pyrad.proc.process_traj</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">pyrad.prod.product_aux</a><ul class="simple">
+<li class="toctree-l1"><a class="reference internal" href="flow.html">processing flow control (<code class="docutils literal notranslate"><span class="pre">pyrad.flow</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proc.html">Dataset processing (<code class="docutils literal notranslate"><span class="pre">pyrad.proc</span></code>)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Products generation (<code class="docutils literal notranslate"><span class="pre">pyrad.prod</span></code>)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#auxiliary-functions">Auxiliary functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#product-generation">Product generation</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="#pyrad-prod-process-product">pyrad.prod.process_product</a><ul class="simple">
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="#pyrad-prod-process-vol-products">pyrad.prod.process_vol_products</a><ul class="simple">
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="#pyrad-prod-process-grid-products">pyrad.prod.process_grid_products</a><ul class="simple">
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="#pyrad-prod-process-timeseries-products">pyrad.prod.process_timeseries_products</a><ul class="simple">
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="#pyrad-prod-process-monitoring-products">pyrad.prod.process_monitoring_products</a><ul class="simple">
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="#pyrad-prod-process-intercomp-products">pyrad.prod.process_intercomp_products</a><ul class="simple">
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="#id1">pyrad.prod.process_product</a><ul class="simple">
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="io.html">pyrad.io.io_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-config">pyrad.io.config</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-read-data-radar">pyrad.io.read_data_radar</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-read-data-mxpol">pyrad.io.read_data_mxpol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-read-data-cosmo">pyrad.io.read_data_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-read-data-hzt">pyrad.io.read_data_hzt</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-read-data-sensor">pyrad.io.read_data_sensor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-read-data-sun">pyrad.io.read_data_sun</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-read-data-other">pyrad.io.read_data_other</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-write-data">pyrad.io.write_data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-timeseries">pyrad.io.timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html#pyrad-io-trajectory">pyrad.io.trajectory</a></li>
-<li class="toctree-l1"><a class="reference internal" href="graph.html">pyrad.graph.plots_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="graph.html#pyrad-graph-plots">pyrad.graph.plots</a></li>
-<li class="toctree-l1"><a class="reference internal" href="graph.html#pyrad-graph-plots-vol">pyrad.graph.plots_vol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="graph.html#pyrad-graph-plots-grid">pyrad.graph.plots_grid</a></li>
-<li class="toctree-l1"><a class="reference internal" href="graph.html#pyrad-graph-plot-timeseries">pyrad.graph.plot_timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="util.html">pyrad.util.radar_utils</a></li>
-<li class="toctree-l1"><a class="reference internal" href="util.html#pyrad-util-stat-utils">pyrad.util.stat_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html">Input and output (<code class="docutils literal notranslate"><span class="pre">pyrad.io</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graph.html">Plotting (<code class="docutils literal notranslate"><span class="pre">pyrad.graph</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util.html">Utilities (<code class="docutils literal notranslate"><span class="pre">pyrad.util</span></code>)</a></li>
 </ul>
 
 <div class="relations">

@@ -90,7 +90,7 @@
 <span class="kn">from</span> <span class="nn">.io_aux</span> <span class="k">import</span> <span class="n">find_cosmo_file</span><span class="p">,</span> <span class="n">find_rad4alpcosmo_file</span>
 
 
-<div class="viewcode-block" id="get_data"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_radar.get_data">[docs]</a><span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatypesdescr</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
+<div class="viewcode-block" id="get_data"><a class="viewcode-back" href="../../../io.html#pyrad.io.get_data">[docs]</a><span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatypesdescr</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads pyrad input data.</span>
 
@@ -353,7 +353,7 @@
     <span class="k">return</span> <span class="n">radar</span></div>
 
 
-<div class="viewcode-block" id="merge_scans_rainbow"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_radar.merge_scans_rainbow">[docs]</a><span class="k">def</span> <span class="nf">merge_scans_rainbow</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan_list</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">scan_period</span><span class="p">,</span>
+<span class="k">def</span> <span class="nf">merge_scans_rainbow</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan_list</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">scan_period</span><span class="p">,</span>
                         <span class="n">datatype_list</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">radarnr</span><span class="o">=</span><span class="s1">&#39;RADAR001&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    merge rainbow scans</span>
@@ -430,10 +430,10 @@
                 <span class="k">return</span> <span class="kc">None</span>
             <span class="n">radar</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">extract_sweeps</span><span class="p">(</span><span class="n">ind_sweeps</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">radar</span></div>
+    <span class="k">return</span> <span class="n">radar</span>
 
 
-<div class="viewcode-block" id="merge_scans_dem"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_radar.merge_scans_dem">[docs]</a><span class="k">def</span> <span class="nf">merge_scans_dem</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan_list</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">merge_scans_dem</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan_list</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    merge rainbow scans</span>
 
@@ -464,10 +464,10 @@
             <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">merge_fields_dem</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">)</span>
             <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">radar</span></div>
+    <span class="k">return</span> <span class="n">radar</span>
 
 
-<div class="viewcode-block" id="merge_scans_rad4alp"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_radar.merge_scans_rad4alp">[docs]</a><span class="k">def</span> <span class="nf">merge_scans_rad4alp</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan_list</span><span class="p">,</span> <span class="n">radar_name</span><span class="p">,</span> <span class="n">radar_res</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span>
+<span class="k">def</span> <span class="nf">merge_scans_rad4alp</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan_list</span><span class="p">,</span> <span class="n">radar_name</span><span class="p">,</span> <span class="n">radar_res</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span>
                         <span class="n">datatype_list</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    merge rad4alp data.</span>
@@ -558,9 +558,9 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">radar</span></div>
+    <span class="k">return</span> <span class="n">radar</span>
 
-<div class="viewcode-block" id="merge_scans_odim"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_radar.merge_scans_odim">[docs]</a><span class="k">def</span> <span class="nf">merge_scans_odim</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan_list</span><span class="p">,</span> <span class="n">radar_name</span><span class="p">,</span> <span class="n">radar_res</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span>
+<span class="k">def</span> <span class="nf">merge_scans_odim</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan_list</span><span class="p">,</span> <span class="n">radar_name</span><span class="p">,</span> <span class="n">radar_res</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span>
                      <span class="n">datatype_list</span><span class="p">,</span> <span class="n">dataset_list</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    merge odim data.</span>
@@ -666,10 +666,10 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">radar</span></div>
+    <span class="k">return</span> <span class="n">radar</span>
 
 
-<div class="viewcode-block" id="merge_scans_mxpol"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_radar.merge_scans_mxpol">[docs]</a><span class="k">def</span> <span class="nf">merge_scans_mxpol</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan_list</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">merge_scans_mxpol</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan_list</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    merge rad4alp data.</span>
 
@@ -754,10 +754,10 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">radar</span></div>
+    <span class="k">return</span> <span class="n">radar</span>
 
 
-<div class="viewcode-block" id="merge_scans_cosmo"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_radar.merge_scans_cosmo">[docs]</a><span class="k">def</span> <span class="nf">merge_scans_cosmo</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">merge_scans_cosmo</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    merge rainbow scans</span>
 
@@ -814,10 +814,10 @@
                     <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span>
                         <span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">radar</span></div>
+    <span class="k">return</span> <span class="n">radar</span>
 
 
-<div class="viewcode-block" id="merge_scans_cosmo_rad4alp"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_radar.merge_scans_cosmo_rad4alp">[docs]</a><span class="k">def</span> <span class="nf">merge_scans_cosmo_rad4alp</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">merge_scans_cosmo_rad4alp</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    merge cosmo rad4alp scans. If data for all the scans cannot be retrieved</span>
 <span class="sd">    returns None</span>
@@ -908,10 +908,10 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">radar</span></div>
+    <span class="k">return</span> <span class="n">radar</span>
 
 
-<div class="viewcode-block" id="merge_scans_dem_rad4alp"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_radar.merge_scans_dem_rad4alp">[docs]</a><span class="k">def</span> <span class="nf">merge_scans_dem_rad4alp</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">merge_scans_dem_rad4alp</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    merge DEM rad4alp scans. If data for all the scans cannot be retrieved</span>
 <span class="sd">    returns None</span>
@@ -1026,10 +1026,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">radar</span></div>
+    <span class="k">return</span> <span class="n">radar</span>
 
 
-<div class="viewcode-block" id="merge_scans_hydro_rad4alp"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_radar.merge_scans_hydro_rad4alp">[docs]</a><span class="k">def</span> <span class="nf">merge_scans_hydro_rad4alp</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">merge_scans_hydro_rad4alp</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    merge rad4alp hydrometeor classification scans. If data for all the scans</span>
 <span class="sd">    cannot be retrieved returns None</span>
@@ -1183,10 +1183,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">radar</span></div>
+    <span class="k">return</span> <span class="n">radar</span>
 
 
-<div class="viewcode-block" id="merge_scans_Doppler_rad4alp"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_radar.merge_scans_Doppler_rad4alp">[docs]</a><span class="k">def</span> <span class="nf">merge_scans_Doppler_rad4alp</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">merge_scans_Doppler_rad4alp</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    merge rad4alp dealised Doppler velocity scans. If data for all the scans</span>
 <span class="sd">    cannot be retrieved returns None</span>
@@ -1340,10 +1340,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">radar</span></div>
+    <span class="k">return</span> <span class="n">radar</span>
 
 
-<div class="viewcode-block" id="merge_fields_rainbow"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_radar.merge_fields_rainbow">[docs]</a><span class="k">def</span> <span class="nf">merge_fields_rainbow</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan_name</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">merge_fields_rainbow</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan_name</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    merge Rainbow fields into a single radar object.</span>
 
@@ -1410,10 +1410,10 @@
                     <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Unable to add field &#39;&quot;</span><span class="o">+</span><span class="n">field_name</span><span class="o">+</span><span class="s2">&quot;&#39; to radar object&quot;</span>
                          <span class="s2">&quot;: (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
 
-    <span class="k">return</span> <span class="n">radar</span></div>
+    <span class="k">return</span> <span class="n">radar</span>
 
 
-<div class="viewcode-block" id="merge_fields_pyrad"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_radar.merge_fields_pyrad">[docs]</a><span class="k">def</span> <span class="nf">merge_fields_pyrad</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">loadname</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span>
+<span class="k">def</span> <span class="nf">merge_fields_pyrad</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">loadname</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span>
                        <span class="n">dataset_list</span><span class="p">,</span> <span class="n">product_list</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
                        <span class="n">termination</span><span class="o">=</span><span class="s1">&#39;.nc&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -1512,10 +1512,10 @@
         <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
             <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
 
-    <span class="k">return</span> <span class="n">radar</span></div>
+    <span class="k">return</span> <span class="n">radar</span>
 
 
-<div class="viewcode-block" id="merge_fields_dem"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_radar.merge_fields_dem">[docs]</a><span class="k">def</span> <span class="nf">merge_fields_dem</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan_name</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">merge_fields_dem</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan_name</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    merge DEM fields into a single radar object.</span>
 
@@ -1566,10 +1566,10 @@
                 <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
                     <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to add field &#39;</span><span class="o">+</span><span class="n">field_name</span><span class="o">+</span><span class="s1">&#39; to radar object&#39;</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">radar</span></div>
+    <span class="k">return</span> <span class="n">radar</span>
 
 
-<div class="viewcode-block" id="merge_fields_cosmo"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_radar.merge_fields_cosmo">[docs]</a><span class="k">def</span> <span class="nf">merge_fields_cosmo</span><span class="p">(</span><span class="n">filename_list</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">merge_fields_cosmo</span><span class="p">(</span><span class="n">filename_list</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    merge COSMO fields in Rainbow file format</span>
 
@@ -1611,10 +1611,10 @@
             <span class="k">break</span>
         <span class="n">radar</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">])</span>
 
-    <span class="k">return</span> <span class="n">radar</span></div>
+    <span class="k">return</span> <span class="n">radar</span>
 
 
-<div class="viewcode-block" id="get_data_rainbow"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_radar.get_data_rainbow">[docs]</a><span class="k">def</span> <span class="nf">get_data_rainbow</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">datatype</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_data_rainbow</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">datatype</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    gets rainbow radar data</span>
 
@@ -1673,10 +1673,10 @@
             <span class="n">radar</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
             <span class="n">radar</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="s1">&#39;noisedBZ_vv&#39;</span><span class="p">,</span> <span class="n">noisedBZ_v</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">radar</span></div>
+    <span class="k">return</span> <span class="n">radar</span>
 
 
-<div class="viewcode-block" id="get_data_rad4alp"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_radar.get_data_rad4alp">[docs]</a><span class="k">def</span> <span class="nf">get_data_rad4alp</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span> <span class="n">scan_name</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_data_rad4alp</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span> <span class="n">scan_name</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    gets rad4alp radar data</span>
 
@@ -1785,10 +1785,10 @@
             <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Horizontal channel noise power not &#39;</span> <span class="o">+</span>
                  <span class="s1">&#39;available for sweep &#39;</span><span class="o">+</span><span class="n">scan_name</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">radar</span></div>
+    <span class="k">return</span> <span class="n">radar</span>
 
 
-<div class="viewcode-block" id="get_data_odim"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_radar.get_data_odim">[docs]</a><span class="k">def</span> <span class="nf">get_data_odim</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span> <span class="n">scan_name</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_data_odim</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span> <span class="n">scan_name</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    gets ODIM radar data</span>
 
@@ -1893,10 +1893,10 @@
             <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Horizontal channel noise power not &#39;</span> <span class="o">+</span>
                  <span class="s1">&#39;available for sweep &#39;</span><span class="o">+</span><span class="n">scan_name</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">radar</span></div>
+    <span class="k">return</span> <span class="n">radar</span>
 
 
-<div class="viewcode-block" id="get_data_mxpol"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_radar.get_data_mxpol">[docs]</a><span class="k">def</span> <span class="nf">get_data_mxpol</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_data_mxpol</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    gets MXPol radar data</span>
 
@@ -1923,10 +1923,10 @@
     <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;Nh&#39;</span> <span class="ow">in</span> <span class="n">datatype_list</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="s1">&#39;Nv&#39;</span> <span class="ow">in</span> <span class="n">datatype_list</span><span class="p">):</span>
         <span class="k">pass</span>
 
-    <span class="k">return</span> <span class="n">radar</span></div>
+    <span class="k">return</span> <span class="n">radar</span>
 
 
-<div class="viewcode-block" id="add_field"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_radar.add_field">[docs]</a><span class="k">def</span> <span class="nf">add_field</span><span class="p">(</span><span class="n">radar_dest</span><span class="p">,</span> <span class="n">radar_orig</span><span class="p">):</span>
+<div class="viewcode-block" id="add_field"><a class="viewcode-back" href="../../../io.html#pyrad.io.add_field">[docs]</a><span class="k">def</span> <span class="nf">add_field</span><span class="p">(</span><span class="n">radar_dest</span><span class="p">,</span> <span class="n">radar_orig</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    adds the fields from orig radar into dest radar. If they are not in the</span>
 <span class="sd">    same grid, interpolates them to dest grid</span>
@@ -1974,7 +1974,7 @@
     <span class="k">return</span> <span class="n">radar_dest</span></div>
 
 
-<div class="viewcode-block" id="interpol_field"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_data_radar.interpol_field">[docs]</a><span class="k">def</span> <span class="nf">interpol_field</span><span class="p">(</span><span class="n">radar_dest</span><span class="p">,</span> <span class="n">radar_orig</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<div class="viewcode-block" id="interpol_field"><a class="viewcode-back" href="../../../io.html#pyrad.io.interpol_field">[docs]</a><span class="k">def</span> <span class="nf">interpol_field</span><span class="p">(</span><span class="n">radar_dest</span><span class="p">,</span> <span class="n">radar_orig</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                    <span class="n">ang_tol</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    interpolates field field_name contained in radar_orig to the grid in</span>
@@ -2090,46 +2090,12 @@
 
 <h3>Navigation</h3>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../flow.html">pyrad.flow.flow_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../flow.html#pyrad-flow-flow-control">pyrad.flow.flow_control</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html">pyrad.proc.process_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-calib">pyrad.proc.process_calib</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-cosmo">pyrad.proc.process_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-doppler">pyrad.proc.process_Doppler</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-echoclass">pyrad.proc.process_echoclass</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-intercomp">pyrad.proc.process_intercomp</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-monitoring">pyrad.proc.process_monitoring</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-phase">pyrad.proc.process_phase</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-retrieve">pyrad.proc.process_retrieve</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-timeseries">pyrad.proc.process_timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../proc.html#pyrad-proc-process-traj">pyrad.proc.process_traj</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html">pyrad.prod.product_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-product">pyrad.prod.process_product</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-vol-products">pyrad.prod.process_vol_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-grid-products">pyrad.prod.process_grid_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-timeseries-products">pyrad.prod.process_timeseries_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-monitoring-products">pyrad.prod.process_monitoring_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#pyrad-prod-process-intercomp-products">pyrad.prod.process_intercomp_products</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../prod.html#id1">pyrad.prod.process_product</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html">pyrad.io.io_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-config">pyrad.io.config</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-radar">pyrad.io.read_data_radar</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-mxpol">pyrad.io.read_data_mxpol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-cosmo">pyrad.io.read_data_cosmo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-hzt">pyrad.io.read_data_hzt</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-sensor">pyrad.io.read_data_sensor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-sun">pyrad.io.read_data_sun</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-read-data-other">pyrad.io.read_data_other</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-write-data">pyrad.io.write_data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-timeseries">pyrad.io.timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html#pyrad-io-trajectory">pyrad.io.trajectory</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html">pyrad.graph.plots_aux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots">pyrad.graph.plots</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots-vol">pyrad.graph.plots_vol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plots-grid">pyrad.graph.plots_grid</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../graph.html#pyrad-graph-plot-timeseries">pyrad.graph.plot_timeseries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../util.html">pyrad.util.radar_utils</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../util.html#pyrad-util-stat-utils">pyrad.util.stat_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../flow.html">processing flow control (<code class="docutils literal notranslate"><span class="pre">pyrad.flow</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../proc.html">Dataset processing (<code class="docutils literal notranslate"><span class="pre">pyrad.proc</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../prod.html">Products generation (<code class="docutils literal notranslate"><span class="pre">pyrad.prod</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html">Input and output (<code class="docutils literal notranslate"><span class="pre">pyrad.io</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../graph.html">Plotting (<code class="docutils literal notranslate"><span class="pre">pyrad.graph</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../util.html">Utilities (<code class="docutils literal notranslate"><span class="pre">pyrad.util</span></code>)</a></li>
 </ul>
 
 <div class="relations">
