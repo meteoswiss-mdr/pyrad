@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
@@ -146,7 +145,7 @@
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to create radar_echo_id dataset. Missing data&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
-    <span class="n">echo_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">radar</span><span class="o">.</span><span class="n">nrays</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">ngates</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span><span class="o">+</span><span class="mi">3</span>
+    <span class="n">echo_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">radar</span><span class="o">.</span><span class="n">nrays</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">ngates</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span><span class="o">+</span><span class="mi">3</span>
 
     <span class="c1"># look for clutter</span>
     <span class="n">gatefilter</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">moment_and_texture_based_gate_filter</span><span class="p">(</span>
@@ -166,7 +165,6 @@
 
     <span class="n">id_field</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="s1">&#39;radar_echo_id&#39;</span><span class="p">)</span>
     <span class="n">id_field</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">echo_id</span>
-    <span class="n">id_field</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;_FillValue&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">})</span>
 
     <span class="c1"># prepare for exit</span>
     <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">radar</span><span class="p">)}</span>
@@ -525,7 +523,7 @@
 
     <span class="k">for</span> <span class="n">datatypedescr</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;datatype&#39;</span><span class="p">]:</span>
         <span class="n">radarnr</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_datatype_fields</span><span class="p">(</span><span class="n">datatypedescr</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;SNRh&#39;</span><span class="p">,</span> <span class="s1">&#39;SNRv&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;SNRh&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;SNRv&#39;</span><span class="p">):</span>
             <span class="n">snr_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
             <span class="k">break</span>
 
@@ -549,7 +547,7 @@
     <span class="k">for</span> <span class="n">datatypedescr</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;datatype&#39;</span><span class="p">]:</span>
         <span class="n">radarnr</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_datatype_fields</span><span class="p">(</span><span class="n">datatypedescr</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;SNRh&#39;</span><span class="p">,</span> <span class="s1">&#39;SNRv&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;SNRh&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;SNRv&#39;</span><span class="p">):</span>
             <span class="k">continue</span>
 
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
@@ -733,7 +731,9 @@
         <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_where</span><span class="p">(</span>
             <span class="n">is_lowVIS</span><span class="p">,</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
 
-        <span class="k">if</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;dBZ&#39;</span><span class="p">,</span> <span class="s1">&#39;dBZc&#39;</span><span class="p">,</span> <span class="s1">&#39;dBuZ&#39;</span><span class="p">,</span> <span class="s1">&#39;dBZv&#39;</span><span class="p">,</span> <span class="s1">&#39;dBZvc&#39;</span><span class="p">,</span> <span class="s1">&#39;dBuZv&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">((</span><span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBZ&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBZc&#39;</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="p">(</span><span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBuZ&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBZv&#39;</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="p">(</span><span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBZvc&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBuZv&#39;</span><span class="p">)):</span>
             <span class="n">radar_field</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">correct</span><span class="o">.</span><span class="n">correct_visibility</span><span class="p">(</span>
                 <span class="n">radar_aux</span><span class="p">,</span> <span class="n">vis_field</span><span class="o">=</span><span class="n">vis_field</span><span class="p">,</span> <span class="n">field_name</span><span class="o">=</span><span class="n">field_name</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -930,8 +930,6 @@
                 <span class="n">zdr_field</span> <span class="o">=</span> <span class="s1">&#39;corrected_differential_reflectivity&#39;</span>
             <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;RhoHV&#39;</span><span class="p">:</span>
                 <span class="n">rhv_field</span> <span class="o">=</span> <span class="s1">&#39;cross_correlation_ratio&#39;</span>
-            <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;uRhoHV&#39;</span><span class="p">:</span>
-                <span class="n">rhv_field</span> <span class="o">=</span> <span class="s1">&#39;uncorrected_cross_correlation_ratio&#39;</span>
             <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;RhoHVc&#39;</span><span class="p">:</span>
                 <span class="n">rhv_field</span> <span class="o">=</span> <span class="s1">&#39;corrected_cross_correlation_ratio&#39;</span>
             <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;KDP&#39;</span><span class="p">:</span>
@@ -1217,18 +1215,17 @@
         <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_list</span><span class="p">[</span><span class="n">ind_rad</span><span class="p">]</span>
 
         <span class="c1"># Check which should be the reference field for temperature</span>
-        <span class="k">if</span> <span class="n">iso0_field</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">iso0_field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
-                <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to detect melting layer. &#39;</span> <span class="o">+</span>
-                     <span class="s1">&#39;Missing height over iso0 field&#39;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">iso0_field</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">iso0_field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">):</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to detect melting layer. &#39;</span> <span class="o">+</span>
+                 <span class="s1">&#39;Missing height over iso0 field&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
             <span class="n">temp_ref</span> <span class="o">=</span> <span class="s1">&#39;height_over_iso0&#39;</span>
 
-        <span class="k">if</span> <span class="n">temp_field</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">temp_field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
-                <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to detect melting layer. &#39;</span> <span class="o">+</span>
-                     <span class="s1">&#39;Missing temperature field&#39;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">temp_field</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">temp_field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">):</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to detect melting layer. Missing temperature field&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
             <span class="n">temp_ref</span> <span class="o">=</span> <span class="s1">&#39;temperature&#39;</span>
             <span class="n">iso0_field</span> <span class="o">=</span> <span class="s1">&#39;height_over_iso0&#39;</span>
 
@@ -1425,6 +1422,7 @@
     <span class="k">if</span> <span class="n">procstatus</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
+    <span class="n">temp_ref</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">temp_field</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">iso0_field</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">for</span> <span class="n">datatypedescr</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;datatype&#39;</span><span class="p">]:</span>
@@ -1453,13 +1451,15 @@
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to detect melting layer. &#39;</span> <span class="o">+</span>
              <span class="s1">&#39;Missing height over iso0 field&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
-    <span class="n">temp_ref</span> <span class="o">=</span> <span class="s1">&#39;height_over_iso0&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">temp_ref</span> <span class="o">=</span> <span class="s1">&#39;height_over_iso0&#39;</span>
 
     <span class="k">if</span> <span class="n">temp_field</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">temp_field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">):</span>
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to detect melting layer. Missing temperature field&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
-    <span class="n">temp_ref</span> <span class="o">=</span> <span class="s1">&#39;temperature&#39;</span>
-    <span class="n">iso0_field</span> <span class="o">=</span> <span class="s1">&#39;height_over_iso0&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">temp_ref</span> <span class="o">=</span> <span class="s1">&#39;temperature&#39;</span>
+        <span class="n">iso0_field</span> <span class="o">=</span> <span class="s1">&#39;height_over_iso0&#39;</span>
 
     <span class="k">if</span> <span class="p">((</span><span class="n">zdr_field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">)</span> <span class="ow">or</span>
             <span class="p">(</span><span class="n">rhv_field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">)):</span>
@@ -1595,7 +1595,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, meteoswiss-mdr.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
     </div>
   </body>
 </html>

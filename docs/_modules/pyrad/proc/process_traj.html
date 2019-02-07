@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
@@ -95,7 +94,7 @@
 <span class="kn">from</span> <span class="nn">..io.read_data_other</span> <span class="k">import</span> <span class="n">read_antenna_pattern</span>
 
 <span class="kn">from</span> <span class="nn">..util.stat_utils</span> <span class="k">import</span> <span class="n">quantiles_weighted</span>
-<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">belongs_roi_indices</span><span class="p">,</span> <span class="n">find_nearest_gate</span>
+<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">belongs_roi_indices</span>
 
 
 <div class="viewcode-block" id="process_trajectory"><a class="viewcode-back" href="../../../proc.html#pyrad.proc.process_trajectory">[docs]</a><span class="k">def</span> <span class="nf">process_trajectory</span><span class="p">(</span><span class="n">procstatus</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">radar_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">trajectory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -216,13 +215,10 @@
     <span class="n">time_tol</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TimeTol&#39;</span><span class="p">,</span> <span class="mf">100.</span><span class="p">)</span>
     <span class="n">alt_min</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;alt_min&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">alt_max</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;alt_max&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="n">cell_center</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cell_center&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-    <span class="n">latlon_tol</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;latlon_tol&#39;</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)</span>  <span class="c1"># aprox. 1 km</span>
 
     <span class="n">inds_ray</span><span class="p">,</span> <span class="n">inds_rng</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">alt</span> <span class="o">=</span> <span class="n">_get_gates_trt</span><span class="p">(</span>
         <span class="n">radar</span><span class="p">,</span> <span class="n">trajectory</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">time_tol</span><span class="o">=</span><span class="n">time_tol</span><span class="p">,</span>
-        <span class="n">alt_min</span><span class="o">=</span><span class="n">alt_min</span><span class="p">,</span> <span class="n">alt_max</span><span class="o">=</span><span class="n">alt_max</span><span class="p">,</span> <span class="n">cell_center</span><span class="o">=</span><span class="n">cell_center</span><span class="p">,</span>
-        <span class="n">latlon_tol</span><span class="o">=</span><span class="n">latlon_tol</span><span class="p">)</span>
+        <span class="n">alt_min</span><span class="o">=</span><span class="n">alt_min</span><span class="p">,</span> <span class="n">alt_max</span><span class="o">=</span><span class="n">alt_max</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">inds_ray</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
@@ -1412,7 +1408,7 @@
 
 
 <span class="k">def</span> <span class="nf">_get_gates_trt</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">trajectory</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">time_tol</span><span class="o">=</span><span class="mf">100.</span><span class="p">,</span> <span class="n">alt_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                   <span class="n">alt_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cell_center</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">latlon_tol</span><span class="o">=</span><span class="mf">0.0005</span><span class="p">):</span>
+                   <span class="n">alt_max</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find the gates of the radar object that belong to a TRT cell</span>
 
@@ -1440,105 +1436,55 @@
         <span class="n">dt</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">voltime</span> <span class="o">-</span> <span class="n">time_traj</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">())</span>
     <span class="k">if</span> <span class="n">dt</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">time_tol</span><span class="p">:</span>
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No TRT data for radar volume time&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
     <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+    <span class="n">lon_roi</span> <span class="o">=</span> <span class="n">trajectory</span><span class="o">.</span><span class="n">cell_contour</span><span class="p">[</span><span class="n">ind</span><span class="p">][</span><span class="s1">&#39;lon&#39;</span><span class="p">]</span>
+    <span class="n">lat_roi</span> <span class="o">=</span> <span class="n">trajectory</span><span class="o">.</span><span class="n">cell_contour</span><span class="p">[</span><span class="n">ind</span><span class="p">][</span><span class="s1">&#39;lat&#39;</span><span class="p">]</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">cell_center</span><span class="p">:</span>
-        <span class="n">lon_roi</span> <span class="o">=</span> <span class="n">trajectory</span><span class="o">.</span><span class="n">cell_contour</span><span class="p">[</span><span class="n">ind</span><span class="p">][</span><span class="s1">&#39;lon&#39;</span><span class="p">]</span>
-        <span class="n">lat_roi</span> <span class="o">=</span> <span class="n">trajectory</span><span class="o">.</span><span class="n">cell_contour</span><span class="p">[</span><span class="n">ind</span><span class="p">][</span><span class="s1">&#39;lat&#39;</span><span class="p">]</span>
+    <span class="n">roi_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;lon&#39;</span><span class="p">:</span> <span class="n">lon_roi</span><span class="p">,</span>
+        <span class="s1">&#39;lat&#39;</span><span class="p">:</span> <span class="n">lat_roi</span><span class="p">,</span>
+        <span class="s1">&#39;alt_min&#39;</span><span class="p">:</span> <span class="n">alt_min</span><span class="p">,</span>
+        <span class="s1">&#39;alt_max&#39;</span><span class="p">:</span> <span class="n">alt_max</span><span class="p">}</span>
 
-        <span class="n">roi_dict</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s1">&#39;lon&#39;</span><span class="p">:</span> <span class="n">lon_roi</span><span class="p">,</span>
-            <span class="s1">&#39;lat&#39;</span><span class="p">:</span> <span class="n">lat_roi</span><span class="p">,</span>
-            <span class="s1">&#39;alt_min&#39;</span><span class="p">:</span> <span class="n">alt_min</span><span class="p">,</span>
-            <span class="s1">&#39;alt_max&#39;</span><span class="p">:</span> <span class="n">alt_max</span><span class="p">}</span>
+    <span class="c1"># extract the data within the ROI boundaries</span>
+    <span class="n">inds_ray</span><span class="p">,</span> <span class="n">inds_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">gate_longitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]))</span>
 
-        <span class="c1"># extract the data within the ROI boundaries</span>
-        <span class="n">inds_ray</span><span class="p">,</span> <span class="n">inds_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">gate_longitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]))</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
+            <span class="n">radar</span><span class="o">.</span><span class="n">gate_latitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">roi_dict</span><span class="p">[</span><span class="s1">&#39;lat&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
+            <span class="n">radar</span><span class="o">.</span><span class="n">gate_latitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">roi_dict</span><span class="p">[</span><span class="s1">&#39;lat&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
+            <span class="n">radar</span><span class="o">.</span><span class="n">gate_longitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">roi_dict</span><span class="p">[</span><span class="s1">&#39;lon&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
+            <span class="n">radar</span><span class="o">.</span><span class="n">gate_longitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">roi_dict</span><span class="p">[</span><span class="s1">&#39;lon&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
 
-        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
-                <span class="n">radar</span><span class="o">.</span><span class="n">gate_latitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">roi_dict</span><span class="p">[</span><span class="s1">&#39;lat&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
-                <span class="n">radar</span><span class="o">.</span><span class="n">gate_latitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">roi_dict</span><span class="p">[</span><span class="s1">&#39;lat&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()),</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
-                <span class="n">radar</span><span class="o">.</span><span class="n">gate_longitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">roi_dict</span><span class="p">[</span><span class="s1">&#39;lon&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
-                <span class="n">radar</span><span class="o">.</span><span class="n">gate_longitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">roi_dict</span><span class="p">[</span><span class="s1">&#39;lon&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+    <span class="k">if</span> <span class="n">alt_min</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mask</span><span class="p">[</span><span class="n">radar</span><span class="o">.</span><span class="n">gate_altitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">alt_min</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">alt_max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mask</span><span class="p">[</span><span class="n">radar</span><span class="o">.</span><span class="n">gate_altitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">alt_max</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="k">if</span> <span class="n">alt_min</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">mask</span><span class="p">[</span><span class="n">radar</span><span class="o">.</span><span class="n">gate_altitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">alt_min</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">if</span> <span class="n">alt_max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">mask</span><span class="p">[</span><span class="n">radar</span><span class="o">.</span><span class="n">gate_altitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">alt_max</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No values within ROI&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
-            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No values within ROI&#39;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="n">inds_ray</span> <span class="o">=</span> <span class="n">inds_ray</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+    <span class="n">inds_rng</span> <span class="o">=</span> <span class="n">inds_rng</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
 
-        <span class="n">inds_ray</span> <span class="o">=</span> <span class="n">inds_ray</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
-        <span class="n">inds_rng</span> <span class="o">=</span> <span class="n">inds_rng</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+    <span class="c1"># extract the data inside the ROI</span>
+    <span class="n">lat</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">gate_latitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">mask</span><span class="p">]</span>
+    <span class="n">lon</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">gate_longitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">mask</span><span class="p">]</span>
+    <span class="n">inds</span><span class="p">,</span> <span class="n">is_roi</span> <span class="o">=</span> <span class="n">belongs_roi_indices</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">roi_dict</span><span class="p">)</span>
 
-        <span class="c1"># extract the data inside the ROI</span>
-        <span class="n">lat</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">gate_latitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">mask</span><span class="p">]</span>
-        <span class="n">lon</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">gate_longitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">mask</span><span class="p">]</span>
-        <span class="n">inds</span><span class="p">,</span> <span class="n">is_roi</span> <span class="o">=</span> <span class="n">belongs_roi_indices</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">roi_dict</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_roi</span> <span class="o">==</span> <span class="s1">&#39;None&#39;</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No values within ROI&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
-        <span class="k">if</span> <span class="n">is_roi</span> <span class="o">==</span> <span class="s1">&#39;None&#39;</span><span class="p">:</span>
-            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No values within ROI&#39;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="n">inds_ray</span> <span class="o">=</span> <span class="n">inds_ray</span><span class="p">[</span><span class="n">inds</span><span class="p">]</span>
+    <span class="n">inds_rng</span> <span class="o">=</span> <span class="n">inds_rng</span><span class="p">[</span><span class="n">inds</span><span class="p">]</span>
 
-        <span class="n">inds_ray</span> <span class="o">=</span> <span class="n">inds_ray</span><span class="p">[</span><span class="n">inds</span><span class="p">]</span>
-        <span class="n">inds_rng</span> <span class="o">=</span> <span class="n">inds_rng</span><span class="p">[</span><span class="n">inds</span><span class="p">]</span>
-
-        <span class="n">lat</span> <span class="o">=</span> <span class="n">lat</span><span class="p">[</span><span class="n">inds</span><span class="p">]</span>
-        <span class="n">lon</span> <span class="o">=</span> <span class="n">lon</span><span class="p">[</span><span class="n">inds</span><span class="p">]</span>
-        <span class="n">alt</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">gate_altitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">inds_ray</span><span class="p">,</span> <span class="n">inds_rng</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">radar</span><span class="p">)</span>
-        <span class="c1"># transform radar into ppi over the required elevation</span>
-        <span class="k">if</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">scan_type</span> <span class="o">==</span> <span class="s1">&#39;rhi&#39;</span><span class="p">:</span>
-            <span class="n">target_elevations</span><span class="p">,</span> <span class="n">el_tol</span> <span class="o">=</span> <span class="n">get_target_elevations</span><span class="p">(</span><span class="n">radar_aux</span><span class="p">)</span>
-            <span class="n">radar_ppi</span> <span class="o">=</span> <span class="n">cross_section_rhi</span><span class="p">(</span>
-                <span class="n">radar_aux</span><span class="p">,</span> <span class="n">target_elevations</span><span class="p">,</span> <span class="n">el_tol</span><span class="o">=</span><span class="n">el_tol</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">scan_type</span> <span class="o">==</span> <span class="s1">&#39;ppi&#39;</span><span class="p">:</span>
-            <span class="n">radar_ppi</span> <span class="o">=</span> <span class="n">radar_aux</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Error: unsupported scan type.&#39;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
-
-        <span class="n">inds_ray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
-        <span class="n">inds_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
-        <span class="n">lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
-        <span class="n">lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
-        <span class="n">alt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
-        <span class="k">for</span> <span class="n">sweep</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">radar_ppi</span><span class="o">.</span><span class="n">nsweeps</span><span class="p">):</span>
-            <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">radar_ppi</span><span class="o">.</span><span class="n">extract_sweeps</span><span class="p">([</span><span class="n">sweep</span><span class="p">]))</span>
-
-            <span class="c1"># find nearest gate to lat lon point</span>
-            <span class="n">ind_ray</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">find_nearest_gate</span><span class="p">(</span>
-                <span class="n">radar_aux</span><span class="p">,</span> <span class="n">trajectory</span><span class="o">.</span><span class="n">wgs84_lat_deg</span><span class="p">[</span><span class="n">ind</span><span class="p">],</span>
-                <span class="n">trajectory</span><span class="o">.</span><span class="n">wgs84_lon_deg</span><span class="p">[</span><span class="n">ind</span><span class="p">],</span> <span class="n">latlon_tol</span><span class="o">=</span><span class="n">latlon_tol</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">ind_ray</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">continue</span>
-
-            <span class="k">if</span> <span class="n">alt_min</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">gate_altitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">][</span><span class="n">ind_rng</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">alt_min</span><span class="p">:</span>
-                    <span class="k">continue</span>
-            <span class="k">if</span> <span class="n">alt_max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">gate_altitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">][</span><span class="n">ind_rng</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">alt_max</span><span class="p">:</span>
-                    <span class="k">continue</span>
-
-            <span class="n">inds_ray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inds_ray</span><span class="p">,</span> <span class="n">ind_ray</span><span class="p">)</span>
-            <span class="n">inds_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inds_rng</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">)</span>
-            <span class="n">lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">lat</span><span class="p">,</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">gate_latitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">][</span><span class="n">ind_rng</span><span class="p">])</span>
-            <span class="n">lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">lon</span><span class="p">,</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">gate_longitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">][</span><span class="n">ind_rng</span><span class="p">])</span>
-            <span class="n">alt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">alt</span><span class="p">,</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">gate_altitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">][</span><span class="n">ind_rng</span><span class="p">])</span>
-
-        <span class="k">if</span> <span class="n">inds_ray</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No values in center of cell&#39;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="n">lat</span> <span class="o">=</span> <span class="n">lat</span><span class="p">[</span><span class="n">inds</span><span class="p">]</span>
+    <span class="n">lon</span> <span class="o">=</span> <span class="n">lon</span><span class="p">[</span><span class="n">inds</span><span class="p">]</span>
+    <span class="n">alt</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">gate_altitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">inds_ray</span><span class="p">,</span> <span class="n">inds_rng</span><span class="p">]</span>
 
     <span class="k">return</span> <span class="n">inds_ray</span><span class="p">,</span> <span class="n">inds_rng</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">alt</span>
 
@@ -1773,7 +1719,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, meteoswiss-mdr.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
     </div>
   </body>
 </html>
