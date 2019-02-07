@@ -54,6 +54,8 @@ To use Pyrad for data quality monitoring check the report [pyrad_monitoring_fvj.
 # Development
 We welcome contributions, suggestions of developments and bug reports.
 
+Suggestions of developments and bug reports should use the [Issues page of the github repository](https://github.com/meteoswiss-mdr/pyrad/issues).
+
 The process to contribute by partners external to MeteoSwiss is described in the [user manual](./doc/pyrad_user_manual.pdf).
 
 # Disclaimer
