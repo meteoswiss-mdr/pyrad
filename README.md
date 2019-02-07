@@ -10,25 +10,22 @@ aimed at processing and visualizing data from individual Swiss weather radars bo
 real time. It is written in the Python language. The framework is version controlled and automatic
 documentation is generated based on doc-strings. It is capable of ingesting data from all the
 weather radars in Switzerland, namely the operational MeteoSwiss C-band rad4alp radar network,
-the MeteoSwiss X-band DX50 radar and the EPFL MXPol radar. Extension to OPERA file format is planned.
+the MeteoSwiss X-band DX50 radar and the EPFL MXPol radar and radar data in the OPERA file format.
 
 The processing flow is controlled by 3 simple configuration files. Multiple levels of processing can
-be performed. At each level new datasets (i.e. attenuation corrected reflectivity) are created which
+be performed. At each level new datasets (e.g. attenuation corrected reflectivity) are created which
 can be stored in a file and/or used in the next processing level (for example, creating a rainfall rate
-dataset from the corrected reflectivity). Multiple products can be generated from each dataset (i.e
+dataset from the corrected reflectivity). Multiple products can be generated from each dataset (e.g.
 PPI, RHI images, histograms, etc.). In the off-line mode, data from multiple radars can be ingested
 in order to obtain products such as the inter-comparison of reflectivity values at co-located range
 gates.
 
 The framework is able to ingest polarimetric and Doppler radar moments as well as auxiliary data
-such as numerical weather prediction parameters (i.e. temperature, wind speed, etc.), DEM-based
+such as numerical weather prediction parameters (e.g. temperature, wind speed, etc.), DEM-based
 visibility and data used in the generation of the products such as rain gauge measurements,
 disdrometer measurements, solar flux, etc.
 
-The signal processing and part of the data visualization is performed by a MeteoSwiss developed
-version of the Py-ART radar toolkit which contains enhanced features. MeteoSwiss regularly
-contributes back to the main Py-ART branch once a new functionality has been thoroughly tested
-and it is considered of interest for the broad weather radar community.
+The signal processing and part of the data visualization is performed by a [MeteoSwiss developed version of the Py-ART radar toolkit](https://github.com/meteoswiss-mdr/pyart) which contains enhanced features. MeteoSwiss regularly contributes back to the [main Py-ART branch](https://github.com/ARM-DOE/pyart) once a new functionality has been thoroughly tested and it is considered of interest for the broad weather radar community.
 
 The capabilities of the processing framework include various forms of echo classification and
 filtering, differential phase and specific differential phase estimation, attenuation correction, data
