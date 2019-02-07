@@ -2,7 +2,7 @@
 [![Ref doc](https://img.shields.io/badge/docs-users-4088b8.svg)](https://meteoswiss-mdr.github.io/pyrad/)
 
 # pyrad
-Python Radar Processing
+Python Radar Data Processing
 
 # What is Pyrad?
 Pyrad is a real-time data processing framework developed by MeteoSwiss. The framework is
@@ -35,26 +35,26 @@ sensors. This is particularly useful when performing measurement campaigns where
 sensing retrievals are validated with in-situ airplane or ground-based measurements.
 
 # Installation
-To install Pyrad and its submodules please have a look at the [Pyrad user manual (pdf)](./doc/pyrad_user_manual.pdf)
+To install Pyrad and its submodules please have a look at the [Pyrad user manual (pdf)](./doc/pyrad_user_manual.pdf).
 
 # Use
-Before using it have a look at the [cookbook (pdf)](./doc/pyrad-framework-cookbook/DataProcessing.pdf)
+Before using it have a look at the [cookbook (pdf)](./doc/pyrad-framework-cookbook/DataProcessing.pdf).
 
 For details on the implemented functions check the [pyrad library reference for users](https://meteoswiss-mdr.github.io/pyrad/). Downloadable copies can be found in the repository: 
 
 [For users (pdf)](./doc/pyrad_library_reference_users.pdf)
 
-[For developer (pdf)](./doc/pyrad_library_reference_dev.pdf)
+[For developers (pdf)](./doc/pyrad_library_reference_dev.pdf)
 
 
-Example configuration files can be found in the repository directory [pyrad/config/processing/](./config/processing)
+Example configuration files can be found in the repository directory [pyrad/config/processing/](./config/processing).
 
-To use Pyrad for data quality monitoring check the report [pyrad_monitoring_fvj.pdf](./doc/pyrad_monitoring_fvj.pdf)
+To use Pyrad for data quality monitoring check the report [pyrad_monitoring_fvj.pdf](./doc/pyrad_monitoring_fvj.pdf).
 
 # Development
 We welcome contributions, suggestions of developments and bug reports.
 
-The process to contribute by partners external to MeteoSwiss is described in the [user manual](./doc/pyrad_user_manual.pdf)
+The process to contribute by partners external to MeteoSwiss is described in the [user manual](./doc/pyrad_user_manual.pdf).
 
 # Disclaimer
 The software is still in a development stage. Please let us know if you would like to test it.
