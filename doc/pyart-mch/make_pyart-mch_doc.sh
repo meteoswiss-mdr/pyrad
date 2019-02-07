@@ -35,7 +35,10 @@ cd library_reference_users
 # make html for github pages
 make clean
 make html
-git rm -r ../../../src/pyart/docs/*
+cd ../../../src/pyart/
+rm -fr ./docs/*
+git rm -fr ./docs/*
+cd ../../doc/pyart-mch/library_reference_users
 mv build/html/* ../../../src/pyart/docs
 rm -rf build/*
 touch ../../../src/pyart/docs/.nojekyll
