@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
@@ -86,8 +85,6 @@
 <span class="sd">    find_hzt_file</span>
 <span class="sd">    find_rad4alpcosmo_file</span>
 <span class="sd">    _get_datetime</span>
-<span class="sd">    find_date_in_file_name</span>
-
 
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -382,392 +379,60 @@
 <span class="sd">        corresponding Py-ART field name</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBZ&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;DBZH&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBuZ&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_reflectivity&#39;</span>
+    <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;udBZ&#39;</span><span class="p">:</span>
         <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;TH&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBZc&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_reflectivity&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;DBZHC&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBuZc&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_unfiltered_reflectivity&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;THC&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBZv&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity_vv&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;DBZV&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBZvc&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_reflectivity_vv&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;DBZVC&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBuZv&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_reflectivity_vv&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;uncorrected_reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;udBZv&#39;</span><span class="p">:</span>
         <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;TV&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBuZvc&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_unfiltered_reflectivity_vv&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;TVC&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBZ_bias&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity_bias&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;ZBIAS&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;eta_h&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;volumetric_reflectivity&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;etah&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;eta_v&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;volumetric_reflectivity_vv&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;etav&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;rcs_h&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;radar_cross_section_hh&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;RCSH&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;rcs_v&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;radar_cross_section_vv&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;RCSV&#39;</span>
-
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ZDR&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;differential_reflectivity&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;ZDR&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ZDRu&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_differential_reflectivity&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;ZDRU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ZDRc&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_differential_reflectivity&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;ZDRC&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ZDRuc&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_unfiltered_differential_reflectivity&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;ZDRUC&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ZDR_prec&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;differential_reflectivity_in_precipitation&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;ZDRPREC&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ZDR_snow&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;differential_reflectivity_in_snow&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;ZDRSNOW&#39;</span>
-
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBm&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;signal_power_hh&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;DBMH&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBmv&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;signal_power_vv&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;DBMV&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;Nh&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;noisedBZ_hh&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;NDBZH&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;Nv&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;noisedBZ_vv&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;NDBZV&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;SNRh&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;signal_to_noise_ratio_hh&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;SNRH&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;SNRv&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;signal_to_noise_ratio_vv&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;SNRV&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;SQI&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;normalized_coherent_power&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;SQIH&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;SQIv&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;normalized_coherent_power_vv&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;SQIV&#39;</span>
-
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBm_sun_hit&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;sun_hit_power_h&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;DBM_SUNHIT&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBmv_sun_hit&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;sun_hit_power_v&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;DBMV_SUNHIT&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ZDR_sun_hit&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;sun_hit_differential_reflectivity&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;ZDR_SUNHIT&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBm_sun_est&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;sun_est_power_h&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;DBM_SUNEST&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBmv_sun_est&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;sun_est_power_v&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;DBMV_SUNEST&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ZDR_sun_est&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;sun_est_differential_reflectivity&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;ZDR_SUNEST&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sun_pos_h&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;sun_hit_h&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;POSH_SUNHIT&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sun_pos_v&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;sun_hit_v&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;POSV_SUNHIT&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sun_pos_zdr&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;sun_hit_zdr&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;POSZDR_SUNHIT&#39;</span>
-
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;RhoHV&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;cross_correlation_ratio&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;RHOHV&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;uRhoHV&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;uncorrected_cross_correlation_ratio&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;URHOHV&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;RhoHVc&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_cross_correlation_ratio&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;RHOHVC&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;RhoHV_rain&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;cross_correlation_ratio_in_rain&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;RHOHVRAIN&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;L&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;logarithmic_cross_correlation_ratio&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;LRHOHV&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CDR&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;circular_depolarization_ratio&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;CDR&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;LDR&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;linear_polarization_ratio&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;LDR&#39;</span>
-
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;PhiDP&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;differential_phase&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;PHIDP&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;uPhiDP&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;uncorrected_differential_phase&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;UPHIDP&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;PhiDPc&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_differential_phase&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;PHIDPC&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;PhiDP0&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;system_differential_phase&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;PHIDP0&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;PhiDP0_bin&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;first_gate_differential_phase&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;PHIDP0_BIN&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;KDP&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;specific_differential_phase&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;KDP&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;KDPc&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_specific_differential_phase&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;KDPC&#39;</span>
-
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;V&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;velocity&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;VRADH&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;Vh&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;velocity&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;VRADH&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dealV&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;dealiased_velocity&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;VRADDH&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;Vc&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_velocity&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;VRADHC&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dealVc&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;dealiased_corrected_velocity&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;VRADDHC&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;estV&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;retrieved_velocity&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;VRADEST&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;stdV&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;retrieved_velocity_std&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;sd_vvp&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;diffV&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;velocity_difference&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;VDIFF&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;Vv&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;velocity_vv&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;VRADV&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dealVv&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;dealiased_velocity_vv&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;VRADDV&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;W&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectrum_width&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;WRADH&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;Wc&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_spectrum_width&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;WRADHC&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;Wv&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectrum_width_vv&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;WRADV&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;wind_vel_h_az&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;azimuthal_horizontal_wind_component&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;AHWND&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;wind_vel_v&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;vertical_wind_component&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;wind_vel_h_u&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;eastward_wind_component&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;UWND&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;wind_vel_h_v&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;northward_wind_component&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;VWND&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;windshear_v&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;vertical_wind_shear&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;VSHR&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;WIND_SPEED&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;wind_speed&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;ff&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;WIND_DIRECTION&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;wind_direction&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;dd&#39;</span>
-
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;Ah&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;specific_attenuation&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;AH&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;Ahc&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_specific_attenuation&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;AHC&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;PIA&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;path_integrated_attenuation&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;PIA&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;PIAc&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_path_integrated_attenuation&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;PIAC&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;Adp&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;specific_differential_attenuation&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;ADP&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;Adpc&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_specific_differential_attenuation&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;ADPC&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;PIDA&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;path_integrated_differential_attenuation&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;PIDA&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;PIDAc&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_path_integrated_differential_attenuation&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;PIDAC&#39;</span>
-
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;TEMP&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;temperature&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;TEMP&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ISO0&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;iso0&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;ISO0&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;H_ISO0&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;height_over_iso0&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;HISO0&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;cosmo_index&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;cosmo_index&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;COSMOIND&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;hzt_index&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;hzt_index&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;HZTIND&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ml&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;melting_layer&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;ML&#39;</span>
-
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;VIS&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;visibility&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;VIS&#39;</span>
-
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;echoID&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;radar_echo_id&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;ECHOID&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CLT&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;clutter_exit_code&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;CLT&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;occurrence&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;occurrence&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;OCC&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;freq_occu&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;frequency_of_occurrence&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;OCCFREQ&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;RR&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;radar_estimated_rain_rate&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;RATE&#39;</span>
-
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;hydro&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;radar_echo_classification&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;CLASS&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;entropy&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;hydroclass_entropy&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;ENTROPY&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;propAG&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;proportion_AG&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;propAG&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;propCR&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;proportion_CR&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;propCR&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;propLR&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;proportion_LR&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;propLR&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;propRP&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;proportion_RP&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;propRP&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;propRN&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;proportion_RN&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;propRN&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;propVI&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;proportion_VI&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;propVI&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;propWS&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;proportion_WS&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;propWS&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;propMH&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;proportion_MH&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;propMH&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;propIH&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;proportion_IH&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;propIH&#39;</span>
-
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;time_avg_flag&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;time_avg_flag&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;TAFLAG&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;colocated_gates&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;colocated_gates&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;COLGATES&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nsamples&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;number_of_samples&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;ns&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;bird_density&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;bird_density&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;dens&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;std&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;standard_deviation&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;STD&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sum&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;sum&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;SUM&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sum2&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;sum_squared&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;SUM2&#39;</span>
-
-    <span class="c1"># vol2bird field names</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ff&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;wind_speed&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;ff&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dd&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;wind_direction&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;dd&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;u&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;eastward_wind_component&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;UWND&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;northward_wind_component&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;VWND&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;w&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;vertical_wind_component&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;width&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;height_resolution&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;width&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;gap&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;gap&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;gap&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dbz&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;bird_reflectivity&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;eta&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;eta&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;volumetric_reflectivity&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;etah&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dens&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;bird_density&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;dens&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;n&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;number_of_samples_velocity&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;n&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;n_dbz&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;number_of_samples_reflectivity&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;n_dbz&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sd_vvp&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;retrieved_velocity_std&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;sd_vvp&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;DBZH&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;uncorrected_reflectivity_vv&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBZ&#39;</span><span class="p">:</span>
         <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;DBZH&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;n_all&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;number_of_samples_velocity_all&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;n_all&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;n_dbz_all&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;number_of_samples_reflectivity_all&#39;</span>
-        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;n_dbz_all&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBZv&#39;</span><span class="p">:</span>
+        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;DBZV&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity_vv&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBZc&#39;</span><span class="p">:</span>
+        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;DBZH&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBZvc&#39;</span><span class="p">:</span>
+        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;DBZV&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_reflectivity_vv&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ZDR&#39;</span><span class="p">:</span>
+        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;ZDR&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;differential_reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;RhoHV&#39;</span><span class="p">:</span>
+        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;RHOHV&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;cross_correlation_ratio&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;LDR&#39;</span><span class="p">:</span>
+        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;LDR&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;linear_polarization_ratio&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;PhiDP&#39;</span><span class="p">:</span>
+        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;PHIDP&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;differential_phase&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;KDP&#39;</span><span class="p">:</span>
+        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;KDP&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;specific_differential_phase&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;SQI&#39;</span><span class="p">:</span>
+        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;SQI&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;normalized_coherent_power&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;SNR&#39;</span><span class="p">:</span>
+        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;SNR&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;signal_to_noise_ratio&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;V&#39;</span><span class="p">:</span>
+        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;VRAD&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;velocity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;Vh&#39;</span><span class="p">:</span>
+        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;VRADH&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;velocity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;Vv&#39;</span><span class="p">:</span>
+        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;VRADV&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;velocity_vv&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;W&#39;</span><span class="p">:</span>
+        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;WRAD&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectrum_width&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;QIND&#39;</span><span class="p">:</span>
+        <span class="n">datatype_odim</span> <span class="o">=</span> <span class="s1">&#39;QIND&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;signal_quality_index&#39;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
             <span class="s1">&#39;ERROR: ODIM fields do not contain datatype &#39;</span><span class="o">+</span><span class="n">datatype</span><span class="p">)</span>
@@ -1001,12 +666,6 @@
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;number_of_samples&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;bird_density&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;bird_density&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;std&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;standard_deviation&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sum&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;sum&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sum2&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;sum_squared&#39;</span>
 
     <span class="c1"># vol2bird field names</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ff&#39;</span><span class="p">:</span>
@@ -1107,7 +766,7 @@
         <span class="n">datadescriptor</span><span class="p">)</span>
     <span class="n">ind_rad</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">radarnr</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">8</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span>
 
-    <span class="k">if</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;Nh&#39;</span><span class="p">,</span> <span class="s1">&#39;Nv&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;Nh&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;Nv&#39;</span><span class="p">):</span>
         <span class="n">datatype</span> <span class="o">=</span> <span class="s1">&#39;dBZ&#39;</span>
 
     <span class="n">t_filelist</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1204,7 +863,7 @@
                     <span class="n">starttime</span><span class="o">+</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">i</span><span class="p">))</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
                         <span class="n">fpath_strf</span><span class="p">)</span>
                 <span class="n">datapath</span> <span class="o">=</span> <span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span> <span class="o">+</span> <span class="n">daydir</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
-                <span class="n">dayfilelist</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="o">+</span><span class="n">scan</span><span class="o">+</span><span class="s1">&#39;*.h5&#39;</span><span class="p">)</span>
+                <span class="n">dayfilelist</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="o">+</span><span class="n">scan</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">dayinfo</span> <span class="o">=</span> <span class="p">(</span><span class="n">starttime</span><span class="o">+</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">i</span><span class="p">))</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%y%j&#39;</span><span class="p">)</span>
                 <span class="n">basename</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="o">+</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarRes&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span> <span class="o">+</span>
@@ -1227,11 +886,7 @@
                 <span class="k">continue</span>
             <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">dayfilelist</span><span class="p">:</span>
                 <span class="n">t_filelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;CFRADIAL&#39;</span><span class="p">,</span> <span class="s1">&#39;ODIMPYRAD&#39;</span><span class="p">):</span>
-            <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.nc&#39;</span>
-            <span class="k">if</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;ODIMPYRAD&#39;</span><span class="p">:</span>
-                <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.h5&#39;</span>
-
+        <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;CFRADIAL&#39;</span><span class="p">:</span>
             <span class="n">daydir</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">starttime</span><span class="o">+</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">i</span><span class="p">))</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="n">dayinfo</span> <span class="o">=</span> <span class="p">(</span><span class="n">starttime</span><span class="o">+</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">i</span><span class="p">))</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -1241,7 +896,7 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">datapath</span><span class="p">):</span>
                 <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;WARNING: Unknown datapath &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">datapath</span><span class="p">)</span>
                 <span class="k">continue</span>
-            <span class="n">dayfilelist</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="o">+</span><span class="n">datatype</span><span class="o">+</span><span class="n">termination</span><span class="p">)</span>
+            <span class="n">dayfilelist</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="o">+</span><span class="n">datatype</span><span class="o">+</span><span class="s1">&#39;.nc&#39;</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">dayfilelist</span><span class="p">:</span>
                 <span class="n">t_filelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;MXPOL&#39;</span><span class="p">:</span>
@@ -1274,9 +929,8 @@
     <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">t_filelist</span><span class="p">:</span>
         <span class="n">filenamestr</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
         <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">get_datetime</span><span class="p">(</span><span class="n">filenamestr</span><span class="p">,</span> <span class="n">datadescriptor</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">fdatetime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">fdatetime</span> <span class="o">&gt;=</span> <span class="n">starttime</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">fdatetime</span> <span class="o">&lt;=</span> <span class="n">endtime</span><span class="p">):</span>
-                <span class="n">filelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filenamestr</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">fdatetime</span> <span class="o">&gt;=</span> <span class="n">starttime</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">fdatetime</span> <span class="o">&lt;=</span> <span class="n">endtime</span><span class="p">):</span>
+            <span class="n">filelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filenamestr</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">filelist</span><span class="p">)</span></div>
 
@@ -1424,7 +1078,7 @@
             <span class="n">product</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">datagroup</span> <span class="o">=</span> <span class="n">descrfields</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;CFRADIAL&#39;</span><span class="p">,</span> <span class="s1">&#39;ODIMPYRAD&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;CFRADIAL&#39;</span><span class="p">:</span>
                 <span class="n">descrfields2</span> <span class="o">=</span> <span class="n">descrfields</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
                 <span class="n">datatype</span> <span class="o">=</span> <span class="n">descrfields2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="n">dataset</span> <span class="o">=</span> <span class="n">descrfields2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -1447,7 +1101,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">radarnr</span> <span class="o">=</span> <span class="s1">&#39;RADAR001&#39;</span>
         <span class="n">datagroup</span> <span class="o">=</span> <span class="n">descrfields</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;CFRADIAL&#39;</span><span class="p">,</span> <span class="s1">&#39;ODIMPYRAD&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;CFRADIAL&#39;</span><span class="p">:</span>
             <span class="n">descrfields2</span> <span class="o">=</span> <span class="n">descrfields</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
             <span class="n">datatype</span> <span class="o">=</span> <span class="n">descrfields2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">dataset</span> <span class="o">=</span> <span class="n">descrfields2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -1770,7 +1424,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">bfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;RAINBOW&#39;</span><span class="p">,</span> <span class="s1">&#39;CFRADIAL&#39;</span><span class="p">,</span> <span class="s1">&#39;ODIMPYRAD&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;RAINBOW&#39;</span> <span class="ow">or</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;CFRADIAL&#39;</span><span class="p">:</span>
         <span class="n">datetimestr</span> <span class="o">=</span> <span class="n">bfile</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">14</span><span class="p">]</span>
         <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">datetimestr</span><span class="p">,</span> <span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M%S&#39;</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;RAD4ALP&#39;</span><span class="p">:</span>
@@ -1782,54 +1436,25 @@
             <span class="n">datetimestr</span> <span class="o">=</span> <span class="n">bfile</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">12</span><span class="p">]</span>
             <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">datetimestr</span><span class="p">,</span> <span class="s1">&#39;%y%j%H%M&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">find_date_in_file_name</span><span class="p">(</span>
-                <span class="n">bfile</span><span class="p">,</span> <span class="n">date_format</span><span class="o">=</span><span class="n">ftime_format</span><span class="p">[</span><span class="n">ftime_format</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">)</span><span class="o">+</span><span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">fdate_strf</span> <span class="o">=</span> <span class="n">ftime_format</span><span class="p">[</span><span class="n">ftime_format</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">)</span><span class="o">+</span><span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">today</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+            <span class="n">len_datestr</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">today</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">fdate_strf</span><span class="p">))</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">bfile</span><span class="p">)[</span><span class="n">count</span><span class="p">:</span><span class="n">count</span><span class="o">+</span><span class="n">len_datestr</span><span class="p">],</span> <span class="n">fdate_strf</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># No error, stop the loop</span>
+                    <span class="k">break</span>
     <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;MXPOL&#39;</span><span class="p">:</span>
         <span class="n">datetimestr</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;([0-9]</span><span class="si">{8}</span><span class="s2">-[0-9]</span><span class="si">{6}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">bfile</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">datetimestr</span><span class="p">,</span> <span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">-%H%M%S&#39;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;unknown data group&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>
-
-    <span class="k">return</span> <span class="n">fdatetime</span>
-
-
-<span class="k">def</span> <span class="nf">find_date_in_file_name</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">date_format</span><span class="o">=</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M%S&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Find a date with date format defined in date_format in a file name.</span>
-<span class="sd">    If no date is found returns None</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    filename : str</span>
-<span class="sd">        file name</span>
-<span class="sd">    date_format : str</span>
-<span class="sd">        The time format</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    fdatetime : datetime object</span>
-<span class="sd">        date and time in file name</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">today</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
-    <span class="n">len_datestr</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">today</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">date_format</span><span class="p">))</span>
-    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">bfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span>
-                <span class="n">bfile</span><span class="p">[</span><span class="n">count</span><span class="p">:</span><span class="n">count</span><span class="o">+</span><span class="n">len_datestr</span><span class="p">],</span> <span class="n">date_format</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="n">count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">+</span> <span class="mi">1</span>
-            <span class="k">if</span> <span class="n">count</span><span class="o">+</span><span class="n">len_datestr</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bfile</span><span class="p">):</span>
-                <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to find date from string name. &#39;</span> <span class="o">+</span>
-                     <span class="s1">&#39;date format &#39;</span><span class="o">+</span><span class="n">date_format</span><span class="o">+</span><span class="s1">&#39;. File name &#39;</span> <span class="o">+</span>
-                     <span class="n">bfile</span><span class="p">)</span>
-                <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># No error, stop the loop</span>
-            <span class="k">break</span>
 
     <span class="k">return</span> <span class="n">fdatetime</span>
 </pre></div>
@@ -1854,7 +1479,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, meteoswiss-mdr.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
     </div>
   </body>
 </html>

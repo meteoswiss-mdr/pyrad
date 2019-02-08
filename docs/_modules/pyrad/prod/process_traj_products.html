@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
@@ -69,7 +68,6 @@
 
 <span class="kn">from</span> <span class="nn">..io.io_aux</span> <span class="k">import</span> <span class="n">get_save_dir</span><span class="p">,</span> <span class="n">make_filename</span>
 <span class="kn">from</span> <span class="nn">..io.timeseries</span> <span class="k">import</span> <span class="n">TimeSeries</span>
-<span class="kn">from</span> <span class="nn">..graph.plots_vol</span> <span class="k">import</span> <span class="n">plot_pos</span>
 
 
 <div class="viewcode-block" id="generate_traj_product"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.generate_traj_product">[docs]</a><span class="k">def</span> <span class="nf">generate_traj_product</span><span class="p">(</span><span class="n">traj</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
@@ -179,40 +177,6 @@
 
         <span class="k">return</span> <span class="kc">None</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;TRAJ_MAP&#39;</span><span class="p">:</span> <span class="c1">#Trajectory on a map</span>
-    
-        <span class="n">timeinfo</span> <span class="o">=</span> <span class="n">traj</span><span class="o">.</span><span class="n">time_vector</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="n">savedir</span> <span class="o">=</span> <span class="n">get_save_dir</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;basepath&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;procname&#39;</span><span class="p">],</span>
-                               <span class="n">dssavedir</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;prdname&#39;</span><span class="p">],</span>
-                               <span class="n">timeinfo</span><span class="o">=</span><span class="n">timeinfo</span><span class="p">)</span>
-
-        
-        <span class="n">fname</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span><span class="s1">&#39;ts&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="s1">&#39;TRAJ&#39;</span><span class="p">,</span>
-                                  <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span>
-                                  <span class="n">prdcfginfo</span><span class="o">=</span><span class="s2">&quot;MAP&quot;</span><span class="p">,</span> <span class="n">timeinfo</span><span class="o">=</span><span class="n">timeinfo</span><span class="p">,</span>
-                                  <span class="n">timeformat</span><span class="o">=</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M%S&#39;</span><span class="p">,</span>
-                                  <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
-
-        <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Trajectory Starting at  </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> \
-                <span class="n">traj</span><span class="o">.</span><span class="n">time_vector</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="n">fname_list</span><span class="o">=</span><span class="n">fname</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
-            <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
-
-        <span class="c1"># Get traj</span>
-        <span class="n">lat</span><span class="o">=</span><span class="n">traj</span><span class="o">.</span><span class="n">wgs84_lat_deg</span>
-        <span class="n">lon</span><span class="o">=</span><span class="n">traj</span><span class="o">.</span><span class="n">wgs84_lon_deg</span>
-        <span class="n">alt</span><span class="o">=</span><span class="n">traj</span><span class="o">.</span><span class="n">wgs84_alt_m</span>
-
-        <span class="n">fig</span><span class="o">=</span><span class="n">plot_pos</span><span class="p">(</span>
-            <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span>
-            <span class="n">alt</span><span class="p">,</span>
-            <span class="n">fname_list</span><span class="p">,</span><span class="n">cb_label</span><span class="o">=</span><span class="s1">&#39;Altitude [m]&#39;</span><span class="p">,</span>
-            <span class="n">titl</span><span class="o">=</span><span class="n">title</span><span class="p">,</span><span class="n">save_fig</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ERROR: Unsupported product type: &#39;</span><span class="si">%s</span><span class="s2">&#39; of dataset &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span>
                         <span class="o">%</span> <span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dsname&#39;</span><span class="p">]))</span></div>
@@ -238,7 +202,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, meteoswiss-mdr.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
     </div>
   </body>
 </html>
