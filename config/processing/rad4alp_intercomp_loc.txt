@@ -23,8 +23,6 @@ RadarRes STRARR 5
     L
     L
 
-path_convention STRING RT
-
 # Repetition time of the scans [min]
 ScanPeriod INT 5
   
