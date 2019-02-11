@@ -75,7 +75,9 @@ def get_data(voltime, datatypesdescr, cfg):
             'DEM': Visibility data saved in Rainbow file format
 
             'RAD4ALP': METRANET format used for the operational MeteoSwiss
-                data
+                data. To find out which datatype to use to match a particular
+                METRANET field name check the function 'get_datatype_metranet'
+                in pyrad/io/io_aux.py
             'RAD4ALPCOSMO': COSMO model data saved in a binary file format.
                 Used by operational MeteoSwiss radars
             'RAD4ALPDEM': Visibility data saved in a binary format used by
@@ -87,7 +89,9 @@ def get_data(voltime, datatypesdescr, cfg):
 
             'ODIM': Generic ODIM file format. For such types 'dataset'
                 specifies the directory and file name date convention.
-                Example: ODIM:dBZ,D{%Y-%m-%d}-F{%Y%m%d%H%M%S}
+                Example: ODIM:dBZ,D{%Y-%m-%d}-F{%Y%m%d%H%M%S}. To find out
+                which datatype to use to match a particular ODIM field name
+                check the function 'get_datatype_odim' in pyrad/io/io_aux.py
 
             'MXPOL': MXPOL (EPFL) data written in a netcdf file
 
@@ -109,7 +113,7 @@ def get_data(voltime, datatypesdescr, cfg):
         'CFRADIAL' and 'ODIMPYRAD' are secondary data file sources and they
         can be combined with any other datagroup type.
         For a list of accepted datatypes and how they map to the Py-ART name
-        convention check function get_field_name in pyrad/io/io_aux.py
+        convention check function 'get_field_name_pyart' in pyrad/io/io_aux.py
     cfg: dictionary of dictionaries
         configuration info to figure out where the data is
 

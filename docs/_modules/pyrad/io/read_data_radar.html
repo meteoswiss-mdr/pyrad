@@ -131,7 +131,9 @@
 <span class="sd">            &#39;DEM&#39;: Visibility data saved in Rainbow file format</span>
 
 <span class="sd">            &#39;RAD4ALP&#39;: METRANET format used for the operational MeteoSwiss</span>
-<span class="sd">                data</span>
+<span class="sd">                data. To find out which datatype to use to match a particular</span>
+<span class="sd">                METRANET field name check the function &#39;get_datatype_metranet&#39;</span>
+<span class="sd">                in pyrad/io/io_aux.py</span>
 <span class="sd">            &#39;RAD4ALPCOSMO&#39;: COSMO model data saved in a binary file format.</span>
 <span class="sd">                Used by operational MeteoSwiss radars</span>
 <span class="sd">            &#39;RAD4ALPDEM&#39;: Visibility data saved in a binary format used by</span>
@@ -143,7 +145,9 @@
 
 <span class="sd">            &#39;ODIM&#39;: Generic ODIM file format. For such types &#39;dataset&#39;</span>
 <span class="sd">                specifies the directory and file name date convention.</span>
-<span class="sd">                Example: ODIM:dBZ,D{%Y-%m-%d}-F{%Y%m%d%H%M%S}</span>
+<span class="sd">                Example: ODIM:dBZ,D{%Y-%m-%d}-F{%Y%m%d%H%M%S}. To find out</span>
+<span class="sd">                which datatype to use to match a particular ODIM field name</span>
+<span class="sd">                check the function &#39;get_datatype_odim&#39; in pyrad/io/io_aux.py</span>
 
 <span class="sd">            &#39;MXPOL&#39;: MXPOL (EPFL) data written in a netcdf file</span>
 
@@ -165,7 +169,7 @@
 <span class="sd">        &#39;CFRADIAL&#39; and &#39;ODIMPYRAD&#39; are secondary data file sources and they</span>
 <span class="sd">        can be combined with any other datagroup type.</span>
 <span class="sd">        For a list of accepted datatypes and how they map to the Py-ART name</span>
-<span class="sd">        convention check function get_field_name in pyrad/io/io_aux.py</span>
+<span class="sd">        convention check function &#39;get_field_name_pyart&#39; in pyrad/io/io_aux.py</span>
 <span class="sd">    cfg: dictionary of dictionaries</span>
 <span class="sd">        configuration info to figure out where the data is</span>
 
