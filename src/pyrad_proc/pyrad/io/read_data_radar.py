@@ -64,7 +64,52 @@ def get_data(voltime, datatypesdescr, cfg):
         volume scan time
     datatypesdescr : list
         list of radar field types to read.
-        Format : [radar file type]:[datatype]
+        Format : [radarnr]:[datagroup]:[datatype],[dataset],[product]
+        'dataset' is only specified for data groups 'ODIM',
+        'CFRADIAL' and 'ODIMPYRAD'. 'product' is only specified for data
+        groups 'CFRADIAL' and 'ODIMPYRAD'
+        The data group specifies the type file from which data is extracted.
+        It can be:
+            'RAINBOW': Propietary Leonardo format
+            'COSMO': COSMO model data saved in Rainbow file format
+            'DEM': Visibility data saved in Rainbow file format
+
+            'RAD4ALP': METRANET format used for the operational MeteoSwiss
+                data
+            'RAD4ALPCOSMO': COSMO model data saved in a binary file format.
+                Used by operational MeteoSwiss radars
+            'RAD4ALPDEM': Visibility data saved in a binary format used by
+                operational MeteoSwiss radars
+            'RAD4ALPHYDRO': Used to read the MeteoSwiss operational
+                hydrometeor classification
+            'RAD4ALPDOPPLER': Used to read the MeteoSwiss operational
+                dealiased Doppler velocity
+
+            'ODIM': Generic ODIM file format. For such types 'dataset'
+                specifies the directory and file name date convention.
+                Example: ODIM:dBZ,D{%Y-%m-%d}-F{%Y%m%d%H%M%S}
+
+            'MXPOL': MXPOL (EPFL) data written in a netcdf file
+
+            'CFRADIAL': CFRadial format with the naming convention and
+                directory structure in which Pyrad saves the data. For such
+                datatypes 'dataset' specifies the directory where the dataset
+                is stored and 'product' specifies the directroy where the
+                product is stored.
+                Example: CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
+            'ODIMPYRAD': ODIM file format with the naming convention and
+                directory structure in which Pyrad saves the data.  For such
+                datatypes 'dataset' specifies the directory where the dataset
+                is stored and 'product' specifies the directroy where the
+                product is stored.
+                Example: ODIMPYRAD:dBZc,Att_ZPhi,SAVEVOL_dBZc
+        'RAINBOW', 'RAD4ALP', 'ODIM' and 'MXPOL' are primary data file sources
+        and they cannot be mixed for the same radar. It is also the case for
+        their complementary data files, i.e. 'COSMO' and 'RAD4ALPCOSMO', etc.
+        'CFRADIAL' and 'ODIMPYRAD' are secondary data file sources and they
+        can be combined with any other datagroup type.
+        For a list of accepted datatypes and how they map to the Py-ART name
+        convention check function get_field_name in pyrad/io/io_aux.py
     cfg: dictionary of dictionaries
         configuration info to figure out where the data is
 
