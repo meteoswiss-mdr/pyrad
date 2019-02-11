@@ -98,7 +98,15 @@
 
 <div class="viewcode-block" id="generate_occurrence_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.generate_occurrence_products">[docs]</a><span class="k">def</span> <span class="nf">generate_occurrence_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    generates occurrence products</span>
+<span class="sd">    generates occurrence products. Accepted product types:</span>
+<span class="sd">        &#39;WRITE_EXCESS_GATES&#39;: Write the data that identifies radar gates</span>
+<span class="sd">            with clutter that has a frequency of occurrence above a certain</span>
+<span class="sd">            threshold.</span>
+<span class="sd">            User defined parameters:</span>
+<span class="sd">                quant_min: float</span>
+<span class="sd">                    Minimum frequency of occurrence in percentage to keep the</span>
+<span class="sd">                    gate as valid. Default 95.</span>
+<span class="sd">        All the products of the &#39;VOL&#39; dataset group</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -182,20 +190,22 @@
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;saved excess gates file: &#39;</span><span class="o">+</span><span class="n">fname</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">fname</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
-        <span class="k">if</span> <span class="p">((</span><span class="n">field_name</span> <span class="o">==</span> <span class="s1">&#39;frequency_of_occurrence&#39;</span><span class="p">)</span> <span class="ow">and</span>
-                <span class="p">(</span><span class="ow">not</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;occu_final&#39;</span><span class="p">])):</span>
-            <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;occu_final&#39;</span><span class="p">]:</span>
-            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;endtime&#39;</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">generate_vol_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">)</span></div>
+    <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="p">((</span><span class="n">field_name</span> <span class="o">==</span> <span class="s1">&#39;frequency_of_occurrence&#39;</span><span class="p">)</span> <span class="ow">and</span>
+            <span class="p">(</span><span class="ow">not</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;occu_final&#39;</span><span class="p">])):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;occu_final&#39;</span><span class="p">]:</span>
+        <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;endtime&#39;</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">generate_vol_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="generate_cosmo_coord_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.generate_cosmo_coord_products">[docs]</a><span class="k">def</span> <span class="nf">generate_cosmo_coord_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    generates COSMO coordinates products</span>
+<span class="sd">    generates COSMO coordinates products. Accepted product types:</span>
+<span class="sd">        &#39;SAVEVOL&#39;: Save an object containing the index of the COSMO model grid</span>
+<span class="sd">            that corresponds to each radar gate in a C/F radial file.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -235,14 +245,33 @@
 
         <span class="k">return</span> <span class="n">fname</span>
 
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39; Unsupported product type: &#39;</span> <span class="o">+</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="kc">None</span></div>
+    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39; Unsupported product type: &#39;</span> <span class="o">+</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="generate_sun_hits_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.generate_sun_hits_products">[docs]</a><span class="k">def</span> <span class="nf">generate_sun_hits_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    generates sun hits products</span>
+<span class="sd">    generates sun hits products. Accepted product types:</span>
+<span class="sd">        &#39;PLOT_SUN_HITS&#39;: Plots in a sun-radar azimuth difference-sun-radar</span>
+<span class="sd">            elevation difference grid the values of all sun hits obtained</span>
+<span class="sd">            during the processing period</span>
+<span class="sd">        &#39;PLOT_SUN_RETRIEVAL&#39;: Plots in a sun-radar azimuth difference-sun-</span>
+<span class="sd">            radar elevation difference grid the retrieved sun pattern</span>
+<span class="sd">        &#39;PLOT_SUN_RETRIEVAL_TS&#39;: Plots time series of the retrieved sun</span>
+<span class="sd">            pattern parameters</span>
+<span class="sd">            User defined parameters:</span>
+<span class="sd">                dpi: int</span>
+<span class="sd">                    The pixel density of the plot. Default 72</span>
+<span class="sd">                add_date_in_fname: Bool</span>
+<span class="sd">                    If true the year is added in the plot file name</span>
+<span class="sd">        &#39;WRITE_SUN_HITS&#39;: Writes the information concerning possible sun hits</span>
+<span class="sd">            in a csv file</span>
+<span class="sd">        &#39;WRITE_SUN_RETRIEVAL&#39;: Writes the retrieved sun pattern parameters in</span>
+<span class="sd">            a csv file.</span>
+<span class="sd">            User defined parameters:</span>
+<span class="sd">                add_date_in_fname: Bool</span>
+<span class="sd">                    If true the year is added in the csv file name</span>
+<span class="sd">        All the products of the &#39;VOL&#39; dataset group</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -285,7 +314,7 @@
 
         <span class="k">return</span> <span class="n">fname</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PLOT_SUN_HITS&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PLOT_SUN_HITS&#39;</span><span class="p">:</span>
         <span class="k">if</span> <span class="s1">&#39;sun_hits_final&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
@@ -330,16 +359,15 @@
 
         <span class="k">return</span> <span class="n">fname_list</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;WRITE_SUN_RETRIEVAL&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;WRITE_SUN_RETRIEVAL&#39;</span><span class="p">:</span>
         <span class="k">if</span> <span class="s1">&#39;sun_retrieval&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="n">timeinfo</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">timeformat</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="s1">&#39;add_date_in_fname&#39;</span> <span class="ow">in</span> <span class="n">prdcfg</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;add_date_in_fname&#39;</span><span class="p">]:</span>
-                <span class="n">timeinfo</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">]</span>
-                <span class="n">timeformat</span> <span class="o">=</span> <span class="s1">&#39;%Y&#39;</span>
+        <span class="k">if</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;add_date_in_fname&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">timeinfo</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">]</span>
+            <span class="n">timeformat</span> <span class="o">=</span> <span class="s1">&#39;%Y&#39;</span>
 
         <span class="n">savedir</span> <span class="o">=</span> <span class="n">get_save_dir</span><span class="p">(</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;basepath&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;procname&#39;</span><span class="p">],</span> <span class="n">dssavedir</span><span class="p">,</span>
@@ -357,7 +385,7 @@
 
         <span class="k">return</span> <span class="n">fname</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PLOT_SUN_RETRIEVAL&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PLOT_SUN_RETRIEVAL&#39;</span><span class="p">:</span>
         <span class="k">if</span> <span class="s1">&#39;sun_retrieval&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
@@ -406,20 +434,16 @@
 
         <span class="k">return</span> <span class="n">fname_list</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PLOT_SUN_RETRIEVAL_TS&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PLOT_SUN_RETRIEVAL_TS&#39;</span><span class="p">:</span>
         <span class="k">if</span> <span class="s1">&#39;sun_retrieval&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
-        <span class="n">dpi</span> <span class="o">=</span> <span class="mi">72</span>
-        <span class="k">if</span> <span class="s1">&#39;dpi&#39;</span> <span class="ow">in</span> <span class="n">prdcfg</span><span class="p">:</span>
-            <span class="n">dpi</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dpi&#39;</span><span class="p">]</span>
-
+        <span class="n">dpi</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dpi&#39;</span><span class="p">,</span> <span class="mi">72</span><span class="p">)</span>
         <span class="n">timeinfo</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">timeformat</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="s1">&#39;add_date_in_fname&#39;</span> <span class="ow">in</span> <span class="n">prdcfg</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;add_date_in_fname&#39;</span><span class="p">]:</span>
-                <span class="n">timeinfo</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">]</span>
-                <span class="n">timeformat</span> <span class="o">=</span> <span class="s1">&#39;%Y&#39;</span>
+        <span class="k">if</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;add_date_in_fname&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">timeinfo</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">]</span>
+            <span class="n">timeformat</span> <span class="o">=</span> <span class="s1">&#39;%Y&#39;</span>
 
         <span class="n">savedir</span> <span class="o">=</span> <span class="n">get_save_dir</span><span class="p">(</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;basepath&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;procname&#39;</span><span class="p">],</span> <span class="n">dssavedir</span><span class="p">,</span>
@@ -468,15 +492,21 @@
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----- save to &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fname_list</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">fname_list</span>
 
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="s1">&#39;radar_out&#39;</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">generate_vol_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">)</span></div>
+    <span class="k">if</span> <span class="s1">&#39;radar_out&#39;</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">generate_vol_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="generate_qvp_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.generate_qvp_products">[docs]</a><span class="k">def</span> <span class="nf">generate_qvp_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Generates quasi vertical profile products. Quasi vertical profiles</span>
-<span class="sd">    come from azimuthal averaging of polarimetric radar data.</span>
+<span class="sd">    Generates quasi vertical profile-like products. Quasi vertical profiles</span>
+<span class="sd">    come from azimuthal averaging of polarimetric radar data. With the</span>
+<span class="sd">    variable &#39;qvp_type&#39; the user decides if the product has to be generated</span>
+<span class="sd">    at the end of the processing period (&#39;final&#39;) or instantaneously</span>
+<span class="sd">    (&#39;instant&#39;)</span>
+<span class="sd">    Accepted product types:</span>
+<span class="sd">        All the products of the &#39;VOL&#39; dataset group</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -506,7 +536,17 @@
 
 <div class="viewcode-block" id="generate_ml_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.generate_ml_products">[docs]</a><span class="k">def</span> <span class="nf">generate_ml_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Generates melting layer products.</span>
+<span class="sd">    Generates melting layer products. Accepted product types:</span>
+<span class="sd">        &#39;ML_TS&#39;: Plots and writes a time series of the melting layer, i.e.</span>
+<span class="sd">            the evolution of the average and standard deviation of the melting</span>
+<span class="sd">            layer top and thickness and the the number of rays used in the</span>
+<span class="sd">            retrieval.</span>
+<span class="sd">            User defined parameters:</span>
+<span class="sd">                dpi: int</span>
+<span class="sd">                    The pixel density of the plot. Default 72</span>
+<span class="sd">        &#39;SAVE_ML&#39;: Saves an object containing the melting layer retrieval</span>
+<span class="sd">            information in a C/F radial file</span>
+<span class="sd">        All the products of the &#39;VOL&#39; dataset group</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -583,7 +623,8 @@
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----- save to &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">figfname_list</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">figfname_list</span>
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;SAVE_ML&#39;</span><span class="p">:</span>
+
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;SAVE_ML&#39;</span><span class="p">:</span>
         <span class="n">savedir</span> <span class="o">=</span> <span class="n">get_save_dir</span><span class="p">(</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;basepath&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;procname&#39;</span><span class="p">],</span> <span class="n">dssavedir</span><span class="p">,</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;prdname&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
@@ -597,8 +638,8 @@
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;saved file: &#39;</span><span class="o">+</span><span class="n">fname</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">fname</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">generate_vol_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">)</span></div>
+
+    <span class="k">return</span> <span class="n">generate_vol_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">)</span></div>
 </pre></div>
 
           </div>

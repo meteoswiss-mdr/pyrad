@@ -63,6 +63,7 @@
 <span class="sd">.. autosummary::</span>
 <span class="sd">    :toctree: generated/</span>
 
+<span class="sd">    generate_sparse_grid_products</span>
 <span class="sd">    generate_grid_products</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
@@ -78,12 +79,17 @@
 <span class="kn">from</span> <span class="nn">..graph.plots_grid</span> <span class="k">import</span> <span class="n">plot_longitude_slice</span><span class="p">,</span> <span class="n">plot_latitude_slice</span>
 <span class="kn">from</span> <span class="nn">..graph.plots_grid</span> <span class="k">import</span> <span class="n">plot_latlon_slice</span>
 <span class="kn">from</span> <span class="nn">..graph.plots_vol</span> <span class="k">import</span> <span class="n">plot_pos</span>
-<span class="kn">from</span> <span class="nn">..graph.plots_aux</span> <span class="k">import</span> <span class="n">get_colobar_label</span><span class="p">,</span> <span class="n">get_field_name</span><span class="p">,</span> <span class="n">get_norm</span>
+<span class="kn">from</span> <span class="nn">..graph.plots_aux</span> <span class="k">import</span> <span class="n">get_colobar_label</span><span class="p">,</span> <span class="n">get_field_name</span>
 
 
 <span class="k">def</span> <span class="nf">generate_sparse_grid_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    generates products defined by sparse points</span>
+<span class="sd">    generates products defined by sparse points. Accepted product types:</span>
+<span class="sd">        &#39;SURFACE_IMAGE&#39;: Generates a surface image</span>
+<span class="sd">            User defined parameters:</span>
+<span class="sd">                &#39;field_limits&#39;: list of floats</span>
+<span class="sd">                    The limits of the surface to plot [deg]</span>
+<span class="sd">                    lon0, lon1, lat0, lat1</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -124,8 +130,8 @@
         <span class="n">cb_label</span> <span class="o">=</span> <span class="n">get_colobar_label</span><span class="p">(</span>
             <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;fields&#39;</span><span class="p">][</span><span class="n">field_name</span><span class="p">],</span> <span class="n">field_name</span><span class="p">)</span>
 
-        <span class="n">titl</span><span class="o">=</span> <span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">T%H:%M%SZ&#39;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
-               <span class="n">get_field_name</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;fields&#39;</span><span class="p">][</span><span class="n">field_name</span><span class="p">],</span> <span class="n">field_name</span><span class="p">))</span>
+        <span class="n">titl</span> <span class="o">=</span> <span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">T%H:%M%SZ&#39;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+                <span class="n">get_field_name</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;fields&#39;</span><span class="p">][</span><span class="n">field_name</span><span class="p">],</span> <span class="n">field_name</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="s1">&#39;field_limits&#39;</span> <span class="ow">in</span> <span class="n">prdcfg</span><span class="p">:</span>
             <span class="n">field_limits</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;field_limits&#39;</span><span class="p">]</span>
@@ -145,9 +151,40 @@
 
         <span class="k">return</span> <span class="n">fname_list</span>
 
+    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39; Unsupported product type: &#39;</span> <span class="o">+</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
 <div class="viewcode-block" id="generate_grid_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.generate_grid_products">[docs]</a><span class="k">def</span> <span class="nf">generate_grid_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    generates grid products</span>
+<span class="sd">    generates grid products. Accepted product types:</span>
+<span class="sd">        &#39;CROSS_SECTION&#39;: Plots a cross-section of gridded data</span>
+<span class="sd">            User defined parameters:</span>
+<span class="sd">                coord1, coord2: dict</span>
+<span class="sd">                    The two lat-lon coordinates marking the limits. They have</span>
+<span class="sd">                    the keywords &#39;lat&#39; and &#39;lon&#39; [degree]. The altitude limits</span>
+<span class="sd">                    are defined by the parameters in &#39;rhiImageConfig&#39; in the</span>
+<span class="sd">                    &#39;loc&#39; configuration file</span>
+<span class="sd">        &#39;LATITUDE_SLICE&#39;: Plots a cross-section of gridded data over a</span>
+<span class="sd">            constant latitude.</span>
+<span class="sd">            User defined parameters:</span>
+<span class="sd">                lon, lat: floats</span>
+<span class="sd">                    The starting point of the cross-section. The ending point</span>
+<span class="sd">                    is defined by the parameters in &#39;rhiImageConfig&#39; in the</span>
+<span class="sd">                    &#39;loc&#39; configuration file</span>
+<span class="sd">        &#39;LONGITUDE_SLICE&#39;: Plots a cross-ection of gridded data over a</span>
+<span class="sd">            constant longitude.</span>
+<span class="sd">            User defined parameters:</span>
+<span class="sd">                lon, lat: floats</span>
+<span class="sd">                    The starting point of the cross-section. The ending point</span>
+<span class="sd">                    is defined by the parameters in &#39;rhiImageConfig&#39; in the</span>
+<span class="sd">                    &#39;loc&#39; configuration file</span>
+<span class="sd">        &#39;SAVEVOL&#39;: save the gridded data in a C/F radial file</span>
+<span class="sd">        &#39;SURFACE_IMAGE&#39;: Plots a surface image of gridded data.</span>
+<span class="sd">            User defined parameters:</span>
+<span class="sd">                level: int</span>
+<span class="sd">                    The altitude level to plot. The rest of the parameters are</span>
+<span class="sd">                    defined by the parameters in &#39;ppiImageConfig&#39; and</span>
+<span class="sd">                    &#39;ppiMapImageConfig&#39; in the &#39;loc&#39; configuration file</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -159,7 +196,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    no return</span>
+<span class="sd">    None or name of generated files</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -199,7 +236,7 @@
 
         <span class="k">return</span> <span class="n">fname_list</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;LATITUDE_SLICE&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;LATITUDE_SLICE&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -234,7 +271,7 @@
 
         <span class="k">return</span> <span class="n">fname_list</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;LONGITUDE_SLICE&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;LONGITUDE_SLICE&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -270,7 +307,7 @@
 
         <span class="k">return</span> <span class="n">fname_list</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;CROSS_SECTION&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;CROSS_SECTION&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -321,7 +358,7 @@
 
         <span class="k">return</span> <span class="n">fname_list</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;SAVEVOL&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;SAVEVOL&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -346,9 +383,8 @@
 
         <span class="k">return</span> <span class="n">fname</span>
 
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39; Unsupported product type: &#39;</span> <span class="o">+</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="kc">None</span></div>
+    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39; Unsupported product type: &#39;</span> <span class="o">+</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
 </pre></div>
 
           </div>
