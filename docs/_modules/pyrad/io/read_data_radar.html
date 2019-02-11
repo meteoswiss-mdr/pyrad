@@ -120,7 +120,52 @@
 <span class="sd">        volume scan time</span>
 <span class="sd">    datatypesdescr : list</span>
 <span class="sd">        list of radar field types to read.</span>
-<span class="sd">        Format : [radar file type]:[datatype]</span>
+<span class="sd">        Format : [radarnr]:[datagroup]:[datatype],[dataset],[product]</span>
+<span class="sd">        &#39;dataset&#39; is only specified for data groups &#39;ODIM&#39;,</span>
+<span class="sd">        &#39;CFRADIAL&#39; and &#39;ODIMPYRAD&#39;. &#39;product&#39; is only specified for data</span>
+<span class="sd">        groups &#39;CFRADIAL&#39; and &#39;ODIMPYRAD&#39;</span>
+<span class="sd">        The data group specifies the type file from which data is extracted.</span>
+<span class="sd">        It can be:</span>
+<span class="sd">            &#39;RAINBOW&#39;: Propietary Leonardo format</span>
+<span class="sd">            &#39;COSMO&#39;: COSMO model data saved in Rainbow file format</span>
+<span class="sd">            &#39;DEM&#39;: Visibility data saved in Rainbow file format</span>
+
+<span class="sd">            &#39;RAD4ALP&#39;: METRANET format used for the operational MeteoSwiss</span>
+<span class="sd">                data</span>
+<span class="sd">            &#39;RAD4ALPCOSMO&#39;: COSMO model data saved in a binary file format.</span>
+<span class="sd">                Used by operational MeteoSwiss radars</span>
+<span class="sd">            &#39;RAD4ALPDEM&#39;: Visibility data saved in a binary format used by</span>
+<span class="sd">                operational MeteoSwiss radars</span>
+<span class="sd">            &#39;RAD4ALPHYDRO&#39;: Used to read the MeteoSwiss operational</span>
+<span class="sd">                hydrometeor classification</span>
+<span class="sd">            &#39;RAD4ALPDOPPLER&#39;: Used to read the MeteoSwiss operational</span>
+<span class="sd">                dealiased Doppler velocity</span>
+
+<span class="sd">            &#39;ODIM&#39;: Generic ODIM file format. For such types &#39;dataset&#39;</span>
+<span class="sd">                specifies the directory and file name date convention.</span>
+<span class="sd">                Example: ODIM:dBZ,D{%Y-%m-%d}-F{%Y%m%d%H%M%S}</span>
+
+<span class="sd">            &#39;MXPOL&#39;: MXPOL (EPFL) data written in a netcdf file</span>
+
+<span class="sd">            &#39;CFRADIAL&#39;: CFRadial format with the naming convention and</span>
+<span class="sd">                directory structure in which Pyrad saves the data. For such</span>
+<span class="sd">                datatypes &#39;dataset&#39; specifies the directory where the dataset</span>
+<span class="sd">                is stored and &#39;product&#39; specifies the directroy where the</span>
+<span class="sd">                product is stored.</span>
+<span class="sd">                Example: CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc</span>
+<span class="sd">            &#39;ODIMPYRAD&#39;: ODIM file format with the naming convention and</span>
+<span class="sd">                directory structure in which Pyrad saves the data.  For such</span>
+<span class="sd">                datatypes &#39;dataset&#39; specifies the directory where the dataset</span>
+<span class="sd">                is stored and &#39;product&#39; specifies the directroy where the</span>
+<span class="sd">                product is stored.</span>
+<span class="sd">                Example: ODIMPYRAD:dBZc,Att_ZPhi,SAVEVOL_dBZc</span>
+<span class="sd">        &#39;RAINBOW&#39;, &#39;RAD4ALP&#39;, &#39;ODIM&#39; and &#39;MXPOL&#39; are primary data file sources</span>
+<span class="sd">        and they cannot be mixed for the same radar. It is also the case for</span>
+<span class="sd">        their complementary data files, i.e. &#39;COSMO&#39; and &#39;RAD4ALPCOSMO&#39;, etc.</span>
+<span class="sd">        &#39;CFRADIAL&#39; and &#39;ODIMPYRAD&#39; are secondary data file sources and they</span>
+<span class="sd">        can be combined with any other datagroup type.</span>
+<span class="sd">        For a list of accepted datatypes and how they map to the Py-ART name</span>
+<span class="sd">        convention check function get_field_name in pyrad/io/io_aux.py</span>
 <span class="sd">    cfg: dictionary of dictionaries</span>
 <span class="sd">        configuration info to figure out where the data is</span>
 
