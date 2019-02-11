@@ -14,6 +14,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
@@ -150,7 +151,7 @@
 
         <span class="k">return</span> <span class="n">fname_list</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PSEUDOPPI_IMAGE&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PSEUDOPPI_IMAGE&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -283,7 +284,7 @@
 
         <span class="k">return</span> <span class="n">fname_list</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PSEUDOPPI_CONTOUR_OVERPLOT&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PSEUDOPPI_CONTOUR_OVERPLOT&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -377,7 +378,7 @@
 
         <span class="k">return</span> <span class="n">fname_list</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PSEUDOPPI_CONTOUR&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PSEUDOPPI_CONTOUR&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -419,7 +420,7 @@
 
             <span class="k">return</span> <span class="kc">None</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;RHI_IMAGE&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;RHI_IMAGE&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -455,7 +456,7 @@
 
         <span class="k">return</span> <span class="n">fname_list</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PSEUDORHI_IMAGE&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PSEUDORHI_IMAGE&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -498,7 +499,7 @@
                 <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
             <span class="k">return</span> <span class="kc">None</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;RHI_CONTOUR_OVERPLOT&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;RHI_CONTOUR_OVERPLOT&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -550,7 +551,7 @@
 
         <span class="k">return</span> <span class="n">fname_list</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PSEUDORHI_CONTOUR_OVERPLOT&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PSEUDORHI_CONTOUR_OVERPLOT&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -609,7 +610,7 @@
                 <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
             <span class="k">return</span> <span class="kc">None</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;RHI_CONTOUR&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;RHI_CONTOUR&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -644,7 +645,7 @@
 
         <span class="k">return</span> <span class="n">fname_list</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PSEUDORHI_CONTOUR&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PSEUDORHI_CONTOUR&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -686,7 +687,7 @@
                 <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
             <span class="k">return</span> <span class="kc">None</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;RHI_PROFILE&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;RHI_PROFILE&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -834,7 +835,7 @@
 
         <span class="k">return</span> <span class="n">fname</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PROFILE_STATS&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PROFILE_STATS&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -846,7 +847,7 @@
         <span class="c1"># mask unclassified data</span>
         <span class="n">field</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;hydro&#39;</span><span class="p">:</span>
-            <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># user defined parameters</span>
         <span class="n">heightResolution</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;heightResolution&#39;</span><span class="p">,</span> <span class="mf">100.</span><span class="p">)</span>
@@ -962,7 +963,7 @@
 
         <span class="k">return</span> <span class="n">fname</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;WIND_PROFILE&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;WIND_PROFILE&#39;</span><span class="p">:</span>
         <span class="c1"># user defined parameters</span>
         <span class="n">heightResolution</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;heightResolution&#39;</span><span class="p">,</span> <span class="mf">100.</span><span class="p">)</span>
         <span class="n">hmin_user</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;heightMin&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -1287,7 +1288,7 @@
 
         <span class="k">return</span> <span class="n">fname</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PSEUDOPPI_MAP&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PSEUDOPPI_MAP&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -1326,7 +1327,7 @@
 
             <span class="k">return</span> <span class="kc">None</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;CAPPI_IMAGE&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;CAPPI_IMAGE&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -1355,7 +1356,7 @@
 
         <span class="k">return</span> <span class="n">fname_list</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PLOT_ALONG_COORD&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PLOT_ALONG_COORD&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -1623,7 +1624,7 @@
 
         <span class="k">return</span> <span class="n">fname_list</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;BSCOPE_IMAGE&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;BSCOPE_IMAGE&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -1656,7 +1657,7 @@
 
         <span class="k">return</span> <span class="n">fname_list</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;TIME_RANGE&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;TIME_RANGE&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -1689,7 +1690,7 @@
 
         <span class="k">return</span> <span class="n">fname_list</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;HISTOGRAM&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;HISTOGRAM&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -1746,7 +1747,7 @@
 
         <span class="k">return</span> <span class="n">fname_list</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;QUANTILES&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;QUANTILES&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -1758,7 +1759,7 @@
         <span class="c1"># mask unclassified data</span>
         <span class="n">field</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;hydro&#39;</span><span class="p">:</span>
-            <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># user defined variables</span>
         <span class="n">quantiles</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;quantiles&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -1816,7 +1817,7 @@
 
         <span class="k">return</span> <span class="n">fname_list</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;FIELD_COVERAGE&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;FIELD_COVERAGE&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -1976,7 +1977,7 @@
 
         <span class="k">return</span> <span class="n">fname</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;CDF&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;CDF&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -2161,7 +2162,7 @@
 
         <span class="k">return</span> <span class="n">fname</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;SAVEVOL&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;SAVEVOL&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span>
@@ -2169,6 +2170,11 @@
                 <span class="s1">&#39; not available in data set. Skipping product &#39;</span> <span class="o">+</span>
                 <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
             <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">file_type</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;file_type&#39;</span><span class="p">,</span> <span class="s1">&#39;nc&#39;</span><span class="p">)</span>
+        <span class="n">physical</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;physical&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">compression</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;compression&#39;</span><span class="p">,</span> <span class="s1">&#39;gzip&#39;</span><span class="p">)</span>
+        <span class="n">compression_opts</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;compression_opts&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
 
         <span class="n">new_dataset</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">])</span>
         <span class="n">new_dataset</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -2180,33 +2186,77 @@
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;prdname&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
 
         <span class="n">fname</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
-            <span class="s1">&#39;savevol&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;nc&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;savevol&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">file_type</span><span class="p">],</span>
             <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="n">fname</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
 
-        <span class="n">pyart</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">cfradial</span><span class="o">.</span><span class="n">write_cfradial</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">new_dataset</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">file_type</span> <span class="o">==</span> <span class="s1">&#39;nc&#39;</span><span class="p">:</span>
+            <span class="n">pyart</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">write_cfradial</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="n">physical</span><span class="o">=</span><span class="n">physical</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">file_type</span> <span class="o">==</span> <span class="s1">&#39;h5&#39;</span><span class="p">:</span>
+            <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">write_odim_h5</span><span class="p">(</span>
+                <span class="n">fname</span><span class="p">,</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="n">physical</span><span class="o">=</span><span class="n">physical</span><span class="p">,</span>
+                <span class="n">compression</span><span class="o">=</span><span class="n">compression</span><span class="p">,</span> <span class="n">compression_opts</span><span class="o">=</span><span class="n">compression_opts</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Data could not be saved. &#39;</span> <span class="o">+</span>
+                 <span class="s1">&#39;Unknown saving file type &#39;</span><span class="o">+</span><span class="n">file_type</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;saved file: &#39;</span><span class="o">+</span><span class="n">fname</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">fname</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;SAVEALL&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;SAVEALL&#39;</span><span class="p">:</span>
+        <span class="n">file_type</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;file_type&#39;</span><span class="p">,</span> <span class="s1">&#39;nc&#39;</span><span class="p">)</span>
+        <span class="n">datatypes</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;datatypes&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">physical</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;physical&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">compression</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;compression&#39;</span><span class="p">,</span> <span class="s1">&#39;gzip&#39;</span><span class="p">)</span>
+        <span class="n">compression_opts</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;compression_opts&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+
         <span class="n">savedir</span> <span class="o">=</span> <span class="n">get_save_dir</span><span class="p">(</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;basepath&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;procname&#39;</span><span class="p">],</span> <span class="n">dssavedir</span><span class="p">,</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;prdname&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
 
         <span class="n">fname</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
-            <span class="s1">&#39;savevol&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="s1">&#39;all_fields&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;nc&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;savevol&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="s1">&#39;all_fields&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">file_type</span><span class="p">],</span>
             <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="n">fname</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
 
-        <span class="n">pyart</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">cfradial</span><span class="o">.</span><span class="n">write_cfradial</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">])</span>
+        <span class="n">field_names</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">datatypes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">field_names</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="n">datatypes</span><span class="p">:</span>
+                <span class="n">field_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">file_type</span> <span class="o">==</span> <span class="s1">&#39;nc&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">field_names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">])</span>
+                <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="n">field_names</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+                        <span class="n">warn</span><span class="p">(</span><span class="n">field_name</span><span class="o">+</span><span class="s1">&#39; not in radar object&#39;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">radar_aux</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span>
+                            <span class="n">field_name</span><span class="p">,</span>
+                            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span>
+            <span class="n">pyart</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">write_cfradial</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">,</span> <span class="n">physical</span><span class="o">=</span><span class="n">physical</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">file_type</span> <span class="o">==</span> <span class="s1">&#39;h5&#39;</span><span class="p">:</span>
+            <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">write_odim_h5</span><span class="p">(</span>
+                <span class="n">fname</span><span class="p">,</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_names</span><span class="o">=</span><span class="n">field_names</span><span class="p">,</span>
+                <span class="n">physical</span><span class="o">=</span><span class="n">physical</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="n">compression</span><span class="p">,</span>
+                <span class="n">compression_opts</span><span class="o">=</span><span class="n">compression_opts</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Data could not be saved. &#39;</span> <span class="o">+</span>
+                 <span class="s1">&#39;Unknown saving file type &#39;</span><span class="o">+</span><span class="n">file_type</span><span class="p">)</span>
+
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;saved file: &#39;</span><span class="o">+</span><span class="n">fname</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">fname</span>
 
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;SAVESTATE&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;SAVESTATE&#39;</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;lastStateFile&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to save last state file. File name not specified&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -2229,9 +2279,8 @@
 
         <span class="k">return</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;lastStateFile&#39;</span><span class="p">]</span>
 
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39; Unsupported product type: &#39;</span> <span class="o">+</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="kc">None</span></div>
+    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39; Unsupported product type: &#39;</span> <span class="o">+</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
 </pre></div>
 
           </div>
@@ -2254,7 +2303,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, meteoswiss-mdr.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
     </div>
   </body>
 </html>

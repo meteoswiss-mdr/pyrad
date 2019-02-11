@@ -14,6 +14,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
   </head><body>
@@ -230,34 +231,37 @@
 <tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_selfconsistency_bias" title="pyrad.proc.process_selfconsistency_bias"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_selfconsistency_bias</span></code></a>(procstatus,&nbsp;dscfg)</td>
 <td>Estimates the reflectivity bias by means of the selfconsistency algorithm by Gourley</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_occurrence" title="pyrad.proc.process_occurrence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_occurrence</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_time_avg_std" title="pyrad.proc.process_time_avg_std"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_time_avg_std</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<td>computes the average and standard deviation of data.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_occurrence" title="pyrad.proc.process_occurrence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_occurrence</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
 <td>computes the frequency of occurrence of data.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_occurrence_period" title="pyrad.proc.process_occurrence_period"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_occurrence_period</span></code></a>(procstatus,&nbsp;dscfg)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_occurrence_period" title="pyrad.proc.process_occurrence_period"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_occurrence_period</span></code></a>(procstatus,&nbsp;dscfg)</td>
 <td>computes the frequency of occurrence over a long period of time by adding together shorter periods</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_monitoring" title="pyrad.proc.process_monitoring"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_monitoring</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_monitoring" title="pyrad.proc.process_monitoring"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_monitoring</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
 <td>computes monitoring statistics</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_gc_monitoring" title="pyrad.proc.process_gc_monitoring"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_gc_monitoring</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_gc_monitoring" title="pyrad.proc.process_gc_monitoring"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_gc_monitoring</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
 <td>computes ground clutter monitoring statistics</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_time_avg" title="pyrad.proc.process_time_avg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_time_avg</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_time_avg" title="pyrad.proc.process_time_avg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_time_avg</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>computes the temporal mean of a field</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_weighted_time_avg" title="pyrad.proc.process_weighted_time_avg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_weighted_time_avg</span></code></a>(procstatus,&nbsp;dscfg)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_weighted_time_avg" title="pyrad.proc.process_weighted_time_avg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_weighted_time_avg</span></code></a>(procstatus,&nbsp;dscfg)</td>
 <td>computes the temporal mean of a field weighted by the reflectivity</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_time_avg_flag" title="pyrad.proc.process_time_avg_flag"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_time_avg_flag</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_time_avg_flag" title="pyrad.proc.process_time_avg_flag"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_time_avg_flag</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
 <td>computes a flag field describing the conditions of the data used while averaging</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_colocated_gates" title="pyrad.proc.process_colocated_gates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_colocated_gates</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_colocated_gates" title="pyrad.proc.process_colocated_gates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_colocated_gates</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
 <td>Find colocated gates within two radars</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_intercomp" title="pyrad.proc.process_intercomp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_intercomp</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_intercomp" title="pyrad.proc.process_intercomp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_intercomp</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
 <td>intercomparison between two radars</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_intercomp_time_avg" title="pyrad.proc.process_intercomp_time_avg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_intercomp_time_avg</span></code></a>(procstatus,&nbsp;dscfg)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_intercomp_time_avg" title="pyrad.proc.process_intercomp_time_avg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_intercomp_time_avg</span></code></a>(procstatus,&nbsp;dscfg)</td>
 <td>intercomparison between the average reflectivity of two radars</td>
 </tr>
 </tbody>
@@ -3927,7 +3931,7 @@ Default 0.</p>
 </dd>
 <dt>ang_tol <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
 <dd><p class="first last">If the radar object contains an RHI volume, the tolerance in the
-elevation angle for the conversion into PPI</p>
+elevation angle for the conversion into PPI. Default 1.</p>
 </dd>
 <dt>lat, lon <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
 <dd><p class="first last">latitude and longitude of the point of interest [deg]</p>
@@ -4078,6 +4082,73 @@ averaging</p>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
 <dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Radar</span></dt>
 <dd><p class="first last">radar object</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.proc.process_time_avg_std">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_time_avg_std</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_calib.html#process_time_avg_std"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_time_avg_std" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes the average and standard deviation of data. It looks only for
+gates where data is present.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first">data set configuration. Accepted Configuration Keywords:</p>
+<dl class="last docutils">
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">list of string. Dataset keyword</span></dt>
+<dd><p class="first last">The input data types</p>
+</dd>
+<dt>regular_grid <span class="classifier-delimiter">:</span> <span class="classifier">Boolean. Dataset keyword</span></dt>
+<dd><p class="first last">Whether the radar has a Boolean grid or not. Default False</p>
+</dd>
+<dt>rmin, rmax <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">minimum and maximum ranges where the computation takes place. If
+-1 the whole range is considered. Default is -1</p>
+</dd>
+<dt>val_min <span class="classifier-delimiter">:</span> <span class="classifier">Float. Dataset keyword</span></dt>
+<dd><p class="first last">Minimum reflectivity value to consider that the gate has signal.
+Default None</p>
+</dd>
+<dt>filter_prec <span class="classifier-delimiter">:</span> <span class="classifier">str. Dataset keyword</span></dt>
+<dd><p class="first last">Give which type of volume should be filtered. None, no filtering;
+keep_wet, keep wet volumes; keep_dry, keep dry volumes.</p>
+</dd>
+<dt>rmax_prec <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">Maximum range to consider when looking for wet gates [m]</p>
+</dd>
+<dt>percent_prec_max <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">Maxim percentage of wet gates to consider the volume dry</p>
+</dd>
+<dt>lin_trans <span class="classifier-delimiter">:</span> <span class="classifier">Boolean. Dataset keyword</span></dt>
+<dd><p class="first last">If True the data will be transformed into linear units. Default
+False</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the output</p>
 </dd>
 <dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd><p class="first last">radar index</p>
@@ -4887,7 +4958,7 @@ Default None</p>
 </dd>
 <dt>hydroclass <span class="classifier-delimiter">:</span> <span class="classifier">list of ints. Dataset keyword</span></dt>
 <dd><p class="first last">list of hydrometeor classes to keep for the analysis
-Default [1] (dry snow)</p>
+Default [2] (dry snow)</p>
 </dd>
 </dl>
 </dd>
@@ -4934,7 +5005,7 @@ Default [1] (dry snow)</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, meteoswiss-mdr.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
     </div>
   </body>
 </html>

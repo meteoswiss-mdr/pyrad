@@ -36,8 +36,9 @@ if [ "${branch}" = "master" ];then
     make clean
     make html
     cd ../../../src/pyart/
-    rm -fr ./docs/*
-    git rm -fr ./docs/*
+    rm -fr ./docs
+    git rm -fr ./docs
+    mkdir -p docs
     cd ../../doc/pyart-mch/library_reference_users
     mv build/html/* ../../../src/pyart/docs
     rm -rf build/*
