@@ -34,8 +34,9 @@ if [ "${branch}" = "master" ];then
     cd library_reference_users
     make clean
     make html
-    rm -fr ../../../docs/*
-    git rm -fr ../../../docs/*
+    rm -fr ../../../docs
+    git rm -fr ../../../docs
+    mkdir ../../../docs
     mv build/html/* ../../../docs
     rm -rf build/*
     touch ../../../docs/.nojekyll

@@ -37,7 +37,129 @@ from ..util.radar_utils import compute_quantiles_from_hist
 
 def generate_monitoring_products(dataset, prdcfg):
     """
-    generates a monitoring product
+    generates a monitoring product. With the parameter 'hist_type' the user
+    may define is the product is computed for each radar volume ('instant') or
+    at the end of the processing period ('cumulative'). Default is
+    'cumulative'.
+    Accepted product types:
+        'ANGULAR_DENSITY': For a specified elevation angle, plots a 2D
+            histogram with the azimuth angle in the X-axis and the data values
+            in the Y-axis. The reference values and the user defined quantiles
+            are also plot on the same figure
+            User defined parameters:
+                anglenr: int
+                    The elevation angle number to plot
+                quantiles: list of floats
+                    The quantiles to plot. Default 25., 50., 75.
+                ref_value: float
+                    The reference value
+                vmin, vmax : floats or None
+                    The minimum and maximum values of the data points. If not
+                    specified they are obtained from the Py-ART config file
+        'CUMUL_VOL_TS': Plots time series of the average of instantaneous
+            quantiles stored in a csv file.
+            User defined parameters:
+                quantiles: list of 3 floats
+                    the quantiles to compute. Default 25., 50., 75.
+                ref_value: float
+                    The reference value. Default 0
+                sort_by_date: Bool
+                    If true when reading the csv file containing the
+                    statistics the data is sorted by date. Default False
+                rewrite: Bool
+                    If true the csv file containing the statistics is
+                    rewritten
+                add_data_in_fname: Bool
+                    If true and the data used is cumulative the year is
+                    written in the csv file name and the plot file name
+                npoints_min: int
+                    Minimum number of points to use the data point in the
+                    plotting and to send an alarm. Default 0
+                vmin, vmax: float or None
+                    Limits of the Y-axis (data value). If None the limits
+                    are obtained from the Py-ART config file
+                alarm: Bool
+                    If true an alarm is sent
+                tol_abs: float
+                    Margin of tolerance from the reference value. If the
+                    current value is above this margin an alarm is sent. If
+                    the margin is not specified it is not possible to send any
+                    alarm
+                tol_trend: float
+                    Margin of tolerance from the reference value. If the
+                    trend of the last X events is above this margin an alarm
+                    is sent. If the margin is not specified it is not possible
+                    to send any alarm
+                nevents_min: int
+                    Minimum number of events with sufficient points to send an
+                    alarm related to the trend. If not specified it is not
+                    possible to send any alarm
+                sender: str
+                    The mail of the alarm sender. If not specified it is not
+                    possible to send any alarm
+                receiver_list: list of str
+                    The list of emails of the people that will receive the
+                    alarm.. If not specified it is not possible to send any
+                    alarm
+        'PPI_HISTOGRAM': Plots a histogram of data at a particular
+            elevation angle.
+            User defined parameters:
+                anglenr: int
+                    The elevation angle number to plot
+        'SAVEVOL': Saves the monitoring data in a C/F radar file. The data
+            field contains histograms of data for each pair of azimuth and
+            elevation angles
+        'VOL_HISTOGRAM': Plots a histogram of data collected from all the
+            radar volume.
+            User defined parameters:
+                write_data: bool
+                    If true the resultant histogram is also saved in a csv
+                    file. Default True.
+        'VOL_TS': Computes statistics of the gathered data and writes them in
+            a csv file and plots a time series of those statistics.
+            User defined parameters:
+                quantiles: list of 3 floats
+                    the quantiles to compute. Default 25., 50., 75.
+                ref_value: float
+                    The reference value. Default 0
+                sort_by_date: Bool
+                    If true when reading the csv file containing the
+                    statistics the data is sorted by date. Default False
+                rewrite: Bool
+                    If true the csv file containing the statistics is
+                    rewritten
+                add_data_in_fname: Bool
+                    If true and the data used is cumulative the year is
+                    written in the csv file name and the plot file name
+                npoints_min: int
+                    Minimum number of points to use the data point in the
+                    plotting and to send an alarm. Default 0
+                vmin, vmax: float or None
+                    Limits of the Y-axis (data value). If None the limits
+                    are obtained from the Py-ART config file
+                alarm: Bool
+                    If true an alarm is sent
+                tol_abs: float
+                    Margin of tolerance from the reference value. If the
+                    current value is above this margin an alarm is sent. If
+                    the margin is not specified it is not possible to send any
+                    alarm
+                tol_trend: float
+                    Margin of tolerance from the reference value. If the
+                    trend of the last X events is above this margin an alarm
+                    is sent. If the margin is not specified it is not possible
+                    to send any alarm
+                nevents_min: int
+                    Minimum number of events with sufficient points to send an
+                    alarm related to the trend. If not specified it is not
+                    possible to send any alarm
+                sender: str
+                    The mail of the alarm sender. If not specified it is not
+                    possible to send any alarm
+                receiver_list: list of str
+                    The list of emails of the people that will receive the
+                    alarm.. If not specified it is not possible to send any
+                    alarm
 
     Parameters
     ----------
@@ -128,7 +250,7 @@ def generate_monitoring_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'PPI_HISTOGRAM':
+    if prdcfg['type'] == 'PPI_HISTOGRAM':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in hist_obj.fields:
             warn(
@@ -181,7 +303,7 @@ def generate_monitoring_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'ANGULAR_DENSITY':
+    if prdcfg['type'] == 'ANGULAR_DENSITY':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in hist_obj.fields:
             warn(
@@ -223,7 +345,7 @@ def generate_monitoring_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'VOL_TS':
+    if prdcfg['type'] == 'VOL_TS':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in hist_obj.fields:
             warn(
@@ -240,10 +362,9 @@ def generate_monitoring_products(dataset, prdcfg):
             csvtimeinfo_path = dataset['timeinfo']
             csvtimeinfo_file = dataset['timeinfo']
             timeformat = '%Y%m%d'
-        elif 'add_date_in_fname' in prdcfg:
-            if prdcfg['add_date_in_fname']:
-                csvtimeinfo_file = dataset['timeinfo']
-                timeformat = '%Y'
+        if prdcfg.get('add_date_in_fname', False):
+            csvtimeinfo_file = dataset['timeinfo']
+            timeformat = '%Y'
 
         quantiles = prdcfg.get('quantiles', np.array([25., 50., 75.]))
         ref_value = prdcfg.get('ref_value', 0.)
@@ -299,10 +420,9 @@ def generate_monitoring_products(dataset, prdcfg):
         else:
             titldate = (date[0].strftime('%Y%m%d')+'-' +
                         date[-1].strftime('%Y%m%d'))
-            if 'add_date_in_fname' in prdcfg:
-                if prdcfg['add_date_in_fname']:
-                    figtimeinfo = date[0]
-                    timeformat = '%Y'
+            if prdcfg.get('add_date_in_fname', False):
+                figtimeinfo = date[0]
+                timeformat = '%Y'
 
         figfname_list = make_filename(
             'ts', prdcfg['dstype'], prdcfg['voltype'],
@@ -317,17 +437,9 @@ def generate_monitoring_products(dataset, prdcfg):
 
         labely = generate_field_name_str(prdcfg['voltype'])
 
-        np_min = 0
-        if 'npoints_min' in prdcfg:
-            np_min = prdcfg['npoints_min']
-
-        vmin = None
-        if 'vmin' in prdcfg:
-            vmin = prdcfg['vmin']
-
-        vmax = None
-        if 'vmax' in prdcfg:
-            vmax = prdcfg['vmax']
+        np_min = prdcfg.get('npoints_min', 0)
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
 
         plot_monitoring_ts(
             date, np_t_vec, cquant_vec, lquant_vec, hquant_vec, field_name,
@@ -336,8 +448,7 @@ def generate_monitoring_products(dataset, prdcfg):
         print('----- save to '+' '.join(figfname_list))
 
         # generate alarms if needed
-        alarm = prdcfg.get('alarm', 0)
-
+        alarm = prdcfg.get('alarm', False)
         if not alarm:
             return figfname_list
 
@@ -347,11 +458,6 @@ def generate_monitoring_products(dataset, prdcfg):
 
         if 'tol_trend' not in prdcfg:
             warn('unable to send alarm. Missing tolerance in trend')
-            return None
-
-        if 'npoints_min' not in prdcfg:
-            warn('unable to send alarm. ' +
-                 'Missing minimum number of valid points per event')
             return None
 
         if 'nevents_min' not in prdcfg:
@@ -368,7 +474,6 @@ def generate_monitoring_products(dataset, prdcfg):
 
         tol_abs = prdcfg['tol_abs']
         tol_trend = prdcfg['tol_trend']
-        npoints_min = prdcfg['npoints_min']
         nevents_min = prdcfg['nevents_min']
         sender = prdcfg['sender']
         receiver_list = prdcfg['receiver_list']
@@ -376,7 +481,7 @@ def generate_monitoring_products(dataset, prdcfg):
         np_last = np_t_vec[-1]
         value_last = cquant_vec[-1]
 
-        if np_last < npoints_min:
+        if np_last < np_min:
             warn('No valid data on day '+date[-1].strftime('%d-%m-%Y'))
             return None
 
@@ -391,7 +496,7 @@ def generate_monitoring_products(dataset, prdcfg):
         # compute trend and check if last value exceeds it
         mask = np.ma.getmaskarray(cquant_vec)
         ind = np.where(np.logical_and(
-            np.logical_not(mask), np_t_vec >= npoints_min))[0]
+            np.logical_not(mask), np_t_vec >= np_min))[0]
         nvalid = len(ind)
         if nvalid <= nevents_min:
             warn('Not enough points to compute reliable trend')
@@ -441,7 +546,7 @@ def generate_monitoring_products(dataset, prdcfg):
 
         return alarm_fname
 
-    elif prdcfg['type'] == 'CUMUL_VOL_TS':
+    if prdcfg['type'] == 'CUMUL_VOL_TS':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in hist_obj.fields:
             warn(
@@ -491,10 +596,9 @@ def generate_monitoring_products(dataset, prdcfg):
         csvtimeinfo_path = None
         csvtimeinfo_file = None
         timeformat = None
-        if 'add_date_in_fname' in prdcfg:
-            if prdcfg['add_date_in_fname']:
-                csvtimeinfo_file = dataset['timeinfo']
-                timeformat = '%Y'
+        if prdcfg.get('add_date_in_fname', False):
+            csvtimeinfo_file = dataset['timeinfo']
+            timeformat = '%Y'
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -530,10 +634,9 @@ def generate_monitoring_products(dataset, prdcfg):
         titldate = ''
         titldate = (date[0].strftime('%Y%m%d')+'-' +
                     date[-1].strftime('%Y%m%d'))
-        if 'add_date_in_fname' in prdcfg:
-            if prdcfg['add_date_in_fname']:
-                figtimeinfo = date[0]
-                timeformat = '%Y'
+        if prdcfg.get('add_date_in_fname', False):
+            figtimeinfo = date[0]
+            timeformat = '%Y'
 
         figfname_list = make_filename(
             'ts', prdcfg['dstype'], prdcfg['voltype'],
@@ -571,11 +674,6 @@ def generate_monitoring_products(dataset, prdcfg):
             warn('unable to send alarm. Missing tolerance in trend')
             return None
 
-        if 'npoints_min' not in prdcfg:
-            warn('unable to send alarm. ' +
-                 'Missing minimum number of valid points per event')
-            return None
-
         if 'nevents_min' not in prdcfg:
             warn('unable to send alarm. ' +
                  'Missing minimum number of events to compute trend')
@@ -590,7 +688,6 @@ def generate_monitoring_products(dataset, prdcfg):
 
         tol_abs = prdcfg['tol_abs']
         tol_trend = prdcfg['tol_trend']
-        npoints_min = prdcfg['npoints_min']
         nevents_min = prdcfg['nevents_min']
         sender = prdcfg['sender']
         receiver_list = prdcfg['receiver_list']
@@ -598,7 +695,7 @@ def generate_monitoring_products(dataset, prdcfg):
         np_last = np_t_vec[-1]
         value_last = cquant_vec[-1]
 
-        if np_last < npoints_min:
+        if np_last < np_min:
             warn('No valid data on day '+date[-1].strftime('%d-%m-%Y'))
             return None
 
@@ -613,7 +710,7 @@ def generate_monitoring_products(dataset, prdcfg):
         # compute trend and check if last value exceeds it
         mask = np.ma.getmaskarray(cquant_vec)
         ind = np.where(np.logical_and(
-            np.logical_not(mask), np_t_vec >= npoints_min))[0]
+            np.logical_not(mask), np_t_vec >= np_min))[0]
         nvalid = len(ind)
         if nvalid <= nevents_min:
             warn('Not enough points to compute reliable trend')
@@ -663,7 +760,7 @@ def generate_monitoring_products(dataset, prdcfg):
 
         return alarm_fname
 
-    elif prdcfg['type'] == 'SAVEVOL':
+    if prdcfg['type'] == 'SAVEVOL':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in hist_obj.fields:
             warn(
@@ -691,6 +788,5 @@ def generate_monitoring_products(dataset, prdcfg):
 
         return fname
 
-    else:
-        warn(' Unsupported product type: ' + prdcfg['type'])
-        return None
+    warn(' Unsupported product type: ' + prdcfg['type'])
+    return None

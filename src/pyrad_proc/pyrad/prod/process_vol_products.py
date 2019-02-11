@@ -38,7 +38,428 @@ from ..util.stat_utils import quantiles_weighted
 
 def generate_vol_products(dataset, prdcfg):
     """
-    Generates radar volume products.
+    Generates radar volume products. Accepted product types:
+        'CDF': plots and writes the cumulative density function of data
+            User defined parameters:
+                quantiles: list of floats
+                    The quantiles to compute in percent. Default None
+                sector: dict
+                    dictionary defining the sector where to compute the CDF.
+                    Default is None and the CDF is computed over all the data
+                    May contain:
+                        rmin, rmax: float
+                            min and max range [m]
+                        azmin, azmax: float
+                            min and max azimuth angle [deg]
+                        elmin, elmax: float
+                            min and max elevation angle [deg]
+                        hmin, hmax: float
+                            min and max altitude [m MSL]
+                vismin: float
+                    The minimum visibility to use the data. Default None
+                absolute: Bool
+                    If true the absolute values of the data will be used.
+                    Default False
+                use_nans: Bool
+                    If true NaN values will be used. Default False
+                nan_value: Bool
+                    The value by which the NaNs are substituted if NaN values
+                    are to be used in the computation
+                filterclt: Bool
+                    If True the gates containing clutter are filtered
+                filterprec: list of ints
+                    The hydrometeor types that are filtered from the analysis.
+                    Default empty list.
+        'BSCOPE_IMAGE': Creates a B-scope image (azimuth, range)
+            User defined parameters:
+                anglenr : int
+                    The elevation angle number to use
+        'CAPPI_IMAGE': Creates a CAPPI image
+            User defined parameters:
+                altitude: flt
+                    CAPPI altitude [m MSL]
+                wfunc: str
+                    The function used to produce the CAPPI as defined in
+                    pyart.map.grid_from_radars. Default 'NEAREST_NEIGHBOUR'
+                cappi_res: float
+                    The CAPPI resolution [m]. Default 500.
+        'FIELD_COVERAGE' Gets the field coverage over a certain sector
+            User defined parameters:
+                threshold: float or None
+                    Minimum value to consider the data valid. Default None
+                nvalid_min: float
+                    Minimum number of valid gates in the ray to consider it
+                    valid. Default 5
+                ele_res, azi_res: float
+                    Elevation and azimuth resolution of the sectors [deg].
+                    Default 1. and 2.
+                ele_min, ele_max: float
+                    Min and max elevation angle defining the sector [deg].
+                    Default 0. and 30.
+                ele_step: float
+                    Elevation step [deg]. Default 5.
+                ele_sect_start, ele_sect_stop: float or None
+                    start and stop angles of the sector coverage. Default None
+                quantiles: list of floats
+                    The quantiles to compute in the sector. Default 10. to 90.
+                    by steps of 10.
+                AngTol: float
+                    The tolerance in elevation angle when putting the data in
+                    a fixed grid
+        'HISTOGRAM': Computes a histogram of the radar volum data
+            User defined parameters:
+                step: float or None
+                    the data quantization step. If none it will be obtained
+                    from the Py-ART configuration file
+                write_data: Bool
+                    If true the histogram data is written in a csv file
+        'PLOT_ALONG_COORD': Plots the radar volume data along a particular
+            coordinate
+            User defined parameters:
+                colors: list of str or None
+                    The colors of each ploted line
+                mode: str
+                    Ploting mode. Can be 'ALONG_RNG', 'ALONG_AZI' or
+                    'ALONG_ELE'
+                value_start, value_stop: float
+                    The starting and ending points of the data to plot.
+                    According to the mode it may refer to the range, azimuth
+                    or elevation. If not specified the minimum and maximum
+                    possible values are used
+                fix_elevations, fix_azimuths, fix_ranges: list of floats
+                    The elevations, azimuths or ranges to plot for each mode.
+                    'ALONG_RNG' would use fix_elevations and fix_azimuths
+                    'ALONG_AZI' fix_ranges and fix_elevations
+                    'ALONG_ELE' fix_ranges and fix_azimuths
+                AngTol: float
+                    The tolerance to match the radar angle to the fixed angles
+                RngTol: float
+                    The tolerance to match the radar range to the fixed ranges
+        'PPI_CONTOUR': Plots a PPI countour plot
+            User defined parameters:
+                contour_values: list of floats or None
+                    The list of contour values to plot. If None the contour
+                    values are going to be obtained from the Py-ART config
+                    file either with the dictionary key 'contour_values' or
+                    from the minimum and maximum values of the field with an
+                    assumed division of 10 levels.
+                anglenr: float
+                    The elevation angle number
+        'PPI_CONTOUR_OVERPLOT': Plots a PPI of a field with another field
+            overplotted as a contour plot.
+            User defined parameters:
+                contour_values: list of floats or None
+                    The list of contour values to plot. If None the contour
+                    values are going to be obtained from the Py-ART config
+                    file either with the dictionary key 'contour_values' or
+                    from the minimum and maximum values of the field with an
+                    assumed division of 10 levels.
+                anglenr: float
+                    The elevation angle number
+        'PPI_IMAGE': Plots a PPI image. It can also plot the histogram and the
+            quantiles of the data in the PPI.
+            User defined parameters:
+                anglenr: float
+                    The elevation angle number
+                plot_type: str
+                    The type of plot to perform. Can be 'PPI', 'QUANTILES' or
+                    'HISTOGRAM'
+                step: float or None
+                    If the plot type is 'HISTOGRAM', the width of the
+                    histogram bin. If None it will be obtained from the Py-ART
+                    config file
+                quantiles: list of float or None
+                    If the plot type is 'QUANTILES', the list of quantiles to
+                    compute. If None a default list of quantiles will be
+                    computed
+        'PPI_MAP': Plots a PPI image over a map. The map resolution and the
+            type of maps used are defined in the variables 'mapres' and 'maps'
+            in 'ppiMapImageConfig' in the loc config file.
+            User defined parameters:
+                anglenr: float
+                    The elevation angle number
+        'PROFILE_STATS': Computes and plots a vertical profile statistics.
+            The statistics are saved in a csv file
+            User defined parameters:
+                heightResolution: float
+                    The height resolution of the profile [m]. Default 100.
+                heightMin, heightMax: float or None
+                    The minimum and maximum altitude of the profile [m MSL].
+                    If None the values will be obtained from the minimum and
+                    maximum gate altitude.
+                quantity: str
+                    The type of statistics to plot. Can be 'quantiles',
+                    'mode', 'reqgression_mean' or 'mean'.
+                quantiles: list of floats
+                    If quantity type is 'quantiles' the list of quantiles to
+                    compute. Default 25., 50., 75.
+                nvalid_min: int
+                    The minimum number of valid points to consider the
+                    statistic valid. Default 4
+                make_linear: Bool
+                    If true the data is converted from log to linear before
+                    computing the stats
+                include_nans: Bool
+                    If true NaN values are included in the statistics
+                fixed_span: Bool
+                    If true the profile plot has a fix X-axis
+                vmin, vmax: float or None
+                    If fixed_span is set, the minimum and maximum values of
+                    the X-axis. If None, they are obtained from the Py-ART
+                    config file
+        'PSEUDOPPI_CONTOUR': Plots a pseudo-PPI countour plot
+            User defined parameters:
+                contour_values: list of floats or None
+                    The list of contour values to plot. If None the contour
+                    values are going to be obtained from the Py-ART config
+                    file either with the dictionary key 'contour_values' or
+                    from the minimum and maximum values of the field with an
+                    assumed division of 10 levels.
+                angle: float
+                    The elevation angle at which compute the PPI
+                EleTol: float
+                    The tolerance between the actual radar elevation angle and
+                    the nominal pseudo-PPI elevation angle.
+        'PSEUDOPPI_CONTOUR_OVERPLOT': Plots a pseudo-PPI of a field with
+            another field over-plotted as a contour plot
+            User defined parameters:
+                contour_values: list of floats or None
+                    The list of contour values to plot. If None the contour
+                    values are going to be obtained from the Py-ART config
+                    file either with the dictionary key 'contour_values' or
+                    from the minimum and maximum values of the field with an
+                    assumed division of 10 levels.
+                angle: float
+                    The elevation angle at which compute the PPI
+                EleTol: float
+                    The tolerance between the actual radar elevation angle and
+                    the nominal pseudo-PPI elevation angle.
+        'PSEUDOPPI_IMAGE': Plots a pseudo-PPI image. It can also plot the
+            histogram and the quantiles of the data in the pseudo-PPI.
+            User defined parameters:
+                angle: float
+                    The elevation angle of the pseudo-PPI
+                EleTol: float
+                    The tolerance between the actual radar elevation angle and
+                    the nominal pseudo-PPI elevation angle.
+                plot_type: str
+                    The type of plot to perform. Can be 'PPI', 'QUANTILES' or
+                    'HISTOGRAM'
+                step: float or None
+                    If the plot type is 'HISTOGRAM', the width of the
+                    histogram bin. If None it will be obtained from the Py-ART
+                    config file
+                quantiles: list of float or None
+                    If the plot type is 'QUANTILES', the list of quantiles to
+                    compute. If None a default list of quantiles will be
+                    computed
+        'PSEUDOPPI_MAP': Plots a pseudo-PPI image over a map. The map
+            resolution and the type of maps used are defined in the variables
+            'mapres' and 'maps' in 'ppiMapImageConfig' in the loc config file.
+            User defined parameters:
+                angle: float
+                    The elevation angle of the pseudo-PPI
+                EleTol: float
+                    The tolerance between the actual radar elevation angle and
+                    the nominal pseudo-PPI elevation angle.
+        'PSEUDORHI_CONTOUR': Plots a pseudo-RHI countour plot
+            User defined parameters:
+                contour_values: list of floats or None
+                    The list of contour values to plot. If None the contour
+                    values are going to be obtained from the Py-ART config
+                    file either with the dictionary key 'contour_values' or
+                    from the minimum and maximum values of the field with an
+                    assumed division of 10 levels.
+                angle: float
+                    The azimuth angle at which to compute the RPI
+                AziTol: float
+                    The tolerance between the actual radar azimuth angle and
+                    the nominal pseudo-RHI azimuth angle.
+        'PSEUDORHI_CONTOUR_OVERPLOT': Plots a pseudo-RHI of a field with
+            another field over-plotted as a contour plot
+            User defined parameters:
+                contour_values: list of floats or None
+                    The list of contour values to plot. If None the contour
+                    values are going to be obtained from the Py-ART config
+                    file either with the dictionary key 'contour_values' or
+                    from the minimum and maximum values of the field with an
+                    assumed division of 10 levels.
+                angle: float
+                    The azimuth angle at which to compute the RPI
+                AziTol: float
+                    The tolerance between the actual radar azimuth angle and
+                    the nominal pseudo-RHI azimuth angle.
+        'PSEUDORHI_IMAGE': Plots a pseudo-RHI image. It can also plot the
+            histogram and the quantiles of the data in the pseudo-RHI.
+            User defined parameters:
+                angle: float
+                    The azimuth angle at which to compute the RPI
+                AziTol: float
+                    The tolerance between the actual radar azimuth angle and
+                    the nominal pseudo-RHI azimuth angle.
+                plot_type: str
+                    The type of plot to perform. Can be 'RHI', 'QUANTILES' or
+                    'HISTOGRAM'
+                step: float or None
+                    If the plot type is 'HISTOGRAM', the width of the
+                    histogram bin. If None it will be obtained from the Py-ART
+                    config file
+                quantiles: list of float or None
+                    If the plot type is 'QUANTILES', the list of quantiles to
+                    compute. If None a default list of quantiles will be
+                    computed
+        'QUANTILES': Plots and writes the quantiles of a radar volume
+            User defined parameters:
+                quantiles: list of floats or None
+                    the list of quantiles to compute. If None a default list
+                    of quantiles will be computed.
+                write_data: Bool
+                    If True the computed data will be also written in a csv
+                    file
+                fixed_span: Bool
+                    If true the quantile plot has a fix Y-axis
+                vmin, vmax: float or None
+                    If fixed_span is set, the minimum and maximum values of
+                    the Y-axis. If None, they are obtained from the Py-ART
+                    config file
+        'RHI_CONTOUR': Plots an RHI countour plot
+            User defined parameters:
+                contour_values: list of floats or None
+                    The list of contour values to plot. If None the contour
+                    values are going to be obtained from the Py-ART config
+                    file either with the dictionary key 'contour_values' or
+                    from the minimum and maximum values of the field with an
+                    assumed division of 10 levels.
+                anglenr: int
+                    The azimuth angle number
+        'RHI_CONTOUR_OVERPLOT': Plots an RHI of a field with another field
+            over-plotted as a contour plot
+            User defined parameters:
+                contour_values: list of floats or None
+                    The list of contour values to plot. If None the contour
+                    values are going to be obtained from the Py-ART config
+                    file either with the dictionary key 'contour_values' or
+                    from the minimum and maximum values of the field with an
+                    assumed division of 10 levels.
+                anglenr: int
+                    The azimuth angle number
+        'RHI_IMAGE': Plots an RHI image. It can also plot the
+            histogram and the quantiles of the data in the RHI.
+            User defined parameters:
+                anglenr: int
+                    The azimuth angle number
+                plot_type: str
+                    The type of plot to perform. Can be 'RHI', 'QUANTILES' or
+                    'HISTOGRAM'
+                step: float or None
+                    If the plot type is 'HISTOGRAM', the width of the
+                    histogram bin. If None it will be obtained from the Py-ART
+                    config file
+                quantiles: list of float or None
+                    If the plot type is 'QUANTILES', the list of quantiles to
+                    compute. If None a default list of quantiles will be
+                    computed
+        'RHI_PROFILE': Computes and plots a vertical profile statistics out of
+            an RHI.
+            The statistics are saved in a csv file
+            User defined parameters:
+                rangeStart, rangeStop: float
+                    The range start and stop of the data to extract from the
+                    RHI to compute the statistics [m]. Default 0., 25000.
+                heightResolution: float
+                    The height resolution of the profile [m]. Default 100.
+                heightMin, heightMax: float or None
+                    The minimum and maximum altitude of the profile [m MSL].
+                    If None the values will be obtained from the minimum and
+                    maximum gate altitude.
+                quantity: str
+                    The type of statistics to plot. Can be 'quantiles',
+                    'mode', 'reqgression_mean' or 'mean'.
+                quantiles: list of floats
+                    If quantity type is 'quantiles' the list of quantiles to
+                    compute. Default 25., 50., 75.
+                nvalid_min: int
+                    The minimum number of valid points to consider the
+                    statistic valid. Default 4
+                make_linear: Bool
+                    If true the data is converted from log to linear before
+                    computing the stats
+                include_nans: Bool
+                    If true NaN values are included in the statistics
+                fixed_span: Bool
+                    If true the profile plot has a fix X-axis
+                vmin, vmax: float or None
+                    If fixed_span is set, the minimum and maximum values of
+                    the X-axis. If None, they are obtained from the Py-ART
+                    config file
+        'SAVEALL': Saves radar volume data including all or a list of user-
+            defined fields in a C/F radial or ODIM file
+            User defined parameters:
+                file_type: str
+                    The type of file used to save the data. Can be 'nc' or
+                    'h5'. Default 'nc'
+                datatypes: list of str or None
+                    The list of data types to save. If it is None, all fields
+                    in the radar object will be saved
+                physical: Bool
+                    If True the data will be saved in physical units (floats).
+                    Otherwise it will be quantized and saved as binary
+                compression: str
+                    For ODIM file formats, the type of compression. Can be any
+                    of the allowed compression types for hdf5 files. Default
+                    gzip
+                compression_opts: any
+                    The compression options allowed by the hdf5. Depends on
+                    the type of compression. Default 6 (The gzip compression
+                    level).
+        'SAVESTATE': Saves the last processed data in a file. Used for real-
+            time data processing
+        'SAVEVOL': Saves one field of a radar volume data in a C/F radial or
+            ODIM file
+            User defined parameters:
+                file_type: str
+                    The type of file used to save the data. Can be 'nc' or
+                    'h5'. Default 'nc'
+                physical: Bool
+                    If True the data will be saved in physical units (floats).
+                    Otherwise it will be quantized and saved as binary
+                compression: str
+                    For ODIM file formats, the type of compression. Can be any
+                    of the allowed compression types for hdf5 files. Default
+                    gzip
+                compression_opts: any
+                    The compression options allowed by the hdf5. Depends on
+                    the type of compression. Default 6 (The gzip compression
+                    level).
+        'TIME_RANGE': Plots a time-range plot
+            User defined parameters:
+                anglenr: float
+                    The number of the fixed angle to plot
+        'WIND_PROFILE': Plots vertical profile of wind data (U, V, W
+            components and wind velocity and direction) out of a radar
+            volume containing the retrieved U,V and W components of the wind,
+            the standard deviation of the retrieval and the velocity
+            difference between the estimated radial velocity (assuming the
+            wind to be uniform) and the actual measured radial velocity.
+            User defined parameters:
+                heightResolution: float
+                    The height resolution of the profile [m]. Default 100.
+                heightMin, heightMax: float or None
+                    The minimum and maximum altitude of the profile [m MSL].
+                    If None the values will be obtained from the minimum and
+                    maximum gate altitude.
+                min_ele: float
+                    The minimum elevation to be used in the computation of the
+                    vertical velocities. Default 5.
+                max_ele: float
+                    The maximum elevation to be used in the computation of the
+                    horizontal velocities. Default 85.
+                fixed_span: Bool
+                    If true the profile plot has a fix X-axis
+                vmin, vmax: float or None
+                    If fixed_span is set, the minimum and maximum values of
+                    the X-axis. If None, they are obtained from the span of
+                    the U component defined in the Py-ART config file
 
     Parameters
     ----------
@@ -50,7 +471,7 @@ def generate_vol_products(dataset, prdcfg):
 
     Returns
     -------
-    no return
+    The list of created fields or None
 
     """
 
@@ -106,7 +527,8 @@ def generate_vol_products(dataset, prdcfg):
 
         try:
             xsect = pyart.util.cross_section_rhi(
-                dataset['radar_out'], [prdcfg['angle']], el_tol=prdcfg['EleTol'])
+                dataset['radar_out'], [prdcfg['angle']],
+                el_tol=prdcfg['EleTol'])
 
             savedir = get_save_dir(
                 prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -155,7 +577,8 @@ def generate_vol_products(dataset, prdcfg):
 
         el_vec = np.sort(dataset['radar_out'].fixed_angle['data'])
         el = el_vec[prdcfg['anglenr']]
-        ind_el = np.where(dataset['radar_out'].fixed_angle['data'] == el)[0][0]
+        ind_el = np.where(
+            dataset['radar_out'].fixed_angle['data'] == el)[0][0]
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -169,12 +592,12 @@ def generate_vol_products(dataset, prdcfg):
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        plot_ppi_map(dataset['radar_out'], field_name, ind_el, prdcfg, fname_list)
+        plot_ppi_map(
+            dataset['radar_out'], field_name, ind_el, prdcfg, fname_list)
 
         print('----- save to '+' '.join(fname_list))
 
         return fname_list
-
 
     if prdcfg['type'] == 'PPI_CONTOUR_OVERPLOT':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
@@ -197,7 +620,8 @@ def generate_vol_products(dataset, prdcfg):
 
         el_vec = np.sort(dataset['radar_out'].fixed_angle['data'])
         el = el_vec[prdcfg['anglenr']]
-        ind_el = np.where(dataset['radar_out'].fixed_angle['data'] == el)[0][0]
+        ind_el = np.where(
+            dataset['radar_out'].fixed_angle['data'] == el)[0][0]
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -213,12 +637,15 @@ def generate_vol_products(dataset, prdcfg):
             fname_list[i] = savedir+fname
 
         titl = (
-            pyart.graph.common.generate_title(dataset['radar_out'], field_name, ind_el) +
+            pyart.graph.common.generate_title(
+                dataset['radar_out'], field_name, ind_el) +
             ' - ' +
-            pyart.graph.common.generate_field_name(dataset['radar_out'], contour_name))
+            pyart.graph.common.generate_field_name(
+                dataset['radar_out'], contour_name))
 
-        fig, ax = plot_ppi(dataset['radar_out'], field_name, ind_el, prdcfg, fname_list,
-                           titl=titl, save_fig=False)
+        fig, ax = plot_ppi(
+            dataset['radar_out'], field_name, ind_el, prdcfg, fname_list,
+            titl=titl, save_fig=False)
 
         fname_list = plot_ppi_contour(
             dataset['radar_out'], contour_name, ind_el, prdcfg, fname_list,
@@ -335,7 +762,8 @@ def generate_vol_products(dataset, prdcfg):
 
         try:
             xsect = pyart.util.cross_section_rhi(
-                dataset['radar_out'], [prdcfg['angle']], el_tol=prdcfg['EleTol'])
+                dataset['radar_out'], [prdcfg['angle']],
+                el_tol=prdcfg['EleTol'])
 
             savedir = get_save_dir(
                 prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -567,7 +995,8 @@ def generate_vol_products(dataset, prdcfg):
 
         az_vec = np.sort(dataset['radar_out'].fixed_angle['data'])
         az = az_vec[prdcfg['anglenr']]
-        ind_az = np.where(dataset['radar_out'].fixed_angle['data'] == az)[0][0]
+        ind_az = np.where(
+            dataset['radar_out'].fixed_angle['data'] == az)[0][0]
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -602,7 +1031,8 @@ def generate_vol_products(dataset, prdcfg):
 
         try:
             xsect = pyart.util.cross_section_ppi(
-                dataset['radar_out'], [prdcfg['angle']], az_tol=prdcfg['AziTol'])
+                dataset['radar_out'], [prdcfg['angle']],
+                az_tol=prdcfg['AziTol'])
 
             savedir = get_save_dir(
                 prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -967,7 +1397,8 @@ def generate_vol_products(dataset, prdcfg):
                 w_vel_aux[ind_sweep, ind_rng] = w_vel[ind_start, ind_rng]
                 std_vel_aux[ind_sweep, ind_rng] = std_vel[ind_start, ind_rng]
                 gate_altitude_aux[ind_sweep, ind_rng] = (
-                    dataset['radar_out'].gate_altitude['data'][ind_start, ind_rng])
+                    dataset['radar_out'].gate_altitude['data'][
+                        ind_start, ind_rng])
                 ngates_aux[ind_sweep, ind_rng] = (
                     diff_vel[ind_start:ind_end, ind_rng].compressed().size)
 
@@ -1003,7 +1434,8 @@ def generate_vol_products(dataset, prdcfg):
             maxheight = hmax_user
         nlevels = int((maxheight-minheight)/heightResolution)
 
-        h_vec = minheight+np.arange(nlevels)*heightResolution+heightResolution/2.
+        h_vec = (
+            minheight+np.arange(nlevels)*heightResolution+heightResolution/2.)
 
         u_vals, val_valid = compute_profile_stats(
             u_vel_aux, gate_altitude_aux, h_vec, heightResolution,
@@ -1161,10 +1593,10 @@ def generate_vol_products(dataset, prdcfg):
             fname_list[i] = savedir+fname
 
         plot_rhi_profile(
-            mag_data, h_vec, fname_list, labelx=labelx, labely='Height (m MSL)',
-            labels=labels, title=titl, colors=colors,
-            linestyles=linestyles, vmin=vmin, vmax=vmax,
-            hmin=minheight, hmax=maxheight)
+            mag_data, h_vec, fname_list, labelx=labelx,
+            labely='Height (m MSL)', labels=labels, title=titl, colors=colors,
+            linestyles=linestyles, vmin=vmin, vmax=vmax, hmin=minheight,
+            hmax=maxheight)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -1314,17 +1746,11 @@ def generate_vol_products(dataset, prdcfg):
             warn('This product is only available for PPI or RHI volumes')
             return None
 
-        colors = None
-        if 'colors' in prdcfg:
-            colors = prdcfg['colors']
-
+        colors = prdcfg.get('colors', None)
         if prdcfg['mode'] == 'ALONG_RNG':
-            value_start = 0.
-            if 'value_start' in prdcfg:
-                value_start = prdcfg['value_start']
-            value_stop = np.max(dataset['radar_out'].range['data'])
-            if 'value_stop' in prdcfg:
-                value_stop = prdcfg['value_stop']
+            value_start = prdcfg.get('value_start', 0.)
+            value_stop = prdcfg.get(
+                'value_stop', np.max(dataset['radar_out'].range['data']))
 
             rng_mask = np.logical_and(
                 dataset['radar_out'].range['data'] >= value_start,
@@ -1337,13 +1763,14 @@ def generate_vol_products(dataset, prdcfg):
             valid_azi = []
             valid_ele = []
             if dataset['radar_out'].scan_type == 'ppi':
-                for i in range(len(prdcfg['fix_elevations'])):
-                    d_el = np.abs(dataset['radar_out'].fixed_angle['data'] -
-                                  prdcfg['fix_elevations'][i])
+                for ele, azi in zip(
+                        prdcfg['fix_elevations'], prdcfg['fix_azimuths']):
+                    d_el = np.abs(
+                        dataset['radar_out'].fixed_angle['data']-ele)
                     min_d_el = np.min(d_el)
                     if min_d_el > prdcfg['AngTol']:
                         warn('No elevation angle found for fix_elevation ' +
-                             str(prdcfg['fix_elevations'][i]))
+                             str(ele))
                         continue
                     ind_sweep = np.argmin(d_el)
                     new_dataset = dataset['radar_out'].extract_sweeps(
@@ -1351,12 +1778,10 @@ def generate_vol_products(dataset, prdcfg):
 
                     try:
                         dataset_line = pyart.util.cross_section_ppi(
-                            new_dataset, [prdcfg['fix_azimuths'][i]],
-                            az_tol=prdcfg['AngTol'])
+                            new_dataset, [azi], az_tol=prdcfg['AngTol'])
                     except EnvironmentError:
-                        warn(' No data found at azimuth ' +
-                             prdcfg['fix_azimuths'][i]+' and elevation ' +
-                             prdcfg['fix_elevations'][i])
+                        warn(' No data found at azimuth '+str(azi) +
+                             ' and elevation '+str(ele))
                         continue
                     yvals.append(
                         dataset_line.fields[field_name]['data'][0, rng_mask])
@@ -1364,13 +1789,14 @@ def generate_vol_products(dataset, prdcfg):
                     valid_azi.append(dataset_line.azimuth['data'][0])
                     valid_ele.append(dataset_line.elevation['data'][0])
             else:
-                for i in range(len(prdcfg['fix_azimuths'])):
-                    d_az = np.abs(dataset['radar_out'].fixed_angle['data'] -
-                                  prdcfg['fix_azimuths'][i])
+                for ele, azi in zip(
+                        prdcfg['fix_elevations'], prdcfg['fix_azimuths']):
+                    d_az = np.abs(
+                        dataset['radar_out'].fixed_angle['data']-azi)
                     min_d_az = np.min(d_az)
                     if min_d_az > prdcfg['AngTol']:
                         warn('No azimuth angle found for fix_azimuth ' +
-                             str(prdcfg['fix_azimuths'][i]))
+                             str(azi))
                         continue
                     ind_sweep = np.argmin(d_az)
                     new_dataset = dataset['radar_out'].extract_sweeps(
@@ -1378,13 +1804,10 @@ def generate_vol_products(dataset, prdcfg):
 
                     try:
                         dataset_line = pyart.util.cross_section_rhi(
-                            new_dataset, [prdcfg['fix_elevations'][i]],
-                            el_tol=prdcfg['AngTol'])
+                            new_dataset, [ele], el_tol=prdcfg['AngTol'])
                     except EnvironmentError:
-                        warn(
-                            ' No data found at azimuth ' +
-                            prdcfg['fix_azimuths'][i]+' and elevation ' +
-                            prdcfg['fix_elevations'][i])
+                        warn(' No data found at azimuth '+str(azi) +
+                             ' and elevation '+str(ele))
                         continue
                     yvals.append(
                         dataset_line.fields[field_name]['data'][0, rng_mask])
@@ -1399,40 +1822,36 @@ def generate_vol_products(dataset, prdcfg):
             labelx = 'Range (m)'
 
             labels = list()
-            for i, azi in enumerate(valid_azi):
+            for ele, azi in zip(valid_ele, valid_azi):
                 labels.append(
-                    'azi '+'{:.1f}'.format(azi) +
-                    ' ele '+'{:.1f}'.format(valid_ele[i]))
+                    'azi '+'{:.1f}'.format(azi)+' ele '+'{:.1f}'.format(ele))
 
         elif prdcfg['mode'] == 'ALONG_AZI':
-            value_start = np.min(dataset['radar_out'].azimuth['data'])
-            if 'value_start' in prdcfg:
-                value_start = prdcfg['value_start']
-            value_stop = np.max(dataset['radar_out'].azimuth['data'])
-            if 'value_stop' in prdcfg:
-                value_stop = prdcfg['value_stop']
+            value_start = prdcfg.get(
+                'value_start', np.min(dataset['radar_out'].azimuth['data']))
+            value_stop = prdcfg.get(
+                'value_stop', np.max(dataset['radar_out'].azimuth['data']))
 
             yvals = []
             xvals = []
             valid_rng = []
             valid_ele = []
-            for i in range(len(prdcfg['fix_ranges'])):
-                d_rng = np.abs(dataset['radar_out'].range['data'] -
-                               prdcfg['fix_ranges'][i])
+            for rng, ele in zip(
+                    prdcfg['fix_ranges'], prdcfg['fix_elevations']):
+                d_rng = np.abs(dataset['radar_out'].range['data']-rng)
                 min_d_rng = np.min(d_rng)
                 if min_d_rng > prdcfg['RngTol']:
-                    warn('No range gate found for fix_range ' +
-                         str(prdcfg['fix_ranges'][i]))
+                    warn('No range gate found for fix_range '+str(rng))
                     continue
                 ind_rng = np.argmin(d_rng)
 
                 if dataset['radar_out'].scan_type == 'ppi':
-                    d_el = np.abs(dataset['radar_out'].fixed_angle['data'] -
-                                  prdcfg['fix_elevations'][i])
+                    d_el = np.abs(
+                        dataset['radar_out'].fixed_angle['data']-ele)
                     min_d_el = np.min(d_el)
                     if min_d_el > prdcfg['AngTol']:
                         warn('No elevation angle found for fix_elevation ' +
-                             str(prdcfg['fix_elevations'][i]))
+                             str(ele))
                         continue
                     ind_sweep = np.argmin(d_el)
                     new_dataset = dataset['radar_out'].extract_sweeps(
@@ -1440,14 +1859,12 @@ def generate_vol_products(dataset, prdcfg):
                 else:
                     try:
                         new_dataset = pyart.util.cross_section_rhi(
-                            dataset['radar_out'],
-                            [prdcfg['fix_elevations'][i]],
+                            dataset['radar_out'], [ele],
                             el_tol=prdcfg['AngTol'])
                     except EnvironmentError:
                         warn(
-                            ' No data found at range ' +
-                            prdcfg['fix_ranges'][i]+' and elevation ' +
-                            prdcfg['fix_elevations'][i])
+                            ' No data found at range '+str(rng) +
+                            ' and elevation '+str(ele))
                         continue
                 if value_start < value_stop:
                     azi_mask = np.logical_and(
@@ -1470,51 +1887,45 @@ def generate_vol_products(dataset, prdcfg):
             labelx = 'Azimuth Angle (deg)'
 
             labels = list()
-            for i, rng in enumerate(valid_rng):
+            for ele, rng in zip(valid_ele, valid_rng):
                 labels.append(
-                    'rng '+'{:.1f}'.format(rng) +
-                    ' ele '+'{:.1f}'.format(valid_ele[i]))
+                    'rng '+'{:.1f}'.format(rng)+' ele '+'{:.1f}'.format(ele))
 
         elif prdcfg['mode'] == 'ALONG_ELE':
-            value_start = np.min(dataset['radar_out'].elevation['data'])
-            if 'value_start' in prdcfg:
-                value_start = prdcfg['value_start']
-            value_stop = np.max(dataset['radar_out'].elevation['data'])
-            if 'value_stop' in prdcfg:
-                value_stop = prdcfg['value_stop']
+            value_start = prdcfg.get(
+                'value_start', np.min(dataset['radar_out'].elevation['data']))
+            value_stop = prdcfg.get(
+                'value_stop', np.max(dataset['radar_out'].elevation['data']))
 
             yvals = []
             xvals = []
             valid_rng = []
             valid_azi = []
-            for i in range(len(prdcfg['fix_ranges'])):
-                d_rng = np.abs(dataset['radar_out'].range['data'] -
-                               prdcfg['fix_ranges'][i])
+            for rng, azi in zip(prdcfg['fix_ranges'], prdcfg['fix_azimuths']):
+                d_rng = np.abs(dataset['radar_out'].range['data']-rng)
                 min_d_rng = np.min(d_rng)
                 if min_d_rng > prdcfg['RngTol']:
-                    warn('No range gate found for fix_range ' +
-                         str(prdcfg['fix_ranges'][i]))
+                    warn('No range gate found for fix_range '+str(rng))
                     continue
                 ind_rng = np.argmin(d_rng)
 
                 if dataset['radar_out'].scan_type == 'ppi':
                     try:
                         new_dataset = pyart.util.cross_section_ppi(
-                            dataset, [prdcfg['fix_azimuths'][i]],
+                            dataset, [azi],
                             az_tol=prdcfg['AngTol'])
                     except EnvironmentError:
                         warn(
-                            ' No data found at range ' +
-                            prdcfg['fix_ranges'][i]+' and elevation ' +
-                            prdcfg['fix_azimuths'][i])
+                            ' No data found at range '+str(rng) +
+                            ' and elevation '+str(azi))
                         continue
                 else:
-                    d_az = np.abs(dataset['radar_out'].fixed_angle['data'] -
-                                  prdcfg['fix_azimuths'][i])
+                    d_az = np.abs(
+                        dataset['radar_out'].fixed_angle['data']-azi)
                     min_d_az = np.min(d_az)
                     if min_d_az > prdcfg['AngTol']:
                         warn('No azimuth angle found for fix_azimuth ' +
-                             str(prdcfg['fix_azimuths'][i]))
+                             str(azi))
                         continue
                     ind_sweep = np.argmin(d_az)
                     new_dataset = dataset['radar_out'].extract_sweeps(
@@ -1533,10 +1944,9 @@ def generate_vol_products(dataset, prdcfg):
             labelx = 'Elevation Angle (deg)'
 
             labels = list()
-            for i, rng in enumerate(valid_rng):
+            for azi, rng in zip(valid_azi, valid_rng):
                 labels.append(
-                    'rng '+'{:.1f}'.format(rng) +
-                    ' azi '+'{:.1f}'.format(valid_azi[i]))
+                    'rng '+'{:.1f}'.format(rng)+' azi '+'{:.1f}'.format(azi))
         else:
             warn('Unknown plotting mode '+prdcfg['mode'])
             return None
@@ -1770,39 +2180,18 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfg['type'])
             return None
 
-        threshold = None
-        if 'threshold' in prdcfg:
-            threshold = prdcfg['threshold']
-        nvalid_min = 5.
-        if 'nvalid_min' in prdcfg:
-            nvalid_min = prdcfg['nvalid_min']
-
-        ele_res = 1.
-        if 'ele_res' in prdcfg:
-            ele_res = prdcfg['ele_res']
-        azi_res = 2.
-        if 'azi_res' in prdcfg:
-            azi_res = prdcfg['azi_res']
-
-        ele_min = 0.
-        if 'ele_min' in prdcfg:
-            ele_min = prdcfg['ele_min']
-        ele_max = 30.
-        if 'ele_max' in prdcfg:
-            ele_max = prdcfg['ele_max']
-        ele_step = 5.
-        if 'ele_step' in prdcfg:
-            ele_step = prdcfg['ele_step']
-
-        ele_sect_start = None
-        if 'ele_sect_start' in prdcfg:
-            ele_sect_start = prdcfg['ele_sect_start']
-        ele_sect_stop = None
-        if 'ele_sect_stop' in prdcfg:
-            ele_sect_stop = prdcfg['ele_sect_stop']
-        quantiles = np.array([10., 20., 30., 40., 50., 60., 70., 80., 90.])
-        if 'quantiles' in prdcfg:
-            quantiles = np.array(prdcfg['quantiles'])
+        threshold = prdcfg.get('threshold', None)
+        nvalid_min = prdcfg.get('nvalid_min', 5.)
+        ele_res = prdcfg.get('ele_res', 1.)
+        azi_res = prdcfg.get('azi_res', 2.)
+        ele_min = prdcfg.get('ele_min', 0.)
+        ele_max = prdcfg.get('ele_max', 30.)
+        ele_step = prdcfg.get('ele_step', 5.)
+        ele_sect_start = prdcfg.get('ele_sect_start', None)
+        ele_sect_stop = prdcfg.get('ele_sect_stop', None)
+        quantiles = prdcfg.get(
+            'quantiles',
+            np.array([10., 20., 30., 40., 50., 60., 70., 80., 90.]))
 
         # get coverage per ray
         field_coverage = np.ma.masked_all(dataset['radar_out'].nrays)
@@ -1930,10 +2319,7 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfg['type'])
             return None
 
-        quantiles = None
-        if 'quantiles' in prdcfg:
-            quantiles = prdcfg['quantiles']
-
+        quantiles = prdcfg.get('quantiles', None)
         sector = {
             'rmin': None,
             'rmax': None,
@@ -1962,28 +2348,12 @@ def generate_vol_products(dataset, prdcfg):
             if 'hmax' in prdcfg['sector']:
                 sector['hmax'] = prdcfg['sector']['hmax']
 
-        vismin = None
-        if 'vismin' in prdcfg:
-            vismin = prdcfg['vismin']
-
-        absolute = False
-        if 'absolute' in prdcfg:
-            absolute = prdcfg['absolute']
-
-        use_nans = False
-        nan_value = 0.
-        if 'use_nans' in prdcfg:
-            use_nans = prdcfg['use_nans']
-            if 'nan_value' in prdcfg:
-                nan_value = prdcfg['nan_value']
-
-        filterclt = False
-        if 'filterclt' in prdcfg:
-            filterclt = prdcfg['filterclt']
-
-        filterprec = np.array([], dtype=int)
-        if 'filterprec' in prdcfg:
-            filterprec = prdcfg['filterprec']
+        vismin = prdcfg.get('vismin', None)
+        absolute = prdcfg.get('absolute', False)
+        use_nans = prdcfg.get('use_nans', False)
+        nan_value = prdcfg.get('nan_value', 0.)
+        filterclt = prdcfg.get('filterclt', False)
+        filterprec = prdcfg.get('filterprec', np.array([], dtype=int))
 
         data = deepcopy(dataset['radar_out'].fields[field_name]['data'])
 

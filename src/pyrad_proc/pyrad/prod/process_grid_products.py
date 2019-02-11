@@ -7,6 +7,7 @@ Functions for obtaining Pyrad products from gridded datasets
 .. autosummary::
     :toctree: generated/
 
+    generate_sparse_grid_products
     generate_grid_products
 
 """
@@ -22,12 +23,17 @@ from ..graph.plots_grid import plot_surface
 from ..graph.plots_grid import plot_longitude_slice, plot_latitude_slice
 from ..graph.plots_grid import plot_latlon_slice
 from ..graph.plots_vol import plot_pos
-from ..graph.plots_aux import get_colobar_label, get_field_name, get_norm
+from ..graph.plots_aux import get_colobar_label, get_field_name
 
 
 def generate_sparse_grid_products(dataset, prdcfg):
     """
-    generates products defined by sparse points
+    generates products defined by sparse points. Accepted product types:
+        'SURFACE_IMAGE': Generates a surface image
+            User defined parameters:
+                'field_limits': list of floats
+                    The limits of the surface to plot [deg]
+                    lon0, lon1, lat0, lat1
 
     Parameters
     ----------
@@ -68,8 +74,8 @@ def generate_sparse_grid_products(dataset, prdcfg):
         cb_label = get_colobar_label(
             dataset['fields'][field_name], field_name)
 
-        titl= (prdcfg['timeinfo'].strftime('%Y-%m-%dT%H:%M%SZ')+'\n' +
-               get_field_name(dataset['fields'][field_name], field_name))
+        titl = (prdcfg['timeinfo'].strftime('%Y-%m-%dT%H:%M%SZ')+'\n' +
+                get_field_name(dataset['fields'][field_name], field_name))
 
         if 'field_limits' in prdcfg:
             field_limits = prdcfg['field_limits']
@@ -89,9 +95,40 @@ def generate_sparse_grid_products(dataset, prdcfg):
 
         return fname_list
 
+    warn(' Unsupported product type: ' + prdcfg['type'])
+    return None
+
 def generate_grid_products(dataset, prdcfg):
     """
-    generates grid products
+    generates grid products. Accepted product types:
+        'CROSS_SECTION': Plots a cross-section of gridded data
+            User defined parameters:
+                coord1, coord2: dict
+                    The two lat-lon coordinates marking the limits. They have
+                    the keywords 'lat' and 'lon' [degree]. The altitude limits
+                    are defined by the parameters in 'rhiImageConfig' in the
+                    'loc' configuration file
+        'LATITUDE_SLICE': Plots a cross-section of gridded data over a
+            constant latitude.
+            User defined parameters:
+                lon, lat: floats
+                    The starting point of the cross-section. The ending point
+                    is defined by the parameters in 'rhiImageConfig' in the
+                    'loc' configuration file
+        'LONGITUDE_SLICE': Plots a cross-ection of gridded data over a
+            constant longitude.
+            User defined parameters:
+                lon, lat: floats
+                    The starting point of the cross-section. The ending point
+                    is defined by the parameters in 'rhiImageConfig' in the
+                    'loc' configuration file
+        'SAVEVOL': save the gridded data in a C/F radial file
+        'SURFACE_IMAGE': Plots a surface image of gridded data.
+            User defined parameters:
+                level: int
+                    The altitude level to plot. The rest of the parameters are
+                    defined by the parameters in 'ppiImageConfig' and
+                    'ppiMapImageConfig' in the 'loc' configuration file
 
     Parameters
     ----------
@@ -103,7 +140,7 @@ def generate_grid_products(dataset, prdcfg):
 
     Returns
     -------
-    no return
+    None or name of generated files
 
     """
 
@@ -143,7 +180,7 @@ def generate_grid_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'LATITUDE_SLICE':
+    if prdcfg['type'] == 'LATITUDE_SLICE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset.fields:
             warn(
@@ -178,7 +215,7 @@ def generate_grid_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'LONGITUDE_SLICE':
+    if prdcfg['type'] == 'LONGITUDE_SLICE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset.fields:
             warn(
@@ -214,7 +251,7 @@ def generate_grid_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'CROSS_SECTION':
+    if prdcfg['type'] == 'CROSS_SECTION':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset.fields:
             warn(
@@ -265,7 +302,7 @@ def generate_grid_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'SAVEVOL':
+    if prdcfg['type'] == 'SAVEVOL':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset.fields:
             warn(
@@ -290,6 +327,5 @@ def generate_grid_products(dataset, prdcfg):
 
         return fname
 
-    else:
-        warn(' Unsupported product type: ' + prdcfg['type'])
-        return None
+    warn(' Unsupported product type: ' + prdcfg['type'])
+    return None
