@@ -71,6 +71,7 @@ Monitoring, calibration and noise correction
     process_sun_hits
     process_selfconsistency_kdp_phidp
     process_selfconsistency_bias
+    process_time_avg_std
     process_occurrence
     process_occurrence_period
     process_monitoring
@@ -183,6 +184,7 @@ from .process_phase import process_attenuation
 from .process_calib import process_correct_bias, process_correct_noise_rhohv
 from .process_calib import process_occurrence, process_occurrence_period
 from .process_calib import process_gc_monitoring, process_sun_hits
+from .process_calib import process_time_avg_std
 
 from .process_intercomp import process_time_avg, process_weighted_time_avg
 from .process_intercomp import process_time_avg_flag

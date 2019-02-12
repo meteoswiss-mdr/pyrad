@@ -132,7 +132,7 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
 
         return (fig, ax)
 
-    elif plot_type == 'QUANTILES':
+    if plot_type == 'QUANTILES':
         quantiles, values = compute_quantiles_sweep(
             radar.fields[field_name]['data'],
             radar.sweep_start_ray_index['data'][ind_el],
@@ -319,7 +319,7 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
 
         return (fig, ax)
 
-    elif plot_type == 'QUANTILES':
+    if plot_type == 'QUANTILES':
         quantiles, values = compute_quantiles_sweep(
             radar.fields[field_name]['data'],
             radar.sweep_start_ray_index['data'][ind_az],
@@ -1106,7 +1106,7 @@ def plot_along_coord(xval_list, yval_list, fname_list, labelx='coord',
                      colors=None, linestyles=None, ymin=None, ymax=None,
                      dpi=72):
     """
-    plots a time series
+    plots data along a certain radar coordinate
 
     Parameters
     ----------

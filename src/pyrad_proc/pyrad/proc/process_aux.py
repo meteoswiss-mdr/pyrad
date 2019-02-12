@@ -38,7 +38,101 @@ def get_process_func(dataset_type, dsname):
     Parameters
     ----------
     dataset_type : str
-        data set type, i.e. 'RAW', 'SAN', etc.
+        The following is a list of data set types ordered by type of output
+        dataset with the function they call. For details of what they do check
+        the function documentation:
+            'VOL' format output:
+                'ATTENUATION': process_attenuation
+                'AZI_AVG': process_azimuthal_average
+                'BIAS_CORRECTION': process_correct_bias
+                'BIRDS_ID': process_birds_id
+                'BIRD_DENSITY': process_bird_density
+                'CDF': process_cdf
+                'CDR': process_cdr
+                'CLT_TO_SAN': process_clt_to_echo_id
+                'COSMO': process_cosmo
+                'COSMO_LOOKUP': process_cosmo_lookup_table
+                'DEALIAS_FOURDD': process_dealias_fourdd
+                'DEALIAS_REGION': process_dealias_region_based
+                'DEALIAS_UNWRAP': process_dealias_unwrap_phase
+                'ECHO_FILTER': process_echo_filter
+                'HYDROCLASS': process_hydroclass
+                'HZT': process_hzt
+                'HZT_LOOKUP': process_hzt_lookup_table
+                'KDP_LEASTSQUARE_1W': process_kdp_leastsquare_single_window
+                'KDP_LEASTSQUARE_2W': process_kdp_leastsquare_double_window
+                'L': process_l
+                'NCVOL': process_save_radar
+                'OUTLIER_FILTER': process_outlier_filter
+                'PHIDP0_CORRECTION': process_correct_phidp0
+                'PHIDP0_ESTIMATE': process_estimate_phidp0
+                'PHIDP_KDP_KALMAN': process_phidp_kdp_Kalman
+                'PHIDP_KDP_LP': process_phidp_kdp_lp
+                'PHIDP_KDP_VULPIANI': process_phidp_kdp_Vulpiani
+                'PHIDP_SMOOTH_1W': process_smooth_phidp_single_window
+                'PHIDP_SMOOTH_2W': process_smooth_phidp_double_window
+                'PWR': process_signal_power
+                'RAINRATE': process_rainrate
+                'RAW': process_raw
+                'RCS': process_rcs
+                'RCS_PR': process_rcs_pr
+                'RHOHV_CORRECTION': process_correct_noise_rhohv
+                'RHOHV_RAIN': process_rhohv_rain
+                'ROI': process_roi
+                'SAN': process_echo_id
+                'SELFCONSISTENCY_BIAS': process_selfconsistency_bias
+                'SELFCONSISTENCY_KDP_PHIDP': process_selfconsistency_kdp_phidp
+                'SNR': process_snr
+                'SNR_FILTER': process_filter_snr
+                'TRAJ_TRT' : process_traj_trt
+                'VAD': process_vad
+                'VEL_FILTER': process_filter_vel_diff
+                'VIS_FILTER': process_filter_visibility
+                'VOL_REFL': process_vol_refl
+                'WIND_VEL': process_wind_vel
+                'WINDSHEAR': process_windshear
+                'ZDR_PREC': process_zdr_precip
+                'ZDR_SNOW': process_zdr_snow
+            'COLOCATED_GATES' format output:
+                'COLOCATED_GATES': process_colocated_gates
+            'COSMO_COORD' format output:
+                'COSMO_COORD': process_cosmo_coord
+                'HZT_COORD': process_hzt_coord
+            'GRID' format output:
+                'GRID': process_grid
+            'INTERCOMP' format output:
+                'INTERCOMP': process_intercomp
+                'INTERCOMP_TIME_AVG': process_intercomp_time_avg
+            'ML' format output:
+                'ML_DETECTION': process_melting_layer
+            'MONITORING' format output:
+                'GC_MONITORING': process_gc_monitoring
+                'MONITORING': process_monitoring
+            'OCCURRENCE' format output:
+                'OCCURRENCE': process_occurrence
+                'OCCURRENCE_PERIOD': process_occurrence_period
+                'TIMEAVG_STD': process_time_avg_std
+            'QVP' format output:
+                'EVP': process_evp
+                'QVP': process_qvp
+                'rQVP': process_rqvp
+                'SVP': process_svp
+                'TIME_HEIGHT': process_time_height
+            'SPARSE_GRID' format output:
+                'ZDR_COLUMN': process_zdr_column
+            'SUN_HITS' format output:
+                'SUN_HITS': process_sun_hits
+            'TIMEAVG' format output:
+                'FLAG_TIME_AVG': process_time_avg_flag
+                'TIME_AVG': process_time_avg
+                'WEIGHTED_TIME_AVG': process_weighted_time_avg
+            'TIMESERIES' format output:
+                'POINT_MEASUREMENT': 'process_point_measurement'
+                'TRAJ_ANTENNA_PATTERN': process_traj_antenna_pattern
+                'TRAJ_ATPLANE': process_traj_atplane
+                'TRAJ_LIGHTNING': process_traj_lightning
+            'TRAJ_ONLY' format output:
+                'TRAJ': process_trajectory
     dsname : str
         Name of dataset
 
@@ -208,6 +302,9 @@ def get_process_func(dataset_type, dsname):
         dsformat = 'MONITORING'
     elif dataset_type == 'OCCURRENCE':
         func_name = 'process_occurrence'
+        dsformat = 'OCCURRENCE'
+    elif dataset_type == 'TIMEAVG_STD':
+        func_name = 'process_time_avg_std'
         dsformat = 'OCCURRENCE'
     elif dataset_type == 'OCCURRENCE_PERIOD':
         func_name = 'process_occurrence_period'
@@ -697,7 +794,7 @@ def process_azimuthal_average(procstatus, dscfg, radar_list=None):
     delta_azi = dscfg.get('delta_azi', None)
     avg_type = dscfg.get('avg_type', 'mean')
     nvalid_min = dscfg.get('nvalid_min', 1)
-    if avg_type != 'mean' and avg_type != 'median':
+    if avg_type not in ('mean', 'median'):
         warn('Unsuported statistics '+avg_type)
         return None, None
 

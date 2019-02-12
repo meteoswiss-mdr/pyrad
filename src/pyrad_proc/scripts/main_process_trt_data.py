@@ -3,7 +3,7 @@
 
 """
 ================================================
-main_trt
+main_process_trt_data.py
 ================================================
 
 This program processes TRT data obtaining plots of time series of
@@ -234,13 +234,13 @@ def main():
                 titl=str(traj_ID[0])+' Cell Position')
             print('Plotted '+' '.join(figfname))
 
-    fname = args.trtbase+'cell_scores.csv'
+    fname = args.trtbase+'Santis_cell_scores.csv'
     write_trt_cell_scores(
         cell_ID_max_list, time_flash_density_max_list,
         flash_density_max_rank_list, nflashes_max_list, area_flash_max_list,
         flash_density_max_list, time_rank_max_list, rank_max_list, fname)
 
-    fname = args.trtbase+'cell_euclid_lightning.csv'
+    fname = args.trtbase+'Santis_cell_euclid_lightning.csv'
     write_trt_cell_lightning(
         cell_ID_list, time_list, lon_list, lat_list, area_list,
         rank_flash_density_list, nflash_list, flash_density_list, fname)

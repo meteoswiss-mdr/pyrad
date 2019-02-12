@@ -4,20 +4,60 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 11
-    hydroclass_entropy_trt_traj
-    entropy_trt_traj
-    propAG_trt_traj
-    propCR_trt_traj
-    propLR_trt_traj
-    propRP_trt_traj
-    propRN_trt_traj
-    propVI_trt_traj
-    propWS_trt_traj
-    propMH_trt_traj
-    propIH_trt_traj
+dataSetList STRARR 1
+    hydroclass_trt_traj
+    
+#    temperature_trt_traj
+#    reflectivity_trt_traj
+#    ZDRc_trt_traj
+#    RhoHVc_trt_traj
+#    KDPc_trt_traj
+#    hydroclass_trt_traj
+#    hydroclass_entropy_trt_traj
+#    entropy_trt_traj
+#    propAG_trt_traj
+#    propCR_trt_traj
+#    propLR_trt_traj
+#    propRP_trt_traj
+#    propRN_trt_traj
+#    propVI_trt_traj
+#    propWS_trt_traj
+#    propMH_trt_traj
+#    propIH_trt_traj
 
 
+# ==========================================================================================
+#               TRT cells trajectory processing center of cell only
+# ==========================================================================================
+#reflectivity_trt_center_traj STRUCT 4
+#    type STRING TRAJ_TRT
+#    datatype STRING CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
+#    cell_center INT 1
+#    products STRUCT 4
+#        SAVEVOL STRUCT 2
+#            type STRING SAVEVOL
+#            voltype STRING dBZc
+#        HISTOGRAM STRUCT 4
+#            type STRING HISTOGRAM
+#            voltype STRING dBZc
+#            step FLOAT 0.5
+#            write_data FLOAT 1
+#        QUANTILES STRUCT 3
+#            type STRING QUANTILES
+#            voltype STRING dBZc
+#            write_data FLOAT 1
+#        PROFILE STRUCT 9
+#            type STRING PROFILE_STATS
+#            voltype STRING dBZc
+#            heightMin FLOAT 0.
+#            heightMax FLOAT 15000.
+#            heightResolution FLOAT 250.
+#            quantity STRING mean
+#            nvalid_min INT 1
+#            vmin FLOAT -10.
+#            vmax FLOAT 50.
+#
+#
 # ==========================================================================================
 #               TRT cells trajectory processing
 # ==========================================================================================
@@ -151,28 +191,28 @@ dataSetList STRARR 11
 #            vmin FLOAT -1.
 #            vmax FLOAT 2.
 #
-#hydroclass_trt_traj STRUCT 3
-#    type STRING TRAJ_TRT
-#    datatype STRING CFRADIAL:hydro,hydroclass,SAVEVOL_hydro
-#    products STRUCT 3
-#        SAVEVOL STRUCT 2
-#            type STRING SAVEVOL
-#            voltype STRING hydro
-#        HISTOGRAM STRUCT 4
-#            type STRING HISTOGRAM
-#            voltype STRING hydro
-#            step FLOAT 1.
-#            write_data FLOAT 1
-#        PROFILE STRUCT 8
-#            type STRING PROFILE_STATS
-#            voltype STRING hydro
-#            quantity STRING mode
-#            heightMin FLOAT 0.
-#            heightMax FLOAT 15000.
-#            heightResolution FLOAT 250.
-#            vmin FLOAT 0.
-#            vmax FLOAT 9.
-#
+hydroclass_trt_traj STRUCT 3
+    type STRING TRAJ_TRT
+    datatype STRING CFRADIAL:hydro,hydroclass,SAVEVOL_hydro
+    products STRUCT 3
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING hydro
+        HISTOGRAM STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING hydro
+            step FLOAT 1.
+            write_data FLOAT 1
+        PROFILE STRUCT 8
+            type STRING PROFILE_STATS
+            voltype STRING hydro
+            quantity STRING mode
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            vmin FLOAT 0.
+            vmax FLOAT 9.
+
 hydroclass_entropy_trt_traj STRUCT 3
     type STRING TRAJ_TRT
     datatype STRING CFRADIAL:hydro,hydroclass_entropy,SAVEVOL_hydro

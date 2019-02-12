@@ -163,7 +163,7 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
             warn('Unable to retrieve PhiDP and KDP using self-consistency. ' +
                  'No selfconsistency files for the radar elevations.')
 
-            return None
+            return None, None
 
         zdr_kdpzh_dict = {'zdr_kdpzh': zdr_kdpzh_list,
                           'elev': el_list}
@@ -350,7 +350,7 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
             warn('Unable to retrieve PhiDP and KDP using self-consistency. ' +
                  'No selfconsistency files for the radar elevations.')
 
-            return None
+            return None, None
 
         zdr_kdpzh_dict = {'zdr_kdpzh': zdr_kdpzh_list,
                           'elev': el_list}
@@ -864,7 +864,7 @@ def process_zdr_snow(procstatus, dscfg, radar_list=None):
             Default None
         hydroclass : list of ints. Dataset keyword
             list of hydrometeor classes to keep for the analysis
-            Default [1] (dry snow)
+            Default [2] (dry snow)
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -924,53 +924,24 @@ def process_zdr_snow(procstatus, dscfg, radar_list=None):
             (rhohv_field not in radar.fields) or
             (zdr_field not in radar.fields) or
             (phidp_field not in radar.fields) or
-            (snr_field not in radar.fields) or
             (hydro_field not in radar.fields)):
         warn('Unable to estimate ZDR in snow. Missing data')
         return None, None
 
-    # default values
-    rmin = 1000.
-    rmax = 50000.
-    zmin = 0.
-    zmax = 30.
-    snrmin = 10.
-    snrmax = 50.
-    rhohvmin = 0.97
-    phidpmax = 10.
-    elmax = None
-    kdpmax = None
-    tempmin = None
-    tempmax = None
-    hydroclass = [1]
-
-    # user defined values
-    if 'rmin' in dscfg:
-        rmin = dscfg['rmin']
-    if 'rmax' in dscfg:
-        rmax = dscfg['rmax']
-    if 'Zmin' in dscfg:
-        zmin = dscfg['Zmin']
-    if 'Zmax' in dscfg:
-        zmax = dscfg['Zmax']
-    if 'SNRmin' in dscfg:
-        snrmin = dscfg['SNRmin']
-    if 'SNRmax' in dscfg:
-        snrmax = dscfg['SNRmax']
-    if 'RhoHVmin' in dscfg:
-        rhohvmin = dscfg['RhoHVmin']
-    if 'PhiDPmax' in dscfg:
-        phidpmax = dscfg['PhiDPmax']
-    if 'KDPmax' in dscfg:
-        kdpmax = dscfg['KDPmax']
-    if 'TEMPmin' in dscfg:
-        tempmin = dscfg['TEMPmin']
-    if 'TEMPmax' in dscfg:
-        tempmax = dscfg['TEMPmax']
-    if 'elmax' in dscfg:
-        elmax = dscfg['elmax']
-    if 'hydroclass' in dscfg:
-        hydroclass = dscfg['hydroclass']
+    # User defined values
+    rmin = dscfg.get('rmin', 1000.)
+    rmax = dscfg.get('rmax', 50000.)
+    zmin = dscfg.get('Zmin', 0.)
+    zmax = dscfg.get('Zmax', 30.)
+    snrmin = dscfg.get('SNRmin', 10.)
+    snrmax = dscfg.get('SNRmax', 50.)
+    rhohvmin = dscfg.get('RhoHVmin', 0.97)
+    phidpmax = dscfg.get('PhiDPmax', 10.)
+    elmax = dscfg.get('elmax', None)
+    kdpmax = dscfg.get('KDPmax', None)
+    tempmin = dscfg.get('TEMPmin', None)
+    tempmax = dscfg.get('TEMPmax', None)
+    hydroclass = dscfg.get('hydroclass', [2])
 
     ind_rmin = np.where(radar.range['data'] > rmin)[0][0]
     ind_rmax = np.where(radar.range['data'] < rmax)[0][-1]

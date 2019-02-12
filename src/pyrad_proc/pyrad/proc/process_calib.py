@@ -11,6 +11,7 @@ Functions for monitoring data quality and correct bias and noise effects
     process_correct_noise_rhohv
     process_gc_monitoring
     process_occurrence
+    process_time_avg_std
     process_occurrence_period
     process_sun_hits
 
@@ -262,7 +263,7 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
 
         # filter wet or dry volumes
         filter_prec = dscfg.get('filter_prec', 'None')
-        if filter_prec == 'keep_wet' or filter_prec == 'keep_dry':
+        if filter_prec in ('keep_wet', 'keep_dry'):
             if echoid_field not in radar.fields:
                 warn('Unable to determine if there is precipitation ' +
                      'close to the radar. Missing echoID field.')
@@ -459,7 +460,7 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
                 mask, radar.fields[field_name]['data'] < val_min)
 
         filter_prec = dscfg.get('filter_prec', 'None')
-        if filter_prec == 'keep_wet' or filter_prec == 'keep_dry':
+        if filter_prec in ('keep_wet', 'keep_dry'):
             if echoid_field not in radar.fields:
                 warn('Unable to determine if there is precipitation ' +
                      'close to the radar. Missing echoID field.')
@@ -593,6 +594,253 @@ def process_occurrence(procstatus, dscfg, radar_list=None):
 
         new_dataset = {
             'radar_out': dscfg['global_data']['radar_out'],
+            'starttime': dscfg['global_data']['starttime'],
+            'endtime': dscfg['global_data']['endtime'],
+            'occu_final': True}
+
+        return new_dataset, ind_rad
+
+
+def process_time_avg_std(procstatus, dscfg, radar_list=None):
+    """
+    computes the average and standard deviation of data. It looks only for
+    gates where data is present.
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        regular_grid : Boolean. Dataset keyword
+            Whether the radar has a Boolean grid or not. Default False
+        rmin, rmax : float. Dataset keyword
+            minimum and maximum ranges where the computation takes place. If
+            -1 the whole range is considered. Default is -1
+        val_min : Float. Dataset keyword
+            Minimum reflectivity value to consider that the gate has signal.
+            Default None
+        filter_prec : str. Dataset keyword
+            Give which type of volume should be filtered. None, no filtering;
+            keep_wet, keep wet volumes; keep_dry, keep dry volumes.
+        rmax_prec : float. Dataset keyword
+            Maximum range to consider when looking for wet gates [m]
+        percent_prec_max : float. Dataset keyword
+            Maxim percentage of wet gates to consider the volume dry
+        lin_trans : Boolean. Dataset keyword
+            If True the data will be transformed into linear units. Default
+            False
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the output
+    ind_rad : int
+        radar index
+
+    """
+    echoid_field = None
+    refl_field = None
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+        if datatype == 'echoID':
+            echoid_field = get_fieldname_pyart(datatype)
+        elif (datatype in ('dBZ', 'dBZc', 'dBZv', 'dBZvc', 'dBuZ', 'dBuZc') and
+              refl_field is None):
+            refl_field = get_fieldname_pyart(datatype)
+        else:
+            field_name = get_fieldname_pyart(datatype)
+    ind_rad = int(radarnr[5:8])-1
+
+    lin_trans = dscfg.get('lin_trans', 0)
+
+    if procstatus == 0:
+        return None, None
+
+    if procstatus == 1:
+        if radar_list[ind_rad] is None:
+            warn('No valid radar')
+            return None, None
+        radar = radar_list[ind_rad]
+
+        if field_name not in radar.fields:
+            warn(field_name+' not available.')
+            return None, None
+
+        # filter out low reflectivity values
+        val_min = dscfg.get('val_min', None)
+        mask = np.ma.getmaskarray(radar.fields[field_name]['data'])
+        if val_min is not None and refl_field is not None:
+            mask = np.logical_or(
+                mask, radar.fields[refl_field]['data'] < val_min)
+
+        filter_prec = dscfg.get('filter_prec', 'None')
+        if filter_prec in ('keep_wet', 'keep_dry'):
+            if echoid_field not in radar.fields:
+                warn('Unable to determine if there is precipitation ' +
+                     'close to the radar. Missing echoID field.')
+                return None, None
+
+            # Put invalid values to noise
+            echoid = deepcopy(radar.fields[echoid_field]['data'])
+            echoid[mask] = 1
+
+            rmax_prec = dscfg.get('rmax_prec', 0.)
+            percent_prec_max = dscfg.get('percent_prec_max', 10.)
+
+            ngates = radar.ngates
+            if rmax_prec > 0.:
+                ngates = len(
+                    radar.range['data'][radar.range['data'] < rmax_prec])
+            ngates_total = ngates*radar.nrays
+
+            prec_field = echoid[:, :ngates]
+            ngates_prec = np.size(prec_field[prec_field == 3])
+
+            percent_prec = ngates_prec/ngates_total*100.
+            warn('Percent gates with precipitation: '+str(percent_prec)+'\n')
+            if percent_prec > percent_prec_max:
+                if filter_prec == 'keep_dry':
+                    warn('Radar volume is precipitation contaminated.\n' +
+                         'Maximum percentage allowed: '+str(percent_prec_max))
+                    return None, None
+            else:
+                if filter_prec == 'keep_wet':
+                    warn('Radar volume has not enough precipitation.\n' +
+                         'Minimum percentage required: ' +
+                         str(percent_prec_max))
+                    return None, None
+
+        # filter out out of range data
+        rmin = dscfg.get('rmin', -1.)
+        rmax = dscfg.get('rmax', -1.)
+        if rmin >= 0.:
+            ind_min = np.where(radar.range['data'] < rmin)[0]
+            if ind_min:
+                ind_min = ind_min[-1]
+                mask[:, 0:ind_min+1] = 1
+        if rmax >= 0.:
+            ind_max = np.where(radar.range['data'] > rmax)[0]
+            if ind_max:
+                ind_max = ind_max[0]
+                mask[:, ind_max:radar.ngates] = 1
+
+        # prepare field number of samples and values sum
+        field = deepcopy(radar.fields[field_name]['data'])
+        if lin_trans:
+            field = np.ma.power(10., 0.1*field)
+
+        field = np.ma.masked_where(mask, field)
+        field = np.ma.asarray(field)
+
+        radar_aux = deepcopy(radar)
+        radar_aux.fields = dict()
+
+        sum_dict = pyart.config.get_metadata('sum')
+        sum_dict['data'] = field
+        radar_aux.add_field('sum', sum_dict)
+
+        sum2_dict = pyart.config.get_metadata('sum_squared')
+        sum2_dict['data'] = field*field
+        radar_aux.add_field('sum_squared', sum2_dict)
+
+        npoints_dict = pyart.config.get_metadata('number_of_samples')
+        npoints_dict['data'] = np.ma.asarray(np.logical_not(mask), dtype=int)
+        radar_aux.add_field('number_of_samples', npoints_dict)
+
+        # first volume: initialize radar object
+        if dscfg['initialized'] == 0:
+            new_dataset = {
+                'radar_out': radar_aux,
+                'starttime': dscfg['timeinfo'],
+                'endtime': dscfg['timeinfo'],
+                'occu_final': False}
+
+            dscfg['global_data'] = new_dataset
+            dscfg['initialized'] = 1
+
+            return new_dataset, ind_rad
+
+        # accumulate data
+        regular_grid = False
+        if 'regular_grid' in dscfg:
+            regular_grid = dscfg['regular_grid']
+
+        if not regular_grid:
+            sum_interp = interpol_field(
+                dscfg['global_data']['radar_out'], radar_aux, 'sum')
+            sum2_interp = interpol_field(
+                dscfg['global_data']['radar_out'], radar_aux, 'sum_squared')
+            npoints_interp = interpol_field(
+                dscfg['global_data']['radar_out'], radar_aux,
+                'number_of_samples')
+        else:
+            if radar_aux.nrays != dscfg['global_data']['radar_out'].nrays:
+                warn('Unable to accumulate radar object. ' +
+                     'Number of rays of current radar different from ' +
+                     'reference. nrays current: '+str(radar_aux.nrays) +
+                     ' nrays ref: ' +
+                     str(dscfg['global_data']['radar_out'].nrays))
+                return None, None
+            sum_interp = radar_aux.fields['sum']
+            sum2_interp = radar_aux.fields['sum_squared']
+            npoints_interp = radar_aux.fields['number_of_samples']
+
+        valid = np.logical_not(np.ma.getmaskarray(sum_interp))
+
+        dscfg['global_data']['radar_out'].fields['sum']['data'][valid] += (
+            np.ma.asarray(sum_interp['data'][valid]))
+        dscfg['global_data']['radar_out'].fields['sum_squared'][
+            'data'][valid] += np.ma.asarray(sum2_interp['data'][valid])
+        dscfg['global_data']['radar_out'].fields['number_of_samples'][
+            'data'][valid] += np.ma.asarray(npoints_interp['data'][valid])
+        dscfg['global_data']['endtime'] = dscfg['timeinfo']
+
+        new_dataset = {
+            'radar_out': dscfg['global_data']['radar_out'],
+            'starttime': dscfg['global_data']['starttime'],
+            'endtime': dscfg['global_data']['endtime'],
+            'occu_final': False}
+
+        return new_dataset, ind_rad
+
+    # no more files to process. Compute mean and standard deviation
+    if procstatus == 2:
+        if dscfg['initialized'] == 0:
+            return None, None
+        if 'radar_out' not in dscfg['global_data']:
+            return None, None
+
+        field_mean = (
+            dscfg['global_data']['radar_out'].fields['sum']['data'] /
+            dscfg['global_data']['radar_out'].fields[
+                'number_of_samples']['data'])
+        field_std = np.ma.sqrt(
+            dscfg['global_data']['radar_out'].fields['sum_squared']['data'] /
+            dscfg['global_data']['radar_out'].fields[
+                'number_of_samples']['data']-field_mean*field_mean)
+        if lin_trans:
+            field_mean = 10.*np.ma.log10(field_mean)
+            field_std = 10.*np.ma.log10(field_std)
+
+        radar = dscfg['global_data']['radar_out']
+
+        mean_dict = pyart.config.get_metadata(field_name)
+        mean_dict['data'] = field_mean
+        radar.add_field(field_name, mean_dict)
+
+        std_dict = pyart.config.get_metadata('standard_deviation')
+        std_dict['data'] = field_std
+        radar.add_field('standard_deviation', std_dict)
+
+        new_dataset = {
+            'radar_out': radar,
             'starttime': dscfg['global_data']['starttime'],
             'endtime': dscfg['global_data']['endtime'],
             'occu_final': True}

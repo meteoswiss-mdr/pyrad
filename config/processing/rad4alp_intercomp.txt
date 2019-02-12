@@ -15,6 +15,7 @@ datapath STRARR 5
     /srn/data/
     /srn/data/
     /srn/data/
+path_convention STRING RT
     
 # Loading of saved datasets
 loadbasepath STRARR 5

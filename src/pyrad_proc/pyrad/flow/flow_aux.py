@@ -44,7 +44,12 @@ import threading
 import glob
 from copy import deepcopy
 
-from memory_profiler import profile as mprofile
+try:
+    from memory_profiler import profile as mprofile
+    _MPROFILE_AVAILABLE = True
+except ImportError:
+    warn('Memory profiler not available')
+    _MPROFILE_AVAILABLE = False
 
 from pyrad import proc
 
@@ -114,6 +119,9 @@ def profiler(level=1):
                 the function decorated with the memory decorator
 
             """
+            if not _MPROFILE_AVAILABLE:
+                return func(*args, **kwargs)
+
             if ((PROFILE_LEVEL == 1 and level == 1) or
                     (PROFILE_LEVEL == 2 and (level == 1 or level == 2)) or
                     PROFILE_LEVEL == 3):
