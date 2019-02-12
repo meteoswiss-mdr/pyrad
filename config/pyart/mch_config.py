@@ -39,29 +39,21 @@ fill_value = -9999.0
 # and retrieval algorithms. The comments in this section provide additional
 # information about the fields in that section.
 
-# Radar reflectivity fields, DZ
-reflectivity = 'reflectivity'
-corrected_reflectivity = 'corrected_reflectivity'
+# Radar reflectivity fields
 total_power = 'total_power'
 
 unfiltered_reflectivity = 'unfiltered_reflectivity'
-corrected_unfiltered_reflectivity = 'corrected_unfiltered_reflectivity'
-reflectivity_vv = 'reflectivity_vv'
-corrected_reflectivity_vv = 'corrected_reflectivity_vv'
 unfiltered_reflectivity_vv = 'unfiltered_reflectivity_vv'
 
+reflectivity = 'reflectivity'
+reflectivity_vv = 'reflectivity_vv'
+
+corrected_unfiltered_reflectivity = 'corrected_unfiltered_reflectivity'
+
+corrected_reflectivity = 'corrected_reflectivity'
+corrected_reflectivity_vv = 'corrected_reflectivity_vv'
+
 reflectivity_bias = 'reflectivity_bias'
-
-signal_power_hh = 'signal_power_hh'
-signal_power_vv = 'signal_power_vv'
-
-sun_hit_power_h = 'sun_hit_power_h'
-sun_hit_power_v = 'sun_hit_power_v'
-sun_hit_differential_reflectivity = 'sun_hit_differential_reflectivity'
-
-sun_est_power_h = 'sun_est_power_h'
-sun_est_power_v = 'sun_est_power_v'
-sun_est_differential_reflectivity = 'sun_est_differential_reflectivity'
 
 volumetric_reflectivity = 'volumetric_reflectivity'
 volumetric_reflectivity_vv = 'volumetric_reflectivity_vv'
@@ -69,11 +61,21 @@ volumetric_reflectivity_vv = 'volumetric_reflectivity_vv'
 radar_cross_section_hh = 'radar_cross_section_hh'
 radar_cross_section_vv = 'radar_cross_section_vv'
 
+signal_power_hh = 'signal_power_hh'
+signal_power_vv = 'signal_power_vv'
+
+signal_to_noise_ratio = 'signal_to_noise_ratio'
+signal_to_noise_ratio_hh = 'signal_to_noise_ratio_hh'
+signal_to_noise_ratio_vv = 'signal_to_noise_ratio_vv'
+
+noisedBZ_hh = 'noisedBZ_hh'
+noisedBZ_vv = 'noisedBZ_vv'
+
 # Mean Doppler velocity fields, VEL
 velocity = 'velocity'
 corrected_velocity = 'corrected_velocity'
-
 unfiltered_velocity = 'unfiltered_velocity'
+
 velocity_vv = 'velocity_vv'
 unfiltered_velocity_vv = 'unfiltered_velocity_vv'
 
@@ -87,11 +89,11 @@ velocity_difference = 'velocity_difference'
 
 # Spectral width fields, SW
 spectrum_width = 'spectrum_width'
+unfiltered_spectrum_width = 'unfiltered_spectrum_width'
 corrected_spectrum_width = 'corrected_spectrum_width'
 
-unfiltered_spectrum_width = 'unfiltered_spectrum_width'
-spectrum_width_vv = 'spectrum_width_vv'
 unfiltered_spectrum_width_vv = 'unfiltered_spectrum_width_vv'
+spectrum_width_vv = 'spectrum_width_vv'
 
 # Differential reflectivity fields, ZDR
 differential_reflectivity = 'differential_reflectivity'
@@ -119,6 +121,12 @@ cross_correlation_ratio_in_rain = 'cross_correlation_ratio_in_rain'
 
 # Normalized coherent power, signal quality index, SQI, NCP
 normalized_coherent_power = 'normalized_coherent_power'
+
+signal_quality_index = 'signal_quality_index'
+signal_quality_index_vv = 'signal_quality_index_vv'
+unfiltered_signal_quality_index = 'unfiltered_signal_quality_index'
+unfiltered_signal_quality_index_vv = 'unfiltered_signal_quality_index_vv'
+
 
 # Differential phase shift, PhiDP
 differential_phase = 'differential_phase'
@@ -148,42 +156,6 @@ linear_depolarization_ratio_v = 'linear_depolarization_ratio_v'
 
 circular_depolarization_ratio = 'circular_depolarization_ratio'
 
-# signal quality index
-signal_quality_index = 'signal_quality_index'
-signal_quality_index_vv = 'signal_quality_index_vv'
-unfiltered_signal_quality_index = 'unfiltered_signal_quality_index'
-unfiltered_signal_quality_index_vv = 'unfiltered_signal_quality_index_vv'
-
-# hydroclass
-radar_echo_classification = 'radar_echo_classification'
-hydroclass_entropy = 'hydroclass_entropy'
-proportion_AG = 'proportion_AG'
-proportion_CR = 'proportion_CR'
-proportion_LR = 'proportion_LR'
-proportion_RP = 'proportion_RP'
-proportion_RN = 'proportion_RN'
-proportion_VI = 'proportion_VI'
-proportion_WS = 'proportion_WS'
-proportion_MH = 'proportion_MH'
-proportion_IH = 'proportion_IH'
-
-# Misc fields
-signal_to_noise_ratio = 'signal_to_noise_ratio'
-signal_to_noise_ratio_hh = 'signal_to_noise_ratio_hh'
-signal_to_noise_ratio_vv = 'signal_to_noise_ratio_vv'
-noisedBZ_hh = 'noisedBZ_hh'
-noisedBZ_vv = 'noisedBZ_vv'
-
-rain_rate = 'rain_rate'
-radar_estimated_rain_rate = 'radar_estimated_rain_rate'
-radar_echo_id = 'radar_echo_id'
-clutter_exit_code = 'clutter_exit_code'
-melting_layer = 'melting_layer'
-melting_layer_height = 'melting_layer_height'
-
-bird_density = 'bird_density'
-bird_reflectivity = 'bird_reflectivity'
-
 # attenuation
 specific_attenuation = 'specific_attenuation'
 corrected_specific_attenuation = 'corrected_specific_attenuation'
@@ -198,10 +170,15 @@ path_integrated_differential_attenuation = (
 corrected_path_integrated_differential_attenuation = (
     'corrected_path_integrated_differential_attenuation')
 
-sun_hit_h = 'sun_hit_h'
-sun_hit_v = 'sun_hit_v'
-sun_hit_zdr = 'sun_hit_zdr'
+# Textures
+differential_phase_texture = 'differential_phase_texture'
+cross_correlation_ratio_texture = 'cross_correlation_ratio_texture'
+differential_reflectivity_texture = 'differential_reflectivity_texture'
+reflectivity_texture = 'reflectivity_texture'
 
+# Misc fields
+radar_echo_id = 'radar_echo_id'
+clutter_exit_code = 'clutter_exit_code'
 number_of_samples = 'number_of_samples'
 sum = 'sum'
 sum_squared = 'sum_squared'
@@ -221,11 +198,26 @@ hzt_index = 'hzt_index'
 # DEM fields
 visibility = 'visibility'
 
-# Textures
-differential_phase_texture = 'differential_phase_texture'
-cross_correlation_ratio_texture = 'cross_correlation_ratio_texture'
-differential_reflectivity_texture = 'differential_reflectivity_texture'
-reflectivity_texture = 'reflectivity_texture'
+# precipitation
+rain_rate = 'rain_rate'
+radar_estimated_rain_rate = 'radar_estimated_rain_rate'
+
+# melting layer
+melting_layer = 'melting_layer'
+melting_layer_height = 'melting_layer_height'
+
+# hydroclass
+radar_echo_classification = 'radar_echo_classification'
+hydroclass_entropy = 'hydroclass_entropy'
+proportion_AG = 'proportion_AG'
+proportion_CR = 'proportion_CR'
+proportion_LR = 'proportion_LR'
+proportion_RP = 'proportion_RP'
+proportion_RN = 'proportion_RN'
+proportion_VI = 'proportion_VI'
+proportion_WS = 'proportion_WS'
+proportion_MH = 'proportion_MH'
+proportion_IH = 'proportion_IH'
 
 # Wind retrieval fields
 eastward_wind_component = 'eastward_wind_component'
@@ -235,6 +227,23 @@ azimuthal_horizontal_wind_component = 'azimuthal_horizontal_wind_component'
 vertical_wind_shear = 'vertical_wind_shear'
 wind_speed = 'wind_speed'
 wind_direction = 'wind_direction'
+
+# Sun signal fields
+sun_hit_power_h = 'sun_hit_power_h'
+sun_hit_power_v = 'sun_hit_power_v'
+sun_hit_differential_reflectivity = 'sun_hit_differential_reflectivity'
+
+sun_est_power_h = 'sun_est_power_h'
+sun_est_power_v = 'sun_est_power_v'
+sun_est_differential_reflectivity = 'sun_est_differential_reflectivity'
+
+sun_hit_h = 'sun_hit_h'
+sun_hit_v = 'sun_hit_v'
+sun_hit_zdr = 'sun_hit_zdr'
+
+# birds signal
+bird_density = 'bird_density'
+bird_reflectivity = 'bird_reflectivity'
 
 # profile variables
 height = 'height'
@@ -726,7 +735,10 @@ DEFAULT_METADATA = {
         'units': 'dBZ',
         'standard_name': 'horizontal_reflectivity',
         'long_name': 'Horizontal Reflectivity',
-        'coordinates': 'elevation azimuth range'},
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 0.5,
+        'add_offset': -32.,
+        '_Write_as_dtype': 'uint8'},
 
     bird_reflectivity: {
         'units': 'dBZ',
@@ -909,7 +921,10 @@ DEFAULT_METADATA = {
         'units': 'dB',
         'standard_name': 'differential_reflectivity',
         'long_name': 'Differential reflectivity',
-        'coordinates': 'elevation azimuth range'},
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 0.062254902,
+        'add_offset': -7.9375,
+        '_Write_as_dtype': 'uint8'},
 
     corrected_differential_reflectivity: {
         'units': 'dB',
@@ -1122,27 +1137,39 @@ DEFAULT_METADATA = {
         'standard_name': 'sun_hit_h',
         'long_name': 'sun hit radar bins horizontal polarization',
         'labels': ['OTHER', 'SUN'],
-        'ticks': [0, 1],
-        'boundaries': [-0.5, 0.5, 1.5],
-        'coordinates': 'elevation azimuth range'},
+        'ticks': [1, 2],
+        'boundaries': [0.5, 1.5, 2.5],
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 1,
+        'add_offset': 0,
+        '_FillValue': 0,
+        '_Write_as_dtype': 'uint8'},
 
     sun_hit_v: {
         'units': '-',
         'standard_name': 'sun_hit_v',
         'long_name': 'sun hit radar bins vertical polarization',
         'labels': ['OTHER', 'SUN'],
-        'ticks': [0, 1],
-        'boundaries': [-0.5, 0.5, 1.5],
-        'coordinates': 'elevation azimuth range'},
+        'ticks': [1, 2],
+        'boundaries': [0.5, 1.5, 2.5],
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 1,
+        'add_offset': 0,
+        '_FillValue': 0,
+        '_Write_as_dtype': 'uint8'},
 
     sun_hit_zdr: {
         'units': '-',
         'standard_name': 'sun_hit_zdr',
         'long_name': 'sun hit radar bins differential reflectivity',
         'labels': ['OTHER', 'SUN'],
-        'ticks': [0, 1],
-        'boundaries': [-0.5, 0.5, 1.5],
-        'coordinates': 'elevation azimuth range'},
+        'ticks': [1, 2],
+        'boundaries': [0.5, 1.5, 2.5],
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 1,
+        'add_offset': 0,
+        '_FillValue': 0,
+        '_Write_as_dtype': 'uint8'},
 
     radar_echo_classification: {
         'units': '-',
@@ -1150,9 +1177,13 @@ DEFAULT_METADATA = {
         'long_name': 'Radar echo classification',
         'labels': ['NC', 'AG', 'CR', 'LR', 'RP', 'RN', 'VI', 'WS', 'MH',
                    'IH/HDG'],
-        'ticks': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-        'boundaries': [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5],
-        'coordinates': 'elevation azimuth range'},
+        'ticks': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        'boundaries': [0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5],
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 1,
+        'add_offset': 0,
+        '_FillValue': 0,
+        '_Write_as_dtype': 'uint8'},
 
     hydroclass_entropy: {
         'units': '-',
@@ -1221,7 +1252,11 @@ DEFAULT_METADATA = {
         'labels': ['NOISE', 'CLT', 'PREC'],
         'ticks': [1, 2, 3],
         'boundaries': [0.5, 1.5, 2.5, 3.5],
-        'coordinates': 'elevation azimuth range'},
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 1,
+        'add_offset': 0,
+        '_FillValue': 0,
+        '_Write_as_dtype': 'uint8'},
 
     clutter_exit_code: {
         'units': '-',
@@ -1239,7 +1274,11 @@ DEFAULT_METADATA = {
         'labels': ['BELOW', 'ENTERING', 'INSIDE', 'EXITING', 'ABOVE'],
         'ticks': [1, 2, 3, 4, 5],
         'boundaries': [0.5, 1.5, 2.5, 3.5, 4.5, 5.5],
-        'coordinates': 'elevation azimuth range'},
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 1,
+        'add_offset': 0,
+        '_FillValue': 0,
+        '_Write_as_dtype': 'uint8'},
 
     melting_layer_height: {
         'units': 'm MSL',
@@ -1344,9 +1383,13 @@ DEFAULT_METADATA = {
         'standard_name': 'colocated_gates',
         'long_name': 'Colocated gates',
         'labels': ['FALSE', 'TRUE'],
-        'ticks': [0, 1],
-        'boundaries': [-0.5, 0.5, 1.5],
-        'coordinates': 'elevation azimuth range'},
+        'ticks': [1, 2],
+        'boundaries': [0.5, 1.5, 2.5],
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 1,
+        'add_offset': 0,
+        '_FillValue': 0,
+        '_Write_as_dtype': 'uint8'},
 
     # COSMO model data
     temperature: {
@@ -1362,7 +1405,11 @@ DEFAULT_METADATA = {
         'labels': ['BELOW', 'INSIDE', 'ABOVE'],
         'ticks': [1, 2, 3],
         'boundaries': [0.5, 1.5, 2.5, 3.5],
-        'coordinates': 'elevation azimuth range'},
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 1,
+        'add_offset': 0,
+        '_FillValue': 0,
+        '_Write_as_dtype': 'uint8'},
 
     height_over_iso0: {
         'units': 'm',

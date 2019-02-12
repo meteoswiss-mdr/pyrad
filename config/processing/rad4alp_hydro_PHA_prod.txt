@@ -4,21 +4,21 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 1
+dataSetList STRARR 14
     l0:TEMP
-#    l0:ZH
-#    l0:ZH_TIME_HEIGHT
-#    l0:SNRh
-#    l0:RhoHV
-#    l1:echoID
-#    l2:echoFilter
-#    l3:SNRFilter
-#    l4:PhiDPc_smooth2w
-#    l5:KDPc_Vulpiani
-#    l5:Att_ZPhi
-#    l6:ZHc_TIME_HEIGHT
-#    l6:hydroclass_entropy
-#    l7:hydroclass_TIME_HEIGHT
+    l0:ZH
+    l0:ZH_TIME_HEIGHT
+    l0:SNRh
+    l1:RhoHV
+    l2:echoID
+    l3:echoFilter
+    l4:SNRFilter
+    l5:PhiDPc_smooth2w
+    l6:KDPc_Vulpiani
+    l7:Att_ZPhi
+    l8:ZHc_TIME_HEIGHT
+    l8:hydroclass_entropy
+    l9:hydroclass_TIME_HEIGHT
 
 
 # ==========================================================================================

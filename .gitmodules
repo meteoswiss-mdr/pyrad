@@ -1,4 +1,4 @@
 [submodule "src/pyart"]
 	path = src/pyart
 	url = https://github.com/meteoswiss-mdr/pyart.git
-	branch = pyart-mch
+	branch = master

@@ -42,7 +42,15 @@ from ..util.radar_utils import create_sun_retrieval_field
 
 def generate_occurrence_products(dataset, prdcfg):
     """
-    generates occurrence products
+    generates occurrence products. Accepted product types:
+        'WRITE_EXCESS_GATES': Write the data that identifies radar gates
+            with clutter that has a frequency of occurrence above a certain
+            threshold.
+            User defined parameters:
+                quant_min: float
+                    Minimum frequency of occurrence in percentage to keep the
+                    gate as valid. Default 95.
+        All the products of the 'VOL' dataset group
 
     Parameters
     ----------
@@ -126,20 +134,22 @@ def generate_occurrence_products(dataset, prdcfg):
             print('saved excess gates file: '+fname)
 
         return fname
-    else:
-        field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if ((field_name == 'frequency_of_occurrence') and
-                (not dataset['occu_final'])):
-            return None
-        if dataset['occu_final']:
-            prdcfg['timeinfo'] = dataset['endtime']
 
-        return generate_vol_products(dataset, prdcfg)
+    field_name = get_fieldname_pyart(prdcfg['voltype'])
+    if ((field_name == 'frequency_of_occurrence') and
+            (not dataset['occu_final'])):
+        return None
+    if dataset['occu_final']:
+        prdcfg['timeinfo'] = dataset['endtime']
+
+    return generate_vol_products(dataset, prdcfg)
 
 
 def generate_cosmo_coord_products(dataset, prdcfg):
     """
-    generates COSMO coordinates products
+    generates COSMO coordinates products. Accepted product types:
+        'SAVEVOL': Save an object containing the index of the COSMO model grid
+            that corresponds to each radar gate in a C/F radial file.
 
     Parameters
     ----------
@@ -179,14 +189,33 @@ def generate_cosmo_coord_products(dataset, prdcfg):
 
         return fname
 
-    else:
-        warn(' Unsupported product type: ' + prdcfg['type'])
-        return None
+    warn(' Unsupported product type: ' + prdcfg['type'])
+    return None
 
 
 def generate_sun_hits_products(dataset, prdcfg):
     """
-    generates sun hits products
+    generates sun hits products. Accepted product types:
+        'PLOT_SUN_HITS': Plots in a sun-radar azimuth difference-sun-radar
+            elevation difference grid the values of all sun hits obtained
+            during the processing period
+        'PLOT_SUN_RETRIEVAL': Plots in a sun-radar azimuth difference-sun-
+            radar elevation difference grid the retrieved sun pattern
+        'PLOT_SUN_RETRIEVAL_TS': Plots time series of the retrieved sun
+            pattern parameters
+            User defined parameters:
+                dpi: int
+                    The pixel density of the plot. Default 72
+                add_date_in_fname: Bool
+                    If true the year is added in the plot file name
+        'WRITE_SUN_HITS': Writes the information concerning possible sun hits
+            in a csv file
+        'WRITE_SUN_RETRIEVAL': Writes the retrieved sun pattern parameters in
+            a csv file.
+            User defined parameters:
+                add_date_in_fname: Bool
+                    If true the year is added in the csv file name
+        All the products of the 'VOL' dataset group
 
     Parameters
     ----------
@@ -229,7 +258,7 @@ def generate_sun_hits_products(dataset, prdcfg):
 
         return fname[0]
 
-    elif prdcfg['type'] == 'PLOT_SUN_HITS':
+    if prdcfg['type'] == 'PLOT_SUN_HITS':
         if 'sun_hits_final' not in dataset:
             return None
 
@@ -274,16 +303,15 @@ def generate_sun_hits_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'WRITE_SUN_RETRIEVAL':
+    if prdcfg['type'] == 'WRITE_SUN_RETRIEVAL':
         if 'sun_retrieval' not in dataset:
             return None
 
         timeinfo = None
         timeformat = None
-        if 'add_date_in_fname' in prdcfg:
-            if prdcfg['add_date_in_fname']:
-                timeinfo = dataset['timeinfo']
-                timeformat = '%Y'
+        if prdcfg.get('add_date_in_fname', False):
+            timeinfo = dataset['timeinfo']
+            timeformat = '%Y'
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -301,7 +329,7 @@ def generate_sun_hits_products(dataset, prdcfg):
 
         return fname
 
-    elif prdcfg['type'] == 'PLOT_SUN_RETRIEVAL':
+    if prdcfg['type'] == 'PLOT_SUN_RETRIEVAL':
         if 'sun_retrieval' not in dataset:
             return None
 
@@ -350,20 +378,16 @@ def generate_sun_hits_products(dataset, prdcfg):
 
         return fname_list
 
-    elif prdcfg['type'] == 'PLOT_SUN_RETRIEVAL_TS':
+    if prdcfg['type'] == 'PLOT_SUN_RETRIEVAL_TS':
         if 'sun_retrieval' not in dataset:
             return None
 
-        dpi = 72
-        if 'dpi' in prdcfg:
-            dpi = prdcfg['dpi']
-
+        dpi = prdcfg.get('dpi', 72)
         timeinfo = None
         timeformat = None
-        if 'add_date_in_fname' in prdcfg:
-            if prdcfg['add_date_in_fname']:
-                timeinfo = dataset['timeinfo']
-                timeformat = '%Y'
+        if prdcfg.get('add_date_in_fname', False):
+            timeinfo = dataset['timeinfo']
+            timeformat = '%Y'
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -412,15 +436,21 @@ def generate_sun_hits_products(dataset, prdcfg):
         print('----- save to '+' '.join(fname_list))
         return fname_list
 
-    else:
-        if 'radar_out' in dataset:
-            return generate_vol_products(dataset, prdcfg)
+    if 'radar_out' in dataset:
+        return generate_vol_products(dataset, prdcfg)
+
+    return None
 
 
 def generate_qvp_products(dataset, prdcfg):
     """
-    Generates quasi vertical profile products. Quasi vertical profiles
-    come from azimuthal averaging of polarimetric radar data.
+    Generates quasi vertical profile-like products. Quasi vertical profiles
+    come from azimuthal averaging of polarimetric radar data. With the
+    variable 'qvp_type' the user decides if the product has to be generated
+    at the end of the processing period ('final') or instantaneously
+    ('instant')
+    Accepted product types:
+        All the products of the 'VOL' dataset group
 
     Parameters
     ----------
@@ -450,7 +480,17 @@ def generate_qvp_products(dataset, prdcfg):
 
 def generate_ml_products(dataset, prdcfg):
     """
-    Generates melting layer products.
+    Generates melting layer products. Accepted product types:
+        'ML_TS': Plots and writes a time series of the melting layer, i.e.
+            the evolution of the average and standard deviation of the melting
+            layer top and thickness and the the number of rays used in the
+            retrieval.
+            User defined parameters:
+                dpi: int
+                    The pixel density of the plot. Default 72
+        'SAVE_ML': Saves an object containing the melting layer retrieval
+            information in a C/F radial file
+        All the products of the 'VOL' dataset group
 
     Parameters
     ----------
@@ -527,7 +567,8 @@ def generate_ml_products(dataset, prdcfg):
         print('----- save to '+' '.join(figfname_list))
 
         return figfname_list
-    elif prdcfg['type'] == 'SAVE_ML':
+
+    if prdcfg['type'] == 'SAVE_ML':
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
@@ -541,5 +582,5 @@ def generate_ml_products(dataset, prdcfg):
         print('saved file: '+fname)
 
         return fname
-    else:
-        return generate_vol_products(dataset, prdcfg)
+
+    return generate_vol_products(dataset, prdcfg)

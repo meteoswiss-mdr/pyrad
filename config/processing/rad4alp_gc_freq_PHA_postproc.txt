@@ -48,7 +48,7 @@ imgformat STRING png
 configpath STRING $HOME/pyrad/config/
 
 # Configuration of the radar location and approach direction
-locationConfigFile STRING $HOME/pyrad/config/processing/rad4alp_gc_PHA_rt_loc.txt
+locationConfigFile STRING $HOME/pyrad/config/processing/rad4alp_gc_PHA_loc.txt
 
 # Configuration of the product generation
 productConfigFile STRING $HOME/pyrad/config/processing/rad4alp_gc_freq_PHA_postproc_prod.txt

@@ -296,7 +296,7 @@ def main():
             print("----- plot to '%s'" % fname)
 
     if 'hydro' in datatype_list:
-        fname = args.trtbase+'cell_rimmed_particles_column.csv'
+        fname = args.trtbase+'cell_rimed_particles_column.csv'
         write_trt_cell_lightning(
             cell_ID_list, time_list, lon_list, lat_list, area_list,
             rank_list, rm_hmin_list, rm_hmax_list, fname)
@@ -326,7 +326,7 @@ def get_graupel_column(tbin_edges, hbin_edges, data_ma, start_time,
     Returns
     -------
     hmin, hmax : 1D float arrays
-        the minimum and maximum altitude of the rimmed particles column
+        the minimum and maximum altitude of the rimed particles column
 
     """
     tbin_rights = tbin_edges[1:]
@@ -342,12 +342,12 @@ def get_graupel_column(tbin_edges, hbin_edges, data_ma, start_time,
     hmin = np.ma.min(H_lefts, axis=1)
     hmax = np.ma.max(H_rights, axis=1)
 
-    # All TRT cell time steps have a corresponding rimmed column height value
+    # All TRT cell time steps have a corresponding rimed column height value
     # Return the values
     if tbin_rights.size == yyyymmddHHMM.size:
         return hmin, hmax
 
-    # Missing rimmed height values. Determine those missing and put the data
+    # Missing rimed height values. Determine those missing and put the data
     # in the right time step
     hmin_aux = np.ma.masked_all(yyyymmddHHMM.size, dtype=float)
     hmax_aux = np.ma.masked_all(yyyymmddHHMM.size, dtype=float)
