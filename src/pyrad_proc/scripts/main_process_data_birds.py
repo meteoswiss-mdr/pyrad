@@ -197,7 +197,7 @@ def main():
         titl = 'bird retrieval '+args.starttime+'\n'+get_field_name(
             field_dict, field_name)
 
-        tbin_edges, hbin_edges, np_ma, data_ma = read_profile_ts(
+        tbin_edges, hbin_edges, np_ma, data_ma, t_start = read_profile_ts(
             flist, labels, hres=hres, label_nr=label_nr)
 
         basepath_out = os.path.dirname(flist[0])

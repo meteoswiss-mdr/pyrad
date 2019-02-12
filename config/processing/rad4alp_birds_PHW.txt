@@ -10,6 +10,7 @@ name STRING rad4alp_birds_PHW
 # Note: Must have a trailing '/'
 # ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
 datapath STRING /srn/data/
+path_convention STRING RT
 
 # Base path for cosmo data
 # cosmopath STRING /srn/analysis/cosmo/
@@ -35,7 +36,7 @@ datapath STRING /srn/data/
 # --------------------------------------------
 saveimgbasepath STRING /srn/analysis/pyrad_products/
 # Supported formats: eps, jpeg, jpg, pdf, pgf, png, ps, raw, rgba, svg, svgz, tif, tiff
-imgformat STRING png	
+imgformat STRING png
 
 # --------------------------------------------------------
 # configuration files pathes
@@ -45,7 +46,7 @@ imgformat STRING png
 configpath STRING $HOME/pyrad/config/
 
 # Configuration of the radar location and approach direction
-locationConfigFile STRING $HOME/pyrad/config/processing/rad4alp_birds_PHW_rt_loc.txt
+locationConfigFile STRING $HOME/pyrad/config/processing/rad4alp_birds_PHW_loc.txt
 
 # Configuration of the product generation
 productConfigFile STRING $HOME/pyrad/config/processing/rad4alp_birds_PHW_prod.txt
