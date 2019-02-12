@@ -166,9 +166,9 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
 
     # ax.autoscale(enable=True, axis='both', tight=True)
 
-    plt.xlabel(labelx)
-    plt.ylabel(labely)
-    plt.title(titl)
+    ax.set_xlabel(labelx)
+    ax.set_ylabel(labely)
+    ax.set_title(titl)
 
     cb = fig.colorbar(cax)
     cb.set_label(label)
@@ -197,7 +197,7 @@ def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)
 
     return fname_list
 
@@ -279,23 +279,23 @@ def plot_scatter(bin_edges1, bin_edges2, hist_2d, field_name1, field_name2, fnam
 
     # ax.autoscale(enable=True, axis='both', tight=True)
 
-    plt.xlabel(labelx)
-    plt.ylabel(labely)
-    plt.title(titl)
+    ax.set_xlabel(labelx)
+    ax.set_ylabel(labely)
+    ax.set_title(titl)
 
     cb = fig.colorbar(cax)
     cb.set_label(label)
 
     if metadata is not None:
-        plt.text(0.05, 0.95, metadata, horizontalalignment='left',
-                 verticalalignment='top', transform=ax.transAxes)
+        ax.text(0.05, 0.95, metadata, horizontalalignment='left',
+                verticalalignment='top', transform=ax.transAxes)
 
     # Make a tight layout
     fig.tight_layout()
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)
 
     return fname_list
 
@@ -342,7 +342,7 @@ def plot_quantiles(quant, value, fname_list, labelx='quantile', labely='value',
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)
 
     return fname_list
 
@@ -375,24 +375,26 @@ def plot_histogram(bin_edges, values, fname_list, labelx='bins',
         list of names of the created plots
 
     """
-    fig = plt.figure(figsize=[10, 6], dpi=dpi)
-    plt.hist(values, bins=bin_edges)
-    plt.xlabel(labelx)
-    plt.ylabel(labely)
-    plt.title(titl)
+    fig, ax = plt.subplots(figsize=[10, 6], dpi=dpi)
+    ax.hist(values, bins=bin_edges)
+    ax.set_xlabel(labelx)
+    ax.set_ylabel(labely)
+    ax.set_title(titl)
 
     # Make a tight layout
     fig.tight_layout()
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)
 
     return fname_list
 
 
 def plot_histogram2(bin_centers, hist, fname_list, labelx='bins',
-                    labely='Number of Samples', titl='histogram', dpi=72):
+                    labely='Number of Samples', titl='histogram', dpi=72,
+                    ax=None, fig=None, save_fig=True, color=None, alpha=None,
+                    invert_xaxis=False):
     """
     plots histogram
 
@@ -412,27 +414,50 @@ def plot_histogram2(bin_centers, hist, fname_list, labelx='bins',
         The figure title
     dpi : int
         dots per inch
+    fig : Figure
+        Figure to add the colorbar to. If none a new figure will be created
+    ax : Axis
+        Axis to plot on. if fig is None a new axis will be created
+    save_fig : bool
+        if true save the figure. If false it does not close the plot and
+        returns the handle to the figure
+    color : str
+        color of the bars
+    alpha : float
+        parameter controling the transparency
+    invert_xaxis : bool
+        If true inverts the x axis
 
     Returns
     -------
-    fname_list : list of str
+    fname_list or fig, ax: list of str
         list of names of the created plots
 
     """
-    fig = plt.figure(figsize=[10, 6], dpi=dpi)
-    plt.bar(bin_centers, hist, width=bin_centers[1]-bin_centers[0])
-    plt.xlabel(labelx)
-    plt.ylabel(labely)
-    plt.title(titl)
+    if fig is None:
+        fig = plt.figure(figsize=[10, 6], dpi=dpi)
+        ax = fig.add_subplot(111)
+    else:
+        ax.autoscale(False)
 
-    # Make a tight layout
-    fig.tight_layout()
+    ax.bar(
+        bin_centers, hist, width=bin_centers[1]-bin_centers[0], color=color,
+        alpha=alpha)
+    if invert_xaxis:
+        ax.invert_xaxis()
 
-    for fname in fname_list:
-        fig.savefig(fname, dpi=dpi)
-    plt.close()
+    ax.set_xlabel(labelx)
+    ax.set_ylabel(labely)
+    ax.set_title(titl)
 
-    return fname_list
+    if save_fig:
+        for fname in fname_list:
+            fig.savefig(fname, dpi=dpi)
+        plt.close(fig)
+
+        return fname_list
+
+    return (fig, ax)
 
 
 def plot_antenna_pattern(antpattern, fname_list, labelx='Angle [Deg]',
@@ -500,7 +525,7 @@ def plot_antenna_pattern(antpattern, fname_list, labelx='Angle [Deg]',
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)
 
     return fname_list
 
@@ -553,15 +578,15 @@ def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
         ax.set(adjustable='box-forced', aspect='equal')
 
     if metadata is not None:
-        plt.text(0.05, 0.95, metadata, horizontalalignment='left',
-                 verticalalignment='top', transform=ax.transAxes)
+        ax.text(0.05, 0.95, metadata, horizontalalignment='left',
+                verticalalignment='top', transform=ax.transAxes)
 
     # Make a tight layout
     fig.tight_layout()
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)
 
     return fname_list
 
@@ -613,9 +638,9 @@ def plot_sun_hits(field, field_name, fname_list, prdcfg):
     cax = ax.imshow(
         field, extent=(azmin, azmax, elmin, elmax),
         origin='lower', cmap=cmap, vmin=vmin, vmax=vmax, interpolation='none')
-    plt.xlabel('rad_az-sun_az (deg)')
-    plt.ylabel('rad_el-sun_el (deg)')
-    plt.title(titl)
+    ax.set_xlabel('rad_az-sun_az (deg)')
+    ax.set_ylabel('rad_el-sun_el (deg)')
+    ax.set_title(titl)
 
     # plot the colorbar and set the label.
     label = get_colobar_label(field_dict, field_name)
@@ -627,6 +652,6 @@ def plot_sun_hits(field, field_name, fname_list, prdcfg):
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)
 
     return fname_list

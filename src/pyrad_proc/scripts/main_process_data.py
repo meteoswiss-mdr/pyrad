@@ -78,15 +78,21 @@ def main():
     parser.add_argument("-t", "--trajfile", type=str, default='',
                         help="Definition file of plane trajectory. "
                         "Configuration of scan sector, products, ...")
-
     parser.add_argument("--trajtype", type=str, default='plane',
                         help="Type of trajectory. "
                         "Can be either 'plane' or 'lightning'")
-
     parser.add_argument("--flashnr", type=int, default=0,
                         help="If type of trajectory is 'lightning', "
                         "flash number the data of which will be processed"
                         "0 means that all lightning data will be processed")
+    parser.add_argument("--MULTIPROCESSING_DSET", type=int, default=0,
+                        help="If 1 the generation of the datasets at the "
+                        "same processing level will be parallelized")
+    parser.add_argument("--MULTIPROCESSING_PROD", type=int, default=0,
+                        help="If 1 the generation of the products of each "
+                        "dataset will be parallelized")
+    parser.add_argument("--PROFILE_MULTIPROCESSING", type=int, default=0,
+                        help="If 1 the multiprocessing is profiled")
 
     args = parser.parse_args()
 
@@ -106,6 +112,12 @@ def main():
         print('end time: '+args.endtime)
     else:
         print('end time not defined by user')
+    if args.MULTIPROCESSING_DSET:
+        print('Dataset generation will be parallelized')
+    if args.MULTIPROCESSING_PROD:
+        print('Product generation will be parallelized')
+    if args.PROFILE_MULTIPROCESSING:
+        print('Parallel processing performance will be profiled')
 
     proc_starttime = None
     if args.starttime is not None:
@@ -123,14 +135,20 @@ def main():
 
     pyrad_main(cfgfile_proc, starttime=proc_starttime, endtime=proc_endtime,
                trajfile=args.trajfile, infostr=infostr,
-               trajtype=args.trajtype, flashnr=args.flashnr)
+               trajtype=args.trajtype, flashnr=args.flashnr,
+               MULTIPROCESSING_DSET=args.MULTIPROCESSING_DSET,
+               MULTIPROCESSING_PROD=args.MULTIPROCESSING_PROD,
+               PROFILE_MULTIPROCESSING=args.PROFILE_MULTIPROCESSING)
 
     if args.postproc_cfgfile is not None:
         cfgfile_postproc = args.cfgpath+args.postproc_cfgfile
         pyrad_main(cfgfile_postproc, starttime=proc_starttime,
                    endtime=proc_endtime, trajfile=args.trajfile,
                    infostr=infostr, trajtype=args.trajtype,
-                   flashnr=args.flashnr)
+                   flashnr=args.flashnr,
+                   MULTIPROCESSING_DSET=args.MULTIPROCESSING_DSET,
+                   MULTIPROCESSING_PROD=args.MULTIPROCESSING_PROD,
+                   PROFILE_MULTIPROCESSING=args.PROFILE_MULTIPROCESSING)
 
 
 def _print_end_msg(text):

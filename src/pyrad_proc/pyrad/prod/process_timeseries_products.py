@@ -34,7 +34,123 @@ from ..util.radar_utils import rainfall_accumulation
 
 def generate_timeseries_products(dataset, prdcfg):
     """
-    Generates time series products
+    Generates time series products. Accepted product types:
+        'COMPARE_CUMULATIVE_POINT': Plots in the same graph 2 time series of
+            data accumulation (tipically rainfall rate). One time series is
+            a point measurement of radar data while the other is from a
+            co-located instrument (rain gauge or disdrometer)
+            User defined parameters:
+                dpi: int
+                    The pixel density of the plot. Default 72
+                vmin, vmax: float
+                    The limits of the Y-axis. If none they will be obtained
+                    from the Py-ART config file.
+                sensor: str
+                    The sensor type. Can be 'rgage' or 'disdro'
+                sensorid: str
+                    The sensor ID.
+                location: str
+                    A string identifying the location of the disdrometer
+                freq: float
+                    The frequency used to retrieve the polarimetric variables
+                    of a disdrometer
+                ele: float
+                    The elevation angle used to retrieve the polarimetric
+                    variables of a disdrometer
+                ScanPeriod: float
+                    The scaning period of the radar in seconds. This parameter
+                    is defined in the 'loc' config file
+        'COMPARE_POINT': Plots in the same graph 2 time series of
+            data . One time series is a point measurement of radar data while
+            the other is from a co-located instrument (rain gauge or
+            disdrometer)
+            User defined parameters:
+                dpi: int
+                    The pixel density of the plot. Default 72
+                vmin, vmax: float
+                    The limits of the Y-axis. If none they will be obtained
+                    from the Py-ART config file.
+                sensor: str
+                    The sensor type. Can be 'rgage' or 'disdro'
+                sensorid: str
+                    The sensor ID.
+                location: str
+                    A string identifying the location of the disdrometer
+                freq: float
+                    The frequency used to retrieve the polarimetric variables
+                    of a disdrometer
+                ele: float
+                    The elevation angle used to retrieve the polarimetric
+                    variables of a disdrometer
+        'COMPARE_TIME_AVG': Creates a scatter plot of average radar data
+            versus average sensor data.
+            User defined parameters:
+                dpi: int
+                    The pixel density of the plot. Default 72
+                sensor: str
+                    The sensor type. Can be 'rgage' or 'disdro'
+                sensorid: str
+                    The sensor ID.
+                location: str
+                    A string identifying the location of the disdrometer
+                freq: float
+                    The frequency used to retrieve the polarimetric variables
+                    of a disdrometer
+                ele: float
+                    The elevation angle used to retrieve the polarimetric
+                    variables of a disdrometer
+                cum_time: float
+                    Data accumulation time [s]. Default 3600.
+                base_time: float
+                    Starting moment of the accumulation [s from midnight].
+                    Default 0.
+        'PLOT_AND_WRITE': Writes and plots a trajectory time series.
+            User defined parameters:
+                ymin, ymax: float
+                    The minimum and maximum value of the Y-axis. If none it
+                    will be obtained from the Py-ART config file.
+        'PLOT_AND_WRITE_POINT': Plots and writes a time series of radar data
+            at a particular point
+            User defined parameters:
+                dpi: int
+                    The pixel density of the plot. Default 72
+                vmin, vmax: float
+                    The limits of the Y-axis. If none they will be obtained
+                    from the Py-ART config file.
+        'PLOT_CUMULATIVE_POINT': Plots a time series of radar data
+            accumulation at a particular point.
+            User defined parameters:
+                dpi: int
+                    The pixel density of the plot. Default 72
+                vmin, vmax: float
+                    The limits of the Y-axis. If none they will be obtained
+                    from the Py-ART config file.
+                ScanPeriod: float
+                    The scaning period of the radar in seconds. This parameter
+                    is defined in the 'loc' config file
+        'PLOT_HIST': plots and writes a histogram of all the data gathered
+            during the trajectory processing
+            User defined parameters:
+                step: float or None
+                    The quantization step of the data. If None it will be
+                    obtained from the Py-ART config file
+        'TRAJ_CAPPI_IMAGE': Creates a CAPPI image with the trajectory position
+            overplot on it.
+            User defined parameters:
+                color_ref: str
+                    The meaning of the color code with which the trajectory is
+                    plotted. Can be 'None', 'altitude' (the absolute
+                    altitude), 'rel_altitude' (altitude relative to the CAPPI
+                    altitude), 'time' (trajectory time respect of the start of
+                    the radar scan leading to the CAPPI)
+                altitude: float
+                    The CAPPI altitude [m]
+                wfunc: str
+                    Function used in the gridding of the radar data. The
+                    function types are defined in pyart.map.grid_from_radars.
+                    Default 'NEAREST_NEIGHBOUR'
+                res: float
+                    The CAPPI resolution [m]. Default 500.
 
     Parameters
     ----------
@@ -49,10 +165,13 @@ def generate_timeseries_products(dataset, prdcfg):
     no return
 
     """
-
     dssavedir = prdcfg['dsname']
     if 'dssavename' in prdcfg:
         dssavedir = prdcfg['dssavename']
+
+    prdsavedir = prdcfg['prdname']
+    if 'prdsavedir' in prdcfg:
+        prdsavedir = prdcfg['prdsavedir']
 
     if prdcfg['type'] == 'PLOT_AND_WRITE_POINT':
         if dataset['final']:
@@ -67,7 +186,7 @@ def generate_timeseries_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         csvfname = make_filename(
             'ts', prdcfg['dstype'], dataset['datatype'], ['csv'],
@@ -85,7 +204,7 @@ def generate_timeseries_products(dataset, prdcfg):
             warn(
                 'Unable to plot time series. No valid data')
             return None
-            
+
         vmin = prdcfg.get('vmin', None)
         vmax = prdcfg.get('vmax', None)
 
@@ -110,11 +229,13 @@ def generate_timeseries_products(dataset, prdcfg):
 
         return figfname_list
 
-    elif prdcfg['type'] == 'PLOT_CUMULATIVE_POINT':
+    if prdcfg['type'] == 'PLOT_CUMULATIVE_POINT':
         if dataset['final']:
             return None
 
         dpi = prdcfg.get('dpi', 72)
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
 
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
@@ -161,7 +282,7 @@ def generate_timeseries_products(dataset, prdcfg):
 
         return figfname_list
 
-    elif prdcfg['type'] == 'COMPARE_POINT':
+    if prdcfg['type'] == 'COMPARE_POINT':
         if dataset['final']:
             return None
 
@@ -197,13 +318,13 @@ def generate_timeseries_products(dataset, prdcfg):
                 'Unable to plot sensor comparison at point of interest. ' +
                 'No valid sensor data')
             return None
-            
+
         vmin = prdcfg.get('vmin', None)
         vmax = prdcfg.get('vmax', None)
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=radardate[0])
+            prdsavedir, timeinfo=radardate[0])
 
         figfname_list = make_filename(
             'ts_comp', prdcfg['dstype'], dataset['datatype'],
@@ -226,7 +347,7 @@ def generate_timeseries_products(dataset, prdcfg):
 
         return figfname_list
 
-    elif prdcfg['type'] == 'COMPARE_CUMULATIVE_POINT':
+    if prdcfg['type'] == 'COMPARE_CUMULATIVE_POINT':
         if dataset['final']:
             return None
 
@@ -263,9 +384,12 @@ def generate_timeseries_products(dataset, prdcfg):
                 'No valid sensor data')
             return None
 
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
+
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=radardate[0])
+            prdsavedir, timeinfo=radardate[0])
 
         figfname_list = make_filename(
             'ts_cumcomp', prdcfg['dstype'], dataset['datatype'],
@@ -291,7 +415,7 @@ def generate_timeseries_products(dataset, prdcfg):
 
         return figfname_list
 
-    elif prdcfg['type'] == 'COMPARE_TIME_AVG':
+    if prdcfg['type'] == 'COMPARE_TIME_AVG':
         if not dataset['final']:
             return None
 
@@ -351,7 +475,7 @@ def generate_timeseries_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=radardate[0])
+            prdsavedir, timeinfo=radardate[0])
 
         fname = make_filename(
             str(cum_time)+'s_acc_ts_comp', prdcfg['dstype'],
@@ -396,26 +520,35 @@ def generate_timeseries_products(dataset, prdcfg):
         return figfname_list
 
     # ================================================================
-    elif prdcfg['type'] == 'PLOT_AND_WRITE':
+    if prdcfg['type'] == 'PLOT_AND_WRITE':
         if not dataset['final']:
             return None
 
-        timeinfo = dataset['ts'].time_vector[0]
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['ts_dict']:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        ts = dataset['ts_dict'][field_name]
+        timeinfo = ts.time_vector[0]
 
         savedir = get_save_dir(prdcfg['basepath'], prdcfg['procname'],
-                               dssavedir, prdcfg['prdname'],
+                               dssavedir, prdsavedir,
                                timeinfo=timeinfo)
 
         dstype_str = prdcfg['dstype'].lower().replace('_', '')
-        fname = make_filename('ts', dstype_str, dataset['ts'].datatype,
+        fname = make_filename('ts', dstype_str, ts.datatype,
                               ['csv'],
                               prdcfginfo=None, timeinfo=timeinfo,
                               timeformat='%Y%m%d%H%M%S',
                               runinfo=prdcfg['runinfo'])
 
-        dataset['ts'].write(savedir + fname[0])
+        ts.write(savedir + fname[0])
 
-        fname = make_filename('ts', dstype_str, dataset['ts'].datatype,
+        fname = make_filename('ts', dstype_str, ts.datatype,
                               prdcfg['imgformat'],
                               prdcfginfo=None, timeinfo=timeinfo,
                               timeformat='%Y%m%d%H%M%S',
@@ -425,23 +558,32 @@ def generate_timeseries_products(dataset, prdcfg):
         ymin = prdcfg.get('ymin', None)
         ymax = prdcfg.get('ymax', None)
 
-        dataset['ts'].plot(savedir + fname[0], ymin=ymin, ymax=ymax)
+        ts.plot(savedir + fname[0], ymin=ymin, ymax=ymax)
 
         return None
 
-    elif prdcfg['type'] == 'PLOT_HIST':
+    if prdcfg['type'] == 'PLOT_HIST':
         if not dataset['final']:
             return None
 
-        timeinfo = dataset['ts'].time_vector[0]
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['ts_dict']:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        ts = dataset['ts_dict'][field_name]
+        timeinfo = ts.time_vector[0]
 
         savedir = get_save_dir(prdcfg['basepath'], prdcfg['procname'],
-                               dssavedir, prdcfg['prdname'],
+                               dssavedir, prdsavedir,
                                timeinfo=timeinfo)
 
         dstype_str = prdcfg['dstype'].lower().replace('_', '')
 
-        fname = make_filename('hist', dstype_str, dataset['ts'].datatype,
+        fname = make_filename('hist', dstype_str, ts.datatype,
                               prdcfg['imgformat'],
                               prdcfginfo=None, timeinfo=timeinfo,
                               timeformat='%Y%m%d%H%M%S',
@@ -449,11 +591,11 @@ def generate_timeseries_products(dataset, prdcfg):
 
         step = prdcfg.get('step', None)
 
-        dataset['ts'].plot_hist(savedir + fname[0], step=step)
+        ts.plot_hist(savedir + fname[0], step=step)
 
         return None
 
-    elif prdcfg['type'] == 'TRAJ_CAPPI_IMAGE':
+    if prdcfg['type'] == 'TRAJ_CAPPI_IMAGE':
         if dataset['final']:
             return None
 
@@ -466,7 +608,7 @@ def generate_timeseries_products(dataset, prdcfg):
             return None
 
         savedir = get_save_dir(prdcfg['basepath'], prdcfg['procname'],
-                               dssavedir, prdcfg['prdname'],
+                               dssavedir, prdsavedir,
                                timeinfo=prdcfg['timeinfo'])
 
         color_ref = prdcfg.get('color_ref', 'None')
@@ -508,6 +650,5 @@ def generate_timeseries_products(dataset, prdcfg):
         return None
 
     # ================================================================
-    else:
-        raise Exception("ERROR: Unsupported product type: '%s' of dataset '%s'"
-                        % (prdcfg['type'], prdcfg['dsname']))
+    warn(' Unsupported product type: ' + prdcfg['type'])
+    return None

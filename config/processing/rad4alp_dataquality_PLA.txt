@@ -10,6 +10,7 @@ name STRING rad4alp_dataquality_PLA
 # Note: Must have a trailing '/'
 # ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
 datapath STRING /srn/data/
+path_convention STRING RT
 
 # Base path for cosmo data
 cosmopath STRING /srn/analysis/cosmo/
@@ -45,7 +46,7 @@ imgformat STRING png
 configpath STRING $HOME/pyrad/config/
 
 # Configuration of the radar location and approach direction
-locationConfigFile STRING $HOME/pyrad/config/processing/rad4alp_dataquality_PLA_rt_loc.txt
+locationConfigFile STRING $HOME/pyrad/config/processing/rad4alp_dataquality_PLA_loc.txt
 
 # Configuration of the product generation
 productConfigFile STRING $HOME/pyrad/config/processing/rad4alp_dataquality_PLA_prod.txt

@@ -1,6 +1,6 @@
 """
-pyrad.io.read_data_other
-========================
+pyrad.io.read_data_sensor
+=========================
 
 Functions for reading data from other sensors
 
@@ -12,6 +12,7 @@ Functions for reading data from other sensors
     read_trt_data
     read_trt_traj_data
     read_lightning
+    read_meteorage
     read_lightning_traj
     read_lightning_all
     get_sensor_data
@@ -656,6 +657,97 @@ def read_lightning(fname, filter_data=True):
         warn(str(ee))
         warn('Unable to read file '+fname)
         return None, None, None, None, None, None, None
+
+
+def read_meteorage(fname):
+    """
+    Reads METEORAGE lightning data contained in a text file. The file has the
+    following fields:
+        date: date + time + time zone
+        lon: longitude [degree]
+        lat: latitude [degree]
+        intens: amplitude [kilo amperes]
+        ns: number of strokes of the flash
+        mode: kind of localization [0,15]
+        intra: 1 = intra-cloud , 0 = cloud-to-ground
+        ax: length of the semi-major axis of the ellipse [km]
+        ki2: standard deviation on the localization computation (Ki^2)
+        ecc: eccentricity (major-axis / minor-axis)
+        incl: ellipse inclination (angle with respect to the North, +90° is
+            East) [degrees]
+        sind: stroke index within the flash
+
+    Parameters
+    ----------
+    fname : str
+        path of time series file
+
+    Returns
+    -------
+    stroke_time, lon, lat, intens, ns, mode, intra, ax, ki2, ecc, incl,
+    sind : tupple
+        A tupple containing the read values. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                csvfile, fieldnames=['date', 'lon', 'lat', 'intens', 'ns',
+                                     'mode', 'intra', 'ax', 'ki2', 'ecc',
+                                     'incl', 'sind', 'par1', 'par2', 'par3',
+                                     'par4'],
+                delimiter='|')
+            nrows = sum(1 for row in reader)
+
+            stroke_time = np.empty(nrows, dtype=datetime.datetime)
+            lon = np.empty(nrows, dtype=float)
+            lat = np.empty(nrows, dtype=float)
+            intens = np.empty(nrows, dtype=float)
+            ns = np.empty(nrows, dtype=int)
+            mode = np.empty(nrows, dtype=int)
+            intra = np.empty(nrows, dtype=int)
+            ax = np.empty(nrows, dtype=float)
+            ki2 = np.empty(nrows, dtype=float)
+            ecc = np.empty(nrows, dtype=float)
+            incl = np.empty(nrows, dtype=float)
+            sind = np.empty(nrows, dtype=int)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                csvfile, fieldnames=['date', 'lon', 'lat', 'intens', 'ns',
+                                     'mode', 'intra', 'ax', 'ki2', 'ecc',
+                                     'incl', 'sind', 'par1', 'par2', 'par3',
+                                     'par4'],
+                delimiter='|')
+
+            for i, row in enumerate(reader):
+                stroke_time[i] = datetime.datetime.strptime(
+                    row['date'], '%d.%m.%Y %H:%M:%S.%f UTC')
+                lon[i] = float(row['lon'])
+                lat[i] = float(row['lat'])
+                intens[i] = float(row['intens'])
+                ns[i] = int(row['ns'])
+                mode[i] = int(row['mode'])
+                intra[i] = int(row['intra'])
+                ax[i] = float(row['ax'])
+                ki2[i] = float(row['ki2'])
+                ecc[i] = float(row['ecc'])
+                incl[i] = float(row['incl'])
+                sind[i] = int(float(row['sind']))-1
+
+            csvfile.close()
+
+            return (
+                stroke_time, lon, lat, intens, ns, mode, intra, ax, ki2, ecc,
+                incl, sind)
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return (
+            None, None, None, None, None, None, None, None, None, None, None,
+            None)
 
 
 def read_lightning_traj(fname):

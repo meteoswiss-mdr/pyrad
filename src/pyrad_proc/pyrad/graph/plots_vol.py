@@ -1,6 +1,6 @@
 """
-pyrad.graph.plots
-=================
+pyrad.graph.plots_vol
+=====================
 
 Functions to plot radar volume data
 
@@ -72,6 +72,10 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
         step for histogram plotting
     quantiles : float array
         quantiles to plot
+    save_fig : bool
+        if true save the figure. If false it does not close the plot and
+        returns the handle to the figure
+
 
     Returns
     -------
@@ -99,19 +103,19 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
         display = pyart.graph.RadarDisplay(radar)
         display.plot_ppi(
             field_name, title=titl, sweep=ind_el, norm=norm, ticks=ticks,
-            ticklabs=ticklabs, fig=fig)
+            ticklabs=ticklabs, fig=fig, ax=ax)
 
         display.set_limits(
             ylim=[prdcfg['ppiImageConfig']['ymin'],
                   prdcfg['ppiImageConfig']['ymax']],
             xlim=[prdcfg['ppiImageConfig']['xmin'],
-                  prdcfg['ppiImageConfig']['xmax']])
+                  prdcfg['ppiImageConfig']['xmax']], ax=ax)
         if 'rngRing' in prdcfg['ppiImageConfig']:
             if prdcfg['ppiImageConfig']['rngRing'] > 0:
                 display.plot_range_rings(np.arange(
                     0., radar.range['data'][-1]/1000.,
-                    prdcfg['ppiImageConfig']['rngRing']))
-        display.plot_cross_hair(5.)
+                    prdcfg['ppiImageConfig']['rngRing']), ax=ax)
+        display.plot_cross_hair(5., ax=ax)
 
         # Turn on the grid
         ax.grid()
@@ -122,13 +126,13 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
         if save_fig:
             for fname in fname_list:
                 fig.savefig(fname, dpi=dpi)
-            plt.close()
+            plt.close(fig)
 
             return fname_list
 
         return (fig, ax)
 
-    elif plot_type == 'QUANTILES':
+    if plot_type == 'QUANTILES':
         quantiles, values = compute_quantiles_sweep(
             radar.fields[field_name]['data'],
             radar.sweep_start_ray_index['data'][ind_el],
@@ -200,7 +204,7 @@ def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
                           np.ceil(prdcfg['ppiMapImageConfig']['latmax'])+1,
                           0.5)
 
-    display_map = pyart.graph.RadarMapDisplayCartopy(radar)
+    display_map = pyart.graph.RadarMapDisplay(radar)
     display_map.plot_ppi_map(
         field_name, sweep=ind_el, norm=norm, ticks=ticks,
         ticklabs=ticklabs, min_lon=prdcfg['ppiMapImageConfig']['lonmin'],
@@ -210,7 +214,7 @@ def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
         resolution=prdcfg['ppiMapImageConfig']['mapres'],
         lat_lines=lat_lines, lon_lines=lon_lines,
         maps_list=prdcfg['ppiMapImageConfig']['maps'],
-        colorbar_flag=False)
+        colorbar_flag=False, fig=fig, ax=ax)
 
     if 'rngRing' in prdcfg['ppiMapImageConfig']:
         if prdcfg['ppiMapImageConfig']['rngRing'] > 0:
@@ -218,7 +222,7 @@ def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
                 0., radar.range['data'][-1]/1000.,
                 prdcfg['ppiMapImageConfig']['rngRing'])
             for rng_ring in rng_rings:
-                display_map.plot_range_ring(rng_ring)
+                display_map.plot_range_ring(rng_ring, ax=ax)
 
     # Adapt the axes of the colorbar
     divider = make_axes_locatable(ax)
@@ -230,7 +234,7 @@ def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi, bbox_inches='tight')
 
-    plt.close()
+    plt.close(fig)
 
     return fname_list
 
@@ -291,13 +295,14 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
         display.plot_rhi(
             field_name, title=titl, sweep=ind_az, norm=norm, ticks=ticks,
             ticklabs=ticklabs, colorbar_orient='horizontal',
-            reverse_xaxis=False)
+            reverse_xaxis=False, fig=fig, ax=ax)
         display.set_limits(
             ylim=[prdcfg['rhiImageConfig']['ymin'],
                   prdcfg['rhiImageConfig']['ymax']],
             xlim=[prdcfg['rhiImageConfig']['xmin'],
-                  prdcfg['rhiImageConfig']['xmax']])
-        display.plot_cross_hair(5.)
+                  prdcfg['rhiImageConfig']['xmax']],
+            ax=ax)
+        display.plot_cross_hair(5., ax=ax)
 
         # Turn on the grid
         ax.grid()
@@ -308,13 +313,13 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
         if save_fig:
             for fname in fname_list:
                 fig.savefig(fname, dpi=dpi)
-            plt.close()
+            plt.close(fig)
 
             return fname_list
 
         return (fig, ax)
 
-    elif plot_type == 'QUANTILES':
+    if plot_type == 'QUANTILES':
         quantiles, values = compute_quantiles_sweep(
             radar.fields[field_name]['data'],
             radar.sweep_start_ray_index['data'][ind_az],
@@ -393,7 +398,7 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
         labely = 'ray number'
 
     # display data
-    titl = pyart.graph.common.generate_title(radar_aux, field_name, ind_sweep)
+    titl = pyart.graph.common.generate_title(radar_aux, field_name, 0)
     label = get_colobar_label(radar_aux.fields[field_name], field_name)
 
     dpi = prdcfg['ppiImageConfig'].get('dpi', 72)
@@ -403,10 +408,10 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
                      dpi=dpi)
     ax = fig.add_subplot(111)
     if radar_aux.ngates == 1:
-        plt.plot(ang, field, 'bx')
-        plt.xlabel(labely)
-        plt.ylabel(label)
-        plt.title(titl)
+        ax.plot(ang, field, 'bx', figure=fig)
+        ax.set_xlabel(labely)
+        ax.set_ylabel(label)
+        ax.set_title(titl)
     else:
         cmap = pyart.config.get_field_colormap(field_name)
 
@@ -420,9 +425,9 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
             field, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax, norm=norm,
             extent=(rmin, rmax, ang_min, ang_max), aspect='auto',
             interpolation='none')
-        plt.xlabel('Range (km)')
-        plt.ylabel(labely)
-        plt.title(titl)
+        ax.set_xlabel('Range (km)')
+        ax.set_ylabel(labely)
+        ax.set_title(titl)
 
         cb = fig.colorbar(cax)
         if ticks is not None:
@@ -436,7 +441,7 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)
 
     return fname_list
 
@@ -570,9 +575,9 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname_list,
         grid.fields[field_name]['data'][0], extent=(xmin, xmax, ymin, ymax),
         origin='lower', cmap=cmap, vmin=vmin, vmax=vmax, norm=norm,
         interpolation='none')
-    plt.xlabel('East West distance from radar(km)')
-    plt.ylabel('North South distance from radar(km)')
-    plt.title(titl)
+    ax.set_xlabel('East West distance from radar(km)')
+    ax.set_ylabel('North South distance from radar(km)')
+    ax.set_title(titl)
 
     # plot the colorbar and set the label.
     cb = fig.colorbar(cax)
@@ -589,7 +594,7 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname_list,
     if save_fig:
         for fname in fname_list:
             fig.savefig(fname, dpi=dpi)
-        plt.close()
+        plt.close(fig)
 
         return fname_list
 
@@ -645,8 +650,7 @@ def plot_traj(rng_traj, azi_traj, ele_traj, time_traj, prdcfg, fname_list,
         warn('Unable to plot trajectory relative to radar scan start time. ' +
              'Unknown radar scan start time.')
         color_ref = 'None'
-    if (rad_alt is None and
-            (color_ref == 'rel_altitude' or color_ref == 'altitude')):
+    if rad_alt is None and color_ref in ('rel_altitude', 'altitude'):
         warn('Unable to plot trajectory altitude. ' +
              'Unknown radar altitude.')
         color_ref = 'None'
@@ -714,7 +718,7 @@ def plot_traj(rng_traj, azi_traj, ele_traj, time_traj, prdcfg, fname_list,
     if save_fig:
         for fname in fname_list:
             fig.savefig(fname, dpi=dpi)
-        plt.close()
+        plt.close(fig)
 
         return fname_list
 
@@ -805,8 +809,8 @@ def plot_rhi_contour(radar, field_name, ind_az, prdcfg, fname_list,
             ylim=[prdcfg['rhiImageConfig']['ymin'],
                   prdcfg['rhiImageConfig']['ymax']],
             xlim=[prdcfg['rhiImageConfig']['xmin'],
-                  prdcfg['rhiImageConfig']['xmax']])
-        display.plot_cross_hair(5.)
+                  prdcfg['rhiImageConfig']['xmax']], ax=ax)
+        display.plot_cross_hair(5., ax=ax)
 
         # Turn on the grid
         ax.grid()
@@ -823,7 +827,7 @@ def plot_rhi_contour(radar, field_name, ind_az, prdcfg, fname_list,
     if save_fig:
         for fname in fname_list:
             fig.savefig(fname, dpi=dpi)
-        plt.close()
+        plt.close(fig)
 
         return fname_list
 
@@ -910,8 +914,8 @@ def plot_ppi_contour(radar, field_name, ind_el, prdcfg, fname_list,
             ylim=[prdcfg['ppiImageConfig']['ymin'],
                   prdcfg['ppiImageConfig']['ymax']],
             xlim=[prdcfg['ppiImageConfig']['xmin'],
-                  prdcfg['ppiImageConfig']['xmax']])
-        display.plot_cross_hair(5.)
+                  prdcfg['ppiImageConfig']['xmax']], ax=ax)
+        display.plot_cross_hair(5., ax=ax)
 
         # Turn on the grid
         ax.grid()
@@ -926,7 +930,7 @@ def plot_ppi_contour(radar, field_name, ind_el, prdcfg, fname_list,
     if save_fig:
         for fname in fname_list:
             fig.savefig(fname, dpi=dpi)
-        plt.close()
+        plt.close(fig)
 
         return fname_list
 
@@ -974,7 +978,7 @@ def plot_pos(lat, lon, alt, fname_list, ax=None, fig=None, save_fig=True,
         list of names of the saved plots or handle of the figure an axes
 
     """
-    if sort_altitude == 'Lowest_on_top' or sort_altitude == 'Highest_on_top':
+    if sort_altitude in ('Lowest_on_top', 'Highest_on_top'):
         ind = np.argsort(alt)
         if sort_altitude == 'Lowest_on_top':
             ind = ind[::-1]
@@ -1008,9 +1012,9 @@ def plot_pos(lat, lon, alt, fname_list, ax=None, fig=None, save_fig=True,
     cb = fig.colorbar(cax, orientation='horizontal')
     cb.set_label(cb_label)
 
-    plt.title(titl)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+    ax.set_title(titl)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
 
     # Turn on the grid
     ax.grid()
@@ -1018,7 +1022,7 @@ def plot_pos(lat, lon, alt, fname_list, ax=None, fig=None, save_fig=True,
     if save_fig:
         for fname in fname_list:
             fig.savefig(fname, dpi=dpi)
-        plt.close()
+        plt.close(fig)
 
         return fname_list
 
@@ -1092,7 +1096,7 @@ def plot_rhi_profile(data_list, hvec, fname_list, labelx='Value',
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)
 
     return fname_list
 
@@ -1102,7 +1106,7 @@ def plot_along_coord(xval_list, yval_list, fname_list, labelx='coord',
                      colors=None, linestyles=None, ymin=None, ymax=None,
                      dpi=72):
     """
-    plots a time series
+    plots data along a certain radar coordinate
 
     Parameters
     ----------
@@ -1159,7 +1163,7 @@ def plot_along_coord(xval_list, yval_list, fname_list, labelx='coord',
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)
 
     return fname_list
 
@@ -1227,7 +1231,7 @@ def plot_field_coverage(xval_list, yval_list, fname_list,
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)
 
     return fname_list
 
@@ -1235,6 +1239,7 @@ def plot_field_coverage(xval_list, yval_list, fname_list,
 def _plot_time_range(rad_time, rad_range, rad_data, field_name, fname_list,
                      titl='Time-Range plot',
                      xlabel='time (s from start time)', ylabel='range (Km)',
+                     clabel=None,
                      vmin=None, vmax=None, figsize=[10, 8], dpi=72):
     """
     plots a time-range plot
@@ -1247,18 +1252,18 @@ def _plot_time_range(rad_time, rad_range, rad_data, field_name, fname_list,
         name of the radar field to plot
     rad_data : int
         sweep index to plot
-    field_name : dict
-        dictionary containing the product configuration
+    field_name : str or None
+        field name. Used to define plot characteristics
     fname_list : list of str
         list of names of the files where to store the plot
     titl : str
         Plot title
     xlabel, ylabel : str
         x- and y-axis labels
+    clabel : str or None
+        colorbar label
     vmin, vmax : float
         min and max values of the color bar
-    Norm : array
-        norm
     figsize : list
         figure size [xsize, ysize]
     dpi : int
@@ -1271,41 +1276,55 @@ def _plot_time_range(rad_time, rad_range, rad_data, field_name, fname_list,
 
     """
     # display data
-    field_dict = pyart.config.get_metadata(field_name)
-    label = get_colobar_label(field_dict, field_name)
+    norm = None
+    cmap = None
+    ticks = None
+    ticklabs = None
+    if field_name is not None:
+        field_dict = pyart.config.get_metadata(field_name)
+        if clabel is None:
+            clabel = get_colobar_label(field_dict, field_name)
+
+        cmap = pyart.config.get_field_colormap(field_name)
+
+        norm, ticks, ticklabs = get_norm(field_name)
+        if vmin is None or vmax is None:
+            vmin = vmax = None
+            if norm is None:  # if norm is set do not override with vmin/vmax
+                vmin, vmax = pyart.config.get_field_limits(field_name)
+        else:
+            norm = None
+    else:
+        if clabel is None:
+            clabel = 'value'
+        if vmin is None:
+            vmin = np.ma.min(rad_data)
+        if vmax is None:
+            vmax = np.ma.max(rad_data)
 
     fig = plt.figure(figsize=figsize, dpi=dpi)
     ax = fig.add_subplot(111)
-    cmap = pyart.config.get_field_colormap(field_name)
-
-    norm, ticks, ticklabs = get_norm(field_name)
-    if vmin is None or vmax is None:
-        vmin = vmax = None
-        if norm is None:  # if norm is set do not override with vmin/vmax
-            vmin, vmax = pyart.config.get_field_limits(field_name)
-    else:
-        norm = None
 
     T, R = np.meshgrid(rad_time, rad_range)
     cax = ax.pcolormesh(
         T, R, np.ma.transpose(rad_data), cmap=cmap, vmin=vmin, vmax=vmax,
         norm=norm)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.title(titl)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_title(titl)
 
     cb = fig.colorbar(cax)
     if ticks is not None:
         cb.set_ticks(ticks)
     if ticklabs:
         cb.set_ticklabels(ticklabs)
-    cb.set_label(label)
+    cb.set_label(clabel)
 
     # Make a tight layout
     fig.tight_layout()
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
-    plt.close()
+    plt.close(fig)
 
     return fname_list

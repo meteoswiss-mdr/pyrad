@@ -71,6 +71,7 @@ Monitoring, calibration and noise correction
     process_sun_hits
     process_selfconsistency_kdp_phidp
     process_selfconsistency_bias
+    process_time_avg_std
     process_occurrence
     process_occurrence_period
     process_monitoring
@@ -89,6 +90,8 @@ Retrievals
     :toctree: generated/
 
     process_signal_power
+    process_rcs
+    process_rcs_pr
     process_snr
     process_l
     process_cdr
@@ -131,6 +134,8 @@ Trajectory functions
     process_trajectory
     process_traj_atplane
     process_traj_antenna_pattern
+    process_traj_lightning
+    process_traj_trt
 
 COSMO data
 ==========
@@ -156,7 +161,8 @@ from .process_timeseries import process_rqvp, process_evp, process_svp
 from .process_timeseries import process_time_height
 
 from .process_traj import process_trajectory, process_traj_atplane
-from .process_traj import process_traj_antenna_pattern
+from .process_traj import process_traj_antenna_pattern, process_traj_lightning
+from .process_traj import process_traj_trt
 
 from .process_echoclass import process_echo_id, process_birds_id
 from .process_echoclass import process_echo_filter, process_clt_to_echo_id
@@ -178,6 +184,7 @@ from .process_phase import process_attenuation
 from .process_calib import process_correct_bias, process_correct_noise_rhohv
 from .process_calib import process_occurrence, process_occurrence_period
 from .process_calib import process_gc_monitoring, process_sun_hits
+from .process_calib import process_time_avg_std
 
 from .process_intercomp import process_time_avg, process_weighted_time_avg
 from .process_intercomp import process_time_avg_flag
@@ -192,7 +199,8 @@ from .process_monitoring import process_monitoring
 
 from .process_retrieve import process_signal_power, process_snr
 from .process_retrieve import process_l, process_cdr, process_bird_density
-from .process_retrieve import process_rainrate, process_vol_refl
+from .process_retrieve import process_rainrate, process_vol_refl, process_rcs
+from .process_retrieve import process_rcs_pr
 
 from .process_Doppler import process_wind_vel, process_windshear
 from .process_Doppler import process_dealias_fourdd

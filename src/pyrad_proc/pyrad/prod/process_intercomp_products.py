@@ -37,7 +37,38 @@ from ..util.radar_utils import compute_2d_stats
 
 def generate_intercomp_products(dataset, prdcfg):
     """
-    Generates radar intercomparison products.
+    Generates radar intercomparison products. Accepted product types:
+        'PLOT_AND_WRITE_INTERCOMP_TS': Writes statistics of radar
+            intercomparison in a file and plots the time series of the
+            statistics.
+            User defined parameters:
+                'add_date_in_fname': Bool
+                    If true adds the year in the csv file containing the
+                    statistics. Default False
+                'sort_by_date': Bool
+                    If true sorts the statistics by date when reading the
+                    csv file containing the statistics. Default False
+                'rewrite': Bool
+                    If true rewrites the csv file containing the statistics.
+                    Default False
+                'npoints_min': int
+                    The minimum number of points to consider the statistics
+                    valid and therefore use the data point in the plotting.
+                    Default 0
+                'corr_min': float
+                    The minimum correlation to consider the statistics
+                    valid and therefore use the data point in the plotting.
+                    Default 0.
+        'PLOT_SCATTER_INTERCOMP': Plots a density plot with the points of
+            radar 1 versus the points of radar 2
+            User defined parameters:
+                'step': float
+                    The quantization step of the data. If none it will be
+                    computed using the Py-ART config file. Default None
+        'WRITE_INTERCOMP': Writes the instantaneously intercompared data
+            (gate positions, values, etc.) in a csv file.
+        'WRITE_INTERCOMP_TIME_AVG': Writes the time-averaged intercompared
+            data (gate positions, values, etc.) in a csv file.
 
     Parameters
     ----------
@@ -78,6 +109,7 @@ def generate_intercomp_products(dataset, prdcfg):
         print('saved colocated data file: '+fname)
 
         return fname
+
     if prdcfg['type'] == 'WRITE_INTERCOMP_TIME_AVG':
         if dataset['final']:
             return None
@@ -98,7 +130,8 @@ def generate_intercomp_products(dataset, prdcfg):
         print('saved colocated time averaged data file: '+fname)
 
         return fname
-    elif prdcfg['type'] == 'PLOT_SCATTER_INTERCOMP':
+
+    if prdcfg['type'] == 'PLOT_SCATTER_INTERCOMP':
         if not dataset['final']:
             return None
 
@@ -145,7 +178,8 @@ def generate_intercomp_products(dataset, prdcfg):
         print('----- save to '+' '.join(fname_list))
 
         return fname_list
-    elif prdcfg['type'] == 'PLOT_AND_WRITE_INTERCOMP_TS':
+
+    if prdcfg['type'] == 'PLOT_AND_WRITE_INTERCOMP_TS':
         if not dataset['final']:
             return None
 
@@ -251,14 +285,18 @@ def generate_intercomp_products(dataset, prdcfg):
         print('----- save to '+' '.join(figfname_list))
 
         return figfname_list
-    else:
-        warn(' Unsupported product type: ' + prdcfg['type'])
-        return None
+
+    warn(' Unsupported product type: ' + prdcfg['type'])
+    return None
 
 
 def generate_colocated_gates_products(dataset, prdcfg):
     """
-    Generates colocated gates products
+    Generates colocated gates products. Accepted product types:
+        'WRITE_COLOCATED_GATES': Writes the position of the co-located gates
+            in a csv file
+        All the products of the 'VOL' dataset group
+
 
     Parameters
     ----------
@@ -297,19 +335,19 @@ def generate_colocated_gates_products(dataset, prdcfg):
 
         return fname
 
-    else:
-        if prdcfg['radar'] not in dataset:
-            return None
-        if 'radar' not in dataset[prdcfg['radar']]:
-            return None
+    if prdcfg['radar'] not in dataset:
+        return None
+    if 'radar_out' not in dataset[prdcfg['radar']]:
+        return None
 
-        prdcfg['timeinfo'] = None
-        generate_vol_products(dataset[prdcfg['radar']], prdcfg)
+    prdcfg['timeinfo'] = None
+    return generate_vol_products(dataset[prdcfg['radar']], prdcfg)
 
 
 def generate_time_avg_products(dataset, prdcfg):
     """
-    generates time average products
+    generates time average products. Accepted product types:
+        All the products of the 'VOL' dataset group
 
     Parameters
     ----------

@@ -17,7 +17,7 @@ Functions for reading radar data files
     merge_scans_dem_rad4alp
     merge_scans_hydro_rad4alp
     merge_fields_rainbow
-    merge_fields_cfradial
+    merge_fields_pyrad
     merge_fields_dem
     merge_fields_cosmo
     get_data_rainbow
@@ -44,13 +44,12 @@ except Exception:
     _WRADLIB_AVAILABLE = False
 
 import pyart
-from pyart.aux_io.odim_h5 import read_odim_h5 as read_odim
 
 from .read_data_other import read_status, read_rad4alp_cosmo, read_rad4alp_vis
 from .read_data_mxpol import pyrad_MXPOL, pyrad_MCH
 
 from .io_aux import get_datatype_metranet, get_fieldname_pyart, get_file_list
-from .io_aux import get_datatype_odim
+from .io_aux import get_datatype_odim, find_date_in_file_name
 from .io_aux import get_datatype_fields, get_datetime, map_hydro, map_Doppler
 from .io_aux import find_cosmo_file, find_rad4alpcosmo_file
 
@@ -65,7 +64,56 @@ def get_data(voltime, datatypesdescr, cfg):
         volume scan time
     datatypesdescr : list
         list of radar field types to read.
-        Format : [radar file type]:[datatype]
+        Format : [radarnr]:[datagroup]:[datatype],[dataset],[product]
+        'dataset' is only specified for data groups 'ODIM',
+        'CFRADIAL' and 'ODIMPYRAD'. 'product' is only specified for data
+        groups 'CFRADIAL' and 'ODIMPYRAD'
+        The data group specifies the type file from which data is extracted.
+        It can be:
+            'RAINBOW': Propietary Leonardo format
+            'COSMO': COSMO model data saved in Rainbow file format
+            'DEM': Visibility data saved in Rainbow file format
+
+            'RAD4ALP': METRANET format used for the operational MeteoSwiss
+                data. To find out which datatype to use to match a particular
+                METRANET field name check the function 'get_datatype_metranet'
+                in pyrad/io/io_aux.py
+            'RAD4ALPCOSMO': COSMO model data saved in a binary file format.
+                Used by operational MeteoSwiss radars
+            'RAD4ALPDEM': Visibility data saved in a binary format used by
+                operational MeteoSwiss radars
+            'RAD4ALPHYDRO': Used to read the MeteoSwiss operational
+                hydrometeor classification
+            'RAD4ALPDOPPLER': Used to read the MeteoSwiss operational
+                dealiased Doppler velocity
+
+            'ODIM': Generic ODIM file format. For such types 'dataset'
+                specifies the directory and file name date convention.
+                Example: ODIM:dBZ,D{%Y-%m-%d}-F{%Y%m%d%H%M%S}. To find out
+                which datatype to use to match a particular ODIM field name
+                check the function 'get_datatype_odim' in pyrad/io/io_aux.py
+
+            'MXPOL': MXPOL (EPFL) data written in a netcdf file
+
+            'CFRADIAL': CFRadial format with the naming convention and
+                directory structure in which Pyrad saves the data. For such
+                datatypes 'dataset' specifies the directory where the dataset
+                is stored and 'product' specifies the directroy where the
+                product is stored.
+                Example: CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
+            'ODIMPYRAD': ODIM file format with the naming convention and
+                directory structure in which Pyrad saves the data.  For such
+                datatypes 'dataset' specifies the directory where the dataset
+                is stored and 'product' specifies the directroy where the
+                product is stored.
+                Example: ODIMPYRAD:dBZc,Att_ZPhi,SAVEVOL_dBZc
+        'RAINBOW', 'RAD4ALP', 'ODIM' and 'MXPOL' are primary data file sources
+        and they cannot be mixed for the same radar. It is also the case for
+        their complementary data files, i.e. 'COSMO' and 'RAD4ALPCOSMO', etc.
+        'CFRADIAL' and 'ODIMPYRAD' are secondary data file sources and they
+        can be combined with any other datagroup type.
+        For a list of accepted datatypes and how they map to the Py-ART name
+        convention check function 'get_field_name_pyart' in pyrad/io/io_aux.py
     cfg: dictionary of dictionaries
         configuration info to figure out where the data is
 
@@ -82,6 +130,9 @@ def get_data(voltime, datatypesdescr, cfg):
     datatype_cfradial = list()
     dataset_cfradial = list()
     product_cfradial = list()
+    datatype_odimpyrad = list()
+    dataset_odimpyrad = list()
+    product_odimpyrad = list()
     datatype_cosmo = list()
     datatype_rad4alpcosmo = list()
     datatype_dem = list()
@@ -103,6 +154,10 @@ def get_data(voltime, datatypesdescr, cfg):
             datatype_cfradial.append(datatype)
             dataset_cfradial.append(dataset)
             product_cfradial.append(product)
+        elif datagroup == 'ODIMPYRAD':
+            datatype_odimpyrad.append(datatype)
+            dataset_odimpyrad.append(dataset)
+            product_odimpyrad.append(product)
         elif datagroup == 'COSMO':
             datatype_cosmo.append(datatype)
         elif datagroup == 'RAD4ALPCOSMO':
@@ -124,6 +179,7 @@ def get_data(voltime, datatypesdescr, cfg):
     ndatatypes_rad4alp = len(datatype_rad4alp)
     ndatatypes_odim = len(datatype_odim)
     ndatatypes_cfradial = len(datatype_cfradial)
+    ndatatypes_odimpyrad = len(datatype_odimpyrad)
     ndatatypes_cosmo = len(datatype_cosmo)
     ndatatypes_rad4alpcosmo = len(datatype_rad4alpcosmo)
     ndatatypes_dem = len(datatype_dem)
@@ -161,10 +217,16 @@ def get_data(voltime, datatypesdescr, cfg):
             datatype_mxpol, cfg)
 
     if ndatatypes_cfradial > 0:
-        radar_aux = merge_fields_cfradial(
+        radar_aux = merge_fields_pyrad(
             cfg['loadbasepath'][ind_rad], cfg['loadname'][ind_rad], voltime,
             datatype_cfradial, dataset_cfradial, product_cfradial,
-            cfg['rmax'])
+            rmax=cfg['rmax'])
+        radar = add_field(radar, radar_aux)
+    if ndatatypes_odimpyrad > 0:
+        radar_aux = merge_fields_pyrad(
+            cfg['loadbasepath'][ind_rad], cfg['loadname'][ind_rad], voltime,
+            datatype_odimpyrad, dataset_odimpyrad, product_odimpyrad,
+            rmax=cfg['rmax'], termination='.h5')
         radar = add_field(radar, radar_aux)
 
     # add COSMO files to the radar field
@@ -357,7 +419,16 @@ def merge_scans_rainbow(basepath, scan_list, voltime, scan_period,
             radar_aux = merge_fields_rainbow(
                 basepath, scan, scantime, datatype_list)
 
-            radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
+            if radar_aux is None:
+                continue
+
+            if radar is None:
+                radar = radar_aux
+            else:
+                radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
+
+    if radar is None:
+        return radar
 
     # keep only PPIs within elevation limits
     if cfg['elmin'] != -600. or cfg['elmax'] != 600.:
@@ -534,7 +605,7 @@ def merge_scans_odim(basepath, scan_list, radar_name, radar_res, voltime,
     radar = None
     dayinfo = voltime.strftime('%y%j')
     timeinfo = voltime.strftime('%H%M')
-    if (radar_name != None) or (radar_res != None):
+    if radar_name is not None and radar_res is not None:
         basename = 'M'+radar_res+radar_name+dayinfo
     if cfg['path_convention'] == 'LTE':
         yy = dayinfo[0:2]
@@ -558,7 +629,13 @@ def merge_scans_odim(basepath, scan_list, radar_name, radar_res, voltime,
         fpath_strf = dataset_list[0][dataset_list[0].find("D")+2:dataset_list[0].find("F")-2]
         fdate_strf = dataset_list[0][dataset_list[0].find("F")+2:-1]
         datapath = (basepath+voltime.strftime(fpath_strf)+'/')
-        filename = glob.glob(datapath+'*'+scan_list[0]+'*')
+        filenames = glob.glob(datapath+'*'+scan_list[0]+'*')
+        filename = []
+        for filename_aux in filenames:
+            fdatetime = find_date_in_file_name(
+                filename_aux, date_format=fdate_strf)
+            if fdatetime == voltime:
+                filename = [filename_aux]
     else:
         datapath = basepath+'M'+radar_res+radar_name+'/'
         filename = glob.glob(
@@ -579,7 +656,14 @@ def merge_scans_odim(basepath, scan_list, radar_name, radar_res, voltime,
     # merge the elevations into a single radar instance
     for scan in scan_list[1:]:
         if cfg['path_convention'] == 'ODIM':
-            filename = glob.glob(datapath+'*'+scan+'*')
+            filenames = glob.glob(datapath+'*'+scan+'*')
+            filename = []
+            for filename_aux in filenames:
+                fdatetime = find_date_in_file_name(
+                    filename_aux, date_format=fdate_strf)
+                if fdatetime == voltime:
+                    filename = [filename_aux]
+                    break
         else:
             filename = glob.glob(datapath+basename+timeinfo+'*'+scan+'*')
         if not filename:
@@ -596,6 +680,7 @@ def merge_scans_odim(basepath, scan_list, radar_name, radar_res, voltime,
                 radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
 
     return radar
+
 
 def merge_scans_mxpol(basepath, scan_list, voltime, datatype_list, cfg):
     """
@@ -1314,7 +1399,7 @@ def merge_fields_rainbow(basepath, scan_name, voltime, datatype_list):
 
     # add other fields in the same scan
     for datatype in datatype_list[1:]:
-        if (datatype != 'Nh') and (datatype != 'Nv'):
+        if datatype not in ('Nh', 'Nv'):
             filename = glob.glob(datapath+fdatetime+datatype+'.*')
         elif datatype == 'Nh':
             filename = glob.glob(datapath+fdatetime+'dBZ.*')
@@ -1324,6 +1409,9 @@ def merge_fields_rainbow(basepath, scan_name, voltime, datatype_list):
             warn('No file found in '+datapath+fdatetime+datatype+'.*')
         else:
             radar_aux = get_data_rainbow(filename[0], datatype)
+            if radar_aux is None:
+                continue
+
             if radar is None:
                 radar = radar_aux
             else:
@@ -1338,10 +1426,12 @@ def merge_fields_rainbow(basepath, scan_name, voltime, datatype_list):
     return radar
 
 
-def merge_fields_cfradial(basepath, loadname, voltime, datatype_list,
-                          dataset_list, product_list, rmax=0.):
+def merge_fields_pyrad(basepath, loadname, voltime, datatype_list,
+                       dataset_list, product_list, rmax=0.,
+                       termination='.nc'):
     """
-    merge CF/Radial fields into a single radar object.
+    merge fields from Pyrad-generated files into a single radar object.
+    Accepted file types are CFRadial and ODIM.
 
     Parameters
     ----------
@@ -1360,6 +1450,8 @@ def merge_fields_cfradial(basepath, loadname, voltime, datatype_list,
         list of products. Used to get path
     rmax : float
         maximum range that will be kept.
+    termination : str
+        file termination type. Can be '.nc' or '.h5'
 
     Returns
     -------
@@ -1370,7 +1462,7 @@ def merge_fields_cfradial(basepath, loadname, voltime, datatype_list,
     datapath = (basepath+loadname+'/'+voltime.strftime('%Y-%m-%d')+'/' +
                 dataset_list[0]+'/'+product_list[0]+'/')
     fdatetime = voltime.strftime('%Y%m%d%H%M%S')
-    filename = glob.glob(datapath+fdatetime+'*'+datatype_list[0]+'.nc')
+    filename = glob.glob(datapath+fdatetime+'*'+datatype_list[0]+termination)
 
     # create radar object
     radar = None
@@ -1378,7 +1470,10 @@ def merge_fields_cfradial(basepath, loadname, voltime, datatype_list,
         warn('No file found in '+datapath+fdatetime+'*'+datatype_list[0] +
              '.nc')
     else:
-        radar = pyart.io.read_cfradial(filename[0])
+        if termination == '.nc':
+            radar = pyart.io.read_cfradial(filename[0])
+        else:
+            radar = pyart.aux_io.read_odim_h5(filename[0])
         if rmax > 0.:
             radar.range['data'] = radar.range['data'][
                 radar.range['data'] < rmax]
@@ -1398,13 +1493,16 @@ def merge_fields_cfradial(basepath, loadname, voltime, datatype_list,
                 basepath+loadname+'/'+voltime.strftime('%Y-%m-%d')+'/' +
                 dataset+'/'+product_list[i]+'/')
             filename = glob.glob(
-                datapath+fdatetime+'*'+datatype_list[i]+'.nc')
+                datapath+fdatetime+'*'+datatype_list[i]+termination)
             if not filename:
                 warn('No file found in '+datapath+fdatetime+'*' +
                      datatype_list[i]+'.nc')
                 continue
 
-            radar_aux = pyart.io.read_cfradial(filename[0])
+            if termination == '.nc':
+                radar_aux = pyart.io.read_cfradial(filename[0])
+            else:
+                radar_aux = pyart.aux_io.read_odim_h5(filename[0])
             if rmax > 0.:
                 radar_aux.range['data'] = radar_aux.range['data'][
                     radar_aux.range['data'] < rmax]
@@ -1499,14 +1597,29 @@ def merge_fields_cosmo(filename_list):
         radar object
 
     """
-    radar = pyart.aux_io.read_rainbow_wrl(filename_list[0])
+    try:
+        radar = pyart.aux_io.read_rainbow_wrl(filename_list[0])
+    except OSError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+filename_list[0])
+        return None
+
+    if radar is None:
+        return None
 
     if len(filename_list) == 1:
         return radar
 
     # add other COSMO fields in the same scan
     for filename in filename_list:
-        radar_aux = pyart.aux_io.read_rainbow_wrl(filename)
+        try:
+            radar_aux = pyart.aux_io.read_rainbow_wrl(filename)
+        except OSError as ee:
+            warn(str(ee))
+            warn('Unable to read file '+filename)
+            continue
+        if radar_aux is None:
+            continue
         for field_name in radar_aux.fields.keys():
             break
         radar.add_field(field_name, radar_aux.fields[field_name])
@@ -1527,15 +1640,30 @@ def get_data_rainbow(filename, datatype):
 
     Returns
     -------
-    radar : Radar
-        radar object
+    radar : Radar or None
+        radar object if the reading of the data has been successful.
+        None otherwise
 
     """
-    radar = pyart.aux_io.read_rainbow_wrl(filename)
-    if (datatype == 'Nh') or (datatype == 'Nv'):
-        with open(filename, 'rb') as fid:
-            rbf = wrl.io.read_rainbow(fid, loaddata=True)
-            fid.close()
+    try:
+        radar = pyart.aux_io.read_rainbow_wrl(filename)
+    except OSError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+filename)
+        return None
+    if radar is None:
+        return None
+
+    if datatype in ('Nh', 'Nv'):
+        try:
+            with open(filename, 'rb') as fid:
+                rbf = wrl.io.read_rainbow(fid, loaddata=True)
+                fid.close()
+        except OSError as ee:
+            warn(str(ee))
+            warn('Unable to read file '+filename)
+            return None
+
         # check the number of slices
         nslices = int(rbf['volume']['scan']['pargroup']['numele'])
         if nslices > 1:
@@ -1586,7 +1714,7 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
     """
     metranet_field_names = dict()
     for datatype in datatype_list:
-        if (datatype != 'Nh') and (datatype != 'Nv'):
+        if datatype not in ('Nh', 'Nv'):
             metranet_field_names.update(get_datatype_metranet(datatype))
 
     if cfg['path_convention'] == 'LTE':
@@ -1698,10 +1826,10 @@ def get_data_odim(filename, datatype_list, scan_name, cfg, ind_rad=0):
     """
     odim_field_names = dict()
     for datatype in datatype_list:
-        if (datatype != 'Nh') and (datatype != 'Nv'):
+        if datatype not in ('Nh', 'Nv'):
             odim_field_names.update(get_datatype_odim(datatype))
         try:
-            radar = read_odim(
+            radar = pyart.aux_io.read_odim_h5(
                 filename, field_names=odim_field_names)
         except ValueError as ee:
             warn("Unable to read file '"+filename+": (%s)" % str(ee))
@@ -1800,7 +1928,7 @@ def get_data_mxpol(filename, datatype_list):
     """
     field_names = dict()
     for datatype in datatype_list:
-        if (datatype != 'Nh') and (datatype != 'Nv'):
+        if datatype not in ('Nh', 'Nv'):
             field_names.update(get_datatype_metranet(datatype))
     radar = pyrad_MXPOL(filename, field_names=field_names)
 

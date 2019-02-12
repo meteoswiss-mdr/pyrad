@@ -66,6 +66,7 @@ Reading other data
     read_solar_flux
     read_selfconsistency
     read_antenna_pattern
+    read_meteorage
     read_lightning
     read_lightning_traj
 	read_lightning_all
@@ -180,6 +181,7 @@ from .read_data_sensor import get_sensor_data, read_smn, read_smn2
 from .read_data_sensor import read_disdro_scattering, read_trt_data
 from .read_data_sensor import read_trt_traj_data, read_lightning_all
 from .read_data_sensor import read_trt_scores, read_trt_cell_lightning
+from .read_data_sensor import read_meteorage
 
 from .read_data_sun import read_sun_hits_multiple_days, read_sun_hits
 from .read_data_sun import read_sun_retrieval, read_solar_flux

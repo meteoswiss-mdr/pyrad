@@ -38,9 +38,20 @@ from ..io.write_data import write_last_state
 
 ALLOW_USER_BREAK = False
 
+try:
+    from dask.diagnostics import Profiler, ResourceProfiler, CacheProfiler
+    from dask.diagnostics import visualize
+    from distributed import Client
+    from bokeh.io import export_png
+    _DASK_AVAILABLE = True
+except ImportError:
+    warn('dask not available: The processing will not be parallelized')
+    _DASK_AVAILABLE = False
+
 
 def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
-         flashnr=0, infostr=""):
+         flashnr=0, infostr="", MULTIPROCESSING_DSET=False,
+         MULTIPROCESSING_PROD=False, PROFILE_MULTIPROCESSING=False):
     """
     Main flow control. Processes radar data off-line over a period of time
     given either by the user, a trajectory file, or determined by the last
@@ -64,6 +75,14 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
     infostr : str
         Information string about the actual data processing
         (e.g. 'RUN57'). This string is added to product files.
+    MULTIPROCESSING_DSET : Bool
+        If true the generation of datasets at the same processing level will
+        be parallelized
+    MULTIPROCESSING_PROD : Bool
+        If true the generation of products from each dataset will be
+        parallelized
+    PROFILE_MULTIPROCESSING : Bool
+        If true and code parallelized the multiprocessing is profiled
 
     """
     print("- PYRAD version: %s (compiled %s by %s)" %
@@ -78,6 +97,30 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
 
     if ALLOW_USER_BREAK:
         input_queue = _initialize_listener()
+
+    if not _DASK_AVAILABLE:
+        MULTIPROCESSING_DSET = False
+        MULTIPROCESSING_PROD = False
+        PROFILE_MULTIPROCESSING = False
+
+    # check if multiprocessing profiling is necessary
+    if not MULTIPROCESSING_DSET and not MULTIPROCESSING_PROD:
+        PROFILE_MULTIPROCESSING = False
+    elif MULTIPROCESSING_DSET and MULTIPROCESSING_PROD:
+        PROFILE_MULTIPROCESSING = False
+
+    if MULTIPROCESSING_DSET and MULTIPROCESSING_PROD:
+        # necessary to launch tasks from tasks
+        Client()
+
+    if PROFILE_MULTIPROCESSING:
+        prof = Profiler()
+        rprof = ResourceProfiler()
+        cprof = CacheProfiler()
+
+        prof.register()
+        rprof.register()
+        cprof.register()
 
     cfg = _create_cfg_dict(cfgfile)
     datacfg = _create_datacfg_dict(cfg)
@@ -142,7 +185,8 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
         # process all data sets
         dscfg, traj = _process_datasets(
             dataset_levels, cfg, dscfg, radar_list, master_voltime, traj=traj,
-            infostr=infostr)
+            infostr=infostr, MULTIPROCESSING_DSET=MULTIPROCESSING_DSET,
+            MULTIPROCESSING_PROD=MULTIPROCESSING_PROD)
 
         # delete variables
         del radar_list
@@ -153,6 +197,21 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
     print('\n\n- Post-processing datasets:')
     dscfg, traj = _postprocess_datasets(
         dataset_levels, cfg, dscfg, traj=traj, infostr=infostr)
+
+    if PROFILE_MULTIPROCESSING:
+        prof.unregister()
+        rprof.unregister()
+        cprof.unregister()
+
+        bokeh_plot = visualize([prof, rprof, cprof], show=False, save=False)
+
+        profile_path = os.path.expanduser('~')+'/profiling/'
+        if not os.path.isdir(profile_path):
+            os.makedirs(profile_path)
+
+        export_png(bokeh_plot, filename=(
+            profile_path+datetime.utcnow().strftime('%Y%m%d%H%M%S') +
+            '_profile.png'))
 
     print('- This is the end my friend! See you soon!')
 

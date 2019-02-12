@@ -43,9 +43,21 @@ from copy import deepcopy
 import datetime
 
 import numpy as np
-import pandas as pd
 import scipy
-import shapely
+
+try:
+    import shapely
+    _SHAPELY_AVAILABLE = True
+except ImportError:
+    warn('shapely not available')
+    _SHAPELY_AVAILABLE = False
+
+try:
+    import pandas as pd
+    _PANDAS_AVAILABLE = True
+except ImportError:
+    warn('Pandas not available')
+    _PANDAS_AVAILABLE = False
 
 import pyart
 
@@ -160,7 +172,8 @@ def rainfall_accumulation(t_in_vec, val_in_vec, cum_time=3600.,
 def time_series_statistics(t_in_vec, val_in_vec, avg_time=3600,
                            base_time=1800, method='mean', dropnan=False):
     """
-    Computes statistics over a time-averaged series
+    Computes statistics over a time-averaged series. Only of package pandas is
+    available otherwise returns None
 
     Parameters
     ----------
@@ -185,6 +198,10 @@ def time_series_statistics(t_in_vec, val_in_vec, avg_time=3600,
         the output values array
 
     """
+    if not _PANDAS_AVAILABLE:
+        warn('Pandas not available. Unable to compute time series statistics')
+        return None, None
+
     df_in = pd.DataFrame(data=val_in_vec, index=pd.DatetimeIndex(t_in_vec))
     df_out = getattr(df_in.resample(
         str(avg_time)+'S', closed='right', label='right', base=base_time),
@@ -199,7 +216,8 @@ def time_series_statistics(t_in_vec, val_in_vec, avg_time=3600,
 
 def join_time_series(t1, val1, t2, val2, dropnan=False):
     """
-    joins time_series
+    joins time_series. Only of package pandas is available otherwise returns
+    None.
 
     Parameters
     ----------
@@ -224,6 +242,10 @@ def join_time_series(t1, val1, t2, val2, dropnan=False):
         value of second series
 
     """
+    if not _PANDAS_AVAILABLE:
+        warn('Pandas not available. Unable to join time series')
+        return None, None, None
+
     df1 = pd.DataFrame(data=val1, index=pd.DatetimeIndex(t1))
     df2 = pd.DataFrame(data=val2, index=pd.DatetimeIndex(t2))
     df_out = pd.concat([df1, df2], join='outer', axis=1)
@@ -301,6 +323,11 @@ def belongs_roi_indices(lat, lon, roi):
         Can be 'All', 'None', 'Some'
 
     """
+    if not _SHAPELY_AVAILABLE:
+        warn('shapely package not available. ' +
+             'Unable to determine if points belong to Region Of Interest')
+        return np.asarray([]), 'None'
+
     lon_list = lon.flatten()
     lat_list = lat.flatten()
 
@@ -318,7 +345,8 @@ def belongs_roi_indices(lat, lon, roi):
     else:
         points_roi = points.intersection(polygon)
         if points_roi.geom_type == 'Point':
-            ind = np.where(np.logical_and(lon == points_roi.x, lat == points_roi.y))
+            ind = np.where(
+                np.logical_and(lon == points_roi.x, lat == points_roi.y))
             if len(ind) == 1:
                 ind = ind[0]
             inds.extend(ind)
@@ -331,7 +359,8 @@ def belongs_roi_indices(lat, lon, roi):
                 inds.extend(ind)
         nroi = len(lat[inds])
         npoint = len(lat_list)
-        warn(str(nroi)+' points out of '+str(npoint)+' in the region of interest')
+        warn(str(nroi)+' points out of '+str(npoint) +
+             ' in the region of interest')
         is_roi = 'Some'
 
     return np.asarray(inds), is_roi
@@ -568,7 +597,7 @@ def find_colocated_indexes(radar1, radar2, rad1_ele, rad1_azi, rad1_rng,
 
 def get_target_elevations(radar_in):
     """
-    Gets RHI taget elevations
+    Gets RHI target elevations
 
     Parameters
     ----------
@@ -895,7 +924,8 @@ def compute_quantiles_sweep(field, ray_start, ray_end, quantiles=None):
     return quantiles, values
 
 
-def compute_histogram(field, field_name, step=None):
+def compute_histogram(field, field_name, bin_edges=None, step=None,
+                      vmin=None, vmax=None):
     """
     computes histogram of the data
 
@@ -903,10 +933,14 @@ def compute_histogram(field, field_name, step=None):
     ----------
     field : ndarray 2D
         the radar field
-    field_name: str
+    field_name: str or none
         name of the field
+    bins_edges :ndarray 1D
+        the bin edges
     step : float
         size of bin
+    vmin, vmax : float
+        The minimum and maximum value of the histogram
 
     Returns
     -------
@@ -916,7 +950,18 @@ def compute_histogram(field, field_name, step=None):
         values at each bin
 
     """
-    bin_edges = get_histogram_bins(field_name, step=step)
+    if bin_edges is None:
+        if field_name is not None:
+            bin_edges = get_histogram_bins(field_name, step=step)
+        else:
+            if vmin is None:
+                vmin = np.ma.min(field)
+            if vmax is None:
+                vmax = np.ma.max(field)
+            if step is None:
+                step = (vmax-vmin)/100.
+            bin_edges = np.arange(vmin, vmax+step, step)
+
     step_aux = bin_edges[1]-bin_edges[0]
     bin_centers = bin_edges[0:-1]+step_aux/2.
     values = field.compressed()

@@ -16,8 +16,6 @@ Auxiliary functions to control the Pyrad data processing flow
     _wait_for_files
     _get_radars_data
     _generate_dataset
-    _generate_dataset_mp
-    _process_dataset
     _generate_prod
     _create_cfg_dict
     _create_datacfg_dict
@@ -39,12 +37,19 @@ from datetime import datetime
 from datetime import timedelta
 import inspect
 import gc
-import multiprocessing as mp
+
 import queue
 import time
 import threading
 import glob
 from copy import deepcopy
+
+try:
+    from memory_profiler import profile as mprofile
+    _MPROFILE_AVAILABLE = True
+except ImportError:
+    warn('Memory profiler not available')
+    _MPROFILE_AVAILABLE = False
 
 from pyrad import proc
 
@@ -59,10 +64,74 @@ from ..io.read_data_other import read_last_state
 from ..proc.process_aux import get_process_func
 from ..prod.product_aux import get_prodgen_func
 
-# from memory_profiler import profile
+try:
+    import dask
+except ImportError:
+    warn('dask not available: The processing will not be parallelized')
 
-MULTIPROCESSING_PROD = False
-MULTIPROCESSING_DSET = False
+PROFILE_LEVEL = 0
+
+def profiler(level=1):
+    """
+    Function to be used as decorator for memory debugging. The function will
+    be profiled or not according to its level respect to the global variable
+    PROFILE_LEVEL
+
+    Parameters
+    ----------
+    level : int
+        profiling level
+
+    Returns
+    -------
+    func or func wrapper : function
+        The function or its wrapper for profiling
+
+    """
+    def profile_real_decorator(func):
+        """
+        real decorator
+
+        Parameters
+        ----------
+        func : function
+            function to profile
+
+        Returns
+        -------
+        wrapper : function
+            The function wrapper
+
+        """
+        def wrapper(*args, **kwargs):
+            """
+            wrapper
+
+            Parameters
+            ----------
+            args, kwargs : arguments
+                The arguments of the function
+
+            Returns
+            -------
+            func : function
+                The original function if no profiling has to be performed or
+                the function decorated with the memory decorator
+
+            """
+            if not _MPROFILE_AVAILABLE:
+                return func(*args, **kwargs)
+
+            if ((PROFILE_LEVEL == 1 and level == 1) or
+                    (PROFILE_LEVEL == 2 and (level == 1 or level == 2)) or
+                    PROFILE_LEVEL == 3):
+                print('profiling '+str(func))
+                func2 = mprofile(func)
+                return func2(*args, **kwargs)
+            return func(*args, **kwargs)
+        return wrapper
+    return profile_real_decorator
+
 
 def _initialize_listener():
     """
@@ -106,7 +175,8 @@ def _user_input_listener(input_queue):
             break
         time.sleep(1)
 
-# @profile
+
+@profiler(level=3)
 def _get_times_and_traj(trajfile, starttime, endtime, scan_period,
                         last_state_file=None, trajtype='plane',
                         flashnr=0):
@@ -214,44 +284,27 @@ def _initialize_datasets(dataset_levels, cfg, traj=None, infostr=None):
     dscfg = dict()
     for level in sorted(dataset_levels):
         print('-- Process level: '+level)
-        if MULTIPROCESSING_DSET:
-            jobs = []
-            manager = mp.Manager()
-            out_queue = manager.Queue()
-            for dataset in dataset_levels[level]:
-                dscfg.update({dataset: _create_dscfg_dict(cfg, dataset)})
-                p = mp.Process(
-                    name=dataset, target=_generate_dataset_mp,
-                    args=(dataset, cfg, dscfg[dataset], out_queue),
-                    kwargs={'proc_status': 0,
-                            'radar_list': None,
-                            'voltime': None,
-                            'trajectory': traj,
-                            'runinfo': infostr})
-                jobs.append(p)
-                p.start()
+        for dataset in dataset_levels[level]:
+            print('--- Processing dataset: '+dataset)
+            dscfg.update({dataset: _create_dscfg_dict(cfg, dataset)})
+            _generate_dataset(
+                dataset, cfg, dscfg[dataset], proc_status=0,
+                radar_list=None, voltime=None, trajectory=traj,
+                runinfo=infostr)
 
-            # wait for completion of the jobs
-            for job in jobs:
-                job.join()
-        else:
-            for dataset in dataset_levels[level]:
-                dscfg.update({dataset: _create_dscfg_dict(cfg, dataset)})
-                _generate_dataset(
-                    dataset, cfg, dscfg[dataset], proc_status=0,
-                    radar_list=None, voltime=None, trajectory=traj,
-                    runinfo=infostr)
-
-                gc.collect()
+            gc.collect()
 
     # manual garbage collection after initial processing
     gc.collect()
 
     return dscfg, traj
 
+
 # @profile
+@profiler(level=1)
 def _process_datasets(dataset_levels, cfg, dscfg, radar_list, master_voltime,
-                      traj=None, infostr=None):
+                      traj=None, infostr=None, MULTIPROCESSING_DSET=False,
+                      MULTIPROCESSING_PROD=False):
     """
     Processes the radar volumes for a particular time stamp.
 
@@ -273,6 +326,12 @@ def _process_datasets(dataset_levels, cfg, dscfg, radar_list, master_voltime,
     infostr : str
         Information string about the actual data processing
         (e.g. 'RUN57'). This string is added to product files.
+    MULTIPROCESSING_DSET : Bool
+        If true the generation of datasets at the same processing level will
+        be parallelized
+    MULTIPROCESSING_PROD : Bool
+        If true the generation of products from each dataset will be
+        parallelized
 
     Returns
     -------
@@ -282,59 +341,57 @@ def _process_datasets(dataset_levels, cfg, dscfg, radar_list, master_voltime,
         the modified trajectory object
 
     """
-    jobs_prod = []
     for level in sorted(dataset_levels):
         print('-- Process level: '+level)
         if MULTIPROCESSING_DSET:
             jobs = []
-            manager = mp.Manager()
-            out_queue = manager.Queue()
+            make_global_list = []
             for dataset in dataset_levels[level]:
-                p = mp.Process(
-                    name=dataset, target=_generate_dataset_mp,
-                    args=(dataset, cfg, dscfg[dataset], out_queue),
-                    kwargs={'proc_status': 1,
-                            'radar_list': radar_list,
-                            'voltime': master_voltime,
-                            'trajectory': traj,
-                            'runinfo': infostr})
-                jobs.append(p)
-                p.start()
+                print('--- Processing dataset: '+dataset)
+                make_global_list.append(dscfg[dataset]['MAKE_GLOBAL'])
 
-            # wait for completion of the jobs
-            for job in jobs:
-                job.join()
+                # delay the data hashing
+                radar_list_aux = dask.delayed(radar_list)
+                dscfg_aux = dask.delayed(dscfg[dataset])
+                jobs.append(dask.delayed(_generate_dataset)(
+                    dataset, cfg, dscfg_aux, proc_status=1,
+                    radar_list=radar_list_aux, voltime=master_voltime,
+                    trajectory=traj, runinfo=infostr,
+                    MULTIPROCESSING_PROD=MULTIPROCESSING_PROD))
 
-            # add new dataset to radar object if necessary
-            for job in jobs:
-                new_dataset, ind_rad, make_global, jobs_ds = (
-                    out_queue.get())
-                _add_dataset(
-                    new_dataset, radar_list, ind_rad,
-                    make_global=make_global)
-                if jobs_ds:
-                    jobs_prod.extend(jobs_ds)
+            try:
+                jobs = dask.compute(*jobs)
+
+                # add new dataset to radar object if necessary
+                # update dataset config dictionary
+                for job, make_global in zip(jobs, make_global_list):
+                    dscfg[job[2]] = job[3]
+                    _add_dataset(
+                        job[0], radar_list, job[1], make_global=make_global)
+
+                del jobs
+            except Exception as ee:
+                warn(str(ee))
+                traceback.print_exc()
         else:
             for dataset in dataset_levels[level]:
-                new_dataset, ind_rad, jobs_ds = _generate_dataset(
-                    dataset, cfg, dscfg[dataset], proc_status=1,
-                    radar_list=radar_list, voltime=master_voltime,
-                    trajectory=traj, runinfo=infostr)
+                print('--- Processing dataset: '+dataset)
+                try:
+                    new_dataset, ind_rad, _, dscfg[dataset] = _generate_dataset(
+                        dataset, cfg, dscfg[dataset], proc_status=1,
+                        radar_list=radar_list, voltime=master_voltime,
+                        trajectory=traj, runinfo=infostr,
+                        MULTIPROCESSING_PROD=MULTIPROCESSING_PROD)
 
-                _add_dataset(
-                    new_dataset, radar_list, ind_rad,
-                    make_global=dscfg[dataset]['MAKE_GLOBAL'])
-                if jobs_ds:
-                    jobs_prod.extend(jobs_ds)
+                    _add_dataset(
+                        new_dataset, radar_list, ind_rad,
+                        make_global=dscfg[dataset]['MAKE_GLOBAL'])
 
-                del new_dataset
-                del jobs_ds
-
-                gc.collect()
-
-    # wait until all the products on this time stamp are generated
-    for job in jobs_prod:
-        job.join()
+                    del new_dataset
+                    gc.collect()
+                except Exception as ee:
+                    warn(str(ee))
+                    traceback.print_exc()
 
     # manual garbage collection after processing each radar volume
     gc.collect()
@@ -371,33 +428,14 @@ def _postprocess_datasets(dataset_levels, cfg, dscfg, traj=None, infostr=None):
     """
     for level in sorted(dataset_levels):
         print('-- Process level: '+level)
-        if MULTIPROCESSING_DSET:
-            jobs = []
-            manager = mp.Manager()
-            out_queue = manager.Queue()
-            for dataset in dataset_levels[level]:
-                p = mp.Process(
-                    name=dataset, target=_generate_dataset_mp,
-                    args=(dataset, cfg, dscfg[dataset], out_queue),
-                    kwargs={'proc_status': 2,
-                            'radar_list': None,
-                            'voltime': None,
-                            'trajectory': traj,
-                            'runinfo': infostr})
-                jobs.append(p)
-                p.start()
+        for dataset in dataset_levels[level]:
+            print('--- Processing dataset: '+dataset)
+            _generate_dataset(
+                dataset, cfg, dscfg[dataset], proc_status=2,
+                radar_list=None, voltime=None, trajectory=traj,
+                runinfo=infostr)
 
-            # wait for completion of the jobs
-            for job in jobs:
-                job.join()
-        else:
-            for dataset in dataset_levels[level]:
-                _generate_dataset(
-                    dataset, cfg, dscfg[dataset], proc_status=2,
-                    radar_list=None, voltime=None, trajectory=traj,
-                    runinfo=infostr)
-
-                gc.collect()
+            gc.collect()
 
     # manual garbage collection after post-processing
     gc.collect()
@@ -525,8 +563,7 @@ def _wait_for_files(nowtime, datacfg, datatype_list, last_processed=None):
         if found_all:
             if nrainbow < 2:
                 return masterfile, masterdatatypedescr, last_processed
-            else:
-                break
+            break
 
     if not found_all:
         # if not all scans available skip the volume
@@ -602,7 +639,7 @@ def _wait_for_rainbow_datatypes(rainbow_files, period=30):
     return found_all
 
 
-# @profile
+@profiler(level=2)
 def _get_radars_data(master_voltime, datatypesdescr_list, datacfg,
                      num_radars=1):
     """
@@ -664,16 +701,17 @@ def _get_radars_data(master_voltime, datatypesdescr_list, datacfg,
     return radar_list
 
 
-# @profile
+@profiler(level=2)
 def _generate_dataset(dsname, cfg, dscfg, proc_status=0, radar_list=None,
-                      voltime=None, trajectory=None, runinfo=None):
+                      voltime=None, trajectory=None, runinfo=None,
+                      MULTIPROCESSING_PROD=False):
     """
     generates a new dataset
 
     Parameters
     ----------
     dsname : str
-        name of the dataset
+        name of the dataset being generated
     cfg : dict
         configuration data
     dscfg : dict
@@ -688,6 +726,9 @@ def _generate_dataset(dsname, cfg, dscfg, proc_status=0, radar_list=None,
         trajectory object
     runinfo : str
         string containing run info
+    MULTIPROCESSING_PROD : Bool
+        If true the generation of products from each dataset will be
+        parallelized
 
     Returns
     -------
@@ -695,105 +736,14 @@ def _generate_dataset(dsname, cfg, dscfg, proc_status=0, radar_list=None,
         The new dataset generated. None otherwise
     ind_rad : int
         the index to the reference radar object
-    jobs : list
-        list of processes used to generate products. (Empty)
-
-    """
-    print('--- Processing dataset: '+dsname)
-    try:
-        return _process_dataset(
-            cfg, dscfg, proc_status=proc_status, radar_list=radar_list,
-            voltime=voltime, trajectory=trajectory, runinfo=runinfo)
-    except Exception as inst:
-        warn(str(inst))
-        traceback.print_exc()
-        return None, None, []
-
-
-def _generate_dataset_mp(dsname, cfg, dscfg, out_queue, proc_status=0,
-                         radar_list=None, voltime=None, trajectory=None,
-                         runinfo=None):
-    """
-    generates a new dataset using multiprocessing
-
-    Parameters
-    ----------
     dsname : str
-        name of the dataset
-    cfg : dict
-        configuration data
+        name of the dataset being generated
     dscfg : dict
-        dataset configuration data
-    out_queue : queue object
-        the queue object where to put the output data
-    proc_status : int
-        processing status 0: init 1: processing 2: final
-    radar_list : list
-        a list containing the radar objects
-    voltime : datetime
-        reference time of the radar(s)
-    trajectory : trajectory object
-        trajectory object
-    runinfo : str
-        string containing run info
+        the modified dataset configuration dictionary
 
-    Returns
-    -------
-    new_dataset : dataset object
-        The new dataset generated. None otherwise
-    ind_rad : int
-        the index to the reference radar object
-    make_global : boolean
-        A flag indicating whether the dataset must be made global
-    jobs : list
-        list of processes used to generate products
 
     """
-    print('--- Processing dataset: '+dsname)
-    try:
-        new_dataset, ind_rad, jobs = _process_dataset(
-            cfg, dscfg, proc_status=proc_status, radar_list=radar_list,
-            voltime=voltime, trajectory=trajectory, runinfo=runinfo)
-        out_queue.put((new_dataset, ind_rad, dscfg['MAKE_GLOBAL'], jobs))
-    except Exception as inst:
-        warn(str(inst))
-        traceback.print_exc()
-        out_queue.put((None, None, 0, []))
-
-
-def _process_dataset(cfg, dscfg, proc_status=0, radar_list=None, voltime=None,
-                     trajectory=None, runinfo=None):
-    """
-    processes a dataset
-
-    Parameters
-    ----------
-    cfg : dict
-        configuration dictionary
-    dscfg : dict
-        dataset specific configuration dictionary
-    proc_status : int
-        status of the processing 0: Initialization 1: process of radar volume
-        2: Final processing
-    radar_list : list
-        list of radar objects containing the data to be processed
-    voltime : datetime object
-        reference time of the radar(s)
-    trajectory : Trajectory object
-        containing trajectory samples
-    runinfo : str
-        string containing run info
-
-    Returns
-    -------
-    new_dataset : dataset object
-        The new dataset generated. None otherwise
-    ind_rad : int
-        the index to the reference radar object
-    jobs : list
-        a list of processes used to generate products
-
-    """
+    dscfg = deepcopy(dscfg)
 
     dscfg['timeinfo'] = voltime
     try:
@@ -816,7 +766,7 @@ def _process_dataset(cfg, dscfg, proc_status=0, radar_list=None, voltime=None,
                                             radar_list=radar_list)
 
     if new_dataset is None:
-        return None, None, []
+        return None, None, dsname, dscfg
 
     try:
         prod_func = get_prodgen_func(dsformat, dscfg['dsname'],
@@ -826,31 +776,28 @@ def _process_dataset(cfg, dscfg, proc_status=0, radar_list=None, voltime=None,
         raise
 
     # create the data set products
-    jobs = []
     if 'products' in dscfg:
         if MULTIPROCESSING_PROD:
+            jobs = []
             for product in dscfg['products']:
-                p = mp.Process(
-                    name=product, target=_generate_prod,
-                    args=(new_dataset, cfg, product, prod_func,
-                          dscfg['dsname'], voltime),
-                    kwargs={'runinfo': runinfo})
-                jobs.append(p)
-                p.start()
+                # delay the data hashing
+                new_dataset = dask.delayed(new_dataset)
+                jobs.append(dask.delayed(_generate_prod)(
+                    new_dataset, cfg, product, prod_func, dscfg['dsname'],
+                    voltime, runinfo=runinfo))
 
-            # wait for completion of the job generation
-            # for job in jobs:
-            #     job.join()
+            dask.compute(*jobs)
+
         else:
             for product in dscfg['products']:
                 _generate_prod(new_dataset, cfg, product, prod_func,
                                dscfg['dsname'], voltime, runinfo=runinfo)
 
                 gc.collect()
-    return new_dataset, ind_rad, jobs
+    return new_dataset, ind_rad, dsname, dscfg
 
 
-# @profile
+@profiler(level=3)
 def _generate_prod(dataset, cfg, prdname, prdfunc, dsname, voltime,
                    runinfo=None):
     """
@@ -875,8 +822,8 @@ def _generate_prod(dataset, cfg, prdname, prdfunc, dsname, voltime,
 
     Returns
     -------
-    cfg : dict
-        dictionary containing the configuration data
+    error : bool
+        False if the products could be generated
 
     """
     print('---- Processing product: ' + prdname)
@@ -884,14 +831,14 @@ def _generate_prod(dataset, cfg, prdname, prdfunc, dsname, voltime,
                                  runinfo=runinfo)
     try:
         prdfunc(dataset, prdcfg)
-        return 0
+        return False
     except Exception as inst:
         warn(str(inst))
         traceback.print_exc()
-        return 1
+        return True
 
 
-# @profile
+@profiler(level=3)
 def _create_cfg_dict(cfgfile):
     """
     creates a configuration dictionary
@@ -976,6 +923,14 @@ def _create_cfg_dict(cfgfile):
         cfg.update({'lrxh': None})
     if 'lrxv' not in cfg:
         cfg.update({'lrxv': None})
+    if 'ltxh' not in cfg:
+        cfg.update({'ltxh': None})
+    if 'ltxv' not in cfg:
+        cfg.update({'ltxv': None})
+    if 'txpwrh' not in cfg:
+        cfg.update({'txpwrh': None})
+    if 'txpwrv' not in cfg:
+        cfg.update({'txpwrv': None})
     if 'lradomeh' not in cfg:
         cfg.update({'lradomeh': None})
     if 'lradomev' not in cfg:
@@ -1021,7 +976,7 @@ def _create_cfg_dict(cfgfile):
     return cfg
 
 
-# @profile
+@profiler(level=3)
 def _create_datacfg_dict(cfg):
     """
     creates a data configuration dictionary from a config dictionary
@@ -1061,7 +1016,7 @@ def _create_datacfg_dict(cfg):
     return datacfg
 
 
-# @profile
+@profiler(level=3)
 def _create_dscfg_dict(cfg, dataset):
     """
     creates a dataset configuration dictionary
@@ -1096,6 +1051,10 @@ def _create_dscfg_dict(cfg, dataset):
     dscfg.update({'radconstv': cfg['radconstv']})
     dscfg.update({'lrxh': cfg['lrxh']})
     dscfg.update({'lrxv': cfg['lrxv']})
+    dscfg.update({'ltxh': cfg['ltxh']})
+    dscfg.update({'ltxv': cfg['ltxv']})
+    dscfg.update({'txpwrh': cfg['txpwrh']})
+    dscfg.update({'txpwrv': cfg['txpwrv']})
     dscfg.update({'lradomeh': cfg['lradomeh']})
     dscfg.update({'lradomev': cfg['lradomev']})
     dscfg.update({'AntennaGain': cfg['AntennaGain']})
@@ -1132,7 +1091,7 @@ def _create_dscfg_dict(cfg, dataset):
     return dscfg
 
 
-# @profile
+@profiler(level=3)
 def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
     """
     creates a product configuration dictionary
@@ -1187,7 +1146,7 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
     return prdcfg
 
 
-# @profile
+@profiler(level=3)
 def _get_datatype_list(cfg, radarnr='RADAR001'):
     """
     get list of unique input data types
@@ -1250,7 +1209,7 @@ def _get_datatype_list(cfg, radarnr='RADAR001'):
     return datatypesdescr
 
 
-# @profile
+@profiler(level=3)
 def _get_datasets_list(cfg):
     """
     get list of dataset at each processing level
@@ -1277,7 +1236,7 @@ def _get_datasets_list(cfg):
     return dataset_levels
 
 
-# @profile
+@profiler(level=3)
 def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
                          scan_list=None):
     """
@@ -1306,10 +1265,9 @@ def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
     masterscan = None
     for datatypedescr in datatypesdescr:
         radarnr, datagroup, _, _, _ = get_datatype_fields(datatypedescr)
-        if ((datagroup != 'COSMO') and (datagroup != 'RAD4ALPCOSMO') and
-                (datagroup != 'DEM') and (datagroup != 'RAD4ALPDEM') and
-                (datagroup != 'RAD4ALPHYDRO') and
-                (datagroup != 'RAD4ALPDOPPLER')):
+        if (datagroup not in (
+                'COSMO', 'RAD4ALPCOSMO', 'DEM', 'RAD4ALPDEM', 'RAD4ALPHYDRO',
+                'RAD4ALPDOPPLER')):
             masterdatatypedescr = datatypedescr
             if scan_list is not None:
                 masterscan = scan_list[int(radarnr[5:8])-1][0]
@@ -1357,7 +1315,7 @@ def _get_masterfile_list(datatypesdescr, starttime, endtime, datacfg,
     return masterfilelist, masterdatatypedescr, masterscan
 
 
-# @profile
+@profiler(level=3)
 def _add_dataset(new_dataset, radar_list, ind_rad, make_global=True):
     """
     adds a new field to an existing radar object

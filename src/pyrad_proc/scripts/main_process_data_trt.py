@@ -47,11 +47,11 @@ def main():
     parser.add_argument(
         'proc_cfgfile', type=str, help='name of main configuration file')
 
-    # keyword arguments
     parser.add_argument(
         'days', nargs='+', type=str,
         help='Dates to process. Format YYYY-MM-DD')
 
+    # keyword arguments
     parser.add_argument(
         '--trtbase', type=str,
         default='/store/msrad/radar/trt/',
@@ -79,6 +79,10 @@ def main():
 
     parser.add_argument(
         '--hres', type=float, default=250., help='Height resolution')
+
+    parser.add_argument(
+        '--center', type=int, default=0,
+        help='If true the data is at the cell center')
 
     args = parser.parse_args()
 
@@ -114,6 +118,10 @@ def main():
         trt_list.extend(glob.glob(
             args.trtbase+time_dir+'/TRTC_cell_plots/Some/*.trt'))
 
+    if len(trt_list) == 0:
+        warn('No valid TRT files found in '+args.trtbase)
+        return
+
     # Pyrad data processing
     trt_cell_id_list = []
     trt_file_list = []
@@ -130,14 +138,15 @@ def main():
             print(ValueError)
 
     # plot time series and get altitude of graupel column
-    cell_ID_list = np.asarray([], dtype=int)
-    time_list = np.asarray([], dtype=datetime.datetime)
-    lon_list = np.asarray([], dtype=float)
-    lat_list = np.asarray([], dtype=float)
-    area_list = np.asarray([], dtype=float)
-    rank_list = np.asarray([], dtype=float)
-    rm_hmin_list = np.ma.asarray([], dtype=float)
-    rm_hmax_list = np.ma.asarray([], dtype=float)
+    if 'hydro' in datatype_list:
+        cell_ID_list = np.asarray([], dtype=int)
+        time_list = np.asarray([], dtype=datetime.datetime)
+        lon_list = np.asarray([], dtype=float)
+        lat_list = np.asarray([], dtype=float)
+        area_list = np.asarray([], dtype=float)
+        rank_list = np.asarray([], dtype=float)
+        rm_hmin_list = np.ma.asarray([], dtype=float)
+        rm_hmax_list = np.ma.asarray([], dtype=float)
 
     for i, trt_cell_id in enumerate(trt_cell_id_list):
         print('\n\nPost-processing cell: '+trt_cell_id)
@@ -146,7 +155,10 @@ def main():
         time_dir = dt_cell.strftime("%Y-%m-%d")
         for j, datatype in enumerate(datatype_list):
             dataset = dataset_list[j]
-            file_base2 = args.radarbase+time_dir+'/'+dataset+'_trt_traj/'
+            if args.center:
+                file_base2 = args.radarbase+time_dir+'/'+dataset+'_trt_center_traj/'
+            else:
+                file_base2 = args.radarbase+time_dir+'/'+dataset+'_trt_traj/'
 
             field_name = get_fieldname_pyart(datatype)
             field_dict = get_metadata(field_name)
@@ -156,23 +168,30 @@ def main():
             # plot time-height
             flist = glob.glob(
                 file_base2+'PROFILE/*_'+trt_cell_id+'_rhi_profile_*_' +
-                datatype+'_hres'+str(args.hres)+'.csv')
+                datatype+'_hres'+str(int(args.hres))+'.csv')
+
             if not flist:
                 warn('No profile files found in '+file_base2 +
                      'PROFILE/ for TRT cell ' +
                      trt_cell_id+' with resolution '+str(args.hres))
             else:
-                labels = [
-                    '50.0-percentile', '25.0-percentile', '75.0-percentile']
-                if datatype == 'RhoHVc':
+                if args.center:
+                    labels = ['Mean', 'Min', 'Max']
+                else:
                     labels = [
-                        '80.0-percentile', '65.0-percentile',
-                        '95.0-percentile']
-                elif datatype == 'hydro':
-                    labels = [
-                        'Mode', '2nd most common', '3rd most common',
-                        '% points mode', '% points 2nd most common',
-                        '% points 3rd most common']
+                        '50.0-percentile', '25.0-percentile', '75.0-percentile']
+                    if datatype == 'RhoHVc':
+                        labels = [
+                            '80.0-percentile', '65.0-percentile',
+                            '95.0-percentile']
+                    elif datatype == 'hydro':
+                        labels = [
+                            'Mode', '2nd most common', '3rd most common',
+                            '% points mode', '% points 2nd most common',
+                            '% points 3rd most common']
+                    elif datatype == 'entropy' or 'prop' in datatype:
+                        labels = ['Mean', 'Min', 'Max']
+
                 tbin_edges, hbin_edges, _, data_ma, start_time = (
                     read_profile_ts(flist, labels, hres=args.hres))
 
@@ -276,12 +295,13 @@ def main():
 
             print("----- plot to '%s'" % fname)
 
-    fname = args.trtbase+'cell_rimmed_particles_column.csv'
-    write_trt_cell_lightning(
-        cell_ID_list, time_list, lon_list, lat_list, area_list,
-        rank_list, rm_hmin_list, rm_hmax_list, fname)
+    if 'hydro' in datatype_list:
+        fname = args.trtbase+'cell_rimed_particles_column.csv'
+        write_trt_cell_lightning(
+            cell_ID_list, time_list, lon_list, lat_list, area_list,
+            rank_list, rm_hmin_list, rm_hmax_list, fname)
 
-    print("----- written to '%s'" % fname)
+        print("----- written to '%s'" % fname)
 
 
 def get_graupel_column(tbin_edges, hbin_edges, data_ma, start_time,
@@ -306,7 +326,7 @@ def get_graupel_column(tbin_edges, hbin_edges, data_ma, start_time,
     Returns
     -------
     hmin, hmax : 1D float arrays
-        the minimum and maximum altitude of the rimmed particles column
+        the minimum and maximum altitude of the rimed particles column
 
     """
     tbin_rights = tbin_edges[1:]
@@ -322,12 +342,12 @@ def get_graupel_column(tbin_edges, hbin_edges, data_ma, start_time,
     hmin = np.ma.min(H_lefts, axis=1)
     hmax = np.ma.max(H_rights, axis=1)
 
-    # All TRT cell time steps have a corresponding rimmed column height value
+    # All TRT cell time steps have a corresponding rimed column height value
     # Return the values
     if tbin_rights.size == yyyymmddHHMM.size:
         return hmin, hmax
 
-    # Missing rimmed height values. Determine those missing and put the data
+    # Missing rimed height values. Determine those missing and put the data
     # in the right time step
     hmin_aux = np.ma.masked_all(yyyymmddHHMM.size, dtype=float)
     hmax_aux = np.ma.masked_all(yyyymmddHHMM.size, dtype=float)

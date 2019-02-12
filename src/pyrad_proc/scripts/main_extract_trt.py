@@ -46,7 +46,12 @@ def main():
 
     # keyword arguments
     parser.add_argument(
-        '--trtbase', type=str,
+        '--raw_trtbase', type=str,
+        default='/store/msrad/radar/rad4alp/TRT/',
+        help='name of folder containing the TRT cell data')
+
+    parser.add_argument(
+        '--proc_trtbase', type=str,
         default='/store/msrad/radar/trt/',
         help='name of folder containing the TRT cell data')
 
@@ -73,9 +78,9 @@ def main():
         endtime = datetime.datetime.strptime(end_time_str, '%Y%m%d%H%M%S')
 
         data_input_path = (
-            args.trtbase+starttime.strftime('%Y-%m-%d')+'/TRTC/')
+            args.raw_trtbase+starttime.strftime('%y%j/TRTC%y%j/'))
         data_output_path = (
-            args.trtbase+starttime.strftime('%Y-%m-%d')+'/TRTC_cell/')
+            args.proc_trtbase+starttime.strftime('%Y-%m-%d')+'/TRTC_cell/')
         if not os.path.isdir(data_output_path):
             os.makedirs(data_output_path)
 

@@ -1,42 +1,37 @@
 language: python
-python:
-  - "3.4"
-  - "3.5"
-  - "3.6"
+
+addons:
+    apt:
+        packages:
+        - gfortran
+
+matrix:
+    include:
+    - python: 3.5
+      env:
+        - PYTHON_VERSION="3.5"
+    - python: 3.6
+      env:
+        - PYTHON_VERSION="3.6"
+    - python: 3.7
+      dist: xenial
+      sudo: true
+      env:
+        - PYTHON_VERSION="3.7"
+
 # command to install dependencies
 install:
-  - sudo apt-get update
-  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - hash -r
-  - conda config --set always_yes yes --set changeps1 no
-  - conda update -q conda
-  # Useful for debugging any issues with conda
-  - conda info -a
-
-  # creation of conda environment and installation of dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
-  - source activate test-environment
-  - conda install netcdf4 h5py nose pandas
-  - conda install -c conda-forge basemap cartopy gdal
-  - conda install -c https://conda.binstar.org/jjhelmus trmm_rsl
-  - conda install -c conda-forge wradlib
-  - pip install --trusted-host pypi.python.org xmltodict
-
-  # export global variables
-  - export RSL_PATH="$HOME/miniconda"
-  - export GDAL_DATA="$HOME/miniconda/share/gdal"
-  # - export PYART_CONFIG="$HOME/pyrad/config/pyart/mch_config.py"
-  # - export METRANETLIB_PATH=""
-
-  # installation of pyart and pyrad
-  - cd $HOME/pyrad/src/pyart
-  - python setup.py install
-  - cd $HOME/pyrad/src/pyrad
-  - python setup.py install
+   - source src/pyrad_proc/continuous_integration/install.sh
 
 # command to run tests
-#script:
+script:   
+   - python -c "import pyart; pyart._debug_info()"
+   - python -c "import pyrad"
+   - if [[ "$PYTHON_VERSION" != "3.5" ]]; then python -c "import wradlib; wradlib.__version__"; fi
 #  - pytest # or py.test for Python versions 3.5 and below
+after_failure:
+   - conda info
+   - conda list
+after_success:
+   - conda info
+   - conda list

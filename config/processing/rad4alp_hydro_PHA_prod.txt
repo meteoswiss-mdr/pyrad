@@ -4,23 +4,23 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 1
+dataSetList STRARR 14
     l0:TEMP
-#    l0:ZH 
-#    l0:ZH_TIME_HEIGHT
-#    l0:SNRh
-#    l0:RhoHV
-#    l1:echoID
-#    l2:echoFilter   
-#    l3:SNRFilter
-#    l4:PhiDPc_smooth2w
-#    l5:KDPc_Vulpiani
-#    l5:Att_ZPhi       
-#    l6:ZHc_TIME_HEIGHT
-#    l6:hydroclass    
-#    l7:hydroclass_TIME_HEIGHT
-   
-   
+    l0:ZH
+    l0:ZH_TIME_HEIGHT
+    l0:SNRh
+    l1:RhoHV
+    l2:echoID
+    l3:echoFilter
+    l4:SNRFilter
+    l5:PhiDPc_smooth2w
+    l6:KDPc_Vulpiani
+    l7:Att_ZPhi
+    l8:ZHc_TIME_HEIGHT
+    l8:hydroclass_entropy
+    l9:hydroclass_TIME_HEIGHT
+
+
 # ==========================================================================================
 #               COSMO data
 # ==========================================================================================
@@ -36,12 +36,12 @@ dataSetList STRARR 1
 TEMP STRUCT 7
     type STRING COSMO_LOOKUP
     datatype STRARR 1
-        RAD4ALP:dBZ        
+        RAD4ALP:dBZ
     cosmo_type STRING TEMP
     regular_grid INT 1
     lookup_table INT 1
     MAKE_GLOBAL INT 1
-    products STRUCT 3                
+    products STRUCT 3
         EL001 STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 2
@@ -54,7 +54,7 @@ TEMP STRUCT 7
         SAVEVOL_TEMP STRUCT 2
             type   STRING SAVEVOL
             voltype STRING TEMP
-            
+
 # ==========================================================================================
 #                 raw data processing
 # ==========================================================================================
@@ -71,7 +71,7 @@ ZH STRUCT 3
          angle FLOAT 93.
          AziTol FLOAT 1.
          voltype STRING dBZ
-         
+
 ZH_TIME_HEIGHT STRUCT 8
    type     STRING TIME_HEIGHT
    datatype STRING RAD4ALP:dBZ
@@ -80,7 +80,7 @@ ZH_TIME_HEIGHT STRUCT 8
    latlon_tol FLOAT 0.005
    hres FLOAT 500.
    hmax FLOAT 12000.
-   products STRUCT 2        
+   products STRUCT 2
         TIME_HEIGHT STRUCT 4
             qvp_type STRING final
             type STRING TIME_RANGE
@@ -89,7 +89,7 @@ ZH_TIME_HEIGHT STRUCT 8
         SAVEVOL STRUCT 2
             type   STRING SAVEVOL
             voltype STRING dBZ
-      
+
 
 # ==========================================================================================
 #                 secondary moments products
@@ -100,8 +100,8 @@ SNRh STRUCT 4
         RAD4ALP:dBZ
         RAD4ALP:Nh
     output_type STRING SNRh
-    MAKE_GLOBAL INT 1	
-	
+    MAKE_GLOBAL INT 1
+
 RhoHV STRUCT 3
     type STRING RHOHV_CORRECTION
     datatype STRARR 5
@@ -112,7 +112,7 @@ RhoHV STRUCT 3
         PROC:SNRh
     MAKE_GLOBAL INT 1
 
-    
+
 # ==========================================================================================
 #                 echo identification
 # ==========================================================================================
@@ -137,7 +137,7 @@ echoFilter STRUCT 5
         RAD4ALP:dBZ
         RAD4ALP:ZDR
         PROC:RhoHV
-        RAD4ALP:uPhiDP        
+        RAD4ALP:uPhiDP
     echo_type INT 3
     MAKE_GLOBAL INT 1
     products STRUCT 3
@@ -154,7 +154,7 @@ echoFilter STRUCT 5
             type   STRING SAVEVOL
             voltype STRING RhoHVc
 
-            
+
 # ==========================================================================================
 #                 filtration based on SNR
 # ==========================================================================================
@@ -165,11 +165,11 @@ SNRFilter STRUCT 4
       PROC:PhiDPc
    SNRmin FLOAT 10.
    MAKE_GLOBAL INT 1
-   
+
 
 # ==========================================================================================
 #                 PHIDP processing
-# ==========================================================================================   
+# ==========================================================================================
 PhiDPc_smooth2w STRUCT 12
     type STRING PHIDP_SMOOTH_2W
     datatype STRARR 2
@@ -182,7 +182,7 @@ PhiDPc_smooth2w STRUCT 12
     Zmax FLOAT 40.
     rwinds FLOAT 1000.
     rwindl FLOAT 3000.
-    Zthr FLOAT 40.    
+    Zthr FLOAT 40.
     MAKE_GLOBAL INT 1
     products STRUCT 3
       EL001 STRUCT 3
@@ -197,11 +197,11 @@ PhiDPc_smooth2w STRUCT 12
       SAVEVOL_PhiDPc STRUCT 2
             type   STRING SAVEVOL
             voltype STRING PhiDPc
-	
-	
+
+
 # ==========================================================================================
 #                 KDP processing
-# ==========================================================================================   
+# ==========================================================================================
 #KDPc_leastsquare2w STRUCT 7
 #    type STRING KDP_LEASTSQUARE_2W
 #    datatype STRARR 2
@@ -209,7 +209,7 @@ PhiDPc_smooth2w STRUCT 12
 #        PROC:dBZc
 #    rwinds FLOAT 1000.
 #    rwindl FLOAT 3000.
-#    Zthr FLOAT 40.    
+#    Zthr FLOAT 40.
 #    MAKE_GLOBAL INT 1
 #    products STRUCT 2
 #      EL001 STRUCT 3
@@ -221,7 +221,7 @@ PhiDPc_smooth2w STRUCT 12
 #         angle FLOAT 93.
 #         AziTol FLOAT 1.
 #         voltype STRING KDPc
-#            
+#
 KDPc_Vulpiani STRUCT 9
     type STRING PHIDP_KDP_VULPIANI
     datatype STRARR 1
@@ -285,7 +285,7 @@ Att_ZPhi STRUCT 6
         SAVEVOL_ZDRc STRUCT 2
             type   STRING SAVEVOL
             voltype STRING ZDRc
-            
+
 #ZH_grid STRUCT 5
 #   type     STRING GRID
 #   datatype STRING PROC:dBZc
@@ -300,7 +300,7 @@ Att_ZPhi STRUCT 6
 #      hres FLOAT 500.
 #      vres FLOAT 200.
 #      altorig FLOAT 0.
-#   products STRUCT 2      
+#   products STRUCT 2
 #      LATLON STRUCT 4
 #         type STRING CROSS_SECTION
 #         voltype STRING dBZc
@@ -309,11 +309,11 @@ Att_ZPhi STRUCT 6
 #            lon FLOAT 9.25
 #         coord2 STRUCT 2
 #            lat FLOAT 47.61
-#            lon FLOAT 9.7            
+#            lon FLOAT 9.7
 #      SURFACE STRUCT 3
 #         type  STRING SURFACE_IMAGE
 #         voltype STRING dBZc
-#         level INT 25  
+#         level INT 25
 #
 ZHc_TIME_HEIGHT STRUCT 8
    type     STRING TIME_HEIGHT
@@ -323,7 +323,7 @@ ZHc_TIME_HEIGHT STRUCT 8
    latlon_tol FLOAT 0.005
    hres FLOAT 500.
    hmax FLOAT 12000.
-   products STRUCT 2        
+   products STRUCT 2
         TIME_HEIGHT STRUCT 4
             qvp_type STRING final
             type STRING TIME_RANGE
@@ -331,13 +331,13 @@ ZHc_TIME_HEIGHT STRUCT 8
             voltype STRING dBZc
         SAVEVOL STRUCT 2
             type   STRING SAVEVOL
-            voltype STRING dBZc         
-            
-            
+            voltype STRING dBZc
+
+
 # ==========================================================================================
 #                 hydrometeor classification products
 # ==========================================================================================
-hydroclass STRUCT 6
+hydroclass_entropy STRUCT 8
     type STRING HYDROCLASS
     datatype STRARR 5
         PROC:dBZc
@@ -347,25 +347,147 @@ hydroclass STRUCT 6
         PROC:TEMP
     HYDRO_METHOD STRING SEMISUPERVISED
     RADARCENTROIDS STRING A
+    compute_entropy INT 1
+    output_distances INT 1
     MAKE_GLOBAL INT 1
-    products STRUCT 3
-      EL001 STRUCT 3
-         type  STRING PPI_IMAGE
-         anglenr INT 2
-         voltype STRING hydro
-      AZ093 STRUCT 4
-         type  STRING PSEUDORHI_IMAGE
-         angle FLOAT 93.
-         AziTol FLOAT 1.
-         voltype STRING hydro
-      SAVEVOL_hydro STRUCT 2
+	products STRUCT 33
+        SAVEVOL_hydro STRUCT 2
             type   STRING SAVEVOL
             voltype STRING hydro
-         
+        SAVEVOL_entropy STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING entropy
+        SAVEVOL_propAG STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING propAG
+        SAVEVOL_propCR STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING propCR
+        SAVEVOL_propLR STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING propLR
+        SAVEVOL_propRP STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING propRP
+        SAVEVOL_propRN STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING propRN
+        SAVEVOL_propVI STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING propVI
+        SAVEVOL_propWS STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING propWS
+        SAVEVOL_propMH STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING propMH
+        SAVEVOL_propIH STRUCT 2
+            type   STRING SAVEVOL
+            voltype STRING propIH
+        EL001_hydro STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING hydro
+        AZ093_hydro STRUCT 4
+            type  STRING PSEUDORHI_IMAGE
+            angle FLOAT 93.
+            AziTol FLOAT 1.
+            voltype STRING hydro
+        EL001_entropy STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING entropy
+        AZ093_entropy STRUCT 4
+            type  STRING PSEUDORHI_IMAGE
+            angle FLOAT 93.
+            AziTol FLOAT 1.
+            voltype STRING entropy
+        EL001_propAG STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING propAG
+        AZ093_propAG STRUCT 4
+            type  STRING PSEUDORHI_IMAGE
+            angle FLOAT 93.
+            AziTol FLOAT 1.
+            voltype STRING propAG
+        EL001_propCR STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING propCR
+        AZ093_propCR STRUCT 4
+            type  STRING PSEUDORHI_IMAGE
+            angle FLOAT 93.
+            AziTol FLOAT 1.
+            voltype STRING propCR
+        EL001_propLR STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING propLR
+        AZ093_propLR STRUCT 4
+            type  STRING PSEUDORHI_IMAGE
+            angle FLOAT 93.
+            AziTol FLOAT 1.
+            voltype STRING propLR
+        EL001_propRP STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING propRP
+        AZ093_propRP STRUCT 4
+            type  STRING PSEUDORHI_IMAGE
+            angle FLOAT 93.
+            AziTol FLOAT 1.
+            voltype STRING propRP
+        EL001_propRN STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING propRN
+        AZ093_propRN STRUCT 4
+            type  STRING PSEUDORHI_IMAGE
+            angle FLOAT 93.
+            AziTol FLOAT 1.
+            voltype STRING propRN
+        EL001_propVI STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING propVI
+        AZ093_propVI STRUCT 4
+            type  STRING PSEUDORHI_IMAGE
+            angle FLOAT 93.
+            AziTol FLOAT 1.
+            voltype STRING propVI
+        EL001_propWS STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING propWS
+        AZ093_propWS STRUCT 4
+            type  STRING PSEUDORHI_IMAGE
+            angle FLOAT 93.
+            AziTol FLOAT 1.
+            voltype STRING propWS
+        EL001_propMH STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING propMH
+        AZ093_propMH STRUCT 4
+            type  STRING PSEUDORHI_IMAGE
+            angle FLOAT 93.
+            AziTol FLOAT 1.
+            voltype STRING propMH
+        EL001_propIH STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING propIH
+        AZ093_propIH STRUCT 4
+            type  STRING PSEUDORHI_IMAGE
+            angle FLOAT 93.
+            AziTol FLOAT 1.
+            voltype STRING propIH
+
 #hydroclass_grid STRUCT 5
 #   type     STRING GRID
 #   datatype STRING PROC:hydro
-#   wfunc STRING NEAREST_NEIGHBOUR   
+#   wfunc STRING NEAREST_NEIGHBOUR
 #   gridConfig STRUCT 9
 #      xmin FLOAT 0.
 #      xmax FLOAT 100.
@@ -385,12 +507,12 @@ hydroclass STRUCT 6
 #            lon FLOAT 9.25
 #         coord2 STRUCT 2
 #            lat FLOAT 47.61
-#            lon FLOAT 9.7            
+#            lon FLOAT 9.7
 #      SURFACE STRUCT 3
 #         type  STRING SURFACE_IMAGE
 #         voltype STRING hydro
 #         level INT 25
-#         
+#
 hydroclass_TIME_HEIGHT STRUCT 8
    type     STRING TIME_HEIGHT
    datatype STRING PROC:hydro
@@ -399,7 +521,7 @@ hydroclass_TIME_HEIGHT STRUCT 8
    latlon_tol FLOAT 0.005
    hres FLOAT 500.
    hmax FLOAT 12000.
-   products STRUCT 2        
+   products STRUCT 2
         TIME_HEIGHT STRUCT 4
             qvp_type STRING final
             type STRING TIME_RANGE
@@ -408,4 +530,5 @@ hydroclass_TIME_HEIGHT STRUCT 8
         SAVEVOL STRUCT 2
             type   STRING SAVEVOL
             voltype STRING hydro
-            
+
+

@@ -8,6 +8,13 @@
    :special-members:
    :inherited-members:
    :show-inheritance:
+.. automodule:: pyart.graph.cm_colorblind
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
 .. automodule:: pyart.graph.common
    :members:
    :undoc-members:
@@ -37,6 +44,13 @@
    :inherited-members:
    :show-inheritance:
 .. automodule:: pyart.graph.radarmapdisplay
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
+.. automodule:: pyart.graph.radarmapdisplay_cartopy
    :members:
    :undoc-members:
    :private-members:

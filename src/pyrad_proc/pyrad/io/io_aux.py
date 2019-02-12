@@ -30,6 +30,8 @@ Auxiliary functions for reading/writing files
     find_hzt_file
     find_rad4alpcosmo_file
     _get_datetime
+    find_date_in_file_name
+
 
 """
 
@@ -324,60 +326,392 @@ def get_datatype_odim(datatype):
         corresponding Py-ART field name
 
     """
-    if datatype == 'udBZ':
-        datatype_odim = 'TH'
-        field_name = 'uncorrected_reflectivity'
-    elif datatype == 'udBZv':
-        datatype_odim = 'TV'
-        field_name = 'uncorrected_reflectivity_vv'
-    elif datatype == 'dBZ':
-        datatype_odim = 'DBZH'
+    if datatype == 'dBZ':
         field_name = 'reflectivity'
-    elif datatype == 'dBZv':
-        datatype_odim = 'DBZV'
-        field_name = 'reflectivity_vv'
-    elif datatype == 'dBZc':
         datatype_odim = 'DBZH'
+    elif datatype == 'dBuZ':
+        field_name = 'unfiltered_reflectivity'
+        datatype_odim = 'TH'
+    elif datatype == 'dBZc':
         field_name = 'corrected_reflectivity'
-    elif datatype == 'dBZvc':
+        datatype_odim = 'DBZHC'
+    elif datatype == 'dBuZc':
+        field_name = 'corrected_unfiltered_reflectivity'
+        datatype_odim = 'THC'
+    elif datatype == 'dBZv':
+        field_name = 'reflectivity_vv'
         datatype_odim = 'DBZV'
+    elif datatype == 'dBZvc':
         field_name = 'corrected_reflectivity_vv'
+        datatype_odim = 'DBZVC'
+    elif datatype == 'dBuZv':
+        field_name = 'unfiltered_reflectivity_vv'
+        datatype_odim = 'TV'
+    elif datatype == 'dBuZvc':
+        field_name = 'corrected_unfiltered_reflectivity_vv'
+        datatype_odim = 'TVC'
+    elif datatype == 'dBZ_bias':
+        field_name = 'reflectivity_bias'
+        datatype_odim = 'ZBIAS'
+    elif datatype == 'eta_h':
+        field_name = 'volumetric_reflectivity'
+        datatype_odim = 'etah'
+    elif datatype == 'eta_v':
+        field_name = 'volumetric_reflectivity_vv'
+        datatype_odim = 'etav'
+    elif datatype == 'rcs_h':
+        field_name = 'radar_cross_section_hh'
+        datatype_odim = 'RCSH'
+    elif datatype == 'rcs_v':
+        field_name = 'radar_cross_section_vv'
+        datatype_odim = 'RCSV'
+
     elif datatype == 'ZDR':
-        datatype_odim = 'ZDR'
         field_name = 'differential_reflectivity'
-    elif datatype == 'RhoHV':
-        datatype_odim = 'RHOHV'
-        field_name = 'cross_correlation_ratio'
-    elif datatype == 'LDR':
-        datatype_odim = 'LDR'
-        field_name = 'linear_polarization_ratio'
-    elif datatype == 'PhiDP':
-        datatype_odim = 'PHIDP'
-        field_name = 'differential_phase'
-    elif datatype == 'KDP':
-        datatype_odim = 'KDP'
-        field_name = 'specific_differential_phase'
+        datatype_odim = 'ZDR'
+    elif datatype == 'ZDRu':
+        field_name = 'unfiltered_differential_reflectivity'
+        datatype_odim = 'ZDRU'
+    elif datatype == 'ZDRc':
+        field_name = 'corrected_differential_reflectivity'
+        datatype_odim = 'ZDRC'
+    elif datatype == 'ZDRuc':
+        field_name = 'corrected_unfiltered_differential_reflectivity'
+        datatype_odim = 'ZDRUC'
+    elif datatype == 'ZDR_prec':
+        field_name = 'differential_reflectivity_in_precipitation'
+        datatype_odim = 'ZDRPREC'
+    elif datatype == 'ZDR_snow':
+        field_name = 'differential_reflectivity_in_snow'
+        datatype_odim = 'ZDRSNOW'
+
+    elif datatype == 'dBm':
+        field_name = 'signal_power_hh'
+        datatype_odim = 'DBMH'
+    elif datatype == 'dBmv':
+        field_name = 'signal_power_vv'
+        datatype_odim = 'DBMV'
+    elif datatype == 'Nh':
+        field_name = 'noisedBZ_hh'
+        datatype_odim = 'NDBZH'
+    elif datatype == 'Nv':
+        field_name = 'noisedBZ_vv'
+        datatype_odim = 'NDBZV'
+    elif datatype == 'SNRh':
+        field_name = 'signal_to_noise_ratio_hh'
+        datatype_odim = 'SNRH'
+    elif datatype == 'SNRv':
+        field_name = 'signal_to_noise_ratio_vv'
+        datatype_odim = 'SNRV'
     elif datatype == 'SQI':
-        datatype_odim = 'SQI'
         field_name = 'normalized_coherent_power'
-    elif datatype == 'SNR':
-        datatype_odim = 'SNR'
-        field_name = 'signal_to_noise_ratio'
+        datatype_odim = 'SQIH'
+    elif datatype == 'SQIv':
+        field_name = 'normalized_coherent_power_vv'
+        datatype_odim = 'SQIV'
+
+    elif datatype == 'dBm_sun_hit':
+        field_name = 'sun_hit_power_h'
+        datatype_odim = 'DBM_SUNHIT'
+    elif datatype == 'dBmv_sun_hit':
+        field_name = 'sun_hit_power_v'
+        datatype_odim = 'DBMV_SUNHIT'
+    elif datatype == 'ZDR_sun_hit':
+        field_name = 'sun_hit_differential_reflectivity'
+        datatype_odim = 'ZDR_SUNHIT'
+    elif datatype == 'dBm_sun_est':
+        field_name = 'sun_est_power_h'
+        datatype_odim = 'DBM_SUNEST'
+    elif datatype == 'dBmv_sun_est':
+        field_name = 'sun_est_power_v'
+        datatype_odim = 'DBMV_SUNEST'
+    elif datatype == 'ZDR_sun_est':
+        field_name = 'sun_est_differential_reflectivity'
+        datatype_odim = 'ZDR_SUNEST'
+    elif datatype == 'sun_pos_h':
+        field_name = 'sun_hit_h'
+        datatype_odim = 'POSH_SUNHIT'
+    elif datatype == 'sun_pos_v':
+        field_name = 'sun_hit_v'
+        datatype_odim = 'POSV_SUNHIT'
+    elif datatype == 'sun_pos_zdr':
+        field_name = 'sun_hit_zdr'
+        datatype_odim = 'POSZDR_SUNHIT'
+
+    elif datatype == 'RhoHV':
+        field_name = 'cross_correlation_ratio'
+        datatype_odim = 'RHOHV'
+    elif datatype == 'uRhoHV':
+        field_name = 'uncorrected_cross_correlation_ratio'
+        datatype_odim = 'URHOHV'
+    elif datatype == 'RhoHVc':
+        field_name = 'corrected_cross_correlation_ratio'
+        datatype_odim = 'RHOHVC'
+    elif datatype == 'RhoHV_rain':
+        field_name = 'cross_correlation_ratio_in_rain'
+        datatype_odim = 'RHOHVRAIN'
+    elif datatype == 'L':
+        field_name = 'logarithmic_cross_correlation_ratio'
+        datatype_odim = 'LRHOHV'
+    elif datatype == 'CDR':
+        field_name = 'circular_depolarization_ratio'
+        datatype_odim = 'CDR'
+    elif datatype == 'LDR':
+        field_name = 'linear_polarization_ratio'
+        datatype_odim = 'LDR'
+
+    elif datatype == 'PhiDP':
+        field_name = 'differential_phase'
+        datatype_odim = 'PHIDP'
+    elif datatype == 'uPhiDP':
+        field_name = 'uncorrected_differential_phase'
+        datatype_odim = 'UPHIDP'
+    elif datatype == 'PhiDPc':
+        field_name = 'corrected_differential_phase'
+        datatype_odim = 'PHIDPC'
+    elif datatype == 'PhiDP0':
+        field_name = 'system_differential_phase'
+        datatype_odim = 'PHIDP0'
+    elif datatype == 'PhiDP0_bin':
+        field_name = 'first_gate_differential_phase'
+        datatype_odim = 'PHIDP0_BIN'
+    elif datatype == 'KDP':
+        field_name = 'specific_differential_phase'
+        datatype_odim = 'KDP'
+    elif datatype == 'KDPc':
+        field_name = 'corrected_specific_differential_phase'
+        datatype_odim = 'KDPC'
+
     elif datatype == 'V':
-        datatype_odim = 'VRAD'
         field_name = 'velocity'
-    elif datatype == 'Vh':
         datatype_odim = 'VRADH'
+    elif datatype == 'Vh':
         field_name = 'velocity'
+        datatype_odim = 'VRADH'
+    elif datatype == 'dealV':
+        field_name = 'dealiased_velocity'
+        datatype_odim = 'VRADDH'
+    elif datatype == 'Vc':
+        field_name = 'corrected_velocity'
+        datatype_odim = 'VRADHC'
+    elif datatype == 'dealVc':
+        field_name = 'dealiased_corrected_velocity'
+        datatype_odim = 'VRADDHC'
+    elif datatype == 'estV':
+        field_name = 'retrieved_velocity'
+        datatype_odim = 'VRADEST'
+    elif datatype == 'stdV':
+        field_name = 'retrieved_velocity_std'
+        datatype_odim = 'sd_vvp'
+    elif datatype == 'diffV':
+        field_name = 'velocity_difference'
+        datatype_odim = 'VDIFF'
     elif datatype == 'Vv':
-        datatype_odim = 'VRADV'
         field_name = 'velocity_vv'
+        datatype_odim = 'VRADV'
+    elif datatype == 'dealVv':
+        field_name = 'dealiased_velocity_vv'
+        datatype_odim = 'VRADDV'
     elif datatype == 'W':
-        datatype_odim = 'WRAD'
         field_name = 'spectrum_width'
-    elif datatype == 'QIND':
-        datatype_odim = 'QIND'
-        field_name = 'signal_quality_index'
+        datatype_odim = 'WRADH'
+    elif datatype == 'Wc':
+        field_name = 'corrected_spectrum_width'
+        datatype_odim = 'WRADHC'
+    elif datatype == 'Wv':
+        field_name = 'spectrum_width_vv'
+        datatype_odim = 'WRADV'
+    elif datatype == 'wind_vel_h_az':
+        field_name = 'azimuthal_horizontal_wind_component'
+        datatype_odim = 'AHWND'
+    elif datatype == 'wind_vel_v':
+        field_name = 'vertical_wind_component'
+        datatype_odim = 'w'
+    elif datatype == 'wind_vel_h_u':
+        field_name = 'eastward_wind_component'
+        datatype_odim = 'UWND'
+    elif datatype == 'wind_vel_h_v':
+        field_name = 'northward_wind_component'
+        datatype_odim = 'VWND'
+    elif datatype == 'windshear_v':
+        field_name = 'vertical_wind_shear'
+        datatype_odim = 'VSHR'
+    elif datatype == 'WIND_SPEED':
+        field_name = 'wind_speed'
+        datatype_odim = 'ff'
+    elif datatype == 'WIND_DIRECTION':
+        field_name = 'wind_direction'
+        datatype_odim = 'dd'
+
+    elif datatype == 'Ah':
+        field_name = 'specific_attenuation'
+        datatype_odim = 'AH'
+    elif datatype == 'Ahc':
+        field_name = 'corrected_specific_attenuation'
+        datatype_odim = 'AHC'
+    elif datatype == 'PIA':
+        field_name = 'path_integrated_attenuation'
+        datatype_odim = 'PIA'
+    elif datatype == 'PIAc':
+        field_name = 'corrected_path_integrated_attenuation'
+        datatype_odim = 'PIAC'
+    elif datatype == 'Adp':
+        field_name = 'specific_differential_attenuation'
+        datatype_odim = 'ADP'
+    elif datatype == 'Adpc':
+        field_name = 'corrected_specific_differential_attenuation'
+        datatype_odim = 'ADPC'
+    elif datatype == 'PIDA':
+        field_name = 'path_integrated_differential_attenuation'
+        datatype_odim = 'PIDA'
+    elif datatype == 'PIDAc':
+        field_name = 'corrected_path_integrated_differential_attenuation'
+        datatype_odim = 'PIDAC'
+
+    elif datatype == 'TEMP':
+        field_name = 'temperature'
+        datatype_odim = 'TEMP'
+    elif datatype == 'ISO0':
+        field_name = 'iso0'
+        datatype_odim = 'ISO0'
+    elif datatype == 'H_ISO0':
+        field_name = 'height_over_iso0'
+        datatype_odim = 'HISO0'
+    elif datatype == 'cosmo_index':
+        field_name = 'cosmo_index'
+        datatype_odim = 'COSMOIND'
+    elif datatype == 'hzt_index':
+        field_name = 'hzt_index'
+        datatype_odim = 'HZTIND'
+    elif datatype == 'ml':
+        field_name = 'melting_layer'
+        datatype_odim = 'ML'
+
+    elif datatype == 'VIS':
+        field_name = 'visibility'
+        datatype_odim = 'VIS'
+
+    elif datatype == 'echoID':
+        field_name = 'radar_echo_id'
+        datatype_odim = 'ECHOID'
+    elif datatype == 'CLT':
+        field_name = 'clutter_exit_code'
+        datatype_odim = 'CLT'
+    elif datatype == 'occurrence':
+        field_name = 'occurrence'
+        datatype_odim = 'OCC'
+    elif datatype == 'freq_occu':
+        field_name = 'frequency_of_occurrence'
+        datatype_odim = 'OCCFREQ'
+    elif datatype == 'RR':
+        field_name = 'radar_estimated_rain_rate'
+        datatype_odim = 'RATE'
+
+    elif datatype == 'hydro':
+        field_name = 'radar_echo_classification'
+        datatype_odim = 'CLASS'
+    elif datatype == 'entropy':
+        field_name = 'hydroclass_entropy'
+        datatype_odim = 'ENTROPY'
+    elif datatype == 'propAG':
+        field_name = 'proportion_AG'
+        datatype_odim = 'propAG'
+    elif datatype == 'propCR':
+        field_name = 'proportion_CR'
+        datatype_odim = 'propCR'
+    elif datatype == 'propLR':
+        field_name = 'proportion_LR'
+        datatype_odim = 'propLR'
+    elif datatype == 'propRP':
+        field_name = 'proportion_RP'
+        datatype_odim = 'propRP'
+    elif datatype == 'propRN':
+        field_name = 'proportion_RN'
+        datatype_odim = 'propRN'
+    elif datatype == 'propVI':
+        field_name = 'proportion_VI'
+        datatype_odim = 'propVI'
+    elif datatype == 'propWS':
+        field_name = 'proportion_WS'
+        datatype_odim = 'propWS'
+    elif datatype == 'propMH':
+        field_name = 'proportion_MH'
+        datatype_odim = 'propMH'
+    elif datatype == 'propIH':
+        field_name = 'proportion_IH'
+        datatype_odim = 'propIH'
+
+    elif datatype == 'time_avg_flag':
+        field_name = 'time_avg_flag'
+        datatype_odim = 'TAFLAG'
+    elif datatype == 'colocated_gates':
+        field_name = 'colocated_gates'
+        datatype_odim = 'COLGATES'
+    elif datatype == 'nsamples':
+        field_name = 'number_of_samples'
+        datatype_odim = 'ns'
+    elif datatype == 'bird_density':
+        field_name = 'bird_density'
+        datatype_odim = 'dens'
+    elif datatype == 'std':
+        field_name = 'standard_deviation'
+        datatype_odim = 'STD'
+    elif datatype == 'sum':
+        field_name = 'sum'
+        datatype_odim = 'SUM'
+    elif datatype == 'sum2':
+        field_name = 'sum_squared'
+        datatype_odim = 'SUM2'
+
+    # vol2bird field names
+    elif datatype == 'ff':
+        field_name = 'wind_speed'
+        datatype_odim = 'ff'
+    elif datatype == 'dd':
+        field_name = 'wind_direction'
+        datatype_odim = 'dd'
+    elif datatype == 'u':
+        field_name = 'eastward_wind_component'
+        datatype_odim = 'UWND'
+    elif datatype == 'v':
+        field_name = 'northward_wind_component'
+        datatype_odim = 'VWND'
+    elif datatype == 'w':
+        field_name = 'vertical_wind_component'
+        datatype_odim = 'w'
+    elif datatype == 'width':
+        field_name = 'height_resolution'
+        datatype_odim = 'width'
+    elif datatype == 'gap':
+        field_name = 'gap'
+        datatype_odim = 'gap'
+    elif datatype == 'dbz':
+        field_name = 'bird_reflectivity'
+        datatype_odim = 'eta'
+    elif datatype == 'eta':
+        field_name = 'volumetric_reflectivity'
+        datatype_odim = 'etah'
+    elif datatype == 'dens':
+        field_name = 'bird_density'
+        datatype_odim = 'dens'
+    elif datatype == 'n':
+        field_name = 'number_of_samples_velocity'
+        datatype_odim = 'n'
+    elif datatype == 'n_dbz':
+        field_name = 'number_of_samples_reflectivity'
+        datatype_odim = 'n_dbz'
+    elif datatype == 'sd_vvp':
+        field_name = 'retrieved_velocity_std'
+        datatype_odim = 'sd_vvp'
+    elif datatype == 'DBZH':
+        field_name = 'reflectivity'
+        datatype_odim = 'DBZH'
+    elif datatype == 'n_all':
+        field_name = 'number_of_samples_velocity_all'
+        datatype_odim = 'n_all'
+    elif datatype == 'n_dbz_all':
+        field_name = 'number_of_samples_reflectivity_all'
+        datatype_odim = 'n_dbz_all'
     else:
         raise ValueError(
             'ERROR: ODIM fields do not contain datatype '+datatype)
@@ -423,6 +757,10 @@ def get_fieldname_pyart(datatype):
         field_name = 'volumetric_reflectivity'
     elif datatype == 'eta_v':
         field_name = 'volumetric_reflectivity_vv'
+    elif datatype == 'rcs_h':
+        field_name = 'radar_cross_section_hh'
+    elif datatype == 'rcs_v':
+        field_name = 'radar_cross_section_vv'
 
     elif datatype == 'ZDR':
         field_name = 'differential_reflectivity'
@@ -607,6 +945,12 @@ def get_fieldname_pyart(datatype):
         field_name = 'number_of_samples'
     elif datatype == 'bird_density':
         field_name = 'bird_density'
+    elif datatype == 'std':
+        field_name = 'standard_deviation'
+    elif datatype == 'sum':
+        field_name = 'sum'
+    elif datatype == 'sum2':
+        field_name = 'sum_squared'
 
     # vol2bird field names
     elif datatype == 'ff':
@@ -707,7 +1051,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
         datadescriptor)
     ind_rad = int(radarnr[5:8])-1
 
-    if (datatype == 'Nh') or (datatype == 'Nv'):
+    if datatype in ('Nh', 'Nv'):
         datatype = 'dBZ'
 
     t_filelist = []
@@ -804,7 +1148,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
                     starttime+datetime.timedelta(days=i)).strftime(
                         fpath_strf)
                 datapath = (cfg['datapath'][ind_rad] + daydir+'/')
-                dayfilelist = glob.glob(datapath+'*'+scan)
+                dayfilelist = glob.glob(datapath+'*'+scan+'*.h5')
             else:
                 dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%y%j')
                 basename = ('M'+cfg['RadarRes'][ind_rad] +
@@ -827,7 +1171,11 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
                 continue
             for filename in dayfilelist:
                 t_filelist.append(filename)
-        elif datagroup == 'CFRADIAL':
+        elif datagroup in ('CFRADIAL', 'ODIMPYRAD'):
+            termination = '.nc'
+            if datagroup == 'ODIMPYRAD':
+                termination = '.h5'
+
             daydir = (
                 starttime+datetime.timedelta(days=i)).strftime('%Y-%m-%d')
             dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%Y%m%d')
@@ -837,7 +1185,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
             if not os.path.isdir(datapath):
                 warn("WARNING: Unknown datapath '%s'" % datapath)
                 continue
-            dayfilelist = glob.glob(datapath+dayinfo+'*'+datatype+'.nc')
+            dayfilelist = glob.glob(datapath+dayinfo+'*'+datatype+termination)
             for filename in dayfilelist:
                 t_filelist.append(filename)
         elif datagroup == 'MXPOL':
@@ -870,8 +1218,9 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
     for filename in t_filelist:
         filenamestr = str(filename)
         fdatetime = get_datetime(filenamestr, datadescriptor)
-        if (fdatetime >= starttime) and (fdatetime <= endtime):
-            filelist.append(filenamestr)
+        if fdatetime is not None:
+            if (fdatetime >= starttime) and (fdatetime <= endtime):
+                filelist.append(filenamestr)
 
     return sorted(filelist)
 
@@ -1019,7 +1368,7 @@ def get_datatype_fields(datadescriptor):
             product = None
         else:
             datagroup = descrfields[1]
-            if datagroup == 'CFRADIAL':
+            if datagroup in ('CFRADIAL', 'ODIMPYRAD'):
                 descrfields2 = descrfields[2].split(',')
                 datatype = descrfields2[0]
                 dataset = descrfields2[1]
@@ -1042,7 +1391,7 @@ def get_datatype_fields(datadescriptor):
     else:
         radarnr = 'RADAR001'
         datagroup = descrfields[0]
-        if datagroup == 'CFRADIAL':
+        if datagroup in ('CFRADIAL', 'ODIMPYRAD'):
             descrfields2 = descrfields[1].split(',')
             datatype = descrfields2[0]
             dataset = descrfields2[1]
@@ -1365,7 +1714,7 @@ def _get_datetime(fname, datagroup, ftime_format=None):
 
     """
     bfile = os.path.basename(fname)
-    if datagroup == 'RAINBOW' or datagroup == 'CFRADIAL':
+    if datagroup in ('RAINBOW', 'CFRADIAL', 'ODIMPYRAD'):
         datetimestr = bfile[0:14]
         fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d%H%M%S')
     elif datagroup == 'RAD4ALP':
@@ -1377,24 +1726,53 @@ def _get_datetime(fname, datagroup, ftime_format=None):
             datetimestr = bfile[3:12]
             fdatetime = datetime.datetime.strptime(datetimestr, '%y%j%H%M')
         else:
-            fdate_strf = ftime_format[ftime_format.find("F")+2:-1]
-            today = datetime.datetime.now()
-            len_datestr = len(today.strftime(fdate_strf))
-            count = 0
-            while True:
-                try:
-                    fdatetime = datetime.datetime.strptime(
-                        os.path.basename(bfile)[count:count+len_datestr], fdate_strf)
-                except ValueError:
-                    count = count + 1
-                else:
-                    # No error, stop the loop
-                    break
+            return find_date_in_file_name(
+                bfile, date_format=ftime_format[ftime_format.find("F")+2:-1])
     elif datagroup == 'MXPOL':
         datetimestr = re.findall(r"([0-9]{8}-[0-9]{6})", bfile)[0]
         fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d-%H%M%S')
     else:
         warn('unknown data group')
         return None
+
+    return fdatetime
+
+
+def find_date_in_file_name(filename, date_format='%Y%m%d%H%M%S'):
+    """
+    Find a date with date format defined in date_format in a file name.
+    If no date is found returns None
+
+    Parameters
+    ----------
+    filename : str
+        file name
+    date_format : str
+        The time format
+
+    Returns
+    -------
+    fdatetime : datetime object
+        date and time in file name
+
+    """
+    today = datetime.datetime.now()
+    len_datestr = len(today.strftime(date_format))
+    count = 0
+    bfile = os.path.basename(filename)
+    while True:
+        try:
+            fdatetime = datetime.datetime.strptime(
+                bfile[count:count+len_datestr], date_format)
+        except ValueError:
+            count = count + 1
+            if count+len_datestr >= len(bfile):
+                warn('Unable to find date from string name. ' +
+                     'date format '+date_format+'. File name ' +
+                     bfile)
+                return None
+        else:
+            # No error, stop the loop
+            break
 
     return fdatetime

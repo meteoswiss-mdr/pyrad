@@ -3,7 +3,7 @@
 
 """
 ================================================
-main_trt
+main_process_trt_data.py
 ================================================
 
 This program processes TRT data obtaining plots of time series of
@@ -45,11 +45,6 @@ def main():
         help='Dates to process. Format YYYY-MM-DD')
 
     # keyword arguments
-    parser.add_argument(
-        '--trtbase', type=str,
-        default='/store/msrad/radar/trt/',
-        help='name of folder containing the TRT cell data')
-
     parser.add_argument(
         '--trtbase', type=str,
         default='/store/msrad/radar/trt/',
@@ -106,14 +101,14 @@ def main():
     time_rank_max_list = []
 
     # List for collection of flashes data
-    cell_ID_list = np.asarray([], dtype=int)
-    time_list = np.asarray([], dtype=datetime.datetime)
-    lon_list = np.asarray([], dtype=float)
-    lat_list = np.asarray([], dtype=float)
-    flash_density_list = np.asarray([], dtype=float)
-    rank_flash_density_list = np.asarray([], dtype=float)
-    area_list = np.asarray([], dtype=float)
-    nflash_list = np.asarray([], dtype=int)
+    cell_ID_list = np.ma.asarray([], dtype=int)
+    time_list = np.ma.asarray([], dtype=datetime.datetime)
+    lon_list = np.ma.asarray([], dtype=float)
+    lat_list = np.ma.asarray([], dtype=float)
+    flash_density_list = np.ma.asarray([], dtype=float)
+    rank_flash_density_list = np.ma.asarray([], dtype=float)
+    area_list = np.ma.asarray([], dtype=float)
+    nflash_list = np.ma.asarray([], dtype=int)
 
     for i, time_dir in enumerate(time_dir_list):
         data_input_path = args.trtbase+time_dir+'/TRTC_cell/'
@@ -239,13 +234,13 @@ def main():
                 titl=str(traj_ID[0])+' Cell Position')
             print('Plotted '+' '.join(figfname))
 
-    fname = args.trtbase+'cell_scores.csv'
+    fname = args.trtbase+'Santis_cell_scores.csv'
     write_trt_cell_scores(
         cell_ID_max_list, time_flash_density_max_list,
         flash_density_max_rank_list, nflashes_max_list, area_flash_max_list,
         flash_density_max_list, time_rank_max_list, rank_max_list, fname)
 
-    fname = args.trtbase+'cell_euclid_lightning.csv'
+    fname = args.trtbase+'Santis_cell_euclid_lightning.csv'
     write_trt_cell_lightning(
         cell_ID_list, time_list, lon_list, lat_list, area_list,
         rank_flash_density_list, nflash_list, flash_density_list, fname)
