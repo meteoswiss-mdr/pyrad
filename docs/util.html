@@ -14,6 +14,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
   </head><body>
@@ -85,10 +86,10 @@
 <td>Computes the rainfall accumulation of a time series over a given period</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.time_series_statistics" title="pyrad.util.time_series_statistics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_series_statistics</span></code></a>(t_in_vec,&nbsp;val_in_vec)</td>
-<td>Computes statistics over a time-averaged series</td>
+<td>Computes statistics over a time-averaged series.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#pyrad.util.join_time_series" title="pyrad.util.join_time_series"><code class="xref py py-obj docutils literal notranslate"><span class="pre">join_time_series</span></code></a>(t1,&nbsp;val1,&nbsp;t2,&nbsp;val2[,&nbsp;dropnan])</td>
-<td>joins time_series</td>
+<td>joins time_series.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.get_range_bins_to_avg" title="pyrad.util.get_range_bins_to_avg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_range_bins_to_avg</span></code></a>(rad1_rng,&nbsp;rad2_rng)</td>
 <td>Compares the resolution of two radars and determines if and which radar has to be averaged and the length of the averaging window</td>
@@ -915,7 +916,8 @@ has to be averaged and the length of the averaging window</p>
 <dl class="function">
 <dt id="pyrad.util.join_time_series">
 <code class="descclassname">pyrad.util.</code><code class="descname">join_time_series</code><span class="sig-paren">(</span><em>t1</em>, <em>val1</em>, <em>t2</em>, <em>val2</em>, <em>dropnan=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#join_time_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.join_time_series" title="Permalink to this definition">¶</a></dt>
-<dd><p>joins time_series</p>
+<dd><p>joins time_series. Only of package pandas is available otherwise returns
+None.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1086,7 +1088,8 @@ quantile(s).</p>
 <dl class="function">
 <dt id="pyrad.util.time_series_statistics">
 <code class="descclassname">pyrad.util.</code><code class="descname">time_series_statistics</code><span class="sig-paren">(</span><em>t_in_vec</em>, <em>val_in_vec</em>, <em>avg_time=3600</em>, <em>base_time=1800</em>, <em>method='mean'</em>, <em>dropnan=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#time_series_statistics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.time_series_statistics" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes statistics over a time-averaged series</p>
+<dd><p>Computes statistics over a time-averaged series. Only of package pandas is
+available otherwise returns None</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1150,7 +1153,7 @@ quantile(s).</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, meteoswiss-mdr.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
     </div>
   </body>
 </html>

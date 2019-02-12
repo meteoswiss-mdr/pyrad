@@ -14,6 +14,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
@@ -66,6 +67,7 @@
 <span class="sd">    process_correct_noise_rhohv</span>
 <span class="sd">    process_gc_monitoring</span>
 <span class="sd">    process_occurrence</span>
+<span class="sd">    process_time_avg_std</span>
 <span class="sd">    process_occurrence_period</span>
 <span class="sd">    process_sun_hits</span>
 
@@ -317,7 +319,7 @@
 
         <span class="c1"># filter wet or dry volumes</span>
         <span class="n">filter_prec</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;filter_prec&#39;</span><span class="p">,</span> <span class="s1">&#39;None&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">filter_prec</span> <span class="o">==</span> <span class="s1">&#39;keep_wet&#39;</span> <span class="ow">or</span> <span class="n">filter_prec</span> <span class="o">==</span> <span class="s1">&#39;keep_dry&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">filter_prec</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;keep_wet&#39;</span><span class="p">,</span> <span class="s1">&#39;keep_dry&#39;</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">echoid_field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
                 <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to determine if there is precipitation &#39;</span> <span class="o">+</span>
                      <span class="s1">&#39;close to the radar. Missing echoID field.&#39;</span><span class="p">)</span>
@@ -514,7 +516,7 @@
                 <span class="n">mask</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">val_min</span><span class="p">)</span>
 
         <span class="n">filter_prec</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;filter_prec&#39;</span><span class="p">,</span> <span class="s1">&#39;None&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">filter_prec</span> <span class="o">==</span> <span class="s1">&#39;keep_wet&#39;</span> <span class="ow">or</span> <span class="n">filter_prec</span> <span class="o">==</span> <span class="s1">&#39;keep_dry&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">filter_prec</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;keep_wet&#39;</span><span class="p">,</span> <span class="s1">&#39;keep_dry&#39;</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">echoid_field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
                 <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to determine if there is precipitation &#39;</span> <span class="o">+</span>
                      <span class="s1">&#39;close to the radar. Missing echoID field.&#39;</span><span class="p">)</span>
@@ -648,6 +650,253 @@
 
         <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;starttime&#39;</span><span class="p">:</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;starttime&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;endtime&#39;</span><span class="p">:</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;endtime&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;occu_final&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="n">ind_rad</span></div>
+
+
+<div class="viewcode-block" id="process_time_avg_std"><a class="viewcode-back" href="../../../proc.html#pyrad.proc.process_time_avg_std">[docs]</a><span class="k">def</span> <span class="nf">process_time_avg_std</span><span class="p">(</span><span class="n">procstatus</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">radar_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    computes the average and standard deviation of data. It looks only for</span>
+<span class="sd">    gates where data is present.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    procstatus : int</span>
+<span class="sd">        Processing status: 0 initializing, 1 processing volume,</span>
+<span class="sd">        2 post-processing</span>
+<span class="sd">    dscfg : dictionary of dictionaries</span>
+<span class="sd">        data set configuration. Accepted Configuration Keywords::</span>
+
+<span class="sd">        datatype : list of string. Dataset keyword</span>
+<span class="sd">            The input data types</span>
+<span class="sd">        regular_grid : Boolean. Dataset keyword</span>
+<span class="sd">            Whether the radar has a Boolean grid or not. Default False</span>
+<span class="sd">        rmin, rmax : float. Dataset keyword</span>
+<span class="sd">            minimum and maximum ranges where the computation takes place. If</span>
+<span class="sd">            -1 the whole range is considered. Default is -1</span>
+<span class="sd">        val_min : Float. Dataset keyword</span>
+<span class="sd">            Minimum reflectivity value to consider that the gate has signal.</span>
+<span class="sd">            Default None</span>
+<span class="sd">        filter_prec : str. Dataset keyword</span>
+<span class="sd">            Give which type of volume should be filtered. None, no filtering;</span>
+<span class="sd">            keep_wet, keep wet volumes; keep_dry, keep dry volumes.</span>
+<span class="sd">        rmax_prec : float. Dataset keyword</span>
+<span class="sd">            Maximum range to consider when looking for wet gates [m]</span>
+<span class="sd">        percent_prec_max : float. Dataset keyword</span>
+<span class="sd">            Maxim percentage of wet gates to consider the volume dry</span>
+<span class="sd">        lin_trans : Boolean. Dataset keyword</span>
+<span class="sd">            If True the data will be transformed into linear units. Default</span>
+<span class="sd">            False</span>
+<span class="sd">    radar_list : list of Radar objects</span>
+<span class="sd">        Optional. list of radar objects</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    new_dataset : dict</span>
+<span class="sd">        dictionary containing the output</span>
+<span class="sd">    ind_rad : int</span>
+<span class="sd">        radar index</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">echoid_field</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">refl_field</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">datatypedescr</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;datatype&#39;</span><span class="p">]:</span>
+        <span class="n">radarnr</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_datatype_fields</span><span class="p">(</span><span class="n">datatypedescr</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;echoID&#39;</span><span class="p">:</span>
+            <span class="n">echoid_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;dBZ&#39;</span><span class="p">,</span> <span class="s1">&#39;dBZc&#39;</span><span class="p">,</span> <span class="s1">&#39;dBZv&#39;</span><span class="p">,</span> <span class="s1">&#39;dBZvc&#39;</span><span class="p">,</span> <span class="s1">&#39;dBuZ&#39;</span><span class="p">,</span> <span class="s1">&#39;dBuZc&#39;</span><span class="p">)</span> <span class="ow">and</span>
+              <span class="n">refl_field</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">refl_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+    <span class="n">ind_rad</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">radarnr</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">8</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span>
+
+    <span class="n">lin_trans</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lin_trans&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">procstatus</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">procstatus</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">radar_list</span><span class="p">[</span><span class="n">ind_rad</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No valid radar&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_list</span><span class="p">[</span><span class="n">ind_rad</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="n">field_name</span><span class="o">+</span><span class="s1">&#39; not available.&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="c1"># filter out low reflectivity values</span>
+        <span class="n">val_min</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;val_min&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">val_min</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">refl_field</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span>
+                <span class="n">mask</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">refl_field</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">val_min</span><span class="p">)</span>
+
+        <span class="n">filter_prec</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;filter_prec&#39;</span><span class="p">,</span> <span class="s1">&#39;None&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">filter_prec</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;keep_wet&#39;</span><span class="p">,</span> <span class="s1">&#39;keep_dry&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">echoid_field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to determine if there is precipitation &#39;</span> <span class="o">+</span>
+                     <span class="s1">&#39;close to the radar. Missing echoID field.&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+            <span class="c1"># Put invalid values to noise</span>
+            <span class="n">echoid</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">echoid_field</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+            <span class="n">echoid</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+            <span class="n">rmax_prec</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rmax_prec&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span>
+            <span class="n">percent_prec_max</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;percent_prec_max&#39;</span><span class="p">,</span> <span class="mf">10.</span><span class="p">)</span>
+
+            <span class="n">ngates</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">ngates</span>
+            <span class="k">if</span> <span class="n">rmax_prec</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">:</span>
+                <span class="n">ngates</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span>
+                    <span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">rmax_prec</span><span class="p">])</span>
+            <span class="n">ngates_total</span> <span class="o">=</span> <span class="n">ngates</span><span class="o">*</span><span class="n">radar</span><span class="o">.</span><span class="n">nrays</span>
+
+            <span class="n">prec_field</span> <span class="o">=</span> <span class="n">echoid</span><span class="p">[:,</span> <span class="p">:</span><span class="n">ngates</span><span class="p">]</span>
+            <span class="n">ngates_prec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">prec_field</span><span class="p">[</span><span class="n">prec_field</span> <span class="o">==</span> <span class="mi">3</span><span class="p">])</span>
+
+            <span class="n">percent_prec</span> <span class="o">=</span> <span class="n">ngates_prec</span><span class="o">/</span><span class="n">ngates_total</span><span class="o">*</span><span class="mf">100.</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Percent gates with precipitation: &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">percent_prec</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">percent_prec</span> <span class="o">&gt;</span> <span class="n">percent_prec_max</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">filter_prec</span> <span class="o">==</span> <span class="s1">&#39;keep_dry&#39;</span><span class="p">:</span>
+                    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Radar volume is precipitation contaminated.</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+                         <span class="s1">&#39;Maximum percentage allowed: &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">percent_prec_max</span><span class="p">))</span>
+                    <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">filter_prec</span> <span class="o">==</span> <span class="s1">&#39;keep_wet&#39;</span><span class="p">:</span>
+                    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Radar volume has not enough precipitation.</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+                         <span class="s1">&#39;Minimum percentage required: &#39;</span> <span class="o">+</span>
+                         <span class="nb">str</span><span class="p">(</span><span class="n">percent_prec_max</span><span class="p">))</span>
+                    <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="c1"># filter out out of range data</span>
+        <span class="n">rmin</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rmin&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.</span><span class="p">)</span>
+        <span class="n">rmax</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rmax&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rmin</span> <span class="o">&gt;=</span> <span class="mf">0.</span><span class="p">:</span>
+            <span class="n">ind_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">rmin</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">ind_min</span><span class="p">:</span>
+                <span class="n">ind_min</span> <span class="o">=</span> <span class="n">ind_min</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">mask</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="n">ind_min</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">rmax</span> <span class="o">&gt;=</span> <span class="mf">0.</span><span class="p">:</span>
+            <span class="n">ind_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">rmax</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">ind_max</span><span class="p">:</span>
+                <span class="n">ind_max</span> <span class="o">=</span> <span class="n">ind_max</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">mask</span><span class="p">[:,</span> <span class="n">ind_max</span><span class="p">:</span><span class="n">radar</span><span class="o">.</span><span class="n">ngates</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># prepare field number of samples and values sum</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">lin_trans</span><span class="p">:</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="mf">10.</span><span class="p">,</span> <span class="mf">0.1</span><span class="o">*</span><span class="n">field</span><span class="p">)</span>
+
+        <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_where</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+
+        <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">radar</span><span class="p">)</span>
+        <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="n">sum_dict</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span>
+        <span class="n">sum_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span>
+        <span class="n">radar_aux</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="n">sum_dict</span><span class="p">)</span>
+
+        <span class="n">sum2_dict</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="s1">&#39;sum_squared&#39;</span><span class="p">)</span>
+        <span class="n">sum2_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="o">*</span><span class="n">field</span>
+        <span class="n">radar_aux</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="s1">&#39;sum_squared&#39;</span><span class="p">,</span> <span class="n">sum2_dict</span><span class="p">)</span>
+
+        <span class="n">npoints_dict</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="s1">&#39;number_of_samples&#39;</span><span class="p">)</span>
+        <span class="n">npoints_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">mask</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">radar_aux</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="s1">&#39;number_of_samples&#39;</span><span class="p">,</span> <span class="n">npoints_dict</span><span class="p">)</span>
+
+        <span class="c1"># first volume: initialize radar object</span>
+        <span class="k">if</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;initialized&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">radar_aux</span><span class="p">,</span>
+                <span class="s1">&#39;starttime&#39;</span><span class="p">:</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;endtime&#39;</span><span class="p">:</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;occu_final&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+
+            <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_dataset</span>
+            <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;initialized&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+            <span class="k">return</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="n">ind_rad</span>
+
+        <span class="c1"># accumulate data</span>
+        <span class="n">regular_grid</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s1">&#39;regular_grid&#39;</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">:</span>
+            <span class="n">regular_grid</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;regular_grid&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">regular_grid</span><span class="p">:</span>
+            <span class="n">sum_interp</span> <span class="o">=</span> <span class="n">interpol_field</span><span class="p">(</span>
+                <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">radar_aux</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">)</span>
+            <span class="n">sum2_interp</span> <span class="o">=</span> <span class="n">interpol_field</span><span class="p">(</span>
+                <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">radar_aux</span><span class="p">,</span> <span class="s1">&#39;sum_squared&#39;</span><span class="p">)</span>
+            <span class="n">npoints_interp</span> <span class="o">=</span> <span class="n">interpol_field</span><span class="p">(</span>
+                <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">radar_aux</span><span class="p">,</span>
+                <span class="s1">&#39;number_of_samples&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">nrays</span> <span class="o">!=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">nrays</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to accumulate radar object. &#39;</span> <span class="o">+</span>
+                     <span class="s1">&#39;Number of rays of current radar different from &#39;</span> <span class="o">+</span>
+                     <span class="s1">&#39;reference. nrays current: &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">radar_aux</span><span class="o">.</span><span class="n">nrays</span><span class="p">)</span> <span class="o">+</span>
+                     <span class="s1">&#39; nrays ref: &#39;</span> <span class="o">+</span>
+                     <span class="nb">str</span><span class="p">(</span><span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">nrays</span><span class="p">))</span>
+                <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+            <span class="n">sum_interp</span> <span class="o">=</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;sum&#39;</span><span class="p">]</span>
+            <span class="n">sum2_interp</span> <span class="o">=</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;sum_squared&#39;</span><span class="p">]</span>
+            <span class="n">npoints_interp</span> <span class="o">=</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;number_of_samples&#39;</span><span class="p">]</span>
+
+        <span class="n">valid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">sum_interp</span><span class="p">))</span>
+
+        <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;sum&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">valid</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sum_interp</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">valid</span><span class="p">]))</span>
+        <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;sum_squared&#39;</span><span class="p">][</span>
+            <span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">valid</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sum2_interp</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">valid</span><span class="p">])</span>
+        <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;number_of_samples&#39;</span><span class="p">][</span>
+            <span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">valid</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">npoints_interp</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">valid</span><span class="p">])</span>
+        <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;endtime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">]</span>
+
+        <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;starttime&#39;</span><span class="p">:</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;starttime&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;endtime&#39;</span><span class="p">:</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;endtime&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;occu_final&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="n">ind_rad</span>
+
+    <span class="c1"># no more files to process. Compute mean and standard deviation</span>
+    <span class="k">if</span> <span class="n">procstatus</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;initialized&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s1">&#39;radar_out&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="n">field_mean</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;sum&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">/</span>
+            <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span>
+                <span class="s1">&#39;number_of_samples&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+        <span class="n">field_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;sum_squared&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">/</span>
+            <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span>
+                <span class="s1">&#39;number_of_samples&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">field_mean</span><span class="o">*</span><span class="n">field_mean</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">lin_trans</span><span class="p">:</span>
+            <span class="n">field_mean</span> <span class="o">=</span> <span class="mf">10.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">field_mean</span><span class="p">)</span>
+            <span class="n">field_std</span> <span class="o">=</span> <span class="mf">10.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">field_std</span><span class="p">)</span>
+
+        <span class="n">radar</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span>
+
+        <span class="n">mean_dict</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+        <span class="n">mean_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">field_mean</span>
+        <span class="n">radar</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">mean_dict</span><span class="p">)</span>
+
+        <span class="n">std_dict</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="s1">&#39;standard_deviation&#39;</span><span class="p">)</span>
+        <span class="n">std_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">field_std</span>
+        <span class="n">radar</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="s1">&#39;standard_deviation&#39;</span><span class="p">,</span> <span class="n">std_dict</span><span class="p">)</span>
+
+        <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">radar</span><span class="p">,</span>
             <span class="s1">&#39;starttime&#39;</span><span class="p">:</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;starttime&#39;</span><span class="p">],</span>
             <span class="s1">&#39;endtime&#39;</span><span class="p">:</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;endtime&#39;</span><span class="p">],</span>
             <span class="s1">&#39;occu_final&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
@@ -1229,7 +1478,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, meteoswiss-mdr.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
     </div>
   </body>
 </html>

@@ -3,7 +3,7 @@
 
 """
 ================================================
-main_trt
+main_process_trt_data.py
 ================================================
 
 This program processes TRT data obtaining plots of time series of

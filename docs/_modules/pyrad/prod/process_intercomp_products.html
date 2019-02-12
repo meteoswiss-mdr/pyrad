@@ -14,6 +14,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
@@ -92,7 +93,38 @@
 
 <div class="viewcode-block" id="generate_intercomp_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.generate_intercomp_products">[docs]</a><span class="k">def</span> <span class="nf">generate_intercomp_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Generates radar intercomparison products.</span>
+<span class="sd">    Generates radar intercomparison products. Accepted product types:</span>
+<span class="sd">        &#39;PLOT_AND_WRITE_INTERCOMP_TS&#39;: Writes statistics of radar</span>
+<span class="sd">            intercomparison in a file and plots the time series of the</span>
+<span class="sd">            statistics.</span>
+<span class="sd">            User defined parameters:</span>
+<span class="sd">                &#39;add_date_in_fname&#39;: Bool</span>
+<span class="sd">                    If true adds the year in the csv file containing the</span>
+<span class="sd">                    statistics. Default False</span>
+<span class="sd">                &#39;sort_by_date&#39;: Bool</span>
+<span class="sd">                    If true sorts the statistics by date when reading the</span>
+<span class="sd">                    csv file containing the statistics. Default False</span>
+<span class="sd">                &#39;rewrite&#39;: Bool</span>
+<span class="sd">                    If true rewrites the csv file containing the statistics.</span>
+<span class="sd">                    Default False</span>
+<span class="sd">                &#39;npoints_min&#39;: int</span>
+<span class="sd">                    The minimum number of points to consider the statistics</span>
+<span class="sd">                    valid and therefore use the data point in the plotting.</span>
+<span class="sd">                    Default 0</span>
+<span class="sd">                &#39;corr_min&#39;: float</span>
+<span class="sd">                    The minimum correlation to consider the statistics</span>
+<span class="sd">                    valid and therefore use the data point in the plotting.</span>
+<span class="sd">                    Default 0.</span>
+<span class="sd">        &#39;PLOT_SCATTER_INTERCOMP&#39;: Plots a density plot with the points of</span>
+<span class="sd">            radar 1 versus the points of radar 2</span>
+<span class="sd">            User defined parameters:</span>
+<span class="sd">                &#39;step&#39;: float</span>
+<span class="sd">                    The quantization step of the data. If none it will be</span>
+<span class="sd">                    computed using the Py-ART config file. Default None</span>
+<span class="sd">        &#39;WRITE_INTERCOMP&#39;: Writes the instantaneously intercompared data</span>
+<span class="sd">            (gate positions, values, etc.) in a csv file.</span>
+<span class="sd">        &#39;WRITE_INTERCOMP_TIME_AVG&#39;: Writes the time-averaged intercompared</span>
+<span class="sd">            data (gate positions, values, etc.) in a csv file.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -133,6 +165,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;saved colocated data file: &#39;</span><span class="o">+</span><span class="n">fname</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">fname</span>
+
     <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;WRITE_INTERCOMP_TIME_AVG&#39;</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;final&#39;</span><span class="p">]:</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -153,7 +186,8 @@
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;saved colocated time averaged data file: &#39;</span><span class="o">+</span><span class="n">fname</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">fname</span>
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PLOT_SCATTER_INTERCOMP&#39;</span><span class="p">:</span>
+
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PLOT_SCATTER_INTERCOMP&#39;</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;final&#39;</span><span class="p">]:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
@@ -200,7 +234,8 @@
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----- save to &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fname_list</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">fname_list</span>
-    <span class="k">elif</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PLOT_AND_WRITE_INTERCOMP_TS&#39;</span><span class="p">:</span>
+
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PLOT_AND_WRITE_INTERCOMP_TS&#39;</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;final&#39;</span><span class="p">]:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
@@ -306,14 +341,18 @@
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----- save to &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">figfname_list</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">figfname_list</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39; Unsupported product type: &#39;</span> <span class="o">+</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="kc">None</span></div>
+
+    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39; Unsupported product type: &#39;</span> <span class="o">+</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="generate_colocated_gates_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.generate_colocated_gates_products">[docs]</a><span class="k">def</span> <span class="nf">generate_colocated_gates_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Generates colocated gates products</span>
+<span class="sd">    Generates colocated gates products. Accepted product types:</span>
+<span class="sd">        &#39;WRITE_COLOCATED_GATES&#39;: Writes the position of the co-located gates</span>
+<span class="sd">            in a csv file</span>
+<span class="sd">        All the products of the &#39;VOL&#39; dataset group</span>
+
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -352,19 +391,19 @@
 
         <span class="k">return</span> <span class="n">fname</span>
 
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;radar&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="s1">&#39;radar_out&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;radar&#39;</span><span class="p">]]:</span>
-            <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;radar&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s1">&#39;radar_out&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;radar&#39;</span><span class="p">]]:</span>
+        <span class="k">return</span> <span class="kc">None</span>
 
-        <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">generate_vol_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;radar&#39;</span><span class="p">]],</span> <span class="n">prdcfg</span><span class="p">)</span></div>
+    <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">generate_vol_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;radar&#39;</span><span class="p">]],</span> <span class="n">prdcfg</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="generate_time_avg_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.generate_time_avg_products">[docs]</a><span class="k">def</span> <span class="nf">generate_time_avg_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    generates time average products</span>
+<span class="sd">    generates time average products. Accepted product types:</span>
+<span class="sd">        All the products of the &#39;VOL&#39; dataset group</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -405,7 +444,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, meteoswiss-mdr.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
     </div>
   </body>
 </html>

@@ -34,7 +34,23 @@ def get_prodgen_func(dsformat, dsname, dstype):
     Parameters
     ----------
     dsformat : str
-        dataset group, i.e. 'VOL', etc.
+        dataset group. The following is a list of dataset groups with the
+        function that is called to generate their products. For details about
+        what the functions do check the function documentation:
+            'VOL': generate_vol_products
+            'COLOCATED_GATES': generate_colocated_gates_products
+            'COSMO_COORD': generate_cosmo_coord_products
+            'GRID': generate_grid_products
+            'INTERCOMP': generate_intercomp_products
+            'ML': generate_ml_products
+            'MONITORING': generate_monitoring_products
+            'OCCURRENCE': generate_occurrence_products
+            'QVP': generate_qvp_products
+            'SPARSE_GRID': generate_sparse_grid_products
+            'SUN_HITS': generate_sun_hits_products
+            'TIMEAVG': generate_time_avg_products
+            'TIMESERIES': generate_timeseries_products
+            'TRAJ_ONLY': generate_traj_product
 
     Returns
     -------

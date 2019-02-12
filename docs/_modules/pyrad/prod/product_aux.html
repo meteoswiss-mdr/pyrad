@@ -14,6 +14,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
@@ -89,7 +90,23 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    dsformat : str</span>
-<span class="sd">        dataset group, i.e. &#39;VOL&#39;, etc.</span>
+<span class="sd">        dataset group. The following is a list of dataset groups with the</span>
+<span class="sd">        function that is called to generate their products. For details about</span>
+<span class="sd">        what the functions do check the function documentation:</span>
+<span class="sd">            &#39;VOL&#39;: generate_vol_products</span>
+<span class="sd">            &#39;COLOCATED_GATES&#39;: generate_colocated_gates_products</span>
+<span class="sd">            &#39;COSMO_COORD&#39;: generate_cosmo_coord_products</span>
+<span class="sd">            &#39;GRID&#39;: generate_grid_products</span>
+<span class="sd">            &#39;INTERCOMP&#39;: generate_intercomp_products</span>
+<span class="sd">            &#39;ML&#39;: generate_ml_products</span>
+<span class="sd">            &#39;MONITORING&#39;: generate_monitoring_products</span>
+<span class="sd">            &#39;OCCURRENCE&#39;: generate_occurrence_products</span>
+<span class="sd">            &#39;QVP&#39;: generate_qvp_products</span>
+<span class="sd">            &#39;SPARSE_GRID&#39;: generate_sparse_grid_products</span>
+<span class="sd">            &#39;SUN_HITS&#39;: generate_sun_hits_products</span>
+<span class="sd">            &#39;TIMEAVG&#39;: generate_time_avg_products</span>
+<span class="sd">            &#39;TIMESERIES&#39;: generate_timeseries_products</span>
+<span class="sd">            &#39;TRAJ_ONLY&#39;: generate_traj_product</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -153,7 +170,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, meteoswiss-mdr.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
     </div>
   </body>
 </html>

@@ -81,6 +81,8 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
     MULTIPROCESSING_PROD : Bool
         If true the generation of products from each dataset will be
         parallelized
+    PROFILE_MULTIPROCESSING : Bool
+        If true and code parallelized the multiprocessing is profiled
 
     """
     print("- PYRAD version: %s (compiled %s by %s)" %

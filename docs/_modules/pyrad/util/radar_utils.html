@@ -14,6 +14,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
@@ -98,9 +99,21 @@
 <span class="kn">import</span> <span class="nn">datetime</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">scipy</span>
-<span class="kn">import</span> <span class="nn">shapely</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">shapely</span>
+    <span class="n">_SHAPELY_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;shapely not available&#39;</span><span class="p">)</span>
+    <span class="n">_SHAPELY_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+    <span class="n">_PANDAS_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Pandas not available&#39;</span><span class="p">)</span>
+    <span class="n">_PANDAS_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
 
 <span class="kn">import</span> <span class="nn">pyart</span>
 
@@ -215,7 +228,8 @@
 <div class="viewcode-block" id="time_series_statistics"><a class="viewcode-back" href="../../../util.html#pyrad.util.time_series_statistics">[docs]</a><span class="k">def</span> <span class="nf">time_series_statistics</span><span class="p">(</span><span class="n">t_in_vec</span><span class="p">,</span> <span class="n">val_in_vec</span><span class="p">,</span> <span class="n">avg_time</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span>
                            <span class="n">base_time</span><span class="o">=</span><span class="mi">1800</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">dropnan</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Computes statistics over a time-averaged series</span>
+<span class="sd">    Computes statistics over a time-averaged series. Only of package pandas is</span>
+<span class="sd">    available otherwise returns None</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -240,6 +254,10 @@
 <span class="sd">        the output values array</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_PANDAS_AVAILABLE</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Pandas not available. Unable to compute time series statistics&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
     <span class="n">df_in</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">val_in_vec</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">t_in_vec</span><span class="p">))</span>
     <span class="n">df_out</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">df_in</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span>
         <span class="nb">str</span><span class="p">(</span><span class="n">avg_time</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="n">base_time</span><span class="p">),</span>
@@ -254,7 +272,8 @@
 
 <div class="viewcode-block" id="join_time_series"><a class="viewcode-back" href="../../../util.html#pyrad.util.join_time_series">[docs]</a><span class="k">def</span> <span class="nf">join_time_series</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">val1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">val2</span><span class="p">,</span> <span class="n">dropnan</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    joins time_series</span>
+<span class="sd">    joins time_series. Only of package pandas is available otherwise returns</span>
+<span class="sd">    None.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -279,6 +298,10 @@
 <span class="sd">        value of second series</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_PANDAS_AVAILABLE</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Pandas not available. Unable to join time series&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
     <span class="n">df1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">val1</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">t1</span><span class="p">))</span>
     <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">val2</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">t2</span><span class="p">))</span>
     <span class="n">df_out</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df1</span><span class="p">,</span> <span class="n">df2</span><span class="p">],</span> <span class="n">join</span><span class="o">=</span><span class="s1">&#39;outer&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -356,6 +379,11 @@
 <span class="sd">        Can be &#39;All&#39;, &#39;None&#39;, &#39;Some&#39;</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_SHAPELY_AVAILABLE</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;shapely package not available. &#39;</span> <span class="o">+</span>
+             <span class="s1">&#39;Unable to determine if points belong to Region Of Interest&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([]),</span> <span class="s1">&#39;None&#39;</span>
+
     <span class="n">lon_list</span> <span class="o">=</span> <span class="n">lon</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
     <span class="n">lat_list</span> <span class="o">=</span> <span class="n">lat</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
 
@@ -373,7 +401,8 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">points_roi</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">polygon</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">points_roi</span><span class="o">.</span><span class="n">geom_type</span> <span class="o">==</span> <span class="s1">&#39;Point&#39;</span><span class="p">:</span>
-            <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">lon</span> <span class="o">==</span> <span class="n">points_roi</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">lat</span> <span class="o">==</span> <span class="n">points_roi</span><span class="o">.</span><span class="n">y</span><span class="p">))</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">lon</span> <span class="o">==</span> <span class="n">points_roi</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">lat</span> <span class="o">==</span> <span class="n">points_roi</span><span class="o">.</span><span class="n">y</span><span class="p">))</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">ind</span> <span class="o">=</span> <span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">inds</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
@@ -386,7 +415,8 @@
                 <span class="n">inds</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
         <span class="n">nroi</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lat</span><span class="p">[</span><span class="n">inds</span><span class="p">])</span>
         <span class="n">npoint</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lat_list</span><span class="p">)</span>
-        <span class="n">warn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">nroi</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39; points out of &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">npoint</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39; in the region of interest&#39;</span><span class="p">)</span>
+        <span class="n">warn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">nroi</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39; points out of &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">npoint</span><span class="p">)</span> <span class="o">+</span>
+             <span class="s1">&#39; in the region of interest&#39;</span><span class="p">)</span>
         <span class="n">is_roi</span> <span class="o">=</span> <span class="s1">&#39;Some&#39;</span>
 
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">inds</span><span class="p">),</span> <span class="n">is_roi</span></div>
@@ -1508,7 +1538,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, meteoswiss-mdr.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
     </div>
   </body>
 </html>
