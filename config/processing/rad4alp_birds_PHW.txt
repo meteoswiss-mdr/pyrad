@@ -36,7 +36,7 @@ path_convention STRING RT
 # --------------------------------------------
 saveimgbasepath STRING /srn/analysis/pyrad_products/
 # Supported formats: eps, jpeg, jpg, pdf, pgf, png, ps, raw, rgba, svg, svgz, tif, tiff
-imgformat STRING png	
+imgformat STRING png
 
 # --------------------------------------------------------
 # configuration files pathes
