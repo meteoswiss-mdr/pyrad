@@ -123,7 +123,7 @@ def profiler(level=1):
                 return func(*args, **kwargs)
 
             if ((PROFILE_LEVEL == 1 and level == 1) or
-                    (PROFILE_LEVEL == 2 and (level == 1 or level == 2)) or
+                    (PROFILE_LEVEL == 2 and (level in (1, 2))) or
                     PROFILE_LEVEL == 3):
                 print('profiling '+str(func))
                 func2 = mprofile(func)
@@ -287,7 +287,7 @@ def _initialize_datasets(dataset_levels, cfg, traj=None, infostr=None):
         for dataset in dataset_levels[level]:
             print('--- Processing dataset: '+dataset)
             dscfg.update({dataset: _create_dscfg_dict(cfg, dataset)})
-            _generate_dataset(
+            _, _, _, dscfg[dataset] = _generate_dataset(
                 dataset, cfg, dscfg[dataset], proc_status=0,
                 radar_list=None, voltime=None, trajectory=traj,
                 runinfo=infostr)
