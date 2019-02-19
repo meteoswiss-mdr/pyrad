@@ -15,9 +15,8 @@ from copy import deepcopy
 from warnings import warn
 
 import numpy as np
-from netCDF4 import num2date
-
 import pyart
+from netCDF4 import num2date
 
 from ..io.io_aux import get_save_dir, make_filename, get_fieldname_pyart
 
@@ -28,11 +27,14 @@ from ..graph.plots_vol import plot_ppi, plot_ppi_map, plot_rhi, plot_cappi
 from ..graph.plots_vol import plot_bscope, plot_rhi_profile, plot_along_coord
 from ..graph.plots_vol import plot_field_coverage, plot_time_range
 from ..graph.plots_vol import plot_rhi_contour, plot_ppi_contour
+from ..graph.plots_vol import plot_fixed_rng
 from ..graph.plots import plot_quantiles, plot_histogram
 from ..graph.plots_aux import get_colobar_label, get_field_name
 
 from ..util.radar_utils import get_ROI, compute_profile_stats
 from ..util.radar_utils import compute_histogram, compute_quantiles
+from ..util.radar_utils import get_data_along_rng, get_data_along_azi
+from ..util.radar_utils import get_data_along_ele
 from ..util.stat_utils import quantiles_weighted
 
 
@@ -83,7 +85,7 @@ def generate_vol_products(dataset, prdcfg):
                     pyart.map.grid_from_radars. Default 'NEAREST_NEIGHBOUR'
                 cappi_res: float
                     The CAPPI resolution [m]. Default 500.
-        'FIELD_COVERAGE' Gets the field coverage over a certain sector
+        'FIELD_COVERAGE': Gets the field coverage over a certain sector
             User defined parameters:
                 threshold: float or None
                     Minimum value to consider the data valid. Default None
@@ -106,6 +108,14 @@ def generate_vol_products(dataset, prdcfg):
                 AngTol: float
                     The tolerance in elevation angle when putting the data in
                     a fixed grid
+        'FIXED_RNG_IMAGE': Plots a fixed range image
+            User defined parameters:
+                AngTol : float
+                    The tolerance between the nominal angles and the actual
+                    radar angles. Default 1.
+                ele_res, azi_res: float or None
+                    The resolution of the fixed grid [deg]. If None it will be
+                    obtained from the separation between angles
         'HISTOGRAM': Computes a histogram of the radar volum data
             User defined parameters:
                 step: float or None
@@ -133,8 +143,10 @@ def generate_vol_products(dataset, prdcfg):
                     'ALONG_ELE' fix_ranges and fix_azimuths
                 AngTol: float
                     The tolerance to match the radar angle to the fixed angles
+                    Default 1.
                 RngTol: float
                     The tolerance to match the radar range to the fixed ranges
+                    Default 50.
         'PPI_CONTOUR': Plots a PPI countour plot
             User defined parameters:
                 contour_values: list of floats or None
@@ -1732,6 +1744,42 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname_list
 
+    if prdcfg['type'] == 'FIXED_RNG_IMAGE':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # user defined parameters
+        ang_tol = prdcfg.get('AngTol', 1.)
+        azi_res = prdcfg.get('azi_res', None)
+        ele_res = prdcfg.get('ele_res', None)
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            'fixed_rng', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'],
+            prdcfginfo='rng'+'{:.1f}'.format(
+                dataset['radar_out'].range['data'][0]),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        plot_fixed_rng(
+            dataset['radar_out'], field_name, prdcfg, fname_list,
+            azi_res=azi_res, ele_res=ele_res, ang_tol=ang_tol)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
     if prdcfg['type'] == 'PLOT_ALONG_COORD':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
@@ -1751,69 +1799,12 @@ def generate_vol_products(dataset, prdcfg):
             value_start = prdcfg.get('value_start', 0.)
             value_stop = prdcfg.get(
                 'value_stop', np.max(dataset['radar_out'].range['data']))
+            ang_tol = prdcfg.get('AngTol', 1.)
 
-            rng_mask = np.logical_and(
-                dataset['radar_out'].range['data'] >= value_start,
-                dataset['radar_out'].range['data'] <= value_stop)
-
-            x = dataset['radar_out'].range['data'][rng_mask]
-
-            xvals = []
-            yvals = []
-            valid_azi = []
-            valid_ele = []
-            if dataset['radar_out'].scan_type == 'ppi':
-                for ele, azi in zip(
-                        prdcfg['fix_elevations'], prdcfg['fix_azimuths']):
-                    d_el = np.abs(
-                        dataset['radar_out'].fixed_angle['data']-ele)
-                    min_d_el = np.min(d_el)
-                    if min_d_el > prdcfg['AngTol']:
-                        warn('No elevation angle found for fix_elevation ' +
-                             str(ele))
-                        continue
-                    ind_sweep = np.argmin(d_el)
-                    new_dataset = dataset['radar_out'].extract_sweeps(
-                        [ind_sweep])
-
-                    try:
-                        dataset_line = pyart.util.cross_section_ppi(
-                            new_dataset, [azi], az_tol=prdcfg['AngTol'])
-                    except EnvironmentError:
-                        warn(' No data found at azimuth '+str(azi) +
-                             ' and elevation '+str(ele))
-                        continue
-                    yvals.append(
-                        dataset_line.fields[field_name]['data'][0, rng_mask])
-                    xvals.append(x)
-                    valid_azi.append(dataset_line.azimuth['data'][0])
-                    valid_ele.append(dataset_line.elevation['data'][0])
-            else:
-                for ele, azi in zip(
-                        prdcfg['fix_elevations'], prdcfg['fix_azimuths']):
-                    d_az = np.abs(
-                        dataset['radar_out'].fixed_angle['data']-azi)
-                    min_d_az = np.min(d_az)
-                    if min_d_az > prdcfg['AngTol']:
-                        warn('No azimuth angle found for fix_azimuth ' +
-                             str(azi))
-                        continue
-                    ind_sweep = np.argmin(d_az)
-                    new_dataset = dataset['radar_out'].extract_sweeps(
-                        [ind_sweep])
-
-                    try:
-                        dataset_line = pyart.util.cross_section_rhi(
-                            new_dataset, [ele], el_tol=prdcfg['AngTol'])
-                    except EnvironmentError:
-                        warn(' No data found at azimuth '+str(azi) +
-                             ' and elevation '+str(ele))
-                        continue
-                    yvals.append(
-                        dataset_line.fields[field_name]['data'][0, rng_mask])
-                    xvals.append(x)
-                    valid_azi.append(dataset_line.azimuth['data'][0])
-                    valid_ele.append(dataset_line.elevation['data'][0])
+            xvals, yvals, valid_azi, valid_ele = get_data_along_rng(
+                dataset['radar_out'], field_name, prdcfg['fix_elevations'],
+                prdcfg['fix_azimuths'], ang_tol=ang_tol, rmin=value_start,
+                rmax=value_stop)
 
             if not yvals:
                 warn('No data found')
@@ -1831,54 +1822,13 @@ def generate_vol_products(dataset, prdcfg):
                 'value_start', np.min(dataset['radar_out'].azimuth['data']))
             value_stop = prdcfg.get(
                 'value_stop', np.max(dataset['radar_out'].azimuth['data']))
+            ang_tol = prdcfg.get('AngTol', 1.)
+            rng_tol = prdcfg.get('RngTol', 50.)
 
-            yvals = []
-            xvals = []
-            valid_rng = []
-            valid_ele = []
-            for rng, ele in zip(
-                    prdcfg['fix_ranges'], prdcfg['fix_elevations']):
-                d_rng = np.abs(dataset['radar_out'].range['data']-rng)
-                min_d_rng = np.min(d_rng)
-                if min_d_rng > prdcfg['RngTol']:
-                    warn('No range gate found for fix_range '+str(rng))
-                    continue
-                ind_rng = np.argmin(d_rng)
-
-                if dataset['radar_out'].scan_type == 'ppi':
-                    d_el = np.abs(
-                        dataset['radar_out'].fixed_angle['data']-ele)
-                    min_d_el = np.min(d_el)
-                    if min_d_el > prdcfg['AngTol']:
-                        warn('No elevation angle found for fix_elevation ' +
-                             str(ele))
-                        continue
-                    ind_sweep = np.argmin(d_el)
-                    new_dataset = dataset['radar_out'].extract_sweeps(
-                        [ind_sweep])
-                else:
-                    try:
-                        new_dataset = pyart.util.cross_section_rhi(
-                            dataset['radar_out'], [ele],
-                            el_tol=prdcfg['AngTol'])
-                    except EnvironmentError:
-                        warn(
-                            ' No data found at range '+str(rng) +
-                            ' and elevation '+str(ele))
-                        continue
-                if value_start < value_stop:
-                    azi_mask = np.logical_and(
-                        new_dataset.azimuth['data'] >= value_start,
-                        new_dataset.azimuth['data'] <= value_stop)
-                else:
-                    azi_mask = np.logical_or(
-                        new_dataset.azimuth['data'] >= value_start,
-                        new_dataset.azimuth['data'] <= value_stop)
-                yvals.append(
-                    new_dataset.fields[field_name]['data'][azi_mask, ind_rng])
-                xvals.append(new_dataset.azimuth['data'][azi_mask])
-                valid_rng.append(new_dataset.range['data'][ind_rng])
-                valid_ele.append(new_dataset.elevation['data'][0])
+            xvals, yvals, valid_rng, valid_ele = get_data_along_azi(
+                dataset['radar_out'], field_name, prdcfg['fix_ranges'],
+                prdcfg['fix_elevations'], rng_tol=rng_tol, ang_tol=ang_tol,
+                azi_start=value_start, azi_stop=value_stop)
 
             if not yvals:
                 warn('No data found')
@@ -1896,51 +1846,18 @@ def generate_vol_products(dataset, prdcfg):
                 'value_start', np.min(dataset['radar_out'].elevation['data']))
             value_stop = prdcfg.get(
                 'value_stop', np.max(dataset['radar_out'].elevation['data']))
+            ang_tol = prdcfg.get('AngTol', 1.)
+            rng_tol = prdcfg.get('RngTol', 50.)
 
-            yvals = []
-            xvals = []
-            valid_rng = []
-            valid_azi = []
-            for rng, azi in zip(prdcfg['fix_ranges'], prdcfg['fix_azimuths']):
-                d_rng = np.abs(dataset['radar_out'].range['data']-rng)
-                min_d_rng = np.min(d_rng)
-                if min_d_rng > prdcfg['RngTol']:
-                    warn('No range gate found for fix_range '+str(rng))
-                    continue
-                ind_rng = np.argmin(d_rng)
+            xvals, yvals, valid_rng, valid_azi = get_data_along_ele(
+                dataset['radar_out'], field_name, prdcfg['fix_ranges'],
+                prdcfg['fix_azimuths'], rng_tol=rng_tol, ang_tol=ang_tol,
+                ele_min=value_start, ele_max=value_stop)
 
-                if dataset['radar_out'].scan_type == 'ppi':
-                    try:
-                        new_dataset = pyart.util.cross_section_ppi(
-                            dataset, [azi],
-                            az_tol=prdcfg['AngTol'])
-                    except EnvironmentError:
-                        warn(
-                            ' No data found at range '+str(rng) +
-                            ' and elevation '+str(azi))
-                        continue
-                else:
-                    d_az = np.abs(
-                        dataset['radar_out'].fixed_angle['data']-azi)
-                    min_d_az = np.min(d_az)
-                    if min_d_az > prdcfg['AngTol']:
-                        warn('No azimuth angle found for fix_azimuth ' +
-                             str(azi))
-                        continue
-                    ind_sweep = np.argmin(d_az)
-                    new_dataset = dataset['radar_out'].extract_sweeps(
-                        [ind_sweep])
-                ele_mask = np.logical_and(
-                    new_dataset.elevation['data'] >= value_start,
-                    new_dataset.elevation['data'] <= value_stop)
-                yvals.append(
-                    new_dataset.fields[field_name]['data'][ele_mask, ind_rng])
-                xvals.append(new_dataset.elevation['data'][ele_mask])
-                valid_rng.append(new_dataset.range['data'][ind_rng])
-                valid_azi.append(new_dataset.elevation['data'][0])
             if not yvals:
                 warn('No data found')
                 return None
+
             labelx = 'Elevation Angle (deg)'
 
             labels = list()

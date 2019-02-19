@@ -12,6 +12,7 @@ determined points or regions of interest.
     get_process_func
     process_raw
     process_save_radar
+    process_fixed_rng
     process_roi
     process_grid
     process_azimuthal_average
@@ -28,6 +29,7 @@ from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 from ..io.read_data_sensor import read_trt_traj_data
 from ..util.radar_utils import belongs_roi_indices, get_target_elevations
 from ..util.radar_utils import find_neighbour_gates, compute_directional_stats
+from ..util.radar_utils import get_fixed_rng_data
 
 
 def get_process_func(dataset_type, dsname):
@@ -56,6 +58,7 @@ def get_process_func(dataset_type, dsname):
                 'DEALIAS_REGION': process_dealias_region_based
                 'DEALIAS_UNWRAP': process_dealias_unwrap_phase
                 'ECHO_FILTER': process_echo_filter
+                'FIXED_RNG': process_fixed_rng
                 'HYDROCLASS': process_hydroclass
                 'HZT': process_hzt
                 'HZT_LOOKUP': process_hzt_lookup_table
@@ -331,6 +334,8 @@ def get_process_func(dataset_type, dsname):
         dsformat = 'TIMESERIES'
     elif dataset_type == 'TRAJ_TRT':
         func_name = 'process_traj_trt'
+    elif dataset_type == 'FIXED_RNG':
+        func_name = process_fixed_rng
     else:
         raise ValueError("ERROR: Unknown dataset type '%s' of dataset '%s'"
                          % (dataset_type, dsname))
@@ -410,6 +415,72 @@ def process_save_radar(procstatus, dscfg, radar_list=None):
         warn('ERROR: No valid radar')
         return None, None
     new_dataset = {'radar_out': deepcopy(radar_list[ind_rad])}
+
+    return new_dataset, ind_rad
+
+
+def process_fixed_rng(procstatus, dscfg, radar_list=None):
+    """
+    Obtains radar data at a fixed range
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of strings. Dataset keyword
+            The fields we want to extract
+        rng : float. Dataset keyword
+            The fixed range [m]
+        RngTol : float. Dataset keyword
+            The tolerance between the nominal range and the radar range
+        ele_min, ele_max, azi_min, azi_max : floats. Dataset keyword
+            The azimuth and elevation limits of the data [deg]
+
+    radar_list : list of Radar objects
+          Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the data and metadata at the point of interest
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    field_names = []
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, datatype, _, _ = get_datatype_fields(
+            datatypedescr)
+        field_names.append(get_fieldname_pyart(datatype))
+    ind_rad = int(radarnr[5:8])-1
+
+    if (radar_list is None) or (radar_list[ind_rad] is None):
+        warn('ERROR: No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    # user defined parameters
+    rng_tol = dscfg.get('RngTol', 50.)
+    ele_min = dscfg.get('ele_min', None)
+    ele_max = dscfg.get('ele_max', None)
+    azi_min = dscfg.get('azi_min', None)
+    azi_max = dscfg.get('azi_max', None)
+
+    radar_aux = get_fixed_rng_data(
+        radar, field_names, dscfg['rng'], rng_tol=rng_tol, ele_min=ele_min,
+        ele_max=ele_max, azi_min=azi_min, azi_max=azi_max)
+
+    if radar_aux is None:
+        return None
+
+    new_dataset = {'radar_out': radar_aux}
 
     return new_dataset, ind_rad
 
