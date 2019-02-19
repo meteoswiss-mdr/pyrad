@@ -12,6 +12,7 @@ Functions to plot radar volume data
     plot_rhi
     plot_bscope
     plot_time_range
+    plot_fixed_rng
     plot_cappi
     plot_traj
     plot_rhi_contour
@@ -40,10 +41,10 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import pyart
 
-from .plots_aux import get_colobar_label, get_norm
+from .plots_aux import get_colobar_label, get_norm, generate_fixed_rng_title
 from .plots import plot_quantiles, plot_histogram
 
-from ..util.radar_utils import compute_quantiles_sweep
+from ..util.radar_utils import compute_quantiles_sweep, find_ang_index
 from ..util.radar_utils import compute_histogram_sweep
 
 
@@ -486,6 +487,133 @@ def plot_time_range(radar, field_name, ind_sweep, prdcfg, fname_list):
     time_aux = np.append(radar_aux.time['data'], radar_aux.time['data'][-1]+time_res)
     return _plot_time_range(
         time_aux, rng_aux, field, field_name, fname_list, titl=titl,
+        figsize=[xsize, ysize], dpi=dpi)
+
+
+def plot_fixed_rng(radar, field_name, prdcfg, fname_list, azi_res=None,
+                   ele_res=None, ang_tol=1.):
+    """
+    plots a fixed range plot
+
+    Parameters
+    ----------
+    radar : radar object
+        The radar object containing the fixed range data
+    field_name : str
+        The name of the field to plot
+    prdcfg : dict
+        dictionary containing the product configuration
+    fname_list : list of str
+        list of names of the files where to store the plot
+    azi_res, ele_res : float
+        The nominal azimuth and elevation angle resolution [deg]
+    ang_tol : float
+        The tolerance between the nominal and the actual radar angle
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    """
+    # Get radar azimuth angles within limits taking as reference
+    # the first elevation angle
+    fixed_rng = radar.range['data'][0]
+
+    if radar.scan_type == 'ppi':
+        ele_vec = np.sort(radar.fixed_angle['data'])
+        azi_vec = np.sort(
+            radar.azimuth['data'][radar.sweep_start_ray_index['data'][0]:
+                                  radar.sweep_end_ray_index['data'][0]+1])
+    else:
+        ele_vec = np.sort(
+            radar.elevation['data'][radar.sweep_start_ray_index['data'][0]:
+                                    radar.sweep_end_ray_index['data'][0]+1])
+        azi_vec = np.sort(radar.fixed_angle['data'])
+
+    # put data in a regular 2D grid
+    field_2D = np.ma.masked_all((azi_vec.size, ele_vec.size))
+    sweep_start_inds = radar.sweep_start_ray_index['data']
+    sweep_end_inds = radar.sweep_end_ray_index['data']
+
+    if radar.scan_type == 'ppi':
+        for j, ele in enumerate(ele_vec):
+            field_1D = radar.fields[field_name]['data'][
+                sweep_start_inds[j]:sweep_end_inds[j]+1]
+            azi_1D = radar.azimuth['data'][
+                sweep_start_inds[j]:sweep_end_inds[j]+1]
+
+            for i, azi in enumerate(azi_vec):
+                ind = find_ang_index(azi_1D, azi, ang_tol=ang_tol)
+                if ind is None:
+                    continue
+                field_2D[i, j] = field_1D[ind]
+    else:
+        for i, azi in enumerate(azi_vec):
+            field_1D = radar.fields[field_name]['data'][
+                sweep_start_inds[i]:sweep_end_inds[i]+1]
+            ele_1D = radar.elevation['data'][
+                sweep_start_inds[i]:sweep_end_inds[i]+1]
+
+            for j, ele in enumerate(ele_vec):
+                ind = find_ang_index(ele_1D, ele, ang_tol=ang_tol)
+                if ind is None:
+                    continue
+                field_2D[i, j] = field_1D[ind]
+
+    # get limits of angle bins
+    if radar.scan_type == 'ppi':
+        if azi_res is None:
+            azi_res = np.median(azi_vec[1:]-azi_vec[0:-1])
+            if radar.ray_angle_res is not None:
+                azi_res = np.min(
+                    [radar.ray_angle_res['data'][0], azi_res])
+
+        azi_vec = np.append(azi_vec-azi_res/2., azi_vec[-1]+azi_res/2.)
+
+        if ele_res is None:
+            ele_res = np.median(ele_vec[1:]-ele_vec[0:-1])
+            if 'radar_beam_width_h' in radar.instrument_parameters:
+                bwidth = radar.instrument_parameters[
+                    'radar_beam_width_h']['data'][0]
+                ele_res = np.min([bwidth, ele_res])
+            elif 'radar_beam_width_v' in radar.instrument_parameters:
+                bwidth = radar.instrument_parameters[
+                    'radar_beam_width_v']['data'][0]
+                ele_res = np.min([bwidth, ele_res])
+
+        ele_vec = np.append(ele_vec-ele_res/2., ele_vec[-1]+ele_res/2.)
+    else:
+        if ele_res is None:
+            ele_res = np.median(ele_vec[1:]-ele_vec[0:-1])
+            if radar.ray_angle_res is not None:
+                ele_res = np.min(
+                    [radar.ray_angle_res['data'][0], ele_res])
+
+        ele_vec = np.append(ele_vec-ele_res/2., ele_vec[-1]+ele_res/2.)
+
+        if azi_res is None:
+            azi_res = np.median(azi_vec[1:]-azi_vec[0:-1])
+            if 'radar_beam_width_h' in radar.instrument_parameters:
+                bwidth = radar.instrument_parameters[
+                    'radar_beam_width_h']['data'][0]
+                azi_res = np.min([bwidth, azi_res])
+            elif 'radar_beam_width_v' in radar.instrument_parameters:
+                bwidth = radar.instrument_parameters[
+                    'radar_beam_width_v']['data'][0]
+                azi_res = np.min([bwidth, azi_res])
+
+        azi_vec = np.append(azi_vec-azi_res/2., azi_vec[-1]+azi_res/2.)
+
+    titl = generate_fixed_rng_title(radar, field_name, fixed_rng)
+
+    dpi = prdcfg['ppiImageConfig'].get('dpi', 72)
+    xsize = prdcfg['ppiImageConfig'].get('xsize', 10)
+    ysize = prdcfg['ppiImageConfig'].get('ysize', 8)
+
+    return _plot_time_range(
+        azi_vec, ele_vec, field_2D, field_name, fname_list, titl=titl,
+        xlabel='azimuth (deg)', ylabel='elevation (deg)',
         figsize=[xsize, ysize], dpi=dpi)
 
 

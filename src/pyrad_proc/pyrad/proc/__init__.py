@@ -16,6 +16,7 @@ Auxiliary functions
     get_process_func
     process_raw
     process_save_radar
+    process_fixed_rng
     process_roi
     process_grid
     process_azimuthal_average
@@ -155,6 +156,7 @@ COSMO data
 
 from .process_aux import get_process_func, process_raw, process_save_radar
 from .process_aux import process_grid, process_roi, process_azimuthal_average
+from .process_aux import process_fixed_rng
 
 from .process_timeseries import process_point_measurement, process_qvp
 from .process_timeseries import process_rqvp, process_evp, process_svp

@@ -7,11 +7,14 @@ Auxiliary plotting functions
 .. autosummary::
     :toctree: generated/
 
+    generate_fixed_rng_title
     get_colobar_label
     get_field_name
     get_norm
 
 """
+
+import pyart
 
 import matplotlib as mpl
 mpl.use('Agg')
@@ -20,7 +23,37 @@ mpl.use('Agg')
 mpl.rcParams.update({'font.size': 16})
 mpl.rcParams.update({'font.family':  "sans-serif"})
 
-import pyart
+
+def generate_fixed_rng_title(radar, field, fixed_rng, datetime_format=None):
+    """
+    creates the fixed range plot title
+
+    Parameters
+    ----------
+    radar : radar
+        The radar object
+    field : str
+        name of the field
+    fixed_rng : float
+        The fixed range [m]
+    datetime_forat : str or None
+        The date time format to use
+
+    Returns
+    -------
+    titl : str
+        The plot title
+
+    """
+    begin_time = pyart.graph.common.generate_radar_time_begin(radar)
+    if datetime_format:
+        time_str = begin_time.strftime(datetime_format)
+    else:
+        time_str = begin_time.isoformat() + 'Z'
+    l1 = "%s %.1f m. %s " % (pyart.graph.common.generate_radar_name(radar),
+                             fixed_rng, time_str)
+    field_name = pyart.graph.common.generate_field_name(radar, field)
+    return l1 + '\n' + field_name
 
 
 def get_colobar_label(field_dict, field_name):

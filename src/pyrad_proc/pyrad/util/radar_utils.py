@@ -7,6 +7,9 @@ Miscellaneous functions dealing with radar data
 .. autosummary::
     :toctree: generated/
 
+    get_data_along_rng
+    get_data_along_azi
+    get_data_along_ele
     get_ROI
     rainfall_accumulation
     time_series_statistics
@@ -21,6 +24,7 @@ Miscellaneous functions dealing with radar data
     get_target_elevations
     time_avg_range
     get_closest_solar_flux
+    get_fixed_rng_data
     create_sun_hits_field
     create_sun_retrieval_field
     compute_quantiles
@@ -62,6 +66,248 @@ except ImportError:
 import pyart
 
 from .stat_utils import quantiles_weighted
+
+
+def get_data_along_rng(radar, field_name, fix_elevations, fix_azimuths,
+                       ang_tol=1., rmin=None, rmax=None):
+    """
+    Get data at particular (azimuths, elevations)
+
+    Parameters
+    ----------
+    radar : radar object
+        the radar object where the data is
+    field_name : str
+        name of the field to filter
+    fix_elevations, fix_azimuths: list of floats
+        List of elevations, azimuths couples [deg]
+    ang_tol : float
+        Tolerance between the nominal angle and the radar angle [deg]
+    rmin, rmax: float
+        Min and Max range of the obtained data [m]
+
+    Returns
+    -------
+    xvals : list of float arrays
+        The ranges of each azi, ele pair
+    yvals : list of float arrays
+        The values
+    valid_azi, valid_ele : float arrays
+        The azi, ele pairs
+
+    """
+    if rmin is None:
+        rmin = 0.
+    if rmax is None:
+        rmax = np.max(radar.range['data'])
+
+    rng_mask = np.logical_and(
+        radar.range['data'] >= rmin, radar.range['data'] <= rmax)
+
+    x = radar.range['data'][rng_mask]
+
+    xvals = []
+    yvals = []
+    valid_azi = []
+    valid_ele = []
+    if radar.scan_type == 'ppi':
+        for ele, azi in zip(fix_elevations, fix_azimuths):
+            ind_sweep = find_ang_index(
+                radar.fixed_angle['data'], ele, ang_tol=ang_tol)
+            if ind_sweep is None:
+                warn('No elevation angle found for fix_elevation '+str(ele))
+                continue
+            new_dataset = radar.extract_sweeps([ind_sweep])
+
+            try:
+                dataset_line = pyart.util.cross_section_ppi(
+                    new_dataset, [azi], az_tol=ang_tol)
+            except EnvironmentError:
+                warn(' No data found at azimuth '+str(azi) +
+                     ' and elevation '+str(ele))
+                continue
+            yvals.append(dataset_line.fields[field_name]['data'][0, rng_mask])
+            xvals.append(x)
+            valid_azi.append(dataset_line.azimuth['data'][0])
+            valid_ele.append(dataset_line.elevation['data'][0])
+    else:
+        for ele, azi in zip(fix_elevations, fix_azimuths):
+            ind_sweep = find_ang_index(
+                radar.fixed_angle['data'], azi, ang_tol=ang_tol)
+            if ind_sweep is None:
+                warn('No azimuth angle found for fix_azimuth '+str(azi))
+                continue
+            new_dataset = radar.extract_sweeps([ind_sweep])
+
+            try:
+                dataset_line = pyart.util.cross_section_rhi(
+                    new_dataset, [ele], el_tol=ang_tol)
+            except EnvironmentError:
+                warn(' No data found at azimuth '+str(azi) +
+                     ' and elevation '+str(ele))
+                continue
+            yvals.append(
+                dataset_line.fields[field_name]['data'][0, rng_mask])
+            xvals.append(x)
+            valid_azi.append(dataset_line.azimuth['data'][0])
+            valid_ele.append(dataset_line.elevation['data'][0])
+
+    return xvals, yvals, valid_azi, valid_ele
+
+
+def get_data_along_azi(radar, field_name, fix_ranges, fix_elevations,
+                       rng_tol=50., ang_tol=1., azi_start=None,
+                       azi_stop=None):
+    """
+    Get data at particular (ranges, elevations)
+
+    Parameters
+    ----------
+    radar : radar object
+        the radar object where the data is
+    field_name : str
+        name of the field to filter
+    fix_ranges, fix_elevations: list of floats
+        List of ranges [m], elevations [deg] couples
+    rng_tol : float
+        Tolerance between the nominal range and the radar range [m]
+    ang_tol : float
+        Tolerance between the nominal angle and the radar angle [deg]
+    azi_start, azi_stop: float
+        Start and stop azimuth angle of the data [deg]
+
+    Returns
+    -------
+    xvals : list of float arrays
+        The ranges of each rng, ele pair
+    yvals : list of float arrays
+        The values
+    valid_rng, valid_ele : float arrays
+        The rng, ele pairs
+
+    """
+    if azi_start is None:
+        azi_start = np.min(radar.azimuth['data'])
+    if azi_stop is None:
+        azi_stop = np.max(radar.azimuth['data'])
+
+    yvals = []
+    xvals = []
+    valid_rng = []
+    valid_ele = []
+    for rng, ele in zip(fix_ranges, fix_elevations):
+        ind_rng = find_rng_index(radar.range['data'], rng, rng_tol=rng_tol)
+        if ind_rng is None:
+            warn('No range gate found for fix_range '+str(rng))
+            continue
+
+        if radar.scan_type == 'ppi':
+            ind_sweep = find_ang_index(
+                radar.fixed_angle['data'], ele, ang_tol=ang_tol)
+            if ind_sweep is None:
+                warn('No elevation angle found for fix_elevation ' +
+                     str(ele))
+                continue
+            new_dataset = radar.extract_sweeps([ind_sweep])
+        else:
+            try:
+                new_dataset = pyart.util.cross_section_rhi(
+                    radar, [ele], el_tol=ang_tol)
+            except EnvironmentError:
+                warn(
+                    ' No data found at range '+str(rng) +
+                    ' and elevation '+str(ele))
+                continue
+        if azi_start < azi_stop:
+            azi_mask = np.logical_and(
+                new_dataset.azimuth['data'] >= azi_start,
+                new_dataset.azimuth['data'] <= azi_stop)
+        else:
+            azi_mask = np.logical_or(
+                new_dataset.azimuth['data'] >= azi_start,
+                new_dataset.azimuth['data'] <= azi_stop)
+        yvals.append(
+            new_dataset.fields[field_name]['data'][azi_mask, ind_rng])
+        xvals.append(new_dataset.azimuth['data'][azi_mask])
+        valid_rng.append(new_dataset.range['data'][ind_rng])
+        valid_ele.append(new_dataset.elevation['data'][0])
+
+    return xvals, yvals, valid_rng, valid_ele
+
+
+def get_data_along_ele(radar, field_name, fix_ranges, fix_azimuths,
+                       rng_tol=50., ang_tol=1., ele_min=None,
+                       ele_max=None):
+    """
+    Get data at particular (ranges, azimuths)
+
+    Parameters
+    ----------
+    radar : radar object
+        the radar object where the data is
+    field_name : str
+        name of the field to filter
+    fix_ranges, fix_azimuths: list of floats
+        List of ranges [m], azimuths [deg] couples
+    rng_tol : float
+        Tolerance between the nominal range and the radar range [m]
+    ang_tol : float
+        Tolerance between the nominal angle and the radar angle [deg]
+    ele_min, ele_max: float
+        Min and max elevation angle [deg]
+
+    Returns
+    -------
+    xvals : list of float arrays
+        The ranges of each rng, ele pair
+    yvals : list of float arrays
+        The values
+    valid_rng, valid_ele : float arrays
+        The rng, ele pairs
+
+    """
+    if ele_min is None:
+        ele_min = np.min(radar.elevation['data'])
+    if ele_max is None:
+        ele_max = np.max(radar.elevation['data'])
+
+    yvals = []
+    xvals = []
+    valid_rng = []
+    valid_azi = []
+    for rng, azi in zip(fix_ranges, fix_azimuths):
+        ind_rng = find_rng_index(radar.range['data'], rng, rng_tol=rng_tol)
+        if ind_rng is None:
+            warn('No range gate found for fix_range '+str(rng))
+            continue
+
+        if radar.scan_type == 'ppi':
+            try:
+                new_dataset = pyart.util.cross_section_ppi(
+                    radar, [azi], az_tol=ang_tol)
+            except EnvironmentError:
+                warn(
+                    ' No data found at range '+str(rng) +
+                    ' and elevation '+str(azi))
+                continue
+        else:
+            ind_sweep = find_ang_index(
+                radar.fixed_angle['data'], azi, ang_tol=ang_tol)
+            if ind_sweep is None:
+                warn('No azimuth angle found for fix_azimuth '+str(azi))
+                continue
+            new_dataset = radar.extract_sweeps([ind_sweep])
+
+        ele_mask = np.logical_and(
+            new_dataset.elevation['data'] >= ele_min,
+            new_dataset.elevation['data'] <= ele_max)
+        yvals.append(
+            new_dataset.fields[field_name]['data'][ele_mask, ind_rng])
+        xvals.append(new_dataset.elevation['data'][ele_mask])
+        valid_rng.append(new_dataset.range['data'][ind_rng])
+        valid_azi.append(new_dataset.elevation['data'][0])
+
+    return xvals, yvals, valid_rng, valid_azi
 
 
 def get_ROI(radar, fieldname, sector):
@@ -433,6 +679,33 @@ def find_rng_index(rng_vec, rng, rng_tol=0.):
     return ind_rng
 
 
+def find_ang_index(ang_vec, ang, ang_tol=0.):
+    """
+    Find the angle index corresponding to a particular fixed angle
+
+    Parameters
+    ----------
+    ang_vec : float array
+        The angle data array where to look for
+    ang : float
+        The angle to search
+    ang_tol : float
+        Tolerance [deg]
+
+    Returns
+    -------
+    ind_ang : int
+        The angle index
+
+    """
+    dist = np.abs(ang_vec-ang)
+    ind_ang = np.argmin(dist)
+    if dist[ind_ang] > ang_tol:
+        return None
+
+    return ind_ang
+
+
 def find_nearest_gate(radar, lat, lon, latlon_tol=0.0005):
     """
     Find the radar gate closest to a lat,lon point
@@ -701,6 +974,157 @@ def get_closest_solar_flux(hit_datetime_list, flux_datetime_list,
     return flux_datetime_closest_list, flux_value_closest_list
 
 
+def get_fixed_rng_data(radar, field_names, fixed_rng, rng_tol=50.,
+                       ele_min=None, ele_max=None, azi_min=None,
+                       azi_max=None):
+    """
+    Creates a 2D-grid with (azi, ele) data at a fixed range
+
+    Parameters
+    ----------
+    radar : radar object
+        The radar object containing the data
+    field_name : str
+        The field name
+    fixed_rng : float
+        The fixed range [m]
+    rng_tol : float
+        The tolerance between the nominal range and the actual radar range [m]
+    ele_min, ele_max, azi_min, azi_max : float or None
+        The limits of the grid [deg]. If None the limits will be the limits
+        of the radar volume
+
+    Returns
+    -------
+    radar : radar object
+        The radar object containing only the desired data
+
+    """
+    radar_aux = deepcopy(radar)
+
+    ind_rng = find_rng_index(
+        radar_aux.range['data'], fixed_rng, rng_tol=rng_tol)
+
+    # Determine angle limits
+    if radar_aux.scan_type == 'ppi':
+        if ele_min is None:
+            ele_min = np.min(radar_aux.fixed_angle['data'])
+        if ele_max is None:
+            ele_max = np.max(radar_aux.fixed_angle['data'])
+        if azi_min is None:
+            azi_min = np.min(radar_aux.azimuth['data'])
+        if azi_max is None:
+            azi_max = np.max(radar_aux.azimuth['data'])
+    else:
+        if ele_min is None:
+            ele_min = np.min(radar_aux.elevation['data'])
+        if ele_max is None:
+            ele_max = np.max(radar_aux.elevation['data'])
+        if azi_min is None:
+            azi_min = np.min(radar_aux.fixed_angle['data'])
+        if azi_max is None:
+            azi_max = np.max(radar_aux.fixed_angle['data'])
+
+    if radar_aux.scan_type == 'ppi':
+        # Get radar elevation angles within limits
+        ele_vec = np.sort(radar_aux.fixed_angle['data'])
+        ele_vec = ele_vec[
+            np.logical_and(ele_vec >= ele_min, ele_vec <= ele_max)]
+        if ele_vec is None:
+            warn('No elevation angles between '+str(ele_min)+' and ' +
+                 str(ele_max))
+            return None, None, None
+
+        # get sweeps corresponding to the desired elevation angles
+        ind_sweeps = []
+        for ele in ele_vec:
+            ind_sweeps.append(
+                np.where(radar_aux.fixed_angle['data'] == ele)[0][0])
+        radar_aux = radar_aux.extract_sweeps(ind_sweeps)
+
+        # Get indices of rays within limits
+        if azi_min < azi_max:
+            ind_rays = np.where(np.logical_and(
+                radar_aux.azimuth['data'] >= azi_min,
+                radar_aux.azimuth['data'] <= azi_max))[0]
+        else:
+            ind_rays = np.where(np.logical_or(
+                radar_aux.azimuth['data'] >= azi_min,
+                radar_aux.azimuth['data'] <= azi_max))[0]
+
+    else:
+        # Get radar azimuth angles within limits
+        azi_vec = radar_aux.fixed_angle['data']
+        if azi_min < azi_max:
+            azi_vec = np.sort(azi_vec[
+                np.logical_and(azi_vec >= azi_min, azi_vec <= azi_max)])
+        else:
+            azi_vec = azi_vec[
+                np.logical_or(azi_vec >= azi_min, azi_vec <= azi_max)]
+            azi_vec = np.append(
+                np.sort(azi_vec[azi_vec >= azi_min]),
+                np.sort(azi_vec[azi_vec < azi_min]))
+        if azi_vec is None:
+            warn('No azimuth angles between '+str(azi_min)+' and ' +
+                 str(azi_max))
+            return None, None, None
+
+        # get sweeps corresponding to the desired azimuth angles
+        ind_sweeps = []
+        for azi in azi_vec:
+            ind_sweeps.append(
+                np.where(radar_aux.fixed_angle['data'] == azi)[0][0])
+        radar_aux = radar_aux.extract_sweeps(ind_sweeps)
+
+        # Get indices of rays within limits
+        ind_rays = np.where(np.logical_and(
+            radar_aux.elevation['data'] >= ele_min,
+            radar_aux.elevation['data'] <= ele_max))[0]
+
+    # get new sweep start index and stop index
+    sweep_start_inds = deepcopy(radar_aux.sweep_start_ray_index['data'])
+    sweep_end_inds = deepcopy(radar_aux.sweep_end_ray_index['data'])
+
+    nrays = 0
+    for j in range(radar_aux.nsweeps):
+        # get azimuth indices for this elevation
+        rays_in_sweep = np.size(
+            ind_rays[np.logical_and(ind_rays >= sweep_start_inds[j],
+                                    ind_rays <= sweep_end_inds[j])])
+        radar_aux.rays_per_sweep['data'][j] = rays_in_sweep
+        if j == 0:
+            radar_aux.sweep_start_ray_index['data'][j] = 0
+        else:
+            radar_aux.sweep_start_ray_index['data'][j] = int(
+                radar_aux.sweep_end_ray_index['data'][j-1]+1)
+        radar_aux.sweep_end_ray_index['data'][j] = (
+            radar_aux.sweep_start_ray_index['data'][j]+rays_in_sweep-1)
+        nrays += rays_in_sweep
+
+    # Get new fields
+    for field_name in field_names:
+        if field_name not in radar_aux.fields:
+            warn('Field '+field_name+' not available')
+            continue
+        radar_aux.fields[field_name]['data'] = (
+            radar_aux.fields[field_name]['data'][:, ind_rng])
+        radar_aux.fields[field_name]['data'] = (
+            radar_aux.fields[field_name]['data'][ind_rays, np.newaxis])
+
+    # Update metadata
+    radar_aux.time['data'] = radar_aux.time['data'][ind_rays]
+    radar_aux.range['data'] = np.array([fixed_rng])
+    radar_aux.azimuth['data'] = radar_aux.azimuth['data'][ind_rays]
+    radar_aux.elevation['data'] = radar_aux.elevation['data'][ind_rays]
+    radar_aux.init_gate_x_y_z()
+    radar_aux.init_gate_longitude_latitude()
+    radar_aux.init_gate_altitude()
+    radar_aux.nrays = nrays
+    radar_aux.ngates = 1
+
+    return radar_aux
+
+
 def create_sun_hits_field(rad_el, rad_az, sun_el, sun_az, data, imgcfg):
     """
     creates a sun hits field from the position and power of the sun hits
@@ -792,7 +1216,7 @@ def create_sun_retrieval_field(par, field_name, imgcfg, lant=0.):
 
     field = (par[0]+par[1]*d_az_mat+par[2]*d_el_mat+par[3]*d_az_mat*d_az_mat +
              par[4]*d_el_mat*d_el_mat)
-    if field_name == 'sun_est_power_h' or field_name == 'sun_est_power_v':
+    if field_name in ('sun_est_power_h', 'sun_est_power_v'):
         # account for polarization of the antenna and scanning losses
         field += 3.+lant
 
