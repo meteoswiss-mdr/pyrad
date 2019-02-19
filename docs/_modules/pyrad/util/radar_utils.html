@@ -14,6 +14,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
@@ -62,6 +63,9 @@
 <span class="sd">.. autosummary::</span>
 <span class="sd">    :toctree: generated/</span>
 
+<span class="sd">    get_data_along_rng</span>
+<span class="sd">    get_data_along_azi</span>
+<span class="sd">    get_data_along_ele</span>
 <span class="sd">    get_ROI</span>
 <span class="sd">    rainfall_accumulation</span>
 <span class="sd">    time_series_statistics</span>
@@ -76,6 +80,7 @@
 <span class="sd">    get_target_elevations</span>
 <span class="sd">    time_avg_range</span>
 <span class="sd">    get_closest_solar_flux</span>
+<span class="sd">    get_fixed_rng_data</span>
 <span class="sd">    create_sun_hits_field</span>
 <span class="sd">    create_sun_retrieval_field</span>
 <span class="sd">    compute_quantiles</span>
@@ -117,6 +122,248 @@
 <span class="kn">import</span> <span class="nn">pyart</span>
 
 <span class="kn">from</span> <span class="nn">.stat_utils</span> <span class="k">import</span> <span class="n">quantiles_weighted</span>
+
+
+<div class="viewcode-block" id="get_data_along_rng"><a class="viewcode-back" href="../../../util.html#pyrad.util.get_data_along_rng">[docs]</a><span class="k">def</span> <span class="nf">get_data_along_rng</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">fix_elevations</span><span class="p">,</span> <span class="n">fix_azimuths</span><span class="p">,</span>
+                       <span class="n">ang_tol</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">rmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get data at particular (azimuths, elevations)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    radar : radar object</span>
+<span class="sd">        the radar object where the data is</span>
+<span class="sd">    field_name : str</span>
+<span class="sd">        name of the field to filter</span>
+<span class="sd">    fix_elevations, fix_azimuths: list of floats</span>
+<span class="sd">        List of elevations, azimuths couples [deg]</span>
+<span class="sd">    ang_tol : float</span>
+<span class="sd">        Tolerance between the nominal angle and the radar angle [deg]</span>
+<span class="sd">    rmin, rmax: float</span>
+<span class="sd">        Min and Max range of the obtained data [m]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    xvals : list of float arrays</span>
+<span class="sd">        The ranges of each azi, ele pair</span>
+<span class="sd">    yvals : list of float arrays</span>
+<span class="sd">        The values</span>
+<span class="sd">    valid_azi, valid_ele : float arrays</span>
+<span class="sd">        The azi, ele pairs</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">rmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmin</span> <span class="o">=</span> <span class="mf">0.</span>
+    <span class="k">if</span> <span class="n">rmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+
+    <span class="n">rng_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
+        <span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">rmin</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">rmax</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">rng_mask</span><span class="p">]</span>
+
+    <span class="n">xvals</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">yvals</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">valid_azi</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">valid_ele</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">radar</span><span class="o">.</span><span class="n">scan_type</span> <span class="o">==</span> <span class="s1">&#39;ppi&#39;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">ele</span><span class="p">,</span> <span class="n">azi</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">fix_elevations</span><span class="p">,</span> <span class="n">fix_azimuths</span><span class="p">):</span>
+            <span class="n">ind_sweep</span> <span class="o">=</span> <span class="n">find_ang_index</span><span class="p">(</span>
+                <span class="n">radar</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">ele</span><span class="p">,</span> <span class="n">ang_tol</span><span class="o">=</span><span class="n">ang_tol</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ind_sweep</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No elevation angle found for fix_elevation &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ele</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="n">new_dataset</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">extract_sweeps</span><span class="p">([</span><span class="n">ind_sweep</span><span class="p">])</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">dataset_line</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cross_section_ppi</span><span class="p">(</span>
+                    <span class="n">new_dataset</span><span class="p">,</span> <span class="p">[</span><span class="n">azi</span><span class="p">],</span> <span class="n">az_tol</span><span class="o">=</span><span class="n">ang_tol</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">EnvironmentError</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s1">&#39; No data found at azimuth &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">azi</span><span class="p">)</span> <span class="o">+</span>
+                     <span class="s1">&#39; and elevation &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ele</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="n">yvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset_line</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="n">rng_mask</span><span class="p">])</span>
+            <span class="n">xvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">valid_azi</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset_line</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">valid_ele</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset_line</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">ele</span><span class="p">,</span> <span class="n">azi</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">fix_elevations</span><span class="p">,</span> <span class="n">fix_azimuths</span><span class="p">):</span>
+            <span class="n">ind_sweep</span> <span class="o">=</span> <span class="n">find_ang_index</span><span class="p">(</span>
+                <span class="n">radar</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">azi</span><span class="p">,</span> <span class="n">ang_tol</span><span class="o">=</span><span class="n">ang_tol</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ind_sweep</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No azimuth angle found for fix_azimuth &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">azi</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="n">new_dataset</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">extract_sweeps</span><span class="p">([</span><span class="n">ind_sweep</span><span class="p">])</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">dataset_line</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cross_section_rhi</span><span class="p">(</span>
+                    <span class="n">new_dataset</span><span class="p">,</span> <span class="p">[</span><span class="n">ele</span><span class="p">],</span> <span class="n">el_tol</span><span class="o">=</span><span class="n">ang_tol</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">EnvironmentError</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s1">&#39; No data found at azimuth &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">azi</span><span class="p">)</span> <span class="o">+</span>
+                     <span class="s1">&#39; and elevation &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ele</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="n">yvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">dataset_line</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="n">rng_mask</span><span class="p">])</span>
+            <span class="n">xvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">valid_azi</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset_line</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">valid_ele</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset_line</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">xvals</span><span class="p">,</span> <span class="n">yvals</span><span class="p">,</span> <span class="n">valid_azi</span><span class="p">,</span> <span class="n">valid_ele</span></div>
+
+
+<div class="viewcode-block" id="get_data_along_azi"><a class="viewcode-back" href="../../../util.html#pyrad.util.get_data_along_azi">[docs]</a><span class="k">def</span> <span class="nf">get_data_along_azi</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">fix_ranges</span><span class="p">,</span> <span class="n">fix_elevations</span><span class="p">,</span>
+                       <span class="n">rng_tol</span><span class="o">=</span><span class="mf">50.</span><span class="p">,</span> <span class="n">ang_tol</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">azi_start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">azi_stop</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get data at particular (ranges, elevations)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    radar : radar object</span>
+<span class="sd">        the radar object where the data is</span>
+<span class="sd">    field_name : str</span>
+<span class="sd">        name of the field to filter</span>
+<span class="sd">    fix_ranges, fix_elevations: list of floats</span>
+<span class="sd">        List of ranges [m], elevations [deg] couples</span>
+<span class="sd">    rng_tol : float</span>
+<span class="sd">        Tolerance between the nominal range and the radar range [m]</span>
+<span class="sd">    ang_tol : float</span>
+<span class="sd">        Tolerance between the nominal angle and the radar angle [deg]</span>
+<span class="sd">    azi_start, azi_stop: float</span>
+<span class="sd">        Start and stop azimuth angle of the data [deg]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    xvals : list of float arrays</span>
+<span class="sd">        The ranges of each rng, ele pair</span>
+<span class="sd">    yvals : list of float arrays</span>
+<span class="sd">        The values</span>
+<span class="sd">    valid_rng, valid_ele : float arrays</span>
+<span class="sd">        The rng, ele pairs</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">azi_start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">azi_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">azi_stop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">azi_stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+
+    <span class="n">yvals</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">xvals</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">valid_rng</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">valid_ele</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">rng</span><span class="p">,</span> <span class="n">ele</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">fix_ranges</span><span class="p">,</span> <span class="n">fix_elevations</span><span class="p">):</span>
+        <span class="n">ind_rng</span> <span class="o">=</span> <span class="n">find_rng_index</span><span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">rng</span><span class="p">,</span> <span class="n">rng_tol</span><span class="o">=</span><span class="n">rng_tol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ind_rng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No range gate found for fix_range &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">rng</span><span class="p">))</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">radar</span><span class="o">.</span><span class="n">scan_type</span> <span class="o">==</span> <span class="s1">&#39;ppi&#39;</span><span class="p">:</span>
+            <span class="n">ind_sweep</span> <span class="o">=</span> <span class="n">find_ang_index</span><span class="p">(</span>
+                <span class="n">radar</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">ele</span><span class="p">,</span> <span class="n">ang_tol</span><span class="o">=</span><span class="n">ang_tol</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ind_sweep</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No elevation angle found for fix_elevation &#39;</span> <span class="o">+</span>
+                     <span class="nb">str</span><span class="p">(</span><span class="n">ele</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="n">new_dataset</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">extract_sweeps</span><span class="p">([</span><span class="n">ind_sweep</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">new_dataset</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cross_section_rhi</span><span class="p">(</span>
+                    <span class="n">radar</span><span class="p">,</span> <span class="p">[</span><span class="n">ele</span><span class="p">],</span> <span class="n">el_tol</span><span class="o">=</span><span class="n">ang_tol</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">EnvironmentError</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span>
+                    <span class="s1">&#39; No data found at range &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span> <span class="o">+</span>
+                    <span class="s1">&#39; and elevation &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ele</span><span class="p">))</span>
+                <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">azi_start</span> <span class="o">&lt;</span> <span class="n">azi_stop</span><span class="p">:</span>
+            <span class="n">azi_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
+                <span class="n">new_dataset</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">azi_start</span><span class="p">,</span>
+                <span class="n">new_dataset</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">azi_stop</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">azi_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span>
+                <span class="n">new_dataset</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">azi_start</span><span class="p">,</span>
+                <span class="n">new_dataset</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">azi_stop</span><span class="p">)</span>
+        <span class="n">yvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">new_dataset</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">azi_mask</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">])</span>
+        <span class="n">xvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_dataset</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">azi_mask</span><span class="p">])</span>
+        <span class="n">valid_rng</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_dataset</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rng</span><span class="p">])</span>
+        <span class="n">valid_ele</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_dataset</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">xvals</span><span class="p">,</span> <span class="n">yvals</span><span class="p">,</span> <span class="n">valid_rng</span><span class="p">,</span> <span class="n">valid_ele</span></div>
+
+
+<div class="viewcode-block" id="get_data_along_ele"><a class="viewcode-back" href="../../../util.html#pyrad.util.get_data_along_ele">[docs]</a><span class="k">def</span> <span class="nf">get_data_along_ele</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">fix_ranges</span><span class="p">,</span> <span class="n">fix_azimuths</span><span class="p">,</span>
+                       <span class="n">rng_tol</span><span class="o">=</span><span class="mf">50.</span><span class="p">,</span> <span class="n">ang_tol</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">ele_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">ele_max</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get data at particular (ranges, azimuths)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    radar : radar object</span>
+<span class="sd">        the radar object where the data is</span>
+<span class="sd">    field_name : str</span>
+<span class="sd">        name of the field to filter</span>
+<span class="sd">    fix_ranges, fix_azimuths: list of floats</span>
+<span class="sd">        List of ranges [m], azimuths [deg] couples</span>
+<span class="sd">    rng_tol : float</span>
+<span class="sd">        Tolerance between the nominal range and the radar range [m]</span>
+<span class="sd">    ang_tol : float</span>
+<span class="sd">        Tolerance between the nominal angle and the radar angle [deg]</span>
+<span class="sd">    ele_min, ele_max: float</span>
+<span class="sd">        Min and max elevation angle [deg]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    xvals : list of float arrays</span>
+<span class="sd">        The ranges of each rng, ele pair</span>
+<span class="sd">    yvals : list of float arrays</span>
+<span class="sd">        The values</span>
+<span class="sd">    valid_rng, valid_ele : float arrays</span>
+<span class="sd">        The rng, ele pairs</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ele_min</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ele_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">ele_max</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ele_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+
+    <span class="n">yvals</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">xvals</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">valid_rng</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">valid_azi</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">rng</span><span class="p">,</span> <span class="n">azi</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">fix_ranges</span><span class="p">,</span> <span class="n">fix_azimuths</span><span class="p">):</span>
+        <span class="n">ind_rng</span> <span class="o">=</span> <span class="n">find_rng_index</span><span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">rng</span><span class="p">,</span> <span class="n">rng_tol</span><span class="o">=</span><span class="n">rng_tol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ind_rng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No range gate found for fix_range &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">rng</span><span class="p">))</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">radar</span><span class="o">.</span><span class="n">scan_type</span> <span class="o">==</span> <span class="s1">&#39;ppi&#39;</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">new_dataset</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cross_section_ppi</span><span class="p">(</span>
+                    <span class="n">radar</span><span class="p">,</span> <span class="p">[</span><span class="n">azi</span><span class="p">],</span> <span class="n">az_tol</span><span class="o">=</span><span class="n">ang_tol</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">EnvironmentError</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span>
+                    <span class="s1">&#39; No data found at range &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span> <span class="o">+</span>
+                    <span class="s1">&#39; and elevation &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">azi</span><span class="p">))</span>
+                <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ind_sweep</span> <span class="o">=</span> <span class="n">find_ang_index</span><span class="p">(</span>
+                <span class="n">radar</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">azi</span><span class="p">,</span> <span class="n">ang_tol</span><span class="o">=</span><span class="n">ang_tol</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ind_sweep</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No azimuth angle found for fix_azimuth &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">azi</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="n">new_dataset</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">extract_sweeps</span><span class="p">([</span><span class="n">ind_sweep</span><span class="p">])</span>
+
+        <span class="n">ele_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
+            <span class="n">new_dataset</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">ele_min</span><span class="p">,</span>
+            <span class="n">new_dataset</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">ele_max</span><span class="p">)</span>
+        <span class="n">yvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">new_dataset</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ele_mask</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">])</span>
+        <span class="n">xvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_dataset</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ele_mask</span><span class="p">])</span>
+        <span class="n">valid_rng</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_dataset</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rng</span><span class="p">])</span>
+        <span class="n">valid_azi</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_dataset</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">xvals</span><span class="p">,</span> <span class="n">yvals</span><span class="p">,</span> <span class="n">valid_rng</span><span class="p">,</span> <span class="n">valid_azi</span></div>
 
 
 <div class="viewcode-block" id="get_ROI"><a class="viewcode-back" href="../../../util.html#pyrad.util.get_ROI">[docs]</a><span class="k">def</span> <span class="nf">get_ROI</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">fieldname</span><span class="p">,</span> <span class="n">sector</span><span class="p">):</span>
@@ -488,7 +735,34 @@
     <span class="k">return</span> <span class="n">ind_rng</span></div>
 
 
-<span class="k">def</span> <span class="nf">find_nearest_gate</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">latlon_tol</span><span class="o">=</span><span class="mf">0.0005</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">find_ang_index</span><span class="p">(</span><span class="n">ang_vec</span><span class="p">,</span> <span class="n">ang</span><span class="p">,</span> <span class="n">ang_tol</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find the angle index corresponding to a particular fixed angle</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ang_vec : float array</span>
+<span class="sd">        The angle data array where to look for</span>
+<span class="sd">    ang : float</span>
+<span class="sd">        The angle to search</span>
+<span class="sd">    ang_tol : float</span>
+<span class="sd">        Tolerance [deg]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ind_ang : int</span>
+<span class="sd">        The angle index</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ang_vec</span><span class="o">-</span><span class="n">ang</span><span class="p">)</span>
+    <span class="n">ind_ang</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">dist</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dist</span><span class="p">[</span><span class="n">ind_ang</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">ang_tol</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">ind_ang</span>
+
+
+<div class="viewcode-block" id="find_nearest_gate"><a class="viewcode-back" href="../../../util.html#pyrad.util.find_nearest_gate">[docs]</a><span class="k">def</span> <span class="nf">find_nearest_gate</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">latlon_tol</span><span class="o">=</span><span class="mf">0.0005</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find the radar gate closest to a lat,lon point</span>
 
@@ -534,7 +808,7 @@
     <span class="n">azi</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">]</span>
     <span class="n">rng</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rng</span><span class="p">]</span>
 
-    <span class="k">return</span> <span class="n">ind_ray</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">,</span> <span class="n">azi</span><span class="p">,</span> <span class="n">rng</span>
+    <span class="k">return</span> <span class="n">ind_ray</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">,</span> <span class="n">azi</span><span class="p">,</span> <span class="n">rng</span></div>
 
 
 <div class="viewcode-block" id="find_neighbour_gates"><a class="viewcode-back" href="../../../util.html#pyrad.util.find_neighbour_gates">[docs]</a><span class="k">def</span> <span class="nf">find_neighbour_gates</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">azi</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">delta_azi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">delta_rng</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -756,6 +1030,157 @@
     <span class="k">return</span> <span class="n">flux_datetime_closest_list</span><span class="p">,</span> <span class="n">flux_value_closest_list</span></div>
 
 
+<div class="viewcode-block" id="get_fixed_rng_data"><a class="viewcode-back" href="../../../util.html#pyrad.util.get_fixed_rng_data">[docs]</a><span class="k">def</span> <span class="nf">get_fixed_rng_data</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">field_names</span><span class="p">,</span> <span class="n">fixed_rng</span><span class="p">,</span> <span class="n">rng_tol</span><span class="o">=</span><span class="mf">50.</span><span class="p">,</span>
+                       <span class="n">ele_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ele_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">azi_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">azi_max</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a 2D-grid with (azi, ele) data at a fixed range</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    radar : radar object</span>
+<span class="sd">        The radar object containing the data</span>
+<span class="sd">    field_name : str</span>
+<span class="sd">        The field name</span>
+<span class="sd">    fixed_rng : float</span>
+<span class="sd">        The fixed range [m]</span>
+<span class="sd">    rng_tol : float</span>
+<span class="sd">        The tolerance between the nominal range and the actual radar range [m]</span>
+<span class="sd">    ele_min, ele_max, azi_min, azi_max : float or None</span>
+<span class="sd">        The limits of the grid [deg]. If None the limits will be the limits</span>
+<span class="sd">        of the radar volume</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    radar : radar object</span>
+<span class="sd">        The radar object containing only the desired data</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">radar</span><span class="p">)</span>
+
+    <span class="n">ind_rng</span> <span class="o">=</span> <span class="n">find_rng_index</span><span class="p">(</span>
+        <span class="n">radar_aux</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">fixed_rng</span><span class="p">,</span> <span class="n">rng_tol</span><span class="o">=</span><span class="n">rng_tol</span><span class="p">)</span>
+
+    <span class="c1"># Determine angle limits</span>
+    <span class="k">if</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">scan_type</span> <span class="o">==</span> <span class="s1">&#39;ppi&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ele_min</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ele_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">radar_aux</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">ele_max</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ele_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">radar_aux</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">azi_min</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">azi_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">radar_aux</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">azi_max</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">azi_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">radar_aux</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ele_min</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ele_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">radar_aux</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">ele_max</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ele_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">radar_aux</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">azi_min</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">azi_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">radar_aux</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">azi_max</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">azi_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">radar_aux</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">scan_type</span> <span class="o">==</span> <span class="s1">&#39;ppi&#39;</span><span class="p">:</span>
+        <span class="c1"># Get radar elevation angles within limits</span>
+        <span class="n">ele_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">radar_aux</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+        <span class="n">ele_vec</span> <span class="o">=</span> <span class="n">ele_vec</span><span class="p">[</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">ele_vec</span> <span class="o">&gt;=</span> <span class="n">ele_min</span><span class="p">,</span> <span class="n">ele_vec</span> <span class="o">&lt;=</span> <span class="n">ele_max</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">ele_vec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No elevation angles between &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ele_min</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39; and &#39;</span> <span class="o">+</span>
+                 <span class="nb">str</span><span class="p">(</span><span class="n">ele_max</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="c1"># get sweeps corresponding to the desired elevation angles</span>
+        <span class="n">ind_sweeps</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">ele</span> <span class="ow">in</span> <span class="n">ele_vec</span><span class="p">:</span>
+            <span class="n">ind_sweeps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">radar_aux</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ele</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">extract_sweeps</span><span class="p">(</span><span class="n">ind_sweeps</span><span class="p">)</span>
+
+        <span class="c1"># Get indices of rays within limits</span>
+        <span class="k">if</span> <span class="n">azi_min</span> <span class="o">&lt;</span> <span class="n">azi_max</span><span class="p">:</span>
+            <span class="n">ind_rays</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
+                <span class="n">radar_aux</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">azi_min</span><span class="p">,</span>
+                <span class="n">radar_aux</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">azi_max</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ind_rays</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span>
+                <span class="n">radar_aux</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">azi_min</span><span class="p">,</span>
+                <span class="n">radar_aux</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">azi_max</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Get radar azimuth angles within limits</span>
+        <span class="n">azi_vec</span> <span class="o">=</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">azi_min</span> <span class="o">&lt;</span> <span class="n">azi_max</span><span class="p">:</span>
+            <span class="n">azi_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">azi_vec</span><span class="p">[</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">azi_vec</span> <span class="o">&gt;=</span> <span class="n">azi_min</span><span class="p">,</span> <span class="n">azi_vec</span> <span class="o">&lt;=</span> <span class="n">azi_max</span><span class="p">)])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">azi_vec</span> <span class="o">=</span> <span class="n">azi_vec</span><span class="p">[</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">azi_vec</span> <span class="o">&gt;=</span> <span class="n">azi_min</span><span class="p">,</span> <span class="n">azi_vec</span> <span class="o">&lt;=</span> <span class="n">azi_max</span><span class="p">)]</span>
+            <span class="n">azi_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">azi_vec</span><span class="p">[</span><span class="n">azi_vec</span> <span class="o">&gt;=</span> <span class="n">azi_min</span><span class="p">]),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">azi_vec</span><span class="p">[</span><span class="n">azi_vec</span> <span class="o">&lt;</span> <span class="n">azi_min</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">azi_vec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No azimuth angles between &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">azi_min</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39; and &#39;</span> <span class="o">+</span>
+                 <span class="nb">str</span><span class="p">(</span><span class="n">azi_max</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="c1"># get sweeps corresponding to the desired azimuth angles</span>
+        <span class="n">ind_sweeps</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">azi</span> <span class="ow">in</span> <span class="n">azi_vec</span><span class="p">:</span>
+            <span class="n">ind_sweeps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">radar_aux</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">azi</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">extract_sweeps</span><span class="p">(</span><span class="n">ind_sweeps</span><span class="p">)</span>
+
+        <span class="c1"># Get indices of rays within limits</span>
+        <span class="n">ind_rays</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
+            <span class="n">radar_aux</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">ele_min</span><span class="p">,</span>
+            <span class="n">radar_aux</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">ele_max</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># get new sweep start index and stop index</span>
+    <span class="n">sweep_start_inds</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">radar_aux</span><span class="o">.</span><span class="n">sweep_start_ray_index</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+    <span class="n">sweep_end_inds</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">radar_aux</span><span class="o">.</span><span class="n">sweep_end_ray_index</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+
+    <span class="n">nrays</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">radar_aux</span><span class="o">.</span><span class="n">nsweeps</span><span class="p">):</span>
+        <span class="c1"># get azimuth indices for this elevation</span>
+        <span class="n">rays_in_sweep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span>
+            <span class="n">ind_rays</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">ind_rays</span> <span class="o">&gt;=</span> <span class="n">sweep_start_inds</span><span class="p">[</span><span class="n">j</span><span class="p">],</span>
+                                    <span class="n">ind_rays</span> <span class="o">&lt;=</span> <span class="n">sweep_end_inds</span><span class="p">[</span><span class="n">j</span><span class="p">])])</span>
+        <span class="n">radar_aux</span><span class="o">.</span><span class="n">rays_per_sweep</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">rays_in_sweep</span>
+        <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">radar_aux</span><span class="o">.</span><span class="n">sweep_start_ray_index</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">radar_aux</span><span class="o">.</span><span class="n">sweep_start_ray_index</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+                <span class="n">radar_aux</span><span class="o">.</span><span class="n">sweep_end_ray_index</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">radar_aux</span><span class="o">.</span><span class="n">sweep_end_ray_index</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">radar_aux</span><span class="o">.</span><span class="n">sweep_start_ray_index</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">]</span><span class="o">+</span><span class="n">rays_in_sweep</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">nrays</span> <span class="o">+=</span> <span class="n">rays_in_sweep</span>
+
+    <span class="c1"># Get new fields</span>
+    <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="n">field_names</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Field &#39;</span><span class="o">+</span><span class="n">field_name</span><span class="o">+</span><span class="s1">&#39; not available&#39;</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][:,</span> <span class="n">ind_rng</span><span class="p">])</span>
+        <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span>
+
+    <span class="c1"># Update metadata</span>
+    <span class="n">radar_aux</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">]</span>
+    <span class="n">radar_aux</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">fixed_rng</span><span class="p">])</span>
+    <span class="n">radar_aux</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">]</span>
+    <span class="n">radar_aux</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">]</span>
+    <span class="n">radar_aux</span><span class="o">.</span><span class="n">init_gate_x_y_z</span><span class="p">()</span>
+    <span class="n">radar_aux</span><span class="o">.</span><span class="n">init_gate_longitude_latitude</span><span class="p">()</span>
+    <span class="n">radar_aux</span><span class="o">.</span><span class="n">init_gate_altitude</span><span class="p">()</span>
+    <span class="n">radar_aux</span><span class="o">.</span><span class="n">nrays</span> <span class="o">=</span> <span class="n">nrays</span>
+    <span class="n">radar_aux</span><span class="o">.</span><span class="n">ngates</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">radar_aux</span></div>
+
+
 <div class="viewcode-block" id="create_sun_hits_field"><a class="viewcode-back" href="../../../util.html#pyrad.util.create_sun_hits_field">[docs]</a><span class="k">def</span> <span class="nf">create_sun_hits_field</span><span class="p">(</span><span class="n">rad_el</span><span class="p">,</span> <span class="n">rad_az</span><span class="p">,</span> <span class="n">sun_el</span><span class="p">,</span> <span class="n">sun_az</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">imgcfg</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    creates a sun hits field from the position and power of the sun hits</span>
@@ -847,7 +1272,7 @@
 
     <span class="n">field</span> <span class="o">=</span> <span class="p">(</span><span class="n">par</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">par</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">d_az_mat</span><span class="o">+</span><span class="n">par</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">d_el_mat</span><span class="o">+</span><span class="n">par</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">*</span><span class="n">d_az_mat</span><span class="o">*</span><span class="n">d_az_mat</span> <span class="o">+</span>
              <span class="n">par</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">*</span><span class="n">d_el_mat</span><span class="o">*</span><span class="n">d_el_mat</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">field_name</span> <span class="o">==</span> <span class="s1">&#39;sun_est_power_h&#39;</span> <span class="ow">or</span> <span class="n">field_name</span> <span class="o">==</span> <span class="s1">&#39;sun_est_power_v&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;sun_est_power_h&#39;</span><span class="p">,</span> <span class="s1">&#39;sun_est_power_v&#39;</span><span class="p">):</span>
         <span class="c1"># account for polarization of the antenna and scanning losses</span>
         <span class="n">field</span> <span class="o">+=</span> <span class="mf">3.</span><span class="o">+</span><span class="n">lant</span>
 
@@ -1537,7 +1962,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, meteoswiss-mdr.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
     </div>
   </body>
 </html>

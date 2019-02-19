@@ -14,6 +14,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
   </head><body>
@@ -1084,7 +1085,7 @@ pyart.map.grid_from_radars. Default ‘NEAREST_NEIGHBOUR’</dd>
 </dd>
 </dl>
 </dd>
-<dt>‘FIELD_COVERAGE’ Gets the field coverage over a certain sector</dt>
+<dt>‘FIELD_COVERAGE’: Gets the field coverage over a certain sector</dt>
 <dd><dl class="first last docutils">
 <dt>User defined parameters:</dt>
 <dd><dl class="first last docutils">
@@ -1109,6 +1110,20 @@ by steps of 10.</dd>
 <dt>AngTol: float</dt>
 <dd>The tolerance in elevation angle when putting the data in
 a fixed grid</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>‘FIXED_RNG_IMAGE’: Plots a fixed range image</dt>
+<dd><dl class="first last docutils">
+<dt>User defined parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>AngTol <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>The tolerance between the nominal angles and the actual
+radar angles. Default 1.</dd>
+<dt>ele_res, azi_res: float or None</dt>
+<dd>The resolution of the fixed grid [deg]. If None it will be
+obtained from the separation between angles</dd>
 </dl>
 </dd>
 </dl>
@@ -1147,9 +1162,11 @@ possible values are used</dd>
 ‘ALONG_AZI’ fix_ranges and fix_elevations
 ‘ALONG_ELE’ fix_ranges and fix_azimuths</dd>
 <dt>AngTol: float</dt>
-<dd>The tolerance to match the radar angle to the fixed angles</dd>
+<dd>The tolerance to match the radar angle to the fixed angles
+Default 1.</dd>
 <dt>RngTol: float</dt>
-<dd>The tolerance to match the radar range to the fixed ranges</dd>
+<dd>The tolerance to match the radar range to the fixed ranges
+Default 50.</dd>
 </dl>
 </div></blockquote>
 </dd>
@@ -1683,7 +1700,7 @@ what the functions do check the function documentation:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, meteoswiss-mdr.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
     </div>
   </body>
 </html>

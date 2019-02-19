@@ -14,6 +14,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
@@ -62,11 +63,14 @@
 <span class="sd">.. autosummary::</span>
 <span class="sd">    :toctree: generated/</span>
 
+<span class="sd">    generate_fixed_rng_title</span>
 <span class="sd">    get_colobar_label</span>
 <span class="sd">    get_field_name</span>
 <span class="sd">    get_norm</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">pyart</span>
 
 <span class="kn">import</span> <span class="nn">matplotlib</span> <span class="k">as</span> <span class="nn">mpl</span>
 <span class="n">mpl</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;Agg&#39;</span><span class="p">)</span>
@@ -75,7 +79,37 @@
 <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;font.size&#39;</span><span class="p">:</span> <span class="mi">16</span><span class="p">})</span>
 <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;font.family&#39;</span><span class="p">:</span>  <span class="s2">&quot;sans-serif&quot;</span><span class="p">})</span>
 
-<span class="kn">import</span> <span class="nn">pyart</span>
+
+<span class="k">def</span> <span class="nf">generate_fixed_rng_title</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">fixed_rng</span><span class="p">,</span> <span class="n">datetime_format</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    creates the fixed range plot title</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    radar : radar</span>
+<span class="sd">        The radar object</span>
+<span class="sd">    field : str</span>
+<span class="sd">        name of the field</span>
+<span class="sd">    fixed_rng : float</span>
+<span class="sd">        The fixed range [m]</span>
+<span class="sd">    datetime_forat : str or None</span>
+<span class="sd">        The date time format to use</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    titl : str</span>
+<span class="sd">        The plot title</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">begin_time</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">generate_radar_time_begin</span><span class="p">(</span><span class="n">radar</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">datetime_format</span><span class="p">:</span>
+        <span class="n">time_str</span> <span class="o">=</span> <span class="n">begin_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">datetime_format</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">time_str</span> <span class="o">=</span> <span class="n">begin_time</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;Z&#39;</span>
+    <span class="n">l1</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%.1f</span><span class="s2"> m. </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pyart</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">generate_radar_name</span><span class="p">(</span><span class="n">radar</span><span class="p">),</span>
+                             <span class="n">fixed_rng</span><span class="p">,</span> <span class="n">time_str</span><span class="p">)</span>
+    <span class="n">field_name</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">generate_field_name</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">l1</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">field_name</span>
 
 
 <div class="viewcode-block" id="get_colobar_label"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.get_colobar_label">[docs]</a><span class="k">def</span> <span class="nf">get_colobar_label</span><span class="p">(</span><span class="n">field_dict</span><span class="p">,</span> <span class="n">field_name</span><span class="p">):</span>
@@ -199,7 +233,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, meteoswiss-mdr.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
     </div>
   </body>
 </html>

@@ -14,6 +14,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
@@ -70,9 +71,8 @@
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">netCDF4</span> <span class="k">import</span> <span class="n">num2date</span>
-
 <span class="kn">import</span> <span class="nn">pyart</span>
+<span class="kn">from</span> <span class="nn">netCDF4</span> <span class="k">import</span> <span class="n">num2date</span>
 
 <span class="kn">from</span> <span class="nn">..io.io_aux</span> <span class="k">import</span> <span class="n">get_save_dir</span><span class="p">,</span> <span class="n">make_filename</span><span class="p">,</span> <span class="n">get_fieldname_pyart</span>
 
@@ -83,11 +83,14 @@
 <span class="kn">from</span> <span class="nn">..graph.plots_vol</span> <span class="k">import</span> <span class="n">plot_bscope</span><span class="p">,</span> <span class="n">plot_rhi_profile</span><span class="p">,</span> <span class="n">plot_along_coord</span>
 <span class="kn">from</span> <span class="nn">..graph.plots_vol</span> <span class="k">import</span> <span class="n">plot_field_coverage</span><span class="p">,</span> <span class="n">plot_time_range</span>
 <span class="kn">from</span> <span class="nn">..graph.plots_vol</span> <span class="k">import</span> <span class="n">plot_rhi_contour</span><span class="p">,</span> <span class="n">plot_ppi_contour</span>
+<span class="kn">from</span> <span class="nn">..graph.plots_vol</span> <span class="k">import</span> <span class="n">plot_fixed_rng</span>
 <span class="kn">from</span> <span class="nn">..graph.plots</span> <span class="k">import</span> <span class="n">plot_quantiles</span><span class="p">,</span> <span class="n">plot_histogram</span>
 <span class="kn">from</span> <span class="nn">..graph.plots_aux</span> <span class="k">import</span> <span class="n">get_colobar_label</span><span class="p">,</span> <span class="n">get_field_name</span>
 
 <span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">get_ROI</span><span class="p">,</span> <span class="n">compute_profile_stats</span>
 <span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">compute_histogram</span><span class="p">,</span> <span class="n">compute_quantiles</span>
+<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">get_data_along_rng</span><span class="p">,</span> <span class="n">get_data_along_azi</span>
+<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">get_data_along_ele</span>
 <span class="kn">from</span> <span class="nn">..util.stat_utils</span> <span class="k">import</span> <span class="n">quantiles_weighted</span>
 
 
@@ -138,7 +141,7 @@
 <span class="sd">                    pyart.map.grid_from_radars. Default &#39;NEAREST_NEIGHBOUR&#39;</span>
 <span class="sd">                cappi_res: float</span>
 <span class="sd">                    The CAPPI resolution [m]. Default 500.</span>
-<span class="sd">        &#39;FIELD_COVERAGE&#39; Gets the field coverage over a certain sector</span>
+<span class="sd">        &#39;FIELD_COVERAGE&#39;: Gets the field coverage over a certain sector</span>
 <span class="sd">            User defined parameters:</span>
 <span class="sd">                threshold: float or None</span>
 <span class="sd">                    Minimum value to consider the data valid. Default None</span>
@@ -161,6 +164,14 @@
 <span class="sd">                AngTol: float</span>
 <span class="sd">                    The tolerance in elevation angle when putting the data in</span>
 <span class="sd">                    a fixed grid</span>
+<span class="sd">        &#39;FIXED_RNG_IMAGE&#39;: Plots a fixed range image</span>
+<span class="sd">            User defined parameters:</span>
+<span class="sd">                AngTol : float</span>
+<span class="sd">                    The tolerance between the nominal angles and the actual</span>
+<span class="sd">                    radar angles. Default 1.</span>
+<span class="sd">                ele_res, azi_res: float or None</span>
+<span class="sd">                    The resolution of the fixed grid [deg]. If None it will be</span>
+<span class="sd">                    obtained from the separation between angles</span>
 <span class="sd">        &#39;HISTOGRAM&#39;: Computes a histogram of the radar volum data</span>
 <span class="sd">            User defined parameters:</span>
 <span class="sd">                step: float or None</span>
@@ -188,8 +199,10 @@
 <span class="sd">                    &#39;ALONG_ELE&#39; fix_ranges and fix_azimuths</span>
 <span class="sd">                AngTol: float</span>
 <span class="sd">                    The tolerance to match the radar angle to the fixed angles</span>
+<span class="sd">                    Default 1.</span>
 <span class="sd">                RngTol: float</span>
 <span class="sd">                    The tolerance to match the radar range to the fixed ranges</span>
+<span class="sd">                    Default 50.</span>
 <span class="sd">        &#39;PPI_CONTOUR&#39;: Plots a PPI countour plot</span>
 <span class="sd">            User defined parameters:</span>
 <span class="sd">                contour_values: list of floats or None</span>
@@ -1787,6 +1800,42 @@
 
         <span class="k">return</span> <span class="n">fname_list</span>
 
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;FIXED_RNG_IMAGE&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="s1">&#39; Field type &#39;</span> <span class="o">+</span> <span class="n">field_name</span> <span class="o">+</span>
+                <span class="s1">&#39; not available in data set. Skipping product &#39;</span> <span class="o">+</span>
+                <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># user defined parameters</span>
+        <span class="n">ang_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AngTol&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">azi_res</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;azi_res&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">ele_res</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ele_res&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">savedir</span> <span class="o">=</span> <span class="n">get_save_dir</span><span class="p">(</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;basepath&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;procname&#39;</span><span class="p">],</span> <span class="n">dssavedir</span><span class="p">,</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;prdname&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+
+        <span class="n">fname_list</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
+            <span class="s1">&#39;fixed_rng&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span>
+            <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;rng&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
+            <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
+
+        <span class="n">plot_fixed_rng</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
+            <span class="n">azi_res</span><span class="o">=</span><span class="n">azi_res</span><span class="p">,</span> <span class="n">ele_res</span><span class="o">=</span><span class="n">ele_res</span><span class="p">,</span> <span class="n">ang_tol</span><span class="o">=</span><span class="n">ang_tol</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----- save to &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fname_list</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">fname_list</span>
+
     <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PLOT_ALONG_COORD&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
@@ -1806,69 +1855,12 @@
             <span class="n">value_start</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;value_start&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span>
             <span class="n">value_stop</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
                 <span class="s1">&#39;value_stop&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]))</span>
+            <span class="n">ang_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AngTol&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
 
-            <span class="n">rng_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
-                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">value_start</span><span class="p">,</span>
-                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">value_stop</span><span class="p">)</span>
-
-            <span class="n">x</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">rng_mask</span><span class="p">]</span>
-
-            <span class="n">xvals</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">yvals</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">valid_azi</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">valid_ele</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">if</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">scan_type</span> <span class="o">==</span> <span class="s1">&#39;ppi&#39;</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">ele</span><span class="p">,</span> <span class="n">azi</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
-                        <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;fix_elevations&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;fix_azimuths&#39;</span><span class="p">]):</span>
-                    <span class="n">d_el</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span>
-                        <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">ele</span><span class="p">)</span>
-                    <span class="n">min_d_el</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">d_el</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">min_d_el</span> <span class="o">&gt;</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;AngTol&#39;</span><span class="p">]:</span>
-                        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No elevation angle found for fix_elevation &#39;</span> <span class="o">+</span>
-                             <span class="nb">str</span><span class="p">(</span><span class="n">ele</span><span class="p">))</span>
-                        <span class="k">continue</span>
-                    <span class="n">ind_sweep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">d_el</span><span class="p">)</span>
-                    <span class="n">new_dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extract_sweeps</span><span class="p">(</span>
-                        <span class="p">[</span><span class="n">ind_sweep</span><span class="p">])</span>
-
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="n">dataset_line</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cross_section_ppi</span><span class="p">(</span>
-                            <span class="n">new_dataset</span><span class="p">,</span> <span class="p">[</span><span class="n">azi</span><span class="p">],</span> <span class="n">az_tol</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;AngTol&#39;</span><span class="p">])</span>
-                    <span class="k">except</span> <span class="ne">EnvironmentError</span><span class="p">:</span>
-                        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39; No data found at azimuth &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">azi</span><span class="p">)</span> <span class="o">+</span>
-                             <span class="s1">&#39; and elevation &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ele</span><span class="p">))</span>
-                        <span class="k">continue</span>
-                    <span class="n">yvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="n">dataset_line</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="n">rng_mask</span><span class="p">])</span>
-                    <span class="n">xvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-                    <span class="n">valid_azi</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset_line</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
-                    <span class="n">valid_ele</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset_line</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">ele</span><span class="p">,</span> <span class="n">azi</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
-                        <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;fix_elevations&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;fix_azimuths&#39;</span><span class="p">]):</span>
-                    <span class="n">d_az</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span>
-                        <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">azi</span><span class="p">)</span>
-                    <span class="n">min_d_az</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">d_az</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">min_d_az</span> <span class="o">&gt;</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;AngTol&#39;</span><span class="p">]:</span>
-                        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No azimuth angle found for fix_azimuth &#39;</span> <span class="o">+</span>
-                             <span class="nb">str</span><span class="p">(</span><span class="n">azi</span><span class="p">))</span>
-                        <span class="k">continue</span>
-                    <span class="n">ind_sweep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">d_az</span><span class="p">)</span>
-                    <span class="n">new_dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extract_sweeps</span><span class="p">(</span>
-                        <span class="p">[</span><span class="n">ind_sweep</span><span class="p">])</span>
-
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="n">dataset_line</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cross_section_rhi</span><span class="p">(</span>
-                            <span class="n">new_dataset</span><span class="p">,</span> <span class="p">[</span><span class="n">ele</span><span class="p">],</span> <span class="n">el_tol</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;AngTol&#39;</span><span class="p">])</span>
-                    <span class="k">except</span> <span class="ne">EnvironmentError</span><span class="p">:</span>
-                        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39; No data found at azimuth &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">azi</span><span class="p">)</span> <span class="o">+</span>
-                             <span class="s1">&#39; and elevation &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ele</span><span class="p">))</span>
-                        <span class="k">continue</span>
-                    <span class="n">yvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="n">dataset_line</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="n">rng_mask</span><span class="p">])</span>
-                    <span class="n">xvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-                    <span class="n">valid_azi</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset_line</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
-                    <span class="n">valid_ele</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset_line</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">xvals</span><span class="p">,</span> <span class="n">yvals</span><span class="p">,</span> <span class="n">valid_azi</span><span class="p">,</span> <span class="n">valid_ele</span> <span class="o">=</span> <span class="n">get_data_along_rng</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;fix_elevations&#39;</span><span class="p">],</span>
+                <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;fix_azimuths&#39;</span><span class="p">],</span> <span class="n">ang_tol</span><span class="o">=</span><span class="n">ang_tol</span><span class="p">,</span> <span class="n">rmin</span><span class="o">=</span><span class="n">value_start</span><span class="p">,</span>
+                <span class="n">rmax</span><span class="o">=</span><span class="n">value_stop</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">yvals</span><span class="p">:</span>
                 <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No data found&#39;</span><span class="p">)</span>
@@ -1886,54 +1878,13 @@
                 <span class="s1">&#39;value_start&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]))</span>
             <span class="n">value_stop</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
                 <span class="s1">&#39;value_stop&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]))</span>
+            <span class="n">ang_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AngTol&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+            <span class="n">rng_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;RngTol&#39;</span><span class="p">,</span> <span class="mf">50.</span><span class="p">)</span>
 
-            <span class="n">yvals</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">xvals</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">valid_rng</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">valid_ele</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">rng</span><span class="p">,</span> <span class="n">ele</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
-                    <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;fix_ranges&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;fix_elevations&#39;</span><span class="p">]):</span>
-                <span class="n">d_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">rng</span><span class="p">)</span>
-                <span class="n">min_d_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">d_rng</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">min_d_rng</span> <span class="o">&gt;</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;RngTol&#39;</span><span class="p">]:</span>
-                    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No range gate found for fix_range &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">rng</span><span class="p">))</span>
-                    <span class="k">continue</span>
-                <span class="n">ind_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">d_rng</span><span class="p">)</span>
-
-                <span class="k">if</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">scan_type</span> <span class="o">==</span> <span class="s1">&#39;ppi&#39;</span><span class="p">:</span>
-                    <span class="n">d_el</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span>
-                        <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">ele</span><span class="p">)</span>
-                    <span class="n">min_d_el</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">d_el</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">min_d_el</span> <span class="o">&gt;</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;AngTol&#39;</span><span class="p">]:</span>
-                        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No elevation angle found for fix_elevation &#39;</span> <span class="o">+</span>
-                             <span class="nb">str</span><span class="p">(</span><span class="n">ele</span><span class="p">))</span>
-                        <span class="k">continue</span>
-                    <span class="n">ind_sweep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">d_el</span><span class="p">)</span>
-                    <span class="n">new_dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extract_sweeps</span><span class="p">(</span>
-                        <span class="p">[</span><span class="n">ind_sweep</span><span class="p">])</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="n">new_dataset</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cross_section_rhi</span><span class="p">(</span>
-                            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">ele</span><span class="p">],</span>
-                            <span class="n">el_tol</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;AngTol&#39;</span><span class="p">])</span>
-                    <span class="k">except</span> <span class="ne">EnvironmentError</span><span class="p">:</span>
-                        <span class="n">warn</span><span class="p">(</span>
-                            <span class="s1">&#39; No data found at range &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span> <span class="o">+</span>
-                            <span class="s1">&#39; and elevation &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ele</span><span class="p">))</span>
-                        <span class="k">continue</span>
-                <span class="k">if</span> <span class="n">value_start</span> <span class="o">&lt;</span> <span class="n">value_stop</span><span class="p">:</span>
-                    <span class="n">azi_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
-                        <span class="n">new_dataset</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">value_start</span><span class="p">,</span>
-                        <span class="n">new_dataset</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">value_stop</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">azi_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span>
-                        <span class="n">new_dataset</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">value_start</span><span class="p">,</span>
-                        <span class="n">new_dataset</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">value_stop</span><span class="p">)</span>
-                <span class="n">yvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                    <span class="n">new_dataset</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">azi_mask</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">])</span>
-                <span class="n">xvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_dataset</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">azi_mask</span><span class="p">])</span>
-                <span class="n">valid_rng</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_dataset</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rng</span><span class="p">])</span>
-                <span class="n">valid_ele</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_dataset</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">xvals</span><span class="p">,</span> <span class="n">yvals</span><span class="p">,</span> <span class="n">valid_rng</span><span class="p">,</span> <span class="n">valid_ele</span> <span class="o">=</span> <span class="n">get_data_along_azi</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;fix_ranges&#39;</span><span class="p">],</span>
+                <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;fix_elevations&#39;</span><span class="p">],</span> <span class="n">rng_tol</span><span class="o">=</span><span class="n">rng_tol</span><span class="p">,</span> <span class="n">ang_tol</span><span class="o">=</span><span class="n">ang_tol</span><span class="p">,</span>
+                <span class="n">azi_start</span><span class="o">=</span><span class="n">value_start</span><span class="p">,</span> <span class="n">azi_stop</span><span class="o">=</span><span class="n">value_stop</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">yvals</span><span class="p">:</span>
                 <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No data found&#39;</span><span class="p">)</span>
@@ -1951,51 +1902,18 @@
                 <span class="s1">&#39;value_start&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]))</span>
             <span class="n">value_stop</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
                 <span class="s1">&#39;value_stop&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]))</span>
+            <span class="n">ang_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AngTol&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+            <span class="n">rng_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;RngTol&#39;</span><span class="p">,</span> <span class="mf">50.</span><span class="p">)</span>
 
-            <span class="n">yvals</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">xvals</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">valid_rng</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">valid_azi</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">rng</span><span class="p">,</span> <span class="n">azi</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;fix_ranges&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;fix_azimuths&#39;</span><span class="p">]):</span>
-                <span class="n">d_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">rng</span><span class="p">)</span>
-                <span class="n">min_d_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">d_rng</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">min_d_rng</span> <span class="o">&gt;</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;RngTol&#39;</span><span class="p">]:</span>
-                    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No range gate found for fix_range &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">rng</span><span class="p">))</span>
-                    <span class="k">continue</span>
-                <span class="n">ind_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">d_rng</span><span class="p">)</span>
+            <span class="n">xvals</span><span class="p">,</span> <span class="n">yvals</span><span class="p">,</span> <span class="n">valid_rng</span><span class="p">,</span> <span class="n">valid_azi</span> <span class="o">=</span> <span class="n">get_data_along_ele</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;fix_ranges&#39;</span><span class="p">],</span>
+                <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;fix_azimuths&#39;</span><span class="p">],</span> <span class="n">rng_tol</span><span class="o">=</span><span class="n">rng_tol</span><span class="p">,</span> <span class="n">ang_tol</span><span class="o">=</span><span class="n">ang_tol</span><span class="p">,</span>
+                <span class="n">ele_min</span><span class="o">=</span><span class="n">value_start</span><span class="p">,</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">value_stop</span><span class="p">)</span>
 
-                <span class="k">if</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">scan_type</span> <span class="o">==</span> <span class="s1">&#39;ppi&#39;</span><span class="p">:</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="n">new_dataset</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cross_section_ppi</span><span class="p">(</span>
-                            <span class="n">dataset</span><span class="p">,</span> <span class="p">[</span><span class="n">azi</span><span class="p">],</span>
-                            <span class="n">az_tol</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;AngTol&#39;</span><span class="p">])</span>
-                    <span class="k">except</span> <span class="ne">EnvironmentError</span><span class="p">:</span>
-                        <span class="n">warn</span><span class="p">(</span>
-                            <span class="s1">&#39; No data found at range &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span> <span class="o">+</span>
-                            <span class="s1">&#39; and elevation &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">azi</span><span class="p">))</span>
-                        <span class="k">continue</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">d_az</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span>
-                        <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">azi</span><span class="p">)</span>
-                    <span class="n">min_d_az</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">d_az</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">min_d_az</span> <span class="o">&gt;</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;AngTol&#39;</span><span class="p">]:</span>
-                        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No azimuth angle found for fix_azimuth &#39;</span> <span class="o">+</span>
-                             <span class="nb">str</span><span class="p">(</span><span class="n">azi</span><span class="p">))</span>
-                        <span class="k">continue</span>
-                    <span class="n">ind_sweep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">d_az</span><span class="p">)</span>
-                    <span class="n">new_dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extract_sweeps</span><span class="p">(</span>
-                        <span class="p">[</span><span class="n">ind_sweep</span><span class="p">])</span>
-                <span class="n">ele_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
-                    <span class="n">new_dataset</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">value_start</span><span class="p">,</span>
-                    <span class="n">new_dataset</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">value_stop</span><span class="p">)</span>
-                <span class="n">yvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                    <span class="n">new_dataset</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ele_mask</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">])</span>
-                <span class="n">xvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_dataset</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ele_mask</span><span class="p">])</span>
-                <span class="n">valid_rng</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_dataset</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rng</span><span class="p">])</span>
-                <span class="n">valid_azi</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_dataset</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">yvals</span><span class="p">:</span>
                 <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No data found&#39;</span><span class="p">)</span>
                 <span class="k">return</span> <span class="kc">None</span>
+
             <span class="n">labelx</span> <span class="o">=</span> <span class="s1">&#39;Elevation Angle (deg)&#39;</span>
 
             <span class="n">labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -2672,7 +2590,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, meteoswiss-mdr.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
     </div>
   </body>
 </html>
