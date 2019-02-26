@@ -1225,7 +1225,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
     return sorted(filelist)
 
 
-def get_trtfile_list(datapath, starttime, endtime):
+def get_trtfile_list(basepath, starttime, endtime):
     """
     gets the list of TRT files with a time period
 
@@ -1244,20 +1244,28 @@ def get_trtfile_list(datapath, starttime, endtime):
         list of files within the time period
 
     """
-    dayfilelist = glob.glob(datapath+'CZC*0T.trt')
-    if not dayfilelist:
-        warn('No TRT files in '+datapath)
-        return None
+    startdate = starttime.date()
+    enddate = endtime.date()
+    ndays = int((enddate-startdate).days)+1
+
+    t_filelist = []
+    for i in range(ndays):
+        daydir = (startdate+datetime.timedelta(days=i)).strftime('%y%j')
+        datapath = basepath+daydir+'/TRTC'+daydir+'/'
+        dayfilelist = glob.glob(datapath+'CZC*0T.trt')
+        if not dayfilelist:
+            warn('No TRT files in '+datapath)
+            continue
+        t_filelist.extend(dayfilelist)
 
     filelist = []
-    for filename in dayfilelist:
+    for filename in t_filelist:
         bfile = os.path.basename(filename)
         datetimestr = bfile[3:12]
         fdatetime = datetime.datetime.strptime(datetimestr, '%y%j%H%M')
         if (fdatetime >= starttime) and (fdatetime <= endtime):
-            pass
-            # filelist.append(filename)
-        filelist.append(filename)
+            filelist.append(filename)
+        # filelist.append(filename)
 
     return sorted(filelist)
 

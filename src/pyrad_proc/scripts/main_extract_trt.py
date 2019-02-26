@@ -22,6 +22,7 @@ import os
 import numpy as np
 
 from pyrad.io import get_trtfile_list, read_trt_data, write_trt_cell_data
+from pyrad.io import read_thundertracking_info
 
 print(__doc__)
 
@@ -33,18 +34,23 @@ def main():
     parser = argparse.ArgumentParser(
         description='Entry to Pyrad processing framework')
 
-    # positional arguments
+    # keyword arguments
     parser.add_argument(
-        'start_times', type=str,
+        '--start_times', type=str, default=None,
         help=('Start times of the data to process. Format YYYYMMDDhhmmss.' +
               'Coma separated'))
 
     parser.add_argument(
-        'end_times', type=str,
+        '--end_times', type=str,
+        default=None,
         help=('End times of the data to process. Format YYYYMMDDhhmmss.' +
               'Coma separated'))
 
-    # keyword arguments
+    parser.add_argument(
+        '--info_file', type=str,
+        default='/store/msrad/radar/thundertracking/info/thundertracking_info.csv',
+        help='configuration file path')
+
     parser.add_argument(
         '--raw_trtbase', type=str,
         default='/store/msrad/radar/rad4alp/TRT/',
@@ -57,9 +63,14 @@ def main():
 
     parser.add_argument(
         '--nsteps_min', type=int,
-        default=3,
+        default=1,
         help=('Minimum number of time steps to consider the TRT cell ' +
               'worth processing'))
+
+    parser.add_argument(
+        '--get_complete_cell', type=bool,
+        default=False,
+        help=('If true get the entire life span of the cell'))
 
     args = parser.parse_args()
 
@@ -68,23 +79,40 @@ def main():
     atexit.register(_print_end_msg,
                     "====== TRT cell extraction finished: ")
 
-    start_time_list = args.start_times.split(',')
-    end_time_list = args.end_times.split(',')
+    if args.start_times is not None and args.end_times is not None:
+        start_time_str_list = args.start_times.split(',')
+        end_time_str_list = args.end_times.split(',')
+        ids = None
 
-    for i, start_time_str in enumerate(start_time_list):
-        end_time_str = end_time_list[i]
+        start_time_list = np.array([], dtype=datetime.datetime)
+        end_time_list = np.array([], dtype=datetime.datetime)
+        for start_time_str, end_time_str in zip(start_time_str_list, end_time_str_list):
+            start_time_list = np.append(
+                start_time_list,
+                datetime.datetime.strptime(start_time_str, '%Y%m%d%H%M%S'))
+            end_time_list = np.append(
+                end_time_list,
+                datetime.datetime.strptime(end_time_str, '%Y%m%d%H%M%S'))
+    else:
+        ids, rank_max, nscans_total, start_time_list, end_time_list = (
+            read_thundertracking_info(args.info_file))
 
-        starttime = datetime.datetime.strptime(start_time_str, '%Y%m%d%H%M%S')
-        endtime = datetime.datetime.strptime(end_time_str, '%Y%m%d%H%M%S')
+    for i, starttime in enumerate(start_time_list):
+        endtime = end_time_list[i]
 
-        data_input_path = (
-            args.raw_trtbase+starttime.strftime('%y%j/TRTC%y%j/'))
+        if args.get_complete_cell and ids is not None:
+            starttime = datetime.datetime.strptime(
+                str(ids[i])[0:13], '%Y%m%d%H%M')
+            endtime = (
+                endtime.replace(hour=0, minute=0, second=0, microsecond=0) +
+                datetime.timedelta(days=2))
+
         data_output_path = (
             args.proc_trtbase+starttime.strftime('%Y-%m-%d')+'/TRTC_cell/')
         if not os.path.isdir(data_output_path):
             os.makedirs(data_output_path)
 
-        flist = get_trtfile_list(data_input_path, starttime, endtime)
+        flist = get_trtfile_list(args.raw_trtbase, starttime, endtime)
 
         if flist is None:
             continue
@@ -160,9 +188,11 @@ def main():
             Dvel_y = np.append(Dvel_y, Dvel_y_aux)
             cell_contour.extend(cell_contour_aux)
 
-        traj_ID_unique_list = np.unique(traj_ID)
-
-        print('Total Number of cells: '+str(traj_ID_unique_list.size))
+        if ids is None:
+            traj_ID_unique_list = np.unique(traj_ID)
+            print('Total Number of cells: '+str(traj_ID_unique_list.size))
+        else:
+            traj_ID_unique_list = [ids[i]]
 
         ncells = 0
         for traj_ID_unique in traj_ID_unique_list:
@@ -213,11 +243,13 @@ def main():
                 RANK_cell, Dvel_x_cell,
                 Dvel_y_cell, cell_contour_cell, fname)
 
-            print('Written individual TRT cell file '+fname)
-            ncells += 1
+            if fname is not None:
+                print('Written individual TRT cell file '+fname)
+                ncells += 1
 
-        print('Number of cells with '+str(args.nsteps_min) +
-              ' or more time steps: '+str(ncells))
+        if ids is None:
+            print('Number of cells with '+str(args.nsteps_min) +
+                  ' or more time steps: '+str(ncells))
 
 
 def _print_end_msg(text):

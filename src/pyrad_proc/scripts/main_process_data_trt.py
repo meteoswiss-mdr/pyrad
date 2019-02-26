@@ -26,7 +26,7 @@ import numpy as np
 from pyrad.flow.flow_control import main as pyrad_main
 from pyrad.io import get_fieldname_pyart, write_trt_cell_lightning
 from pyrad.io import read_profile_ts, read_histogram_ts, read_quantiles_ts
-from pyrad.io import read_trt_traj_data
+from pyrad.io import read_trt_traj_data, read_thundertracking_info
 from pyrad.graph import get_field_name, get_colobar_label
 from pyrad.graph import _plot_time_range
 
@@ -47,15 +47,25 @@ def main():
     parser.add_argument(
         'proc_cfgfile', type=str, help='name of main configuration file')
 
-    parser.add_argument(
-        'days', nargs='+', type=str,
-        help='Dates to process. Format YYYY-MM-DD')
-
     # keyword arguments
+    parser.add_argument(
+        '--days', type=str, default=None,
+        help='Dates to process. Format YYYY-MM-DD. Coma separated')
+
+    parser.add_argument(
+        '--info_file', type=str,
+        default='/store/msrad/radar/thundertracking/info/thundertracking_info.csv',
+        help='configuration file path')
+
     parser.add_argument(
         '--trtbase', type=str,
         default='/store/msrad/radar/trt/',
         help='name of folder containing the TRT cell data')
+
+    parser.add_argument(
+        '--postproc', type=int,
+        default=1,
+        help='If true the data will be post-processed')
 
     parser.add_argument(
         '--radarbase', type=str,
@@ -99,24 +109,45 @@ def main():
     cfgfile_proc = args.cfgpath+args.proc_cfgfile
     trajtype = 'trt'
 
-    time_dir_list = args.days
-    datatype_list = args.datatypes.split(',')
-    dataset_list = args.datasets.split(',')
+    if args.days is not None:
+        time_dir_list = args.days.split(',')
+    else:
+        ids, rank_max, nscans_total, trt_time_start, trt_time_end = (
+            read_thundertracking_info(args.info_file))
+        trt_times = np.append(trt_time_start, trt_time_end)
 
-    if np.size(datatype_list) != np.size(dataset_list):
-        warn(
-            str(np.size(datatype_list))+' datatypes but ' +
-            str(np.size(dataset_list)) +
-            ' dataset directories. Their number must be equal')
-        return
+        trt_dates = np.array([], dtype=datetime.date)
+        for trt_time in trt_times:
+            trt_dates = np.append(trt_dates, trt_time.date())
+        trt_dates = np.sort(np.unique(trt_dates))
+        time_dir_list = []
+        for trt_date in trt_dates:
+            time_dir_list.append(trt_date.strftime("%Y-%m-%d"))
+
+
+    if args.postproc:
+        datatype_list = args.datatypes.split(',')
+        dataset_list = args.datasets.split(',')
+
+        if np.size(datatype_list) != np.size(dataset_list):
+            warn(
+                str(np.size(datatype_list))+' datatypes but ' +
+                str(np.size(dataset_list)) +
+                ' dataset directories. Their number must be equal')
+            return
 
     # Find all TRT files in directory
     trt_list = []
-    for time_dir in time_dir_list:
-        trt_list.extend(glob.glob(
-            args.trtbase+time_dir+'/TRTC_cell_plots/All/*.trt'))
-        trt_list.extend(glob.glob(
-            args.trtbase+time_dir+'/TRTC_cell_plots/Some/*.trt'))
+    if args.days is not None:
+        for time_dir in time_dir_list:
+            trt_list.extend(glob.glob(
+                args.trtbase+time_dir+'/TRTC_cell_plots/All/*.trt'))
+            trt_list.extend(glob.glob(
+                args.trtbase+time_dir+'/TRTC_cell_plots/Some/*.trt'))
+    else:
+        for time_dir in time_dir_list:
+            trt_list.extend(glob.glob(
+                args.trtbase+time_dir+'/TRTC_cell/*.trt'))
 
     if len(trt_list) == 0:
         warn('No valid TRT files found in '+args.trtbase)
@@ -129,13 +160,16 @@ def main():
         print('processing TRT cell file '+fname)
         try:
             infostr = os.path.basename(fname).split('.')[0]
-#            pyrad_main(
-#                cfgfile_proc, trajfile=fname, infostr=infostr,
-#                trajtype=trajtype)
+            pyrad_main(
+                cfgfile_proc, trajfile=fname, infostr=infostr,
+                trajtype=trajtype)
             trt_cell_id_list.append(infostr)
             trt_file_list.append(fname)
         except ValueError:
             print(ValueError)
+
+    if not args.postproc:
+        return
 
     # plot time series and get altitude of graupel column
     if 'hydro' in datatype_list:
@@ -155,10 +189,12 @@ def main():
         time_dir = dt_cell.strftime("%Y-%m-%d")
         for j, datatype in enumerate(datatype_list):
             dataset = dataset_list[j]
-            if args.center:
+            if args.center == 1:
                 file_base2 = args.radarbase+time_dir+'/'+dataset+'_trt_center_traj/'
-            else:
+            elif args.center == 0:
                 file_base2 = args.radarbase+time_dir+'/'+dataset+'_trt_traj/'
+            elif args.center == 2:
+                file_base2 = args.radarbase+time_dir+'/trt_traj/'
 
             field_name = get_fieldname_pyart(datatype)
             field_dict = get_metadata(field_name)
@@ -166,9 +202,15 @@ def main():
                 field_dict, field_name)
 
             # plot time-height
-            flist = glob.glob(
-                file_base2+'PROFILE/*_'+trt_cell_id+'_rhi_profile_*_' +
-                datatype+'_hres'+str(int(args.hres))+'.csv')
+            if args.center == 2:
+                flist = glob.glob(
+                    file_base2+'PROFILE_'+dataset+'/*_'+trt_cell_id+'_rhi_profile_*_' +
+                    datatype+'_hres'+str(int(args.hres))+'.csv')
+            else:
+                flist = glob.glob(
+                    file_base2+'PROFILE/*_'+trt_cell_id+'_rhi_profile_*_' +
+                    datatype+'_hres'+str(int(args.hres))+'.csv')
+
 
             if not flist:
                 warn('No profile files found in '+file_base2 +
@@ -235,9 +277,14 @@ def main():
                     rm_hmax_list = np.ma.append(rm_hmax_list, hmax)
 
             # plot time-hist
-            flist = glob.glob(
-                file_base2+'HISTOGRAM/*_'+trt_cell_id+'_histogram_*_' +
-                datatype+'.csv')
+            if args.center == 2:
+                flist = glob.glob(
+                    file_base2+'HISTOGRAM_'+dataset+'/*_'+trt_cell_id+'_histogram_*_' +
+                    datatype+'.csv')
+            else:
+                flist = glob.glob(
+                    file_base2+'HISTOGRAM/*_'+trt_cell_id+'_histogram_*_' +
+                    datatype+'.csv')
 
             if not flist:
                 warn('No histogram files found in '+file_base2 +

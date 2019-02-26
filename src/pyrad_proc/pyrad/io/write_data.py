@@ -12,6 +12,7 @@ Functions for writing pyrad output data
     write_alarm_msg
     write_last_state
     write_smn
+    write_trt_info
     write_trt_cell_data
     write_trt_cell_scores
     write_trt_cell_lightning
@@ -295,6 +296,42 @@ def write_smn(datetime_vec, value_avg_vec, value_std_vec, fname):
     return fname
 
 
+def write_trt_info(id, max_rank, nscans, time_start, time_end,  fname):
+    """
+    writes TRT info of the thundertracking
+
+    Parameters
+    ----------
+    id, max_rank, nscans, time_start, time_end: array
+        the cell parameters
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    with open(fname, 'w', newline='') as csvfile:
+        fieldnames = [
+            'id', 'max_rank', 'nscans_Xband', 'time_start', 'time_end']
+        writer = csv.DictWriter(csvfile, fieldnames)
+        writer.writeheader()
+        for i, id_cell in enumerate(id):
+            writer.writerow({
+                'id': id_cell,
+                'max_rank': max_rank[i],
+                'nscans_Xband': nscans[i],
+                'time_start': time_start[i].strftime('%Y%m%d%H%M'),
+                'time_end': time_end[i].strftime('%Y%m%d%H%M')
+            })
+
+        csvfile.close()
+
+    return fname
+
+
 def write_trt_cell_data(
         traj_ID, yyyymmddHHMM, lon, lat, ell_L, ell_S, ell_or, area,
         vel_x, vel_y, det, RANKr, CG_n, CG_p, CG, CG_percent_p, ET45,
@@ -319,59 +356,63 @@ def write_trt_cell_data(
         the name of the file where data has written
 
     """
-    with open(fname, 'w', newline='') as csvfile:
-        fieldnames = [
-            'traj_ID', 'yyyymmddHHMM', 'lon', 'lat', 'ell_L', 'ell_S',
-            'ell_or', 'area', 'vel_x', 'vel_y', 'det', 'RANKr', 'CG-',
-            'CG+', 'CG', '%CG+', 'ET45', 'ET45m', 'ET15', 'ET15m',
-            'VIL', 'maxH', 'maxHm', 'POH', 'RANK', 'Dvel_x', 'Dvel_y',
-            'cell_contour_lon-lat']
-        writer = csv.DictWriter(csvfile, fieldnames)
-        writer.writeheader()
-        for i, traj_ID_el in enumerate(traj_ID):
-            cell_contour_aux = cell_contour[i]
-            npoints_contour = len(cell_contour_aux['lon'])
-            cell_contour_arr = np.empty(2*npoints_contour, dtype=float)
-            cell_contour_arr[0:-1:2] = cell_contour_aux['lon']
-            cell_contour_arr[1::2] = cell_contour_aux['lat']
-            cell_contour_str = str(cell_contour_arr[0])
-            for j in range(1, 2*npoints_contour):
-                cell_contour_str += ' '+str(cell_contour_arr[j])
+    try:
+        with open(fname, 'w', newline='') as csvfile:
+            fieldnames = [
+                'traj_ID', 'yyyymmddHHMM', 'lon', 'lat', 'ell_L', 'ell_S',
+                'ell_or', 'area', 'vel_x', 'vel_y', 'det', 'RANKr', 'CG-',
+                'CG+', 'CG', '%CG+', 'ET45', 'ET45m', 'ET15', 'ET15m',
+                'VIL', 'maxH', 'maxHm', 'POH', 'RANK', 'Dvel_x', 'Dvel_y',
+                'cell_contour_lon-lat']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writeheader()
+            for i, traj_ID_el in enumerate(traj_ID):
+                cell_contour_aux = cell_contour[i]
+                npoints_contour = len(cell_contour_aux['lon'])
+                cell_contour_arr = np.empty(2*npoints_contour, dtype=float)
+                cell_contour_arr[0:-1:2] = cell_contour_aux['lon']
+                cell_contour_arr[1::2] = cell_contour_aux['lat']
+                cell_contour_str = str(cell_contour_arr[0])
+                for j in range(1, 2*npoints_contour):
+                    cell_contour_str += ' '+str(cell_contour_arr[j])
 
-            writer.writerow({
-                'traj_ID': traj_ID_el,
-                'yyyymmddHHMM': yyyymmddHHMM[i].strftime('%Y%m%d%H%M'),
-                'lon': lon[i],
-                'lat': lat[i],
-                'ell_L': ell_L[i],
-                'ell_S': ell_S[i],
-                'ell_or': ell_or[i],
-                'area': area[i],
-                'vel_x': vel_x[i],
-                'vel_y': vel_y[i],
-                'det': det[i],
-                'RANKr': RANKr[i],
-                'CG-': CG_n[i],
-                'CG+': CG_p[i],
-                'CG': CG[i],
-                '%CG+': CG_percent_p[i],
-                'ET45': ET45[i],
-                'ET45m': ET45m[i],
-                'ET15': ET15[i],
-                'ET15m': ET15m[i],
-                'VIL': VIL[i],
-                'maxH': maxH[i],
-                'maxHm': maxHm[i],
-                'POH': POH[i],
-                'RANK': RANK[i],
-                'Dvel_x': Dvel_x[i],
-                'Dvel_y': Dvel_y[i],
-                'cell_contour_lon-lat': cell_contour_str
-            })
+                writer.writerow({
+                    'traj_ID': traj_ID_el,
+                    'yyyymmddHHMM': yyyymmddHHMM[i].strftime('%Y%m%d%H%M'),
+                    'lon': lon[i],
+                    'lat': lat[i],
+                    'ell_L': ell_L[i],
+                    'ell_S': ell_S[i],
+                    'ell_or': ell_or[i],
+                    'area': area[i],
+                    'vel_x': vel_x[i],
+                    'vel_y': vel_y[i],
+                    'det': det[i],
+                    'RANKr': RANKr[i],
+                    'CG-': CG_n[i],
+                    'CG+': CG_p[i],
+                    'CG': CG[i],
+                    '%CG+': CG_percent_p[i],
+                    'ET45': ET45[i],
+                    'ET45m': ET45m[i],
+                    'ET15': ET15[i],
+                    'ET15m': ET15m[i],
+                    'VIL': VIL[i],
+                    'maxH': maxH[i],
+                    'maxHm': maxHm[i],
+                    'POH': POH[i],
+                    'RANK': RANK[i],
+                    'Dvel_x': Dvel_x[i],
+                    'Dvel_y': Dvel_y[i],
+                    'cell_contour_lon-lat': cell_contour_str
+                })
 
-        csvfile.close()
+            csvfile.close()
 
-    return fname
+            return fname
+    except EnvironmentError:
+        warn('Unable to write on file '+fname)
+        return None
 
 
 def write_trt_cell_scores(

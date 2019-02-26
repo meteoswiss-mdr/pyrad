@@ -7,6 +7,9 @@ Functions for reading data from other sensors
 .. autosummary::
     :toctree: generated/
 
+    read_thundertracking_info
+    read_trt_info_all
+    read_trt_info
     read_trt_scores
     read_trt_cell_lightning
     read_trt_data
@@ -24,6 +27,7 @@ Functions for reading data from other sensors
 """
 
 import os
+import glob
 import datetime
 import csv
 from warnings import warn
@@ -33,6 +37,209 @@ import re
 import numpy as np
 
 from pyart.config import get_fillvalue
+
+
+def read_thundertracking_info(fname):
+    """
+    Reads the TRT info used for thundertracking
+
+    Parameters
+    ----------
+    fname : str
+        Name of the file containing the info
+
+    Returns
+    -------
+    A tupple containing the read values. None otherwise. The read values are
+    id, max_rank, nscans_Xband, time_start, time_end
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                (row for row in csvfile if not row.startswith('#')),
+                delimiter=',')
+            nrows = sum(1 for row in reader)
+
+            if nrows == 0:
+                warn('No data in file '+fname)
+                return None, None, None, None, None
+
+            id = np.empty(nrows, dtype=int)
+            max_rank = np.empty(nrows, dtype=float)
+            nscans_Xband = np.empty(nrows, dtype=int)
+            time_start = np.empty(nrows, dtype=datetime.datetime)
+            time_end = np.empty(nrows, dtype=datetime.datetime)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                (row for row in csvfile if not row.startswith('#')),
+                delimiter=',')
+            for i, row in enumerate(reader):
+                id[i] = int(row['id'])
+                max_rank[i] = float(row['max_rank'])
+                nscans_Xband[i] = int(row['nscans_Xband'])
+                time_start[i] = datetime.datetime.strptime(
+                    row['time_start'], '%Y%m%d%H%M')
+                time_end[i] = datetime.datetime.strptime(
+                    row['time_end'], '%Y%m%d%H%M')
+
+            csvfile.close()
+
+            return id, max_rank, nscans_Xband, time_start, time_end
+
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return None, None, None, None, None
+
+def read_trt_info_all(dir):
+    """
+    Reads all the TRT info files
+
+    Parameters
+    ----------
+    dir : str
+        directory where the files are stored
+
+    Returns
+    -------
+    A tupple containing the read values. None otherwise. The read values are
+    trt_time, id, rank, nscans, azi, rng, lat, lon, ell_l, ell_s, ell_or,
+    vel_x, vel_y, det
+
+    """
+    file_list = glob.glob(dir+'*.txt')
+    if not file_list:
+        warn('No info files in '+dir)
+        return None
+
+    trt_time = np.array([], dtype=datetime.datetime)
+    id = np.array([], dtype=int)
+    rank = np.array([])
+    nscans = np.array([], dtype=int)
+    azi = np.array([])
+    rng = np.array([])
+    lat = np.array([])
+    lon = np.array([])
+    ell_l = np.array([])
+    ell_s = np.array([])
+    ell_or = np.array([])
+    vel_x = np.array([])
+    vel_y = np.array([])
+    det = np.array([])
+
+    for file in file_list:
+        (trt_time_aux, id_aux, rank_aux, nscans_aux, azi_aux, rng_aux,
+         lat_aux, lon_aux, ell_l_aux, ell_s_aux, ell_or_aux, vel_x_aux,
+         vel_y_aux, det_aux) = read_trt_info(file)
+
+        if trt_time_aux is None:
+            continue
+
+        trt_time = np.append(trt_time, trt_time_aux)
+        id = np.append(id, id_aux)
+        rank = np.append(rank, rank_aux)
+        nscans = np.append(nscans, nscans_aux)
+        azi = np.append(azi, azi_aux)
+        rng = np.append(rng, rng_aux)
+        lat = np.append(lat, lat_aux)
+        lon = np.append(lon, lon_aux)
+        ell_l = np.append(ell_l, ell_l_aux)
+        ell_s = np.append(ell_s, ell_s_aux)
+        ell_or = np.append(ell_or, ell_or_aux)
+        vel_x = np.append(vel_x, vel_x_aux)
+        vel_y = np.append(vel_y, vel_y_aux)
+        det = np.append(det, det_aux)
+
+    return (
+        trt_time, id, rank, nscans, azi, rng, lat, lon, ell_l, ell_s, ell_or,
+        vel_x, vel_y, det)
+
+
+def read_trt_info(fname):
+    """
+    Reads the TRT info used for thundertracking and contained in a text file.
+
+    Parameters
+    ----------
+    fname : str
+        path of the TRT info file
+
+    Returns
+    -------
+    A tupple containing the read values. None otherwise. The read values are
+    trt_time, id, rank, nscans, azi, rng, lat, lon, ell_l, ell_s, ell_or,
+    vel_x, vel_y, det
+
+    """
+    try:
+
+        with open(fname, 'r', newline='') as txtfile:
+            # read file contents
+            id = np.array([], dtype=int)
+            azi = np.array([])
+            rng = np.array([])
+            rank = np.array([])
+            trt_time = np.array([], dtype=datetime.datetime)
+            vel_x = np.array([])
+            vel_y = np.array([])
+            ell_l = np.array([])
+            ell_s = np.array([])
+            ell_or = np.array([])
+            det = np.array([])
+            lat = np.array([])
+            lon = np.array([])
+            nscans = np.array([], dtype=int)
+
+            nscans_aux = -1
+            while 0 == 0:
+                line = txtfile.readline()
+                if not line:
+                    break
+                fields = line.split()
+
+                if fields[2] == ':TRT:':
+                    if nscans_aux != -1:
+                        nscans = np.append(nscans, nscans_aux)
+                    id = np.append(id, int(fields[3].split('=')[1]))
+                    azi = np.append(azi, float(fields[4].split('=')[1]))
+                    rng = np.append(rng, float(fields[5].split('=')[1]))
+                    rank = np.append(rank, float(fields[6].split('=')[1]))
+                    trt_time = np.append(
+                        trt_time,
+                        datetime.datetime.strptime(
+                            fields[7].split('=')[1], '%Y%m%d%H%M'))
+                    vel_x = np.append(vel_x, float(fields[8].split('=')[1]))
+                    vel_y = np.append(vel_y, float(fields[9].split('=')[1]))
+                    ell_l = np.append(ell_l, float(fields[10].split('=')[1]))
+                    ell_s = np.append(ell_s, float(fields[11].split('=')[1]))
+                    ell_or = np.append(
+                        ell_or, float(fields[12].split('=')[1]))
+                    det = np.append(det, float(fields[13].split('=')[1]))
+                    if np.size(fields) == 16:
+                        lat = np.append(lat, float(fields[14].split('=')[1]))
+                        lon = np.append(lon, float(fields[15].split('=')[1]))
+                    else:
+                        lat = -9999.
+                        lon = -9999.
+                    nscans_aux = 0
+                elif fields[2] == ':START':
+                    nscans_aux += 1
+
+            nscans = np.append(nscans, nscans_aux)
+            return (
+                trt_time, id, rank, nscans, azi, rng, lat, lon, ell_l, ell_s,
+                ell_or, vel_x, vel_y, det)
+
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return (
+            None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None)
 
 
 def read_trt_scores(fname):

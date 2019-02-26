@@ -35,6 +35,8 @@ do
     shift # past argument or value
 done
 
+echo "Fetching TRT data from repository"
+
 nday=${#day_vec[@]}
 for ((iday=0; iday<${nday}; iday++)); do
     yearl=$(date --date "${day_vec[${iday}]}" +"%Y")
