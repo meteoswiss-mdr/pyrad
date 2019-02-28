@@ -811,6 +811,8 @@ def get_fieldname_pyart(datatype):
 
     elif datatype == 'RhoHV':
         field_name = 'cross_correlation_ratio'
+    elif datatype == 'RhoHVu':
+        field_name = 'unfiltered_cross_correlation_ratio'
     elif datatype == 'uRhoHV':
         field_name = 'uncorrected_cross_correlation_ratio'
     elif datatype == 'RhoHVc':
@@ -824,6 +826,8 @@ def get_fieldname_pyart(datatype):
 
     elif datatype == 'PhiDP':
         field_name = 'differential_phase'
+    elif datatype == 'uPhiDPu':
+        field_name = 'uncorrected_unfiltered_differential_phase'
     elif datatype == 'uPhiDP':
         field_name = 'uncorrected_differential_phase'
     elif datatype == 'PhiDPc':
@@ -839,6 +843,8 @@ def get_fieldname_pyart(datatype):
 
     elif datatype == 'V':
         field_name = 'velocity'
+    elif datatype == 'Vu':
+        field_name = 'unfiltered_velocity'
     elif datatype == 'dealV':
         field_name = 'dealiased_velocity'
     elif datatype == 'Vc':
@@ -853,6 +859,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'velocity_difference'
     elif datatype == 'W':
         field_name = 'spectrum_width'
+    elif datatype == 'Wu':
+        field_name = 'unfiltered_spectrum_width'
     elif datatype == 'Wc':
         field_name = 'corrected_spectrum_width'
     elif datatype == 'wind_vel_h_az':
@@ -1225,7 +1233,7 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
     return sorted(filelist)
 
 
-def get_trtfile_list(datapath, starttime, endtime):
+def get_trtfile_list(basepath, starttime, endtime):
     """
     gets the list of TRT files with a time period
 
@@ -1244,20 +1252,28 @@ def get_trtfile_list(datapath, starttime, endtime):
         list of files within the time period
 
     """
-    dayfilelist = glob.glob(datapath+'CZC*0T.trt')
-    if not dayfilelist:
-        warn('No TRT files in '+datapath)
-        return None
+    startdate = starttime.date()
+    enddate = endtime.date()
+    ndays = int((enddate-startdate).days)+1
+
+    t_filelist = []
+    for i in range(ndays):
+        daydir = (startdate+datetime.timedelta(days=i)).strftime('%y%j')
+        datapath = basepath+daydir+'/TRTC'+daydir+'/'
+        dayfilelist = glob.glob(datapath+'CZC*0T.trt')
+        if not dayfilelist:
+            warn('No TRT files in '+datapath)
+            continue
+        t_filelist.extend(dayfilelist)
 
     filelist = []
-    for filename in dayfilelist:
+    for filename in t_filelist:
         bfile = os.path.basename(filename)
         datetimestr = bfile[3:12]
         fdatetime = datetime.datetime.strptime(datetimestr, '%y%j%H%M')
         if (fdatetime >= starttime) and (fdatetime <= endtime):
-            pass
-            # filelist.append(filename)
-        filelist.append(filename)
+            filelist.append(filename)
+        # filelist.append(filename)
 
     return sorted(filelist)
 
