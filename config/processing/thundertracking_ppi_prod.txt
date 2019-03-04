@@ -1,0 +1,286 @@
+#
+# Product generation configuration for thunderstorm tracking
+#
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 17
+    l0:dBZ
+    l0:ZDR
+    l0:RhoHV
+    l0:KDP
+    l0:PhiDP
+    l0:uPhiDP
+    l0:V
+    l0:W
+    l0:TEMP
+    l0:echoID
+    l1:echoFilter
+    l3:echoFilter_Ah
+    l2:outlierFilter
+    l2:Att_ZPhi
+    l3:hydroclass
+    l4:rainrate
+    l5:savevol
+
+
+# ==========================================================================================
+#                 raw data processing
+# ==========================================================================================
+dBZ STRUCT 3
+   type     STRING RAW
+   datatype STRING dBZ
+   products STRUCT 1
+      PPI STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING dBZ
+
+ZDR STRUCT 3
+   type     STRING RAW
+   datatype STRING ZDR
+   products STRUCT 1
+      PPI STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING ZDR
+
+RhoHV STRUCT 3
+   type     STRING RAW
+   datatype STRING RhoHV
+   products STRUCT 1
+      PPI STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING RhoHV
+
+KDP STRUCT 3
+   type     STRING RAW
+   datatype STRING KDP
+   products STRUCT 1
+      PPI STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING KDP
+
+PhiDP STRUCT 3
+   type     STRING RAW
+   datatype STRING PhiDP
+   products STRUCT 1
+      PPI STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING PhiDP
+
+uPhiDP STRUCT 3
+   type     STRING RAW
+   datatype STRING uPhiDP
+   products STRUCT 1
+      PPI STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING uPhiDP
+
+V STRUCT 3
+   type     STRING RAW
+   datatype STRING V
+   products STRUCT 1
+      PPI STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING V
+
+W STRUCT 3
+   type     STRING RAW
+   datatype STRING W
+   products STRUCT 1
+      PPI STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING W
+
+
+
+# ==========================================================================================
+#               COSMO data
+# ==========================================================================================
+TEMP STRUCT 7
+    type STRING COSMO_LOOKUP
+    datatype STRARR 1
+        dBZ
+    cosmo_type STRING TEMP
+    regular_grid INT 0
+    lookup_table INT 0
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+      PPI STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING TEMP
+
+
+# ==========================================================================================
+#                 echo identification
+# ==========================================================================================
+echoID STRUCT 4
+    type STRING SAN
+    datatype STRARR 4
+        dBZ
+        ZDR
+        uPhiDP
+        RhoHV
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+      PPI STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING echoID
+
+
+# ==========================================================================================
+#                 clutter and noise suppression
+# ==========================================================================================
+# echo type 3 : precip, 2 : clutter, 1 : noise
+echoFilter STRUCT 5
+    type STRING ECHO_FILTER
+    datatype STRARR 8
+        PROC:echoID
+        dBZ
+        ZDR
+        RhoHV
+        PhiDP
+        KDP
+        V
+        W
+    echo_type INT 3
+    MAKE_GLOBAL INT 1
+    products STRUCT 4
+      PPI_RhoHVc STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING RhoHVc
+      PPI_Wc STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING Wc
+      PPI_KDPc STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING KDPc
+      PPI_PhiDPc STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING PhiDPc
+
+echoFilter_Ah STRUCT 4
+    type STRING ECHO_FILTER
+    datatype STRARR 2
+        PROC:echoID
+        PROC:Ah
+    echo_type INT 3
+    MAKE_GLOBAL INT 1
+
+
+# ==========================================================================================
+#                 outlier filter
+# ==========================================================================================
+outlierFilter STRUCT 9
+    type STRING OUTLIER_FILTER
+    datatype STRARR 1
+        PROC:Vc
+    threshold FLOAT 10.
+    nb INT 2
+    nb_min INT 3
+    percentile_min FLOAT 5.
+    percentile_max float 95.
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+      PPI STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING Vc
+
+
+# ==========================================================================================
+#                 Attenuation
+# ==========================================================================================
+Att_ZPhi STRUCT 6
+    type STRING ATTENUATION
+    datatype STRARR 4
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:PhiDPc
+        PROC:TEMP
+    ATT_METHOD STRING ZPhi
+    fzl FLOAT 2000.
+    MAKE_GLOBAL INT 1
+    products STRUCT 2
+      PPI_dBZc STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING dBZc
+      PPI_ZDRc STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING ZDRc
+
+
+# ==========================================================================================
+#                 hydrometeor classification products
+# ==========================================================================================
+hydroclass STRUCT 7
+    type STRING HYDROCLASS
+    datatype STRARR 5
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:RhoHVc
+        PROC:KDPc
+        PROC:TEMP
+    HYDRO_METHOD STRING SEMISUPERVISED
+    RADARCENTROIDS STRING DX50
+    vectorize INT 1
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+      PPI STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING hydro
+
+
+# ==========================================================================================
+#               rainfall rate
+# ==========================================================================================
+rainrate STRUCT 5
+    type STRING RAINRATE
+    datatype STRARR 3
+        PROC:dBZc
+        PROC:Ahc
+        PROC:hydro
+    RR_METHOD STRING hydro
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+      PPI STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING RR
+
+# ==========================================================================================
+#               savevol
+# ==========================================================================================
+savevol STRUCT 3
+    type STRING NCVOL
+    datatype STRARR 1
+        dBZ
+    products STRUCT 1
+      PPI STRUCT 2
+         type  STRING SAVEALL
+         datatypes STRARR 10
+            TEMP
+            dBZc
+            ZDRc
+            RhoHVc
+            KDPc
+            PhiDPc
+            Vc
+            Wc
+            hydro
+            RR

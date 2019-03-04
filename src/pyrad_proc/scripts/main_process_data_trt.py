@@ -58,6 +58,16 @@ def main():
         help='configuration file path')
 
     parser.add_argument(
+        '--years', type=str,
+        default=None,
+        help='Years to process. If None all years in file will be processed')
+
+    parser.add_argument(
+        '--max_rank', type=float,
+        default=None,
+        help='Max rank to process')
+
+    parser.add_argument(
         '--trtbase', type=str,
         default='/store/msrad/radar/trt/',
         help='name of folder containing the TRT cell data')
@@ -69,7 +79,7 @@ def main():
 
     parser.add_argument(
         '--radarbase', type=str,
-        default='/store/msrad/radar/pyrad_products/rad4alp_hydro_PHA/',
+        default='/store/msrad/radar/pyrad_products/thundertracking/',
         help='name of folder containing the radar data')
 
     parser.add_argument(
@@ -79,19 +89,19 @@ def main():
 
     parser.add_argument(
         '--datatypes', type=str,
-        default='hydro,KDPc,dBZc,RhoHVc,TEMP,ZDRc',
+        default='RR,hydro,KDPc,dBZc,RhoHVc,TEMP,ZDRc',
         help='Name of the polarimetric moments to process. Coma separated')
 
     parser.add_argument(
         '--datasets', type=str,
-        default='hydroclass,KDPc,reflectivity,RhoHVc,temperature,ZDRc',
+        default='RR,hydro,KDPc,dBZc,RhoHVc,TEMP,ZDRc',
         help='Name of the directory containing the datasets')
 
     parser.add_argument(
         '--hres', type=float, default=250., help='Height resolution')
 
     parser.add_argument(
-        '--center', type=int, default=0,
+        '--path_structure', type=int, default=2,
         help='If true the data is at the cell center')
 
     args = parser.parse_args()
@@ -112,8 +122,13 @@ def main():
     if args.days is not None:
         time_dir_list = args.days.split(',')
     else:
-        ids, rank_max, nscans_total, trt_time_start, trt_time_end = (
-            read_thundertracking_info(args.info_file))
+        # get the years to process
+        years = None
+        if args.years is not None:
+            years = list(map(int, args.years.split(',')))
+
+        _, _, _, trt_time_start, trt_time_end = read_thundertracking_info(
+            args.info_file)
         trt_times = np.append(trt_time_start, trt_time_end)
 
         trt_dates = np.array([], dtype=datetime.date)
@@ -122,6 +137,9 @@ def main():
         trt_dates = np.sort(np.unique(trt_dates))
         time_dir_list = []
         for trt_date in trt_dates:
+            if years is not None:
+                if trt_date.year not in years:
+                    continue
             time_dir_list.append(trt_date.strftime("%Y-%m-%d"))
 
 
@@ -189,11 +207,11 @@ def main():
         time_dir = dt_cell.strftime("%Y-%m-%d")
         for j, datatype in enumerate(datatype_list):
             dataset = dataset_list[j]
-            if args.center == 1:
+            if args.path_structure == 1:
                 file_base2 = args.radarbase+time_dir+'/'+dataset+'_trt_center_traj/'
-            elif args.center == 0:
+            elif args.path_structure == 0:
                 file_base2 = args.radarbase+time_dir+'/'+dataset+'_trt_traj/'
-            elif args.center == 2:
+            elif args.path_structure == 2:
                 file_base2 = args.radarbase+time_dir+'/trt_traj/'
 
             field_name = get_fieldname_pyart(datatype)
@@ -202,7 +220,7 @@ def main():
                 field_dict, field_name)
 
             # plot time-height
-            if args.center == 2:
+            if args.path_structure == 2:
                 flist = glob.glob(
                     file_base2+'PROFILE_'+dataset+'/*_'+trt_cell_id+'_rhi_profile_*_' +
                     datatype+'_hres'+str(int(args.hres))+'.csv')
@@ -217,7 +235,7 @@ def main():
                      'PROFILE/ for TRT cell ' +
                      trt_cell_id+' with resolution '+str(args.hres))
             else:
-                if args.center:
+                if args.path_structure == 1:
                     labels = ['Mean', 'Min', 'Max']
                 else:
                     labels = [
@@ -235,7 +253,7 @@ def main():
                         labels = ['Mean', 'Min', 'Max']
 
                 tbin_edges, hbin_edges, _, data_ma, start_time = (
-                    read_profile_ts(flist, labels, hres=args.hres))
+                    read_profile_ts(flist, labels, hres=args.hres, t_res=None))
 
                 basepath_out = os.path.dirname(flist[0])
                 fname = (
@@ -277,7 +295,7 @@ def main():
                     rm_hmax_list = np.ma.append(rm_hmax_list, hmax)
 
             # plot time-hist
-            if args.center == 2:
+            if args.path_structure == 2:
                 flist = glob.glob(
                     file_base2+'HISTOGRAM_'+dataset+'/*_'+trt_cell_id+'_histogram_*_' +
                     datatype+'.csv')
@@ -291,7 +309,7 @@ def main():
                      'HISTOGRAM/ for TRT cell '+trt_cell_id)
             else:
                 tbin_edges, bin_edges, data_ma, start_time = read_histogram_ts(
-                    flist, datatype)
+                    flist, datatype, t_res=None)
 
                 basepath_out = os.path.dirname(flist[0])
                 fname = (
@@ -321,7 +339,7 @@ def main():
                 continue
 
             tbin_edges, qbin_edges, data_ma, start_time = read_quantiles_ts(
-                flist, step=5., qmin=0., qmax=100.)
+                flist, step=5., qmin=0., qmax=100., t_res=None)
 
             basepath_out = os.path.dirname(flist[0])
             fname = (

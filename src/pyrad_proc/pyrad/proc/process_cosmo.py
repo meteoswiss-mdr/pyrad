@@ -19,6 +19,7 @@ Functions to manage COSMO data
 from copy import deepcopy
 from warnings import warn
 import glob
+import os
 
 import numpy as np
 from netCDF4 import num2date
@@ -117,11 +118,16 @@ def process_cosmo(procstatus, dscfg, radar_list=None):
     if fname is None:
         return None, None
 
+    model = os.path.basename(fname)[0:7]
+    if model not in ('cosmo-1', 'cosmo-2', 'cosmo-7'):
+        warn('Unknown NWP model '+model)
+        return None, None
+
     if keep_in_memory:
         if dscfg['initialized'] == 0:
             cosmo_coord = read_cosmo_coord(
-                dscfg['cosmopath'][ind_rad] +
-                'rad2cosmo1/cosmo-1_MDR_3D_const.nc', zmin=zmin)
+                dscfg['cosmopath'][ind_rad]+'rad2cosmo/'+model +
+                '_MDR_3D_const.nc', zmin=zmin)
             dscfg['global_data'] = {
                 'cosmo_fname': None,
                 'cosmo_data': None,
@@ -149,8 +155,8 @@ def process_cosmo(procstatus, dscfg, radar_list=None):
             cosmo_data = dscfg['global_data']['cosmo_data']
     else:
         cosmo_coord = read_cosmo_coord(
-            dscfg['cosmopath'][ind_rad]+'rad2cosmo1/cosmo-1_MDR_3D_const.nc',
-            zmin=zmin)
+            dscfg['cosmopath'][ind_rad]+'rad2cosmo/'+model +
+            '_MDR_3D_const.nc', zmin=zmin)
 
         # debugging
         # start_time2 = time.time()
@@ -414,24 +420,30 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
     if fname is None:
         return None, None
 
+    model = os.path.basename(fname)[0:7]
+    if model not in ('cosmo-1', 'cosmo-2', 'cosmo-7'):
+        warn('Unknown NWP model '+model)
+        return None, None
+
     if dscfg['initialized'] == 0:
         if lookup_table:
-            savedir = dscfg['cosmopath'][ind_rad]+'rad2cosmo1/'
+            savedir = dscfg['cosmopath'][ind_rad]+'rad2cosmo/'
             fname_ind = 'rad2cosmo_cosmo_index_'+dscfg['procname']+'.nc'
             fname_ind2 = glob.glob(savedir+fname_ind)
             if not fname_ind2:
                 warn('File '+savedir+fname_ind+' not found')
                 return None, None
-            else:
-                cosmo_radar = pyart.io.read_cfradial(fname_ind2[0])
+            cosmo_radar = pyart.io.read_cfradial(fname_ind2[0])
         else:
             cosmo_coord = read_cosmo_coord(
-                dscfg['cosmopath'][ind_rad] +
-                'rad2cosmo1/cosmo-1_MDR_3D_const.nc', zmin=zmin)
+                dscfg['cosmopath'][ind_rad]+'rad2cosmo/'+model +
+                '_MDR_3D_const.nc', zmin=zmin)
+            print('COSMO coordinates files read')
             cosmo_ind_field = cosmo2radar_coord(radar, cosmo_coord)
             cosmo_radar = deepcopy(radar)
             cosmo_radar.fields = dict()
             cosmo_radar.add_field('cosmo_index', cosmo_ind_field)
+            print('COSMO index field added')
 
         dscfg['global_data'] = {
             'cosmo_fname': None,
@@ -575,14 +587,13 @@ def process_hzt_lookup_table(procstatus, dscfg, radar_list=None):
 
     if dscfg['initialized'] == 0:
         if lookup_table:
-            savedir = dscfg['cosmopath'][ind_rad]+'rad2cosmo1/'
+            savedir = dscfg['cosmopath'][ind_rad]+'rad2cosmo/'
             fname_ind = 'rad2cosmo_hzt_index_'+dscfg['procname']+'.nc'
             fname_ind2 = glob.glob(savedir+fname_ind)
             if not fname_ind2:
                 warn('File '+savedir+fname_ind+' not found')
                 return None, None
-            else:
-                hzt_radar = pyart.io.read_cfradial(fname_ind2[0])
+            hzt_radar = pyart.io.read_cfradial(fname_ind2[0])
         else:
             hzt_data = read_hzt_data(fname)
             if hzt_data is None:
@@ -683,6 +694,8 @@ def process_cosmo_coord(procstatus, dscfg, radar_list=None):
             arbitrary data type
         cosmopath : string. General keyword
             path where to store the look up table
+        model : string. Dataset keyword
+            The COSMO model to use. Can be cosmo-1, cosmo-2, cosmo-7
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -710,8 +723,13 @@ def process_cosmo_coord(procstatus, dscfg, radar_list=None):
         return None, None
     radar = radar_list[ind_rad]
 
+    model = dscfg.get('model', 'cosmo-1')
+    if model not in ('cosmo-1', 'cosmo-2', 'cosmo-7'):
+        warn('Unknown NWP model '+model)
+        return None, None
+
     cosmo_coord = read_cosmo_coord(
-        dscfg['cosmopath'][ind_rad]+'rad2cosmo1/cosmo-1_MDR_3D_const.nc',
+        dscfg['cosmopath'][ind_rad]+'rad2cosmo/'+model+'_MDR_3D_const.nc',
         zmin=None)
 
     if cosmo_coord is None:

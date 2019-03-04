@@ -1572,23 +1572,27 @@ def find_raw_cosmo_file(voltime, datatype, cfg, ind_rad=0):
 
     # look for cosmo file
     found = False
-    nruns_to_check = int((cfg['CosmoForecasted']-1)/cfg['CosmoRunFreq'])
+    nruns_to_check = int(cfg['CosmoForecasted']/cfg['CosmoRunFreq'])
     for i in range(nruns_to_check):
         runtime = runtime0-datetime.timedelta(hours=i * cfg['CosmoRunFreq'])
         runtimestr = runtime.strftime('%Y%m%d%H')
 
         daydir = runtime.strftime('%Y-%m-%d')
-        datapath = cfg['cosmopath'][ind_rad]+datatype+'/raw1/'+daydir+'/'
-        if datatype == 'TEMP':
-            search_name = (datapath+'cosmo-1_MDR_3D_'+runtimestr+'.nc')
-        elif datatype == 'WIND':
-            search_name = (datapath+'cosmo-1_MDR_3DWIND_'+runtimestr+'.nc')
-        else:
-            warn('Unable to get COSMO '+datatype+'. Unknown variable')
-        print('Looking for file: '+search_name)
-        fname = glob.glob(search_name)
-        if fname:
-            found = True
+        datapath = cfg['cosmopath'][ind_rad]+datatype+'/raw/'+daydir+'/'
+        for model in ('cosmo-1', 'cosmo-2', 'cosmo-7'):
+            if datatype == 'TEMP':
+                search_name = (datapath+model+'_MDR_3D_'+runtimestr+'.nc')
+            elif datatype == 'WIND':
+                search_name = (datapath+model+'_MDR_3DWIND_'+runtimestr+'.nc')
+            else:
+                warn('Unable to get COSMO '+datatype+'. Unknown variable')
+            print('Looking for file: '+search_name)
+            fname = glob.glob(search_name)
+            if fname:
+                found = True
+                break
+
+        if found:
             break
 
     if not found:

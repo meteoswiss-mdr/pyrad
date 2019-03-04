@@ -1,0 +1,46 @@
+# ---------------------------------
+# Configuration file to display the Thunderstorm tracking data
+#  THUNDERTRACKING
+# ---------------------------------
+
+# Name of this configuration:
+# Will be used in product generation save path
+name STRING thundertracking
+
+# ---------------------------------------------------------
+#  Raw data pathes
+# ---------------------------------------------------------
+
+# Base path of the raw data.
+# Note: Must have a trailing '/'
+# ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
+datapath STRING /store/msrad/radar/DX50/rawdata/
+
+# Base path for cosmo data
+cosmopath STRING /store/msrad/cosmo/
+
+# Loading of saved datasets
+loadbasepath STRING /store/msrad/radar/pyrad_products/
+loadname STRING thundertracking
+
+
+# --------------------------------------------
+# Output data
+# --------------------------------------------
+saveimgbasepath STRING /store/msrad/radar/pyrad_products/
+imgformat       STRING png
+
+# --------------------------------------------------------
+# configuration files pathes
+# --------------------------------------------------------
+# Base path of configuration files
+configpath STRING $HOME/pyrad/config/
+
+# Configuration of the radar location and approach direction
+locationConfigFile STRING $HOME/pyrad/config/processing/thundertracking_rhi_loc.txt
+
+# Configuration of the product generation
+productConfigFile STRING $HOME/pyrad/config/processing/thundertracking_rhi_prod.txt
+
+# State after last run
+# lastStateFile STRING $HOME/postproc_pyrad/thundertracking_postproc_lastState.txt

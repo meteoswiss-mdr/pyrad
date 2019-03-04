@@ -1,0 +1,39 @@
+# TODO: accept also PPI data!
+# Configuration for Thundertracking tests at Magadino
+
+# Radar Name
+RadarName STRING DX50
+
+# Names of the radar scans in the specified sector
+# NOTE: Must have a trailing '/'
+ScanList STRARR 3
+    ThunderTracking_00_up.ele/
+    ThunderTracking_01_dw.ele/
+    ThunderTracking_02_up.ele/
+
+# Repetition time of the scans [min]
+ScanPeriod FLOAT 1.2
+
+# Frequency of cosmo run [h]
+CosmoRunFreq INT 1
+
+# hours forecasted in cosmo run [h]
+CosmoForecasted INT 1
+
+# Image config
+ppiImageConfig STRUCT 6
+   xsize      FLOAT   10.   # image size [inches] (default dots per inch (dpi):72)
+   ysize      FLOAT   8.    # image size [inches] (default dots per inch (dpi):72)
+   xmin       FLOAT -60.0   # Min distance on horizontal axis [km]
+   xmax       FLOAT  60.0   # Max distance on horizontal axis [km]
+   ymin       FLOAT -60.0   # Min distance on vertical axis [km]
+   ymax       FLOAT  60.0   # Max distance on vertical axis [km]
+
+rhiImageConfig STRUCT 6
+   xsize      FLOAT   10.    # image size [inches]
+   ysize      FLOAT   5.     # image size [inches]
+   xmin       FLOAT -60.0   # Min distance on horizontal axis [km]
+   xmax       FLOAT  60.0   # Max distance on horizontal axis [km]
+   ymin       FLOAT   0.0   # Min distance on vertical axis [km]
+   ymax       FLOAT  15.0   # Max distance on vertical axis [km]
+

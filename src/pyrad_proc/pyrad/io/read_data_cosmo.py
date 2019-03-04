@@ -87,8 +87,13 @@ def cosmo2radar_data(radar, cosmo_coord, cosmo_data, time_index=0,
                 time_index, ind_zmin:ind_zmax+1, ind_ymin:ind_ymax+1,
                 ind_xmin:ind_xmax+1].flatten()
             # find interpolation function
+            tree_options = {
+                'compact_nodes': False,
+                'balanced_tree': False
+            }
             interp_func = NearestNDInterpolator(
-                (z_cosmo, y_cosmo, x_cosmo), values)
+                (z_cosmo, y_cosmo, x_cosmo), values,
+                tree_options=tree_options)
 
             del values
 
@@ -150,7 +155,12 @@ def cosmo2radar_coord(radar, cosmo_coord, slice_xy=True, slice_z=False,
          x_radar, y_radar, z_radar, cosmo_coord, slice_xy=slice_xy,
          slice_z=slice_z)
 
-    tree = cKDTree(np.transpose((z_cosmo, y_cosmo, x_cosmo)))
+    print('Generating tree')
+    # default scipy compact_nodes and balanced_tree = True
+    tree = cKDTree(
+        np.transpose((z_cosmo, y_cosmo, x_cosmo)), compact_nodes=False,
+        balanced_tree=False)
+    print('Tree generated')
     _, ind_vec = tree.query(np.transpose(
         (z_radar.flatten(), y_radar.flatten(), x_radar.flatten())), k=1)
 

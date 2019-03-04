@@ -103,7 +103,10 @@ def read_profile_ts(fname_list, labels, hres=None, label_nr=0, t_res=300.):
         dt_s[j] = (dt-datetime_arr[0]).total_seconds()
 
     if t_res is None:
-        t_res = np.median(dt_s[1:]-dt_s[:-1])
+        if dt_s.size > 1:
+            t_res = np.median(dt_s[1:]-dt_s[:-1])
+        else:
+            t_res = 300.
     tbin_edges = np.append(dt_s-t_res, dt_s[-1])
 
     return tbin_edges, hbin_edges, np_ma, data_ma, datetime_arr[0]
@@ -158,7 +161,10 @@ def read_histogram_ts(fname_list, datatype, t_res=300.):
         dt_s[j] = (dt-datetime_arr[0]).total_seconds()
 
     if t_res is None:
-        t_res = np.median(dt_s[1:]-dt_s[:-1])
+        if dt_s.size > 1:
+            t_res = np.median(dt_s[1:]-dt_s[:-1])
+        else:
+            t_res = 300.
     tbin_edges = np.append(dt_s-t_res, dt_s[-1])
 
     return tbin_edges, bin_edges, data_ma, datetime_arr[0]
@@ -214,7 +220,10 @@ def read_quantiles_ts(fname_list, step=5., qmin=0., qmax=100., t_res=300.):
         dt_s[j] = (dt-datetime_arr[0]).total_seconds()
 
     if t_res is None:
-        t_res = np.median(dt_s[1:]-dt_s[:-1])
+        if dt_s.size > 1:
+            t_res = np.median(dt_s[1:]-dt_s[:-1])
+        else:
+            t_res = 300.
     tbin_edges = np.append(dt_s-t_res, dt_s[-1])
 
     return tbin_edges, qbin_edges, data_ma, datetime_arr[0]
@@ -391,7 +400,7 @@ def read_rad4alp_cosmo(fname, datatype, ngates=0):
             if ngates > 0:
                 field['data'] = field['data'][:, :ngates]
             return field
-        elif datatype == 'ISO0':
+        if datatype == 'ISO0':
             field_name = get_fieldname_pyart(datatype)
             field_data = np.ma.masked_where(mask, (bindata-1).astype(float))
 
@@ -400,9 +409,9 @@ def read_rad4alp_cosmo(fname, datatype, ngates=0):
             if ngates > 0:
                 field['data'] = field['data'][:, :ngates]
             return field
-        else:
-            warn('Unknown COSMO data type '+datatype)
-            return None
+        
+        warn('Unknown COSMO data type '+datatype)
+        return None
     except EnvironmentError as ee:
         warn(str(ee))
         warn('Unable to read file '+fname)
