@@ -29,7 +29,7 @@ from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 from ..io.read_data_sensor import read_trt_traj_data
 from ..util.radar_utils import belongs_roi_indices, get_target_elevations
 from ..util.radar_utils import find_neighbour_gates, compute_directional_stats
-from ..util.radar_utils import get_fixed_rng_data
+from ..util.radar_utils import get_fixed_rng_data, get_fixed_rng_span_data
 
 
 def get_process_func(dataset_type, dsname):
@@ -59,6 +59,7 @@ def get_process_func(dataset_type, dsname):
                 'DEALIAS_UNWRAP': process_dealias_unwrap_phase
                 'ECHO_FILTER': process_echo_filter
                 'FIXED_RNG': process_fixed_rng
+                'FIXED_RNG_SPAN': process_fixed_rng_span
                 'HYDROCLASS': process_hydroclass
                 'HZT': process_hzt
                 'HZT_LOOKUP': process_hzt_lookup_table
@@ -336,6 +337,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_traj_trt'
     elif dataset_type == 'FIXED_RNG':
         func_name = process_fixed_rng
+    elif dataset_type == 'FIXED_RNG_SPAN':
+        func_name = process_fixed_rng_span
     else:
         raise ValueError("ERROR: Unknown dataset type '%s' of dataset '%s'"
                          % (dataset_type, dsname))
@@ -475,6 +478,72 @@ def process_fixed_rng(procstatus, dscfg, radar_list=None):
 
     radar_aux = get_fixed_rng_data(
         radar, field_names, dscfg['rng'], rng_tol=rng_tol, ele_min=ele_min,
+        ele_max=ele_max, azi_min=azi_min, azi_max=azi_max)
+
+    if radar_aux is None:
+        return None
+
+    new_dataset = {'radar_out': radar_aux}
+
+    return new_dataset, ind_rad
+
+
+def process_fixed_rng_span(procstatus, dscfg, radar_list=None):
+    """
+    For each azimuth-elevation gets the data within a fixed range span
+    and computes a user-defined statistic: mean, min, max, mode, median
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of strings. Dataset keyword
+            The fields we want to extract
+        rmin, rmax : float. Dataset keyword
+            The range limits [m]
+        ele_min, ele_max, azi_min, azi_max : floats. Dataset keyword
+            The azimuth and elevation limits of the data [deg]
+
+    radar_list : list of Radar objects
+          Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the data and metadata at the point of interest
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    field_names = []
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, datatype, _, _ = get_datatype_fields(
+            datatypedescr)
+        field_names.append(get_fieldname_pyart(datatype))
+    ind_rad = int(radarnr[5:8])-1
+
+    if (radar_list is None) or (radar_list[ind_rad] is None):
+        warn('ERROR: No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    # user defined parameters
+    rmin = dscfg.get('rmin', None)
+    rmax = dscfg.get('rmax', None)
+    ele_min = dscfg.get('ele_min', None)
+    ele_max = dscfg.get('ele_max', None)
+    azi_min = dscfg.get('azi_min', None)
+    azi_max = dscfg.get('azi_max', None)
+
+    radar_aux = get_fixed_rng_span_data(
+        radar, field_names, rmin=rmin, rmax=rmax, ele_min=ele_min,
         ele_max=ele_max, azi_min=azi_min, azi_max=azi_max)
 
     if radar_aux is None:

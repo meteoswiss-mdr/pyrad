@@ -7,12 +7,15 @@ Auxiliary plotting functions
 .. autosummary::
     :toctree: generated/
 
+    generate_fixed_rng_span_title
     generate_fixed_rng_title
     get_colobar_label
     get_field_name
     get_norm
 
 """
+
+import numpy as np
 
 import pyart
 
@@ -22,6 +25,40 @@ mpl.use('Agg')
 # Increase a bit font size
 mpl.rcParams.update({'font.size': 16})
 mpl.rcParams.update({'font.family':  "sans-serif"})
+
+
+def generate_fixed_rng_span_title(radar, field, stat, datetime_format=None):
+    """
+    creates the fixed range plot title
+
+    Parameters
+    ----------
+    radar : radar
+        The radar object
+    field : str
+        name of the field
+    stat : str
+        The statistic computed
+    datetime_forat : str or None
+        The date time format to use
+
+    Returns
+    -------
+    titl : str
+        The plot title
+
+    """
+    begin_time = pyart.graph.common.generate_radar_time_begin(radar)
+    if datetime_format:
+        time_str = begin_time.strftime(datetime_format)
+    else:
+        time_str = begin_time.isoformat() + 'Z'
+    l1 = "%s %.1f-%.1f m %s. %s " % (
+        pyart.graph.common.generate_radar_name(radar),
+        np.min(radar.range['data']), np.max(radar.range['data']), stat,
+        time_str)
+    field_name = pyart.graph.common.generate_field_name(radar, field)
+    return l1 + '\n' + field_name
 
 
 def generate_fixed_rng_title(radar, field, fixed_rng, datetime_format=None):

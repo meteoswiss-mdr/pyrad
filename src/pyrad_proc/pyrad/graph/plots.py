@@ -532,7 +532,8 @@ def plot_antenna_pattern(antpattern, fname_list, labelx='Angle [Deg]',
 
 def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
                       labely='Sensor 2', titl='Scatter', axis=None,
-                      metadata=None, dpi=72):
+                      metadata=None, dpi=72, ax=None, fig=None,
+                      save_fig=True, point_format='bx'):
     """
     plots the scatter between two time series
 
@@ -556,6 +557,15 @@ def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
         a string containing metadata
     dpi : int
         dots per inch
+    fig : Figure
+        Figure to add the colorbar to. If none a new figure will be created
+    ax : Axis
+        Axis to plot on. if fig is None a new axis will be created
+    save_fig : bool
+        if true save the figure if false it does not close the plot and
+        returns the handle to the figure
+    point_format : str
+        format of the scatter point
 
     Returns
     -------
@@ -565,30 +575,36 @@ def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
     """
     max_value = np.ma.max([np.max(value1), np.max(value2)])
 
-    fig, ax = plt.subplots(figsize=[7, 7], dpi=dpi)
+    if fig is None:
+        fig, ax = plt.subplots(figsize=[7, 7], dpi=dpi)
 
-    ax.plot(value1, value2, 'bx')
-    ax.set_xlabel(labelx)
-    ax.set_ylabel(labely)
-    ax.set_title(titl)
+        ax.plot(value1, value2, point_format)
+        ax.set_xlabel(labelx)
+        ax.set_ylabel(labely)
+        ax.set_title(titl)
 
-    if axis == 'equal':
-        ax.axis([0, max_value, 0, max_value])
-        ax.plot([0, max_value], [0, max_value], 'k--')
-        ax.set(adjustable='box-forced', aspect='equal')
+        if axis == 'equal':
+            ax.axis([0, max_value, 0, max_value])
+            ax.plot([0, max_value], [0, max_value], 'k--')
+            ax.set(adjustable='box-forced', aspect='equal')
 
-    if metadata is not None:
-        ax.text(0.05, 0.95, metadata, horizontalalignment='left',
-                verticalalignment='top', transform=ax.transAxes)
+        if metadata is not None:
+            ax.text(0.05, 0.95, metadata, horizontalalignment='left',
+                    verticalalignment='top', transform=ax.transAxes)
 
-    # Make a tight layout
-    fig.tight_layout()
+        # Make a tight layout
+        fig.tight_layout()
+    else:
+        ax.autoscale(False)
+        ax.plot(value1, value2, point_format)
 
-    for fname in fname_list:
-        fig.savefig(fname, dpi=dpi)
-    plt.close(fig)
+    if save_fig:
+        for fname in fname_list:
+            fig.savefig(fname, dpi=dpi)
+        plt.close(fig)
 
-    return fname_list
+        return fname_list
+    return (fig, ax)
 
 
 def plot_sun_hits(field, field_name, fname_list, prdcfg):

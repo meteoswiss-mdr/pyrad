@@ -1128,6 +1128,23 @@ obtained from the separation between angles</dd>
 </dd>
 </dl>
 </dd>
+<dt>‘FIXED_RNG_SPAN_IMAGE’: Plots a user-defined statistic over a fixed</dt>
+<dd><p class="first">range image
+User defined parameters:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>AngTol <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>The tolerance between the nominal angles and the actual
+radar angles. Default 1.</dd>
+<dt>ele_res, azi_res: float or None</dt>
+<dd>The resolution of the fixed grid [deg]. If None it will be
+obtained from the separation between angles</dd>
+<dt>stat <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>The statistic to compute. Can be ‘min’, ‘max’, ‘mean’,
+‘mode’. Default ‘max’</dd>
+</dl>
+</div></blockquote>
+</dd>
 <dt>‘HISTOGRAM’: Computes a histogram of the radar volum data</dt>
 <dd><dl class="first last docutils">
 <dt>User defined parameters:</dt>

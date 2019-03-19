@@ -28,6 +28,7 @@ Radar Utilities
     find_colocated_indexes
     get_target_elevations
     get_fixed_rng_data
+    get_fixed_rng_span_data
     time_avg_range
     get_closest_solar_flux
     create_sun_hits_field
@@ -62,7 +63,7 @@ from .radar_utils import compute_profile_stats, compute_directional_stats
 from .radar_utils import project_to_vertical, find_neighbour_gates
 from .radar_utils import get_target_elevations, get_data_along_rng
 from .radar_utils import get_data_along_azi, get_data_along_ele
-from .radar_utils import get_fixed_rng_data
+from .radar_utils import get_fixed_rng_data, get_fixed_rng_span_data
 
 from .stat_utils import quantiles_weighted
 
