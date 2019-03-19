@@ -7,6 +7,7 @@ Functions for writing pyrad output data
 .. autosummary::
     :toctree: generated/
 
+    write_fixed_angle
     write_ts_lightning
     send_msg
     write_alarm_msg
@@ -50,6 +51,45 @@ import numpy as np
 from pyart.config import get_fillvalue
 
 from .io_aux import generate_field_name_str
+
+
+def write_fixed_angle(time_data, fixed_angle, fname):
+    """
+    writes an output file with the fixed angle data
+
+    Parameters
+    ----------
+    time_data : datetime object
+        The scan time
+    fixed_angle : float
+        The first fixed angle in the scan
+
+    Returns
+    -------
+    fname : str
+        the name of the file containing the content
+
+    """
+    filelist = glob.glob(fname)
+    if not filelist:
+        with open(fname, 'w', newline='') as csvfile:
+            fieldnames = ['date_time', 'fixed_angle']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writeheader()
+            writer.writerow({
+                'date_time': time_data.strftime('%Y%m%d%H%M%S'),
+                'fixed_angle': fixed_angle})
+
+            csvfile.close()
+    else:
+        with open(fname, 'a', newline='') as csvfile:
+            fieldnames = ['date_time', 'fixed_angle']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writerow({
+                'date_time': time_data.strftime('%Y%m%d%H%M%S'),
+                'fixed_angle': fixed_angle})
+
+            csvfile.close()
 
 
 def write_ts_lightning(flashnr, time_data, time_in_flash, lat, lon, alt, dBm,
@@ -296,13 +336,13 @@ def write_smn(datetime_vec, value_avg_vec, value_std_vec, fname):
     return fname
 
 
-def write_trt_info(id, max_rank, nscans, time_start, time_end,  fname):
+def write_trt_info(ids, max_rank, nscans, time_start, time_end, fname):
     """
     writes TRT info of the thundertracking
 
     Parameters
     ----------
-    id, max_rank, nscans, time_start, time_end: array
+    ids, max_rank, nscans, time_start, time_end: array
         the cell parameters
     fname : str
         file name where to store the data
@@ -318,7 +358,7 @@ def write_trt_info(id, max_rank, nscans, time_start, time_end,  fname):
             'id', 'max_rank', 'nscans_Xband', 'time_start', 'time_end']
         writer = csv.DictWriter(csvfile, fieldnames)
         writer.writeheader()
-        for i, id_cell in enumerate(id):
+        for i, id_cell in enumerate(ids):
             writer.writerow({
                 'id': id_cell,
                 'max_rank': max_rank[i],

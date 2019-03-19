@@ -109,6 +109,8 @@ def main():
     rank_flash_density_list = np.ma.asarray([], dtype=float)
     area_list = np.ma.asarray([], dtype=float)
     nflash_list = np.ma.asarray([], dtype=int)
+    nflash_p_list = np.ma.asarray([], dtype=int)
+    nflash_n_list = np.ma.asarray([], dtype=int)
 
     for i, time_dir in enumerate(time_dir_list):
         data_input_path = args.trtbase+time_dir+'/TRTC_cell/'
@@ -158,6 +160,8 @@ def main():
                 rank_flash_density_list, RANKr)
             area_list = np.append(area_list, area)
             nflash_list = np.append(nflash_list, CG)
+            nflash_p_list = np.append(nflash_p_list, CG_p)
+            nflash_n_list = np.append(nflash_n_list, CG_n)
 
             # Time series plots
             figfname = data_output_path+str(traj_ID[0])+'_flash_density.png'
@@ -244,6 +248,11 @@ def main():
     write_trt_cell_lightning(
         cell_ID_list, time_list, lon_list, lat_list, area_list,
         rank_flash_density_list, nflash_list, flash_density_list, fname)
+
+    fname = args.trtbase+'Santis_cell_euclid_np_lightning.csv'
+    write_trt_cell_lightning(
+        cell_ID_list, time_list, lon_list, lat_list, area_list,
+        rank_flash_density_list, nflash_p_list, nflash_n_list, fname)
 
     plot_scatter_comp(
         flash_density_list, rank_flash_density_list/10.,

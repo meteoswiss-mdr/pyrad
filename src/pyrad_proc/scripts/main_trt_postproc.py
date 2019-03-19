@@ -28,7 +28,7 @@ import matplotlib.pyplot as plt
 
 from pyrad.io import read_trt_scores, read_trt_cell_lightning
 from pyrad.util import belongs_roi_indices
-from pyrad.graph import plot_scatter_comp, plot_pos
+from pyrad.graph import plot_scatter_comp, plot_pos, plot_timeseries
 
 print(__doc__)
 
@@ -36,18 +36,20 @@ print(__doc__)
 def main():
     """
     """
-    basepath = '/store/msrad/radar/trt/'
+    basepath = '/store/msrad/radar/trt/data_analysis_new/'
 
     roi = {
         'lon': [8.9000010, 9.2000000, 9.4999970, 9.4999970, 8.9000010],
         'lat': [47.0000030, 47.0000030, 47.0000030, 47.5999930, 47.5999930]
     }
 
+    plot_rpc_time_series(basepath, 'cell_rimed_particles_column.csv')
+    # plot_rimed_column_EUCLID_pn(basepath, 'cell_rimed_particles_column.csv', 'Santis_cell_euclid_np_lightning.csv', roi)
     # plot_rimed_column_EUCLID(basepath, 'cell_rimed_particles_column.csv', 'Santis_cell_euclid_lightning.csv', roi)
     # plot_rimed_column_LMA(basepath, 'cell_rimed_particles_column.csv', 'cell_LMA_flashes.csv', roi)
     # plot_max_LMA_rank(basepath, 'cell_LMA_flashes.csv')
     # plot_time_diff_max_EUCLID_density_max_rank(basepath, 'Santis_cell_scores.csv')
-    plot_time_diff_max_LMA_max_rank(basepath, 'cell_LMA_flashes.csv', roi= roi)
+    # plot_time_diff_max_LMA_max_rank(basepath, 'cell_LMA_flashes.csv', roi= roi)
     # plot_time_diff_max_EUCLID_strokes_max_rank(basepath, 'Santis_cell_euclid_lightning.csv')
     # read_general_scores(basepath, 'Santis_cell_scores.csv')
     # plot_rank_LMA_flashes(basepath, 'cell_LMA_flashes.csv', roi=roi)
@@ -494,6 +496,31 @@ def plot_rimed_column_LMA(basepath, fname_rimed, fname_LMA, roi):
     print("----- plot to '%s'" % fname)
 
 
+def plot_rpc_time_series(basepath, fname):
+    # read rimed particles file
+    (traj_ID, time_cell, lon_cell, lat_cell, area_cell, rank_cell,
+     rm_hmin, rm_hmax) = read_trt_cell_lightning(basepath+fname)
+
+    traj_ID_uniques = np.unique(traj_ID, return_index=False)
+
+    for traj_ID_unique in traj_ID_uniques:
+        inds = np.where(traj_ID == traj_ID_unique)[0]
+        td = time_cell[inds]
+        rpc_hmin = rm_hmin[inds]
+        rpc_hmax = rm_hmax[inds]
+
+        figfname = basepath+str(traj_ID_unique)+'_rpc_base_altitude.png'
+        plot_timeseries(
+            td, [rpc_hmin], [figfname], labelx='Time UTC',
+            labely='Altitude [m MSL]', title=str(traj_ID_unique)+' RPC base altitude')
+
+        figfname = basepath+str(traj_ID_unique)+'_rpc_height.png'
+        plot_timeseries(
+            td, [rpc_hmax-rpc_hmin], [figfname], labelx='Time UTC',
+            labely='Height [m]', title=str(traj_ID_unique)+' RPC height')
+
+
+
 def plot_rimed_column_EUCLID(basepath, fname_rimed, fname_EUCLID, roi):
     # read rimed particles file
     (traj_ID, time_cell, lon_cell, lat_cell, area_cell, rank_cell,
@@ -598,6 +625,180 @@ def plot_rimed_column_EUCLID(basepath, fname_rimed, fname_EUCLID, roi):
         rm_hmax_common-rm_hmin_common, flash_dens_EUCLID_common, [fname],
         labelx='RPC length [m]', labely='Strokes density [strokes/km^2]',
         titl='RPC length vs EUCLID strokes density', axis=None, metadata=None, dpi=72)
+
+    print("----- plot to '%s'" % fname)
+
+
+def plot_rimed_column_EUCLID_pn(basepath, fname_rimed, fname_EUCLID, roi):
+    # read rimed particles file
+    (traj_ID, time_cell, lon_cell, lat_cell, area_cell, rank_cell,
+     rm_hmin, rm_hmax) = read_trt_cell_lightning(basepath+fname_rimed)
+
+    print('Cell steps: ', rank_cell.size)
+
+    # keep only time steps within EUCLID domain
+    inds, is_roi = belongs_roi_indices(lat_cell, lon_cell, roi)
+
+    traj_ID = traj_ID[inds]
+    time_cell = time_cell[inds]
+    rank_cell = rank_cell[inds]
+    rm_hmin = rm_hmin[inds]
+    rm_hmax = rm_hmax[inds]
+
+    # put non-valid min and max to 0
+    rm_hmin = rm_hmin.filled(0.)
+    rm_hmax = rm_hmax.filled(0.)
+
+
+#    # keep only valid time steps
+#    valid = np.logical_not(np.logical_or(
+#        np.ma.getmaskarray(rm_hmin), np.ma.getmaskarray(rm_hmax)))
+#
+#    traj_ID = traj_ID[valid]
+#    time_cell = time_cell[valid]
+#    rank_cell = rank_cell[valid]
+#    rm_hmax = rm_hmax[valid]
+#    rm_hmin = rm_hmin[valid]
+
+    print('Cell steps within LMA domain: ', rank_cell.size)
+
+    # read EUCLID particles column file
+    (traj_ID_EUCLID, time_cell_EUCLID, lon_cell_EUCLID, lat_cell_EUCLID,
+     area_cell_EUCLID, rank_cell_EUCLID, nflashes_p_cell_EUCLID,
+     nflashes_n_cell_EUCLID) = read_trt_cell_lightning(basepath+fname_EUCLID)
+
+    print('Cell steps: ', rank_cell_EUCLID.size)
+
+    # keep only time steps within EUCLID domain
+    inds, is_roi = belongs_roi_indices(lat_cell_EUCLID, lon_cell_EUCLID, roi)
+
+    traj_ID_EUCLID = traj_ID_EUCLID[inds]
+    time_cell_EUCLID = time_cell_EUCLID[inds]
+    rank_cell_EUCLID = rank_cell_EUCLID[inds]
+    nflashes_p_cell_EUCLID = nflashes_p_cell_EUCLID[inds]
+    nflashes_n_cell_EUCLID = nflashes_n_cell_EUCLID[inds]
+    area_cell_EUCLID = area_cell_EUCLID[inds]
+
+    print('Cell steps within LMA domain: ', rank_cell_EUCLID.size)
+
+    # Get data from common TRT cells and time steps
+    rm_hmin_common = np.asarray([])
+    rm_hmax_common = np.asarray([])
+
+    nflashes_p_cell_EUCLID_common = np.ma.asarray([])
+    nflashes_n_cell_EUCLID_common = np.ma.asarray([])
+    area_cell_EUCLID_common = np.ma.asarray([])
+
+    for i, time_cell_EUCLID_el in enumerate(time_cell_EUCLID):
+        ind = np.ma.where(np.logical_and(
+            time_cell == time_cell_EUCLID_el,
+            traj_ID == traj_ID_EUCLID[i]))[0]
+        if ind.size == 0:
+            continue
+        rm_hmin_common = np.append(rm_hmin_common, rm_hmin[ind])
+        rm_hmax_common = np.append(rm_hmax_common, rm_hmax[ind])
+
+        nflashes_p_cell_EUCLID_common = np.append(
+            nflashes_p_cell_EUCLID_common, nflashes_p_cell_EUCLID[i])
+        nflashes_n_cell_EUCLID_common = np.append(
+            nflashes_n_cell_EUCLID_common, nflashes_n_cell_EUCLID[i])
+        area_cell_EUCLID_common = np.append(
+            area_cell_EUCLID_common, area_cell_EUCLID[i])
+
+
+    print('Common cell steps: ', rm_hmin_common.size)
+
+    # plot data
+    fname = basepath+'LMA_domain_rpc_min_height_vs_EUCLID_flashes.png'
+
+    fig, ax = plot_scatter_comp(
+        rm_hmin_common, nflashes_p_cell_EUCLID_common+nflashes_n_cell_EUCLID_common, [fname],
+        labelx='RPC base height [m MSL]', labely='N strokes',
+        titl='RPC base height vs EUCLID strokes', axis=None, metadata=None,
+        dpi=72, save_fig=False, point_format='go')
+
+    fig, ax = plot_scatter_comp(
+        rm_hmin_common, nflashes_p_cell_EUCLID_common, [fname],
+        labelx='RPC base height [m MSL]', labely='N strokes',
+        titl='RPC base height vs EUCLID strokes', axis=None, metadata=None,
+        dpi=72, ax=ax, fig=fig, save_fig=False, point_format='bx')
+
+    plot_scatter_comp(
+        rm_hmin_common, nflashes_n_cell_EUCLID_common, [fname],
+        labelx='RPC base height [m MSL]', labely='N strokes',
+        titl='RPC base height vs EUCLID strokes', axis=None, metadata=None,
+        dpi=72, ax=ax, fig=fig, save_fig=True, point_format='r+')
+
+    print("----- plot to '%s'" % fname)
+
+    fname = basepath+'LMA_domain_rpc_min_height_vs_EUCLID_flashes_density.png'
+    fig, ax = plot_scatter_comp(
+        rm_hmin_common, (nflashes_p_cell_EUCLID_common+nflashes_n_cell_EUCLID_common)/area_cell_EUCLID_common,
+        [fname], labelx='RPC base height [m MSL]',
+        labely='Stroke density [strokes/km^2]',
+        titl='RPC base height vs EUCLID stroke density', axis=None,
+        metadata=None, dpi=72, save_fig=False, point_format='go')
+
+    fig, ax = plot_scatter_comp(
+        rm_hmin_common, nflashes_p_cell_EUCLID_common/area_cell_EUCLID_common,
+        [fname], labelx='RPC base height [m MSL]',
+        labely='Stroke density [strokes/km^2]',
+        titl='RPC base height vs EUCLID stroke density', axis=None,
+        metadata=None, dpi=72, ax=ax, fig=fig, save_fig=False, point_format='bx')
+
+    plot_scatter_comp(
+        rm_hmin_common, nflashes_n_cell_EUCLID_common/area_cell_EUCLID_common,
+        [fname], labelx='RPC base height [m MSL]',
+        labely='Stroke density [strokes/km^2]',
+        titl='RPC base height vs EUCLID stroke density', axis=None,
+        metadata=None, dpi=72, ax=ax, fig=fig, save_fig=True, point_format='r+')
+
+    print("----- plot to '%s'" % fname)
+
+    # plot data
+    fname = basepath+'LMA_domain_rpc_thickness_vs_EUCLID_flashes.png'
+    fig, ax = plot_scatter_comp(
+        rm_hmax_common-rm_hmin_common,
+        nflashes_p_cell_EUCLID_common+nflashes_n_cell_EUCLID_common, [fname],
+        labelx='RPC length [m]', labely='N strokes',
+        titl='RPC length vs EUCLID strokes', axis=None, metadata=None, dpi=72,
+        save_fig=False, point_format='go')
+
+    fig, ax = plot_scatter_comp(
+        rm_hmax_common-rm_hmin_common, nflashes_p_cell_EUCLID_common, [fname],
+        labelx='RPC length [m]', labely='N strokes',
+        titl='RPC length vs EUCLID strokes', axis=None, metadata=None, dpi=72,
+        ax=ax, fig=fig, save_fig=False, point_format='bx')
+
+    plot_scatter_comp(
+        rm_hmax_common-rm_hmin_common, nflashes_n_cell_EUCLID_common, [fname],
+        labelx='RPC length [m]', labely='N strokes',
+        titl='RPC length vs EUCLID strokes', axis=None, metadata=None, dpi=72,
+        ax=ax, fig=fig, save_fig=True, point_format='r+')
+
+    print("----- plot to '%s'" % fname)
+
+    fname = basepath+'LMA_domain_rpc_thickness_vs_EUCLID_flashes_density.png'
+    fig, ax = plot_scatter_comp(
+        rm_hmax_common-rm_hmin_common,
+        (nflashes_p_cell_EUCLID_common+nflashes_n_cell_EUCLID_common)/area_cell_EUCLID_common, [fname],
+        labelx='RPC length [m]', labely='Strokes density [strokes/km^2]',
+        titl='RPC length vs EUCLID strokes density', axis=None, metadata=None,
+        dpi=72, save_fig=False, point_format='go')
+
+    fig, ax = plot_scatter_comp(
+        rm_hmax_common-rm_hmin_common,
+        nflashes_p_cell_EUCLID_common/area_cell_EUCLID_common, [fname],
+        labelx='RPC length [m]', labely='Strokes density [strokes/km^2]',
+        titl='RPC length vs EUCLID strokes density', axis=None, metadata=None,
+        dpi=72, ax=ax, fig=fig, save_fig=False, point_format='bx')
+
+    plot_scatter_comp(
+        rm_hmax_common-rm_hmin_common,
+        nflashes_n_cell_EUCLID_common/area_cell_EUCLID_common, [fname],
+        labelx='RPC length [m]', labely='Strokes density [strokes/km^2]',
+        titl='RPC length vs EUCLID strokes density', axis=None, metadata=None,
+        dpi=72, ax=ax, fig=fig, save_fig=True, point_format='r+')
 
     print("----- plot to '%s'" % fname)
 

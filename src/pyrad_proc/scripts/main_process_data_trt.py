@@ -127,7 +127,7 @@ def main():
         if args.years is not None:
             years = list(map(int, args.years.split(',')))
 
-        _, _, _, trt_time_start, trt_time_end = read_thundertracking_info(
+        _, max_rank, _, trt_time_start, trt_time_end = read_thundertracking_info(
             args.info_file)
         trt_times = np.append(trt_time_start, trt_time_end)
 
@@ -136,10 +136,15 @@ def main():
             trt_dates = np.append(trt_dates, trt_time.date())
         trt_dates = np.sort(np.unique(trt_dates))
         time_dir_list = []
-        for trt_date in trt_dates:
+        for rank, trt_date in zip(max_rank, trt_dates):
             if years is not None:
                 if trt_date.year not in years:
                     continue
+
+            if args.max_rank is not None:
+                if rank > args.max_rank:
+                    continue
+
             time_dir_list.append(trt_date.strftime("%Y-%m-%d"))
 
 

@@ -115,6 +115,7 @@ Writing data
     write_colocated_data_time_avg
     write_sun_hits
     write_sun_retrieval
+    write_fixed_angle
 
 
 Auxiliary functions
@@ -201,7 +202,7 @@ from .write_data import write_last_state, write_alarm_msg, send_msg
 from .write_data import write_excess_gates, write_trt_cell_data
 from .write_data import write_histogram, write_quantiles, write_ts_lightning
 from .write_data import write_trt_cell_scores, write_trt_cell_lightning
-from .write_data import write_trt_info
+from .write_data import write_trt_info, write_fixed_angle
 
 from .io_aux import get_save_dir, make_filename, get_new_rainbow_file_name
 from .io_aux import get_datetime, get_dataset_fields, map_hydro, map_Doppler

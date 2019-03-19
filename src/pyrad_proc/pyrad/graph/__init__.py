@@ -24,6 +24,7 @@ Plots
     plot_rhi_contour
     plot_bscope
     plot_fixed_rng
+    plot_fixed_rng_span
     plot_time_range
     plot_rhi_profile
     plot_along_coord
@@ -58,7 +59,7 @@ from .plots_vol import plot_ppi, plot_ppi_map, plot_rhi, plot_bscope
 from .plots_vol import plot_time_range, plot_cappi, plot_rhi_profile
 from .plots_vol import plot_along_coord, plot_field_coverage, plot_traj
 from .plots_vol import plot_pos, _plot_time_range, plot_rhi_contour
-from .plots_vol import plot_ppi_contour, plot_fixed_rng
+from .plots_vol import plot_ppi_contour, plot_fixed_rng, plot_fixed_rng_span
 
 from .plots_grid import plot_surface, plot_latitude_slice
 from .plots_grid import plot_longitude_slice, plot_latlon_slice

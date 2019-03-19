@@ -22,12 +22,13 @@ from ..io.io_aux import get_save_dir, make_filename, get_fieldname_pyart
 
 from ..io.write_data import write_cdf, write_rhi_profile, write_field_coverage
 from ..io.write_data import write_last_state, write_histogram, write_quantiles
+from ..io.write_data import write_fixed_angle
 
 from ..graph.plots_vol import plot_ppi, plot_ppi_map, plot_rhi, plot_cappi
 from ..graph.plots_vol import plot_bscope, plot_rhi_profile, plot_along_coord
 from ..graph.plots_vol import plot_field_coverage, plot_time_range
 from ..graph.plots_vol import plot_rhi_contour, plot_ppi_contour
-from ..graph.plots_vol import plot_fixed_rng
+from ..graph.plots_vol import plot_fixed_rng, plot_fixed_rng_span
 from ..graph.plots import plot_quantiles, plot_histogram
 from ..graph.plots_aux import get_colobar_label, get_field_name
 
@@ -116,6 +117,18 @@ def generate_vol_products(dataset, prdcfg):
                 ele_res, azi_res: float or None
                     The resolution of the fixed grid [deg]. If None it will be
                     obtained from the separation between angles
+        'FIXED_RNG_SPAN_IMAGE': Plots a user-defined statistic over a fixed
+            range image
+            User defined parameters:
+                AngTol : float
+                    The tolerance between the nominal angles and the actual
+                    radar angles. Default 1.
+                ele_res, azi_res: float or None
+                    The resolution of the fixed grid [deg]. If None it will be
+                    obtained from the separation between angles
+                stat : str
+                    The statistic to compute. Can be 'min', 'max', 'mean',
+                    'mode'. Default 'max'
         'HISTOGRAM': Computes a histogram of the radar volum data
             User defined parameters:
                 step: float or None
@@ -1780,6 +1793,45 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname_list
 
+    if prdcfg['type'] == 'FIXED_RNG_SPAN_IMAGE':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # user defined parameters
+        ang_tol = prdcfg.get('AngTol', 1.)
+        azi_res = prdcfg.get('azi_res', None)
+        ele_res = prdcfg.get('ele_res', None)
+        stat = prdcfg.get('stat', 'max')
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            stat, prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'],
+            prdcfginfo='rng' +
+            '{:.1f}'.format(dataset['radar_out'].range['data'][0])+'-' +
+            '{:.1f}'.format(dataset['radar_out'].range['data'][-1]),
+            timeinfo=prdcfg['timeinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        plot_fixed_rng_span(
+            dataset['radar_out'], field_name, prdcfg, fname_list,
+            azi_res=azi_res, ele_res=ele_res, ang_tol=ang_tol, stat=stat)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+
     if prdcfg['type'] == 'PLOT_ALONG_COORD':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
@@ -2509,6 +2561,32 @@ def generate_vol_products(dataset, prdcfg):
         print('saved file: '+prdcfg['lastStateFile'])
 
         return prdcfg['lastStateFile']
+
+    if prdcfg['type'] == 'SAVE_FIXED_ANGLE':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=None)
+
+        fname = make_filename(
+            'ts', prdcfg['dstype'], 'fixed_angle', ['csv'],
+            timeinfo=None, runinfo=prdcfg['runinfo'])[0]
+
+        fname = savedir+fname
+
+        write_fixed_angle(
+            prdcfg['timeinfo'], dataset['radar_out'].fixed_angle['data'][0],
+            fname)
+        print('saved file: '+fname)
+
+        return fname
 
     warn(' Unsupported product type: ' + prdcfg['type'])
     return None

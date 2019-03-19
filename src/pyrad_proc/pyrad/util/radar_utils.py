@@ -25,6 +25,7 @@ Miscellaneous functions dealing with radar data
     time_avg_range
     get_closest_solar_flux
     get_fixed_rng_data
+    get_fixed_rng_span_data
     create_sun_hits_field
     create_sun_retrieval_field
     compute_quantiles
@@ -1005,6 +1006,11 @@ def get_fixed_rng_data(radar, field_names, fixed_rng, rng_tol=50.,
     ind_rng = find_rng_index(
         radar_aux.range['data'], fixed_rng, rng_tol=rng_tol)
 
+    if ind_rng is None:
+        warn('No range bin at range '+str(fixed_rng)+' with tolerance ' +
+             str(rng_tol))
+        return None, None, None
+
     # Determine angle limits
     if radar_aux.scan_type == 'ppi':
         if ele_min is None:
@@ -1121,6 +1127,168 @@ def get_fixed_rng_data(radar, field_names, fixed_rng, rng_tol=50.,
     radar_aux.init_gate_altitude()
     radar_aux.nrays = nrays
     radar_aux.ngates = 1
+
+    return radar_aux
+
+
+def get_fixed_rng_span_data(radar, field_names, rmin=None, rmax=None,
+                            ele_min=None, ele_max=None, azi_min=None,
+                            azi_max=None):
+    """
+    Creates a 2D-grid with (azi, ele) data representing a user-defined
+    statistic over a fixed range span
+
+    Parameters
+    ----------
+    radar : radar object
+        The radar object containing the data
+    field_name : str
+        The field name
+    rmin, rmax : float
+        The range limits [m]. If None the entire coverage of the radar is
+        going to be used
+    ele_min, ele_max, azi_min, azi_max : float or None
+        The limits of the grid [deg]. If None the limits will be the limits
+        of the radar volume
+
+    Returns
+    -------
+    radar : radar object
+        The radar object containing only the desired data
+
+    """
+    radar_aux = deepcopy(radar)
+
+    if rmin is None:
+        rmin = 0.
+    if rmax is None:
+        rmax = np.max(radar_aux.range['data'])
+
+    ind_rng = np.where(np.logical_and(
+        radar_aux.range['data'] >= rmin, radar_aux.range['data'] <= rmax))[0]
+
+    if ind_rng.size == 0:
+        warn('No range bins between '+str(rmin)+' and '+str(rmax)+' m')
+        return None, None, None
+
+    # Determine angle limits
+    if radar_aux.scan_type == 'ppi':
+        if ele_min is None:
+            ele_min = np.min(radar_aux.fixed_angle['data'])
+        if ele_max is None:
+            ele_max = np.max(radar_aux.fixed_angle['data'])
+        if azi_min is None:
+            azi_min = np.min(radar_aux.azimuth['data'])
+        if azi_max is None:
+            azi_max = np.max(radar_aux.azimuth['data'])
+    else:
+        if ele_min is None:
+            ele_min = np.min(radar_aux.elevation['data'])
+        if ele_max is None:
+            ele_max = np.max(radar_aux.elevation['data'])
+        if azi_min is None:
+            azi_min = np.min(radar_aux.fixed_angle['data'])
+        if azi_max is None:
+            azi_max = np.max(radar_aux.fixed_angle['data'])
+
+    if radar_aux.scan_type == 'ppi':
+        # Get radar elevation angles within limits
+        ele_vec = np.sort(radar_aux.fixed_angle['data'])
+        ele_vec = ele_vec[
+            np.logical_and(ele_vec >= ele_min, ele_vec <= ele_max)]
+        if ele_vec is None:
+            warn('No elevation angles between '+str(ele_min)+' and ' +
+                 str(ele_max))
+            return None, None, None
+
+        # get sweeps corresponding to the desired elevation angles
+        ind_sweeps = []
+        for ele in ele_vec:
+            ind_sweeps.append(
+                np.where(radar_aux.fixed_angle['data'] == ele)[0][0])
+        radar_aux = radar_aux.extract_sweeps(ind_sweeps)
+
+        # Get indices of rays within limits
+        if azi_min < azi_max:
+            ind_rays = np.where(np.logical_and(
+                radar_aux.azimuth['data'] >= azi_min,
+                radar_aux.azimuth['data'] <= azi_max))[0]
+        else:
+            ind_rays = np.where(np.logical_or(
+                radar_aux.azimuth['data'] >= azi_min,
+                radar_aux.azimuth['data'] <= azi_max))[0]
+
+    else:
+        # Get radar azimuth angles within limits
+        azi_vec = radar_aux.fixed_angle['data']
+        if azi_min < azi_max:
+            azi_vec = np.sort(azi_vec[
+                np.logical_and(azi_vec >= azi_min, azi_vec <= azi_max)])
+        else:
+            azi_vec = azi_vec[
+                np.logical_or(azi_vec >= azi_min, azi_vec <= azi_max)]
+            azi_vec = np.append(
+                np.sort(azi_vec[azi_vec >= azi_min]),
+                np.sort(azi_vec[azi_vec < azi_min]))
+        if azi_vec is None:
+            warn('No azimuth angles between '+str(azi_min)+' and ' +
+                 str(azi_max))
+            return None, None, None
+
+        # get sweeps corresponding to the desired azimuth angles
+        ind_sweeps = []
+        for azi in azi_vec:
+            ind_sweeps.append(
+                np.where(radar_aux.fixed_angle['data'] == azi)[0][0])
+        radar_aux = radar_aux.extract_sweeps(ind_sweeps)
+
+        # Get indices of rays within limits
+        ind_rays = np.where(np.logical_and(
+            radar_aux.elevation['data'] >= ele_min,
+            radar_aux.elevation['data'] <= ele_max))[0]
+
+    # get new sweep start index and stop index
+    sweep_start_inds = deepcopy(radar_aux.sweep_start_ray_index['data'])
+    sweep_end_inds = deepcopy(radar_aux.sweep_end_ray_index['data'])
+
+    nrays = 0
+    for j in range(radar_aux.nsweeps):
+        # get azimuth indices for this elevation
+        rays_in_sweep = np.size(
+            ind_rays[np.logical_and(ind_rays >= sweep_start_inds[j],
+                                    ind_rays <= sweep_end_inds[j])])
+        radar_aux.rays_per_sweep['data'][j] = rays_in_sweep
+        if j == 0:
+            radar_aux.sweep_start_ray_index['data'][j] = 0
+        else:
+            radar_aux.sweep_start_ray_index['data'][j] = int(
+                radar_aux.sweep_end_ray_index['data'][j-1]+1)
+        radar_aux.sweep_end_ray_index['data'][j] = (
+            radar_aux.sweep_start_ray_index['data'][j]+rays_in_sweep-1)
+        nrays += rays_in_sweep
+
+    # Get new fields
+    for field_name in field_names:
+        if field_name not in radar_aux.fields:
+            warn('Field '+field_name+' not available')
+            continue
+
+        radar_aux.fields[field_name]['data'] = (
+            radar_aux.fields[field_name]['data'][:, ind_rng])
+        radar_aux.fields[field_name]['data'] = (
+            radar_aux.fields[field_name]['data'][ind_rays, :])
+
+
+    # Update metadata
+    radar_aux.range['data'] = radar_aux.range['data'][ind_rng]
+    radar_aux.time['data'] = radar_aux.time['data'][ind_rays]
+    radar_aux.azimuth['data'] = radar_aux.azimuth['data'][ind_rays]
+    radar_aux.elevation['data'] = radar_aux.elevation['data'][ind_rays]
+    radar_aux.init_gate_x_y_z()
+    radar_aux.init_gate_longitude_latitude()
+    radar_aux.init_gate_altitude()
+    radar_aux.nrays = nrays
+    radar_aux.ngates = ind_rng.size
 
     return radar_aux
 
