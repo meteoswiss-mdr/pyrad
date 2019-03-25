@@ -43,7 +43,7 @@ def main():
         'lat': [47.0000030, 47.0000030, 47.0000030, 47.5999930, 47.5999930]
     }
 
-    plot_rpc_time_series(basepath, 'cell_rimed_particles_column.csv')
+    # plot_rpc_time_series(basepath, 'cell_rimed_particles_column.csv')
     # plot_rimed_column_EUCLID_pn(basepath, 'cell_rimed_particles_column.csv', 'Santis_cell_euclid_np_lightning.csv', roi)
     # plot_rimed_column_EUCLID(basepath, 'cell_rimed_particles_column.csv', 'Santis_cell_euclid_lightning.csv', roi)
     # plot_rimed_column_LMA(basepath, 'cell_rimed_particles_column.csv', 'cell_LMA_flashes.csv', roi)
@@ -54,7 +54,7 @@ def main():
     # read_general_scores(basepath, 'Santis_cell_scores.csv')
     # plot_rank_LMA_flashes(basepath, 'cell_LMA_flashes.csv', roi=roi)
     # plot_rank_LMA_sources(basepath, 'cell_LMA_sources.csv', roi=roi)
-    # plot_LMA_EUCLID(basepath, 'cell_LMA_flashes.csv', 'Santis_cell_euclid_lightning.csv', roi)
+    plot_LMA_EUCLID(basepath, 'cell_LMA_flashes.csv', 'Santis_cell_euclid_lightning.csv', roi)
 
 
     return
@@ -1204,8 +1204,8 @@ def plot_LMA_EUCLID(basepath, fname_LMA, fname_EUCLID, roi):
     fname = basepath+'LMA_domain_LMA_flashes-Euclid_flashes'
     plot_scatter_comp(
         nflashes_LMA_common, nflashes_cell_common, [fname],
-        labelx='LMA flashes', labely='Euclid CG flashes',
-        titl='LMA flashes vs Euclid CG flashes\nReduced LMA domain only', axis=None, metadata=None, dpi=72)
+        labelx='LMA flashes', labely='Euclid CG strokes',
+        titl='LMA flashes vs Euclid CG strokes\nReduced LMA domain only', axis=None, metadata=None, dpi=72)
 
     print("----- plot to '%s'" % fname)
 

@@ -167,8 +167,8 @@ def main():
             figfname = data_output_path+str(traj_ID[0])+'_flash_density.png'
             plot_timeseries(
                 yyyymmddHHMM, [flash_density], [figfname], labelx='Time UTC',
-                labely='Flash density [flashes/km2]',
-                title=str(traj_ID[0])+' flash density')
+                labely='Stroke density [strokes/km2]',
+                title=str(traj_ID[0])+' stroke density')
 
             figfname = data_output_path+str(traj_ID[0])+'_area.png'
             plot_timeseries(
@@ -195,8 +195,8 @@ def main():
             figfname = data_output_path+str(traj_ID[0])+'_lightning.png'
             plot_timeseries(
                 yyyymmddHHMM, [CG_n, CG_p, CG], [figfname], labelx='Time UTC',
-                labely='N flash [-]', labels=['CG-', 'CG+', 'CG'],
-                title=str(traj_ID[0])+' flashes in cell')
+                labely='N strokes [-]', labels=['CG-', 'CG+', 'CG'],
+                title=str(traj_ID[0])+' strokes in cell')
 
             figfname = data_output_path+str(traj_ID[0])+'_ET.png'
             plot_timeseries(
@@ -238,27 +238,27 @@ def main():
                 titl=str(traj_ID[0])+' Cell Position')
             print('Plotted '+' '.join(figfname))
 
-    fname = args.trtbase+'Santis_cell_scores.csv'
-    write_trt_cell_scores(
-        cell_ID_max_list, time_flash_density_max_list,
-        flash_density_max_rank_list, nflashes_max_list, area_flash_max_list,
-        flash_density_max_list, time_rank_max_list, rank_max_list, fname)
-
-    fname = args.trtbase+'Santis_cell_euclid_lightning.csv'
-    write_trt_cell_lightning(
-        cell_ID_list, time_list, lon_list, lat_list, area_list,
-        rank_flash_density_list, nflash_list, flash_density_list, fname)
-
-    fname = args.trtbase+'Santis_cell_euclid_np_lightning.csv'
-    write_trt_cell_lightning(
-        cell_ID_list, time_list, lon_list, lat_list, area_list,
-        rank_flash_density_list, nflash_p_list, nflash_n_list, fname)
-
-    plot_scatter_comp(
-        flash_density_list, rank_flash_density_list/10.,
-        [args.trtbase+'hist_flash_density_rank'],
-        labelx='flash density [flashes/km2]', labely='rank',
-        titl='Flash density vs Rank', axis=None, metadata=None, dpi=72)
+#    fname = args.trtbase+'Santis_cell_scores.csv'
+#    write_trt_cell_scores(
+#        cell_ID_max_list, time_flash_density_max_list,
+#        flash_density_max_rank_list, nflashes_max_list, area_flash_max_list,
+#        flash_density_max_list, time_rank_max_list, rank_max_list, fname)
+#
+#    fname = args.trtbase+'Santis_cell_euclid_lightning.csv'
+#    write_trt_cell_lightning(
+#        cell_ID_list, time_list, lon_list, lat_list, area_list,
+#        rank_flash_density_list, nflash_list, flash_density_list, fname)
+#
+#    fname = args.trtbase+'Santis_cell_euclid_np_lightning.csv'
+#    write_trt_cell_lightning(
+#        cell_ID_list, time_list, lon_list, lat_list, area_list,
+#        rank_flash_density_list, nflash_p_list, nflash_n_list, fname)
+#
+#    plot_scatter_comp(
+#        flash_density_list, rank_flash_density_list/10.,
+#        [args.trtbase+'hist_flash_density_rank'],
+#        labelx='stroke density [strokes/km2]', labely='rank',
+#        titl='Stroke density vs Rank', axis=None, metadata=None, dpi=72)
 
 
 def _print_end_msg(text):
