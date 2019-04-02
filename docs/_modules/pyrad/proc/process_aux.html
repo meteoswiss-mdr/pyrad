@@ -69,6 +69,7 @@
 <span class="sd">    process_raw</span>
 <span class="sd">    process_save_radar</span>
 <span class="sd">    process_fixed_rng</span>
+<span class="sd">    process_fixed_rng_span</span>
 <span class="sd">    process_roi</span>
 <span class="sd">    process_grid</span>
 <span class="sd">    process_azimuthal_average</span>
@@ -186,6 +187,8 @@
 <span class="sd">                &#39;FLAG_TIME_AVG&#39;: process_time_avg_flag</span>
 <span class="sd">                &#39;TIME_AVG&#39;: process_time_avg</span>
 <span class="sd">                &#39;WEIGHTED_TIME_AVG&#39;: process_weighted_time_avg</span>
+<span class="sd">                &#39;TIME_STATS&#39;: process_time_stats</span>
+<span class="sd">                &#39;TIME_STATS2&#39;: process_time_stats2</span>
 <span class="sd">            &#39;TIMESERIES&#39; format output:</span>
 <span class="sd">                &#39;POINT_MEASUREMENT&#39;: &#39;process_point_measurement&#39;</span>
 <span class="sd">                &#39;TRAJ_ANTENNA_PATTERN&#39;: process_traj_antenna_pattern</span>
@@ -344,6 +347,12 @@
         <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;TIMEAVG&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;FLAG_TIME_AVG&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_time_avg_flag&#39;</span>
+        <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;TIMEAVG&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;TIME_STATS&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_time_stats&#39;</span>
+        <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;TIMEAVG&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;TIME_STATS2&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_time_stats2&#39;</span>
         <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;TIMEAVG&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;COLOCATED_GATES&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_colocated_gates&#39;</span>
@@ -544,7 +553,7 @@
     <span class="k">return</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="n">ind_rad</span></div>
 
 
-<span class="k">def</span> <span class="nf">process_fixed_rng_span</span><span class="p">(</span><span class="n">procstatus</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">radar_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="process_fixed_rng_span"><a class="viewcode-back" href="../../../proc.html#pyrad.proc.process_fixed_rng_span">[docs]</a><span class="k">def</span> <span class="nf">process_fixed_rng_span</span><span class="p">(</span><span class="n">procstatus</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">radar_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    For each azimuth-elevation gets the data within a fixed range span</span>
 <span class="sd">    and computes a user-defined statistic: mean, min, max, mode, median</span>
@@ -607,7 +616,7 @@
 
     <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">radar_aux</span><span class="p">}</span>
 
-    <span class="k">return</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="n">ind_rad</span>
+    <span class="k">return</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="n">ind_rad</span></div>
 
 
 <div class="viewcode-block" id="process_roi"><a class="viewcode-back" href="../../../proc.html#pyrad.proc.process_roi">[docs]</a><span class="k">def</span> <span class="nf">process_roi</span><span class="p">(</span><span class="n">procstatus</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">radar_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>

@@ -63,11 +63,13 @@
 <span class="sd">.. autosummary::</span>
 <span class="sd">    :toctree: generated/</span>
 
+<span class="sd">    write_fixed_angle</span>
 <span class="sd">    write_ts_lightning</span>
 <span class="sd">    send_msg</span>
 <span class="sd">    write_alarm_msg</span>
 <span class="sd">    write_last_state</span>
 <span class="sd">    write_smn</span>
+<span class="sd">    write_trt_info</span>
 <span class="sd">    write_trt_cell_data</span>
 <span class="sd">    write_trt_cell_scores</span>
 <span class="sd">    write_trt_cell_lightning</span>
@@ -105,6 +107,58 @@
 <span class="kn">from</span> <span class="nn">pyart.config</span> <span class="k">import</span> <span class="n">get_fillvalue</span>
 
 <span class="kn">from</span> <span class="nn">.io_aux</span> <span class="k">import</span> <span class="n">generate_field_name_str</span>
+
+
+<div class="viewcode-block" id="write_fixed_angle"><a class="viewcode-back" href="../../../io.html#pyrad.io.write_fixed_angle">[docs]</a><span class="k">def</span> <span class="nf">write_fixed_angle</span><span class="p">(</span><span class="n">time_data</span><span class="p">,</span> <span class="n">fixed_angle</span><span class="p">,</span> <span class="n">rad_lat</span><span class="p">,</span> <span class="n">rad_lon</span><span class="p">,</span> <span class="n">rad_alt</span><span class="p">,</span>
+                      <span class="n">fname</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    writes an output file with the fixed angle data</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    time_data : datetime object</span>
+<span class="sd">        The scan time</span>
+<span class="sd">    fixed_angle : float</span>
+<span class="sd">        The first fixed angle in the scan</span>
+<span class="sd">    rad_lat, rad_lon, rad_alt : float</span>
+<span class="sd">        Latitude, longitude [deg] and altitude [m MSL] of the radar</span>
+<span class="sd">    fname : str</span>
+<span class="sd">        The name of the file where to write</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fname : str</span>
+<span class="sd">        the name of the file containing the content</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">filelist</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">filelist</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+            <span class="n">fieldnames</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s1">&#39;date_time&#39;</span><span class="p">,</span> <span class="s1">&#39;rad_lat&#39;</span><span class="p">,</span> <span class="s1">&#39;rad_lon&#39;</span><span class="p">,</span> <span class="s1">&#39;rad_alt&#39;</span><span class="p">,</span> <span class="s1">&#39;fixed_angle&#39;</span><span class="p">]</span>
+            <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">fieldnames</span><span class="p">)</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writeheader</span><span class="p">()</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">({</span>
+                <span class="s1">&#39;date_time&#39;</span><span class="p">:</span> <span class="n">time_data</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M%S&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;rad_lat&#39;</span><span class="p">:</span> <span class="n">rad_lat</span><span class="p">,</span>
+                <span class="s1">&#39;rad_lon&#39;</span><span class="p">:</span> <span class="n">rad_lon</span><span class="p">,</span>
+                <span class="s1">&#39;rad_alt&#39;</span><span class="p">:</span> <span class="n">rad_alt</span><span class="p">,</span>
+                <span class="s1">&#39;fixed_angle&#39;</span><span class="p">:</span> <span class="n">fixed_angle</span><span class="p">})</span>
+
+            <span class="n">csvfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+            <span class="n">fieldnames</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s1">&#39;date_time&#39;</span><span class="p">,</span> <span class="s1">&#39;rad_lat&#39;</span><span class="p">,</span> <span class="s1">&#39;rad_lon&#39;</span><span class="p">,</span> <span class="s1">&#39;rad_alt&#39;</span><span class="p">,</span> <span class="s1">&#39;fixed_angle&#39;</span><span class="p">]</span>
+            <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">fieldnames</span><span class="p">)</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">({</span>
+                <span class="s1">&#39;date_time&#39;</span><span class="p">:</span> <span class="n">time_data</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M%S&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;rad_lat&#39;</span><span class="p">:</span> <span class="n">rad_lat</span><span class="p">,</span>
+                <span class="s1">&#39;rad_lon&#39;</span><span class="p">:</span> <span class="n">rad_lon</span><span class="p">,</span>
+                <span class="s1">&#39;rad_alt&#39;</span><span class="p">:</span> <span class="n">rad_alt</span><span class="p">,</span>
+                <span class="s1">&#39;fixed_angle&#39;</span><span class="p">:</span> <span class="n">fixed_angle</span><span class="p">})</span>
+
+            <span class="n">csvfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="write_ts_lightning"><a class="viewcode-back" href="../../../io.html#pyrad.io.write_ts_lightning">[docs]</a><span class="k">def</span> <span class="nf">write_ts_lightning</span><span class="p">(</span><span class="n">flashnr</span><span class="p">,</span> <span class="n">time_data</span><span class="p">,</span> <span class="n">time_in_flash</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">alt</span><span class="p">,</span> <span class="n">dBm</span><span class="p">,</span>
@@ -351,6 +405,42 @@
     <span class="k">return</span> <span class="n">fname</span></div>
 
 
+<div class="viewcode-block" id="write_trt_info"><a class="viewcode-back" href="../../../io.html#pyrad.io.write_trt_info">[docs]</a><span class="k">def</span> <span class="nf">write_trt_info</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="n">max_rank</span><span class="p">,</span> <span class="n">nscans</span><span class="p">,</span> <span class="n">time_start</span><span class="p">,</span> <span class="n">time_end</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    writes TRT info of the thundertracking</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ids, max_rank, nscans, time_start, time_end: array</span>
+<span class="sd">        the cell parameters</span>
+<span class="sd">    fname : str</span>
+<span class="sd">        file name where to store the data</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fname : str</span>
+<span class="sd">        the name of the file where data has written</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+        <span class="n">fieldnames</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;max_rank&#39;</span><span class="p">,</span> <span class="s1">&#39;nscans_Xband&#39;</span><span class="p">,</span> <span class="s1">&#39;time_start&#39;</span><span class="p">,</span> <span class="s1">&#39;time_end&#39;</span><span class="p">]</span>
+        <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">fieldnames</span><span class="p">)</span>
+        <span class="n">writer</span><span class="o">.</span><span class="n">writeheader</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">id_cell</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ids</span><span class="p">):</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">({</span>
+                <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">id_cell</span><span class="p">,</span>
+                <span class="s1">&#39;max_rank&#39;</span><span class="p">:</span> <span class="n">max_rank</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="s1">&#39;nscans_Xband&#39;</span><span class="p">:</span> <span class="n">nscans</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="s1">&#39;time_start&#39;</span><span class="p">:</span> <span class="n">time_start</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;time_end&#39;</span><span class="p">:</span> <span class="n">time_end</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M&#39;</span><span class="p">)</span>
+            <span class="p">})</span>
+
+        <span class="n">csvfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">fname</span></div>
+
+
 <div class="viewcode-block" id="write_trt_cell_data"><a class="viewcode-back" href="../../../io.html#pyrad.io.write_trt_cell_data">[docs]</a><span class="k">def</span> <span class="nf">write_trt_cell_data</span><span class="p">(</span>
         <span class="n">traj_ID</span><span class="p">,</span> <span class="n">yyyymmddHHMM</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">ell_L</span><span class="p">,</span> <span class="n">ell_S</span><span class="p">,</span> <span class="n">ell_or</span><span class="p">,</span> <span class="n">area</span><span class="p">,</span>
         <span class="n">vel_x</span><span class="p">,</span> <span class="n">vel_y</span><span class="p">,</span> <span class="n">det</span><span class="p">,</span> <span class="n">RANKr</span><span class="p">,</span> <span class="n">CG_n</span><span class="p">,</span> <span class="n">CG_p</span><span class="p">,</span> <span class="n">CG</span><span class="p">,</span> <span class="n">CG_percent_p</span><span class="p">,</span> <span class="n">ET45</span><span class="p">,</span>
@@ -375,59 +465,63 @@
 <span class="sd">        the name of the file where data has written</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
-        <span class="n">fieldnames</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="s1">&#39;traj_ID&#39;</span><span class="p">,</span> <span class="s1">&#39;yyyymmddHHMM&#39;</span><span class="p">,</span> <span class="s1">&#39;lon&#39;</span><span class="p">,</span> <span class="s1">&#39;lat&#39;</span><span class="p">,</span> <span class="s1">&#39;ell_L&#39;</span><span class="p">,</span> <span class="s1">&#39;ell_S&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;ell_or&#39;</span><span class="p">,</span> <span class="s1">&#39;area&#39;</span><span class="p">,</span> <span class="s1">&#39;vel_x&#39;</span><span class="p">,</span> <span class="s1">&#39;vel_y&#39;</span><span class="p">,</span> <span class="s1">&#39;det&#39;</span><span class="p">,</span> <span class="s1">&#39;RANKr&#39;</span><span class="p">,</span> <span class="s1">&#39;CG-&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;CG+&#39;</span><span class="p">,</span> <span class="s1">&#39;CG&#39;</span><span class="p">,</span> <span class="s1">&#39;%CG+&#39;</span><span class="p">,</span> <span class="s1">&#39;ET45&#39;</span><span class="p">,</span> <span class="s1">&#39;ET45m&#39;</span><span class="p">,</span> <span class="s1">&#39;ET15&#39;</span><span class="p">,</span> <span class="s1">&#39;ET15m&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;VIL&#39;</span><span class="p">,</span> <span class="s1">&#39;maxH&#39;</span><span class="p">,</span> <span class="s1">&#39;maxHm&#39;</span><span class="p">,</span> <span class="s1">&#39;POH&#39;</span><span class="p">,</span> <span class="s1">&#39;RANK&#39;</span><span class="p">,</span> <span class="s1">&#39;Dvel_x&#39;</span><span class="p">,</span> <span class="s1">&#39;Dvel_y&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;cell_contour_lon-lat&#39;</span><span class="p">]</span>
-        <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">fieldnames</span><span class="p">)</span>
-        <span class="n">writer</span><span class="o">.</span><span class="n">writeheader</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">traj_ID_el</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">traj_ID</span><span class="p">):</span>
-            <span class="n">cell_contour_aux</span> <span class="o">=</span> <span class="n">cell_contour</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-            <span class="n">npoints_contour</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cell_contour_aux</span><span class="p">[</span><span class="s1">&#39;lon&#39;</span><span class="p">])</span>
-            <span class="n">cell_contour_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">npoints_contour</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-            <span class="n">cell_contour_arr</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">cell_contour_aux</span><span class="p">[</span><span class="s1">&#39;lon&#39;</span><span class="p">]</span>
-            <span class="n">cell_contour_arr</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">cell_contour_aux</span><span class="p">[</span><span class="s1">&#39;lat&#39;</span><span class="p">]</span>
-            <span class="n">cell_contour_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cell_contour_arr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">npoints_contour</span><span class="p">):</span>
-                <span class="n">cell_contour_str</span> <span class="o">+=</span> <span class="s1">&#39; &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">cell_contour_arr</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+            <span class="n">fieldnames</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s1">&#39;traj_ID&#39;</span><span class="p">,</span> <span class="s1">&#39;yyyymmddHHMM&#39;</span><span class="p">,</span> <span class="s1">&#39;lon&#39;</span><span class="p">,</span> <span class="s1">&#39;lat&#39;</span><span class="p">,</span> <span class="s1">&#39;ell_L&#39;</span><span class="p">,</span> <span class="s1">&#39;ell_S&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;ell_or&#39;</span><span class="p">,</span> <span class="s1">&#39;area&#39;</span><span class="p">,</span> <span class="s1">&#39;vel_x&#39;</span><span class="p">,</span> <span class="s1">&#39;vel_y&#39;</span><span class="p">,</span> <span class="s1">&#39;det&#39;</span><span class="p">,</span> <span class="s1">&#39;RANKr&#39;</span><span class="p">,</span> <span class="s1">&#39;CG-&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;CG+&#39;</span><span class="p">,</span> <span class="s1">&#39;CG&#39;</span><span class="p">,</span> <span class="s1">&#39;%CG+&#39;</span><span class="p">,</span> <span class="s1">&#39;ET45&#39;</span><span class="p">,</span> <span class="s1">&#39;ET45m&#39;</span><span class="p">,</span> <span class="s1">&#39;ET15&#39;</span><span class="p">,</span> <span class="s1">&#39;ET15m&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;VIL&#39;</span><span class="p">,</span> <span class="s1">&#39;maxH&#39;</span><span class="p">,</span> <span class="s1">&#39;maxHm&#39;</span><span class="p">,</span> <span class="s1">&#39;POH&#39;</span><span class="p">,</span> <span class="s1">&#39;RANK&#39;</span><span class="p">,</span> <span class="s1">&#39;Dvel_x&#39;</span><span class="p">,</span> <span class="s1">&#39;Dvel_y&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;cell_contour_lon-lat&#39;</span><span class="p">]</span>
+            <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">fieldnames</span><span class="p">)</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writeheader</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">traj_ID_el</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">traj_ID</span><span class="p">):</span>
+                <span class="n">cell_contour_aux</span> <span class="o">=</span> <span class="n">cell_contour</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">npoints_contour</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cell_contour_aux</span><span class="p">[</span><span class="s1">&#39;lon&#39;</span><span class="p">])</span>
+                <span class="n">cell_contour_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">npoints_contour</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+                <span class="n">cell_contour_arr</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">cell_contour_aux</span><span class="p">[</span><span class="s1">&#39;lon&#39;</span><span class="p">]</span>
+                <span class="n">cell_contour_arr</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">cell_contour_aux</span><span class="p">[</span><span class="s1">&#39;lat&#39;</span><span class="p">]</span>
+                <span class="n">cell_contour_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cell_contour_arr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">npoints_contour</span><span class="p">):</span>
+                    <span class="n">cell_contour_str</span> <span class="o">+=</span> <span class="s1">&#39; &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">cell_contour_arr</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
 
-            <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">({</span>
-                <span class="s1">&#39;traj_ID&#39;</span><span class="p">:</span> <span class="n">traj_ID_el</span><span class="p">,</span>
-                <span class="s1">&#39;yyyymmddHHMM&#39;</span><span class="p">:</span> <span class="n">yyyymmddHHMM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M&#39;</span><span class="p">),</span>
-                <span class="s1">&#39;lon&#39;</span><span class="p">:</span> <span class="n">lon</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;lat&#39;</span><span class="p">:</span> <span class="n">lat</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;ell_L&#39;</span><span class="p">:</span> <span class="n">ell_L</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;ell_S&#39;</span><span class="p">:</span> <span class="n">ell_S</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;ell_or&#39;</span><span class="p">:</span> <span class="n">ell_or</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;area&#39;</span><span class="p">:</span> <span class="n">area</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;vel_x&#39;</span><span class="p">:</span> <span class="n">vel_x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;vel_y&#39;</span><span class="p">:</span> <span class="n">vel_y</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;det&#39;</span><span class="p">:</span> <span class="n">det</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;RANKr&#39;</span><span class="p">:</span> <span class="n">RANKr</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;CG-&#39;</span><span class="p">:</span> <span class="n">CG_n</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;CG+&#39;</span><span class="p">:</span> <span class="n">CG_p</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;CG&#39;</span><span class="p">:</span> <span class="n">CG</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;%CG+&#39;</span><span class="p">:</span> <span class="n">CG_percent_p</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;ET45&#39;</span><span class="p">:</span> <span class="n">ET45</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;ET45m&#39;</span><span class="p">:</span> <span class="n">ET45m</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;ET15&#39;</span><span class="p">:</span> <span class="n">ET15</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;ET15m&#39;</span><span class="p">:</span> <span class="n">ET15m</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;VIL&#39;</span><span class="p">:</span> <span class="n">VIL</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;maxH&#39;</span><span class="p">:</span> <span class="n">maxH</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;maxHm&#39;</span><span class="p">:</span> <span class="n">maxHm</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;POH&#39;</span><span class="p">:</span> <span class="n">POH</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;RANK&#39;</span><span class="p">:</span> <span class="n">RANK</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;Dvel_x&#39;</span><span class="p">:</span> <span class="n">Dvel_x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;Dvel_y&#39;</span><span class="p">:</span> <span class="n">Dvel_y</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="s1">&#39;cell_contour_lon-lat&#39;</span><span class="p">:</span> <span class="n">cell_contour_str</span>
-            <span class="p">})</span>
+                <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">({</span>
+                    <span class="s1">&#39;traj_ID&#39;</span><span class="p">:</span> <span class="n">traj_ID_el</span><span class="p">,</span>
+                    <span class="s1">&#39;yyyymmddHHMM&#39;</span><span class="p">:</span> <span class="n">yyyymmddHHMM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;lon&#39;</span><span class="p">:</span> <span class="n">lon</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;lat&#39;</span><span class="p">:</span> <span class="n">lat</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;ell_L&#39;</span><span class="p">:</span> <span class="n">ell_L</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;ell_S&#39;</span><span class="p">:</span> <span class="n">ell_S</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;ell_or&#39;</span><span class="p">:</span> <span class="n">ell_or</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;area&#39;</span><span class="p">:</span> <span class="n">area</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;vel_x&#39;</span><span class="p">:</span> <span class="n">vel_x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;vel_y&#39;</span><span class="p">:</span> <span class="n">vel_y</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;det&#39;</span><span class="p">:</span> <span class="n">det</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;RANKr&#39;</span><span class="p">:</span> <span class="n">RANKr</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;CG-&#39;</span><span class="p">:</span> <span class="n">CG_n</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;CG+&#39;</span><span class="p">:</span> <span class="n">CG_p</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;CG&#39;</span><span class="p">:</span> <span class="n">CG</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;%CG+&#39;</span><span class="p">:</span> <span class="n">CG_percent_p</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;ET45&#39;</span><span class="p">:</span> <span class="n">ET45</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;ET45m&#39;</span><span class="p">:</span> <span class="n">ET45m</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;ET15&#39;</span><span class="p">:</span> <span class="n">ET15</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;ET15m&#39;</span><span class="p">:</span> <span class="n">ET15m</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;VIL&#39;</span><span class="p">:</span> <span class="n">VIL</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;maxH&#39;</span><span class="p">:</span> <span class="n">maxH</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;maxHm&#39;</span><span class="p">:</span> <span class="n">maxHm</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;POH&#39;</span><span class="p">:</span> <span class="n">POH</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;RANK&#39;</span><span class="p">:</span> <span class="n">RANK</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;Dvel_x&#39;</span><span class="p">:</span> <span class="n">Dvel_x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;Dvel_y&#39;</span><span class="p">:</span> <span class="n">Dvel_y</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s1">&#39;cell_contour_lon-lat&#39;</span><span class="p">:</span> <span class="n">cell_contour_str</span>
+                <span class="p">})</span>
 
-        <span class="n">csvfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">csvfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-    <span class="k">return</span> <span class="n">fname</span></div>
+            <span class="k">return</span> <span class="n">fname</span>
+    <span class="k">except</span> <span class="ne">EnvironmentError</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to write on file &#39;</span><span class="o">+</span><span class="n">fname</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="write_trt_cell_scores"><a class="viewcode-back" href="../../../io.html#pyrad.io.write_trt_cell_scores">[docs]</a><span class="k">def</span> <span class="nf">write_trt_cell_scores</span><span class="p">(</span>

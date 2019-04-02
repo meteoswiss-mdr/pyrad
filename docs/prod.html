@@ -1124,6 +1124,9 @@ radar angles. Default 1.</dd>
 <dt>ele_res, azi_res: float or None</dt>
 <dd>The resolution of the fixed grid [deg]. If None it will be
 obtained from the separation between angles</dd>
+<dt>vmin, vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
+<dd>Min and Max values of the color scale. If None the values
+are taken from the Py-ART config file</dd>
 </dl>
 </dd>
 </dl>
@@ -1583,6 +1586,8 @@ level).</dd>
 </dl>
 </div></blockquote>
 </dd>
+<dt>‘SAVE_FIXED_ANGLE’: Saves the position of the first fix angle in a</dt>
+<dd>csv file</dd>
 <dt>‘TIME_RANGE’: Plots a time-range plot</dt>
 <dd><dl class="first last docutils">
 <dt>User defined parameters:</dt>

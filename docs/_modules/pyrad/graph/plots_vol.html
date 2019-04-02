@@ -549,7 +549,7 @@
 
 
 <div class="viewcode-block" id="plot_fixed_rng"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_fixed_rng">[docs]</a><span class="k">def</span> <span class="nf">plot_fixed_rng</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">azi_res</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                   <span class="n">ele_res</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ang_tol</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+                   <span class="n">ele_res</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ang_tol</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    plots a fixed range plot</span>
 
@@ -567,6 +567,9 @@
 <span class="sd">        The nominal azimuth and elevation angle resolution [deg]</span>
 <span class="sd">    ang_tol : float</span>
 <span class="sd">        The tolerance between the nominal and the actual radar angle</span>
+<span class="sd">    vmin, vmax : float</span>
+<span class="sd">        Min and Max values of the color scale. If None it is going to be taken</span>
+<span class="sd">        from the Py-ART config files</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -672,7 +675,7 @@
     <span class="k">return</span> <span class="n">_plot_time_range</span><span class="p">(</span>
         <span class="n">azi_vec</span><span class="p">,</span> <span class="n">ele_vec</span><span class="p">,</span> <span class="n">field_2D</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">titl</span><span class="o">=</span><span class="n">titl</span><span class="p">,</span>
         <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;azimuth (deg)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;elevation (deg)&#39;</span><span class="p">,</span>
-        <span class="n">figsize</span><span class="o">=</span><span class="p">[</span><span class="n">xsize</span><span class="p">,</span> <span class="n">ysize</span><span class="p">],</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span></div>
+        <span class="n">figsize</span><span class="o">=</span><span class="p">[</span><span class="n">xsize</span><span class="p">,</span> <span class="n">ysize</span><span class="p">],</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="plot_fixed_rng_span"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_fixed_rng_span">[docs]</a><span class="k">def</span> <span class="nf">plot_fixed_rng_span</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">azi_res</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>

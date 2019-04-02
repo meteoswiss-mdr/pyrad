@@ -540,7 +540,7 @@ returns the handle to the figure</p>
 
 <dl class="function">
 <dt id="pyrad.graph.plot_fixed_rng">
-<code class="descclassname">pyrad.graph.</code><code class="descname">plot_fixed_rng</code><span class="sig-paren">(</span><em>radar</em>, <em>field_name</em>, <em>prdcfg</em>, <em>fname_list</em>, <em>azi_res=None</em>, <em>ele_res=None</em>, <em>ang_tol=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots_vol.html#plot_fixed_rng"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_fixed_rng" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyrad.graph.</code><code class="descname">plot_fixed_rng</code><span class="sig-paren">(</span><em>radar</em>, <em>field_name</em>, <em>prdcfg</em>, <em>fname_list</em>, <em>azi_res=None</em>, <em>ele_res=None</em>, <em>ang_tol=1.0</em>, <em>vmin=None</em>, <em>vmax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots_vol.html#plot_fixed_rng"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_fixed_rng" title="Permalink to this definition">¶</a></dt>
 <dd><p>plots a fixed range plot</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -564,6 +564,10 @@ returns the handle to the figure</p>
 </dd>
 <dt><strong>ang_tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
 <dd><p class="first last">The tolerance between the nominal and the actual radar angle</p>
+</dd>
+<dt><strong>vmin, vmax</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Min and Max values of the color scale. If None it is going to be taken
+from the Py-ART config files</p>
 </dd>
 </dl>
 </td>
