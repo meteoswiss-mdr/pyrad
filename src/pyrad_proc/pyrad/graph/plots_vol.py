@@ -493,7 +493,7 @@ def plot_time_range(radar, field_name, ind_sweep, prdcfg, fname_list):
 
 
 def plot_fixed_rng(radar, field_name, prdcfg, fname_list, azi_res=None,
-                   ele_res=None, ang_tol=1.):
+                   ele_res=None, ang_tol=1., vmin=None, vmax=None):
     """
     plots a fixed range plot
 
@@ -511,6 +511,9 @@ def plot_fixed_rng(radar, field_name, prdcfg, fname_list, azi_res=None,
         The nominal azimuth and elevation angle resolution [deg]
     ang_tol : float
         The tolerance between the nominal and the actual radar angle
+    vmin, vmax : float
+        Min and Max values of the color scale. If None it is going to be taken
+        from the Py-ART config files
 
     Returns
     -------
@@ -616,7 +619,7 @@ def plot_fixed_rng(radar, field_name, prdcfg, fname_list, azi_res=None,
     return _plot_time_range(
         azi_vec, ele_vec, field_2D, field_name, fname_list, titl=titl,
         xlabel='azimuth (deg)', ylabel='elevation (deg)',
-        figsize=[xsize, ysize], dpi=dpi)
+        figsize=[xsize, ysize], vmin=vmin, vmax=vmax, dpi=dpi)
 
 
 def plot_fixed_rng_span(radar, field_name, prdcfg, fname_list, azi_res=None,

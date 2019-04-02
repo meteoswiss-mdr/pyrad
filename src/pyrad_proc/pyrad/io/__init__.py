@@ -74,6 +74,9 @@ Reading other data
     read_trt_data
     read_trt_traj_data
     read_trt_cell_lightning
+    read_trt_info_all
+    read_trt_info
+    read_thundertracking_info
     read_rhi_profile
     read_histogram
     read_quantiles
@@ -93,6 +96,7 @@ Writing data
     write_alarm_msg
     write_last_state
     write_smn
+    write_trt_info
     write_trt_cell_data
     write_trt_cell_scores
     write_trt_cell_lightning
@@ -111,6 +115,7 @@ Writing data
     write_colocated_data_time_avg
     write_sun_hits
     write_sun_retrieval
+    write_fixed_angle
 
 
 Auxiliary functions
@@ -181,7 +186,8 @@ from .read_data_sensor import get_sensor_data, read_smn, read_smn2
 from .read_data_sensor import read_disdro_scattering, read_trt_data
 from .read_data_sensor import read_trt_traj_data, read_lightning_all
 from .read_data_sensor import read_trt_scores, read_trt_cell_lightning
-from .read_data_sensor import read_meteorage
+from .read_data_sensor import read_meteorage, read_trt_info_all, read_trt_info
+from .read_data_sensor import read_thundertracking_info
 
 from .read_data_sun import read_sun_hits_multiple_days, read_sun_hits
 from .read_data_sun import read_sun_retrieval, read_solar_flux
@@ -196,6 +202,7 @@ from .write_data import write_last_state, write_alarm_msg, send_msg
 from .write_data import write_excess_gates, write_trt_cell_data
 from .write_data import write_histogram, write_quantiles, write_ts_lightning
 from .write_data import write_trt_cell_scores, write_trt_cell_lightning
+from .write_data import write_trt_info, write_fixed_angle
 
 from .io_aux import get_save_dir, make_filename, get_new_rainbow_file_name
 from .io_aux import get_datetime, get_dataset_fields, map_hydro, map_Doppler
