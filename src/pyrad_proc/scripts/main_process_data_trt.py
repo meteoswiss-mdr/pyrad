@@ -217,7 +217,7 @@ def main():
             elif args.path_structure == 0:
                 file_base2 = args.radarbase+time_dir+'/'+dataset+'_trt_traj/'
             elif args.path_structure == 2:
-                file_base2 = args.radarbase+time_dir+'/trt_traj/'
+                file_base2 = args.radarbase+time_dir+'/trt_traj_ls/'
 
             field_name = get_fieldname_pyart(datatype)
             field_dict = get_metadata(field_name)

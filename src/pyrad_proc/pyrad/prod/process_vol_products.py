@@ -117,6 +117,9 @@ def generate_vol_products(dataset, prdcfg):
                 ele_res, azi_res: float or None
                     The resolution of the fixed grid [deg]. If None it will be
                     obtained from the separation between angles
+                vmin, vmax : float or None
+                    Min and Max values of the color scale. If None the values
+                    are taken from the Py-ART config file
         'FIXED_RNG_SPAN_IMAGE': Plots a user-defined statistic over a fixed
             range image
             User defined parameters:
@@ -456,6 +459,8 @@ def generate_vol_products(dataset, prdcfg):
                     The compression options allowed by the hdf5. Depends on
                     the type of compression. Default 6 (The gzip compression
                     level).
+        'SAVE_FIXED_ANGLE': Saves the position of the first fix angle in a
+            csv file
         'TIME_RANGE': Plots a time-range plot
             User defined parameters:
                 anglenr: float
@@ -1770,6 +1775,8 @@ def generate_vol_products(dataset, prdcfg):
         ang_tol = prdcfg.get('AngTol', 1.)
         azi_res = prdcfg.get('azi_res', None)
         ele_res = prdcfg.get('ele_res', None)
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -1787,7 +1794,8 @@ def generate_vol_products(dataset, prdcfg):
 
         plot_fixed_rng(
             dataset['radar_out'], field_name, prdcfg, fname_list,
-            azi_res=azi_res, ele_res=ele_res, ang_tol=ang_tol)
+            azi_res=azi_res, ele_res=ele_res, ang_tol=ang_tol, vmin=vmin,
+            vmax=vmax)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -2583,6 +2591,9 @@ def generate_vol_products(dataset, prdcfg):
 
         write_fixed_angle(
             prdcfg['timeinfo'], dataset['radar_out'].fixed_angle['data'][0],
+            dataset['radar_out'].latitude['data'][0],
+            dataset['radar_out'].longitude['data'][0],
+            dataset['radar_out'].altitude['data'][0],
             fname)
         print('saved file: '+fname)
 

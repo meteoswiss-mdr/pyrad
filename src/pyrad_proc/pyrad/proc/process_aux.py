@@ -13,6 +13,7 @@ determined points or regions of interest.
     process_raw
     process_save_radar
     process_fixed_rng
+    process_fixed_rng_span
     process_roi
     process_grid
     process_azimuthal_average
@@ -130,6 +131,8 @@ def get_process_func(dataset_type, dsname):
                 'FLAG_TIME_AVG': process_time_avg_flag
                 'TIME_AVG': process_time_avg
                 'WEIGHTED_TIME_AVG': process_weighted_time_avg
+                'TIME_STATS': process_time_stats
+                'TIME_STATS2': process_time_stats2
             'TIMESERIES' format output:
                 'POINT_MEASUREMENT': 'process_point_measurement'
                 'TRAJ_ANTENNA_PATTERN': process_traj_antenna_pattern
@@ -288,6 +291,12 @@ def get_process_func(dataset_type, dsname):
         dsformat = 'TIMEAVG'
     elif dataset_type == 'FLAG_TIME_AVG':
         func_name = 'process_time_avg_flag'
+        dsformat = 'TIMEAVG'
+    elif dataset_type == 'TIME_STATS':
+        func_name = 'process_time_stats'
+        dsformat = 'TIMEAVG'
+    elif dataset_type == 'TIME_STATS2':
+        func_name = 'process_time_stats2'
         dsformat = 'TIMEAVG'
     elif dataset_type == 'COLOCATED_GATES':
         func_name = 'process_colocated_gates'

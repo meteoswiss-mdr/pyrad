@@ -17,6 +17,9 @@ import datetime
 import atexit
 from warnings import warn
 
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+
 import numpy as np
 
 from pyrad.io import read_histogram
@@ -30,6 +33,12 @@ def main():
     """
     # basepath = '/data/pyrad_products/rad4alp_hydro_PHA/'
     basepath = '/store/msrad/radar/pyrad_products/rad4alp_hydro_PHA/data_analysis_min10sources/'
+
+    create_legend(basepath+'legend1.png', label1='All data', label2='IC', label3='CG', dpi=72)
+    create_legend(basepath+'legend2.png', label1='CGt', label2='-CG', label3='+CG', dpi=72)
+    create_legend(basepath+'legend3.png', label1='Liquid AND mixed phase orig', label2='liquid orig', label3='mixed phase orig', dpi=72)
+
+    return
 
     print("====== Lightning post-processing started: %s" %
           datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
@@ -332,6 +341,21 @@ def main():
         print(bin_centers[ind3])
 
         print('plotted '+''.join(fname_list))
+
+
+def create_legend(fname, label1='All data', label2='IC', label3='CG', dpi=72):
+    blue_patch = mpatches.Patch(color='b', alpha=0.25, label=label1)
+    green_patch = mpatches.Patch(color='g', alpha=0.25, label=label2)
+    red_patch = mpatches.Patch(color='r', alpha=0.25, label=label3)
+
+    fig = plt.figure(figsize=[10, 6], dpi=72)
+    ax = fig.add_subplot(111)
+
+    ax.legend(handles=[blue_patch, green_patch, red_patch])
+    fig.savefig(fname, dpi=dpi)
+    plt.close(fig)
+
+
 
 
 

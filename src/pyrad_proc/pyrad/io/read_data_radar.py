@@ -1521,6 +1521,9 @@ def merge_fields_pyrad(basepath, loadname, voltime, datatype_list,
             else:
                 add_field(radar, radar_aux)
 
+    if radar is None:
+        return radar
+
     for field in radar.fields:
         radar.fields[field]['data'] = np.ma.asarray(
             radar.fields[field]['data'])

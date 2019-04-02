@@ -17,6 +17,7 @@ Auxiliary functions
     process_raw
     process_save_radar
     process_fixed_rng
+    process_fixed_rng_span
     process_roi
     process_grid
     process_azimuthal_average
@@ -80,6 +81,8 @@ Monitoring, calibration and noise correction
     process_time_avg
     process_weighted_time_avg
     process_time_avg_flag
+    process_time_stats
+    process_time_stats2
     process_colocated_gates
     process_intercomp
     process_intercomp_time_avg
@@ -156,7 +159,7 @@ COSMO data
 
 from .process_aux import get_process_func, process_raw, process_save_radar
 from .process_aux import process_grid, process_roi, process_azimuthal_average
-from .process_aux import process_fixed_rng
+from .process_aux import process_fixed_rng, process_fixed_rng_span
 
 from .process_timeseries import process_point_measurement, process_qvp
 from .process_timeseries import process_rqvp, process_evp, process_svp
@@ -189,8 +192,8 @@ from .process_calib import process_gc_monitoring, process_sun_hits
 from .process_calib import process_time_avg_std
 
 from .process_intercomp import process_time_avg, process_weighted_time_avg
-from .process_intercomp import process_time_avg_flag
-from .process_intercomp import process_colocated_gates
+from .process_intercomp import process_time_avg_flag, process_time_stats
+from .process_intercomp import process_colocated_gates, process_time_stats2
 from .process_intercomp import process_intercomp, process_intercomp_time_avg
 
 from .process_monitoring import process_zdr_snow, process_zdr_precip

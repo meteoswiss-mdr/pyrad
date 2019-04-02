@@ -3,7 +3,10 @@
 #
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 17
+# Modified 29-03-2019: KDP from Rainbow not used anymore.
+#                      Added Ahc to the list of saved datatypes
+
+dataSetList STRARR 18
     l0:dBZ
     l0:ZDR
     l0:RhoHV
@@ -18,9 +21,10 @@ dataSetList STRARR 17
     l3:echoFilter_Ah
     l2:outlierFilter
     l2:Att_ZPhi
-    l3:hydroclass
-    l4:rainrate
-    l5:savevol
+    l3:KDPc_leastsquare2w
+    l4:hydroclass
+    l5:rainrate
+    l6:savevol
 
 
 # ==========================================================================================
@@ -208,18 +212,17 @@ echoID STRUCT 3
 # echo type 3 : precip, 2 : clutter, 1 : noise
 echoFilter STRUCT 5
     type STRING ECHO_FILTER
-    datatype STRARR 8
+    datatype STRARR 7
         PROC:echoID
         dBZ
         ZDR
         RhoHV
-        PhiDP
-        KDP
+        PhiDP        
 		V
 		W
     echo_type INT 3
     MAKE_GLOBAL INT 1
-    products STRUCT 12
+    products STRUCT 9
       AZ0_RhoHVc STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 0
@@ -243,19 +246,7 @@ echoFilter STRUCT 5
       AZ2_Wc STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 2
-         voltype STRING Wc
-      AZ0_KDPc STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 0
-         voltype STRING KDPc
-      AZ1_KDPc STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 1
-         voltype STRING KDPc
-      AZ2_KDPc STRUCT 3
-         type  STRING RHI_IMAGE
-         anglenr INT 2
-         voltype STRING KDPc
+         voltype STRING Wc      
       AZ0_PhiDPc STRUCT 3
          type  STRING RHI_IMAGE
          anglenr INT 0
@@ -347,6 +338,34 @@ Att_ZPhi STRUCT 6
 
 
 # ==========================================================================================
+#                 KDP processing
+# ==========================================================================================
+KDPc_leastsquare2w STRUCT 8
+    type STRING KDP_LEASTSQUARE_2W
+    datatype STRARR 2
+        PROC:PhiDPc
+        PROC:dBZc
+    rwinds FLOAT 1000.
+    rwindl FLOAT 3000.
+    Zthr FLOAT 40.
+    vectorize INT 1
+    MAKE_GLOBAL INT 1
+    products STRUCT 3
+      AZ0 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 0
+         voltype STRING KDPc
+      AZ1 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 1
+         voltype STRING KDPc
+      AZ2 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 2
+         voltype STRING KDPc
+         
+         
+# ==========================================================================================
 #                 hydrometeor classification products
 # ==========================================================================================
 hydroclass STRUCT 7
@@ -412,7 +431,7 @@ savevol STRUCT 3
     products STRUCT 1
       RHI STRUCT 2
          type  STRING SAVEALL
-         datatypes STRARR 10
+         datatypes STRARR 11
             TEMP
             dBZc
             ZDRc
@@ -423,3 +442,4 @@ savevol STRUCT 3
             Wc
             hydro
             RR
+            Ahc

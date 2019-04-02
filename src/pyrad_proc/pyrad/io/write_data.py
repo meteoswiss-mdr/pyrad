@@ -53,7 +53,8 @@ from pyart.config import get_fillvalue
 from .io_aux import generate_field_name_str
 
 
-def write_fixed_angle(time_data, fixed_angle, fname):
+def write_fixed_angle(time_data, fixed_angle, rad_lat, rad_lon, rad_alt,
+                      fname):
     """
     writes an output file with the fixed angle data
 
@@ -63,6 +64,10 @@ def write_fixed_angle(time_data, fixed_angle, fname):
         The scan time
     fixed_angle : float
         The first fixed angle in the scan
+    rad_lat, rad_lon, rad_alt : float
+        Latitude, longitude [deg] and altitude [m MSL] of the radar
+    fname : str
+        The name of the file where to write
 
     Returns
     -------
@@ -73,20 +78,28 @@ def write_fixed_angle(time_data, fixed_angle, fname):
     filelist = glob.glob(fname)
     if not filelist:
         with open(fname, 'w', newline='') as csvfile:
-            fieldnames = ['date_time', 'fixed_angle']
+            fieldnames = [
+                'date_time', 'rad_lat', 'rad_lon', 'rad_alt', 'fixed_angle']
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
             writer.writerow({
                 'date_time': time_data.strftime('%Y%m%d%H%M%S'),
+                'rad_lat': rad_lat,
+                'rad_lon': rad_lon,
+                'rad_alt': rad_alt,
                 'fixed_angle': fixed_angle})
 
             csvfile.close()
     else:
         with open(fname, 'a', newline='') as csvfile:
-            fieldnames = ['date_time', 'fixed_angle']
+            fieldnames = [
+                'date_time', 'rad_lat', 'rad_lon', 'rad_alt', 'fixed_angle']
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writerow({
                 'date_time': time_data.strftime('%Y%m%d%H%M%S'),
+                'rad_lat': rad_lat,
+                'rad_lon': rad_lon,
+                'rad_alt': rad_alt,
                 'fixed_angle': fixed_angle})
 
             csvfile.close()

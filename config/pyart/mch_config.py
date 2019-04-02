@@ -873,6 +873,12 @@ DEFAULT_METADATA = {
         'long_name': 'Corrected mean Doppler velocity',
         'coordinates': 'elevation azimuth range'},
 
+    unfiltered_velocity: {
+        'units': 'm/s',
+        'standard_name': 'mean_Doppler_velocity',
+        'long_name': 'Unfiltered mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
     dealiased_velocity: {
         'units': 'm/s',
         'standard_name': 'mean_Doppler_velocity',
@@ -916,6 +922,12 @@ DEFAULT_METADATA = {
         'long_name': 'Corrected Doppler spectrum width',
         'coordinates': 'elevation azimuth range'},
 
+    unfiltered_spectrum_width: {
+        'units': 'm/s',
+        'standard_name': 'Doppler_spectrum_width',
+        'long_name': 'Unfiltered Doppler spectrum width',
+        'coordinates': 'elevation azimuth range'},
+
     # Dual-polarization fields
     differential_reflectivity: {
         'units': 'dB',
@@ -930,6 +942,12 @@ DEFAULT_METADATA = {
         'units': 'dB',
         'standard_name': 'differential_reflectivity',
         'long_name': 'Corrected differential reflectivity',
+        'coordinates': 'elevation azimuth range'},
+
+    unfiltered_differential_reflectivity: {
+        'units': 'dB',
+        'standard_name': 'differential_reflectivity',
+        'long_name': 'Unfiltered differential reflectivity',
         'coordinates': 'elevation azimuth range'},
 
     differential_reflectivity_in_precipitation: {
