@@ -178,20 +178,27 @@ def generate_timeseries_products(dataset, prdcfg):
             return None
 
         dpi = prdcfg.get('dpi', 72)
+        set_time_info = prdcfg.get('set_time_info', 1)
 
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
         r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
         gateinfo = ('az'+az+'r'+r+'el'+el)
 
+        timeinfo = None
+        timeformat = None
+        if set_time_info:
+            timeinfo = prdcfg['timeinfo']
+            timeformat = '%Y%m%d'
+
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdsavedir, timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=timeinfo)
 
         csvfname = make_filename(
             'ts', prdcfg['dstype'], dataset['datatype'], ['csv'],
-            prdcfginfo=gateinfo, timeinfo=prdcfg['timeinfo'],
-            timeformat='%Y%m%d')[0]
+            prdcfginfo=gateinfo, timeinfo=timeinfo,
+            timeformat=timeformat)[0]
 
         csvfname = savedir+csvfname
 
@@ -208,10 +215,14 @@ def generate_timeseries_products(dataset, prdcfg):
         vmin = prdcfg.get('vmin', None)
         vmax = prdcfg.get('vmax', None)
 
+        timeinfo_fig = None
+        if set_time_info:
+            timeinfo_fig = date[0]
+
         figfname_list = make_filename(
             'ts', prdcfg['dstype'], dataset['datatype'],
             prdcfg['imgformat'], prdcfginfo=gateinfo,
-            timeinfo=date[0], timeformat='%Y%m%d')
+            timeinfo=timeinfo_fig, timeformat=timeformat)
 
         for i, figfname in enumerate(figfname_list):
             figfname_list[i] = savedir+figfname

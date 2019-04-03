@@ -1471,10 +1471,18 @@ def merge_fields_pyrad(basepath, loadname, voltime, datatype_list,
              '.nc')
     else:
         if termination == '.nc':
-            radar = pyart.io.read_cfradial(filename[0])
+            try:
+                radar = pyart.io.read_cfradial(filename[0])
+            except OSError as ee:
+                warn(str(ee))
+                warn('Unable to read file '+filename[0])
         else:
-            radar = pyart.aux_io.read_odim_h5(filename[0])
-        if rmax > 0.:
+            try:
+                radar = pyart.aux_io.read_odim_h5(filename[0])
+            except OSError as ee:
+                warn(str(ee))
+                warn('Unable to read file '+filename[0])
+        if radar is not None and rmax > 0.:
             radar.range['data'] = radar.range['data'][
                 radar.range['data'] < rmax]
             radar.ngates = len(radar.range['data'])
@@ -1500,10 +1508,18 @@ def merge_fields_pyrad(basepath, loadname, voltime, datatype_list,
                 continue
 
             if termination == '.nc':
-                radar_aux = pyart.io.read_cfradial(filename[0])
+                try:
+                    radar_aux = pyart.io.read_cfradial(filename[0])
+                except OSError as ee:
+                    warn(str(ee))
+                    warn('Unable to read file '+filename[0])
             else:
-                radar_aux = pyart.aux_io.read_odim_h5(filename[0])
-            if rmax > 0.:
+                try:
+                    radar_aux = pyart.aux_io.read_odim_h5(filename[0])
+                except OSError as ee:
+                    warn(str(ee))
+                    warn('Unable to read file '+filename[0])
+            if radar_aux is not None and rmax > 0.:
                 radar_aux.range['data'] = radar_aux.range['data'][
                     radar_aux.range['data'] < rmax]
                 radar_aux.ngates = len(radar_aux.range['data'])
@@ -1519,7 +1535,8 @@ def merge_fields_pyrad(basepath, loadname, voltime, datatype_list,
             if radar is None:
                 radar = radar_aux
             else:
-                add_field(radar, radar_aux)
+                if radar_aux is not None:
+                    add_field(radar, radar_aux)
 
     if radar is None:
         return radar
