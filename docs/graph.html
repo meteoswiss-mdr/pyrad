@@ -670,7 +670,7 @@ from the Py-ART config files</p>
 
 <dl class="function">
 <dt id="pyrad.graph.plot_histogram2">
-<code class="descclassname">pyrad.graph.</code><code class="descname">plot_histogram2</code><span class="sig-paren">(</span><em>bin_centers</em>, <em>hist</em>, <em>fname_list</em>, <em>labelx='bins'</em>, <em>labely='Number of Samples'</em>, <em>titl='histogram'</em>, <em>dpi=72</em>, <em>ax=None</em>, <em>fig=None</em>, <em>save_fig=True</em>, <em>color=None</em>, <em>alpha=None</em>, <em>invert_xaxis=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots.html#plot_histogram2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_histogram2" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyrad.graph.</code><code class="descname">plot_histogram2</code><span class="sig-paren">(</span><em>bin_centers</em>, <em>hist</em>, <em>fname_list</em>, <em>width=None</em>, <em>labelx='bins'</em>, <em>labely='Number of Samples'</em>, <em>titl='histogram'</em>, <em>dpi=72</em>, <em>ax=None</em>, <em>fig=None</em>, <em>save_fig=True</em>, <em>color=None</em>, <em>alpha=None</em>, <em>invert_xaxis=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots.html#plot_histogram2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_histogram2" title="Permalink to this definition">¶</a></dt>
 <dd><p>plots histogram</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -685,6 +685,10 @@ from the Py-ART config files</p>
 </dd>
 <dt><strong>fname_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
 <dd><p class="first last">list of names of the files where to store the plot</p>
+</dd>
+<dt><strong>width</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar or array-like</span></dt>
+<dd><p class="first last">the width(s) of the bars. If None it is going to be estimated from the
+distances between centers</p>
 </dd>
 <dt><strong>labelx</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
 <dd><p class="first last">The label of the X axis</p>

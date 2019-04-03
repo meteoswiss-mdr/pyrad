@@ -391,7 +391,7 @@ def plot_histogram(bin_edges, values, fname_list, labelx='bins',
     return fname_list
 
 
-def plot_histogram2(bin_centers, hist, fname_list, labelx='bins',
+def plot_histogram2(bin_centers, hist, fname_list, width=None, labelx='bins',
                     labely='Number of Samples', titl='histogram', dpi=72,
                     ax=None, fig=None, save_fig=True, color=None, alpha=None,
                     invert_xaxis=False):
@@ -406,6 +406,9 @@ def plot_histogram2(bin_centers, hist, fname_list, labelx='bins',
         values for each bin
     fname_list : list of str
         list of names of the files where to store the plot
+    width : scalar or array-like
+        the width(s) of the bars. If None it is going to be estimated from the
+        distances between centers
     labelx : str
         The label of the X axis
     labely : str
@@ -440,9 +443,9 @@ def plot_histogram2(bin_centers, hist, fname_list, labelx='bins',
     else:
         ax.autoscale(False)
 
-    ax.bar(
-        bin_centers, hist, width=bin_centers[1]-bin_centers[0], color=color,
-        alpha=alpha)
+    if width is None:
+        width = bin_centers[1]-bin_centers[0]
+    ax.bar(bin_centers, hist, width=width, color=color, alpha=alpha)
     if invert_xaxis:
         ax.invert_xaxis()
 

@@ -52,13 +52,15 @@ def process_time_stats(procstatus, dscfg, radar_list=None):
         datatype : list of string. Dataset keyword
             The input data types
         period : float. Dataset keyword
-            the period to average [s]. Default 3600.
+            the period to average [s]. If -1 the statistics are going to be
+            performed over the entire data. Default 3600.
         start_average : float. Dataset keyword
             when to start the average [s from midnight UTC]. Default 0.
         lin_trans: int. Dataset keyword
             If 1 apply linear transformation before averaging
         stat: string. Dataset keyword
-            Statistic to compute: Can be mean, std, min, max. Default mean
+            Statistic to compute: Can be mean, std, cov, min, max. Default
+            mean
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -76,7 +78,11 @@ def process_time_stats(procstatus, dscfg, radar_list=None):
         break
     ind_rad = int(radarnr[5:8])-1
 
+    start_average = dscfg.get('start_average', 0.)
+    period = dscfg.get('period', 3600.)
     lin_trans = dscfg.get('lin_trans', 0)
+    use_nan = dscfg.get('use_nan', 0)
+    nan_value = dscfg.get('nan_value', 0.)
     stat = dscfg.get('stat', 'mean')
 
     if procstatus == 0:
@@ -92,46 +98,51 @@ def process_time_stats(procstatus, dscfg, radar_list=None):
             warn(field_name+' not available.')
             return None, None
 
-        period = dscfg.get('period', 3600.)
-
+        # Prepare auxiliary radar
         field = deepcopy(radar.fields[field_name])
-        if stat in ('mean', 'std'):
+        if stat in ('mean', 'std', 'cov'):
             if lin_trans:
                 field['data'] = np.ma.power(10., 0.1*field['data'])
-            field['data'] = field['data'].filled(fill_value=0.)
-            field['data'] = np.ma.asarray(field['data'])
 
-            if stat == 'std':
+            if use_nan:
+                field['data'] = np.ma.asarray(field['data'].filled(nan_value))
+
+            if stat in ('std', 'cov'):
                 sum2_dict = pyart.config.get_metadata('sum_squared')
                 sum2_dict['data'] = field['data']*field['data']
+        else:
+            if use_nan:
+                field['data'] = np.ma.asarray(field['data'].filled(nan_value))
+
+        npoints_dict = pyart.config.get_metadata('number_of_samples')
+        npoints_dict['data'] = np.ma.asarray(
+            np.logical_not(np.ma.getmaskarray(field['data'])), dtype=int)
 
         radar_aux = deepcopy(radar)
         radar_aux.fields = dict()
         radar_aux.add_field(field_name, field)
-        npoints_dict = pyart.config.get_metadata('number_of_samples')
-        npoints_dict['data'] = np.ma.ones(
-            (radar.nrays, radar.ngates), dtype=int)
         radar_aux.add_field('number_of_samples', npoints_dict)
 
-        if stat == 'std':
+        if stat in ('std', 'cov'):
             radar_aux.add_field('sum_squared', sum2_dict)
 
         # first volume: initialize start and end time of averaging
         if dscfg['initialized'] == 0:
-            start_average = 0.  # seconds from midnight
-            if 'start_average' in dscfg:
-                start_average = dscfg['start_average']
-
-            date_00 = dscfg['timeinfo'].replace(
-                hour=0, minute=0, second=0, microsecond=0)
-
             avg_par = dict()
-            avg_par.update(
-                {'starttime': date_00+datetime.timedelta(
-                    seconds=start_average)})
-            avg_par.update(
-                {'endtime': avg_par['starttime']+datetime.timedelta(
-                    seconds=period)})
+            if period != -1:
+                date_00 = dscfg['timeinfo'].replace(
+                    hour=0, minute=0, second=0, microsecond=0)
+
+                avg_par.update(
+                    {'starttime': date_00+datetime.timedelta(
+                        seconds=start_average)})
+                avg_par.update(
+                    {'endtime': avg_par['starttime']+datetime.timedelta(
+                        seconds=period)})
+            else:
+                avg_par.update({'starttime': dscfg['timeinfo']})
+                avg_par.update({'endtime': dscfg['timeinfo']})
+
             avg_par.update({'timeinfo': dscfg['timeinfo']})
             dscfg['global_data'] = avg_par
             dscfg['initialized'] = 1
@@ -142,40 +153,74 @@ def process_time_stats(procstatus, dscfg, radar_list=None):
         dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
         # no radar object in global data: create it
         if 'radar_out' not in dscfg['global_data']:
-            # get start and stop times of new radar object
-            (dscfg['global_data']['starttime'],
-             dscfg['global_data']['endtime']) = (
-                 time_avg_range(
-                     dscfg['timeinfo'], dscfg['global_data']['starttime'],
-                     dscfg['global_data']['endtime'], period))
+            if period != -1:
+                # get start and stop times of new radar object
+                (dscfg['global_data']['starttime'],
+                 dscfg['global_data']['endtime']) = (
+                    time_avg_range(
+                        dscfg['timeinfo'], dscfg['global_data']['starttime'],
+                        dscfg['global_data']['endtime'], period))
 
-            # check if volume time older than starttime
-            if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
+                # check if volume time older than starttime
+                if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
+                    dscfg['global_data'].update({'radar_out': radar_aux})
+            else:
                 dscfg['global_data'].update({'radar_out': radar_aux})
 
             return None, None
 
         # still accumulating: add field to global field
-        if dscfg['timeinfo'] < dscfg['global_data']['endtime']:
+        if (period == -1 or
+                dscfg['timeinfo'] < dscfg['global_data']['endtime']):
+
+            if period == -1:
+                dscfg['global_data']['endtime'] = dscfg['timeinfo']
+
             field_interp = interpol_field(
                 dscfg['global_data']['radar_out'], radar_aux, field_name)
             npoints_interp = interpol_field(
                 dscfg['global_data']['radar_out'], radar_aux,
                 'number_of_samples')
 
-            dscfg['global_data']['radar_out'].fields[
-                'number_of_samples']['data'] += (
-                    npoints_interp['data'].filled(fill_value=0)).astype('int')
-
-            if stat in ('mean', 'std'):
+            if use_nan:
+                field_interp['data'] = np.ma.asarray(
+                    field_interp['data'].filled(nan_value))
                 dscfg['global_data']['radar_out'].fields[
-                    field_name]['data'] += (
-                        field_interp['data'].filled(fill_value=0))
-                if stat == 'std':
+                    'number_of_samples']['data'] += np.ma.asarray(
+                        npoints_interp['data'].filled(fill_value=1),
+                        dtype=int)
+            else:
+                dscfg['global_data']['radar_out'].fields[
+                    'number_of_samples']['data'] += np.ma.asarray(
+                        npoints_interp['data'].filled(fill_value=0),
+                        dtype=int)
+
+            if stat in ('mean', 'std', 'cov'):
+                masked_sum = np.ma.getmaskarray(
                     dscfg['global_data']['radar_out'].fields[
-                        'sum_squared']['data'] += (
-                            field_interp['data'].filled(fill_value=0) *
-                            field_interp['data'].filled(fill_value=0))
+                        field_name]['data'])
+                valid_sum = np.logical_and(
+                    np.logical_not(masked_sum),
+                    np.logical_not(np.ma.getmaskarray(field_interp['data'])))
+
+                dscfg['global_data']['radar_out'].fields[
+                    field_name]['data'][masked_sum] = (
+                        field_interp['data'][masked_sum])
+
+                dscfg['global_data']['radar_out'].fields[
+                    field_name]['data'][valid_sum] += (
+                        field_interp['data'][valid_sum])
+
+                if stat in ('cov', 'std'):
+                    dscfg['global_data']['radar_out'].fields[
+                        'sum_squared']['data'][masked_sum] = (
+                            field_interp['data'][masked_sum] *
+                            field_interp['data'][masked_sum])
+
+                    dscfg['global_data']['radar_out'].fields[
+                        'sum_squared']['data'][valid_sum] += (
+                            field_interp['data'][valid_sum] *
+                            field_interp['data'][valid_sum])
 
             elif stat == 'max':
                 dscfg['global_data']['radar_out'].fields[
@@ -203,8 +248,8 @@ def process_time_stats(procstatus, dscfg, radar_list=None):
             return None, None
 
         # we have reached the end of the accumulation period: do the averaging
-        # and start a new object
-        if stat in ('mean', 'std'):
+        # and start a new object (only reachable if period != -1)
+        if stat in ('mean', 'std', 'cov'):
             field_mean = (
                 dscfg['global_data']['radar_out'].fields[field_name]['data'] /
                 dscfg['global_data']['radar_out'].fields[
@@ -217,19 +262,28 @@ def process_time_stats(procstatus, dscfg, radar_list=None):
                 else:
                     dscfg['global_data']['radar_out'].fields[
                         field_name]['data'] = field_mean
-            elif stat == 'std':
+            elif stat in ('std', 'cov'):
                 field_std = np.ma.sqrt(
                     dscfg['global_data']['radar_out'].fields[
                         'sum_squared']['data'] /
                     dscfg['global_data']['radar_out'].fields[
                         'number_of_samples']['data']-field_mean*field_mean)
 
-                if lin_trans:
-                    dscfg['global_data']['radar_out'].fields[
-                        field_name]['data'] = 10.*np.ma.log10(field_std)
+                if stat == 'std':
+                    if lin_trans:
+                        dscfg['global_data']['radar_out'].fields[
+                            field_name]['data'] = 10.*np.ma.log10(field_std)
+                    else:
+                        dscfg['global_data']['radar_out'].fields[
+                            field_name]['data'] = field_std
                 else:
-                    dscfg['global_data']['radar_out'].fields[
-                        field_name]['data'] = field_std
+                    if lin_trans:
+                        dscfg['global_data']['radar_out'].fields[
+                            field_name]['data'] = 10.*np.ma.log10(
+                                field_std/field_mean)
+                    else:
+                        dscfg['global_data']['radar_out'].fields[
+                            field_name]['data'] = field_std/field_mean
 
         new_dataset = {
             'radar_out': deepcopy(dscfg['global_data']['radar_out']),
@@ -261,7 +315,7 @@ def process_time_stats(procstatus, dscfg, radar_list=None):
         if 'radar_out' not in dscfg['global_data']:
             return None, None
 
-        if stat in ('mean', 'std'):
+        if stat in ('mean', 'std', 'cov'):
             field_mean = (
                 dscfg['global_data']['radar_out'].fields[field_name]['data'] /
                 dscfg['global_data']['radar_out'].fields[
@@ -274,28 +328,23 @@ def process_time_stats(procstatus, dscfg, radar_list=None):
                 else:
                     dscfg['global_data']['radar_out'].fields[
                         field_name]['data'] = field_mean
-            elif stat == 'std':
+
+            elif stat in ('std', 'cov'):
                 field_std = np.ma.sqrt(
                     dscfg['global_data']['radar_out'].fields[
                         'sum_squared']['data'] /
                     dscfg['global_data']['radar_out'].fields[
                         'number_of_samples']['data']-field_mean*field_mean)
-                if lin_trans:
-                    dscfg['global_data']['radar_out'].fields[
-                        field_name]['data'] = 10.*np.ma.log10(field_std)
+                if stat == 'std':
+                    if lin_trans:
+                        dscfg['global_data']['radar_out'].fields[
+                            field_name]['data'] = 10.*np.ma.log10(field_std)
+                    else:
+                        dscfg['global_data']['radar_out'].fields[
+                            field_name]['data'] = field_std
                 else:
                     dscfg['global_data']['radar_out'].fields[
-                        field_name]['data'] = field_std
-
-            (dscfg['global_data']['radar_out'].fields[field_name][
-                'data']) /= (
-                    dscfg['global_data']['radar_out'].fields[
-                        'number_of_samples']['data'])
-            if lin_trans:
-                dscfg['global_data']['radar_out'].fields[
-                    field_name]['data'] = 10.*np.ma.log10(
-                        dscfg['global_data']['radar_out'].fields[
-                            field_name]['data'])
+                        field_name]['data'] = field_std/field_mean
 
         new_dataset = {
             'radar_out': deepcopy(dscfg['global_data']['radar_out']),
@@ -319,11 +368,10 @@ def process_time_stats2(procstatus, dscfg, radar_list=None):
         datatype : list of string. Dataset keyword
             The input data types
         period : float. Dataset keyword
-            the period to average [s]. Default 3600.
+            the period to average [s]. If -1 the statistics are going to be
+            performed over the entire data. Default 3600.
         start_average : float. Dataset keyword
             when to start the average [s from midnight UTC]. Default 0.
-        lin_trans: int. Dataset keyword
-            If 1 apply linear transformation before averaging
         stat: string. Dataset keyword
             Statistic to compute: Can be median, mode, percentileXX
     radar_list : list of Radar objects
@@ -343,6 +391,10 @@ def process_time_stats2(procstatus, dscfg, radar_list=None):
         break
     ind_rad = int(radarnr[5:8])-1
 
+    start_average = dscfg.get('start_average', 0.)
+    period = dscfg.get('period', 3600.)
+    use_nan = dscfg.get('use_nan', 0)
+    nan_value = dscfg.get('nan_value', 0.)
     stat = dscfg.get('stat', 'median')
     if 'percentile' in stat:
         percentile = float(stat.replace('percentile', ''))
@@ -360,36 +412,37 @@ def process_time_stats2(procstatus, dscfg, radar_list=None):
             warn(field_name+' not available.')
             return None, None
 
-        period = dscfg.get('period', 3600.)
-
+        # prepare auxiliary radar
         field = deepcopy(radar.fields[field_name])
+        if use_nan:
+            field['data'] = np.ma.asarray(field['data'].filled(nan_value))
+        npoints_dict = pyart.config.get_metadata('number_of_samples')
+        npoints_dict['data'] = np.ma.asarray(
+            np.logical_not(np.ma.getmaskarray(field['data'])), dtype=int)
 
         radar_aux = deepcopy(radar)
         radar_aux.fields = dict()
         radar_aux.add_field(field_name, field)
-        npoints_dict = pyart.config.get_metadata('number_of_samples')
-        npoints_dict['data'] = np.ma.ones(
-            (radar.nrays, radar.ngates), dtype=int)
         radar_aux.add_field('number_of_samples', npoints_dict)
 
         # first volume: initialize start and end time of averaging
         if dscfg['initialized'] == 0:
-            start_average = 0.  # seconds from midnight
-            if 'start_average' in dscfg:
-                start_average = dscfg['start_average']
-
-            date_00 = dscfg['timeinfo'].replace(
-                hour=0, minute=0, second=0, microsecond=0)
-
             avg_par = dict()
-            avg_par.update(
-                {'starttime': date_00+datetime.timedelta(
-                    seconds=start_average)})
-            avg_par.update(
-                {'endtime': avg_par['starttime']+datetime.timedelta(
-                    seconds=period)})
-            avg_par.update({'timeinfo': dscfg['timeinfo']})
+            if period != -1:
+                date_00 = dscfg['timeinfo'].replace(
+                    hour=0, minute=0, second=0, microsecond=0)
 
+                avg_par.update(
+                    {'starttime': date_00+datetime.timedelta(
+                        seconds=start_average)})
+                avg_par.update(
+                    {'endtime': avg_par['starttime']+datetime.timedelta(
+                        seconds=period)})
+            else:
+                avg_par.update({'starttime': dscfg['timeinfo']})
+                avg_par.update({'endtime': dscfg['timeinfo']})
+
+            avg_par.update({'timeinfo': dscfg['timeinfo']})
             dscfg['global_data'] = avg_par
             dscfg['initialized'] = 1
 
@@ -399,15 +452,21 @@ def process_time_stats2(procstatus, dscfg, radar_list=None):
         dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
         # no radar object in global data: create it
         if 'radar_out' not in dscfg['global_data']:
-            # get start and stop times of new radar object
-            (dscfg['global_data']['starttime'],
-             dscfg['global_data']['endtime']) = (
-                 time_avg_range(
-                     dscfg['timeinfo'], dscfg['global_data']['starttime'],
-                     dscfg['global_data']['endtime'], period))
+            if period != -1:
+                # get start and stop times of new radar object
+                (dscfg['global_data']['starttime'],
+                 dscfg['global_data']['endtime']) = (
+                    time_avg_range(
+                        dscfg['timeinfo'], dscfg['global_data']['starttime'],
+                        dscfg['global_data']['endtime'], period))
 
-            # check if volume time older than starttime
-            if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
+                # check if volume time older than starttime
+                if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
+                    dscfg['global_data'].update({'radar_out': radar_aux})
+                    dscfg['global_data'].update(
+                        {'field_data': np.atleast_3d(
+                            radar_aux.fields[field_name]['data'])})
+            else:
                 dscfg['global_data'].update({'radar_out': radar_aux})
                 dscfg['global_data'].update(
                     {'field_data': np.atleast_3d(
@@ -416,16 +475,30 @@ def process_time_stats2(procstatus, dscfg, radar_list=None):
             return None, None
 
         # still accumulating: add field to global field
-        if dscfg['timeinfo'] < dscfg['global_data']['endtime']:
+        if (period == -1 or
+                dscfg['timeinfo'] < dscfg['global_data']['endtime']):
+
+            if period == -1:
+                dscfg['global_data']['endtime'] = dscfg['timeinfo']
+
             field_interp = interpol_field(
                 dscfg['global_data']['radar_out'], radar_aux, field_name)
             npoints_interp = interpol_field(
                 dscfg['global_data']['radar_out'], radar_aux,
                 'number_of_samples')
 
-            dscfg['global_data']['radar_out'].fields[
-                'number_of_samples']['data'] += (
-                    npoints_interp['data'].filled(fill_value=0)).astype('int')
+            if use_nan:
+                field_interp['data'] = np.ma.asarray(
+                    field_interp['data'].filled(nan_value))
+                dscfg['global_data']['radar_out'].fields[
+                    'number_of_samples']['data'] += np.ma.asarray(
+                        npoints_interp['data'].filled(fill_value=1),
+                        dtype=int)
+            else:
+                dscfg['global_data']['radar_out'].fields[
+                    'number_of_samples']['data'] += np.ma.asarray(
+                        npoints_interp['data'].filled(fill_value=0),
+                        dtype=int)
 
             dscfg['global_data']['field_data'] = np.ma.append(
                 dscfg['global_data']['field_data'],
@@ -434,7 +507,7 @@ def process_time_stats2(procstatus, dscfg, radar_list=None):
             return None, None
 
         # we have reached the end of the accumulation period: do the averaging
-        # and start a new object
+        # and start a new object (only reachable if period != -1)
         if stat == 'median':
             dscfg['global_data']['radar_out'].fields[
                 field_name]['data'] = np.ma.median(
@@ -444,7 +517,7 @@ def process_time_stats2(procstatus, dscfg, radar_list=None):
                 dscfg['global_data']['field_data'].filled(fill_value=np.nan),
                 axis=2, nan_policy='omit')
             dscfg['global_data']['radar_out'].fields[field_name]['data'] = (
-                np.ma.masked_invalid(mode_data))
+                np.ma.masked_invalid(np.squeeze(mode_data, axis=2)))
         elif 'percentile' in stat:
             percent_data = np.nanpercentile(
                 dscfg['global_data']['field_data'].filled(fill_value=np.nan),
@@ -490,7 +563,7 @@ def process_time_stats2(procstatus, dscfg, radar_list=None):
                 dscfg['global_data']['field_data'].filled(fill_value=np.nan),
                 axis=2, nan_policy='omit')
             dscfg['global_data']['radar_out'].fields[field_name]['data'] = (
-                np.ma.masked_invalid(mode_data))
+                np.ma.masked_invalid(np.squeeze(mode_data, axis=2)))
         elif 'percentile' in stat:
             percent_data = np.nanpercentile(
                 dscfg['global_data']['field_data'].filled(fill_value=np.nan),
@@ -576,9 +649,7 @@ def process_time_avg(procstatus, dscfg, radar_list=None):
 
         # first volume: initialize start and end time of averaging
         if dscfg['initialized'] == 0:
-            start_average = 0.  # seconds from midnight
-            if 'start_average' in dscfg:
-                start_average = dscfg['start_average']
+            start_average = dscfg.get('start_average', 0.)
 
             date_00 = dscfg['timeinfo'].replace(
                 hour=0, minute=0, second=0, microsecond=0)
@@ -756,9 +827,7 @@ def process_weighted_time_avg(procstatus, dscfg, radar_list=None):
 
         # first volume: initialize start and end time of averaging
         if dscfg['initialized'] == 0:
-            start_average = 0.  # seconds from midnight
-            if 'start_average' in dscfg:
-                start_average = dscfg['start_average']
+            start_average = dscfg.get('start_average', 0.)
 
             date_00 = dscfg['timeinfo'].replace(
                 hour=0, minute=0, second=0, microsecond=0)
@@ -993,9 +1062,7 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
 
         # first volume: initialize start and end time of averaging
         if dscfg['initialized'] == 0:
-            start_average = 0.  # seconds from midnight
-            if 'start_average' in dscfg:
-                start_average = dscfg['start_average']
+            start_average = dscfg.get('start_average', 0.)
 
             date_00 = dscfg['timeinfo'].replace(
                 hour=0, minute=0, second=0, microsecond=0)

@@ -4477,7 +4477,8 @@ processing has finished or not.</p>
 <dd><p class="first last">The input data types</p>
 </dd>
 <dt>period <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
-<dd><p class="first last">the period to average [s]. Default 3600.</p>
+<dd><p class="first last">the period to average [s]. If -1 the statistics are going to be
+performed over the entire data. Default 3600.</p>
 </dd>
 <dt>start_average <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">when to start the average [s from midnight UTC]. Default 0.</p>
@@ -4486,7 +4487,8 @@ processing has finished or not.</p>
 <dd><p class="first last">If 1 apply linear transformation before averaging</p>
 </dd>
 <dt>stat: string. Dataset keyword</dt>
-<dd><p class="first last">Statistic to compute: Can be mean, std, min, max. Default mean</p>
+<dd><p class="first last">Statistic to compute: Can be mean, std, cov, min, max. Default
+mean</p>
 </dd>
 </dl>
 </dd>
@@ -4530,13 +4532,11 @@ processing has finished or not.</p>
 <dd><p class="first last">The input data types</p>
 </dd>
 <dt>period <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
-<dd><p class="first last">the period to average [s]. Default 3600.</p>
+<dd><p class="first last">the period to average [s]. If -1 the statistics are going to be
+performed over the entire data. Default 3600.</p>
 </dd>
 <dt>start_average <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">when to start the average [s from midnight UTC]. Default 0.</p>
-</dd>
-<dt>lin_trans: int. Dataset keyword</dt>
-<dd><p class="first last">If 1 apply linear transformation before averaging</p>
 </dd>
 <dt>stat: string. Dataset keyword</dt>
 <dd><p class="first last">Statistic to compute: Can be median, mode, percentileXX</p>

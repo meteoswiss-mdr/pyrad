@@ -447,7 +447,7 @@
     <span class="k">return</span> <span class="n">fname_list</span></div>
 
 
-<div class="viewcode-block" id="plot_histogram2"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_histogram2">[docs]</a><span class="k">def</span> <span class="nf">plot_histogram2</span><span class="p">(</span><span class="n">bin_centers</span><span class="p">,</span> <span class="n">hist</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">labelx</span><span class="o">=</span><span class="s1">&#39;bins&#39;</span><span class="p">,</span>
+<div class="viewcode-block" id="plot_histogram2"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_histogram2">[docs]</a><span class="k">def</span> <span class="nf">plot_histogram2</span><span class="p">(</span><span class="n">bin_centers</span><span class="p">,</span> <span class="n">hist</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">labelx</span><span class="o">=</span><span class="s1">&#39;bins&#39;</span><span class="p">,</span>
                     <span class="n">labely</span><span class="o">=</span><span class="s1">&#39;Number of Samples&#39;</span><span class="p">,</span> <span class="n">titl</span><span class="o">=</span><span class="s1">&#39;histogram&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">72</span><span class="p">,</span>
                     <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">save_fig</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                     <span class="n">invert_xaxis</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -462,6 +462,9 @@
 <span class="sd">        values for each bin</span>
 <span class="sd">    fname_list : list of str</span>
 <span class="sd">        list of names of the files where to store the plot</span>
+<span class="sd">    width : scalar or array-like</span>
+<span class="sd">        the width(s) of the bars. If None it is going to be estimated from the</span>
+<span class="sd">        distances between centers</span>
 <span class="sd">    labelx : str</span>
 <span class="sd">        The label of the X axis</span>
 <span class="sd">    labely : str</span>
@@ -496,9 +499,9 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">autoscale</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
 
-    <span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span>
-        <span class="n">bin_centers</span><span class="p">,</span> <span class="n">hist</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">bin_centers</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">bin_centers</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
-        <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">width</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="n">bin_centers</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">bin_centers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">bin_centers</span><span class="p">,</span> <span class="n">hist</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">invert_xaxis</span><span class="p">:</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">invert_xaxis</span><span class="p">()</span>
 
