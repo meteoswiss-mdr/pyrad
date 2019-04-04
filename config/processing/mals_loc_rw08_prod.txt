@@ -4,22 +4,49 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 13
-    l0:TEMP
-    l0:echoID
-    l1:echoFilter
-    l3:echoFilter_Ah
-    l2:outlierFilter
-    l2:Att_ZPhi
-    l3:hydroclass_entropy
-    l4:rainrate
-    l5:rainrate_CDF
-    l3:wind
-    l4:windshear
-    l5:windshear_CDF
-    l5:turbulence
+dataSetList STRARR 1
+    RHI_avg
 
-    
+#    l0:TEMP
+#    l0:echoID
+#    l1:echoFilter
+#    l3:echoFilter_Ah
+#    l2:outlierFilter
+#    l2:Att_ZPhi
+#    l3:hydroclass_entropy
+#    l4:rainrate
+#    l5:rainrate_CDF
+#    l3:wind
+#    l4:windshear
+#    l5:windshear_CDF
+#    l5:turbulence
+
+RHI_avg STRUCT 3
+    type STRING AZI_AVG
+    datatype STRARR 4
+        dBZ
+        ZDR
+        RhoHV
+        PhiDP
+    products STRUCT 4
+        RHI_dBZ STRUCT 3
+            type  STRING RHI_IMAGE
+            anglenr INT 0
+            voltype STRING dBZ
+        RHI_ZDR STRUCT 3
+            type  STRING RHI_IMAGE
+            anglenr INT 0
+            voltype STRING ZDR
+        RHI_RhoHV STRUCT 3
+            type  STRING RHI_IMAGE
+            anglenr INT 0
+            voltype STRING RhoHV
+        RHI_PhiDP STRUCT 3
+            type  STRING RHI_IMAGE
+            anglenr INT 0
+            voltype STRING PhiDP
+
+
 # ==========================================================================================
 #               COSMO data
 # ==========================================================================================

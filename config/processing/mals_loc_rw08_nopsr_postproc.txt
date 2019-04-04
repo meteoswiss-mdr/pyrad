@@ -15,10 +15,10 @@ name STRING mals_loc_rw08
 # Base path of the raw data.
 # Note: Must have a trailing '/'
 # ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
-datapath STRING /store/msrad/radar/DX50/rawdata/
+datapath STRING /data/DX50/rawdata/
 
 # Base path for cosmo data
-cosmopath STRING /store/msrad/cosmo/cosmo1/
+cosmopath STRING /data/cosmo/cosmo1/
 
 # Loading of saved datasets
 loadbasepath STRING /store/msrad/radar/pyrad_products/
@@ -28,7 +28,7 @@ loadname STRING mals_loc_rw08
 # --------------------------------------------
 # Output data
 # --------------------------------------------
-saveimgbasepath STRING /store/msrad/radar/pyrad_products/
+saveimgbasepath STRING /data/pyrad_products/
 imgformat       STRING png
 
 # --------------------------------------------------------
