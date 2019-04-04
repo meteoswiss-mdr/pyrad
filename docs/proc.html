@@ -644,40 +644,18 @@ not in the radar object. Default 2000.</p>
 </dd>
 <dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
 <dd><p class="first">data set configuration. Accepted Configuration Keywords:</p>
-<dl class="last docutils">
+<dl class="docutils">
 <dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">string. Dataset keyword</span></dt>
 <dd><p class="first last">The data type where we want to extract the point measurement</p>
 </dd>
-<dt>gridconfig <span class="classifier-delimiter">:</span> <span class="classifier">dictionary. Dataset keyword</span></dt>
-<dd><p class="first">Dictionary containing some or all of this keywords:
-xmin, xmax, ymin, ymax, zmin, zmax : floats</p>
-<blockquote>
-<div><p>minimum and maximum horizontal distance from grid origin [km]
-and minimum and maximum vertical distance from grid origin [m]
-Defaults -40, 40, -40, 40, 0., 10000.</p>
-</div></blockquote>
-<dl class="last docutils">
-<dt>hres, vres <span class="classifier-delimiter">:</span> <span class="classifier">floats</span></dt>
-<dd><p class="first last">horizontal and vertical grid resolution [m]
-Defaults 1000., 500.</p>
-</dd>
-<dt>latorig, lonorig, altorig <span class="classifier-delimiter">:</span> <span class="classifier">floats</span></dt>
-<dd><p class="first last">latitude and longitude of grid origin [deg] and altitude of
-grid origin [m MSL]
-Defaults the latitude, longitude and altitude of the radar</p>
+<dt>angle <span class="classifier-delimiter">:</span> <span class="classifier">float or None. Dataset keyword</span></dt>
+<dd><p class="first last">The</p>
 </dd>
 </dl>
-</dd>
-<dt>wfunc <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd><p class="first last">the weighting function used to combine the radar gates close to a
-grid point. Possible values BARNES, CRESSMAN, NEAREST_NEIGHBOUR
-Default NEAREST_NEIGHBOUR</p>
-</dd>
-<dt>roif_func <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd><p class="first last">the function used to compute the region of interest.
-Possible values: dist_beam, constant</p>
-</dd>
-<dt>roi <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<p>delta_azi : float. Dataset keyword</p>
+<p>avg_type : str. Dataset keyword</p>
+<dl class="last docutils">
+<dt>nvalid_min <span class="classifier-delimiter">:</span> <span class="classifier">int. Dataset keyword</span></dt>
 <dd><p class="first last">the (minimum) radius of the region of interest in m. Default half
 the largest resolution</p>
 </dd>
