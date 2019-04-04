@@ -122,7 +122,8 @@ def generate_grid_products(dataset, prdcfg):
                     The starting point of the cross-section. The ending point
                     is defined by the parameters in 'rhiImageConfig' in the
                     'loc' configuration file
-        'SAVEVOL': save the gridded data in a C/F radial file
+        'SAVEVOL': save the gridded data in a C/F radial file.
+
         'SURFACE_IMAGE': Plots a surface image of gridded data.
             User defined parameters:
                 level: int

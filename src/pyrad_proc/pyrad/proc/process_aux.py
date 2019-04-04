@@ -592,21 +592,29 @@ def process_roi(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
+    field_names_aux = []
     for datatypedescr in dscfg['datatype']:
-        radarnr, _, datatype, _, _ = get_datatype_fields(
-            datatypedescr)
-        break
-    field_name = get_fieldname_pyart(datatype)
-    ind_rad = int(radarnr[5:8])-1
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+        field_names_aux.append(get_fieldname_pyart(datatype))
 
+    ind_rad = int(radarnr[5:8])-1
     if (radar_list is None) or (radar_list[ind_rad] is None):
         warn('ERROR: No valid radar')
         return None, None
     radar = radar_list[ind_rad]
 
-    if field_name not in radar.fields:
-        warn('Unable to extract ROI information. ' +
-             'Field not available')
+    # keep only fields present in radar object
+    field_names = []
+    nfields_available = 0
+    for field_name in field_names_aux:
+        if field_name not in radar.fields:
+            warn('Field name '+field_name+' not available in radar object')
+            continue
+        field_names.append(field_name)
+        nfields_available += 1
+
+    if nfields_available == 0:
+        warn("Fields not available in radar data")
         return None, None
 
     if 'trtfile' in dscfg:
@@ -724,9 +732,11 @@ def process_roi(procstatus, dscfg, radar_list=None):
         radar.gate_z['data'][inds_ray, inds_rng].T)
 
     new_dataset['radar_out'].fields = dict()
-    field_dict = deepcopy(radar.fields[field_name])
-    field_dict['data'] = radar.fields[field_name]['data'][inds_ray, inds_rng].T
-    new_dataset['radar_out'].add_field(field_name, field_dict)
+    for field_name in field_names:
+        field_dict = deepcopy(radar.fields[field_name])
+        field_dict['data'] = (
+            radar.fields[field_name]['data'][inds_ray, inds_rng].T)
+        new_dataset['radar_out'].add_field(field_name, field_dict)
 
     return new_dataset['radar_out'], ind_rad
 
@@ -783,20 +793,29 @@ def process_grid(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
+    field_names_aux = []
     for datatypedescr in dscfg['datatype']:
         radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
-        break
-    field_name = get_fieldname_pyart(datatype)
-    ind_rad = int(radarnr[5:8])-1
+        field_names_aux.append(get_fieldname_pyart(datatype))
 
+    ind_rad = int(radarnr[5:8])-1
     if (radar_list is None) or (radar_list[ind_rad] is None):
         warn('ERROR: No valid radar')
         return None, None
-
     radar = radar_list[ind_rad]
 
-    if field_name not in radar.fields:
-        warn('Field name '+field_name+' not available in radar object')
+    # keep only fields present in radar object
+    field_names = []
+    nfields_available = 0
+    for field_name in field_names_aux:
+        if field_name not in radar.fields:
+            warn('Field name '+field_name+' not available in radar object')
+            continue
+        field_names.append(field_name)
+        nfields_available += 1
+
+    if nfields_available == 0:
+        warn("Fields not available in radar data")
         return None, None
 
     # default parameters
@@ -865,7 +884,7 @@ def process_grid(procstatus, dscfg, radar_list=None):
         grid_limits=((zmin, zmax), (ymin*1000., ymax*1000.),
                      (xmin*1000., xmax*1000.)),
         grid_origin=(lat, lon), grid_origin_alt=alt,
-        fields=[field_name])
+        fields=[field_names])
 
     return grid, ind_rad
 
@@ -884,27 +903,13 @@ def process_azimuthal_average(procstatus, dscfg, radar_list=None):
 
         datatype : string. Dataset keyword
             The data type where we want to extract the point measurement
-        gridconfig : dictionary. Dataset keyword
-            Dictionary containing some or all of this keywords:
-            xmin, xmax, ymin, ymax, zmin, zmax : floats
-                minimum and maximum horizontal distance from grid origin [km]
-                and minimum and maximum vertical distance from grid origin [m]
-                Defaults -40, 40, -40, 40, 0., 10000.
-            hres, vres : floats
-                horizontal and vertical grid resolution [m]
-                Defaults 1000., 500.
-            latorig, lonorig, altorig : floats
-                latitude and longitude of grid origin [deg] and altitude of
-                grid origin [m MSL]
-                Defaults the latitude, longitude and altitude of the radar
-        wfunc : str
-            the weighting function used to combine the radar gates close to a
-            grid point. Possible values BARNES, CRESSMAN, NEAREST_NEIGHBOUR
-            Default NEAREST_NEIGHBOUR
-        roif_func : str
-            the function used to compute the region of interest.
-            Possible values: dist_beam, constant
-        roi : float
+        angle : float or None. Dataset keyword
+            The
+        delta_azi : float. Dataset keyword
+
+        avg_type : str. Dataset keyword
+
+        nvalid_min : int. Dataset keyword
              the (minimum) radius of the region of interest in m. Default half
              the largest resolution
 
@@ -922,20 +927,29 @@ def process_azimuthal_average(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
+    field_names_aux = []
     for datatypedescr in dscfg['datatype']:
         radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
-        break
-    field_name = get_fieldname_pyart(datatype)
-    ind_rad = int(radarnr[5:8])-1
+        field_names_aux.append(get_fieldname_pyart(datatype))
 
+    ind_rad = int(radarnr[5:8])-1
     if (radar_list is None) or (radar_list[ind_rad] is None):
         warn('ERROR: No valid radar')
         return None, None
-
     radar = radar_list[ind_rad]
 
-    if field_name not in radar.fields:
-        warn('Field name '+field_name+' not available in radar object')
+    # keep only fields present in radar object
+    field_names = []
+    nfields_available = 0
+    for field_name in field_names_aux:
+        if field_name not in radar.fields:
+            warn('Field name '+field_name+' not available in radar object')
+            continue
+        field_names.append(field_name)
+        nfields_available += 1
+
+    if nfields_available == 0:
+        warn("Fields not available in radar data")
         return None, None
 
     # default parameters
@@ -983,10 +997,16 @@ def process_azimuthal_average(procstatus, dscfg, radar_list=None):
     radar_rhi.ray_angle_res = None
 
     # average radar data
-    field_dict = pyart.config.get_metadata(field_name)
-    field_dict['data'] = np.ma.masked_all((radar_ppi.nsweeps, radar_ppi.ngates))
     if angle is None:
         fixed_angle = np.zeros(radar_ppi.nsweeps)
+
+    fields_dict = dict()
+    for field_name in field_names:
+        fields_dict.update(
+            {field_name: pyart.config.get_metadata(field_name)})
+        fields_dict[field_name]['data'] = np.ma.masked_all(
+            (radar_ppi.nsweeps, radar_ppi.ngates))
+
     for sweep in range(radar_ppi.nsweeps):
         radar_aux = deepcopy(radar_ppi)
         radar_aux = radar_aux.extract_sweeps([sweep])
@@ -995,22 +1015,27 @@ def process_azimuthal_average(procstatus, dscfg, radar_list=None):
         inds_ray, inds_rng = find_neighbour_gates(
             radar_aux, angle, None, delta_azi=delta_azi, delta_rng=None)
 
-        # keep only data we are interested in
-        field_aux = radar_aux.fields[field_name]['data'][:, inds_rng]
-        field_aux = field_aux[inds_ray, :]
-
-        vals, _ = compute_directional_stats(
-            field_aux, avg_type=avg_type, nvalid_min=nvalid_min, axis=0)
-
-        field_dict['data'][sweep, :] = vals
         if angle is None:
             fixed_angle[sweep] = np.median(radar_aux.azimuth['data'][inds_ray])
+
+        # keep only data we are interested in
+        for field_name in field_names:
+            field_aux = radar_aux.fields[field_name]['data'][:, inds_rng]
+            field_aux = field_aux[inds_ray, :]
+
+            vals, _ = compute_directional_stats(
+                field_aux, avg_type=avg_type, nvalid_min=nvalid_min, axis=0)
+
+            fields_dict[field_name]['data'][sweep, :] = vals
+
     if angle is None:
         radar_rhi.fixed_angle['data'] = np.array([np.mean(fixed_angle)])
     else:
         radar_rhi.fixed_angle['data'] = np.array([angle])
     radar_rhi.azimuth['data'] *= radar_rhi.fixed_angle['data'][0]
-    radar_rhi.add_field(field_name, field_dict)
+
+    for field_name in field_names:
+        radar_rhi.add_field(field_name, fields_dict[field_name])
 
     # prepare for exit
     new_dataset = {'radar_out': radar_rhi}
