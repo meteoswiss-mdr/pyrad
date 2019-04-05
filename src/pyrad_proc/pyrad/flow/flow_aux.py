@@ -1208,14 +1208,14 @@ def _get_datatype_list(cfg, radarnr='RADAR001'):
                 if ((dataset_save is None) and (product_save is None)):
                     datatypesdescr.add(
                         radarnr_descr+":"+datagroup+":"+datatype_aux)
-            elif ((dataset_save is not None) and (product_save is None)):
-                datatypesdescr.add(
-                    radarnr_descr+":"+datagroup+":"+datatype_aux+"," +
-                    dataset_save)
-            else:
-                datatypesdescr.add(
-                    radarnr_descr+":"+datagroup+":"+datatype_aux+"," +
-                    dataset_save+","+product_save)
+                elif ((dataset_save is not None) and (product_save is None)):
+                    datatypesdescr.add(
+                        radarnr_descr+":"+datagroup+":"+datatype_aux+"," +
+                        dataset_save)
+                else:
+                    datatypesdescr.add(
+                        radarnr_descr+":"+datagroup+":"+datatype_aux+"," +
+                        dataset_save+","+product_save)
         else:
             for datatype in cfg[dataset]['datatype']:
                 (radarnr_descr, datagroup, datatype_aux, dataset_save,
@@ -1225,14 +1225,14 @@ def _get_datatype_list(cfg, radarnr='RADAR001'):
                     if ((dataset_save is None) and (product_save is None)):
                         datatypesdescr.add(
                             radarnr_descr+":"+datagroup+":"+datatype_aux)
-                elif ((dataset_save is not None) and (product_save is None)):
-                    datatypesdescr.add(
-                        radarnr_descr+":"+datagroup+":"+datatype_aux+"," +
-                        dataset_save)
-                else:
-                    datatypesdescr.add(
-                        radarnr_descr+":"+datagroup+":"+datatype_aux +
-                        ","+dataset_save+","+product_save)
+                    elif ((dataset_save is not None) and (product_save is None)):
+                        datatypesdescr.add(
+                            radarnr_descr+":"+datagroup+":"+datatype_aux+"," +
+                            dataset_save)
+                    else:
+                        datatypesdescr.add(
+                            radarnr_descr+":"+datagroup+":"+datatype_aux +
+                            ","+dataset_save+","+product_save)
 
     datatypesdescr = list(datatypesdescr)
 
