@@ -67,7 +67,8 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
     trajfile : str
         path to file describing the trajectory
     trajtype : str
-        type of trajectory file. Can be either 'plane' or 'lightning'
+        type of trajectory file. Can be either 'plane', 'lightning' or
+        'proc_periods'
     flashnr : int
         If larger than 0 will select a flash in a lightning trajectory file.
         If 0 the data corresponding to the trajectory of all flashes will be
@@ -125,7 +126,7 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
     cfg = _create_cfg_dict(cfgfile)
     datacfg = _create_datacfg_dict(cfg)
 
-    starttime, endtime, traj = _get_times_and_traj(
+    starttimes, endtimes, traj = _get_times_and_traj(
         trajfile, starttime, endtime, cfg['ScanPeriod'],
         last_state_file=cfg['lastStateFile'], trajtype=trajtype,
         flashnr=flashnr)
@@ -142,21 +143,21 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
     dataset_levels = _get_datasets_list(cfg)
 
     masterfilelist, masterdatatypedescr, masterscan = _get_masterfile_list(
-        datatypesdescr_list[0], starttime, endtime, datacfg,
+        datatypesdescr_list[0], starttimes, endtimes, datacfg,
         scan_list=datacfg['ScanList'])
 
     nvolumes = len(masterfilelist)
     if nvolumes == 0:
         raise ValueError(
             "ERROR: Could not find any valid volumes between " +
-            starttime.strftime('%Y-%m-%d %H:%M:%S') + " and " +
-            endtime.strftime('%Y-%m-%d %H:%M:%S') + " for " +
+            starttimes[0].strftime('%Y-%m-%d %H:%M:%S') + " and " +
+            endtimes[-1].strftime('%Y-%m-%d %H:%M:%S') + " for " +
             "master scan '" + str(masterscan) +
             "' and master data type '" + masterdatatypedescr +
             "'")
     print('- Number of volumes to process: ' + str(nvolumes))
-    print('- Start time: ' + starttime.strftime("%Y-%m-%d %H:%M:%S"))
-    print('- end time: ' + endtime.strftime("%Y-%m-%d %H:%M:%S"))
+    print('- Start time: ' + starttimes[0].strftime("%Y-%m-%d %H:%M:%S"))
+    print('- end time: ' + endtimes[-1].strftime("%Y-%m-%d %H:%M:%S"))
 
     # initial processing of the datasets
     print('\n\n- Initializing datasets:')

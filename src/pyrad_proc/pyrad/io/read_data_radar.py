@@ -407,7 +407,7 @@ def merge_scans_rainbow(basepath, scan_list, voltime, scan_period,
             datadescriptor = radarnr+':RAINBOW:'+datatype_list[0]
         endtime = voltime+datetime.timedelta(minutes=scan_period)
         for scan in scan_list[1:]:
-            filelist = get_file_list(datadescriptor, voltime, endtime,
+            filelist = get_file_list(datadescriptor, [voltime], [endtime],
                                      cfg, scan=scan)
 
             if not filelist:
