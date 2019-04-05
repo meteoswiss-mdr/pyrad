@@ -20,8 +20,8 @@ the trajectory file or the last processed volume.
 postproc_cfgfile is an optional argument with default: None
 cfgpath is an optional argument with default: \
 '$HOME/pyrad/config/processing/'
-The trajectory file can be of type plane or type lightning. If it is of type \
-lightning the flash number can be specified
+The trajectory file can be of type plane, lightning or proc_periods. If it is \
+of type lightning the flash number can be specified
 
 Example:
     python main_process_data.py 'paradiso_fvj_vol.txt' --starttime \
@@ -80,7 +80,7 @@ def main():
                         "Configuration of scan sector, products, ...")
     parser.add_argument("--trajtype", type=str, default='plane',
                         help="Type of trajectory. "
-                        "Can be either 'plane' or 'lightning'")
+                        "Can be either 'plane', 'lightning' or 'proc_periods'")
     parser.add_argument("--flashnr", type=int, default=0,
                         help="If type of trajectory is 'lightning', "
                         "flash number the data of which will be processed"

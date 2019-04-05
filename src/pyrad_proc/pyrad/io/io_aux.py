@@ -1028,7 +1028,7 @@ def get_fieldname_cosmo(field_name):
     return cosmo_name
 
 
-def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
+def get_file_list(datadescriptor, starttimes, endtimes, cfg, scan=None):
     """
     gets the list of files with a time period
 
@@ -1036,10 +1036,10 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
     ----------
     datadescriptor : str
         radar field type. Format : [radar file type]:[datatype]
-    startime : datetime object
-        start of time period
-    endtime : datetime object
-        end of time period
+    startimes : array of datetime objects
+        start of time periods
+    endtimes : array of datetime object
+        end of time periods
     cfg: dictionary of dictionaries
         configuration info to figure out where the data is
     scan : str
@@ -1051,10 +1051,6 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
         list of files within the time period
 
     """
-    startdate = starttime.replace(hour=0, minute=0, second=0, microsecond=0)
-    enddate = endtime.replace(hour=0, minute=0, second=0, microsecond=0)
-    ndays = int((enddate-startdate).days)+1
-
     radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
         datadescriptor)
     ind_rad = int(radarnr[5:8])-1
@@ -1062,173 +1058,197 @@ def get_file_list(datadescriptor, starttime, endtime, cfg, scan=None):
     if datatype in ('Nh', 'Nv'):
         datatype = 'dBZ'
 
-    t_filelist = []
-    for i in range(ndays):
-        if datagroup == 'RAINBOW':
-            if scan is None:
-                warn('Unknown scan name')
-                return None
-            daydir = (
-                starttime+datetime.timedelta(days=i)).strftime('%Y-%m-%d')
-            dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%Y%m%d')
-            datapath = cfg['datapath'][ind_rad] + scan + daydir + '/'
-            if not os.path.isdir(datapath):
-                # warn("WARNING: Unknown datapath '%s'" % datapath)
-                continue
-            dayfilelist = glob.glob(datapath+dayinfo+'*00'+datatype+'.*')
-            for filename in dayfilelist:
-                t_filelist.append(filename)
-        elif datagroup == 'RAD4ALP':
-            if scan is None:
-                warn('Unknown scan name')
-                return None
-            dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%y%j')
-            basename = ('M'+cfg['RadarRes'][ind_rad] +
-                        cfg['RadarName'][ind_rad]+dayinfo)
-            if cfg['path_convention'] == 'LTE':
-                yy = dayinfo[0:2]
-                dy = dayinfo[2:]
-                subf = ('M' + cfg['RadarRes'][ind_rad] +
-                        cfg['RadarName'][ind_rad] + yy + 'hdf' + dy)
-                datapath = cfg['datapath'][ind_rad] + subf + '/'
-
-                # check that M files exist. if not search P files
-                dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
-                if not dayfilelist:
-                    subf = ('P' + cfg['RadarRes'][ind_rad] +
-                            cfg['RadarName'][ind_rad] + yy + 'hdf' + dy)
-                    datapath = cfg['datapath'][ind_rad] + subf + '/'
-                    basename = ('P'+cfg['RadarRes'][ind_rad] +
-                                cfg['RadarName'][ind_rad]+dayinfo)
-            elif cfg['path_convention'] == 'MCH':
-                datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
-
-                # check that M files exist. if not search P files
-                dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
-                if not dayfilelist:
-                    basename = ('P'+cfg['RadarRes'][ind_rad] +
-                                cfg['RadarName'][ind_rad]+dayinfo)
-                    datapath = (cfg['datapath'][ind_rad]+dayinfo+'/' +
-                                basename+'/')
-            else:
-                datapath = (
-                    cfg['datapath'][ind_rad]+'M'+cfg['RadarRes'][ind_rad] +
-                    cfg['RadarName'][ind_rad]+'/')
-
-                # check that M files exist. if not search P files
-                dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
-                if not dayfilelist:
-                    basename = ('P'+cfg['RadarRes'][ind_rad] +
-                                cfg['RadarName'][ind_rad]+dayinfo)
-                    datapath = (
-                        cfg['datapath'][ind_rad]+'P'+cfg['RadarRes'][ind_rad] +
-                        cfg['RadarName'][ind_rad]+'/')
-
-            if not os.path.isdir(datapath):
-                warn("WARNING: Unknown datapath '%s'" % datapath)
-                continue
-            dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
-            for filename in dayfilelist:
-                t_filelist.append(filename)
-        elif datagroup == 'ODIM':
-            if scan is None:
-                warn('Unknown scan name')
-                return None
-            if cfg['path_convention'] == 'MCH':
-                dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%y%j')
-                basename = ('M'+cfg['RadarRes'][ind_rad] +
-                            cfg['RadarName'][ind_rad]+dayinfo)
-                datapath = cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/'
-
-                # check that M files exist. if not search P files
-                dayfilelist = glob.glob(datapath+basename+'*'+scan+'*')
-                if not dayfilelist:
-                    basename = ('P'+cfg['RadarRes'][ind_rad] +
-                                cfg['RadarName'][ind_rad]+dayinfo)
-                    datapath = (cfg['datapath'][ind_rad]+dayinfo+'/' +
-                                basename+'/')
-            elif cfg['path_convention'] == 'ODIM':
-                try:
-                    fpath_strf = dataset[dataset.find("D")+2:dataset.find("F")-2]
-                except AttributeError:
-                    warn('Unknown ODIM directory and/or date convention, check product config file')
-                daydir = (
-                    starttime+datetime.timedelta(days=i)).strftime(
-                        fpath_strf)
-                datapath = (cfg['datapath'][ind_rad] + daydir+'/')
-                dayfilelist = glob.glob(datapath+'*'+scan+'*.h5')
-            else:
-                dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%y%j')
-                basename = ('M'+cfg['RadarRes'][ind_rad] +
-                            cfg['RadarName'][ind_rad]+dayinfo)
-                datapath = (
-                    cfg['datapath'][ind_rad]+'M'+cfg['RadarRes'][ind_rad] +
-                    cfg['RadarName'][ind_rad]+'/')
-
-                # check that M files exist. if not search P files
-                dayfilelist = glob.glob(datapath+basename+'*'+scan+'*')
-                if not dayfilelist:
-                    basename = ('P'+cfg['RadarRes'][ind_rad] +
-                                cfg['RadarName'][ind_rad]+dayinfo)
-                    datapath = (
-                        cfg['datapath'][ind_rad]+'P'+cfg['RadarRes'][ind_rad] +
-                        cfg['RadarName'][ind_rad]+'/')
-
-            if not os.path.isdir(datapath):
-                warn("WARNING: Unknown datapath '%s'" % datapath)
-                continue
-            for filename in dayfilelist:
-                t_filelist.append(filename)
-        elif datagroup in ('CFRADIAL', 'ODIMPYRAD'):
-            termination = '.nc'
-            if datagroup == 'ODIMPYRAD':
-                termination = '.h5'
-
-            daydir = (
-                starttime+datetime.timedelta(days=i)).strftime('%Y-%m-%d')
-            dayinfo = (starttime+datetime.timedelta(days=i)).strftime('%Y%m%d')
-            datapath = (
-                cfg['loadbasepath'][ind_rad]+cfg['loadname'][ind_rad]+'/' +
-                daydir+'/'+dataset+'/'+product+'/')
-            if not os.path.isdir(datapath):
-                warn("WARNING: Unknown datapath '%s'" % datapath)
-                continue
-            dayfilelist = glob.glob(datapath+dayinfo+'*'+datatype+termination)
-            for filename in dayfilelist:
-                t_filelist.append(filename)
-        elif datagroup == 'MXPOL':
-            if scan is None:
-                warn('Unknown scan name')
-                return None
-            if cfg['path_convention'] == 'LTE':
-                sub1 = str(starttime.year)
-                sub2 = starttime.strftime('%m')
-                sub3 = starttime.strftime('%d')
-                datapath = (cfg['datapath'][ind_rad]+'/'+sub1+'/'+sub2+'/' +
-                            sub3+'/')
-                basename = ('MXPol-polar-'+starttime.strftime('%Y%m%d')+'-*-' +
-                            scan+'*')
-                dayfilelist = glob.glob(datapath+basename)
-            else:
+    filelist = []
+    for starttime, endtime in zip(starttimes, endtimes):
+        startdate = starttime.replace(
+            hour=0, minute=0, second=0, microsecond=0)
+        enddate = endtime.replace(hour=0, minute=0, second=0, microsecond=0)
+        ndays = int((enddate-startdate).days)+1
+        t_filelist = []
+        for i in range(ndays):
+            if datagroup == 'RAINBOW':
+                if scan is None:
+                    warn('Unknown scan name')
+                    return None
                 daydir = (
                     starttime+datetime.timedelta(days=i)).strftime('%Y-%m-%d')
-                dayinfo = (
-                    starttime+datetime.timedelta(days=i)).strftime('%Y%m%d')
-                datapath = cfg['datapath'][ind_rad]+scan+'/'+daydir+'/'
+                dayinfo = (starttime+datetime.timedelta(days=i)).strftime(
+                    '%Y%m%d')
+                datapath = cfg['datapath'][ind_rad] + scan + daydir + '/'
+                if not os.path.isdir(datapath):
+                    # warn("WARNING: Unknown datapath '%s'" % datapath)
+                    continue
+                dayfilelist = glob.glob(datapath+dayinfo+'*00'+datatype+'.*')
+                for filename in dayfilelist:
+                    t_filelist.append(filename)
+            elif datagroup == 'RAD4ALP':
+                if scan is None:
+                    warn('Unknown scan name')
+                    return None
+                dayinfo = (starttime+datetime.timedelta(days=i)).strftime(
+                    '%y%j')
+                basename = ('M'+cfg['RadarRes'][ind_rad] +
+                            cfg['RadarName'][ind_rad]+dayinfo)
+                if cfg['path_convention'] == 'LTE':
+                    yy = dayinfo[0:2]
+                    dy = dayinfo[2:]
+                    subf = ('M' + cfg['RadarRes'][ind_rad] +
+                            cfg['RadarName'][ind_rad] + yy + 'hdf' + dy)
+                    datapath = cfg['datapath'][ind_rad] + subf + '/'
+
+                    # check that M files exist. if not search P files
+                    dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
+                    if not dayfilelist:
+                        subf = ('P' + cfg['RadarRes'][ind_rad] +
+                                cfg['RadarName'][ind_rad] + yy + 'hdf' + dy)
+                        datapath = cfg['datapath'][ind_rad] + subf + '/'
+                        basename = ('P'+cfg['RadarRes'][ind_rad] +
+                                    cfg['RadarName'][ind_rad]+dayinfo)
+                elif cfg['path_convention'] == 'MCH':
+                    datapath = (
+                        cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/')
+
+                    # check that M files exist. if not search P files
+                    dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
+                    if not dayfilelist:
+                        basename = ('P'+cfg['RadarRes'][ind_rad] +
+                                    cfg['RadarName'][ind_rad]+dayinfo)
+                        datapath = (cfg['datapath'][ind_rad]+dayinfo+'/' +
+                                    basename+'/')
+                else:
+                    datapath = (
+                        cfg['datapath'][ind_rad]+'M' +
+                        cfg['RadarRes'][ind_rad]+cfg['RadarName'][ind_rad] +
+                        '/')
+
+                    # check that M files exist. if not search P files
+                    dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
+                    if not dayfilelist:
+                        basename = ('P'+cfg['RadarRes'][ind_rad] +
+                                    cfg['RadarName'][ind_rad]+dayinfo)
+                        datapath = (
+                            cfg['datapath'][ind_rad]+'P' +
+                            cfg['RadarRes'][ind_rad] +
+                            cfg['RadarName'][ind_rad]+'/')
+
+                if not os.path.isdir(datapath):
+                    warn("WARNING: Unknown datapath '%s'" % datapath)
+                    continue
+                dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
+                for filename in dayfilelist:
+                    t_filelist.append(filename)
+            elif datagroup == 'ODIM':
+                if scan is None:
+                    warn('Unknown scan name')
+                    return None
+                if cfg['path_convention'] == 'MCH':
+                    dayinfo = (starttime+datetime.timedelta(days=i)).strftime(
+                        '%y%j')
+                    basename = ('M'+cfg['RadarRes'][ind_rad] +
+                                cfg['RadarName'][ind_rad]+dayinfo)
+                    datapath = (
+                        cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/')
+
+                    # check that M files exist. if not search P files
+                    dayfilelist = glob.glob(datapath+basename+'*'+scan+'*')
+                    if not dayfilelist:
+                        basename = ('P'+cfg['RadarRes'][ind_rad] +
+                                    cfg['RadarName'][ind_rad]+dayinfo)
+                        datapath = (cfg['datapath'][ind_rad]+dayinfo+'/' +
+                                    basename+'/')
+                elif cfg['path_convention'] == 'ODIM':
+                    try:
+                        fpath_strf = dataset[
+                            dataset.find("D")+2:dataset.find("F")-2]
+                    except AttributeError:
+                        warn('Unknown ODIM directory and/or date convention, check product config file')
+                    daydir = (
+                        starttime+datetime.timedelta(days=i)).strftime(
+                            fpath_strf)
+                    datapath = (cfg['datapath'][ind_rad] + daydir+'/')
+                    dayfilelist = glob.glob(datapath+'*'+scan+'*.h5')
+                else:
+                    dayinfo = (starttime+datetime.timedelta(days=i)).strftime(
+                        '%y%j')
+                    basename = ('M'+cfg['RadarRes'][ind_rad] +
+                                cfg['RadarName'][ind_rad]+dayinfo)
+                    datapath = (
+                        cfg['datapath'][ind_rad]+'M' +
+                        cfg['RadarRes'][ind_rad]+cfg['RadarName'][ind_rad] +
+                        '/')
+
+                    # check that M files exist. if not search P files
+                    dayfilelist = glob.glob(datapath+basename+'*'+scan+'*')
+                    if not dayfilelist:
+                        basename = ('P'+cfg['RadarRes'][ind_rad] +
+                                    cfg['RadarName'][ind_rad]+dayinfo)
+                        datapath = (
+                            cfg['datapath'][ind_rad]+'P' +
+                            cfg['RadarRes'][ind_rad] +
+                            cfg['RadarName'][ind_rad]+'/')
+
+                if not os.path.isdir(datapath):
+                    warn("WARNING: Unknown datapath '%s'" % datapath)
+                    continue
+                for filename in dayfilelist:
+                    t_filelist.append(filename)
+            elif datagroup in ('CFRADIAL', 'ODIMPYRAD'):
+                termination = '.nc'
+                if datagroup == 'ODIMPYRAD':
+                    termination = '.h5'
+
+                daydir = (
+                    starttime+datetime.timedelta(days=i)).strftime(
+                        '%Y-%m-%d')
+                dayinfo = (starttime+datetime.timedelta(days=i)).strftime(
+                    '%Y%m%d')
+                datapath = (
+                    cfg['loadbasepath'][ind_rad]+cfg['loadname'][ind_rad] +
+                    '/'+daydir+'/'+dataset+'/'+product+'/')
                 if not os.path.isdir(datapath):
                     warn("WARNING: Unknown datapath '%s'" % datapath)
                     continue
                 dayfilelist = glob.glob(
-                    datapath+'MXPol-polar-'+dayinfo+'-*-'+scan+'.nc')
-            for filename in dayfilelist:
-                t_filelist.append(filename)
-    filelist = []
-    for filename in t_filelist:
-        filenamestr = str(filename)
-        fdatetime = get_datetime(filenamestr, datadescriptor)
-        if fdatetime is not None:
-            if (fdatetime >= starttime) and (fdatetime <= endtime):
-                filelist.append(filenamestr)
+                    datapath+dayinfo+'*'+datatype+termination)
+                for filename in dayfilelist:
+                    t_filelist.append(filename)
+            elif datagroup == 'MXPOL':
+                if scan is None:
+                    warn('Unknown scan name')
+                    return None
+                if cfg['path_convention'] == 'LTE':
+                    sub1 = str(starttime.year)
+                    sub2 = starttime.strftime('%m')
+                    sub3 = starttime.strftime('%d')
+                    datapath = (
+                        cfg['datapath'][ind_rad]+'/'+sub1+'/'+sub2 +'/'+sub3 +
+                        '/')
+                    basename = (
+                        'MXPol-polar-'+starttime.strftime('%Y%m%d')+'-*-' +
+                        scan+'*')
+                    dayfilelist = glob.glob(datapath+basename)
+                else:
+                    daydir = (
+                        starttime+datetime.timedelta(days=i)).strftime(
+                            '%Y-%m-%d')
+                    dayinfo = (
+                        starttime+datetime.timedelta(days=i)).strftime(
+                            '%Y%m%d')
+                    datapath = cfg['datapath'][ind_rad]+scan+'/'+daydir+'/'
+                    if not os.path.isdir(datapath):
+                        warn("WARNING: Unknown datapath '%s'" % datapath)
+                        continue
+                    dayfilelist = glob.glob(
+                        datapath+'MXPol-polar-'+dayinfo+'-*-'+scan+'.nc')
+                for filename in dayfilelist:
+                    t_filelist.append(filename)
+
+        for filename in t_filelist:
+            filenamestr = str(filename)
+            fdatetime = get_datetime(filenamestr, datadescriptor)
+            if fdatetime is not None:
+                if (fdatetime >= starttime) and (fdatetime <= endtime):
+                    filelist.append(filenamestr)
 
     return sorted(filelist)
 
