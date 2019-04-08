@@ -884,7 +884,7 @@ def process_grid(procstatus, dscfg, radar_list=None):
         grid_limits=((zmin, zmax), (ymin*1000., ymax*1000.),
                      (xmin*1000., xmax*1000.)),
         grid_origin=(lat, lon), grid_origin_alt=alt,
-        fields=[field_names])
+        fields=field_names)
 
     return grid, ind_rad
 
