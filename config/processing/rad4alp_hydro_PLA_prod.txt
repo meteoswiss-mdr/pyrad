@@ -4,7 +4,8 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 1
+dataSetList STRARR 2
+    dealV
     hydro
 
 #   l0:TEMP

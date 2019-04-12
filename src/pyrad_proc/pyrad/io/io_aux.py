@@ -63,14 +63,14 @@ def map_hydro(hydro_data_op):
 
     """
     hydro_data_py = deepcopy(hydro_data_op)
-    hydro_data_py[hydro_data_op == 25] = 2  # crystals
-    hydro_data_py[hydro_data_op == 50] = 1  # aggregate
-    hydro_data_py[hydro_data_op == 75] = 3  # light rain
-    hydro_data_py[hydro_data_op == 100] = 5  # rain
-    hydro_data_py[hydro_data_op == 125] = 4  # graupel
-    hydro_data_py[hydro_data_op == 150] = 7  # wet snow
-    hydro_data_py[hydro_data_op == 175] = 9  # ice hail
-    hydro_data_py[hydro_data_op == 200] = 8  # melting hail
+    hydro_data_py[hydro_data_op == 25] = 3  # crystals
+    hydro_data_py[hydro_data_op == 50] = 2  # aggregate
+    hydro_data_py[hydro_data_op == 75] = 4  # light rain
+    hydro_data_py[hydro_data_op == 100] = 6  # rain
+    hydro_data_py[hydro_data_op == 125] = 5  # graupel
+    hydro_data_py[hydro_data_op == 150] = 8  # wet snow
+    hydro_data_py[hydro_data_op == 175] = 10  # ice hail
+    hydro_data_py[hydro_data_op == 200] = 9  # melting hail
 
     return hydro_data_py
 

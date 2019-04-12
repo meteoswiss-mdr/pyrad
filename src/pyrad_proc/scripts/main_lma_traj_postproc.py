@@ -38,7 +38,7 @@ def main():
     """
     """
     # basepath = '/data/pyrad_products/rad4alp_hydro_PHA/'
-    basepath = '/store/msrad/radar/pyrad_products/rad4alp_hydro_PHA/'
+    basepath = '/store/msrad/radar/pyrad_products/rad4alp_hydro_PHA/data_analysis_min10sources/daily_stats/'
     day_vec = [
         datetime.datetime(2017, 6, 29),
         datetime.datetime(2017, 6, 30),
@@ -52,8 +52,8 @@ def main():
 #    day_vec = [
 #        datetime.datetime(2017, 7, 14)]
 
-    basename = 'Santis_data_entropy'
-    filt_type = 'keep_non_solid_phase_origin'
+    basename = 'Santis_data'
+    filt_type = 'keep_all'
     nsources_min = 10
 
     if 'entropy' in basename:
@@ -180,6 +180,74 @@ def main():
     print('N sources: '+str(flashnr_filt.size))
 
     # Analyse the data
+
+    # Plot 2D histogram altitude-Reflectivity
+    # Plot 2D histogram all sources
+    step = 1
+    datatype = 'dBZc'
+    field_name = get_fieldname_pyart(datatype)
+
+    vals = pol_vals_dict_filt['dBZc [dBZ]']
+    alt_filt[np.ma.getmaskarray(vals)] = np.ma.masked
+
+    bin_edges_dBZ, dBZ_filt_values = compute_histogram(
+        vals, field_name, step=step)
+
+    bin_edges_alt = np.arange(-50., 14150., 100.)
+
+    _, alt_filt_values = compute_histogram(
+        alt_filt, None, bin_edges=bin_edges_alt)
+
+    print(np.size(bin_edges_alt))
+    print(np.size(alt_filt_values))
+
+    print(np.size(bin_edges_dBZ))
+    print(np.size(dBZ_filt_values))
+
+    H, _, _ = np.histogram2d(
+        alt_filt_values, dBZ_filt_values, bins=[bin_edges_alt, bin_edges_dBZ])
+
+    # set 0 values to blank
+    H = np.ma.asarray(H)
+    H[H == 0] = np.ma.masked
+
+    fname_hist = basepath+data_ID+'_Santis_2Dhist_alt_dBZ.png'
+    fname_hist = _plot_time_range(
+        bin_edges_alt, bin_edges_dBZ, H, None, [fname_hist],
+        titl='LMA sources Altitude-Reflectivity histogram'+subtitl,
+        xlabel='Altitude [m MSL]', ylabel='Reflectivity [dBZ]',
+        clabel='Occurrence',
+        vmin=0, vmax=None, figsize=[10, 8], dpi=72)
+    print('Plotted '+' '.join(fname_hist))
+
+    # Plot 2D histogram first sources
+    vals = pol_vals_dict_first['dBZc [dBZ]']
+    alt_first[np.ma.getmaskarray(vals)] = np.ma.masked
+
+    bin_edges_dBZ, dBZ_first_values = compute_histogram(
+        vals, field_name, step=step)
+
+    _, alt_first_values = compute_histogram(
+        alt_first, None, bin_edges=bin_edges_alt)
+
+    H, _, _ = np.histogram2d(
+        alt_first_values, dBZ_first_values, bins=[bin_edges_alt, bin_edges_dBZ])
+
+    # set 0 values to blank
+    H = np.ma.asarray(H)
+    H[H == 0] = np.ma.masked
+
+    fname_hist = basepath+data_ID+'_Santis_2Dhist_alt_dBZ_first_source.png'
+    fname_hist = _plot_time_range(
+        bin_edges_alt, bin_edges_dBZ, H, None, [fname_hist],
+        titl='LMA first sources Altitude-Reflectivity histogram'+subtitl,
+        xlabel='Altitude [m MSL]', ylabel='Reflectivity [dBZ]',
+        clabel='Occurrence',
+        vmin=0, vmax=None, figsize=[10, 8], dpi=72)
+    print('Plotted '+' '.join(fname_hist))
+
+
+    return
 
     # create histograms of hydrometeor proportions
     if 'propAG' in pol_vals_dict_filt:
@@ -798,11 +866,11 @@ def get_indices_all_data(flashnr, nsources_min=0):
     data_ID = 'All'
     subtitl = ''
 
-    data_ID = 'CGp'
-    subtitl = '\nLMA flashes with associated '+data_ID+' EUCLID flashes'
-
-    data_ID = 'no_CG'
-    subtitl = '\nLMA flashes without associated CG EUCLID flashes'
+#    data_ID = 'CGp'
+#    subtitl = '\nLMA flashes with associated '+data_ID+' EUCLID flashes'
+#
+#    data_ID = 'no_CG'
+#    subtitl = '\nLMA flashes without associated CG EUCLID flashes'
 
     # Get unique flashes
     unique_flashnr = np.unique(flashnr, return_index=False)
