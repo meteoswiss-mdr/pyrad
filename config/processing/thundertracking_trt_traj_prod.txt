@@ -7,7 +7,7 @@
 # The detailed specification of each dataset is given below.
 dataSetList STRARR 2
     l0:loadvol
-    l1:trt_traj
+    l1:trt_traj_tt
 
 
 # ==========================================================================================
@@ -15,13 +15,13 @@ dataSetList STRARR 2
 # ==========================================================================================
 loadvol STRUCT 3
     type STRING RAW
-    datatype STRING CFRADIAL:all_fields,savevol,RHI
+    datatype STRING CFRADIAL:all_fields,savevol_ls,RHI
     MAKE_GLOBAL INT 1
 
 # ==========================================================================================
 #               TRT cells trajectory processing
 # ==========================================================================================
-trt_traj STRUCT 4
+trt_traj_tt STRUCT 4
     type STRING TRAJ_TRT
     datatype STRARR 7
         PROC:TEMP
@@ -31,13 +31,13 @@ trt_traj STRUCT 4
         PROC:KDPc
         PROC:hydro
         PROC:RR
-    TimeTol FLOAT 300.
-    products STRUCT 15        
+    TimeTol FLOAT 2.
+    products STRUCT 15
         HISTOGRAM_TEMP STRUCT 4
             type STRING HISTOGRAM
             voltype STRING TEMP
             step FLOAT 1.
-            write_data FLOAT 1        
+            write_data FLOAT 1
         PROFILE_TEMP STRUCT 7
             type STRING PROFILE_STATS
             voltype STRING TEMP

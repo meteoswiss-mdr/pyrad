@@ -133,6 +133,7 @@ def get_process_func(dataset_type, dsname):
                 'WEIGHTED_TIME_AVG': process_weighted_time_avg
                 'TIME_STATS': process_time_stats
                 'TIME_STATS2': process_time_stats2
+                'RAIN_ACCU': process_rainfall_accumulation
             'TIMESERIES' format output:
                 'POINT_MEASUREMENT': 'process_point_measurement'
                 'TRAJ_ANTENNA_PATTERN': process_traj_antenna_pattern
@@ -240,6 +241,9 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_attenuation'
     elif dataset_type == 'RAINRATE':
         func_name = 'process_rainrate'
+    elif dataset_type == 'RAIN_ACCU':
+        func_name = 'process_rainfall_accumulation'
+        dsformat = 'TIMEAVG'
     elif dataset_type == 'DEALIAS_FOURDD':
         func_name = 'process_dealias_fourdd'
     elif dataset_type == 'DEALIAS_REGION':

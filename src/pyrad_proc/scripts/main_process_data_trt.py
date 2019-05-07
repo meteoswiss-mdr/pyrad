@@ -170,7 +170,7 @@ def main():
     else:
         for time_dir in time_dir_list:
             trt_list.extend(glob.glob(
-                args.trtbase+time_dir+'/TRTC_cell/*.trt'))
+                args.trtbase+time_dir+'/TRTC_cell/*_tt.trt'))
 
     if len(trt_list) == 0:
         warn('No valid TRT files found in '+args.trtbase)
@@ -183,13 +183,14 @@ def main():
         print('processing TRT cell file '+fname)
         try:
             infostr = os.path.basename(fname).split('.')[0]
+            infostr = infostr.replace('_tt', '')
             pyrad_main(
                 cfgfile_proc, trajfile=fname, infostr=infostr,
                 trajtype=trajtype)
             trt_cell_id_list.append(infostr)
             trt_file_list.append(fname)
-        except ValueError:
-            print(ValueError)
+        except:
+            warn('Unable to process TRT cell file '+fname)
 
     if not args.postproc:
         return
@@ -217,7 +218,7 @@ def main():
             elif args.path_structure == 0:
                 file_base2 = args.radarbase+time_dir+'/'+dataset+'_trt_traj/'
             elif args.path_structure == 2:
-                file_base2 = args.radarbase+time_dir+'/trt_traj_ls/'
+                file_base2 = args.radarbase+time_dir+'/trt_traj_tt/'
 
             field_name = get_fieldname_pyart(datatype)
             field_dict = get_metadata(field_name)

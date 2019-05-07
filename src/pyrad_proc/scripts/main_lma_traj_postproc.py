@@ -49,11 +49,11 @@ def main():
         datetime.datetime(2017, 7, 30),
         datetime.datetime(2017, 8, 1)]
 
-#    day_vec = [
-#        datetime.datetime(2017, 7, 14)]
+    day_vec = [
+        datetime.datetime(2017, 8, 1)]
 
     basename = 'Santis_data'
-    filt_type = 'keep_all'
+    filt_type = 'keep_mixed_phase_origin'
     nsources_min = 10
 
     if 'entropy' in basename:
@@ -178,6 +178,8 @@ def main():
 
     print('N flashes: '+str(flashnr_first.size))
     print('N sources: '+str(flashnr_filt.size))
+    
+    return
 
     # Analyse the data
 
