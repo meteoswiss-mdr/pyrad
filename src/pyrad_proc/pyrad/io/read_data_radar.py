@@ -1078,8 +1078,6 @@ def merge_scans_other_rad4alp(voltime, datatype, cfg, ind_rad=0):
         acronym = 'YM'
     elif datatype == 'dealV':
         acronym = 'DV'
-    elif datatype == 'RR':
-        acronym = 'RZ'
     else:
         warn('Unknown Rad4alp product type '+datatype)
         return None
@@ -1122,13 +1120,6 @@ def merge_scans_other_rad4alp(voltime, datatype, cfg, ind_rad=0):
             return None
         prod_dict['data'] = map_Doppler(
             prod_obj.data, float(prod_obj.header['nyquist']))
-    elif datatype == 'RR':
-        prod_obj = pyart.aux_io.read_product(
-            filename_prod, physic_value=False, masked_array=True)
-        if prod_obj is None:
-            warn('Unable to read file '+filename_prod)
-            return None
-        prod_dict['data'] = map_precip(prod_obj.data)
 
     # create the radar object where to store the data
     # taking as reference the metranet polar file
@@ -1214,13 +1205,6 @@ def merge_scans_other_rad4alp(voltime, datatype, cfg, ind_rad=0):
                 continue
             prod_dict['data'] = map_Doppler(
                 prod_obj.data, float(prod_obj.header['nyquist']))
-        elif datatype == 'RR':
-            prod_obj = pyart.aux_io.read_product(
-                filename_prod, physic_value=False, masked_array=True)
-            if prod_obj is None:
-                warn('Unable to read file '+filename_prod)
-                continue
-            prod_dict['data'] = map_precip(prod_obj.data)
 
         if cfg['rmax'] > 0.:
             ngates = radar_aux.ngates

@@ -69,6 +69,7 @@
 <span class="sd">    get_ROI</span>
 <span class="sd">    rainfall_accumulation</span>
 <span class="sd">    time_series_statistics</span>
+<span class="sd">    find_contiguous_times</span>
 <span class="sd">    join_time_series</span>
 <span class="sd">    get_range_bins_to_avg</span>
 <span class="sd">    belongs_roi_indices</span>
@@ -515,6 +516,54 @@
     <span class="n">val_out_vec</span> <span class="o">=</span> <span class="n">df_out</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">t_out_vec</span><span class="p">,</span> <span class="n">val_out_vec</span></div>
+
+
+<div class="viewcode-block" id="find_contiguous_times"><a class="viewcode-back" href="../../../util.html#pyrad.util.find_contiguous_times">[docs]</a><span class="k">def</span> <span class="nf">find_contiguous_times</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">600</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given and array of ordered times, find those contiguous according to</span>
+<span class="sd">    a maximum time step</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    times : array of datetimes</span>
+<span class="sd">        The array of times</span>
+<span class="sd">    step : float</span>
+<span class="sd">        The time step [s]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    start_times, end_times : array of date times</span>
+<span class="sd">        The start and end of each consecutive time period</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">run</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">periods</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">expect</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">times</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">expect</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">run</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">time</span> <span class="o">&lt;=</span> <span class="n">expect</span><span class="p">:</span>
+            <span class="n">run</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">run</span> <span class="o">=</span> <span class="p">[</span><span class="n">time</span><span class="p">]</span>
+            <span class="n">periods</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">run</span><span class="p">)</span>
+        <span class="n">expect</span> <span class="o">=</span> <span class="n">time</span><span class="o">+</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">step</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">periods</span><span class="p">:</span>
+        <span class="n">periods</span> <span class="o">=</span> <span class="p">[</span><span class="n">times</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">periods</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="n">periods</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;number of consecutive periods: &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">periods</span><span class="p">)))</span>
+
+    <span class="n">start_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span>
+    <span class="n">end_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">period</span> <span class="ow">in</span> <span class="n">periods</span><span class="p">:</span>
+        <span class="n">start_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">start_times</span><span class="p">,</span> <span class="n">period</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">step</span><span class="p">))</span>
+        <span class="n">end_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">end_times</span><span class="p">,</span> <span class="n">period</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">start_times</span><span class="p">,</span> <span class="n">end_times</span></div>
 
 
 <div class="viewcode-block" id="join_time_series"><a class="viewcode-back" href="../../../util.html#pyrad.util.join_time_series">[docs]</a><span class="k">def</span> <span class="nf">join_time_series</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">val1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">val2</span><span class="p">,</span> <span class="n">dropnan</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>

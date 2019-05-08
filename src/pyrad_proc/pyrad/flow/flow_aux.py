@@ -214,6 +214,8 @@ def _get_times_and_traj(trajfile, starttime, endtime, scan_period,
             print("- Processing periods file: " + trajfile)
             starttimes, endtimes = read_proc_periods(trajfile)
             traj = None
+            if starttimes is None or endtimes is None:
+                sys.exit(1)
         else:
             print("- Trajectory file: " + trajfile)
             try:
@@ -240,38 +242,40 @@ def _get_times_and_traj(trajfile, starttime, endtime, scan_period,
     else:
         traj = None
         if starttime is None:
-            starttimes = np.array([starttime], dtype=datetime.datetime)
+            starttimes = None
         else:
             starttimes = np.array([starttime])
         if endtime is None:
-            endtimes = np.array([endtime], dtype=datetime.datetime)
+            endtimes = None
         else:
             endtimes = np.array([endtime])
 
     # if start time is not defined and the file lastState exists and
     # contains a valid date start processing from the last valid date.
     # Otherwise start processing from yesterday at 00:00:00 UTC
-    if starttimes[0] is None and last_state_file is not None:
+    if starttimes is None and last_state_file is not None:
         filename = glob.glob(last_state_file)
         if not filename:
             nowtime = datetime.utcnow()
-            starttimes[0] = (nowtime - timedelta(days=1)).replace(
-                hour=0, minute=0, second=0, microsecond=0)
+            starttimes = np.array([(nowtime - timedelta(days=1)).replace(
+                hour=0, minute=0, second=0, microsecond=0)])
             warn('File '+last_state_file+' not found. ' +
                  'Start time set at ' +
                  starttimes[0].strftime('%Y-%m-%d %H:%M:%S'))
         else:
-            starttimes[0] = read_last_state(last_state_file)
-            if starttimes[0] is None:
+            starttime = read_last_state(last_state_file)
+            if starttime is None:
                 nowtime = datetime.utcnow()
-                starttimes[0] = (nowtime - timedelta(days=1)).replace(
-                    hour=0, minute=0, second=0, microsecond=0)
+                starttimes = np.array([(nowtime - timedelta(days=1)).replace(
+                    hour=0, minute=0, second=0, microsecond=0)])
                 warn('File '+last_state_file+' not valid. ' +
                      'Start time set at ' +
                      starttimes[0].strftime('%Y-%m-%d %H:%M:%S'))
+            else:
+                starttimes = np.array([starttime])
 
-    if endtimes[0] is None:
-        endtimes[0] = datetime.utcnow()
+    if endtimes is None:
+        endtimes = np.array([datetime.utcnow()])
         warn('End Time not defined. Set as ' +
              endtimes[0].strftime('%Y-%m-%d %H:%M:%S'))
 
@@ -1075,6 +1079,7 @@ def _create_dscfg_dict(cfg, dataset):
     dscfg.update({'CosmoForecasted': cfg['CosmoForecasted']})
     dscfg.update({'path_convention': cfg['path_convention']})
     dscfg.update({'RadarName': cfg['RadarName']})
+    dscfg.update({'ScanPeriod': cfg['ScanPeriod']})
     dscfg.update({'mflossh': cfg['mflossh']})
     dscfg.update({'mflossv': cfg['mflossv']})
     dscfg.update({'radconsth': cfg['radconsth']})

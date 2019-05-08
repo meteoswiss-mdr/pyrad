@@ -189,6 +189,7 @@
 <span class="sd">                &#39;WEIGHTED_TIME_AVG&#39;: process_weighted_time_avg</span>
 <span class="sd">                &#39;TIME_STATS&#39;: process_time_stats</span>
 <span class="sd">                &#39;TIME_STATS2&#39;: process_time_stats2</span>
+<span class="sd">                &#39;RAIN_ACCU&#39;: process_rainfall_accumulation</span>
 <span class="sd">            &#39;TIMESERIES&#39; format output:</span>
 <span class="sd">                &#39;POINT_MEASUREMENT&#39;: &#39;process_point_measurement&#39;</span>
 <span class="sd">                &#39;TRAJ_ANTENNA_PATTERN&#39;: process_traj_antenna_pattern</span>
@@ -296,6 +297,9 @@
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_attenuation&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;RAINRATE&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_rainrate&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;RAIN_ACCU&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_rainfall_accumulation&#39;</span>
+        <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;TIMEAVG&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;DEALIAS_FOURDD&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_dealias_fourdd&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;DEALIAS_REGION&#39;</span><span class="p">:</span>

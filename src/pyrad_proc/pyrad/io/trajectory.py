@@ -25,6 +25,7 @@ import numpy as np
 import pyart
 
 from ..io.read_data_sensor import read_lightning, read_trt_traj_data
+from ..io.read_data_sensor import read_trt_thundertracking_traj_data
 
 
 class Trajectory(object):
@@ -78,6 +79,7 @@ class Trajectory(object):
     get_samples_in_period : Get indices of samples within period
     _convert_traj_to_swissgrid : convert data from WGS84 to Swiss coordinates
     _read_traj : Read plane trajectory from file
+    _read_traj_trt : Read TRT trajectory from file
     _read_traj_lightning : Read lightning trajectory from file
     _get_total_seconds : Get the total time of the trajectory in seconds
 
@@ -139,7 +141,8 @@ class Trajectory(object):
             else:
                 self._read_traj()
 
-        except:
+        except Exception as ee:
+            warn(str(ee))
             raise Exception(
                 "ERROR: Could not load trajectory data from file '" +
                 filename+"' into Trajectory object")
@@ -490,13 +493,38 @@ class Trajectory(object):
         ----------
 
         """
-        (traj_ID, yyyymmddHHMM, lon, lat, _, _, _, _, _, _, _, _, _, _, _, _,
-         _, _, _, _, _, _, _, _, _, _, _, cell_contours) = read_trt_traj_data(
-             self.filename)
+        if '_tt.trt' in self.filename:
+            (traj_ID, _, yyyymmddHHMM, _, _, _, lon, lat, _, _, _, _, _, _, _,
+             _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
+             cell_contours) = read_trt_thundertracking_traj_data(
+                 self.filename)
 
-        if traj_ID is None:
-            raise Exception("ERROR: Could not find|open trajectory file '" +
-                            self.filename+"'")
+            if traj_ID is None:
+                raise Exception(
+                    "ERROR: Could not find|open trajectory file '" +
+                    self.filename+"'")
+
+            valid = np.logical_not(np.ma.getmaskarray(yyyymmddHHMM))
+            yyyymmddHHMM = yyyymmddHHMM[valid]
+            traj_ID = traj_ID[valid]
+            lon = lon[valid]
+            lat = lat[valid]
+            cell_contours = cell_contours[valid]
+
+            if traj_ID.size == 0:
+                raise Exception(
+                    "ERROR: No valid data in trajectory file '" +
+                    self.filename+"'")
+
+        else:
+            (traj_ID, yyyymmddHHMM, lon, lat, _, _, _, _, _, _, _, _, _, _, _,
+             _, _, _, _, _, _, _, _, _, _, _, _, cell_contours) = (
+                 read_trt_traj_data(self.filename))
+
+            if traj_ID is None:
+                raise Exception(
+                    "ERROR: Could not find|open trajectory file '" +
+                    self.filename+"'")
 
         recording_started = True
         if self.starttime is not None:

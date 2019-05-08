@@ -308,10 +308,13 @@
 <tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_rainrate" title="pyrad.proc.process_rainrate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_rainrate</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Estimates rainfall rate from polarimetric moments</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_vol_refl" title="pyrad.proc.process_vol_refl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_vol_refl</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_rainfall_accumulation" title="pyrad.proc.process_rainfall_accumulation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_rainfall_accumulation</span></code></a>(procstatus,&nbsp;dscfg)</td>
+<td>Computes rainfall accumulation fields</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_vol_refl" title="pyrad.proc.process_vol_refl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_vol_refl</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Computes the volumetric reflectivity in 10log10(cm^2 km^-3)</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_bird_density" title="pyrad.proc.process_bird_density"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_bird_density</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_bird_density" title="pyrad.proc.process_bird_density"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_bird_density</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
 <td>Computes the bird density from the volumetric reflectivity</td>
 </tr>
 </tbody>
@@ -544,7 +547,8 @@ the function documentation:</p>
 ‘TIME_AVG’: process_time_avg
 ‘WEIGHTED_TIME_AVG’: process_weighted_time_avg
 ‘TIME_STATS’: process_time_stats
-‘TIME_STATS2’: process_time_stats2</p>
+‘TIME_STATS2’: process_time_stats2
+‘RAIN_ACCU’: process_rainfall_accumulation</p>
 </dd>
 <dt>‘TIMESERIES’ format output:</dt>
 <dd><p class="first last">‘POINT_MEASUREMENT’: ‘process_point_measurement’
@@ -3144,6 +3148,60 @@ processing has finished or not.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="pyrad.proc.process_rainfall_accumulation">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_rainfall_accumulation</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_retrieve.html#process_rainfall_accumulation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_rainfall_accumulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes rainfall accumulation fields</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first">data set configuration. Accepted Configuration Keywords:</p>
+<dl class="last docutils">
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">list of string. Dataset keyword</span></dt>
+<dd><p class="first last">The input data types</p>
+</dd>
+<dt>period <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">the period to average [s]. If -1 the statistics are going to be
+performed over the entire data. Default 3600.</p>
+</dd>
+<dt>start_average <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">when to start the average [s from midnight UTC]. Default 0.</p>
+</dd>
+<dt>use_nan <span class="classifier-delimiter">:</span> <span class="classifier">bool. Dataset keyword</span></dt>
+<dd><p class="first last">If true non valid data will be used</p>
+</dd>
+<dt>nan_value <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">The value of the non valid data. Default 0</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the output</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="pyrad.proc.process_rainrate">
 <code class="descclassname">pyrad.proc.</code><code class="descname">process_rainrate</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_retrieve.html#process_rainrate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_rainrate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimates rainfall rate from polarimetric moments</p>
@@ -4464,6 +4522,12 @@ performed over the entire data. Default 3600.</p>
 <dt>lin_trans: int. Dataset keyword</dt>
 <dd><p class="first last">If 1 apply linear transformation before averaging</p>
 </dd>
+<dt>use_nan <span class="classifier-delimiter">:</span> <span class="classifier">bool. Dataset keyword</span></dt>
+<dd><p class="first last">If true non valid data will be used</p>
+</dd>
+<dt>nan_value <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">The value of the non valid data. Default 0</p>
+</dd>
 <dt>stat: string. Dataset keyword</dt>
 <dd><p class="first last">Statistic to compute: Can be mean, std, cov, min, max. Default
 mean</p>
@@ -4518,6 +4582,12 @@ performed over the entire data. Default 3600.</p>
 </dd>
 <dt>stat: string. Dataset keyword</dt>
 <dd><p class="first last">Statistic to compute: Can be median, mode, percentileXX</p>
+</dd>
+<dt>use_nan <span class="classifier-delimiter">:</span> <span class="classifier">bool. Dataset keyword</span></dt>
+<dd><p class="first last">If true non valid data will be used</p>
+</dd>
+<dt>nan_value <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">The value of the non valid data. Default 0</p>
 </dd>
 </dl>
 </dd>

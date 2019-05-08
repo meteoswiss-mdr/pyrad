@@ -71,7 +71,7 @@
 <span class="sd">    merge_scans_cosmo</span>
 <span class="sd">    merge_scans_cosmo_rad4alp</span>
 <span class="sd">    merge_scans_dem_rad4alp</span>
-<span class="sd">    merge_scans_hydro_rad4alp</span>
+<span class="sd">    merge_scans_other_rad4alp</span>
 <span class="sd">    merge_fields_rainbow</span>
 <span class="sd">    merge_fields_pyrad</span>
 <span class="sd">    merge_fields_dem</span>
@@ -96,7 +96,7 @@
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">wradlib</span> <span class="k">as</span> <span class="nn">wrl</span>
     <span class="n">_WRADLIB_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">_WRADLIB_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
 
 <span class="kn">import</span> <span class="nn">pyart</span>
@@ -362,7 +362,7 @@
                 <span class="s1">&#39;Unable to load rad4alp hydro data&#39;</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">dt_rad4alphydro</span> <span class="ow">in</span> <span class="n">datatype_rad4alphydro</span><span class="p">:</span>
-            <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">merge_scans_hydro_rad4alp</span><span class="p">(</span>
+            <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">merge_scans_other_rad4alp</span><span class="p">(</span>
                 <span class="n">voltime</span><span class="p">,</span> <span class="n">dt_rad4alphydro</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
@@ -388,7 +388,7 @@
                 <span class="s1">&#39;Unable to load rad4alp dealiased Doppler data&#39;</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">dt_rad4alpDoppler</span> <span class="ow">in</span> <span class="n">datatype_rad4alpDoppler</span><span class="p">:</span>
-            <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">merge_scans_Doppler_rad4alp</span><span class="p">(</span>
+            <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">merge_scans_other_rad4alp</span><span class="p">(</span>
                 <span class="n">voltime</span><span class="p">,</span> <span class="n">dt_rad4alpDoppler</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
@@ -404,6 +404,7 @@
                         <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Unable to add field &#39;&quot;</span><span class="o">+</span><span class="n">field_name</span> <span class="o">+</span>
                              <span class="s2">&quot;&#39; to radar object&quot;</span>
                              <span class="s2">&quot;: (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
+
 
     <span class="c1"># if it is specified, get the position from the config file</span>
     <span class="k">if</span> <span class="s1">&#39;RadarPosition&#39;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">:</span>
@@ -1098,10 +1099,11 @@
     <span class="k">return</span> <span class="n">radar</span>
 
 
-<span class="k">def</span> <span class="nf">merge_scans_hydro_rad4alp</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">merge_scans_other_rad4alp</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    merge rad4alp hydrometeor classification scans. If data for all the scans</span>
-<span class="sd">    cannot be retrieved returns None</span>
+<span class="sd">    merge other rad4alp polar products not contained in the basic M or P</span>
+<span class="sd">    files, i.e. hydro, dealiased velocity or precip. If data for all the</span>
+<span class="sd">    scans cannot be retrieved returns None</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1128,37 +1130,52 @@
     <span class="n">basepath</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
     <span class="n">scan_list</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanList&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
 
-    <span class="c1"># read hydrometeor classification data file for first scan</span>
-    <span class="n">basename_hydro</span> <span class="o">=</span> <span class="s1">&#39;YM&#39;</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="n">dayinfo</span>
+    <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;hydro&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;YM&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dealV&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;DV&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unknown Rad4alp product type &#39;</span><span class="o">+</span><span class="n">datatype</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">prod_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+    <span class="n">prod_dict</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="n">prod_field</span><span class="p">)</span>
+
+    <span class="c1"># read product data file for first scan</span>
+    <span class="n">basename_prod</span> <span class="o">=</span> <span class="n">acronym</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="n">dayinfo</span>
     <span class="k">if</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;path_convention&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;LTE&#39;</span><span class="p">:</span>
         <span class="n">yy</span> <span class="o">=</span> <span class="n">dayinfo</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">dy</span> <span class="o">=</span> <span class="n">dayinfo</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
         <span class="n">subf</span> <span class="o">=</span> <span class="s1">&#39;M&#39;</span><span class="o">+</span><span class="n">radar_res</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="n">yy</span><span class="o">+</span><span class="s1">&#39;hdf&#39;</span><span class="o">+</span><span class="n">dy</span>
-        <span class="n">datapath_hydro</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">subf</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+        <span class="n">datapath_prod</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">subf</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
     <span class="k">elif</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;path_convention&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;MCH&#39;</span><span class="p">:</span>
-        <span class="n">datapath_hydro</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">basename_hydro</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+        <span class="n">datapath_prod</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">basename_prod</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">datapath_hydro</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="s1">&#39;YM&#39;</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+        <span class="n">datapath_prod</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="s1">&#39;YM&#39;</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
 
-    <span class="n">filename_hydro</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath_hydro</span><span class="o">+</span><span class="n">basename_hydro</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span> <span class="o">+</span>
-                               <span class="nb">str</span><span class="p">(</span><span class="mi">800</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">filename_hydro</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath_hydro</span><span class="o">+</span><span class="n">basename_hydro</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span> <span class="o">+</span>
+    <span class="n">filename_prod</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath_prod</span><span class="o">+</span><span class="n">basename_prod</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span> <span class="o">+</span>
+                              <span class="nb">str</span><span class="p">(</span><span class="mi">800</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">filename_prod</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath_prod</span><span class="o">+</span><span class="n">basename_prod</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span> <span class="o">+</span>
              <span class="nb">str</span><span class="p">(</span><span class="mi">800</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
         <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">filename_prod</span> <span class="o">=</span> <span class="n">filename_prod</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="n">filename_hydro</span> <span class="o">=</span> <span class="n">filename_hydro</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-    <span class="n">hydro_obj</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_product</span><span class="p">(</span>
-        <span class="n">filename_hydro</span><span class="p">,</span> <span class="n">physic_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">hydro_obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read file &#39;</span><span class="o">+</span><span class="n">filename_hydro</span><span class="p">)</span>
-        <span class="k">return</span> <span class="kc">None</span>
-
-    <span class="n">hydro_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
-    <span class="n">hydro_dict</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="n">hydro_field</span><span class="p">)</span>
-    <span class="n">hydro_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">map_hydro</span><span class="p">(</span><span class="n">hydro_obj</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;hydro&#39;</span><span class="p">:</span>
+        <span class="n">prod_obj</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_product</span><span class="p">(</span>
+            <span class="n">filename_prod</span><span class="p">,</span> <span class="n">physic_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">prod_obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read file &#39;</span><span class="o">+</span><span class="n">filename_prod</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">prod_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">map_hydro</span><span class="p">(</span><span class="n">prod_obj</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dealV&#39;</span><span class="p">:</span>
+        <span class="n">prod_obj</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_product</span><span class="p">(</span>
+            <span class="n">filename_prod</span><span class="p">,</span> <span class="n">physic_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">prod_obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read file &#39;</span><span class="o">+</span><span class="n">filename_prod</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">prod_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">map_Doppler</span><span class="p">(</span>
+            <span class="n">prod_obj</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">prod_obj</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;nyquist&#39;</span><span class="p">]))</span>
 
     <span class="c1"># create the radar object where to store the data</span>
     <span class="c1"># taking as reference the metranet polar file</span>
@@ -1198,169 +1215,11 @@
         <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">radar</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-            <span class="c1"># add hydrometeor classification data for first scan</span>
+            <span class="c1"># add product data for first scan</span>
             <span class="k">if</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">:</span>
                 <span class="n">ngates</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">ngates</span>
-                <span class="n">hydro_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hydro_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][:,</span> <span class="p">:</span><span class="n">ngates</span><span class="p">]</span>
-            <span class="n">radar</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">hydro_field</span><span class="p">,</span> <span class="n">hydro_dict</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">scan_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">radar</span>
-
-    <span class="c1"># add the other scans</span>
-    <span class="k">for</span> <span class="n">scan</span> <span class="ow">in</span> <span class="n">scan_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span>
-            <span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="n">scan</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
-            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span> <span class="o">+</span>
-                 <span class="n">scan</span><span class="p">)</span>
-            <span class="k">continue</span>
-
-        <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">get_data_rad4alp</span><span class="p">(</span>
-            <span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;dBZ&#39;</span><span class="p">],</span> <span class="n">scan</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">radar_aux</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">continue</span>
-        <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-
-        <span class="c1"># read hydrometeor classification data file for other scans</span>
-        <span class="n">filename_hydro</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath_hydro</span><span class="o">+</span><span class="n">basename_hydro</span><span class="o">+</span><span class="n">timeinfo</span> <span class="o">+</span>
-                                   <span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="mi">800</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="n">scan</span><span class="p">))</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename_hydro</span><span class="p">:</span>
-            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath_hydro</span><span class="o">+</span><span class="n">basename_hydro</span><span class="o">+</span><span class="n">timeinfo</span> <span class="o">+</span>
-                 <span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="mi">800</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="n">scan</span><span class="p">)))</span>
-            <span class="k">continue</span>
-
-        <span class="n">filename_hydro</span> <span class="o">=</span> <span class="n">filename_hydro</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="n">hydro_obj</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_product</span><span class="p">(</span>
-            <span class="n">filename_hydro</span><span class="p">,</span> <span class="n">physic_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">hydro_obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read file &#39;</span><span class="o">+</span><span class="n">filename_hydro</span><span class="p">)</span>
-            <span class="k">continue</span>
-
-        <span class="n">hydro_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
-        <span class="n">hydro_dict</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="n">hydro_field</span><span class="p">)</span>
-        <span class="n">hydro_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">map_hydro</span><span class="p">(</span><span class="n">hydro_obj</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">:</span>
-            <span class="n">ngates</span> <span class="o">=</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">ngates</span>
-            <span class="n">hydro_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hydro_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][:,</span> <span class="p">:</span><span class="n">ngates</span><span class="p">]</span>
-        <span class="n">radar_aux</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">hydro_field</span><span class="p">,</span> <span class="n">hydro_dict</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">radar</span>
-
-
-<span class="k">def</span> <span class="nf">merge_scans_Doppler_rad4alp</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    merge rad4alp dealised Doppler velocity scans. If data for all the scans</span>
-<span class="sd">    cannot be retrieved returns None</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    voltime: datetime object</span>
-<span class="sd">        reference time of the scan</span>
-<span class="sd">    datatype : str</span>
-<span class="sd">        name of the data type to read</span>
-<span class="sd">    cfg : dict</span>
-<span class="sd">        configuration dictionary</span>
-<span class="sd">    ind_rad : int</span>
-<span class="sd">        radar index</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    radar : Radar</span>
-<span class="sd">        radar object</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">radar</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">dayinfo</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%y%j&#39;</span><span class="p">)</span>
-    <span class="n">timeinfo</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%H%M&#39;</span><span class="p">)</span>
-    <span class="n">radar_res</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarRes&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
-    <span class="n">radar_name</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarName&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
-    <span class="n">basepath</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
-    <span class="n">scan_list</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanList&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
-
-    <span class="c1"># read Dopplermeteor classification data file for first scan</span>
-    <span class="n">basename_Doppler</span> <span class="o">=</span> <span class="s1">&#39;DV&#39;</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="n">dayinfo</span>
-    <span class="k">if</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;path_convention&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;LTE&#39;</span><span class="p">:</span>
-        <span class="n">yy</span> <span class="o">=</span> <span class="n">dayinfo</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
-        <span class="n">dy</span> <span class="o">=</span> <span class="n">dayinfo</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
-        <span class="n">subf</span> <span class="o">=</span> <span class="s1">&#39;M&#39;</span><span class="o">+</span><span class="n">radar_res</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="n">yy</span><span class="o">+</span><span class="s1">&#39;hdf&#39;</span><span class="o">+</span><span class="n">dy</span>
-        <span class="n">datapath_Doppler</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">subf</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
-    <span class="k">elif</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;path_convention&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;MCH&#39;</span><span class="p">:</span>
-        <span class="n">datapath_Doppler</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">basename_Doppler</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">datapath_Doppler</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="s1">&#39;YM&#39;</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
-
-    <span class="n">filename_Doppler</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath_Doppler</span><span class="o">+</span><span class="n">basename_Doppler</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span> <span class="o">+</span>
-                                 <span class="nb">str</span><span class="p">(</span><span class="mi">800</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">filename_Doppler</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath_Doppler</span><span class="o">+</span><span class="n">basename_Doppler</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span> <span class="o">+</span>
-             <span class="nb">str</span><span class="p">(</span><span class="mi">800</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
-        <span class="k">return</span> <span class="kc">None</span>
-
-    <span class="n">filename_Doppler</span> <span class="o">=</span> <span class="n">filename_Doppler</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-    <span class="n">Doppler_obj</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_product</span><span class="p">(</span>
-        <span class="n">filename_Doppler</span><span class="p">,</span> <span class="n">physic_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">Doppler_obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read file &#39;</span><span class="o">+</span><span class="n">filename_Doppler</span><span class="p">)</span>
-        <span class="k">return</span> <span class="kc">None</span>
-
-    <span class="n">Doppler_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
-    <span class="n">Doppler_dict</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="n">Doppler_field</span><span class="p">)</span>
-    <span class="n">Doppler_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">map_Doppler</span><span class="p">(</span>
-        <span class="n">Doppler_obj</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">Doppler_obj</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;nyquist&#39;</span><span class="p">]))</span>
-
-    <span class="c1"># create the radar object where to store the data</span>
-    <span class="c1"># taking as reference the metranet polar file</span>
-    <span class="n">basename</span> <span class="o">=</span> <span class="s1">&#39;M&#39;</span><span class="o">+</span><span class="n">radar_res</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="n">dayinfo</span>
-    <span class="k">if</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;path_convention&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;LTE&#39;</span><span class="p">:</span>
-        <span class="n">yy</span> <span class="o">=</span> <span class="n">dayinfo</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
-        <span class="n">dy</span> <span class="o">=</span> <span class="n">dayinfo</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
-        <span class="n">subf</span> <span class="o">=</span> <span class="s1">&#39;M&#39;</span><span class="o">+</span><span class="n">radar_res</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="n">yy</span><span class="o">+</span><span class="s1">&#39;hdf&#39;</span><span class="o">+</span><span class="n">dy</span>
-        <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">subf</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span>
-            <span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;*&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
-            <span class="n">basename</span> <span class="o">=</span> <span class="s1">&#39;P&#39;</span><span class="o">+</span><span class="n">radar_res</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="n">dayinfo</span>
-            <span class="n">subf</span> <span class="o">=</span> <span class="s1">&#39;P&#39;</span><span class="o">+</span><span class="n">radar_res</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="n">yy</span><span class="o">+</span><span class="s1">&#39;hdf&#39;</span><span class="o">+</span><span class="n">dy</span>
-            <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">subf</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
-    <span class="k">elif</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;path_convention&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;MCH&#39;</span><span class="p">:</span>
-        <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span>
-            <span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;*&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
-            <span class="n">basename</span> <span class="o">=</span> <span class="s1">&#39;P&#39;</span><span class="o">+</span><span class="n">radar_res</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="n">dayinfo</span>
-            <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="s1">&#39;M&#39;</span><span class="o">+</span><span class="n">radar_res</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span>
-            <span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;*&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
-            <span class="n">basename</span> <span class="o">=</span> <span class="s1">&#39;P&#39;</span><span class="o">+</span><span class="n">radar_res</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="n">dayinfo</span>
-            <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="s1">&#39;P&#39;</span><span class="o">+</span><span class="n">radar_res</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
-
-    <span class="n">filename</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;*&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">radar</span> <span class="o">=</span> <span class="n">get_data_rad4alp</span><span class="p">(</span>
-            <span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;dBZ&#39;</span><span class="p">],</span> <span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">radar</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-
-            <span class="c1"># add Doppler data for first scan</span>
-            <span class="k">if</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">:</span>
-                <span class="n">ngates</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">ngates</span>
-                <span class="n">Doppler_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Doppler_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][:,</span> <span class="p">:</span><span class="n">ngates</span><span class="p">]</span>
-            <span class="n">radar</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">Doppler_field</span><span class="p">,</span> <span class="n">Doppler_dict</span><span class="p">)</span>
+                <span class="n">prod_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prod_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][:,</span> <span class="p">:</span><span class="n">ngates</span><span class="p">]</span>
+            <span class="n">radar</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">prod_field</span><span class="p">,</span> <span class="n">prod_dict</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">scan_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">radar</span>
@@ -1378,32 +1237,35 @@
             <span class="k">continue</span>
         <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="c1"># read Dopplermeteor classification data file for other scans</span>
-        <span class="n">filename_Doppler</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath_Doppler</span><span class="o">+</span><span class="n">basename_Doppler</span><span class="o">+</span><span class="n">timeinfo</span> <span class="o">+</span>
-                                     <span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="mi">800</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="n">scan</span><span class="p">))</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename_Doppler</span><span class="p">:</span>
-            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath_Doppler</span><span class="o">+</span><span class="n">basename_Doppler</span><span class="o">+</span><span class="n">timeinfo</span> <span class="o">+</span>
+        <span class="c1"># read product data file for other scans</span>
+        <span class="n">filename_prod</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath_prod</span><span class="o">+</span><span class="n">basename_prod</span><span class="o">+</span><span class="n">timeinfo</span> <span class="o">+</span>
+                                  <span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="mi">800</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="n">scan</span><span class="p">))</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename_prod</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath_prod</span><span class="o">+</span><span class="n">basename_prod</span><span class="o">+</span><span class="n">timeinfo</span> <span class="o">+</span>
                  <span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="mi">800</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="n">scan</span><span class="p">)))</span>
             <span class="k">continue</span>
+        <span class="n">filename_prod</span> <span class="o">=</span> <span class="n">filename_prod</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-        <span class="n">filename_Doppler</span> <span class="o">=</span> <span class="n">filename_Doppler</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="n">Doppler_obj</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_product</span><span class="p">(</span>
-            <span class="n">filename_Doppler</span><span class="p">,</span> <span class="n">physic_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">Doppler_obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read file &#39;</span><span class="o">+</span><span class="n">filename_Doppler</span><span class="p">)</span>
-            <span class="k">continue</span>
-
-        <span class="n">Doppler_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
-        <span class="n">Doppler_dict</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="n">Doppler_field</span><span class="p">)</span>
-        <span class="n">Doppler_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">map_Doppler</span><span class="p">(</span>
-            <span class="n">Doppler_obj</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">Doppler_obj</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;nyquist&#39;</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;hydro&#39;</span><span class="p">:</span>
+            <span class="n">prod_obj</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_product</span><span class="p">(</span>
+                <span class="n">filename_prod</span><span class="p">,</span> <span class="n">physic_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">prod_obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read file &#39;</span><span class="o">+</span><span class="n">filename_prod</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="n">prod_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">map_hydro</span><span class="p">(</span><span class="n">prod_obj</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dealV&#39;</span><span class="p">:</span>
+            <span class="n">prod_obj</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_product</span><span class="p">(</span>
+                <span class="n">filename_prod</span><span class="p">,</span> <span class="n">physic_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">prod_obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read file &#39;</span><span class="o">+</span><span class="n">filename_prod</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="n">prod_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">map_Doppler</span><span class="p">(</span>
+                <span class="n">prod_obj</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">prod_obj</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;nyquist&#39;</span><span class="p">]))</span>
 
         <span class="k">if</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">:</span>
             <span class="n">ngates</span> <span class="o">=</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">ngates</span>
-            <span class="n">Doppler_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Doppler_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][:,</span> <span class="p">:</span><span class="n">ngates</span><span class="p">]</span>
-        <span class="n">radar_aux</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">Doppler_field</span><span class="p">,</span> <span class="n">Doppler_dict</span><span class="p">)</span>
+            <span class="n">prod_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prod_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][:,</span> <span class="p">:</span><span class="n">ngates</span><span class="p">]</span>
+        <span class="n">radar_aux</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">prod_field</span><span class="p">,</span> <span class="n">prod_dict</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
         <span class="k">else</span><span class="p">:</span>

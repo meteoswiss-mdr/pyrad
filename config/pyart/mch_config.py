@@ -201,6 +201,7 @@ visibility = 'visibility'
 # precipitation
 rain_rate = 'rain_rate'
 radar_estimated_rain_rate = 'radar_estimated_rain_rate'
+rainfall_accumulation = 'rainfall_accumulation'
 
 # melting layer
 melting_layer = 'melting_layer'
@@ -379,6 +380,7 @@ DEFAULT_FIELD_NAMES = {
     'sun_hit_v': sun_hit_v,
     'sun_hit_zdr': sun_hit_zdr,
     'radar_estimated_rain_rate': radar_estimated_rain_rate,
+    'rainfall_accumulation': rainfall_accumulation,
     'radar_echo_classification': radar_echo_classification,
     'hydroclass_entropy': hydroclass_entropy,
     'proportion_AG': proportion_AG,
@@ -1142,6 +1144,18 @@ DEFAULT_METADATA = {
         'units': 'mm/h',
         'standard_name': 'radar_estimated_rain_rate',
         'long_name': 'Radar estimated rain rate',
+        'labels': ['0.', '0.4', '0.63', '1.', '1.6', '2.5', '4.0', '6.3',
+                   '10.', '16.', '25.', '40.', '63.', '100.', '160.', '250.'],
+        'ticks': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
+                  40., 63., 100., 160., 250.],
+        'boundaries': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
+                       40., 63., 100., 160., 250., 500.],
+        'coordinates': 'elevation azimuth range'},
+        
+    rainfall_accumulation: {
+        'units': 'mm',
+        'standard_name': 'rainfall_accumulation',
+        'long_name': 'Rainfall accumulation',
         'labels': ['0.', '0.4', '0.63', '1.', '1.6', '2.5', '4.0', '6.3',
                    '10.', '16.', '25.', '40.', '63.', '100.', '160.', '250.'],
         'ticks': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
@@ -2306,6 +2320,7 @@ DEFAULT_FIELD_COLORMAP = {
 
     rain_rate: 'pyart_RRate11',
     radar_estimated_rain_rate: 'pyart_RRate11',
+    rainfall_accumulation: 'pyart_RRate11',
 
     sun_hit_h: 'pyart_LangRainbow12',
     sun_hit_v: 'pyart_LangRainbow12',
@@ -2455,6 +2470,7 @@ DEFAULT_FIELD_LIMITS = {
 
     rain_rate: (0., 10.),
     radar_estimated_rain_rate: (0., 10.),
+    rainfall_accumulation: (0., 100.),
 
     radar_echo_classification: (0., 9.),
     hydroclass_entropy: (0., 1.),
