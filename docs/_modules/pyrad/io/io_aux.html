@@ -63,6 +63,7 @@
 <span class="sd">.. autosummary::</span>
 <span class="sd">    :toctree: generated/</span>
 
+<span class="sd">    get_rad4alp_prod_fname</span>
 <span class="sd">    map_hydro</span>
 <span class="sd">    map_Doppler</span>
 <span class="sd">    get_save_dir</span>
@@ -75,6 +76,8 @@
 <span class="sd">    get_field_unit</span>
 <span class="sd">    get_field_name</span>
 <span class="sd">    get_file_list</span>
+<span class="sd">    get_rad4alp_dir</span>
+<span class="sd">    get_rad4alp_grid_dir</span>
 <span class="sd">    get_trtfile_list</span>
 <span class="sd">    get_scan_list</span>
 <span class="sd">    get_new_rainbow_file_name</span>
@@ -101,6 +104,280 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">pyart.config</span> <span class="k">import</span> <span class="n">get_metadata</span>
+
+
+<div class="viewcode-block" id="get_rad4alp_prod_fname"><a class="viewcode-back" href="../../../io.html#pyrad.io.get_rad4alp_prod_fname">[docs]</a><span class="k">def</span> <span class="nf">get_rad4alp_prod_fname</span><span class="p">(</span><span class="n">datatype</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given a datatype find the corresponding start and termination of the</span>
+<span class="sd">    METRANET product file name</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    datatype : str</span>
+<span class="sd">        the data type</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    acronym : str</span>
+<span class="sd">        The start of the METRANET file name</span>
+<span class="sd">    termination : str</span>
+<span class="sd">        The end of the METRANET file name</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># datatype missing:</span>
+    <span class="c1"># NHC (Hail forecast)</span>
+    <span class="c1"># NZC (Thunderstorm forecast based on TRT)</span>
+
+    <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.8??&#39;</span>
+    <span class="c1"># Polar products</span>
+    <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;hydro&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;YM&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dealV&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;DV&#39;</span>
+
+    <span class="c1"># rainfall accumulation products</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;AZC01&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span> <span class="c1"># Rain rate accumulation with local bias corrected</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.801&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;AZC03&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span> <span class="c1"># Rain rate accumulation with local bias corrected</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.803&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;AZC06&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span> <span class="c1"># Rain rate accumulation with local bias corrected</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.806&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;aZC01&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;aZC&#39;</span> <span class="c1"># Rain rate accumulation with local bias not corrected</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.801&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;aZC03&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;aZC&#39;</span> <span class="c1"># Rain rate accumulation with local bias not corrected</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.803&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;aZC06&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;aZC&#39;</span> <span class="c1"># Rain rate accumulation with local bias not corrected</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.806&#39;</span>
+
+    <span class="c1"># CPC</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPC0005&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;CPC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;_00005.801.gif&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPC0060&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;CPC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;_00060.801.gif&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPC0180&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;CPC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;_00180.801.gif&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPC0360&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;CPC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;_00360.801.gif&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPC0720&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;CPC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;_00720.801.gif&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPC1440&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;CPC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;_01440.801.gif&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPC2880&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;CPC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;_02880.801.gif&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPC4320&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;CPC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;_04320.801.gif&#39;</span>
+
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPCH0005&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;CPC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;_00005.801.gif&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPCH0060&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;CPC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;_00060.801.gif&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPCH0180&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;CPC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;_00180.801.gif&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPCH0360&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;CPC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;_00360.801.gif&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPCH0720&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;CPC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;_00720.801.gif&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPCH1440&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;CPC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;_01440.801.gif&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPCH2880&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;CPC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;_02880.801.gif&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPCH4320&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;CPC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;_04320.801.gif&#39;</span>
+
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal60_P60&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.accu_0060_RZC_60&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal90_P90&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.accu_0090_RZC_90&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal180_P180&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.accu_0180_RZC_180&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal360_P360&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.accu_0360_RZC_360&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal720_P720&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.accu_0720_RZC_720&#39;</span>
+
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal90_P30&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.accu_0090_RZC_30&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal90_P30_F60&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.accu_0090_RZC_30_INCA_60&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal90_F60&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.accu_0090_INCA_60&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal180_P60&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.accu_0180_RZC_60&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal180_P60_F120&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.accu_0180_RZC_60_INCA_120&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal180_F120&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.accu_0180_INCA_120&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal360_P120&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.accu_0360_CPC_120&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal360_P120_F240&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.accu_0360_CPC_120_INCA_240&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal360_F240&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.accu_0360_INCA_240&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal720_P360&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.accu_0720_CPC_360&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal720_P360_F360&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.accu_0720_CPC_360_INCA_360&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal720_F360&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.accu_0720_INCA_360&#39;</span>
+
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dACC&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;ACC&#39;</span> <span class="c1"># Daily precip accumulation using NowPal with CPC</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.1440&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dACCH&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;ACC&#39;</span> <span class="c1"># reprocessed after 8 days</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.1440&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dARC&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;ARC&#39;</span> <span class="c1"># Daily precip accumulation using NowPal with RZC</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.1440&#39;</span>
+
+    <span class="c1"># rainfall rate products</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;RZC&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;RZC&#39;</span>  <span class="c1"># rain rate local bias corrected</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;R1F&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;R1F&#39;</span> <span class="c1"># RZC including best foreign radars</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;rZC&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;rZC&#39;</span> <span class="c1"># local bias not corrected</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;RZF&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;RZF&#39;</span> <span class="c1"># RZC including foreign radars</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dRZC&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;RZC&#39;</span>  <span class="c1"># Daily maximum rain rate</span>
+
+    <span class="c1"># hail products</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;BZC&#39;</span><span class="p">,</span> <span class="s1">&#39;dBZC&#39;</span><span class="p">):</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;BZC&#39;</span> <span class="c1"># POH</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;MZC&#39;</span><span class="p">,</span> <span class="s1">&#39;dMZC&#39;</span><span class="p">):</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;MZC&#39;</span> <span class="c1"># Maximum expected severe hail size</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;GZC&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;GZC&#39;</span> <span class="c1"># Hail probability derived from reflectivity</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.803&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dGZC&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;GZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.824&#39;</span>
+
+    <span class="c1"># max echo</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;CZC&#39;</span><span class="p">,</span> <span class="s1">&#39;dCZC&#39;</span><span class="p">):</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;CZC&#39;</span> <span class="c1"># max echo</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;HZC&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;HZC&#39;</span> <span class="c1"># Max echo height</span>
+
+    <span class="c1"># echo tops</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;EZC15&#39;</span><span class="p">,</span> <span class="s1">&#39;dEZC15&#39;</span><span class="p">):</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;EZC&#39;</span> <span class="c1"># echo top</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.815&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;EZC20&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;EZC&#39;</span> <span class="c1"># echo top</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.820&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;EZC45&#39;</span><span class="p">,</span> <span class="s1">&#39;dEZC45&#39;</span><span class="p">):</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;EZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.845&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;EZC50&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;EZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.850&#39;</span>
+
+    <span class="c1"># Vertically integrated liquid</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;LZC&#39;</span><span class="p">,</span> <span class="s1">&#39;dLZC&#39;</span><span class="p">):</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;LZC&#39;</span>
+
+    <span class="c1"># Zh CAPPI</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="s1">&#39;OZC01&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;OZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.810&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="s1">&#39;OZC02&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;OZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.820&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="s1">&#39;OZC03&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;OZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.830&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="s1">&#39;OZC04&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;OZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.840&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="s1">&#39;OZC05&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;OZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.850&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="s1">&#39;OZC06&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;OZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.860&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="s1">&#39;OZC07&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;OZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.870&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="s1">&#39;OZC08&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;OZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.880&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="s1">&#39;OZC09&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;OZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.890&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="s1">&#39;OZC10&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;OZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.900&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="s1">&#39;OZC11&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;OZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.910&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="s1">&#39;OZC12&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;OZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.920&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="s1">&#39;OZC13&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;OZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.930&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="s1">&#39;OZC14&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;OZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.940&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="s1">&#39;OZC15&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;OZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.950&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="s1">&#39;OZC16&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;OZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.960&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="s1">&#39;OZC17&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;OZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.970&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="s1">&#39;OZC18&#39;</span><span class="p">:</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;OZC&#39;</span>
+        <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.980&#39;</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;ERROR: Unknown rad4alp product data type &#39;</span><span class="o">+</span><span class="n">datatype</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">acronym</span><span class="p">,</span> <span class="n">termination</span></div>
+
 
 <div class="viewcode-block" id="map_hydro"><a class="viewcode-back" href="../../../io.html#pyrad.io.map_hydro">[docs]</a><span class="k">def</span> <span class="nf">map_hydro</span><span class="p">(</span><span class="n">hydro_data_op</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -957,6 +1234,8 @@
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;iso0&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;H_ISO0&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;height_over_iso0&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;HZT&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;iso0_height&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;cosmo_index&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;cosmo_index&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;hzt_index&#39;</span><span class="p">:</span>
@@ -1017,6 +1296,209 @@
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;sum&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sum2&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;sum_squared&#39;</span>
+
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;POH&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;probability_of_hail&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;VIL&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;vertically_integrated_liquid&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ETOP15&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;echo_top_15dBZ&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ETOP20&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;echo_top_20dBZ&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ETOP45&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;echo_top_45dBZ&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ETOP50&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;echo_top_50dBZ&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;MAXECHO&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;maximum_echo&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;HMAXECHO&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;maximum_echo_height&#39;</span>
+
+    <span class="c1"># rad4alp cartesian products</span>
+    <span class="c1"># rainfall accumulation products</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;AZC01&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;AZC03&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;AZC06&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;aZC01&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;aZC03&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;aZC06&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+
+    <span class="c1"># CPC</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPC0005&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;radar_estimated_rain_rate&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPC0060&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPC0180&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPC0360&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPC0720&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPC1440&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPC2880&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPC4320&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPCH0005&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;radar_estimated_rain_rate&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPCH0060&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPCH0180&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPCH0360&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPCH0720&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPCH1440&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPCH2880&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CPCH4320&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+
+    <span class="c1"># Nowpal</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal60_P60&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal90_P90&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal180_P180&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal360_P360&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal720_P720&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal90_P30&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal90_P30_F60&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal90_F60&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal180_P60&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal180_P60_F120&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal180_F120&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal360_P120&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal360_P120_F240&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal360_F240&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal720_P360&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal720_P360_F360&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;nowpal720_F360&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dACC&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dACCH&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dARC&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;rainfall_accumulation&#39;</span>
+
+    <span class="c1"># rainfall rate products</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;RZC&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;radar_estimated_rain_rate&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;R1F&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;radar_estimated_rain_rate&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;rZC&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;radar_estimated_rain_rate&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;RZF&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;radar_estimated_rain_rate&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dRZC&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;radar_estimated_rain_rate&#39;</span>
+
+    <span class="c1"># hail products</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;BZC&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;probability_of_hail&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBZC&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;probability_of_hail&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;MZC&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;maximum_expected_severe_hail_size&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dMZC&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;maximum_expected_severe_hail_size&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;GZC&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;probability_of_hail&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dGZC&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;probability_of_hail&#39;</span>
+
+    <span class="c1"># echo tops</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CZC&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;maximum_echo&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dCZC&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;maximum_echo&#39;</span> <span class="c1"># Daily max echo</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;HZC&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;maximum_echo_height&#39;</span> <span class="c1"># Max echo height</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;EZC15&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;echo_top_15dBz&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;EZC20&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;echo_top_20dBz&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;EZC45&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;echo_top_45dBz&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;EZC50&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;echo_top_50dBz&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dEZC15&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;echo_top_15dBZ&#39;</span> <span class="c1"># Daily echo top</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dEZC20&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;echo_top_20dBz&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dEZC45&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;echo_top_45dBz&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dEZC50&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;echo_top_50dBz&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;LZC&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;vertically_integrated_liquid&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dLZC&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;vertically_integrated_liquid&#39;</span>
+
+    <span class="c1"># reflectivity CAPPI</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;OZC01&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;OZC02&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;OZC03&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;OZC04&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;OZC05&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;OZC06&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;OZC07&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;OZC08&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;OZC09&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;OZC10&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;OZC11&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;OZC12&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;OZC13&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;OZC14&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;OZC15&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;OZC16&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;OZC17&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;OZC18&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;reflectivity&#39;</span>
 
     <span class="c1"># vol2bird field names</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ff&#39;</span><span class="p">:</span>
@@ -1143,51 +1625,13 @@
                 <span class="k">if</span> <span class="n">scan</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unknown scan name&#39;</span><span class="p">)</span>
                     <span class="k">return</span> <span class="kc">None</span>
-                <span class="n">dayinfo</span> <span class="o">=</span> <span class="p">(</span><span class="n">starttime</span><span class="o">+</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">i</span><span class="p">))</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
-                    <span class="s1">&#39;%y%j&#39;</span><span class="p">)</span>
-                <span class="n">basename</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="o">+</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarRes&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span> <span class="o">+</span>
-                            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarName&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span><span class="o">+</span><span class="n">dayinfo</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;path_convention&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;LTE&#39;</span><span class="p">:</span>
-                    <span class="n">yy</span> <span class="o">=</span> <span class="n">dayinfo</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
-                    <span class="n">dy</span> <span class="o">=</span> <span class="n">dayinfo</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
-                    <span class="n">subf</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;M&#39;</span> <span class="o">+</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarRes&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span> <span class="o">+</span>
-                            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarName&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span> <span class="o">+</span> <span class="n">yy</span> <span class="o">+</span> <span class="s1">&#39;hdf&#39;</span> <span class="o">+</span> <span class="n">dy</span><span class="p">)</span>
-                    <span class="n">datapath</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span> <span class="o">+</span> <span class="n">subf</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span>
 
-                    <span class="c1"># check that M files exist. if not search P files</span>
-                    <span class="n">dayfilelist</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="n">scan</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">dayfilelist</span><span class="p">:</span>
-                        <span class="n">subf</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;P&#39;</span> <span class="o">+</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarRes&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span> <span class="o">+</span>
-                                <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarName&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span> <span class="o">+</span> <span class="n">yy</span> <span class="o">+</span> <span class="s1">&#39;hdf&#39;</span> <span class="o">+</span> <span class="n">dy</span><span class="p">)</span>
-                        <span class="n">datapath</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span> <span class="o">+</span> <span class="n">subf</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span>
-                        <span class="n">basename</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;P&#39;</span><span class="o">+</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarRes&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span> <span class="o">+</span>
-                                    <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarName&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span><span class="o">+</span><span class="n">dayinfo</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;path_convention&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;MCH&#39;</span><span class="p">:</span>
-                    <span class="n">datapath</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
-
-                    <span class="c1"># check that M files exist. if not search P files</span>
-                    <span class="n">dayfilelist</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="n">scan</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">dayfilelist</span><span class="p">:</span>
-                        <span class="n">basename</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;P&#39;</span><span class="o">+</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarRes&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span> <span class="o">+</span>
-                                    <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarName&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span><span class="o">+</span><span class="n">dayinfo</span><span class="p">)</span>
-                        <span class="n">datapath</span> <span class="o">=</span> <span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;/&#39;</span> <span class="o">+</span>
-                                    <span class="n">basename</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">datapath</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;M&#39;</span> <span class="o">+</span>
-                        <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarRes&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span><span class="o">+</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarName&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span> <span class="o">+</span>
-                        <span class="s1">&#39;/&#39;</span><span class="p">)</span>
-
-                    <span class="c1"># check that M files exist. if not search P files</span>
-                    <span class="n">dayfilelist</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="n">scan</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">dayfilelist</span><span class="p">:</span>
-                        <span class="n">basename</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;P&#39;</span><span class="o">+</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarRes&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span> <span class="o">+</span>
-                                    <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarName&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span><span class="o">+</span><span class="n">dayinfo</span><span class="p">)</span>
-                        <span class="n">datapath</span> <span class="o">=</span> <span class="p">(</span>
-                            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;P&#39;</span> <span class="o">+</span>
-                            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarRes&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span> <span class="o">+</span>
-                            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarName&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+                <span class="n">datapath</span><span class="p">,</span> <span class="n">basename</span> <span class="o">=</span> <span class="n">get_rad4alp_dir</span><span class="p">(</span>
+                    <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span>
+                    <span class="n">starttime</span><span class="o">+</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">i</span><span class="p">),</span>
+                    <span class="n">radar_name</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarName&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span>
+                    <span class="n">radar_res</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarRes&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">scan</span><span class="o">=</span><span class="n">scan</span><span class="p">,</span>
+                    <span class="n">path_convention</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;path_convention&#39;</span><span class="p">])</span>
 
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">datapath</span><span class="p">):</span>
                     <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;WARNING: Unknown datapath &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">datapath</span><span class="p">)</span>
@@ -1195,6 +1639,24 @@
                 <span class="n">dayfilelist</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="n">scan</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">dayfilelist</span><span class="p">:</span>
                     <span class="n">t_filelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">datagroup</span> <span class="ow">in</span><span class="p">(</span><span class="s1">&#39;RAD4ALPGRID&#39;</span><span class="p">,</span> <span class="s1">&#39;RAD4ALPGIF&#39;</span><span class="p">,</span> <span class="s1">&#39;RAD4ALPBIN&#39;</span><span class="p">):</span>
+                <span class="n">acronym</span><span class="p">,</span> <span class="n">termination</span> <span class="o">=</span> <span class="n">get_rad4alp_prod_fname</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+                <span class="n">dir_day</span> <span class="o">=</span> <span class="n">starttime</span><span class="o">+</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
+                <span class="n">dayinfo</span> <span class="o">=</span> <span class="n">dir_day</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%y%j&#39;</span><span class="p">)</span>
+                <span class="n">basename</span> <span class="o">=</span> <span class="n">acronym</span><span class="o">+</span><span class="n">dayinfo</span>
+
+                <span class="n">datapath</span> <span class="o">=</span> <span class="n">get_rad4alp_grid_dir</span><span class="p">(</span>
+                    <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">dir_day</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">acronym</span><span class="p">,</span>
+                    <span class="n">path_convention</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;path_convention&#39;</span><span class="p">])</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">datapath</span><span class="p">):</span>
+                    <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;WARNING: Unknown datapath &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">datapath</span><span class="p">)</span>
+                    <span class="k">continue</span>
+
+                <span class="n">dayfilelist</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="o">+</span><span class="n">termination</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">dayfilelist</span><span class="p">:</span>
+                    <span class="n">t_filelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
             <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;ODIM&#39;</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">scan</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unknown scan name&#39;</span><span class="p">)</span>
@@ -1250,7 +1712,7 @@
                     <span class="k">continue</span>
                 <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">dayfilelist</span><span class="p">:</span>
                     <span class="n">t_filelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;CFRADIAL&#39;</span><span class="p">,</span> <span class="s1">&#39;ODIMPYRAD&#39;</span><span class="p">):</span>
+            <span class="k">elif</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;CFRADIAL&#39;</span><span class="p">,</span> <span class="s1">&#39;ODIMPYRAD&#39;</span><span class="p">,</span> <span class="s1">&#39;PYRADGRID&#39;</span><span class="p">):</span>
                 <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.nc&#39;</span>
                 <span class="k">if</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;ODIMPYRAD&#39;</span><span class="p">:</span>
                     <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.h5&#39;</span>
@@ -1311,6 +1773,132 @@
     <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">filelist</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="get_rad4alp_dir"><a class="viewcode-back" href="../../../io.html#pyrad.io.get_rad4alp_dir">[docs]</a><span class="k">def</span> <span class="nf">get_rad4alp_dir</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">radar_name</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="n">radar_res</span><span class="o">=</span><span class="s1">&#39;L&#39;</span><span class="p">,</span>
+                    <span class="n">scan</span><span class="o">=</span><span class="s1">&#39;001&#39;</span><span class="p">,</span> <span class="n">path_convention</span><span class="o">=</span><span class="s1">&#39;MCH&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    gets the directory where rad4alp data is stored</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    basepath : str</span>
+<span class="sd">        base path</span>
+<span class="sd">    voltime : datetime object</span>
+<span class="sd">        nominal time</span>
+<span class="sd">    radar_name : str</span>
+<span class="sd">        radar name (A, D, L, P, W)</span>
+<span class="sd">    radar_res : str</span>
+<span class="sd">        radar resolution (H, L)</span>
+<span class="sd">    scan : str</span>
+<span class="sd">        scan</span>
+<span class="sd">    path_convention : str</span>
+<span class="sd">        The path convention. Can be &#39;LTE&#39;, &#39;MCH&#39; or &#39;RT&#39;</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    datapath : str</span>
+<span class="sd">        The data path</span>
+<span class="sd">    basename : str</span>
+<span class="sd">        The base name. ex: PHA17213</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dayinfo</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%y%j&#39;</span><span class="p">)</span>
+    <span class="n">basename</span> <span class="o">=</span> <span class="s1">&#39;M&#39;</span><span class="o">+</span><span class="n">radar_res</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="n">dayinfo</span>
+    <span class="k">if</span> <span class="n">path_convention</span> <span class="o">==</span> <span class="s1">&#39;LTE&#39;</span><span class="p">:</span>
+        <span class="n">yy</span> <span class="o">=</span> <span class="n">dayinfo</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">dayinfo</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="n">subf</span> <span class="o">=</span> <span class="s1">&#39;M&#39;</span><span class="o">+</span><span class="n">radar_res</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="n">yy</span><span class="o">+</span><span class="s1">&#39;hdf&#39;</span><span class="o">+</span><span class="n">dy</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">subf</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+
+        <span class="c1"># check that M files exist. if not search P files</span>
+        <span class="n">dayfilelist</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="n">scan</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dayfilelist</span><span class="p">:</span>
+            <span class="n">subf</span> <span class="o">=</span> <span class="s1">&#39;P&#39;</span><span class="o">+</span><span class="n">radar_res</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="n">yy</span><span class="o">+</span><span class="s1">&#39;hdf&#39;</span><span class="o">+</span><span class="n">dy</span>
+            <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">subf</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+            <span class="n">basename</span> <span class="o">=</span> <span class="s1">&#39;P&#39;</span><span class="o">+</span><span class="n">radar_res</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="n">dayinfo</span>
+    <span class="k">elif</span> <span class="n">path_convention</span> <span class="o">==</span> <span class="s1">&#39;MCH&#39;</span><span class="p">:</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+
+        <span class="c1"># check that M files exist. if not search P files</span>
+        <span class="n">dayfilelist</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="n">scan</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dayfilelist</span><span class="p">:</span>
+            <span class="n">basename</span> <span class="o">=</span> <span class="s1">&#39;P&#39;</span><span class="o">+</span><span class="n">radar_res</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="n">dayinfo</span>
+            <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="s1">&#39;M&#39;</span><span class="o">+</span><span class="n">radar_res</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+
+        <span class="c1"># check that M files exist. if not search P files</span>
+        <span class="n">dayfilelist</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="n">scan</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dayfilelist</span><span class="p">:</span>
+            <span class="n">basename</span> <span class="o">=</span> <span class="s1">&#39;P&#39;</span><span class="o">+</span><span class="n">radar_res</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="n">dayinfo</span>
+            <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="s1">&#39;P&#39;</span><span class="o">+</span><span class="n">radar_res</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+
+    <span class="k">return</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">basename</span></div>
+
+
+<div class="viewcode-block" id="get_rad4alp_grid_dir"><a class="viewcode-back" href="../../../io.html#pyrad.io.get_rad4alp_grid_dir">[docs]</a><span class="k">def</span> <span class="nf">get_rad4alp_grid_dir</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">acronym</span><span class="p">,</span>
+                         <span class="n">path_convention</span><span class="o">=</span><span class="s1">&#39;MCH&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    gets the directory where rad4alp grid data is stored</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    basepath : str</span>
+<span class="sd">        base path</span>
+<span class="sd">    voltime : datetime object</span>
+<span class="sd">        nominal time</span>
+<span class="sd">    datatype : str</span>
+<span class="sd">        data type</span>
+<span class="sd">    acronym : str</span>
+<span class="sd">        acronym identifying the data type</span>
+<span class="sd">    path_convention : str</span>
+<span class="sd">        The path convention. Can be &#39;LTE&#39;, &#39;MCH&#39; or &#39;RT&#39;</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    datapath : str</span>
+<span class="sd">        The data path</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nowpal_accu</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s1">&#39;nowpal60_P60&#39;</span><span class="p">,</span> <span class="s1">&#39;nowpal90_P90&#39;</span><span class="p">,</span> <span class="s1">&#39;nowpal180_P180&#39;</span><span class="p">,</span> <span class="s1">&#39;nowpal360_P360&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;nowpal720_P720&#39;</span><span class="p">)</span>
+    <span class="n">nowpal</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s1">&#39;nowpal90_P30&#39;</span><span class="p">,</span> <span class="s1">&#39;nowpal90_P30_F60&#39;</span><span class="p">,</span> <span class="s1">&#39;nowpal90_F60&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;nowpal180_P60&#39;</span><span class="p">,</span> <span class="s1">&#39;nowpal180_P60_F120&#39;</span><span class="p">,</span> <span class="s1">&#39;nowpal180_F120&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;nowpal360_P120&#39;</span><span class="p">,</span> <span class="s1">&#39;nowpal360_P120_F240&#39;</span><span class="p">,</span> <span class="s1">&#39;nowpal360_F240&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;nowpal720_P360&#39;</span><span class="p">,</span> <span class="s1">&#39;nowpal720_P360_F360&#39;</span><span class="p">,</span> <span class="s1">&#39;nowpal720_F360&#39;</span><span class="p">)</span>
+
+    <span class="n">cpch</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s1">&#39;CPCH0005&#39;</span><span class="p">,</span> <span class="s1">&#39;CPCH0060&#39;</span><span class="p">,</span> <span class="s1">&#39;CPCH0180&#39;</span><span class="p">,</span> <span class="s1">&#39;CPCH0360&#39;</span><span class="p">,</span> <span class="s1">&#39;CPCH0720&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;CPCH1440&#39;</span><span class="p">,</span> <span class="s1">&#39;CPCH2880&#39;</span><span class="p">,</span> <span class="s1">&#39;CPCH4320&#39;</span><span class="p">)</span>
+
+    <span class="n">dayinfo</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%y%j&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="n">nowpal_accu</span><span class="p">:</span>
+        <span class="n">dirbase</span> <span class="o">=</span> <span class="s1">&#39;nowpal_accu&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="n">nowpal</span><span class="p">:</span>
+        <span class="n">dirbase</span> <span class="o">=</span> <span class="s1">&#39;nowpal&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">datatype</span> <span class="o">!=</span> <span class="s1">&#39;dGZC&#39;</span><span class="p">:</span>
+        <span class="n">dirbase</span> <span class="o">=</span> <span class="s1">&#39;d&#39;</span><span class="o">+</span><span class="n">acronym</span>
+        <span class="k">if</span> <span class="n">datatype</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;H&#39;</span><span class="p">):</span>
+            <span class="n">dirbase</span> <span class="o">=</span> <span class="n">dirbase</span><span class="o">+</span><span class="s1">&#39;H&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="n">cpch</span><span class="p">:</span>
+        <span class="n">dirbase</span> <span class="o">=</span> <span class="n">acronym</span><span class="o">+</span><span class="s1">&#39;H&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">dirbase</span> <span class="o">=</span> <span class="n">acronym</span>
+
+    <span class="k">if</span> <span class="n">path_convention</span> <span class="o">==</span> <span class="s1">&#39;LTE&#39;</span><span class="p">:</span>
+        <span class="n">yy</span> <span class="o">=</span> <span class="n">dayinfo</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">dayinfo</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="n">subf</span> <span class="o">=</span> <span class="n">acronym</span><span class="o">+</span><span class="n">yy</span><span class="o">+</span><span class="s1">&#39;hdf&#39;</span><span class="o">+</span> <span class="n">dy</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">subf</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+    <span class="k">elif</span> <span class="n">path_convention</span> <span class="o">==</span> <span class="s1">&#39;MCH&#39;</span><span class="p">:</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">dirbase</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">dirbase</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+
+    <span class="k">return</span> <span class="n">datapath</span></div>
+
+
 <div class="viewcode-block" id="get_trtfile_list"><a class="viewcode-back" href="../../../io.html#pyrad.io.get_trtfile_list">[docs]</a><span class="k">def</span> <span class="nf">get_trtfile_list</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">starttime</span><span class="p">,</span> <span class="n">endtime</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    gets the list of TRT files with a time period</span>
@@ -1349,7 +1937,7 @@
         <span class="n">bfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
         <span class="n">datetimestr</span> <span class="o">=</span> <span class="n">bfile</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">12</span><span class="p">]</span>
         <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">datetimestr</span><span class="p">,</span> <span class="s1">&#39;%y%j%H%M&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">fdatetime</span> <span class="o">&gt;=</span> <span class="n">starttime</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">fdatetime</span> <span class="o">&lt;=</span> <span class="n">endtime</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">starttime</span> <span class="o">&lt;=</span> <span class="n">fdatetime</span> <span class="o">&lt;=</span> <span class="n">endtime</span><span class="p">:</span>
             <span class="n">filelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
         <span class="c1"># filelist.append(filename)</span>
 
@@ -1462,7 +2050,7 @@
             <span class="n">product</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">datagroup</span> <span class="o">=</span> <span class="n">descrfields</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;CFRADIAL&#39;</span><span class="p">,</span> <span class="s1">&#39;ODIMPYRAD&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;CFRADIAL&#39;</span><span class="p">,</span> <span class="s1">&#39;ODIMPYRAD&#39;</span><span class="p">,</span> <span class="s1">&#39;PYRADGRID&#39;</span><span class="p">):</span>
                 <span class="n">descrfields2</span> <span class="o">=</span> <span class="n">descrfields</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
                 <span class="n">datatype</span> <span class="o">=</span> <span class="n">descrfields2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="n">dataset</span> <span class="o">=</span> <span class="n">descrfields2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -1485,7 +2073,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">radarnr</span> <span class="o">=</span> <span class="s1">&#39;RADAR001&#39;</span>
         <span class="n">datagroup</span> <span class="o">=</span> <span class="n">descrfields</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;CFRADIAL&#39;</span><span class="p">,</span> <span class="s1">&#39;ODIMPYRAD&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;CFRADIAL&#39;</span><span class="p">,</span> <span class="s1">&#39;ODIMPYRAD&#39;</span><span class="p">,</span> <span class="s1">&#39;PYRADGRID&#39;</span><span class="p">):</span>
             <span class="n">descrfields2</span> <span class="o">=</span> <span class="n">descrfields</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
             <span class="n">datatype</span> <span class="o">=</span> <span class="n">descrfields2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">dataset</span> <span class="o">=</span> <span class="n">descrfields2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -1812,12 +2400,18 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">bfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;RAINBOW&#39;</span><span class="p">,</span> <span class="s1">&#39;CFRADIAL&#39;</span><span class="p">,</span> <span class="s1">&#39;ODIMPYRAD&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;RAINBOW&#39;</span><span class="p">,</span> <span class="s1">&#39;CFRADIAL&#39;</span><span class="p">,</span> <span class="s1">&#39;ODIMPYRAD&#39;</span><span class="p">,</span> <span class="s1">&#39;PYRADGRID&#39;</span><span class="p">):</span>
         <span class="n">datetimestr</span> <span class="o">=</span> <span class="n">bfile</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">14</span><span class="p">]</span>
         <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">datetimestr</span><span class="p">,</span> <span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M%S&#39;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;RAD4ALP&#39;</span><span class="p">:</span>
-        <span class="n">datetimestr</span> <span class="o">=</span> <span class="n">bfile</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">12</span><span class="p">]</span>
-        <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">datetimestr</span><span class="p">,</span> <span class="s1">&#39;%y%j%H%M&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;RAD4ALP&#39;</span><span class="p">,</span> <span class="s1">&#39;RAD4ALPGRID&#39;</span><span class="p">,</span> <span class="s1">&#39;RAD4ALPGIF&#39;</span><span class="p">,</span> <span class="s1">&#39;RAD4ALPBIN&#39;</span><span class="p">):</span>
+        <span class="n">datestr</span> <span class="o">=</span> <span class="n">bfile</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">8</span><span class="p">]</span>
+        <span class="n">timestr</span> <span class="o">=</span> <span class="n">bfile</span><span class="p">[</span><span class="mi">8</span><span class="p">:</span><span class="mi">12</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">timestr</span> <span class="o">!=</span> <span class="s1">&#39;2400&#39;</span><span class="p">:</span>
+            <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span>
+                <span class="n">datestr</span><span class="o">+</span><span class="n">timestr</span><span class="p">,</span> <span class="s1">&#39;%y%j%H%M&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span>
+                <span class="n">datestr</span><span class="p">,</span> <span class="s1">&#39;%y%j&#39;</span><span class="p">)</span><span class="o">+</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;ODIM&#39;</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">ftime_format</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># we assume is rad4alp format</span>

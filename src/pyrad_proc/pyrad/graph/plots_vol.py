@@ -79,17 +79,11 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
         if true save the figure. If false it does not close the plot and
         returns the handle to the figure
 
-
     Returns
     -------
-    fname_list : list of str
-        list of names of the created plots
-
-    History
-    --------
-    ????.??.?? created
-    2017.08.?? -fvj- added option controlling dpi
-    2017-08.23 -jgr- minor graphical changes
+    fname_list : list of str or
+    fig, ax : tupple
+        list of names of the saved plots or handle of the figure an axes
 
     """
     if plot_type == 'PPI':
@@ -184,38 +178,35 @@ def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
     fname_list : list of str
         list of names of the created plots
 
-    History
-    --------
-    ????.??.?? created
-    2017.08.?? -fvj- added option controlling dpi
-    2017-08.22 -jgr- changed colortable behavior: created now here
-                     instead than on pyart
-
     """
     dpi = prdcfg['ppiImageConfig'].get('dpi', 72)
 
     norm, ticks, ticklabs = get_norm(field_name)
 
-    xsize = prdcfg['ppiImageConfig']['xsize']
-    ysize = prdcfg['ppiImageConfig']['ysize']
+    xsize = prdcfg['ppiMapImageConfig']['xsize']
+    ysize = prdcfg['ppiMapImageConfig']['ysize']
+    lonstep = prdcfg['ppiMapImageConfig'].get('lonstep', 0.5)
+    latstep = prdcfg['ppiMapImageConfig'].get('latstep', 0.5)
+    min_lon = prdcfg['ppiMapImageConfig'].get('lonmin', 2.5)
+    max_lon = prdcfg['ppiMapImageConfig'].get('lonmax', 12.5)
+    min_lat = prdcfg['ppiMapImageConfig'].get('latmin', 43.5)
+    max_lat = prdcfg['ppiMapImageConfig'].get('latmax', 49.5)
+    resolution = prdcfg['ppiMapImageConfig'].get('mapres', '110m')
+    if resolution not in ('110m', '50m', '10m'):
+        warn('Unknown map resolution: '+resolution)
+        resolution = '110m'
+
+    lon_lines = np.arange(np.floor(min_lon), np.ceil(max_lon)+1, lonstep)
+    lat_lines = np.arange(np.floor(min_lat), np.ceil(max_lat)+1, latstep)
+
     fig = plt.figure(figsize=[xsize, ysize], dpi=dpi)
     ax = fig.add_subplot(111, aspect='equal')
-    lon_lines = np.arange(np.floor(prdcfg['ppiMapImageConfig']['lonmin']),
-                          np.ceil(prdcfg['ppiMapImageConfig']['lonmax'])+1,
-                          0.5)
-    lat_lines = np.arange(np.floor(prdcfg['ppiMapImageConfig']['latmin']),
-                          np.ceil(prdcfg['ppiMapImageConfig']['latmax'])+1,
-                          0.5)
 
     display_map = pyart.graph.RadarMapDisplay(radar)
     display_map.plot_ppi_map(
-        field_name, sweep=ind_el, norm=norm, ticks=ticks,
-        ticklabs=ticklabs, min_lon=prdcfg['ppiMapImageConfig']['lonmin'],
-        max_lon=prdcfg['ppiMapImageConfig']['lonmax'],
-        min_lat=prdcfg['ppiMapImageConfig']['latmin'],
-        max_lat=prdcfg['ppiMapImageConfig']['latmax'],
-        resolution=prdcfg['ppiMapImageConfig']['mapres'],
-        lat_lines=lat_lines, lon_lines=lon_lines,
+        field_name, sweep=ind_el, norm=norm, ticks=ticks, ticklabs=ticklabs,
+        min_lon=min_lon, max_lon=max_lon, min_lat=min_lat, max_lat=max_lat,
+        resolution=resolution, lat_lines=lat_lines, lon_lines=lon_lines,
         maps_list=prdcfg['ppiMapImageConfig']['maps'],
         colorbar_flag=False, fig=fig, ax=ax)
 
@@ -273,16 +264,9 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
 
     Returns
     -------
-    fname_list : list of str
-        list of names of the created plots
+    fname_list : list of str or
     fig, ax : tupple
         list of names of the saved plots or handle of the figure an axes
-
-     History
-    --------
-    ????.??.?? created
-    2017.08.?? -fvj- added option controlling dpi
-    2017-08.23 -jgr- minor graphical changes
 
     """
     if plot_type == 'RHI':

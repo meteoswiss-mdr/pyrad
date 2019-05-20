@@ -7,23 +7,55 @@ Functions for obtaining Pyrad products from gridded datasets
 .. autosummary::
     :toctree: generated/
 
+    generate_grid_time_avg_products
     generate_sparse_grid_products
     generate_grid_products
 
 """
 
 from warnings import warn
+from copy import deepcopy
+
+import numpy as np
 
 import pyart
 
 from ..io.io_aux import get_fieldname_pyart
 from ..io.io_aux import get_save_dir, make_filename
+from ..io.write_data import write_histogram
 
-from ..graph.plots_grid import plot_surface
+from ..graph.plots_grid import plot_surface, plot_surface_contour
 from ..graph.plots_grid import plot_longitude_slice, plot_latitude_slice
 from ..graph.plots_grid import plot_latlon_slice
 from ..graph.plots_vol import plot_pos
 from ..graph.plots_aux import get_colobar_label, get_field_name
+from ..graph.plots import plot_histogram
+
+from ..util.radar_utils import compute_histogram
+
+
+def generate_grid_time_avg_products(dataset, prdcfg):
+    """
+    generates time average products. Accepted product types:
+        All the products of the 'VOL' dataset group
+
+    Parameters
+    ----------
+    dataset : tuple
+        radar objects and colocated gates dictionary
+
+    prdcfg : dictionary of dictionaries
+        product configuration dictionary of dictionaries
+
+    Returns
+    -------
+    filename : str
+        the name of the file created. None otherwise
+
+    """
+    prdcfg['timeinfo'] = dataset['timeinfo']
+
+    return generate_grid_products(dataset, prdcfg)
 
 
 def generate_sparse_grid_products(dataset, prdcfg):
@@ -53,7 +85,7 @@ def generate_sparse_grid_products(dataset, prdcfg):
 
     if prdcfg['type'] == 'SURFACE_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset['fields']:
+        if field_name not in dataset['radar_out']['fields']:
             warn(
                 ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
@@ -66,27 +98,29 @@ def generate_sparse_grid_products(dataset, prdcfg):
 
         fname_list = make_filename(
             'surface', prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'], timeinfo=prdcfg['timeinfo'])
+            prdcfg['imgformat'], timeinfo=prdcfg['timeinfo'],
+            runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
         cb_label = get_colobar_label(
-            dataset['fields'][field_name], field_name)
+            dataset['radar_out']['fields'][field_name], field_name)
 
         titl = (prdcfg['timeinfo'].strftime('%Y-%m-%dT%H:%M%SZ')+'\n' +
-                get_field_name(dataset['fields'][field_name], field_name))
+                get_field_name(dataset['radar_out']['fields'][field_name],
+                               field_name))
 
         if 'field_limits' in prdcfg:
             field_limits = prdcfg['field_limits']
         else:
-            field_limits = dataset['field_limits']
+            field_limits = dataset['radar_out']['field_limits']
 
         # get colobar limits
         vmin, vmax = pyart.config.get_field_limits(field_name)
         plot_pos(
-            dataset['lat'], dataset['lon'],
-            dataset['fields'][field_name]['data'],
+            dataset['radar_out']['lat'], dataset['radar_out']['lon'],
+            dataset['radar_out']['fields'][field_name]['data'],
             fname_list, cb_label=cb_label,
             titl=titl, limits=field_limits, vmin=vmin,
             vmax=vmax)
@@ -98,6 +132,7 @@ def generate_sparse_grid_products(dataset, prdcfg):
     warn(' Unsupported product type: ' + prdcfg['type'])
     return None
 
+
 def generate_grid_products(dataset, prdcfg):
     """
     generates grid products. Accepted product types:
@@ -108,6 +143,13 @@ def generate_grid_products(dataset, prdcfg):
                     the keywords 'lat' and 'lon' [degree]. The altitude limits
                     are defined by the parameters in 'rhiImageConfig' in the
                     'loc' configuration file
+        'HISTOGRAM': Computes a histogram of the radar volum data
+            User defined parameters:
+                step: float or None
+                    the data quantization step. If none it will be obtained
+                    from the Py-ART configuration file
+                write_data: Bool
+                    If true the histogram data is written in a csv file
         'LATITUDE_SLICE': Plots a cross-section of gridded data over a
             constant latitude.
             User defined parameters:
@@ -122,9 +164,20 @@ def generate_grid_products(dataset, prdcfg):
                     The starting point of the cross-section. The ending point
                     is defined by the parameters in 'rhiImageConfig' in the
                     'loc' configuration file
-        'SAVEVOL': save the gridded data in a C/F radial file.
-
+        'SAVEALL': Saves a gridded data object including all or a list of
+            user-defined fields in a netcdf file
+            User defined parameters:
+                datatypes: list of str or None
+                    The list of data types to save. If it is None, all fields
+                    in the radar object will be saved
+        'SAVEVOL': Saves on field of a gridded data object in a netcdf file.
         'SURFACE_IMAGE': Plots a surface image of gridded data.
+            User defined parameters:
+                level: int
+                    The altitude level to plot. The rest of the parameters are
+                    defined by the parameters in 'ppiImageConfig' and
+                    'ppiMapImageConfig' in the 'loc' configuration file
+        'SURFACE_CONTOUR': Plots a surface image of gridded data.
             User defined parameters:
                 level: int
                     The altitude level to plot. The rest of the parameters are
@@ -151,7 +204,7 @@ def generate_grid_products(dataset, prdcfg):
 
     if prdcfg['type'] == 'SURFACE_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
+        if field_name not in dataset['radar_out'].fields:
             warn(
                 ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
@@ -159,9 +212,7 @@ def generate_grid_products(dataset, prdcfg):
             return None
 
         # user defined values
-        level = 0
-        if 'level' in prdcfg:
-            level = prdcfg['level']
+        level = prdcfg.get('level', 0)
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -170,20 +221,21 @@ def generate_grid_products(dataset, prdcfg):
         fname_list = make_filename(
             'surface', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='l'+str(level),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        plot_surface(dataset, field_name, level, prdcfg, fname_list)
+        plot_surface(
+            dataset['radar_out'], field_name, level, prdcfg, fname_list)
 
         print('----- save to '+' '.join(fname_list))
 
         return fname_list
 
-    if prdcfg['type'] == 'LATITUDE_SLICE':
+    if prdcfg['type'] == 'SURFACE_CONTOUR':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
+        if field_name not in dataset['radar_out'].fields:
             warn(
                 ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
@@ -191,12 +243,96 @@ def generate_grid_products(dataset, prdcfg):
             return None
 
         # user defined values
-        lon = dataset.origin_longitude['data'][0]
-        lat = dataset.origin_latitude['data'][0]
-        if 'lon' in prdcfg:
-            lon = prdcfg['lon']
-        if 'lat' in prdcfg:
-            lat = prdcfg['lat']
+        contour_values = prdcfg.get('contour_values', None)
+        level = prdcfg.get('level', 0)
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            'surface', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo='l'+str(level),
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        plot_surface_contour(
+            dataset['radar_out'], field_name, level, prdcfg, fname_list,
+            contour_values=contour_values)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+    if prdcfg['type'] == 'SURFACE_CONTOUR_OVERPLOT':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_name = get_fieldname_pyart(prdcfg['contourtype'])
+        if contour_name not in dataset['radar_out'].fields:
+            warn(
+                'Contour type ' + contour_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        contour_values = prdcfg.get('contour_values', None)
+        level = prdcfg.get('level', 0)
+        contour_level = prdcfg.get('contour_level', level)
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            'surface', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo='l'+str(level),
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        titl = (
+            pyart.graph.common.generate_grid_title(
+                dataset['radar_out'], field_name, level) +
+            ' - ' +
+            pyart.graph.common.generate_field_name(
+                dataset['radar_out'], contour_name))
+
+        fig, ax, display = plot_surface(
+            dataset['radar_out'], field_name, level, prdcfg, fname_list,
+            titl=titl, save_fig=False)
+
+        fname_list = plot_surface_contour(
+            dataset['radar_out'], contour_name, contour_level, prdcfg,
+            fname_list, contour_values=contour_values, ax=ax, fig=fig,
+            display=display, save_fig=True)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+    if prdcfg['type'] == 'LATITUDE_SLICE':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # user defined values
+        lon = prdcfg.get(
+            'lon', dataset['radar_out'].origin_longitude['data'][0])
+        lat = prdcfg.get(
+            'lat', dataset['radar_out'].origin_latitude['data'][0])
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -205,12 +341,13 @@ def generate_grid_products(dataset, prdcfg):
         fname_list = make_filename(
             'lat_slice', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='lat'+'{:.2f}'.format(lat),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        plot_latitude_slice(dataset, field_name, lon, lat, prdcfg, fname_list)
+        plot_latitude_slice(
+            dataset['radar_out'], field_name, lon, lat, prdcfg, fname_list)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -218,7 +355,7 @@ def generate_grid_products(dataset, prdcfg):
 
     if prdcfg['type'] == 'LONGITUDE_SLICE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
+        if field_name not in dataset['radar_out'].fields:
             warn(
                 ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
@@ -226,12 +363,10 @@ def generate_grid_products(dataset, prdcfg):
             return None
 
         # user defined values
-        lon = dataset.origin_longitude['data'][0]
-        lat = dataset.origin_latitude['data'][0]
-        if 'lon' in prdcfg:
-            lon = prdcfg['lon']
-        if 'lat' in prdcfg:
-            lat = prdcfg['lat']
+        lon = prdcfg.get(
+            'lon', dataset['radar_out'].origin_longitude['data'][0])
+        lat = prdcfg.get(
+            'lat', dataset['radar_out'].origin_latitude['data'][0])
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -240,13 +375,13 @@ def generate_grid_products(dataset, prdcfg):
         fname_list = make_filename(
             'lon_slice', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='lon'+'{:.2f}'.format(lon),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
         plot_longitude_slice(
-            dataset, field_name, lon, lat, prdcfg, fname_list)
+            dataset['radar_out'], field_name, lon, lat, prdcfg, fname_list)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -254,7 +389,7 @@ def generate_grid_products(dataset, prdcfg):
 
     if prdcfg['type'] == 'CROSS_SECTION':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
+        if field_name not in dataset['radar_out'].fields:
             warn(
                 ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
@@ -262,11 +397,11 @@ def generate_grid_products(dataset, prdcfg):
             return None
 
         # user defined values
-        lon1 = dataset.point_longitude['data'][0, 0, 0]
-        lat1 = dataset.point_latitude['data'][0, 0, 0]
+        lon1 = dataset['radar_out'].point_longitude['data'][0, 0, 0]
+        lat1 = dataset['radar_out'].point_latitude['data'][0, 0, 0]
 
-        lon2 = dataset.point_longitude['data'][0, -1, -1]
-        lat2 = dataset.point_latitude['data'][0, -1, -1]
+        lon2 = dataset['radar_out'].point_longitude['data'][0, -1, -1]
+        lat2 = dataset['radar_out'].point_latitude['data'][0, -1, -1]
         if 'coord1' in prdcfg:
             if 'lon' in prdcfg['coord1']:
                 lon1 = prdcfg['coord1']['lon']
@@ -291,26 +426,91 @@ def generate_grid_products(dataset, prdcfg):
             prdcfginfo='lon-lat1_'+'{:.2f}'.format(lon1)+'-' +
             '{:.2f}'.format(lat1)+'_lon-lat2_' +
             '{:.2f}'.format(lon2)+'-'+'{:.2f}'.format(lat2),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
         plot_latlon_slice(
-            dataset, field_name, coord1, coord2, prdcfg, fname_list)
+            dataset['radar_out'], field_name, coord1, coord2, prdcfg,
+            fname_list)
 
         print('----- save to '+' '.join(fname_list))
 
         return fname_list
 
-    if prdcfg['type'] == 'SAVEVOL':
+    if prdcfg['type'] == 'HISTOGRAM':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
-        if field_name not in dataset.fields:
+        if field_name not in dataset['radar_out'].fields:
             warn(
                 ' Field type ' + field_name +
                 ' not available in data set. Skipping product ' +
                 prdcfg['type'])
             return None
+
+        step = prdcfg.get('step', None)
+        mask_val = prdcfg.get('mask_val', None)
+        write_data = prdcfg.get('write_data', 0)
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            'histogram', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'],
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        values = dataset['radar_out'].fields[field_name]['data']
+        if mask_val is not None:
+            values = np.ma.masked_values(values, mask_val)
+        bin_edges, values = compute_histogram(values, field_name, step=step)
+
+        titl = (
+            pyart.graph.common.generate_grid_time_begin(
+                dataset['radar_out']).isoformat() + 'Z' + '\n' +
+            get_field_name(
+                dataset['radar_out'].fields[field_name], field_name))
+
+        labelx = get_colobar_label(
+            dataset['radar_out'].fields[field_name], field_name)
+
+        plot_histogram(bin_edges, values, fname_list, labelx=labelx,
+                       labely='Number of Samples', titl=titl)
+
+        print('----- save to '+' '.join(fname_list))
+
+        if write_data:
+            fname = savedir+make_filename(
+                'histogram', prdcfg['dstype'], prdcfg['voltype'],
+                ['csv'], timeinfo=prdcfg['timeinfo'],
+                runinfo=prdcfg['runinfo'])[0]
+
+            hist, _ = np.histogram(values, bins=bin_edges)
+            write_histogram(
+                bin_edges, hist, fname, datatype=prdcfg['voltype'], step=step)
+            print('----- save to '+fname)
+
+            return fname
+
+        return fname_list
+
+    if prdcfg['type'] == 'SAVEVOL':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        new_dataset = deepcopy(dataset['radar_out'])
+        new_dataset.fields = dict()
+        new_dataset.add_field(
+            field_name, dataset['radar_out'].fields[field_name])
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -318,11 +518,48 @@ def generate_grid_products(dataset, prdcfg):
 
         fname = make_filename(
             'savevol', prdcfg['dstype'], prdcfg['voltype'], ['nc'],
-            timeinfo=prdcfg['timeinfo'])[0]
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])[0]
 
         fname = savedir+fname
 
-        pyart.io.write_grid(fname, dataset, write_point_x_y_z=True,
+        pyart.io.write_grid(fname, new_dataset, write_point_x_y_z=True,
+                            write_point_lon_lat_alt=True)
+        print('saved file: '+fname)
+
+        return fname
+
+    if prdcfg['type'] == 'SAVEALL':
+        datatypes = prdcfg.get('datatypes', None)
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'savevol', prdcfg['dstype'], 'all_fields', ['nc'],
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])[0]
+
+        fname = savedir+fname
+
+        field_names = None
+        if datatypes is not None:
+            field_names = []
+            for datatype in datatypes:
+                field_names.append(get_fieldname_pyart(datatype))
+
+        if field_names is not None:
+            new_dataset = deepcopy(dataset['radar_out'])
+            new_dataset.fields = dict()
+            for field_name in field_names:
+                if field_name not in dataset['radar_out'].fields:
+                    warn(field_name+' not in grid object')
+                else:
+                    new_dataset.add_field(
+                        field_name, dataset['radar_out'].fields[field_name])
+        else:
+            new_dataset = dataset['radar_out']
+
+        pyart.io.write_grid(fname, new_dataset, write_point_x_y_z=True,
                             write_point_lon_lat_alt=True)
         print('saved file: '+fname)
 

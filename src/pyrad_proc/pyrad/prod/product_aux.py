@@ -19,6 +19,7 @@ from .process_product import generate_ml_products
 from .process_vol_products import generate_vol_products
 from .process_grid_products import generate_grid_products
 from .process_grid_products import generate_sparse_grid_products
+from .process_grid_products import generate_grid_time_avg_products
 from .process_timeseries_products import generate_timeseries_products
 from .process_traj_products import generate_traj_product
 from .process_monitoring_products import generate_monitoring_products
@@ -41,6 +42,7 @@ def get_prodgen_func(dsformat, dsname, dstype):
             'COLOCATED_GATES': generate_colocated_gates_products
             'COSMO_COORD': generate_cosmo_coord_products
             'GRID': generate_grid_products
+            'GRID_TIMEAVG': generate_grid_time_avg_products
             'INTERCOMP': generate_intercomp_products
             'ML': generate_ml_products
             'MONITORING': generate_monitoring_products
@@ -69,6 +71,8 @@ def get_prodgen_func(dsformat, dsname, dstype):
         func = generate_sparse_grid_products
     elif dsformat == 'TIMEAVG':
         func = generate_time_avg_products
+    elif dsformat == 'GRID_TIMEAVG':
+        func = generate_grid_time_avg_products
     elif dsformat == 'SUN_HITS':
         func = generate_sun_hits_products
     elif dsformat == 'MONITORING':

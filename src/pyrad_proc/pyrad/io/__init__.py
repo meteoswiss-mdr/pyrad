@@ -113,6 +113,7 @@ Writing data
     write_histogram
     write_quantiles
     write_ts_polar_data
+    write_ts_grid_data
     write_ts_cum
     write_monitoring_ts
     write_excess_gates
@@ -131,6 +132,7 @@ Auxiliary functions
 .. autosummary::
     :toctree: generated/
 
+    get_rad4alp_prod_fname
     map_hydro
     map_Doppler
     get_save_dir
@@ -140,6 +142,8 @@ Auxiliary functions
     get_fieldname_cosmo
     get_field_unit
     get_file_list
+    get_rad4alp_dir
+    get_rad4alp_grid_dir
     get_trtfile_list
     get_new_rainbow_file_name
     get_datatype_fields
@@ -212,14 +216,15 @@ from .write_data import write_excess_gates, write_trt_cell_data
 from .write_data import write_histogram, write_quantiles, write_ts_lightning
 from .write_data import write_trt_cell_scores, write_trt_cell_lightning
 from .write_data import write_trt_info, write_fixed_angle, write_proc_periods
-from .write_data import write_trt_thundertracking_data
+from .write_data import write_trt_thundertracking_data, write_ts_grid_data
 
 from .io_aux import get_save_dir, make_filename, get_new_rainbow_file_name
 from .io_aux import get_datetime, get_dataset_fields, map_hydro, map_Doppler
 from .io_aux import get_file_list, get_trtfile_list, get_datatype_fields
 from .io_aux import get_fieldname_pyart, get_field_unit, get_fieldname_cosmo
 from .io_aux import generate_field_name_str, find_raw_cosmo_file
-from .io_aux import find_hzt_file, _get_datetime
+from .io_aux import find_hzt_file, _get_datetime, get_rad4alp_prod_fname
+from .io_aux import get_rad4alp_dir, get_rad4alp_grid_dir
 
 from .trajectory import Trajectory
 

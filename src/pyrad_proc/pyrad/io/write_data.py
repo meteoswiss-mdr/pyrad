@@ -25,6 +25,7 @@ Functions for writing pyrad output data
     write_histogram
     write_quantiles
     write_ts_polar_data
+    write_ts_grid_data
     write_ts_ml
     write_ts_cum
     write_monitoring_ts
@@ -1131,6 +1132,71 @@ def write_ts_polar_data(dataset, fname):
                  'az': dataset['used_antenna_coordinates_az_el_r'][0],
                  'el': dataset['used_antenna_coordinates_az_el_r'][1],
                  'r': dataset['used_antenna_coordinates_az_el_r'][2],
+                 'value': dataset['value']})
+            csvfile.close()
+
+    return fname
+
+
+def write_ts_grid_data(dataset, fname):
+    """
+    writes time series of data
+
+    Parameters
+    ----------
+    dataset : dict
+        dictionary containing the time series parameters
+
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    filelist = glob.glob(fname)
+    if not filelist:
+        with open(fname, 'w', newline='') as csvfile:
+            csvfile.write('# Gridded data timeseries data file\n')
+            csvfile.write('# Comment lines are preceded by "#"\n')
+            csvfile.write('# Description: \n')
+            csvfile.write('# Time series of a gridded data over a ' +
+                          'fixed location.\n')
+            csvfile.write(
+                '# Nominal location [lon, lat, alt]: ' +
+                str(dataset['point_coordinates_WGS84_lon_lat_alt']) + '\n')
+            csvfile.write(
+                '# Grid points used [iz, iy, ix]: ' +
+                str(dataset['grid_points_iz_iy_ix'])+'\n')
+            csvfile.write(
+                '# Data: '+generate_field_name_str(dataset['datatype'])+'\n')
+            csvfile.write('# Fill Value: '+str(get_fillvalue())+'\n')
+            csvfile.write(
+                '# Start: ' +
+                dataset['time'].strftime('%Y-%m-%d %H:%M:%S UTC')+'\n')
+            csvfile.write('#\n')
+
+            fieldnames = ['date', 'lon', 'lat', 'alt', 'value']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writeheader()
+            writer.writerow(
+                {'date': dataset['time'].strftime('%Y-%m-%d %H:%M:%S.%f'),
+                 'lon': dataset['used_coordinates_WGS84_lon_lat_alt'][0],
+                 'lat': dataset['used_coordinates_WGS84_lon_lat_alt'][1],
+                 'alt': dataset['used_coordinates_WGS84_lon_lat_alt'][2],
+                 'value': dataset['value']})
+            csvfile.close()
+    else:
+        with open(fname, 'a', newline='') as csvfile:
+            fieldnames = ['date', 'lon', 'lat', 'alt', 'value']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writerow(
+                {'date': dataset['time'].strftime('%Y-%m-%d %H:%M:%S.%f'),
+                 'lon': dataset['used_coordinates_WGS84_lon_lat_alt'][0],
+                 'lat': dataset['used_coordinates_WGS84_lon_lat_alt'][1],
+                 'alt': dataset['used_coordinates_WGS84_lon_lat_alt'][2],
                  'value': dataset['value']})
             csvfile.close()
 

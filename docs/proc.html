@@ -36,6 +36,7 @@
   <ul>
 <li><a class="reference internal" href="#">Dataset processing (<code class="docutils literal notranslate"><span class="pre">pyrad.proc</span></code>)</a><ul>
 <li><a class="reference internal" href="#auxiliary-functions">Auxiliary functions</a></li>
+<li><a class="reference internal" href="#gridded-data-functions">Gridded data functions</a></li>
 <li><a class="reference internal" href="#echo-classification-and-filtering">Echo classification and filtering</a></li>
 <li><a class="reference internal" href="#phase-processing-and-attenuation-correction">Phase processing and attenuation correction</a></li>
 <li><a class="reference internal" href="#monitoring-calibration-and-noise-correction">Monitoring, calibration and noise correction</a></li>
@@ -105,11 +106,34 @@
 <tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_roi" title="pyrad.proc.process_roi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_roi</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Obtains the radar data at a region of interest.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_grid" title="pyrad.proc.process_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_grid</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_azimuthal_average" title="pyrad.proc.process_azimuthal_average"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_azimuthal_average</span></code></a>(procstatus,&nbsp;dscfg)</td>
+<td>Averages radar data in azimuth obtaining and RHI as a result</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="gridded-data-functions">
+<h2>Gridded data functions<a class="headerlink" href="#gridded-data-functions" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_raw_grid" title="pyrad.proc.process_raw_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_raw_grid</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<td>Dummy function that returns the initial input data set</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_grid" title="pyrad.proc.process_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_grid</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Puts the radar data in a regular grid</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_azimuthal_average" title="pyrad.proc.process_azimuthal_average"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_azimuthal_average</span></code></a>(procstatus,&nbsp;dscfg)</td>
-<td>Averages radar data in azimuth obtaining and RHI as a result</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_grid_point" title="pyrad.proc.process_grid_point"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_grid_point</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<td>Obtains the grid data at a point location.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_grid_time_stats" title="pyrad.proc.process_grid_time_stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_grid_time_stats</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<td>computes the temporal statistics of a field</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_grid_time_stats2" title="pyrad.proc.process_grid_time_stats2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_grid_time_stats2</span></code></a>(procstatus,&nbsp;dscfg)</td>
+<td>computes the temporal mean of a field</td>
 </tr>
 </tbody>
 </table>
@@ -511,7 +535,12 @@ the function documentation:</p>
 ‘HZT_COORD’: process_hzt_coord</p>
 </dd>
 <dt>‘GRID’ format output:</dt>
-<dd><p class="first last">‘GRID’: process_grid</p>
+<dd><p class="first last">‘RAW_GRID’: process_raw_grid
+‘GRID’: process_grid</p>
+</dd>
+<dt>‘GRID_TIMEAVG’ format output:</dt>
+<dd><p class="first last">‘GRID_TIME_STATS’: process_grid_time_stats
+‘GRID_TIME_STATS2’: process_grid_time_stats2</p>
 </dd>
 <dt>‘INTERCOMP’ format output:</dt>
 <dd><p class="first last">‘INTERCOMP’: process_intercomp
@@ -551,7 +580,8 @@ the function documentation:</p>
 ‘RAIN_ACCU’: process_rainfall_accumulation</p>
 </dd>
 <dt>‘TIMESERIES’ format output:</dt>
-<dd><p class="first last">‘POINT_MEASUREMENT’: ‘process_point_measurement’
+<dd><p class="first last">‘GRID_POINT_MEASUREMENT’: process_grid_point
+‘POINT_MEASUREMENT’: ‘process_point_measurement’
 ‘TRAJ_ANTENNA_PATTERN’: process_traj_antenna_pattern
 ‘TRAJ_ATPLANE’: process_traj_atplane
 ‘TRAJ_LIGHTNING’: process_traj_lightning</p>
@@ -1971,7 +2001,7 @@ keep_wet, keep wet volumes; keep_dry, keep dry volumes.</p>
 
 <dl class="function">
 <dt id="pyrad.proc.process_grid">
-<code class="descclassname">pyrad.proc.</code><code class="descname">process_grid</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_aux.html#process_grid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_grid" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_grid</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_grid.html#process_grid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_grid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Puts the radar data in a regular grid</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2032,6 +2062,188 @@ the largest resolution</p>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
 <dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
 <dd><p class="first last">dictionary containing the gridded data</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.proc.process_grid_point">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_grid_point</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_grid.html#process_grid_point"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_grid_point" title="Permalink to this definition">¶</a></dt>
+<dd><p>Obtains the grid data at a point location.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first">data set configuration. Accepted Configuration Keywords:</p>
+<dl class="last docutils">
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">string. Dataset keyword</span></dt>
+<dd><p class="first last">The data type where we want to extract the point measurement</p>
+</dd>
+<dt>latlon <span class="classifier-delimiter">:</span> <span class="classifier">boolean. Dataset keyword</span></dt>
+<dd><p class="first last">if True position is obtained from latitude, longitude information,
+otherwise position is obtained from grid index (iz, iy, ix).</p>
+</dd>
+<dt>lon <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">the longitude [deg]. Use when latlon is True.</p>
+</dd>
+<dt>lat <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">the latitude [deg]. Use when latlon is True.</p>
+</dd>
+<dt>alt <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">altitude [m MSL]. Use when latlon is True.</p>
+</dd>
+<dt>iz, iy, ix <span class="classifier-delimiter">:</span> <span class="classifier">int. Dataset keyword</span></dt>
+<dd><p class="first last">The grid indices. Use when latlon is False</p>
+</dd>
+<dt>latlonTol <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">latitude-longitude tolerance to determine which grid point to use
+[deg]</p>
+</dd>
+<dt>altTol <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">Altitude tolerance to determine which grid point to use [deg]</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the data and metadata at the point of interest</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.proc.process_grid_time_stats">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_grid_time_stats</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_grid.html#process_grid_time_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_grid_time_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes the temporal statistics of a field</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first">data set configuration. Accepted Configuration Keywords:</p>
+<dl class="last docutils">
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">list of string. Dataset keyword</span></dt>
+<dd><p class="first last">The input data types</p>
+</dd>
+<dt>period <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">the period to average [s]. If -1 the statistics are going to be
+performed over the entire data. Default 3600.</p>
+</dd>
+<dt>start_average <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">when to start the average [s from midnight UTC]. Default 0.</p>
+</dd>
+<dt>lin_trans: int. Dataset keyword</dt>
+<dd><p class="first last">If 1 apply linear transformation before averaging</p>
+</dd>
+<dt>use_nan <span class="classifier-delimiter">:</span> <span class="classifier">bool. Dataset keyword</span></dt>
+<dd><p class="first last">If true non valid data will be used</p>
+</dd>
+<dt>nan_value <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">The value of the non valid data. Default 0</p>
+</dd>
+<dt>stat: string. Dataset keyword</dt>
+<dd><p class="first last">Statistic to compute: Can be mean, std, cov, min, max. Default
+mean</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the output</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.proc.process_grid_time_stats2">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_grid_time_stats2</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_grid.html#process_grid_time_stats2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_grid_time_stats2" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes the temporal mean of a field</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first">data set configuration. Accepted Configuration Keywords:</p>
+<dl class="last docutils">
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">list of string. Dataset keyword</span></dt>
+<dd><p class="first last">The input data types</p>
+</dd>
+<dt>period <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">the period to average [s]. If -1 the statistics are going to be
+performed over the entire data. Default 3600.</p>
+</dd>
+<dt>start_average <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">when to start the average [s from midnight UTC]. Default 0.</p>
+</dd>
+<dt>stat: string. Dataset keyword</dt>
+<dd><p class="first last">Statistic to compute: Can be median, mode, percentileXX</p>
+</dd>
+<dt>use_nan <span class="classifier-delimiter">:</span> <span class="classifier">bool. Dataset keyword</span></dt>
+<dd><p class="first last">If true non valid data will be used</p>
+</dd>
+<dt>nan_value <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">The value of the non valid data. Default 0</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the output</p>
 </dd>
 <dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd><p class="first last">radar index</p>
@@ -3283,6 +3495,42 @@ in method hydro. Default 0.6</p>
 <dl class="function">
 <dt id="pyrad.proc.process_raw">
 <code class="descclassname">pyrad.proc.</code><code class="descname">process_raw</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_aux.html#process_raw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_raw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dummy function that returns the initial input data set</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first last">data set configuration</p>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the output</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.proc.process_raw_grid">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_raw_grid</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_grid.html#process_raw_grid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_raw_grid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Dummy function that returns the initial input data set</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />

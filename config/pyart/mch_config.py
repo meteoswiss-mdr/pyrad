@@ -194,6 +194,7 @@ iso0 = 'iso0'
 height_over_iso0 = 'height_over_iso0'
 cosmo_index = 'cosmo_index'
 hzt_index = 'hzt_index'
+iso0_height = 'iso0_height'
 
 # DEM fields
 visibility = 'visibility'
@@ -219,6 +220,18 @@ proportion_VI = 'proportion_VI'
 proportion_WS = 'proportion_WS'
 proportion_MH = 'proportion_MH'
 proportion_IH = 'proportion_IH'
+
+# rad4alp products
+probability_of_hail = 'probability_of_hail'
+maximum_expected_severe_hail_size = 'maximum_expected_severe_hail_size'
+maximum_echo = 'maximum_echo'
+maximum_echo_height = 'maximum_echo_height'
+echo_top_15dBZ = 'echo_top_15dBZ'
+echo_top_20dBZ = 'echo_top_20dBZ'
+echo_top_45dBZ = 'echo_top_45dBZ'
+echo_top_50dBZ = 'echo_top_50dBZ'
+vertically_integrated_liquid = 'vertically_integrated_liquid'
+
 
 # Wind retrieval fields
 eastward_wind_component = 'eastward_wind_component'
@@ -396,6 +409,15 @@ DEFAULT_FIELD_NAMES = {
     'clutter_exit_code': clutter_exit_code,
     'melting_layer': melting_layer,
     'melting_layer_height': melting_layer_height,
+    'probability_of_hail': probability_of_hail,
+    'maximum_expected_severe_hail_size': maximum_expected_severe_hail_size,
+    'maximum_echo': maximum_echo,
+    'maximum_echo_height': maximum_echo_height,
+    'echo_top_15dBZ': echo_top_15dBZ,
+    'echo_top_20dBZ': echo_top_20dBZ,
+    'echo_top_45dBZ': echo_top_45dBZ,
+    'echo_top_50dBZ': echo_top_50dBZ,
+    'vertically_integrated_liquid': vertically_integrated_liquid,
     'specific_attenuation': specific_attenuation,
     'path_integrated_attenuation': path_integrated_attenuation,
     'specific_differential_attenuation': specific_differential_attenuation,
@@ -411,6 +433,7 @@ DEFAULT_FIELD_NAMES = {
     'temperature': temperature,
     'iso0': iso0,
     'height_over_iso0': height_over_iso0,
+    'iso0_height': iso0_height,
     'cosmo_index': cosmo_index,
     'hzt_index': hzt_index,
     'visibility': visibility,
@@ -1151,7 +1174,7 @@ DEFAULT_METADATA = {
         'boundaries': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
                        40., 63., 100., 160., 250., 500.],
         'coordinates': 'elevation azimuth range'},
-        
+
     rainfall_accumulation: {
         'units': 'mm',
         'standard_name': 'rainfall_accumulation',
@@ -1318,6 +1341,51 @@ DEFAULT_METADATA = {
         'long_name': 'Top and bottom melting layer height',
         'coordinates': 'elevation azimuth'},
 
+    probability_of_hail: {
+        'units': 'percent',
+        'standard_name': 'probability_of_hail',
+        'long_name': 'Probability of hail'},
+
+    maximum_expected_severe_hail_size: {
+        'units': 'cm',
+        'standard_name': 'maximum_expected_severe_hail_size',
+        'long_name': 'Maximum expected severe hail size'},
+
+    maximum_echo: {
+        'units': 'dBZ',
+        'standard_name': 'maximum_echo',
+        'long_name': 'Maximum echo'},
+
+    maximum_echo_height: {
+        'units': 'km ASL',
+        'standard_name': 'maximum_echo_height',
+        'long_name': 'Maximum echo height'},
+
+    echo_top_15dBZ: {
+        'units': 'km ASL',
+        'standard_name': 'echo_top_15_dBZ',
+        'long_name': 'Echo top 15 dBZ'},
+
+    echo_top_20dBZ: {
+        'units': 'km ASL',
+        'standard_name': 'echo_top_20_dBZ',
+        'long_name': 'Echo top 20 dBZ'},
+
+    echo_top_45dBZ: {
+        'units': 'km ASL',
+        'standard_name': 'echo_top_45_dBZ',
+        'long_name': 'Echo top 45 dBZ'},
+
+    echo_top_50dBZ: {
+        'units': 'km ASL',
+        'standard_name': 'echo_top_50_dBZ',
+        'long_name': 'Echo top 50 dBZ'},
+
+    vertically_integrated_liquid: {
+        'units': 'kg/m2',
+        'standard_name': 'vertically_integrated_liquid',
+        'long_name': 'Vertically integrated liquid'},
+
     specific_attenuation: {
         'units': 'dB/km',
         'standard_name': 'specific_attenuation',
@@ -1448,6 +1516,11 @@ DEFAULT_METADATA = {
         'standard_name': 'height_over_iso0',
         'long_name': 'Height of the range bin respect to the iso0 level',
         'coordinates': 'elevation azimuth range'},
+
+    iso0_height: {
+        'units': 'm MSL',
+        'standard_name': 'iso0_height',
+        'long_name': 'iso0 height'},
 
     cosmo_index: {
         'units': 'bin index',
@@ -2487,6 +2560,9 @@ DEFAULT_FIELD_LIMITS = {
     melting_layer: (0, 5),
     clutter_exit_code: (0, 200),
 
+    probability_of_hail: (0., 100.),
+    vertically_integrated_liquid: (0., 30.),
+
     sun_hit_h: (0, 1),
     sun_hit_v: (0, 1),
     sun_hit_zdr: (0, 1),
@@ -2511,6 +2587,7 @@ DEFAULT_FIELD_LIMITS = {
 
     temperature: (-60, 30),
     height_over_iso0: (-6000., 10000.),
+    iso0_height: (0., 5000.),
 
     # Additional reflectivity like fields
     'CZ': (-10., 65.),

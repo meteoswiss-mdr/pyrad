@@ -94,7 +94,7 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
         # prepare for exit
         new_dataset = {
             'time': dscfg['global_data']['time'],
-            'datatype': 'RR',
+            'datatype': datatype,
             'point_coordinates_WGS84_lon_lat_alt': (
                 dscfg['global_data']['point_coordinates_WGS84_lon_lat_alt']),
             'antenna_coordinates_az_el_r': (

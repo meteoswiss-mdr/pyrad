@@ -27,7 +27,7 @@ source activate test-environment
 # - matplotlib
 # - netcdf4
 # Py-ART optional dependencies:
-# - h5py pytest basemap cartopy gdal trmm_rsl wradlib
+# - h5py pytest basemap cartopy gdal trmm_rsl wradlib imageio xarray
 # wradlib optional dependencies:
 # - xmltodict
 # pyrad optional dependencies:
@@ -37,7 +37,7 @@ if [[ "$PYTHON_VERSION" == "3.5" ]]; then
     # There are problems with the geos library so do not install anything that uses it
     conda install -c conda-forge numpy scipy matplotlib netcdf4 h5py pytest pandas dask bokeh memory_profiler
 else
-    conda install -c conda-forge numpy scipy matplotlib netcdf4 h5py pytest basemap cartopy gdal wradlib xmltodict pandas shapely dask bokeh memory_profiler
+    conda install -c conda-forge numpy scipy matplotlib netcdf4 h5py pytest basemap cartopy gdal wradlib xmltodict pandas shapely dask bokeh memory_profiler imageio xarray
 fi
 
 # export global variables
