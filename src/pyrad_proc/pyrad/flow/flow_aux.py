@@ -1044,6 +1044,12 @@ def _create_datacfg_dict(cfg):
     datacfg.update({'rmax': cfg['rmax']})
     datacfg.update({'elmin': cfg['elmin']})
     datacfg.update({'elmax': cfg['elmax']})
+    datacfg.update({'latmin': cfg.get('latmin', None)})
+    datacfg.update({'latmax': cfg.get('latmax', None)})
+    datacfg.update({'lonmin': cfg.get('lonmin', None)})
+    datacfg.update({'lonmax': cfg.get('lonmax', None)})
+    datacfg.update({'altmin': cfg.get('altmin', None)})
+    datacfg.update({'altmax': cfg.get('altmax', None)})
     if 'RadarPosition' in cfg:
         datacfg.update({'RadarPosition': cfg['RadarPosition']})
 
@@ -1168,6 +1174,8 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
         prdcfg.update({'ppiMapImageConfig': cfg['ppiMapImageConfig']})
     if 'rhiImageConfig' in cfg:
         prdcfg.update({'rhiImageConfig': cfg['rhiImageConfig']})
+    if 'gridMapImageConfig' in cfg:
+        prdcfg.update({'gridMapImageConfig': cfg['gridMapImageConfig']})
     if 'sunhitsImageConfig' in cfg:
         prdcfg.update({'sunhitsImageConfig': cfg['sunhitsImageConfig']})
     prdcfg.update({'dsname': dataset})

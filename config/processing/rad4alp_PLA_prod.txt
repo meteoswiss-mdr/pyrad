@@ -6,8 +6,8 @@
 # The detailed specification of each dataset is given below.
 dataSetList STRARR 1
     Zh
-    
-    
+
+
 #	l0:SNRh
 #	l1:RhoHV
 #    l2:echoID
@@ -30,12 +30,16 @@ Zh STRUCT 3
     type STRING RAW
     datatype STRARR 1
         RAD4ALP:dBZ
-    products STRUCT 1
+    products STRUCT 2
         EL001_0 STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 2
             voltype STRING dBZ
-            
+        EL001_0_MAP STRUCT 3
+            type  STRING PPI_MAP
+            anglenr INT 2
+            voltype STRING dBZ
+
 uPhiDP STRUCT 3
     type STRING RAW
     datatype STRARR 1
@@ -45,7 +49,7 @@ uPhiDP STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 2
             voltype STRING uPhiDP
-            
+
 uRhoHV STRUCT 3
     type STRING RAW
     datatype STRARR 1
@@ -55,7 +59,7 @@ uRhoHV STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 2
             voltype STRING uRhoHV
-            
+
 ZDR STRUCT 3
     type STRING RAW
     datatype STRARR 1
@@ -65,7 +69,7 @@ ZDR STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 2
             voltype STRING ZDR
-            
+
 V STRUCT 3
     type STRING RAW
     datatype STRARR 1
@@ -75,7 +79,7 @@ V STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 2
             voltype STRING V
-            
+
 W STRUCT 3
     type STRING RAW
     datatype STRARR 1
@@ -85,7 +89,7 @@ W STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 2
             voltype STRING W
-    
+
 
 ## ==========================================================================================
 ##                 secondary moments products
@@ -97,8 +101,8 @@ W STRUCT 3
 #        RAD4ALP:Nh
 #    output_type STRING SNRh
 #    MAKE_GLOBAL INT 1
-#	
-#	
+#
+#
 #RhoHV STRUCT 3
 #    type STRING RHOHV_CORRECTION
 #    datatype STRARR 5
@@ -120,25 +124,25 @@ W STRUCT 3
 #        RAD4ALP:dBZ
 #    cosmo_type STRING TEMP
 #    keep_in_memory INT 1
-#    products STRUCT 1        
+#    products STRUCT 1
 #        EL001_0 STRUCT 3
 #            type  STRING PPI_IMAGE
 #            anglenr INT 2
 #            voltype STRING TEMP
-#            
+#
 #TEMP_RAW2 STRUCT 6
 #    type STRING COSMO_LOOKUP
 #    datatype STRARR 1
-#        RAD4ALP:dBZ        
+#        RAD4ALP:dBZ
 #    cosmo_type STRING TEMP
 #    regular_grid INT 1
 #    lookup_table INT 1
-#    products STRUCT 1        
+#    products STRUCT 1
 #        EL001_0 STRUCT 3
 #            type  STRING PPI_IMAGE
 #            anglenr INT 2
 #            voltype STRING TEMP
-#            
+#
 WIND_RAW STRUCT 5
     type STRING COSMO
     datatype STRARR 1
@@ -154,14 +158,14 @@ WIND_RAW STRUCT 5
             type  STRING PPI_IMAGE
             anglenr INT 2
             voltype STRING WIND_DIRECTION
-            
+
 WIND_RAW2 STRUCT 6
     type STRING COSMO_LOOKUP
     datatype STRARR 1
         RAD4ALP:dBZ
     cosmo_type STRING WIND
     regular_grid INT 1
-    lookup_table INT 1    
+    lookup_table INT 1
     products STRUCT 2
         EL001_0_SPEED STRUCT 3
             type  STRING PPI_IMAGE
@@ -171,22 +175,22 @@ WIND_RAW2 STRUCT 6
             type  STRING PPI_IMAGE
             anglenr INT 2
             voltype STRING WIND_DIRECTION
-            
+
 RAD2COSMO STRUCT 3
     type STRING COSMO_COORD
     datatype STRARR 1
-        dBZ        
-    products STRUCT 1        
+        dBZ
+    products STRUCT 1
         rad2cosmo STRUCT 2
-            type  STRING SAVEVOL            
+            type  STRING SAVEVOL
             voltype STRING cosmo_index
-            
+
 ## ==========================================================================================
 ##                 echo identification
 ## ==========================================================================================
 #echoID STRUCT 3
 #   type STRING SAN
-#   datatype STRARR 4      
+#   datatype STRARR 4
 #      RAD4ALP:dBZ
 #      RAD4ALP:ZDR
 #      RAD4ALP:uPhiDP
@@ -221,11 +225,11 @@ RAD2COSMO STRUCT 3
 #      PROC:PhiDPc
 #   SNRmin FLOAT 10.
 #   MAKE_GLOBAL INT 1
-#   
+#
 #
 ## ==========================================================================================
 ##                 PHIDP processing
-## ==========================================================================================   
+## ==========================================================================================
 #PhiDPc_smooth2w STRUCT 11
 #    type STRING PHIDP_SMOOTH_2W
 #    datatype STRARR 2
@@ -238,13 +242,13 @@ RAD2COSMO STRUCT 3
 #    Zmax FLOAT 40.
 #    rwinds FLOAT 1000.
 #    rwindl FLOAT 3000.
-#    Zthr FLOAT 40.    
+#    Zthr FLOAT 40.
 #    MAKE_GLOBAL INT 1
-#	
-#	
+#
+#
 ## ==========================================================================================
 ##                 KDP processing
-## ==========================================================================================   
+## ==========================================================================================
 #KDPc STRUCT 6
 #    type STRING KDP_LEASTSQUARE_2W
 #    datatype STRARR 2
@@ -252,7 +256,7 @@ RAD2COSMO STRUCT 3
 #        PROC:dBZc
 #    rwinds FLOAT 1000.
 #    rwindl FLOAT 3000.
-#    Zthr FLOAT 40.    
+#    Zthr FLOAT 40.
 #    MAKE_GLOBAL INT 1
 #
 #
@@ -265,11 +269,11 @@ RAD2COSMO STRUCT 3
 #        PROC:dBZc
 #        PROC:ZDRc
 #        PROC:PhiDPc
-#        RAD4ALPCOSMO:TEMP    
+#        RAD4ALPCOSMO:TEMP
 #    MAKE_GLOBAL INT 1
 #    ATT_METHOD STRING ZPhi
-#	
-#	
+#
+#
 ## ==========================================================================================
 ##                 hydrometeor classification products
 ## ==========================================================================================
@@ -293,7 +297,7 @@ RAD2COSMO STRUCT 3
 #
 ## ==========================================================================================
 ##                 temporal average
-## ==========================================================================================         
+## ==========================================================================================
 #dBZ_avg STRUCT 6
 #   type     STRING TIME_AVG
 #   datatype STRARR 1
@@ -301,7 +305,7 @@ RAD2COSMO STRUCT 3
 #   start_average FLOAT 0.
 #   period FLOAT 3600.
 #   lin_trans INT 1
-#   products STRUCT 2      
+#   products STRUCT 2
 #      EL001_0 STRUCT 3
 #         type  STRING PPI_IMAGE
 #         anglenr INT 2
@@ -309,7 +313,7 @@ RAD2COSMO STRUCT 3
 #      SAVEVOL STRUCT 2
 #         type  STRING SAVEVOL
 #         voltype STRING dBZc
-#		 
+#
 #dBZv_avg STRUCT 6
 #   type     STRING TIME_AVG
 #   datatype STRARR 1
@@ -317,7 +321,7 @@ RAD2COSMO STRUCT 3
 #   start_average FLOAT 0.
 #   period FLOAT 3600.
 #   lin_trans INT 1
-#   products STRUCT 2      
+#   products STRUCT 2
 #      EL001_0 STRUCT 3
 #         type  STRING PPI_IMAGE
 #         anglenr INT 2
@@ -325,7 +329,7 @@ RAD2COSMO STRUCT 3
 #      SAVEVOL STRUCT 2
 #         type  STRING SAVEVOL
 #         voltype STRING dBZvc
-#         
+#
 #PhiDP_avg STRUCT 5
 #   type     STRING WEIGHTED_TIME_AVG
 #   datatype STRARR 2
@@ -333,7 +337,7 @@ RAD2COSMO STRUCT 3
 #      PROC:PhiDPc
 #   start_average FLOAT 0.
 #   period FLOAT 3600.
-#   products STRUCT 2      
+#   products STRUCT 2
 #      EL001_0 STRUCT 3
 #         type  STRING PPI_IMAGE
 #         anglenr INT 2
@@ -351,7 +355,7 @@ RAD2COSMO STRUCT 3
 #   start_average FLOAT 0.
 #   period FLOAT 3600.
 #   phidpmax FLOAT 60.
-#   products STRUCT 2      
+#   products STRUCT 2
 #      EL001_0 STRUCT 3
 #         type  STRING PPI_IMAGE
 #         anglenr INT 2
@@ -359,4 +363,3 @@ RAD2COSMO STRUCT 3
 #      SAVEVOL STRUCT 2
 #         type  STRING SAVEVOL
 #         voltype STRING time_avg_flag
-		 
