@@ -81,12 +81,12 @@ def profiler(level=1):
     Parameters
     ----------
     level : int
-    profiling level
+        profiling level
 
     Returns
     -------
     func or func wrapper : function
-    The function or its wrapper for profiling
+        The function or its wrapper for profiling
 
     """
     def profile_real_decorator(func):
@@ -96,12 +96,12 @@ def profiler(level=1):
         Parameters
         ----------
         func : function
-        function to profile
+            function to profile
 
         Returns
         -------
         wrapper : function
-        The function wrapper
+            The function wrapper
 
         """
         def wrapper(*args, **kwargs):
@@ -111,13 +111,13 @@ def profiler(level=1):
             Parameters
             ----------
             args, kwargs : arguments
-            The arguments of the function
+                The arguments of the function
 
             Returns
             -------
             func : function
-            The original function if no profiling has to be performed or
-            the function decorated with the memory decorator
+                The original function if no profiling has to be performed or
+                the function decorated with the memory decorator
 
             """
             if not _MPROFILE_AVAILABLE:
@@ -141,7 +141,7 @@ def _initialize_listener():
     Returns
     -------
     input_queue : queue object
-    the queue object where to put the quit signal
+        the queue object where to put the quit signal
 
     """
     input_queue = queue.Queue()
@@ -164,7 +164,7 @@ def _user_input_listener(input_queue):
     Parameters
     ----------
     input_queue : queue object
-    the queue object where to put the quit signal
+        the queue object where to put the quit signal
 
     """
     print("Press Enter to quit: ")
@@ -188,25 +188,25 @@ def _get_times_and_traj(trajfile, starttime, endtime, scan_period,
     Parameters
     ----------
     trajfile : str
-    trajectory file
+        trajectory file
     starttime, endtime : datetime object or None
-    the start and stop times of the processing
+        the start and stop times of the processing
     scan_period : float
-    the scan period in minutes
+        the scan period in minutes
     last_state_file : str
-    name of the file that stores the time of the last processed volume
+        name of the file that stores the time of the last processed volume
     trajtype : str
-    type of trajectory. Can be plane, lightning or proc_periods
+        type of trajectory. Can be plane, lightning or proc_periods
     flashnr : int
-    If type of trajectory is lightning, the flash number. 0 means all
-    flash numbers included
+        If type of trajectory is lightning, the flash number. 0 means all
+        flash numbers included
 
     Returns
     -------
     starttimes, endtimes : array of datetime objects
-    the start and end times of the data to process
+        the start and end times of the data to process
     traj : trajectory object or None
-    the trajectory object
+        the trajectory object
 
     """
     if trajfile:
@@ -214,6 +214,8 @@ def _get_times_and_traj(trajfile, starttime, endtime, scan_period,
             print("- Processing periods file: " + trajfile)
             starttimes, endtimes = read_proc_periods(trajfile)
             traj = None
+            if starttimes is None or endtimes is None:
+                sys.exit(1)
         else:
             print("- Trajectory file: " + trajfile)
             try:
@@ -240,38 +242,40 @@ def _get_times_and_traj(trajfile, starttime, endtime, scan_period,
     else:
         traj = None
         if starttime is None:
-            starttimes = np.array([starttime], dtype=datetime.datetime)
+            starttimes = None
         else:
             starttimes = np.array([starttime])
         if endtime is None:
-            endtimes = np.array([endtime], dtype=datetime.datetime)
+            endtimes = None
         else:
             endtimes = np.array([endtime])
 
     # if start time is not defined and the file lastState exists and
     # contains a valid date start processing from the last valid date.
     # Otherwise start processing from yesterday at 00:00:00 UTC
-    if starttimes[0] is None and last_state_file is not None:
+    if starttimes is None and last_state_file is not None:
         filename = glob.glob(last_state_file)
         if not filename:
             nowtime = datetime.utcnow()
-            starttimes[0] = (nowtime - timedelta(days=1)).replace(
-                hour=0, minute=0, second=0, microsecond=0)
+            starttimes = np.array([(nowtime - timedelta(days=1)).replace(
+                hour=0, minute=0, second=0, microsecond=0)])
             warn('File '+last_state_file+' not found. ' +
                  'Start time set at ' +
                  starttimes[0].strftime('%Y-%m-%d %H:%M:%S'))
         else:
-            starttimes[0] = read_last_state(last_state_file)
-            if starttimes[0] is None:
+            starttime = read_last_state(last_state_file)
+            if starttime is None:
                 nowtime = datetime.utcnow()
-                starttimes[0] = (nowtime - timedelta(days=1)).replace(
-                    hour=0, minute=0, second=0, microsecond=0)
+                starttimes = np.array([(nowtime - timedelta(days=1)).replace(
+                    hour=0, minute=0, second=0, microsecond=0)])
                 warn('File '+last_state_file+' not valid. ' +
                      'Start time set at ' +
                      starttimes[0].strftime('%Y-%m-%d %H:%M:%S'))
+            else:
+                starttimes = np.array([starttime])
 
-    if endtimes[0] is None:
-        endtimes[0] = datetime.utcnow()
+    if endtimes is None:
+        endtimes = np.array([datetime.utcnow()])
         warn('End Time not defined. Set as ' +
              endtimes[0].strftime('%Y-%m-%d %H:%M:%S'))
 
@@ -291,22 +295,22 @@ def _initialize_datasets(dataset_levels, cfg, traj=None, infostr=None):
     Parameters
     ----------
     dataset_levels : dict
-    dictionary containing the list of data sets to be generated at each
-    processing level
+        dictionary containing the list of data sets to be generated at each
+        processing level
     cfg : dict
-    processing configuration dictionary
+        processing configuration dictionary
     traj : trajectory object
-    object containing the trajectory
+        object containing the trajectory
     infostr : str
-    Information string about the actual data processing
-    (e.g. 'RUN57'). This string is added to product files.
+        Information string about the actual data processing
+        (e.g. 'RUN57'). This string is added to product files.
 
     Returns
     -------
     dscfg : dict
-    dictionary containing the configuration data for each dataset
+        dictionary containing the configuration data for each dataset
     traj : trajectory object
-    the modified trajectory object
+        the modified trajectory object
 
     """
     dscfg = dict()
@@ -339,34 +343,34 @@ def _process_datasets(dataset_levels, cfg, dscfg, radar_list, master_voltime,
     Parameters
     ----------
     dataset_levels : dict
-    dictionary containing the list of data sets to be generated at each
-    processing level
+        dictionary containing the list of data sets to be generated at each
+        processing level
     cfg : dict
-    processing configuration dictionary
+        processing configuration dictionary
     dscfg : dict
-    dictionary containing the configuration data for each dataset
+        dictionary containing the configuration data for each dataset
     radar_list : list of radar objects
-    The radar objects to be processed
+        The radar objects to be processed
     master_voltime : datetime object
-    the reference radar volume time
+        the reference radar volume time
     traj : trajectory object
-    and object containing the trajectory
+        and object containing the trajectory
     infostr : str
-    Information string about the actual data processing
-    (e.g. 'RUN57'). This string is added to product files.
+        Information string about the actual data processing
+        (e.g. 'RUN57'). This string is added to product files.
     MULTIPROCESSING_DSET : Bool
-    If true the generation of datasets at the same processing level will
-    be parallelized
+        If true the generation of datasets at the same processing level will
+        be parallelized
     MULTIPROCESSING_PROD : Bool
-    If true the generation of products from each dataset will be
-    parallelized
+        If true the generation of products from each dataset will be
+        parallelized
 
     Returns
     -------
     dscfg : dict
-    the modified configuration dictionary
+        the modified configuration dictionary
     traj : trajectory object
-    the modified trajectory object
+        the modified trajectory object
 
     """
     for level in sorted(dataset_levels):
@@ -435,24 +439,24 @@ def _postprocess_datasets(dataset_levels, cfg, dscfg, traj=None, infostr=None):
     Parameters
     ----------
     dataset_levels : dict
-    dictionary containing the list of data sets to be generated at each
-    processing level
+        dictionary containing the list of data sets to be generated at each
+        processing level
     cfg : dict
-    processing configuration dictionary
+        processing configuration dictionary
     dscfg : dict
-    dictionary containing the configuration data for each dataset
+        dictionary containing the configuration data for each dataset
     traj : trajectory object
-    and object containing the trajectory
+        and object containing the trajectory
     infostr : str
-    Information string about the actual data processing
-    (e.g. 'RUN57'). This string is added to product files.
+        Information string about the actual data processing
+        (e.g. 'RUN57'). This string is added to product files.
 
     Returns
     -------
     dscfg : dict
-    the modified configuration dictionary
+        the modified configuration dictionary
     traj : trajectory object
-    the modified trajectory object
+        the modified trajectory object
 
     """
     for level in sorted(dataset_levels):
@@ -480,20 +484,20 @@ def _wait_for_files(nowtime, datacfg, datatype_list, last_processed=None):
     Parameters
     ----------
     nowtime : datetime object
-    the current time
+        the current time
     datacfg : dict
-    dictionary containing the parameters to get the radar data
+        dictionary containing the parameters to get the radar data
     last_processed : datetime or None
-    The end time of the previously processed radar volume
+        The end time of the previously processed radar volume
 
     Returns
     -------
     masterfile : str or None
-    name of the master file. None if the volume was not complete
+        name of the master file. None if the volume was not complete
     masterdatatypedescr : str
-    the description of the master data type
+        the description of the master data type
     last_processed : datetime
-    True of all scans found
+        True of all scans found
 
     """
     endtime_loop = deepcopy(nowtime)
@@ -632,14 +636,14 @@ def _wait_for_rainbow_datatypes(rainbow_files, period=30):
     Parameters
     ----------
     rainbow_files : list of strings
-    a list containing the names of all the rainbow files to wait for
+        a list containing the names of all the rainbow files to wait for
     period : int
-    the time it has to wait (s)
+        the time it has to wait (s)
 
     Returns
     -------
     found_all : Boolean
-    True if all files were present. False otherwise
+        True if all files were present. False otherwise
 
     """
     currenttime = datetime.utcnow()
@@ -678,16 +682,16 @@ def _get_radars_data(master_voltime, datatypesdescr_list, datacfg,
     Parameters
     ----------
     master_voltime : datetime object
-    reference time
+        reference time
     datatypesdescr_list : list of lists
-    List of the raw data types to get from each radar
+        List of the raw data types to get from each radar
     datacfg : dict
-    dictionary containing the parameters to get the radar data
+        dictionary containing the parameters to get the radar data
 
     Returns
     -------
     radar_list : list
-    a list containing the radar objects
+        a list containing the radar objects
 
     """
     # get data of master radar
@@ -741,35 +745,35 @@ def _generate_dataset(dsname, cfg, dscfg, proc_status=0, radar_list=None,
     Parameters
     ----------
     dsname : str
-    name of the dataset being generated
+        name of the dataset being generated
     cfg : dict
-    configuration data
+        configuration data
     dscfg : dict
-    dataset configuration data
+        dataset configuration data
     proc_status : int
-    processing status 0: init 1: processing 2: final
+        processing status 0: init 1: processing 2: final
     radar_list : list
-    a list containing the radar objects
+        a list containing the radar objects
     voltime : datetime
-    reference time of the radar(s)
+        reference time of the radar(s)
     trajectory : trajectory object
-    trajectory object
+        trajectory object
     runinfo : str
-    string containing run info
+        string containing run info
     MULTIPROCESSING_PROD : Bool
-    If true the generation of products from each dataset will be
-    parallelized
+        If true the generation of products from each dataset will be
+        parallelized
 
     Returns
     -------
     new_dataset : dataset object
-    The new dataset generated. None otherwise
+        The new dataset generated. None otherwise
     ind_rad : int
-    the index to the reference radar object
+        the index to the reference radar object
     dsname : str
-    name of the dataset being generated
+        name of the dataset being generated
     dscfg : dict
-    the modified dataset configuration dictionary
+        the modified dataset configuration dictionary
 
 
     """
@@ -836,24 +840,24 @@ def _generate_prod(dataset, cfg, prdname, prdfunc, dsname, voltime,
     Parameters
     ----------
     dataset : object
-    the dataset object
+        the dataset object
     cfg : dict
-    configuration data
+        configuration data
     prdname : str
-    name of the product
+        name of the product
     prdfunc : func
-    name of the product processing function
+        name of the product processing function
     dsname : str
-    name of the dataset
+        name of the dataset
     voltime : datetime object
-    reference time of the radar(s)
+        reference time of the radar(s)
     runinfo : str
-    string containing run info
+        string containing run info
 
     Returns
     -------
     error : bool
-    False if the products could be generated
+        False if the products could be generated
 
     """
     print('---- Processing product: ' + prdname)
@@ -876,12 +880,12 @@ def _create_cfg_dict(cfgfile):
     Parameters
     ----------
     cfgfile : str
-    path of the main config file
+        path of the main config file
 
     Returns
     -------
     cfg : dict
-    dictionary containing the configuration data
+        dictionary containing the configuration data
 
     """
     cfg = dict({'configFile': cfgfile})
@@ -1014,12 +1018,12 @@ def _create_datacfg_dict(cfg):
     Parameters
     ----------
     cfg : dict
-    config dictionary
+        config dictionary
 
     Returns
     -------
     datacfg : dict
-    data config dictionary
+        data config dictionary
 
     """
 
@@ -1040,6 +1044,12 @@ def _create_datacfg_dict(cfg):
     datacfg.update({'rmax': cfg['rmax']})
     datacfg.update({'elmin': cfg['elmin']})
     datacfg.update({'elmax': cfg['elmax']})
+    datacfg.update({'latmin': cfg.get('latmin', None)})
+    datacfg.update({'latmax': cfg.get('latmax', None)})
+    datacfg.update({'lonmin': cfg.get('lonmin', None)})
+    datacfg.update({'lonmax': cfg.get('lonmax', None)})
+    datacfg.update({'altmin': cfg.get('altmin', None)})
+    datacfg.update({'altmax': cfg.get('altmax', None)})
     if 'RadarPosition' in cfg:
         datacfg.update({'RadarPosition': cfg['RadarPosition']})
 
@@ -1054,14 +1064,14 @@ def _create_dscfg_dict(cfg, dataset):
     Parameters
     ----------
     cfg : dict
-    config dictionary
+        config dictionary
     dataset : str
-    name of the dataset
+        name of the dataset
 
     Returns
     -------
     dscfg : dict
-    dataset config dictionary
+        dataset config dictionary
 
     """
     dscfg = cfg[dataset]
@@ -1075,6 +1085,7 @@ def _create_dscfg_dict(cfg, dataset):
     dscfg.update({'CosmoForecasted': cfg['CosmoForecasted']})
     dscfg.update({'path_convention': cfg['path_convention']})
     dscfg.update({'RadarName': cfg['RadarName']})
+    dscfg.update({'ScanPeriod': cfg['ScanPeriod']})
     dscfg.update({'mflossh': cfg['mflossh']})
     dscfg.update({'mflossv': cfg['mflossv']})
     dscfg.update({'radconsth': cfg['radconsth']})
@@ -1129,18 +1140,18 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
     Parameters
     ----------
     cfg : dict
-    config dictionary
+        config dictionary
     dataset : str
-    name of the dataset used to create the product
+        name of the dataset used to create the product
     product : str
-    name of the product
+        name of the product
     voltime : datetime object
-    time of the dataset
+        time of the dataset
 
     Returns
     -------
     prdcfg : dict
-    product config dictionary
+        product config dictionary
 
     """
 
@@ -1163,6 +1174,8 @@ def _create_prdcfg_dict(cfg, dataset, product, voltime, runinfo=None):
         prdcfg.update({'ppiMapImageConfig': cfg['ppiMapImageConfig']})
     if 'rhiImageConfig' in cfg:
         prdcfg.update({'rhiImageConfig': cfg['rhiImageConfig']})
+    if 'gridMapImageConfig' in cfg:
+        prdcfg.update({'gridMapImageConfig': cfg['gridMapImageConfig']})
     if 'sunhitsImageConfig' in cfg:
         prdcfg.update({'sunhitsImageConfig': cfg['sunhitsImageConfig']})
     prdcfg.update({'dsname': dataset})
@@ -1184,14 +1197,14 @@ def _get_datatype_list(cfg, radarnr='RADAR001'):
     Parameters
     ----------
     cfg : dict
-    config dictionary
+        config dictionary
     radarnr : str
-    radar number identifier
+        radar number identifier
 
     Returns
     -------
     datatypesdescr : list
-    list of data type descriptors
+        list of data type descriptors
 
     """
     datatypesdescr = set()
@@ -1247,12 +1260,12 @@ def _get_datasets_list(cfg):
     Parameters
     ----------
     cfg : dict
-    config dictionary
+        config dictionary
 
     Returns
     -------
     dataset_levels : dict
-    a dictionary containing the list of datasets at each processing level
+        a dictionary containing the list of datasets at each processing level
 
     """
     dataset_levels = dict({'l00': list()})
@@ -1275,20 +1288,20 @@ def _get_masterfile_list(datatypesdescr, starttimes, endtimes, datacfg,
     Parameters
     ----------
     datatypesdescr : list
-    list of unique data type descriptors
+        list of unique data type descriptors
     starttimes, endtimes : array of datetime objects
-    start and end of processing periods
+        start and end of processing periods
     datacfg : dict
-    data configuration dictionary
+        data configuration dictionary
     scan_list : list
-    list of scans
+        list of scans
 
     Returns
     -------
     masterfilelist : list
-    the list of master files
+        the list of master files
     masterdatatypedescr : str
-    the master data type descriptor
+        the master data type descriptor
 
     """
     masterdatatypedescr = None
@@ -1314,7 +1327,7 @@ def _get_masterfile_list(datatypesdescr, starttimes, endtimes, datacfg,
                 break
             elif (datagroup in (
                     'RAD4ALPCOSMO', 'RAD4ALPDEM', 'RAD4ALPHYDRO',
-                    'RAD4ALPDOPPLER')):
+                    'RAD4ALPDOPPLER',)):
                 masterdatatypedescr = radarnr+':RAD4ALP:dBZ'
                 if scan_list is not None:
                     masterscan = scan_list[int(radarnr[5:8])-1][0]
@@ -1335,11 +1348,11 @@ def _add_dataset(new_dataset, radar_list, ind_rad, make_global=True):
     Parameters
     ----------
     new_dataset : dict
-    dictionary with key radar_out containing the new fields
+        dictionary with key radar_out containing the new fields
     radar : radar object
-    the radar object containing the global data
+        the radar object containing the global data
     make_global : boolean
-    if true a new field is added to the global data
+        if true a new field is added to the global data
 
     Returns
     -------

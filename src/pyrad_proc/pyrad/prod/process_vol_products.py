@@ -529,7 +529,7 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'ppi', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -568,7 +568,7 @@ def generate_vol_products(dataset, prdcfg):
                 'ppi', prdcfg['dstype'], prdcfg['voltype'],
                 prdcfg['imgformat'],
                 prdcfginfo='el'+'{:.1f}'.format(prdcfg['angle']),
-                timeinfo=prdcfg['timeinfo'])
+                timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
             for i, fname in enumerate(fname_list):
                 fname_list[i] = savedir+fname
@@ -617,7 +617,7 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'ppi_map', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -661,7 +661,7 @@ def generate_vol_products(dataset, prdcfg):
             'ppi', prdcfg['dstype'],
             prdcfg['voltype']+'-'+prdcfg['contourtype'],
             prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -717,7 +717,7 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfg['voltype']+'-'+prdcfg['contourtype'],
                 prdcfg['imgformat'],
                 prdcfginfo='el'+'{:.1f}'.format(prdcfg['angle']),
-                timeinfo=prdcfg['timeinfo'])
+                timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
             for i, fname in enumerate(fname_list):
                 fname_list[i] = savedir+fname
@@ -766,7 +766,7 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'ppi', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -803,7 +803,7 @@ def generate_vol_products(dataset, prdcfg):
                 'ppi', prdcfg['dstype'], prdcfg['voltype'],
                 prdcfg['imgformat'],
                 prdcfginfo='el'+'{:.1f}'.format(prdcfg['angle']),
-                timeinfo=prdcfg['timeinfo'])
+                timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
             for i, fname in enumerate(fname_list):
                 fname_list[i] = savedir+fname
@@ -842,7 +842,7 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'rhi', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='az'+'{:.1f}'.format(az),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -879,7 +879,7 @@ def generate_vol_products(dataset, prdcfg):
                 'rhi', prdcfg['dstype'], prdcfg['voltype'],
                 prdcfg['imgformat'],
                 prdcfginfo='az'+'{:.1f}'.format(prdcfg['angle']),
-                timeinfo=prdcfg['timeinfo'])
+                timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
             for i, fname in enumerate(fname_list):
                 fname_list[i] = savedir+fname
@@ -932,7 +932,7 @@ def generate_vol_products(dataset, prdcfg):
             'rhi', prdcfg['dstype'],
             prdcfg['voltype']+'-'+prdcfg['contourtype'],
             prdcfg['imgformat'], prdcfginfo='az'+'{:.1f}'.format(az),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -985,7 +985,7 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfg['voltype']+'-'+prdcfg['contourtype'],
                 prdcfg['imgformat'],
                 prdcfginfo='az'+'{:.1f}'.format(prdcfg['angle']),
-                timeinfo=prdcfg['timeinfo'])
+                timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
             for i, fname in enumerate(fname_list):
                 fname_list[i] = savedir+fname
@@ -1035,7 +1035,7 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'rhi', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='az'+'{:.1f}'.format(az),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -1072,7 +1072,7 @@ def generate_vol_products(dataset, prdcfg):
                 'rhi', prdcfg['dstype'], prdcfg['voltype'],
                 prdcfg['imgformat'],
                 prdcfginfo='az'+'{:.1f}'.format(prdcfg['angle']),
-                timeinfo=prdcfg['timeinfo'])
+                timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
             for i, fname in enumerate(fname_list):
                 fname_list[i] = savedir+fname
@@ -1197,7 +1197,7 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo=prdcfginfo,
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -1212,7 +1212,7 @@ def generate_vol_products(dataset, prdcfg):
         fname = make_filename(
             'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
             ['csv'], prdcfginfo=prdcfginfo,
-            timeinfo=prdcfg['timeinfo'])[0]
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])[0]
 
         fname = savedir+fname
 
@@ -1716,7 +1716,7 @@ def generate_vol_products(dataset, prdcfg):
                 'ppi', prdcfg['dstype'], prdcfg['voltype'],
                 prdcfg['imgformat'],
                 prdcfginfo='el'+'{:.1f}'.format(prdcfg['angle']),
-                timeinfo=prdcfg['timeinfo'])
+                timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
             for i, fname in enumerate(fname_list):
                 fname_list[i] = savedir+fname
@@ -1750,7 +1750,7 @@ def generate_vol_products(dataset, prdcfg):
             'cappi', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
             prdcfginfo='alt'+'{:.1f}'.format(prdcfg['altitude']),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -1787,7 +1787,7 @@ def generate_vol_products(dataset, prdcfg):
             prdcfg['imgformat'],
             prdcfginfo='rng'+'{:.1f}'.format(
                 dataset['radar_out'].range['data'][0]),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -1826,7 +1826,7 @@ def generate_vol_products(dataset, prdcfg):
             prdcfginfo='rng' +
             '{:.1f}'.format(dataset['radar_out'].range['data'][0])+'-' +
             '{:.1f}'.format(dataset['radar_out'].range['data'][-1]),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -1942,7 +1942,8 @@ def generate_vol_products(dataset, prdcfg):
 
         fname_list = make_filename(
             prdcfg['mode'], prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'], timeinfo=prdcfg['timeinfo'])
+            prdcfg['imgformat'], timeinfo=prdcfg['timeinfo'],
+            runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -1977,7 +1978,7 @@ def generate_vol_products(dataset, prdcfg):
             'b-scope', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
             prdcfginfo='ang'+'{:.1f}'.format(ang),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -2010,7 +2011,7 @@ def generate_vol_products(dataset, prdcfg):
             'time-range', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
             prdcfginfo='ang'+'{:.1f}'.format(ang),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -2251,7 +2252,7 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'coverage', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -2271,7 +2272,8 @@ def generate_vol_products(dataset, prdcfg):
 
         fname = make_filename(
             'coverage', prdcfg['dstype'], prdcfg['voltype'],
-            ['csv'], timeinfo=prdcfg['timeinfo'])[0]
+            ['csv'], timeinfo=prdcfg['timeinfo'],
+            runinfo=prdcfg['runinfo'])[0]
 
         fname = savedir+fname
 
@@ -2417,7 +2419,7 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'cdf', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -2439,7 +2441,8 @@ def generate_vol_products(dataset, prdcfg):
         # store cdf values
         fname = make_filename(
             'cdf', prdcfg['dstype'], prdcfg['voltype'],
-            ['txt'], timeinfo=prdcfg['timeinfo'])[0]
+            ['txt'], timeinfo=prdcfg['timeinfo'],
+            runinfo=prdcfg['runinfo'])[0]
 
         fname = savedir+fname
 

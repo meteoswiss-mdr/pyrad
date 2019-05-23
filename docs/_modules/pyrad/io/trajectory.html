@@ -81,6 +81,7 @@
 <span class="kn">import</span> <span class="nn">pyart</span>
 
 <span class="kn">from</span> <span class="nn">..io.read_data_sensor</span> <span class="k">import</span> <span class="n">read_lightning</span><span class="p">,</span> <span class="n">read_trt_traj_data</span>
+<span class="kn">from</span> <span class="nn">..io.read_data_sensor</span> <span class="k">import</span> <span class="n">read_trt_thundertracking_traj_data</span>
 
 
 <div class="viewcode-block" id="Trajectory"><a class="viewcode-back" href="../../../io.html#pyrad.io.Trajectory">[docs]</a><span class="k">class</span> <span class="nc">Trajectory</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -134,6 +135,7 @@
 <span class="sd">    get_samples_in_period : Get indices of samples within period</span>
 <span class="sd">    _convert_traj_to_swissgrid : convert data from WGS84 to Swiss coordinates</span>
 <span class="sd">    _read_traj : Read plane trajectory from file</span>
+<span class="sd">    _read_traj_trt : Read TRT trajectory from file</span>
 <span class="sd">    _read_traj_lightning : Read lightning trajectory from file</span>
 <span class="sd">    _get_total_seconds : Get the total time of the trajectory in seconds</span>
 
@@ -195,7 +197,8 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_read_traj</span><span class="p">()</span>
 
-        <span class="k">except</span><span class="p">:</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ee</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
                 <span class="s2">&quot;ERROR: Could not load trajectory data from file &#39;&quot;</span> <span class="o">+</span>
                 <span class="n">filename</span><span class="o">+</span><span class="s2">&quot;&#39; into Trajectory object&quot;</span><span class="p">)</span></div>
@@ -546,13 +549,38 @@
 <span class="sd">        ----------</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="p">(</span><span class="n">traj_ID</span><span class="p">,</span> <span class="n">yyyymmddHHMM</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span>
-         <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">cell_contours</span><span class="p">)</span> <span class="o">=</span> <span class="n">read_trt_traj_data</span><span class="p">(</span>
-             <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;_tt.trt&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">traj_ID</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">yyyymmddHHMM</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span>
+             <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span>
+             <span class="n">cell_contours</span><span class="p">)</span> <span class="o">=</span> <span class="n">read_trt_thundertracking_traj_data</span><span class="p">(</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">traj_ID</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ERROR: Could not find|open trajectory file &#39;&quot;</span> <span class="o">+</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="o">+</span><span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">traj_ID</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                    <span class="s2">&quot;ERROR: Could not find|open trajectory file &#39;&quot;</span> <span class="o">+</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="o">+</span><span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
+
+            <span class="n">valid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">yyyymmddHHMM</span><span class="p">))</span>
+            <span class="n">yyyymmddHHMM</span> <span class="o">=</span> <span class="n">yyyymmddHHMM</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span>
+            <span class="n">traj_ID</span> <span class="o">=</span> <span class="n">traj_ID</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span>
+            <span class="n">lon</span> <span class="o">=</span> <span class="n">lon</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span>
+            <span class="n">lat</span> <span class="o">=</span> <span class="n">lat</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span>
+            <span class="n">cell_contours</span> <span class="o">=</span> <span class="n">cell_contours</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">traj_ID</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                    <span class="s2">&quot;ERROR: No valid data in trajectory file &#39;&quot;</span> <span class="o">+</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="o">+</span><span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">traj_ID</span><span class="p">,</span> <span class="n">yyyymmddHHMM</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span>
+             <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">cell_contours</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span>
+                 <span class="n">read_trt_traj_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">traj_ID</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                    <span class="s2">&quot;ERROR: Could not find|open trajectory file &#39;&quot;</span> <span class="o">+</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="o">+</span><span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
 
         <span class="n">recording_started</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">starttime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>

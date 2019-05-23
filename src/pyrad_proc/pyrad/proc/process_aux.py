@@ -1,6 +1,6 @@
 """
 pyrad.proc.process_aux
-=============================
+======================
 
 Auxiliary functions. Functions to determine the process type, pass raw data to
 the product generation functions, save radar data and extract data at
@@ -15,7 +15,6 @@ determined points or regions of interest.
     process_fixed_rng
     process_fixed_rng_span
     process_roi
-    process_grid
     process_azimuthal_average
 
 """
@@ -104,7 +103,11 @@ def get_process_func(dataset_type, dsname):
                 'COSMO_COORD': process_cosmo_coord
                 'HZT_COORD': process_hzt_coord
             'GRID' format output:
+                'RAW_GRID': process_raw_grid
                 'GRID': process_grid
+            'GRID_TIMEAVG' format output:
+                'GRID_TIME_STATS': process_grid_time_stats
+                'GRID_TIME_STATS2': process_grid_time_stats2
             'INTERCOMP' format output:
                 'INTERCOMP': process_intercomp
                 'INTERCOMP_TIME_AVG': process_intercomp_time_avg
@@ -133,7 +136,9 @@ def get_process_func(dataset_type, dsname):
                 'WEIGHTED_TIME_AVG': process_weighted_time_avg
                 'TIME_STATS': process_time_stats
                 'TIME_STATS2': process_time_stats2
+                'RAIN_ACCU': process_rainfall_accumulation
             'TIMESERIES' format output:
+                'GRID_POINT_MEASUREMENT': process_grid_point
                 'POINT_MEASUREMENT': 'process_point_measurement'
                 'TRAJ_ANTENNA_PATTERN': process_traj_antenna_pattern
                 'TRAJ_ATPLANE': process_traj_atplane
@@ -158,7 +163,10 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'AZI_AVG':
         func_name = process_azimuthal_average
     elif dataset_type == 'GRID':
-        func_name = process_grid
+        func_name = 'process_grid'
+        dsformat = 'GRID'
+    elif dataset_type == 'RAW_GRID':
+        func_name = 'process_raw_grid'
         dsformat = 'GRID'
     elif dataset_type == 'QVP':
         func_name = 'process_qvp'
@@ -240,6 +248,9 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_attenuation'
     elif dataset_type == 'RAINRATE':
         func_name = 'process_rainrate'
+    elif dataset_type == 'RAIN_ACCU':
+        func_name = 'process_rainfall_accumulation'
+        dsformat = 'TIMEAVG'
     elif dataset_type == 'DEALIAS_FOURDD':
         func_name = 'process_dealias_fourdd'
     elif dataset_type == 'DEALIAS_REGION':
@@ -298,6 +309,12 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'TIME_STATS2':
         func_name = 'process_time_stats2'
         dsformat = 'TIMEAVG'
+    elif dataset_type == 'GRID_TIME_STATS':
+        func_name = 'process_grid_time_stats'
+        dsformat = 'GRID_TIMEAVG'
+    elif dataset_type == 'GRID_TIME_STATS2':
+        func_name = 'process_grid_time_stats2'
+        dsformat = 'GRID_TIMEAVG'
     elif dataset_type == 'COLOCATED_GATES':
         func_name = 'process_colocated_gates'
         dsformat = 'COLOCATED_GATES'
@@ -327,6 +344,9 @@ def get_process_func(dataset_type, dsname):
         dsformat = 'SUN_HITS'
     elif dataset_type == 'POINT_MEASUREMENT':
         func_name = 'process_point_measurement'
+        dsformat = 'TIMESERIES'
+    elif dataset_type == 'GRID_POINT_MEASUREMENT':
+        func_name = 'process_grid_point'
         dsformat = 'TIMESERIES'
     elif dataset_type == 'ROI':
         func_name = process_roi
@@ -739,154 +759,6 @@ def process_roi(procstatus, dscfg, radar_list=None):
         new_dataset['radar_out'].add_field(field_name, field_dict)
 
     return new_dataset['radar_out'], ind_rad
-
-
-def process_grid(procstatus, dscfg, radar_list=None):
-    """
-    Puts the radar data in a regular grid
-
-    Parameters
-    ----------
-    procstatus : int
-        Processing status: 0 initializing, 1 processing volume,
-        2 post-processing
-    dscfg : dictionary of dictionaries
-        data set configuration. Accepted Configuration Keywords::
-
-        datatype : string. Dataset keyword
-            The data type where we want to extract the point measurement
-        gridconfig : dictionary. Dataset keyword
-            Dictionary containing some or all of this keywords:
-            xmin, xmax, ymin, ymax, zmin, zmax : floats
-                minimum and maximum horizontal distance from grid origin [km]
-                and minimum and maximum vertical distance from grid origin [m]
-                Defaults -40, 40, -40, 40, 0., 10000.
-            hres, vres : floats
-                horizontal and vertical grid resolution [m]
-                Defaults 1000., 500.
-            latorig, lonorig, altorig : floats
-                latitude and longitude of grid origin [deg] and altitude of
-                grid origin [m MSL]
-                Defaults the latitude, longitude and altitude of the radar
-        wfunc : str
-            the weighting function used to combine the radar gates close to a
-            grid point. Possible values BARNES, CRESSMAN, NEAREST_NEIGHBOUR
-            Default NEAREST_NEIGHBOUR
-        roif_func : str
-            the function used to compute the region of interest.
-            Possible values: dist_beam, constant
-        roi : float
-             the (minimum) radius of the region of interest in m. Default half
-             the largest resolution
-
-    radar_list : list of Radar objects
-        Optional. list of radar objects
-
-    Returns
-    -------
-    new_dataset : dict
-        dictionary containing the gridded data
-    ind_rad : int
-        radar index
-
-    """
-    if procstatus != 1:
-        return None, None
-
-    field_names_aux = []
-    for datatypedescr in dscfg['datatype']:
-        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
-        field_names_aux.append(get_fieldname_pyart(datatype))
-
-    ind_rad = int(radarnr[5:8])-1
-    if (radar_list is None) or (radar_list[ind_rad] is None):
-        warn('ERROR: No valid radar')
-        return None, None
-    radar = radar_list[ind_rad]
-
-    # keep only fields present in radar object
-    field_names = []
-    nfields_available = 0
-    for field_name in field_names_aux:
-        if field_name not in radar.fields:
-            warn('Field name '+field_name+' not available in radar object')
-            continue
-        field_names.append(field_name)
-        nfields_available += 1
-
-    if nfields_available == 0:
-        warn("Fields not available in radar data")
-        return None, None
-
-    # default parameters
-    xmin = -40.
-    xmax = 40.
-    ymin = -40.
-    ymax = 40.
-    zmin = 0.
-    zmax = 10000.
-    hres = 1000.
-    vres = 500.
-    lat = float(radar.latitude['data'])
-    lon = float(radar.longitude['data'])
-    alt = float(radar.altitude['data'])
-
-    if 'gridConfig' in dscfg:
-        if 'xmin' in dscfg['gridConfig']:
-            xmin = dscfg['gridConfig']['xmin']
-        if 'xmax' in dscfg['gridConfig']:
-            xmax = dscfg['gridConfig']['xmax']
-        if 'ymin' in dscfg['gridConfig']:
-            ymin = dscfg['gridConfig']['ymin']
-        if 'ymax' in dscfg['gridConfig']:
-            ymax = dscfg['gridConfig']['ymax']
-        if 'zmin' in dscfg['gridConfig']:
-            zmin = dscfg['gridConfig']['zmin']
-        if 'zmax' in dscfg['gridConfig']:
-            zmax = dscfg['gridConfig']['zmax']
-        if 'hres' in dscfg['gridConfig']:
-            hres = dscfg['gridConfig']['hres']
-        if 'vres' in dscfg['gridConfig']:
-            vres = dscfg['gridConfig']['vres']
-        if 'latorig' in dscfg['gridConfig']:
-            lat = dscfg['gridConfig']['latorig']
-        if 'lonorig' in dscfg['gridConfig']:
-            lon = dscfg['gridConfig']['lonorig']
-        if 'altorig' in dscfg['gridConfig']:
-            alt = dscfg['gridConfig']['altorig']
-
-    wfunc = dscfg.get('wfunc', 'NEAREST_NEIGHBOUR')
-    roi_func = dscfg.get('roi_func', 'dist_beam')
-
-    # number of grid points in cappi
-    nz = int((zmax-zmin)/vres)+1
-    ny = int((ymax-ymin)*1000./hres)+1
-    nx = int((xmax-xmin)*1000./hres)+1
-
-    min_radius = dscfg.get('roi', np.max([vres, hres])/2.)
-    # parameters to determine the gates to use for each grid point
-    beamwidth = 1.
-    beam_spacing = 1.
-    if 'radar_beam_width_h' in radar.instrument_parameters:
-        beamwidth = radar.instrument_parameters[
-            'radar_beam_width_h']['data'][0]
-
-    if radar.ray_angle_res is not None:
-        beam_spacing = radar.ray_angle_res['data'][0]
-
-    # cartesian mapping
-    grid = pyart.map.grid_from_radars(
-        (radar,), gridding_algo='map_to_grid',
-        weighting_function=wfunc,
-        roi_func=roi_func, h_factor=1.0, nb=beamwidth, bsp=beam_spacing,
-        min_radius=min_radius, constant_roi=min_radius,
-        grid_shape=(nz, ny, nx),
-        grid_limits=((zmin, zmax), (ymin*1000., ymax*1000.),
-                     (xmin*1000., xmax*1000.)),
-        grid_origin=(lat, lon), grid_origin_alt=alt,
-        fields=field_names)
-
-    return grid, ind_rad
 
 
 def process_azimuthal_average(procstatus, dscfg, radar_list=None):

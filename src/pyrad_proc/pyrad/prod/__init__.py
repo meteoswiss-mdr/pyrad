@@ -32,6 +32,7 @@ Product generation
     generate_timeseries_products
     generate_monitoring_products
     generate_grid_products
+    generate_grid_time_avg_products
     generate_traj_product
     generate_ml_products
 
@@ -47,6 +48,7 @@ from .process_product import generate_ml_products
 
 from .process_vol_products import generate_vol_products
 from .process_grid_products import generate_grid_products
+from .process_grid_products import generate_grid_time_avg_products
 from .process_timeseries_products import generate_timeseries_products
 from .process_traj_products import generate_traj_product
 from .process_monitoring_products import generate_monitoring_products

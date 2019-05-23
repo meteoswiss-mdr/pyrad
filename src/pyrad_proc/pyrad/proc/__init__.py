@@ -19,8 +19,19 @@ Auxiliary functions
     process_fixed_rng
     process_fixed_rng_span
     process_roi
-    process_grid
     process_azimuthal_average
+
+Gridded data functions
+======================
+
+.. autosummary::
+    :toctree: generated/
+
+    process_raw_grid
+    process_grid
+    process_grid_point
+    process_grid_time_stats
+    process_grid_time_stats2
 
 Echo classification and filtering
 =================================
@@ -100,6 +111,7 @@ Retrievals
     process_l
     process_cdr
     process_rainrate
+    process_rainfall_accumulation
     process_vol_refl
     process_bird_density
 
@@ -158,8 +170,11 @@ COSMO data
 """
 
 from .process_aux import get_process_func, process_raw, process_save_radar
-from .process_aux import process_grid, process_roi, process_azimuthal_average
+from .process_aux import process_roi, process_azimuthal_average
 from .process_aux import process_fixed_rng, process_fixed_rng_span
+
+from .process_grid import process_grid, process_raw_grid, process_grid_point
+from .process_grid import process_grid_time_stats, process_grid_time_stats2
 
 from .process_timeseries import process_point_measurement, process_qvp
 from .process_timeseries import process_rqvp, process_evp, process_svp
@@ -205,7 +220,7 @@ from .process_monitoring import process_monitoring
 from .process_retrieve import process_signal_power, process_snr
 from .process_retrieve import process_l, process_cdr, process_bird_density
 from .process_retrieve import process_rainrate, process_vol_refl, process_rcs
-from .process_retrieve import process_rcs_pr
+from .process_retrieve import process_rcs_pr, process_rainfall_accumulation
 
 from .process_Doppler import process_wind_vel, process_windshear
 from .process_Doppler import process_dealias_fourdd

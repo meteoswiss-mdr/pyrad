@@ -13,6 +13,7 @@ Miscellaneous functions dealing with radar data
     get_ROI
     rainfall_accumulation
     time_series_statistics
+    find_contiguous_times
     join_time_series
     get_range_bins_to_avg
     belongs_roi_indices
@@ -459,6 +460,54 @@ def time_series_statistics(t_in_vec, val_in_vec, avg_time=3600,
     val_out_vec = df_out.values.flatten()
 
     return t_out_vec, val_out_vec
+
+
+def find_contiguous_times(times, step=600):
+    """
+    Given and array of ordered times, find those contiguous according to
+    a maximum time step
+
+    Parameters
+    ----------
+    times : array of datetimes
+        The array of times
+    step : float
+        The time step [s]
+
+    Returns
+    -------
+    start_times, end_times : array of date times
+        The start and end of each consecutive time period
+
+    """
+    run = []
+    periods = []
+    expect = None
+    for time in times:
+        if expect is None:
+            run.append(time)
+        elif time <= expect:
+            run.append(time)
+        else:
+            run = [time]
+            periods.append(run)
+        expect = time+datetime.timedelta(seconds=step)
+
+    if not periods:
+        periods = [times]
+    elif periods[0][0] != times[0]:
+        periods.insert(0, [times[0]])
+
+    print('number of consecutive periods: '+str(len(periods)))
+
+    start_times = np.array([], dtype=datetime.datetime)
+    end_times = np.array([], dtype=datetime.datetime)
+    for period in periods:
+        start_times = np.append(
+            start_times, period[0]-datetime.timedelta(seconds=step))
+        end_times = np.append(end_times, period[-1])
+
+    return start_times, end_times
 
 
 def join_time_series(t1, val1, t2, val2, dropnan=False):

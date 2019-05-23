@@ -7,6 +7,7 @@ Auxiliary functions for reading/writing files
 .. autosummary::
     :toctree: generated/
 
+    get_rad4alp_prod_fname
     map_hydro
     map_Doppler
     get_save_dir
@@ -19,6 +20,8 @@ Auxiliary functions for reading/writing files
     get_field_unit
     get_field_name
     get_file_list
+    get_rad4alp_dir
+    get_rad4alp_grid_dir
     get_trtfile_list
     get_scan_list
     get_new_rainbow_file_name
@@ -46,6 +49,280 @@ import numpy as np
 
 from pyart.config import get_metadata
 
+
+def get_rad4alp_prod_fname(datatype):
+    """
+    Given a datatype find the corresponding start and termination of the
+    METRANET product file name
+
+    Parameters
+    ----------
+    datatype : str
+        the data type
+
+    Returns
+    -------
+    acronym : str
+        The start of the METRANET file name
+    termination : str
+        The end of the METRANET file name
+
+    """
+    # datatype missing:
+    # NHC (Hail forecast)
+    # NZC (Thunderstorm forecast based on TRT)
+
+    termination = '.8??'
+    # Polar products
+    if datatype == 'hydro':
+        acronym = 'YM'
+    elif datatype == 'dealV':
+        acronym = 'DV'
+
+    # rainfall accumulation products
+    elif datatype == 'AZC01':
+        acronym = 'AZC' # Rain rate accumulation with local bias corrected
+        termination = '.801'
+    elif datatype == 'AZC03':
+        acronym = 'AZC' # Rain rate accumulation with local bias corrected
+        termination = '.803'
+    elif datatype == 'AZC06':
+        acronym = 'AZC' # Rain rate accumulation with local bias corrected
+        termination = '.806'
+    elif datatype == 'aZC01':
+        acronym = 'aZC' # Rain rate accumulation with local bias not corrected
+        termination = '.801'
+    elif datatype == 'aZC03':
+        acronym = 'aZC' # Rain rate accumulation with local bias not corrected
+        termination = '.803'
+    elif datatype == 'aZC06':
+        acronym = 'aZC' # Rain rate accumulation with local bias not corrected
+        termination = '.806'
+
+    # CPC
+    elif datatype == 'CPC0005':
+        acronym = 'CPC'
+        termination = '_00005.801.gif'
+    elif datatype == 'CPC0060':
+        acronym = 'CPC'
+        termination = '_00060.801.gif'
+    elif datatype == 'CPC0180':
+        acronym = 'CPC'
+        termination = '_00180.801.gif'
+    elif datatype == 'CPC0360':
+        acronym = 'CPC'
+        termination = '_00360.801.gif'
+    elif datatype == 'CPC0720':
+        acronym = 'CPC'
+        termination = '_00720.801.gif'
+    elif datatype == 'CPC1440':
+        acronym = 'CPC'
+        termination = '_01440.801.gif'
+    elif datatype == 'CPC2880':
+        acronym = 'CPC'
+        termination = '_02880.801.gif'
+    elif datatype == 'CPC4320':
+        acronym = 'CPC'
+        termination = '_04320.801.gif'
+
+    elif datatype == 'CPCH0005':
+        acronym = 'CPC'
+        termination = '_00005.801.gif'
+    elif datatype == 'CPCH0060':
+        acronym = 'CPC'
+        termination = '_00060.801.gif'
+    elif datatype == 'CPCH0180':
+        acronym = 'CPC'
+        termination = '_00180.801.gif'
+    elif datatype == 'CPCH0360':
+        acronym = 'CPC'
+        termination = '_00360.801.gif'
+    elif datatype == 'CPCH0720':
+        acronym = 'CPC'
+        termination = '_00720.801.gif'
+    elif datatype == 'CPCH1440':
+        acronym = 'CPC'
+        termination = '_01440.801.gif'
+    elif datatype == 'CPCH2880':
+        acronym = 'CPC'
+        termination = '_02880.801.gif'
+    elif datatype == 'CPCH4320':
+        acronym = 'CPC'
+        termination = '_04320.801.gif'
+
+    elif datatype == 'nowpal60_P60':
+        acronym = 'AZC'
+        termination = '.accu_0060_RZC_60'
+    elif datatype == 'nowpal90_P90':
+        acronym = 'AZC'
+        termination = '.accu_0090_RZC_90'
+    elif datatype == 'nowpal180_P180':
+        acronym = 'AZC'
+        termination = '.accu_0180_RZC_180'
+    elif datatype == 'nowpal360_P360':
+        acronym = 'AZC'
+        termination = '.accu_0360_RZC_360'
+    elif datatype == 'nowpal720_P720':
+        acronym = 'AZC'
+        termination = '.accu_0720_RZC_720'
+
+    elif datatype == 'nowpal90_P30':
+        acronym = 'AZC'
+        termination = '.accu_0090_RZC_30'
+    elif datatype == 'nowpal90_P30_F60':
+        acronym = 'AZC'
+        termination = '.accu_0090_RZC_30_INCA_60'
+    elif datatype == 'nowpal90_F60':
+        acronym = 'AZC'
+        termination = '.accu_0090_INCA_60'
+    elif datatype == 'nowpal180_P60':
+        acronym = 'AZC'
+        termination = '.accu_0180_RZC_60'
+    elif datatype == 'nowpal180_P60_F120':
+        acronym = 'AZC'
+        termination = '.accu_0180_RZC_60_INCA_120'
+    elif datatype == 'nowpal180_F120':
+        acronym = 'AZC'
+        termination = '.accu_0180_INCA_120'
+    elif datatype == 'nowpal360_P120':
+        acronym = 'AZC'
+        termination = '.accu_0360_CPC_120'
+    elif datatype == 'nowpal360_P120_F240':
+        acronym = 'AZC'
+        termination = '.accu_0360_CPC_120_INCA_240'
+    elif datatype == 'nowpal360_F240':
+        acronym = 'AZC'
+        termination = '.accu_0360_INCA_240'
+    elif datatype == 'nowpal720_P360':
+        acronym = 'AZC'
+        termination = '.accu_0720_CPC_360'
+    elif datatype == 'nowpal720_P360_F360':
+        acronym = 'AZC'
+        termination = '.accu_0720_CPC_360_INCA_360'
+    elif datatype == 'nowpal720_F360':
+        acronym = 'AZC'
+        termination = '.accu_0720_INCA_360'
+
+    elif datatype == 'dACC':
+        acronym = 'ACC' # Daily precip accumulation using NowPal with CPC
+        termination = '.1440'
+    elif datatype == 'dACCH':
+        acronym = 'ACC' # reprocessed after 8 days
+        termination = '.1440'
+    elif datatype == 'dARC':
+        acronym = 'ARC' # Daily precip accumulation using NowPal with RZC
+        termination = '.1440'
+
+    # rainfall rate products
+    elif datatype == 'RZC':
+        acronym = 'RZC'  # rain rate local bias corrected
+    elif datatype == 'R1F':
+        acronym = 'R1F' # RZC including best foreign radars
+    elif datatype == 'rZC':
+        acronym = 'rZC' # local bias not corrected
+    elif datatype == 'RZF':
+        acronym = 'RZF' # RZC including foreign radars
+    elif datatype == 'dRZC':
+        acronym = 'RZC'  # Daily maximum rain rate
+
+    # hail products
+    elif datatype in ('BZC', 'dBZC'):
+        acronym = 'BZC' # POH
+    elif datatype in ('MZC', 'dMZC'):
+        acronym = 'MZC' # Maximum expected severe hail size
+    elif datatype == 'GZC':
+        acronym = 'GZC' # Hail probability derived from reflectivity
+        termination = '.803'
+    elif datatype == 'dGZC':
+        acronym = 'GZC'
+        termination = '.824'
+
+    # max echo
+    elif datatype in ('CZC', 'dCZC'):
+        acronym = 'CZC' # max echo
+    elif datatype == 'HZC':
+        acronym = 'HZC' # Max echo height
+
+    # echo tops
+    elif datatype in ('EZC15', 'dEZC15'):
+        acronym = 'EZC' # echo top
+        termination = '.815'
+    elif datatype == 'EZC20':
+        acronym = 'EZC' # echo top
+        termination = '.820'
+    elif datatype in ('EZC45', 'dEZC45'):
+        acronym = 'EZC'
+        termination = '.845'
+    elif datatype == 'EZC50':
+        acronym = 'EZC'
+        termination = '.850'
+
+    # Vertically integrated liquid
+    elif datatype in ('LZC', 'dLZC'):
+        acronym = 'LZC'
+
+    # Zh CAPPI
+    elif datatype in 'OZC01':
+        acronym = 'OZC'
+        termination = '.810'
+    elif datatype in 'OZC02':
+        acronym = 'OZC'
+        termination = '.820'
+    elif datatype in 'OZC03':
+        acronym = 'OZC'
+        termination = '.830'
+    elif datatype in 'OZC04':
+        acronym = 'OZC'
+        termination = '.840'
+    elif datatype in 'OZC05':
+        acronym = 'OZC'
+        termination = '.850'
+    elif datatype in 'OZC06':
+        acronym = 'OZC'
+        termination = '.860'
+    elif datatype in 'OZC07':
+        acronym = 'OZC'
+        termination = '.870'
+    elif datatype in 'OZC08':
+        acronym = 'OZC'
+        termination = '.880'
+    elif datatype in 'OZC09':
+        acronym = 'OZC'
+        termination = '.890'
+    elif datatype in 'OZC10':
+        acronym = 'OZC'
+        termination = '.900'
+    elif datatype in 'OZC11':
+        acronym = 'OZC'
+        termination = '.910'
+    elif datatype in 'OZC12':
+        acronym = 'OZC'
+        termination = '.920'
+    elif datatype in 'OZC13':
+        acronym = 'OZC'
+        termination = '.930'
+    elif datatype in 'OZC14':
+        acronym = 'OZC'
+        termination = '.940'
+    elif datatype in 'OZC15':
+        acronym = 'OZC'
+        termination = '.950'
+    elif datatype in 'OZC16':
+        acronym = 'OZC'
+        termination = '.960'
+    elif datatype in 'OZC17':
+        acronym = 'OZC'
+        termination = '.970'
+    elif datatype in 'OZC18':
+        acronym = 'OZC'
+        termination = '.980'
+
+    else:
+        raise ValueError('ERROR: Unknown rad4alp product data type '+datatype)
+
+    return acronym, termination
+
+
 def map_hydro(hydro_data_op):
     """
     maps the operational hydrometeor classification identifiers to the ones
@@ -63,14 +340,14 @@ def map_hydro(hydro_data_op):
 
     """
     hydro_data_py = deepcopy(hydro_data_op)
-    hydro_data_py[hydro_data_op == 25] = 2  # crystals
-    hydro_data_py[hydro_data_op == 50] = 1  # aggregate
-    hydro_data_py[hydro_data_op == 75] = 3  # light rain
-    hydro_data_py[hydro_data_op == 100] = 5  # rain
-    hydro_data_py[hydro_data_op == 125] = 4  # graupel
-    hydro_data_py[hydro_data_op == 150] = 7  # wet snow
-    hydro_data_py[hydro_data_op == 175] = 9  # ice hail
-    hydro_data_py[hydro_data_op == 200] = 8  # melting hail
+    hydro_data_py[hydro_data_op == 25] = 3  # crystals
+    hydro_data_py[hydro_data_op == 50] = 2  # aggregate
+    hydro_data_py[hydro_data_op == 75] = 4  # light rain
+    hydro_data_py[hydro_data_op == 100] = 6  # rain
+    hydro_data_py[hydro_data_op == 125] = 5  # graupel
+    hydro_data_py[hydro_data_op == 150] = 8  # wet snow
+    hydro_data_py[hydro_data_op == 175] = 10  # ice hail
+    hydro_data_py[hydro_data_op == 200] = 9  # melting hail
 
     return hydro_data_py
 
@@ -901,6 +1178,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'iso0'
     elif datatype == 'H_ISO0':
         field_name = 'height_over_iso0'
+    elif datatype == 'HZT':
+        field_name = 'iso0_height'
     elif datatype == 'cosmo_index':
         field_name = 'cosmo_index'
     elif datatype == 'hzt_index':
@@ -921,6 +1200,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'frequency_of_occurrence'
     elif datatype == 'RR':
         field_name = 'radar_estimated_rain_rate'
+    elif datatype == 'Raccu':
+        field_name = 'rainfall_accumulation'
 
     elif datatype == 'hydro':
         field_name = 'radar_echo_classification'
@@ -959,6 +1240,209 @@ def get_fieldname_pyart(datatype):
         field_name = 'sum'
     elif datatype == 'sum2':
         field_name = 'sum_squared'
+
+    elif datatype == 'POH':
+        field_name = 'probability_of_hail'
+    elif datatype == 'VIL':
+        field_name = 'vertically_integrated_liquid'
+    elif datatype == 'ETOP15':
+        field_name = 'echo_top_15dBZ'
+    elif datatype == 'ETOP20':
+        field_name = 'echo_top_20dBZ'
+    elif datatype == 'ETOP45':
+        field_name = 'echo_top_45dBZ'
+    elif datatype == 'ETOP50':
+        field_name = 'echo_top_50dBZ'
+    elif datatype == 'MAXECHO':
+        field_name = 'maximum_echo'
+    elif datatype == 'HMAXECHO':
+        field_name = 'maximum_echo_height'
+
+    # rad4alp cartesian products
+    # rainfall accumulation products
+    elif datatype == 'AZC01':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'AZC03':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'AZC06':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'aZC01':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'aZC03':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'aZC06':
+        field_name = 'rainfall_accumulation'
+
+    # CPC
+    elif datatype == 'CPC0005':
+        field_name = 'radar_estimated_rain_rate'
+    elif datatype == 'CPC0060':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'CPC0180':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'CPC0360':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'CPC0720':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'CPC1440':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'CPC2880':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'CPC4320':
+        field_name = 'rainfall_accumulation'
+
+    elif datatype == 'CPCH0005':
+        field_name = 'radar_estimated_rain_rate'
+    elif datatype == 'CPCH0060':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'CPCH0180':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'CPCH0360':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'CPCH0720':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'CPCH1440':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'CPCH2880':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'CPCH4320':
+        field_name = 'rainfall_accumulation'
+
+    # Nowpal
+    elif datatype == 'nowpal60_P60':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'nowpal90_P90':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'nowpal180_P180':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'nowpal360_P360':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'nowpal720_P720':
+        field_name = 'rainfall_accumulation'
+
+    elif datatype == 'nowpal90_P30':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'nowpal90_P30_F60':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'nowpal90_F60':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'nowpal180_P60':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'nowpal180_P60_F120':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'nowpal180_F120':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'nowpal360_P120':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'nowpal360_P120_F240':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'nowpal360_F240':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'nowpal720_P360':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'nowpal720_P360_F360':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'nowpal720_F360':
+        field_name = 'rainfall_accumulation'
+
+    elif datatype == 'dACC':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'dACCH':
+        field_name = 'rainfall_accumulation'
+    elif datatype == 'dARC':
+        field_name = 'rainfall_accumulation'
+
+    # rainfall rate products
+    elif datatype == 'RZC':
+        field_name = 'radar_estimated_rain_rate'
+    elif datatype == 'R1F':
+        field_name = 'radar_estimated_rain_rate'
+    elif datatype == 'rZC':
+        field_name = 'radar_estimated_rain_rate'
+    elif datatype == 'RZF':
+        field_name = 'radar_estimated_rain_rate'
+    elif datatype == 'dRZC':
+        field_name = 'radar_estimated_rain_rate'
+
+    # hail products
+    elif datatype == 'BZC':
+        field_name = 'probability_of_hail'
+    elif datatype == 'dBZC':
+        field_name = 'probability_of_hail'
+    elif datatype == 'MZC':
+        field_name = 'maximum_expected_severe_hail_size'
+    elif datatype == 'dMZC':
+        field_name = 'maximum_expected_severe_hail_size'
+    elif datatype == 'GZC':
+        field_name = 'probability_of_hail'
+    elif datatype == 'dGZC':
+        field_name = 'probability_of_hail'
+
+    # echo tops
+    elif datatype == 'CZC':
+        field_name = 'maximum_echo'
+    elif datatype == 'dCZC':
+        field_name = 'maximum_echo' # Daily max echo
+    elif datatype == 'HZC':
+        field_name = 'maximum_echo_height' # Max echo height
+    elif datatype == 'EZC15':
+        field_name = 'echo_top_15dBz'
+    elif datatype == 'EZC20':
+        field_name = 'echo_top_20dBz'
+    elif datatype == 'EZC45':
+        field_name = 'echo_top_45dBz'
+    elif datatype == 'EZC50':
+        field_name = 'echo_top_50dBz'
+    elif datatype == 'dEZC15':
+        field_name = 'echo_top_15dBZ' # Daily echo top
+    elif datatype == 'dEZC20':
+        field_name = 'echo_top_20dBz'
+    elif datatype == 'dEZC45':
+        field_name = 'echo_top_45dBz'
+    elif datatype == 'dEZC50':
+        field_name = 'echo_top_50dBz'
+    elif datatype == 'LZC':
+        field_name = 'vertically_integrated_liquid'
+    elif datatype == 'dLZC':
+        field_name = 'vertically_integrated_liquid'
+
+    # reflectivity CAPPI
+    elif datatype == 'OZC01':
+        field_name = 'reflectivity'
+    elif datatype == 'OZC02':
+        field_name = 'reflectivity'
+    elif datatype == 'OZC03':
+        field_name = 'reflectivity'
+    elif datatype == 'OZC04':
+        field_name = 'reflectivity'
+    elif datatype == 'OZC05':
+        field_name = 'reflectivity'
+    elif datatype == 'OZC06':
+        field_name = 'reflectivity'
+    elif datatype == 'OZC07':
+        field_name = 'reflectivity'
+    elif datatype == 'OZC08':
+        field_name = 'reflectivity'
+    elif datatype == 'OZC09':
+        field_name = 'reflectivity'
+    elif datatype == 'OZC10':
+        field_name = 'reflectivity'
+    elif datatype == 'OZC11':
+        field_name = 'reflectivity'
+    elif datatype == 'OZC12':
+        field_name = 'reflectivity'
+    elif datatype == 'OZC13':
+        field_name = 'reflectivity'
+    elif datatype == 'OZC14':
+        field_name = 'reflectivity'
+    elif datatype == 'OZC15':
+        field_name = 'reflectivity'
+    elif datatype == 'OZC16':
+        field_name = 'reflectivity'
+    elif datatype == 'OZC17':
+        field_name = 'reflectivity'
+    elif datatype == 'OZC18':
+        field_name = 'reflectivity'
 
     # vol2bird field names
     elif datatype == 'ff':
@@ -1085,51 +1569,13 @@ def get_file_list(datadescriptor, starttimes, endtimes, cfg, scan=None):
                 if scan is None:
                     warn('Unknown scan name')
                     return None
-                dayinfo = (starttime+datetime.timedelta(days=i)).strftime(
-                    '%y%j')
-                basename = ('M'+cfg['RadarRes'][ind_rad] +
-                            cfg['RadarName'][ind_rad]+dayinfo)
-                if cfg['path_convention'] == 'LTE':
-                    yy = dayinfo[0:2]
-                    dy = dayinfo[2:]
-                    subf = ('M' + cfg['RadarRes'][ind_rad] +
-                            cfg['RadarName'][ind_rad] + yy + 'hdf' + dy)
-                    datapath = cfg['datapath'][ind_rad] + subf + '/'
 
-                    # check that M files exist. if not search P files
-                    dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
-                    if not dayfilelist:
-                        subf = ('P' + cfg['RadarRes'][ind_rad] +
-                                cfg['RadarName'][ind_rad] + yy + 'hdf' + dy)
-                        datapath = cfg['datapath'][ind_rad] + subf + '/'
-                        basename = ('P'+cfg['RadarRes'][ind_rad] +
-                                    cfg['RadarName'][ind_rad]+dayinfo)
-                elif cfg['path_convention'] == 'MCH':
-                    datapath = (
-                        cfg['datapath'][ind_rad]+dayinfo+'/'+basename+'/')
-
-                    # check that M files exist. if not search P files
-                    dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
-                    if not dayfilelist:
-                        basename = ('P'+cfg['RadarRes'][ind_rad] +
-                                    cfg['RadarName'][ind_rad]+dayinfo)
-                        datapath = (cfg['datapath'][ind_rad]+dayinfo+'/' +
-                                    basename+'/')
-                else:
-                    datapath = (
-                        cfg['datapath'][ind_rad]+'M' +
-                        cfg['RadarRes'][ind_rad]+cfg['RadarName'][ind_rad] +
-                        '/')
-
-                    # check that M files exist. if not search P files
-                    dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
-                    if not dayfilelist:
-                        basename = ('P'+cfg['RadarRes'][ind_rad] +
-                                    cfg['RadarName'][ind_rad]+dayinfo)
-                        datapath = (
-                            cfg['datapath'][ind_rad]+'P' +
-                            cfg['RadarRes'][ind_rad] +
-                            cfg['RadarName'][ind_rad]+'/')
+                datapath, basename = get_rad4alp_dir(
+                    cfg['datapath'][ind_rad],
+                    starttime+datetime.timedelta(days=i),
+                    radar_name=cfg['RadarName'][ind_rad],
+                    radar_res=cfg['RadarRes'][ind_rad], scan=scan,
+                    path_convention=cfg['path_convention'])
 
                 if not os.path.isdir(datapath):
                     warn("WARNING: Unknown datapath '%s'" % datapath)
@@ -1137,6 +1583,24 @@ def get_file_list(datadescriptor, starttimes, endtimes, cfg, scan=None):
                 dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
                 for filename in dayfilelist:
                     t_filelist.append(filename)
+            elif datagroup in('RAD4ALPGRID', 'RAD4ALPGIF', 'RAD4ALPBIN'):
+                acronym, termination = get_rad4alp_prod_fname(datatype)
+                dir_day = starttime+datetime.timedelta(days=i)
+                dayinfo = dir_day.strftime('%y%j')
+                basename = acronym+dayinfo
+
+                datapath = get_rad4alp_grid_dir(
+                    cfg['datapath'][ind_rad], dir_day, datatype, acronym,
+                    path_convention=cfg['path_convention'])
+
+                if not os.path.isdir(datapath):
+                    warn("WARNING: Unknown datapath '%s'" % datapath)
+                    continue
+
+                dayfilelist = glob.glob(datapath+basename+'*'+termination)
+                for filename in dayfilelist:
+                    t_filelist.append(filename)
+
             elif datagroup == 'ODIM':
                 if scan is None:
                     warn('Unknown scan name')
@@ -1192,7 +1656,7 @@ def get_file_list(datadescriptor, starttimes, endtimes, cfg, scan=None):
                     continue
                 for filename in dayfilelist:
                     t_filelist.append(filename)
-            elif datagroup in ('CFRADIAL', 'ODIMPYRAD'):
+            elif datagroup in ('CFRADIAL', 'ODIMPYRAD', 'PYRADGRID'):
                 termination = '.nc'
                 if datagroup == 'ODIMPYRAD':
                     termination = '.h5'
@@ -1253,6 +1717,132 @@ def get_file_list(datadescriptor, starttimes, endtimes, cfg, scan=None):
     return sorted(filelist)
 
 
+def get_rad4alp_dir(basepath, voltime, radar_name='A', radar_res='L',
+                    scan='001', path_convention='MCH'):
+    """
+    gets the directory where rad4alp data is stored
+
+    Parameters
+    ----------
+    basepath : str
+        base path
+    voltime : datetime object
+        nominal time
+    radar_name : str
+        radar name (A, D, L, P, W)
+    radar_res : str
+        radar resolution (H, L)
+    scan : str
+        scan
+    path_convention : str
+        The path convention. Can be 'LTE', 'MCH' or 'RT'
+
+    Returns
+    -------
+    datapath : str
+        The data path
+    basename : str
+        The base name. ex: PHA17213
+
+    """
+    dayinfo = voltime.strftime('%y%j')
+    basename = 'M'+radar_res+radar_name+dayinfo
+    if path_convention == 'LTE':
+        yy = dayinfo[0:2]
+        dy = dayinfo[2:]
+        subf = 'M'+radar_res+radar_name+yy+'hdf'+dy
+        datapath = basepath+subf+'/'
+
+        # check that M files exist. if not search P files
+        dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
+        if not dayfilelist:
+            subf = 'P'+radar_res+radar_name+yy+'hdf'+dy
+            datapath = basepath+subf+'/'
+            basename = 'P'+radar_res+radar_name+dayinfo
+    elif path_convention == 'MCH':
+        datapath = basepath+dayinfo+'/'+basename+'/'
+
+        # check that M files exist. if not search P files
+        dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
+        if not dayfilelist:
+            basename = 'P'+radar_res+radar_name+dayinfo
+            datapath = basepath+dayinfo+'/'+basename+'/'
+    else:
+        datapath = basepath+'M'+radar_res+radar_name+'/'
+
+        # check that M files exist. if not search P files
+        dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
+        if not dayfilelist:
+            basename = 'P'+radar_res+radar_name+dayinfo
+            datapath = basepath+'P'+radar_res+radar_name+'/'
+
+    return datapath, basename
+
+
+def get_rad4alp_grid_dir(basepath, voltime, datatype, acronym,
+                         path_convention='MCH'):
+    """
+    gets the directory where rad4alp grid data is stored
+
+    Parameters
+    ----------
+    basepath : str
+        base path
+    voltime : datetime object
+        nominal time
+    datatype : str
+        data type
+    acronym : str
+        acronym identifying the data type
+    path_convention : str
+        The path convention. Can be 'LTE', 'MCH' or 'RT'
+
+    Returns
+    -------
+    datapath : str
+        The data path
+
+    """
+    nowpal_accu = (
+        'nowpal60_P60', 'nowpal90_P90', 'nowpal180_P180', 'nowpal360_P360',
+        'nowpal720_P720')
+    nowpal = (
+        'nowpal90_P30', 'nowpal90_P30_F60', 'nowpal90_F60',
+        'nowpal180_P60', 'nowpal180_P60_F120', 'nowpal180_F120',
+        'nowpal360_P120', 'nowpal360_P120_F240', 'nowpal360_F240',
+        'nowpal720_P360', 'nowpal720_P360_F360', 'nowpal720_F360')
+
+    cpch = (
+        'CPCH0005', 'CPCH0060', 'CPCH0180', 'CPCH0360', 'CPCH0720',
+        'CPCH1440', 'CPCH2880', 'CPCH4320')
+
+    dayinfo = voltime.strftime('%y%j')
+    if datatype in nowpal_accu:
+        dirbase = 'nowpal_accu'
+    elif datatype in nowpal:
+        dirbase = 'nowpal'
+    elif datatype.startswith('d') and datatype != 'dGZC':
+        dirbase = 'd'+acronym
+        if datatype.endswith('H'):
+            dirbase = dirbase+'H'
+    elif datatype in cpch:
+        dirbase = acronym+'H'
+    else:
+        dirbase = acronym
+
+    if path_convention == 'LTE':
+        yy = dayinfo[0:2]
+        dy = dayinfo[2:]
+        subf = acronym+yy+'hdf'+ dy
+        datapath = basepath+subf+'/'
+    elif path_convention == 'MCH':
+        datapath = basepath+dayinfo+'/'+dirbase+dayinfo+'/'
+    else:
+        datapath = basepath+dirbase+'/'
+
+    return datapath
+
+
 def get_trtfile_list(basepath, starttime, endtime):
     """
     gets the list of TRT files with a time period
@@ -1291,7 +1881,7 @@ def get_trtfile_list(basepath, starttime, endtime):
         bfile = os.path.basename(filename)
         datetimestr = bfile[3:12]
         fdatetime = datetime.datetime.strptime(datetimestr, '%y%j%H%M')
-        if (fdatetime >= starttime) and (fdatetime <= endtime):
+        if starttime <= fdatetime <= endtime:
             filelist.append(filename)
         # filelist.append(filename)
 
@@ -1404,7 +1994,7 @@ def get_datatype_fields(datadescriptor):
             product = None
         else:
             datagroup = descrfields[1]
-            if datagroup in ('CFRADIAL', 'ODIMPYRAD'):
+            if datagroup in ('CFRADIAL', 'ODIMPYRAD', 'PYRADGRID'):
                 descrfields2 = descrfields[2].split(',')
                 datatype = descrfields2[0]
                 dataset = descrfields2[1]
@@ -1427,7 +2017,7 @@ def get_datatype_fields(datadescriptor):
     else:
         radarnr = 'RADAR001'
         datagroup = descrfields[0]
-        if datagroup in ('CFRADIAL', 'ODIMPYRAD'):
+        if datagroup in ('CFRADIAL', 'ODIMPYRAD', 'PYRADGRID'):
             descrfields2 = descrfields[1].split(',')
             datatype = descrfields2[0]
             dataset = descrfields2[1]
@@ -1754,12 +2344,18 @@ def _get_datetime(fname, datagroup, ftime_format=None):
 
     """
     bfile = os.path.basename(fname)
-    if datagroup in ('RAINBOW', 'CFRADIAL', 'ODIMPYRAD'):
+    if datagroup in ('RAINBOW', 'CFRADIAL', 'ODIMPYRAD', 'PYRADGRID'):
         datetimestr = bfile[0:14]
         fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d%H%M%S')
-    elif datagroup == 'RAD4ALP':
-        datetimestr = bfile[3:12]
-        fdatetime = datetime.datetime.strptime(datetimestr, '%y%j%H%M')
+    elif datagroup in ('RAD4ALP', 'RAD4ALPGRID', 'RAD4ALPGIF', 'RAD4ALPBIN'):
+        datestr = bfile[3:8]
+        timestr = bfile[8:12]
+        if timestr != '2400':
+            fdatetime = datetime.datetime.strptime(
+                datestr+timestr, '%y%j%H%M')
+        else:
+            fdatetime = datetime.datetime.strptime(
+                datestr, '%y%j')+datetime.timedelta(days=1)
     elif datagroup == 'ODIM':
         if ftime_format is None:
             # we assume is rad4alp format

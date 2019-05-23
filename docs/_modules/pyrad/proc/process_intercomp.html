@@ -114,6 +114,10 @@
 <span class="sd">            when to start the average [s from midnight UTC]. Default 0.</span>
 <span class="sd">        lin_trans: int. Dataset keyword</span>
 <span class="sd">            If 1 apply linear transformation before averaging</span>
+<span class="sd">        use_nan : bool. Dataset keyword</span>
+<span class="sd">            If true non valid data will be used</span>
+<span class="sd">        nan_value : float. Dataset keyword</span>
+<span class="sd">            The value of the non valid data. Default 0</span>
 <span class="sd">        stat: string. Dataset keyword</span>
 <span class="sd">            Statistic to compute: Can be mean, std, cov, min, max. Default</span>
 <span class="sd">            mean</span>
@@ -213,9 +217,9 @@
                 <span class="c1"># get start and stop times of new radar object</span>
                 <span class="p">(</span><span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;starttime&#39;</span><span class="p">],</span>
                  <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;endtime&#39;</span><span class="p">])</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">time_avg_range</span><span class="p">(</span>
-                        <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;starttime&#39;</span><span class="p">],</span>
-                        <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;endtime&#39;</span><span class="p">],</span> <span class="n">period</span><span class="p">))</span>
+                     <span class="n">time_avg_range</span><span class="p">(</span>
+                         <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;starttime&#39;</span><span class="p">],</span>
+                         <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;endtime&#39;</span><span class="p">],</span> <span class="n">period</span><span class="p">))</span>
 
                 <span class="c1"># check if volume time older than starttime</span>
                 <span class="k">if</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;starttime&#39;</span><span class="p">]:</span>
@@ -430,6 +434,10 @@
 <span class="sd">            when to start the average [s from midnight UTC]. Default 0.</span>
 <span class="sd">        stat: string. Dataset keyword</span>
 <span class="sd">            Statistic to compute: Can be median, mode, percentileXX</span>
+<span class="sd">        use_nan : bool. Dataset keyword</span>
+<span class="sd">            If true non valid data will be used</span>
+<span class="sd">        nan_value : float. Dataset keyword</span>
+<span class="sd">            The value of the non valid data. Default 0</span>
 <span class="sd">    radar_list : list of Radar objects</span>
 <span class="sd">        Optional. list of radar objects</span>
 
@@ -512,9 +520,9 @@
                 <span class="c1"># get start and stop times of new radar object</span>
                 <span class="p">(</span><span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;starttime&#39;</span><span class="p">],</span>
                  <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;endtime&#39;</span><span class="p">])</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">time_avg_range</span><span class="p">(</span>
-                        <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;starttime&#39;</span><span class="p">],</span>
-                        <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;endtime&#39;</span><span class="p">],</span> <span class="n">period</span><span class="p">))</span>
+                     <span class="n">time_avg_range</span><span class="p">(</span>
+                         <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;starttime&#39;</span><span class="p">],</span>
+                         <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;endtime&#39;</span><span class="p">],</span> <span class="n">period</span><span class="p">))</span>
 
                 <span class="c1"># check if volume time older than starttime</span>
                 <span class="k">if</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;starttime&#39;</span><span class="p">]:</span>

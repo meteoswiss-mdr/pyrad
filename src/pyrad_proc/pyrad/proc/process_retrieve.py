@@ -15,17 +15,24 @@ Functions for retrieving new moments and products
     process_l
     process_cdr
     process_rainrate
+    process_rainfall_accumulation
     process_bird_density
 
 
 """
 
+import datetime
 from copy import deepcopy
 from warnings import warn
+
+import numpy as np
 
 import pyart
 
 from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
+from ..io.read_data_radar import interpol_field
+
+from ..util.radar_utils import time_avg_range
 
 
 def process_signal_power(procstatus, dscfg, radar_list=None):
@@ -920,6 +927,193 @@ def process_rainrate(procstatus, dscfg, radar_list=None):
     new_dataset['radar_out'].add_field('radar_estimated_rain_rate', rain)
 
     return new_dataset, ind_rad
+
+
+def process_rainfall_accumulation(procstatus, dscfg, radar_list=None):
+    """
+    Computes rainfall accumulation fields
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        period : float. Dataset keyword
+            the period to average [s]. If -1 the statistics are going to be
+            performed over the entire data. Default 3600.
+        start_average : float. Dataset keyword
+            when to start the average [s from midnight UTC]. Default 0.
+        use_nan : bool. Dataset keyword
+            If true non valid data will be used
+        nan_value : float. Dataset keyword
+            The value of the non valid data. Default 0
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the output
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus == 0:
+        return None, None
+
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
+    if datatype != 'RR':
+        warn('Unable to compute rainfall accumulation. Data type: '+datatype +
+             '. Expected RR')
+        return None, None
+    field_name = get_fieldname_pyart(datatype)
+
+    ind_rad = int(radarnr[5:8])-1
+
+    start_average = dscfg.get('start_average', 0.)
+    period = dscfg.get('period', 3600.)
+    use_nan = dscfg.get('use_nan', 0)
+    nan_value = dscfg.get('nan_value', 0.)
+    rr_acu_name = 'rainfall_accumulation'
+
+    if procstatus == 1:
+        if radar_list[ind_rad] is None:
+            warn('No valid radar')
+            return None, None
+        radar = radar_list[ind_rad]
+
+        if field_name not in radar.fields:
+            warn('ERROR: Unable to compute rainfall accumulation. Missing data')
+            return None, None
+
+        # Prepare auxiliary radar
+        field_data = deepcopy(radar.fields[field_name]['data'])
+        if use_nan:
+            field_data = np.ma.asarray(field_data.filled(nan_value))
+
+        field_data *= dscfg['ScanPeriod']*60./3600.
+
+        rr_acu_dict = pyart.config.get_metadata(rr_acu_name)
+        rr_acu_dict['data'] = field_data
+
+        radar_aux = deepcopy(radar)
+        radar_aux.fields = dict()
+        radar_aux.add_field(rr_acu_name, rr_acu_dict)
+
+        # first volume: initialize start and end time of averaging
+        if dscfg['initialized'] == 0:
+            avg_par = dict()
+            if period != -1:
+                date_00 = dscfg['timeinfo'].replace(
+                    hour=0, minute=0, second=0, microsecond=0)
+
+                avg_par.update(
+                    {'starttime': date_00+datetime.timedelta(
+                        seconds=start_average)})
+                avg_par.update(
+                    {'endtime': avg_par['starttime']+datetime.timedelta(
+                        seconds=period)})
+            else:
+                avg_par.update({'starttime': dscfg['timeinfo']})
+                avg_par.update({'endtime': dscfg['timeinfo']})
+
+            avg_par.update({'timeinfo': dscfg['timeinfo']})
+            dscfg['global_data'] = avg_par
+            dscfg['initialized'] = 1
+
+        if dscfg['initialized'] == 0:
+            return None, None
+
+        dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
+        # no radar object in global data: create it
+        if 'radar_out' not in dscfg['global_data']:
+            if period != -1:
+                # get start and stop times of new radar object
+                (dscfg['global_data']['starttime'],
+                 dscfg['global_data']['endtime']) = (
+                     time_avg_range(
+                         dscfg['timeinfo'], dscfg['global_data']['starttime'],
+                         dscfg['global_data']['endtime'], period))
+
+                # check if volume time older than starttime
+                if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
+                    dscfg['global_data'].update({'radar_out': radar_aux})
+            else:
+                dscfg['global_data'].update({'radar_out': radar_aux})
+
+            return None, None
+
+        # still accumulating: add field to global field
+        if (period == -1 or
+                dscfg['timeinfo'] < dscfg['global_data']['endtime']):
+
+            if period == -1:
+                dscfg['global_data']['endtime'] = dscfg['timeinfo']
+
+            field_interp = interpol_field(
+                dscfg['global_data']['radar_out'], radar_aux, rr_acu_name)
+
+            if use_nan:
+                field_interp['data'] = np.ma.asarray(
+                    field_interp['data'].filled(nan_value))
+
+            masked_sum = np.ma.getmaskarray(
+                dscfg['global_data']['radar_out'].fields[rr_acu_name]['data'])
+            valid_sum = np.logical_and(
+                np.logical_not(masked_sum),
+                np.logical_not(np.ma.getmaskarray(field_interp['data'])))
+
+            dscfg['global_data']['radar_out'].fields[rr_acu_name]['data'][
+                masked_sum] = field_interp['data'][masked_sum]
+
+            dscfg['global_data']['radar_out'].fields[
+                rr_acu_name]['data'][valid_sum] += (
+                    field_interp['data'][valid_sum])
+
+            return None, None
+
+        # we have reached the end of the accumulation period: start a new
+        # object (only reachable if period != -1)
+        new_dataset = {
+            'radar_out': deepcopy(dscfg['global_data']['radar_out']),
+            'timeinfo': dscfg['global_data']['endtime']}
+
+        dscfg['global_data']['starttime'] += datetime.timedelta(
+            seconds=period)
+        dscfg['global_data']['endtime'] += datetime.timedelta(seconds=period)
+
+        # remove old radar object from global_data dictionary
+        dscfg['global_data'].pop('radar_out', None)
+
+        # get start and stop times of new radar object
+        dscfg['global_data']['starttime'], dscfg['global_data']['endtime'] = (
+            time_avg_range(
+                dscfg['timeinfo'], dscfg['global_data']['starttime'],
+                dscfg['global_data']['endtime'], period))
+
+        # check if volume time older than starttime
+        if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
+            dscfg['global_data'].update({'radar_out': radar_aux})
+
+        return new_dataset, ind_rad
+
+    # no more files to process if there is global data pack it up
+    if procstatus == 2:
+        if dscfg['initialized'] == 0:
+            return None, None
+        if 'radar_out' not in dscfg['global_data']:
+            return None, None
+
+        new_dataset = {
+            'radar_out': deepcopy(dscfg['global_data']['radar_out']),
+            'timeinfo': dscfg['global_data']['endtime']}
+
+        return new_dataset, ind_rad
 
 
 def process_bird_density(procstatus, dscfg, radar_list=None):

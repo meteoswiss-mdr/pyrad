@@ -58,6 +58,10 @@ def process_time_stats(procstatus, dscfg, radar_list=None):
             when to start the average [s from midnight UTC]. Default 0.
         lin_trans: int. Dataset keyword
             If 1 apply linear transformation before averaging
+        use_nan : bool. Dataset keyword
+            If true non valid data will be used
+        nan_value : float. Dataset keyword
+            The value of the non valid data. Default 0
         stat: string. Dataset keyword
             Statistic to compute: Can be mean, std, cov, min, max. Default
             mean
@@ -157,9 +161,9 @@ def process_time_stats(procstatus, dscfg, radar_list=None):
                 # get start and stop times of new radar object
                 (dscfg['global_data']['starttime'],
                  dscfg['global_data']['endtime']) = (
-                    time_avg_range(
-                        dscfg['timeinfo'], dscfg['global_data']['starttime'],
-                        dscfg['global_data']['endtime'], period))
+                     time_avg_range(
+                         dscfg['timeinfo'], dscfg['global_data']['starttime'],
+                         dscfg['global_data']['endtime'], period))
 
                 # check if volume time older than starttime
                 if dscfg['timeinfo'] > dscfg['global_data']['starttime']:
@@ -374,6 +378,10 @@ def process_time_stats2(procstatus, dscfg, radar_list=None):
             when to start the average [s from midnight UTC]. Default 0.
         stat: string. Dataset keyword
             Statistic to compute: Can be median, mode, percentileXX
+        use_nan : bool. Dataset keyword
+            If true non valid data will be used
+        nan_value : float. Dataset keyword
+            The value of the non valid data. Default 0
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -456,9 +464,9 @@ def process_time_stats2(procstatus, dscfg, radar_list=None):
                 # get start and stop times of new radar object
                 (dscfg['global_data']['starttime'],
                  dscfg['global_data']['endtime']) = (
-                    time_avg_range(
-                        dscfg['timeinfo'], dscfg['global_data']['starttime'],
-                        dscfg['global_data']['endtime'], period))
+                     time_avg_range(
+                         dscfg['timeinfo'], dscfg['global_data']['starttime'],
+                         dscfg['global_data']['endtime'], period))
 
                 # check if volume time older than starttime
                 if dscfg['timeinfo'] > dscfg['global_data']['starttime']:

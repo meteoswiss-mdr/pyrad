@@ -79,7 +79,7 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.graph.plot_surface" title="pyrad.graph.plot_surface"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_surface</span></code></a>(grid,&nbsp;field_name,&nbsp;level,&nbsp;…)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.graph.plot_surface" title="pyrad.graph.plot_surface"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_surface</span></code></a>(grid,&nbsp;field_name,&nbsp;level,&nbsp;…[,&nbsp;…])</td>
 <td>plots a surface from gridded data</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#pyrad.graph.plot_latitude_slice" title="pyrad.graph.plot_latitude_slice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_latitude_slice</span></code></a>(grid,&nbsp;field_name,&nbsp;lon,&nbsp;…)</td>
@@ -1128,8 +1128,10 @@ returns the handle to the figure</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>fname_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
-<dd><p class="first last">list of names of the created plots</p>
+<dt><strong>fname_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str or</span></dt>
+<dd></dd>
+<dt><strong>fig, ax</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tupple</span></dt>
+<dd><p class="first last">list of names of the saved plots or handle of the figure an axes</p>
 </dd>
 </dl>
 </td>
@@ -1323,9 +1325,8 @@ returns the handle to the figure</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>fname_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
-<dd><p class="first last">list of names of the created plots</p>
-</dd>
+<dt><strong>fname_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str or</span></dt>
+<dd></dd>
 <dt><strong>fig, ax</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tupple</span></dt>
 <dd><p class="first last">list of names of the saved plots or handle of the figure an axes</p>
 </dd>
@@ -1645,7 +1646,7 @@ returns the handle to the figure</p>
 
 <dl class="function">
 <dt id="pyrad.graph.plot_surface">
-<code class="descclassname">pyrad.graph.</code><code class="descname">plot_surface</code><span class="sig-paren">(</span><em>grid</em>, <em>field_name</em>, <em>level</em>, <em>prdcfg</em>, <em>fname_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots_grid.html#plot_surface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_surface" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyrad.graph.</code><code class="descname">plot_surface</code><span class="sig-paren">(</span><em>grid</em>, <em>field_name</em>, <em>level</em>, <em>prdcfg</em>, <em>fname_list</em>, <em>titl=None</em>, <em>save_fig=True</em>, <em>use_basemap=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots_grid.html#plot_surface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_surface" title="Permalink to this definition">¶</a></dt>
 <dd><p>plots a surface from gridded data</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1667,12 +1668,21 @@ returns the handle to the figure</p>
 <dt><strong>fname_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
 <dd><p class="first last">list of names of the files where to store the plot</p>
 </dd>
+<dt><strong>titl</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">Plot title</p>
+</dd>
+<dt><strong>save_fig</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd><p class="first last">if true save the figure. If false it does not close the plot and
+returns the handle to the figure</p>
+</dd>
 </dl>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>fname_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
-<dd><p class="first last">list of names of the created plots</p>
+<dt><strong>fname_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str or</span></dt>
+<dd></dd>
+<dt><strong>fig, ax</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tupple</span></dt>
+<dd><p class="first last">list of names of the saved plots or handle of the figure an axes</p>
 </dd>
 </dl>
 </td>
