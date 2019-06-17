@@ -29,6 +29,13 @@
    :special-members:
    :inherited-members:
    :show-inheritance:
+.. automodule:: pyrad.graph.plots_spectra
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
 .. automodule:: pyrad.graph.plots_timeseries
    :members:
    :undoc-members:

@@ -39,6 +39,17 @@ Reading cosmo data
     read_cosmo_coord
     read_hzt_data
 
+Reading DEM data
+==================
+
+.. autosummary::
+    :toctree: generated/
+
+    dem2radar_data
+    dem2radar_coord
+    read_idrisi_data
+    read_idrisi_metadata
+
 Reading other data
 ==================
 
@@ -178,6 +189,8 @@ from .read_data_radar import get_data, add_field, interpol_field
 from .read_data_cosmo import read_cosmo_data, read_cosmo_coord
 from .read_data_cosmo import cosmo2radar_data, cosmo2radar_coord
 from .read_data_cosmo import get_cosmo_fields
+
+from .read_data_dem import read_idrisi_data, read_idrisi_metadata
 
 from .read_data_hzt import read_hzt_data, hzt2radar_data, hzt2radar_coord
 from .read_data_hzt import get_iso0_field

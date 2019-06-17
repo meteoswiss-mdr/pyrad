@@ -662,7 +662,7 @@ def write_trt_cell_scores(
 
 def write_trt_cell_lightning(
         cell_ID, cell_time, lon, lat, area, rank, nflash, flash_density,
-        fname):
+        fname, timeformat='%Y%m%d%H%M'):
     """
     writes the lightning data for each TRT cell
 
@@ -702,7 +702,7 @@ def write_trt_cell_lightning(
         for i, traj_ID_el in enumerate(cell_ID):
             writer.writerow({
                 'traj_ID': traj_ID_el,
-                'yyyymmddHHMM': cell_time[i].strftime('%Y%m%d%H%M'),
+                'yyyymmddHHMM': cell_time[i].strftime(timeformat),
                 'lon': lon[i],
                 'lat': lat[i],
                 'area': area[i],

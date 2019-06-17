@@ -22,6 +22,13 @@
    :special-members:
    :inherited-members:
    :show-inheritance:
+.. automodule:: pyrad.proc.process_dem
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
 .. automodule:: pyrad.proc.process_Doppler
    :members:
    :undoc-members:
@@ -30,6 +37,13 @@
    :inherited-members:
    :show-inheritance:
 .. automodule:: pyrad.proc.process_echoclass
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
+.. automodule:: pyrad.proc.process_grid
    :members:
    :undoc-members:
    :private-members:
@@ -64,6 +78,13 @@
    :special-members:
    :inherited-members:
    :show-inheritance:
+.. automodule:: pyrad.proc.process_spectra
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
 .. automodule:: pyrad.proc.process_timeseries
    :members:
    :undoc-members:
@@ -72,13 +93,6 @@
    :inherited-members:
    :show-inheritance:
 .. automodule:: pyrad.proc.process_traj
-   :members:
-   :undoc-members:
-   :private-members:
-   :special-members:
-   :inherited-members:
-   :show-inheritance:
-.. automodule:: pyrad.proc.process_grid
    :members:
    :undoc-members:
    :private-members:

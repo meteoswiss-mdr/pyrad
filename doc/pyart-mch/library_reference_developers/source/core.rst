@@ -15,6 +15,13 @@
    :special-members:
    :inherited-members:
    :show-inheritance:
+.. automodule:: pyart.core.radar_spectra
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
     .. automodule:: pyart.core.transforms (This module crashes latex)
        :members:
        :members:

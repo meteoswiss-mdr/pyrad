@@ -79,7 +79,7 @@ def main():
 
     parser.add_argument(
         '--radarbase', type=str,
-        default='/store/msrad/radar/pyrad_products/thundertracking/',
+        default='/store/msrad/radar/pyrad_products/rad4alp_thundertracking/',
         help='name of folder containing the radar data')
 
     parser.add_argument(
@@ -89,12 +89,12 @@ def main():
 
     parser.add_argument(
         '--datatypes', type=str,
-        default='RR,hydro,KDPc,dBZc,RhoHVc,TEMP,ZDRc',
+        default='dBZ,hydro,KDPc,RR,TEMP,uRhoHV,ZDR',
         help='Name of the polarimetric moments to process. Coma separated')
 
     parser.add_argument(
         '--datasets', type=str,
-        default='RR,hydro,KDPc,dBZc,RhoHVc,TEMP,ZDRc',
+        default='dBZ,hydro,KDPc,RR,TEMP,uRhoHV,ZDR',
         help='Name of the directory containing the datasets')
 
     parser.add_argument(
@@ -169,8 +169,13 @@ def main():
                 args.trtbase+time_dir+'/TRTC_cell_plots/Some/*.trt'))
     else:
         for time_dir in time_dir_list:
+            # thundertracking TRT files
+            #trt_list.extend(glob.glob(
+            #    args.trtbase+time_dir+'/TRTC_cell/*_tt.trt'))
+
+            # regular TRT files
             trt_list.extend(glob.glob(
-                args.trtbase+time_dir+'/TRTC_cell/*_tt.trt'))
+                args.trtbase+time_dir+'/TRTC_cell/*[0123456789].trt'))
 
     if len(trt_list) == 0:
         warn('No valid TRT files found in '+args.trtbase)
@@ -185,8 +190,8 @@ def main():
             infostr = os.path.basename(fname).split('.')[0]
             infostr = infostr.replace('_tt', '')
             pyrad_main(
-                cfgfile_proc, trajfile=fname, infostr=infostr,
-                trajtype=trajtype)
+                 cfgfile_proc, trajfile=fname, infostr=infostr,
+                 trajtype=trajtype)
             trt_cell_id_list.append(infostr)
             trt_file_list.append(fname)
         except:
@@ -195,30 +200,34 @@ def main():
     if not args.postproc:
         return
 
-    # plot time series and get altitude of graupel column
-    if 'hydro' in datatype_list:
-        cell_ID_list = np.asarray([], dtype=int)
-        time_list = np.asarray([], dtype=datetime.datetime)
-        lon_list = np.asarray([], dtype=float)
-        lat_list = np.asarray([], dtype=float)
-        area_list = np.asarray([], dtype=float)
-        rank_list = np.asarray([], dtype=float)
-        rm_hmin_list = np.ma.asarray([], dtype=float)
-        rm_hmax_list = np.ma.asarray([], dtype=float)
-
     for i, trt_cell_id in enumerate(trt_cell_id_list):
         print('\n\nPost-processing cell: '+trt_cell_id)
+
         dt_str = trt_cell_id[0:12]
-        dt_cell = datetime.datetime.strptime(dt_str, "%Y%m%d%H%M")
-        time_dir = dt_cell.strftime("%Y-%m-%d")
+        dt_cell1 = datetime.datetime.strptime(dt_str, "%Y%m%d%H%M")
+        dt_cell2 = dt_cell1+datetime.timedelta(days=1)
+        time_dir = [
+            dt_cell1.strftime("%Y-%m-%d"), dt_cell2.strftime("%Y-%m-%d")]
         for j, datatype in enumerate(datatype_list):
             dataset = dataset_list[j]
             if args.path_structure == 1:
-                file_base2 = args.radarbase+time_dir+'/'+dataset+'_trt_center_traj/'
+                file_base2 = [
+                    args.radarbase+time_dir[0]+'/'+args.dataset+'_trt_center_traj/',
+                    args.radarbase+time_dir[1]+'/'+args.dataset+'_trt_center_traj/']
             elif args.path_structure == 0:
-                file_base2 = args.radarbase+time_dir+'/'+dataset+'_trt_traj/'
+                file_base2 = [
+                    args.radarbase+time_dir[0]+'/'+args.dataset+'_trt_traj/',
+                    args.radarbase+time_dir[1]+'/'+args.dataset+'_trt_traj/']
             elif args.path_structure == 2:
-                file_base2 = args.radarbase+time_dir+'/trt_traj_tt/'
+                # Thundertracking trajectories
+                #file_base2 = [
+                #    args.radarbase+time_dir[0]+'/trt_traj_tt/',
+                #    args.radarbase+time_dir[1]+'/trt_traj_tt/']
+
+                # TRT trajectories
+                file_base2 = [
+                    args.radarbase+time_dir[0]+'/trt_traj/',
+                    args.radarbase+time_dir[1]+'/trt_traj/']
 
             field_name = get_fieldname_pyart(datatype)
             field_dict = get_metadata(field_name)
@@ -227,18 +236,28 @@ def main():
 
             # plot time-height
             if args.path_structure == 2:
-                flist = glob.glob(
-                    file_base2+'PROFILE_'+dataset+'/*_'+trt_cell_id+'_rhi_profile_*_' +
+                fstr = (
+                    file_base2[0]+'PROFILE_'+dataset+'/*_'+trt_cell_id+'_rhi_profile_*_' +
                     datatype+'_hres'+str(int(args.hres))+'.csv')
+                flist = []
+                for fbase in file_base2:
+                    flist.extend(glob.glob(
+                        fbase+'PROFILE_'+dataset+'/*_'+trt_cell_id+'_rhi_profile_*_' +
+                        datatype+'_hres'+str(int(args.hres))+'.csv'))
             else:
-                flist = glob.glob(
-                    file_base2+'PROFILE/*_'+trt_cell_id+'_rhi_profile_*_' +
+                fstr = (
+                    file_base2[0]+'PROFILE/*_'+trt_cell_id+'_rhi_profile_*_' +
                     datatype+'_hres'+str(int(args.hres))+'.csv')
+                flist = []
+                for fbase in file_base2:
+                    flist.extend(glob.glob(
+                        fbase+'PROFILE/*_'+trt_cell_id+'_rhi_profile_*_' +
+                        datatype+'_hres'+str(int(args.hres))+'.csv'))
 
 
             if not flist:
-                warn('No profile files found in '+file_base2 +
-                     'PROFILE/ for TRT cell ' +
+                warn('No profile files found in '+fstr +
+                     ' for TRT cell ' +
                      trt_cell_id+' with resolution '+str(args.hres))
             else:
                 if args.path_structure == 1:
@@ -246,7 +265,7 @@ def main():
                 else:
                     labels = [
                         '50.0-percentile', '25.0-percentile', '75.0-percentile']
-                    if datatype == 'RhoHVc':
+                    if datatype in ('uRhoHV', 'RhoHVc'):
                         labels = [
                             '80.0-percentile', '65.0-percentile',
                             '95.0-percentile']
@@ -267,12 +286,12 @@ def main():
                     datatype+'_hres'+str(args.hres)+'.png')
 
                 vmin = vmax = None
-                if datatype == 'RhoHVc':
+                if datatype in ('uRhoHV', 'RhoHVc'):
                     vmin = 0.95
                     vmax = 1.00
 
                 xlabel = (
-                    'time (s from '+start_time.strftime("%Y-%m-%d %H:%M:%S") +
+                    'time (s from '+start_time[0].strftime("%Y-%m-%d %H:%M:%S") +
                     ')')
                 _plot_time_range(
                     tbin_edges, hbin_edges, data_ma, field_name, [fname],
@@ -281,37 +300,22 @@ def main():
 
                 print("----- plot to '%s'" % fname)
 
-                # Get min and max altitude of graupel/hail area
-                if datatype == 'hydro':
-                    (traj_ID, yyyymmddHHMM, lon, lat, _, _, _, area, _, _, _,
-                     RANKr, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
-                     _) = read_trt_traj_data(trt_file_list[i])
-
-                    hmin, hmax = get_graupel_column(
-                        tbin_edges, hbin_edges, data_ma, start_time,
-                        yyyymmddHHMM)
-
-                    cell_ID_list = np.append(cell_ID_list, traj_ID)
-                    time_list = np.append(time_list, yyyymmddHHMM)
-                    lon_list = np.append(lon_list, lon)
-                    lat_list = np.append(lat_list, lat)
-                    area_list = np.append(area_list, area)
-                    rank_list = np.append(rank_list, RANKr)
-                    rm_hmin_list = np.ma.append(rm_hmin_list, hmin)
-                    rm_hmax_list = np.ma.append(rm_hmax_list, hmax)
-
             # plot time-hist
             if args.path_structure == 2:
-                flist = glob.glob(
-                    file_base2+'HISTOGRAM_'+dataset+'/*_'+trt_cell_id+'_histogram_*_' +
-                    datatype+'.csv')
+                flist = []
+                for fbase in file_base2:
+                    flist.extend(glob.glob(
+                        fbase+'HISTOGRAM_'+dataset+'/*_'+trt_cell_id+'_histogram_*_' +
+                        datatype+'.csv'))
             else:
-                flist = glob.glob(
-                    file_base2+'HISTOGRAM/*_'+trt_cell_id+'_histogram_*_' +
-                    datatype+'.csv')
+                flist = []
+                for fbase in file_base2:
+                    flist.extend(glob.glob(
+                        fbase+'HISTOGRAM/*_'+trt_cell_id+'_histogram_*_' +
+                        datatype+'.csv'))
 
             if not flist:
-                warn('No histogram files found in '+file_base2 +
+                warn('No histogram files found in '+file_base2[0] +
                      'HISTOGRAM/ for TRT cell '+trt_cell_id)
             else:
                 tbin_edges, bin_edges, data_ma, start_time = read_histogram_ts(
@@ -324,7 +328,7 @@ def main():
 
                 data_ma[data_ma == 0.] = np.ma.masked
                 xlabel = (
-                    'time (s from '+start_time.strftime("%Y-%m-%d %H:%M:%S") +
+                    'time (s from '+start_time[0].strftime("%Y-%m-%d %H:%M:%S") +
                     ')')
                 _plot_time_range(
                     tbin_edges, bin_edges, data_ma, 'frequency_of_occurrence',
@@ -335,12 +339,14 @@ def main():
                 print("----- plot to '%s'" % fname)
 
             # plot quantiles
-            flist = glob.glob(
-                file_base2+'QUANTILES/*_'+trt_cell_id+'_quantiles_*_' +
-                datatype+'.csv')
+            flist = []
+            for fbase in file_base2:
+                flist.extend(glob.glob(
+                    fbase+'QUANTILES/*_'+trt_cell_id+'_quantiles_*_' +
+                    datatype+'.csv'))
 
             if not flist:
-                warn('No quantiles files found in '+file_base2 +
+                warn('No quantiles files found in '+file_base2[0] +
                      'QUANTILES/ for TRT cell '+trt_cell_id)
                 continue
 
@@ -353,11 +359,11 @@ def main():
                 '.png')
 
             vmin = vmax = None
-            if datatype == 'RhoHVc':
+            if datatype in ('uRhoHV', 'RhoHVc'):
                 vmin = 0.95
                 vmax = 1.00
             xlabel = (
-                'time (s from '+start_time.strftime("%Y-%m-%d %H:%M:%S") +
+                'time (s from '+start_time[0].strftime("%Y-%m-%d %H:%M:%S") +
                 ')')
             _plot_time_range(
                 tbin_edges, qbin_edges, data_ma, field_name, [fname],
@@ -365,14 +371,6 @@ def main():
                 vmax=vmax, figsize=[10, 8], dpi=72)
 
             print("----- plot to '%s'" % fname)
-
-    if 'hydro' in datatype_list:
-        fname = args.trtbase+'cell_rimed_particles_column.csv'
-        write_trt_cell_lightning(
-            cell_ID_list, time_list, lon_list, lat_list, area_list,
-            rank_list, rm_hmin_list, rm_hmax_list, fname)
-
-        print("----- written to '%s'" % fname)
 
 
 def get_graupel_column(tbin_edges, hbin_edges, data_ma, start_time,

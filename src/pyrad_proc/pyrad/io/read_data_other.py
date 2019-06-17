@@ -114,7 +114,7 @@ def read_profile_ts(fname_list, labels, hres=None, label_nr=0, t_res=300.):
 
     Returns
     -------
-    tbin_edges, hbin_edges, np_ma, data_ma, datetime_arr[0] : tupple
+    tbin_edges, hbin_edges, np_ma, data_ma, datetime_arr : tupple
         The read data. None otherwise
 
     """
@@ -152,7 +152,7 @@ def read_profile_ts(fname_list, labels, hres=None, label_nr=0, t_res=300.):
             t_res = 300.
     tbin_edges = np.append(dt_s-t_res, dt_s[-1])
 
-    return tbin_edges, hbin_edges, np_ma, data_ma, datetime_arr[0]
+    return tbin_edges, hbin_edges, np_ma, data_ma, datetime_arr
 
 
 def read_histogram_ts(fname_list, datatype, t_res=300.):
@@ -171,7 +171,7 @@ def read_histogram_ts(fname_list, datatype, t_res=300.):
 
     Returns
     -------
-    tbin_edges, bin_edges, data_ma, datetime_arr[0] : tupple
+    tbin_edges, bin_edges, data_ma, datetime_arr : tupple
         The read data. None otherwise
 
     """
@@ -210,7 +210,7 @@ def read_histogram_ts(fname_list, datatype, t_res=300.):
             t_res = 300.
     tbin_edges = np.append(dt_s-t_res, dt_s[-1])
 
-    return tbin_edges, bin_edges, data_ma, datetime_arr[0]
+    return tbin_edges, bin_edges, data_ma, datetime_arr
 
 
 def read_quantiles_ts(fname_list, step=5., qmin=0., qmax=100., t_res=300.):
@@ -229,7 +229,7 @@ def read_quantiles_ts(fname_list, step=5., qmin=0., qmax=100., t_res=300.):
 
     Returns
     -------
-    tbin_edges, qbin_edges, data_ma, datetime_arr[0] : tupple
+    tbin_edges, qbin_edges, data_ma, datetime_arr : tupple
         The read data. None otherwise
 
     """
@@ -269,7 +269,7 @@ def read_quantiles_ts(fname_list, step=5., qmin=0., qmax=100., t_res=300.):
             t_res = 300.
     tbin_edges = np.append(dt_s-t_res, dt_s[-1])
 
-    return tbin_edges, qbin_edges, data_ma, datetime_arr[0]
+    return tbin_edges, qbin_edges, data_ma, datetime_arr
 
 
 def read_rhi_profile(fname, labels=['50.0-percentile', '25.0-percentile',
