@@ -212,7 +212,7 @@ def plot_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
             spectra, field_name, ray, rng, datetime_format=None)
 
     ax = fig.add_subplot(111)
-    ax.plot(xaxis, field)
+    ax.plot(xaxis, field, marker='x')
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_ylim(bottom=vmin, top=vmax)
@@ -579,7 +579,7 @@ def plot_complex_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
     plt.suptitle(titl)
 
     ax = fig.add_subplot(121)
-    ax.plot(xaxis, re_field)
+    ax.plot(xaxis, re_field, marker='x')
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_ylim(bottom=vmin, top=vmax)
@@ -587,7 +587,7 @@ def plot_complex_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
     ax.set_title('Real part')
 
     ax = fig.add_subplot(122)
-    ax.plot(xaxis, im_field)
+    ax.plot(xaxis, im_field, marker='x')
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_ylim(bottom=vmin, top=vmax)
@@ -685,7 +685,7 @@ def plot_amp_phase_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
     plt.suptitle(titl)
 
     ax = fig.add_subplot(121)
-    ax.plot(xaxis, ampli_field)
+    ax.plot(xaxis, ampli_field, marker='x')
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_ylim(bottom=ampli_vmin, top=ampli_vmax)
@@ -693,7 +693,7 @@ def plot_amp_phase_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
     ax.set_title('Amplitude')
 
     ax = fig.add_subplot(122)
-    ax.plot(xaxis, phase_field)
+    ax.plot(xaxis, phase_field, marker='x')
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_ylim(bottom=phase_vmin, top=phase_vmax)

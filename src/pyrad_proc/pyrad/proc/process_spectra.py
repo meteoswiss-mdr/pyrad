@@ -318,6 +318,9 @@ def process_spectral_power(procstatus, dscfg, radar_list=None):
             The units of the returned signal. Can be 'ADU', 'dBADU' or 'dBm'
         subtract_noise : Bool
             If True noise will be subtracted from the signal
+        smooth_window : int or None
+            Size of the moving Gaussian smoothing window. If none no smoothing
+            will be applied
     radar_list : list of spectra objects
         Optional. list of spectra objects
 
@@ -354,10 +357,12 @@ def process_spectral_power(procstatus, dscfg, radar_list=None):
 
     units = dscfg.get('units', 'dBADU')
     subtract_noise = dscfg.get('subtract_noise', False)
+    smooth_window = dscfg.get('smooth_window', None)
 
     s_pwr = pyart.retrieve.compute_spectral_power(
         psr, units=units, subtract_noise=subtract_noise,
-        signal_field=signal_field, noise_field=noise_field)
+        smooth_window=smooth_window, signal_field=signal_field,
+        noise_field=noise_field)
 
     # prepare for exit
     new_dataset = {'radar_out': deepcopy(psr)}
@@ -439,6 +444,9 @@ def process_spectral_reflectivity(procstatus, dscfg, radar_list=None):
             The input data types
         subtract_noise : Bool
             If True noise will be subtracted from the signal
+        smooth_window : int or None
+            Size of the moving Gaussian smoothing window. If none no smoothing
+            will be applied
     radar_list : list of spectra objects
         Optional. list of spectra objects
 
@@ -474,10 +482,11 @@ def process_spectral_reflectivity(procstatus, dscfg, radar_list=None):
         return None, None
 
     subtract_noise = dscfg.get('subtract_noise', False)
+    smooth_window = dscfg.get('smooth_window', None)
 
     sdBZ = pyart.retrieve.compute_spectral_reflectivity(
-        psr, subtract_noise=subtract_noise, signal_field=signal_field,
-        noise_field=noise_field)
+        psr, subtract_noise=subtract_noise, smooth_window=smooth_window,
+        signal_field=signal_field, noise_field=noise_field)
 
     # prepare for exit
     new_dataset = {'radar_out': deepcopy(psr)}
@@ -503,6 +512,9 @@ def process_spectral_differential_reflectivity(procstatus, dscfg, radar_list=Non
             The input data types
         subtract_noise : Bool
             If True noise will be subtracted from the signal
+        smooth_window : int or None
+            Size of the moving Gaussian smoothing window. If none no smoothing
+            will be applied
     radar_list : list of spectra objects
         Optional. list of spectra objects
 
@@ -543,11 +555,12 @@ def process_spectral_differential_reflectivity(procstatus, dscfg, radar_list=Non
         return None, None
 
     subtract_noise = dscfg.get('subtract_noise', False)
+    smooth_window = dscfg.get('smooth_window', None)
 
     sZDR = pyart.retrieve.compute_spectral_differential_reflectivity(
-        psr, subtract_noise=subtract_noise, signal_h_field=signal_h_field,
-        signal_v_field=signal_v_field, noise_h_field=noise_h_field,
-        noise_v_field=noise_v_field)
+        psr, subtract_noise=subtract_noise, smooth_window=smooth_window,
+        signal_h_field=signal_h_field, signal_v_field=signal_v_field,
+        noise_h_field=noise_h_field, noise_v_field=noise_v_field)
 
     # prepare for exit
     new_dataset = {'radar_out': deepcopy(psr)}
@@ -701,6 +714,9 @@ def process_pol_variables(procstatus, dscfg, radar_list=None):
             The input data types
         subtract_noise : Bool
             If True noise will be subtracted from the signal
+        smooth_window : int or None
+            Size of the moving Gaussian smoothing window. If none no smoothing
+            will be applied
         variables : list of str
             list of variables to compute. Default dBZ
     radar_list : list of spectra objects
@@ -744,6 +760,7 @@ def process_pol_variables(procstatus, dscfg, radar_list=None):
         return None, None
 
     subtract_noise = dscfg.get('subtract_noise', False)
+    smooth_window = dscfg.get('smooth_window', None)
     variables = dscfg.get('variables', ['dBZ'])
 
     fields_list = []
@@ -752,8 +769,9 @@ def process_pol_variables(procstatus, dscfg, radar_list=None):
 
     radar = pyart.retrieve.compute_pol_variables(
         psr, fields_list, subtract_noise=subtract_noise,
-        signal_h_field=signal_h_field, signal_v_field=signal_v_field,
-        noise_h_field=noise_h_field, noise_v_field=noise_v_field)
+        smooth_window=smooth_window, signal_h_field=signal_h_field,
+        signal_v_field=signal_v_field, noise_h_field=noise_h_field,
+        noise_v_field=noise_v_field)
 
     # prepare for exit
     new_dataset = {'radar_out': radar}
