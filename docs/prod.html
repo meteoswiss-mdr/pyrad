@@ -124,16 +124,19 @@
 <tr class="row-even"><td><a class="reference internal" href="#pyrad.prod.generate_monitoring_products" title="pyrad.prod.generate_monitoring_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_monitoring_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
 <td>generates a monitoring product.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.generate_grid_products" title="pyrad.prod.generate_grid_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_grid_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.generate_spectra_products" title="pyrad.prod.generate_spectra_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_spectra_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
 <td>generates grid products. Accepted product types:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.prod.generate_grid_time_avg_products" title="pyrad.prod.generate_grid_time_avg_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_grid_time_avg_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.prod.generate_grid_products" title="pyrad.prod.generate_grid_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_grid_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
+<td>generates grid products. Accepted product types:</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.generate_grid_time_avg_products" title="pyrad.prod.generate_grid_time_avg_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_grid_time_avg_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
 <td>generates time average products. Accepted product types:</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.generate_traj_product" title="pyrad.prod.generate_traj_product"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_traj_product</span></code></a>(traj,&nbsp;prdcfg)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.prod.generate_traj_product" title="pyrad.prod.generate_traj_product"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_traj_product</span></code></a>(traj,&nbsp;prdcfg)</td>
 <td>Generates trajectory products. Accepted product types:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.prod.generate_ml_products" title="pyrad.prod.generate_ml_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_ml_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.generate_ml_products" title="pyrad.prod.generate_ml_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_ml_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
 <td>Generates melting layer products. Accepted product types:</td>
 </tr>
 </tbody>
@@ -747,6 +750,52 @@ status of the processing</p>
 <dt><strong>filename</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
 <dd><p class="first last">the name of the file created. None otherwise</p>
 </dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.prod.generate_spectra_products">
+<code class="descclassname">pyrad.prod.</code><code class="descname">generate_spectra_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_spectra_products.html#generate_spectra_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.generate_spectra_products" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>generates grid products. Accepted product types:</dt>
+<dd><dl class="first last docutils">
+<dt>‘COMPLEX_RANGE_DOPPLER’: Plots the complex spectra range-Doppler</dt>
+<dd><dl class="first last docutils">
+<dt>User defined parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>coord1, coord2: dict</dt>
+<dd>The two lat-lon coordinates marking the limits. They have
+the keywords ‘lat’ and ‘lon’ [degree]. The altitude limits
+are defined by the parameters in ‘rhiImageConfig’ in the
+‘loc’ configuration file</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">spectra</span></dt>
+<dd><p class="first last">spectra object</p>
+</dd>
+<dt><strong>prdcfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first last">product configuration dictionary of dictionaries</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>None or name of generated files</strong></dt>
+<dd></dd>
 </dl>
 </td>
 </tr>
@@ -1746,6 +1795,7 @@ what the functions do check the function documentation:</p>
 ‘COLOCATED_GATES’: generate_colocated_gates_products
 ‘COSMO_COORD’: generate_cosmo_coord_products
 ‘GRID’: generate_grid_products
+‘SPECTRA’: generate_spectra_products
 ‘GRID_TIMEAVG’: generate_grid_time_avg_products
 ‘INTERCOMP’: generate_intercomp_products
 ‘ML’: generate_ml_products

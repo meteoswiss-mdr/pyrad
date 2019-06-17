@@ -63,6 +63,7 @@
 <span class="sd">.. autosummary::</span>
 <span class="sd">    :toctree: generated/</span>
 
+<span class="sd">    read_proc_periods</span>
 <span class="sd">    read_profile_ts</span>
 <span class="sd">    read_histogram_ts</span>
 <span class="sd">    read_quantiles_ts</span>
@@ -169,7 +170,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    tbin_edges, hbin_edges, np_ma, data_ma, datetime_arr[0] : tupple</span>
+<span class="sd">    tbin_edges, hbin_edges, np_ma, data_ma, datetime_arr : tupple</span>
 <span class="sd">        The read data. None otherwise</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -207,7 +208,7 @@
             <span class="n">t_res</span> <span class="o">=</span> <span class="mf">300.</span>
     <span class="n">tbin_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dt_s</span><span class="o">-</span><span class="n">t_res</span><span class="p">,</span> <span class="n">dt_s</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
-    <span class="k">return</span> <span class="n">tbin_edges</span><span class="p">,</span> <span class="n">hbin_edges</span><span class="p">,</span> <span class="n">np_ma</span><span class="p">,</span> <span class="n">data_ma</span><span class="p">,</span> <span class="n">datetime_arr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+    <span class="k">return</span> <span class="n">tbin_edges</span><span class="p">,</span> <span class="n">hbin_edges</span><span class="p">,</span> <span class="n">np_ma</span><span class="p">,</span> <span class="n">data_ma</span><span class="p">,</span> <span class="n">datetime_arr</span></div>
 
 
 <div class="viewcode-block" id="read_histogram_ts"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_histogram_ts">[docs]</a><span class="k">def</span> <span class="nf">read_histogram_ts</span><span class="p">(</span><span class="n">fname_list</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">t_res</span><span class="o">=</span><span class="mf">300.</span><span class="p">):</span>
@@ -226,7 +227,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    tbin_edges, bin_edges, data_ma, datetime_arr[0] : tupple</span>
+<span class="sd">    tbin_edges, bin_edges, data_ma, datetime_arr : tupple</span>
 <span class="sd">        The read data. None otherwise</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -265,7 +266,7 @@
             <span class="n">t_res</span> <span class="o">=</span> <span class="mf">300.</span>
     <span class="n">tbin_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dt_s</span><span class="o">-</span><span class="n">t_res</span><span class="p">,</span> <span class="n">dt_s</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
-    <span class="k">return</span> <span class="n">tbin_edges</span><span class="p">,</span> <span class="n">bin_edges</span><span class="p">,</span> <span class="n">data_ma</span><span class="p">,</span> <span class="n">datetime_arr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+    <span class="k">return</span> <span class="n">tbin_edges</span><span class="p">,</span> <span class="n">bin_edges</span><span class="p">,</span> <span class="n">data_ma</span><span class="p">,</span> <span class="n">datetime_arr</span></div>
 
 
 <div class="viewcode-block" id="read_quantiles_ts"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_quantiles_ts">[docs]</a><span class="k">def</span> <span class="nf">read_quantiles_ts</span><span class="p">(</span><span class="n">fname_list</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span> <span class="n">qmin</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">qmax</span><span class="o">=</span><span class="mf">100.</span><span class="p">,</span> <span class="n">t_res</span><span class="o">=</span><span class="mf">300.</span><span class="p">):</span>
@@ -284,7 +285,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    tbin_edges, qbin_edges, data_ma, datetime_arr[0] : tupple</span>
+<span class="sd">    tbin_edges, qbin_edges, data_ma, datetime_arr : tupple</span>
 <span class="sd">        The read data. None otherwise</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -324,7 +325,7 @@
             <span class="n">t_res</span> <span class="o">=</span> <span class="mf">300.</span>
     <span class="n">tbin_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dt_s</span><span class="o">-</span><span class="n">t_res</span><span class="p">,</span> <span class="n">dt_s</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
-    <span class="k">return</span> <span class="n">tbin_edges</span><span class="p">,</span> <span class="n">qbin_edges</span><span class="p">,</span> <span class="n">data_ma</span><span class="p">,</span> <span class="n">datetime_arr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+    <span class="k">return</span> <span class="n">tbin_edges</span><span class="p">,</span> <span class="n">qbin_edges</span><span class="p">,</span> <span class="n">data_ma</span><span class="p">,</span> <span class="n">datetime_arr</span></div>
 
 
 <div class="viewcode-block" id="read_rhi_profile"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_rhi_profile">[docs]</a><span class="k">def</span> <span class="nf">read_rhi_profile</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;50.0-percentile&#39;</span><span class="p">,</span> <span class="s1">&#39;25.0-percentile&#39;</span><span class="p">,</span>

@@ -85,7 +85,7 @@
 <span class="kn">from</span> <span class="nn">..io.read_data_sensor</span> <span class="k">import</span> <span class="n">read_trt_traj_data</span>
 <span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">belongs_roi_indices</span><span class="p">,</span> <span class="n">get_target_elevations</span>
 <span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">find_neighbour_gates</span><span class="p">,</span> <span class="n">compute_directional_stats</span>
-<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">get_fixed_rng_data</span><span class="p">,</span> <span class="n">get_fixed_rng_span_data</span>
+<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">get_fixed_rng_data</span>
 
 
 <div class="viewcode-block" id="get_process_func"><a class="viewcode-back" href="../../../proc.html#pyrad.proc.get_process_func">[docs]</a><span class="k">def</span> <span class="nf">get_process_func</span><span class="p">(</span><span class="n">dataset_type</span><span class="p">,</span> <span class="n">dsname</span><span class="p">):</span>
@@ -110,9 +110,12 @@
 <span class="sd">                &#39;CLT_TO_SAN&#39;: process_clt_to_echo_id</span>
 <span class="sd">                &#39;COSMO&#39;: process_cosmo</span>
 <span class="sd">                &#39;COSMO_LOOKUP&#39;: process_cosmo_lookup_table</span>
+<span class="sd">                &#39;DEM&#39;: process_dem</span>
 <span class="sd">                &#39;DEALIAS_FOURDD&#39;: process_dealias_fourdd</span>
 <span class="sd">                &#39;DEALIAS_REGION&#39;: process_dealias_region_based</span>
 <span class="sd">                &#39;DEALIAS_UNWRAP&#39;: process_dealias_unwrap_phase</span>
+<span class="sd">                &#39;DOPPLER_VELOCITY&#39;: process_Doppler_velocity</span>
+<span class="sd">                &#39;DOPPLER_WIDTH&#39;: process_Doppler_width</span>
 <span class="sd">                &#39;ECHO_FILTER&#39;: process_echo_filter</span>
 <span class="sd">                &#39;FIXED_RNG&#39;: process_fixed_rng</span>
 <span class="sd">                &#39;FIXED_RNG_SPAN&#39;: process_fixed_rng_span</span>
@@ -124,6 +127,7 @@
 <span class="sd">                &#39;L&#39;: process_l</span>
 <span class="sd">                &#39;NCVOL&#39;: process_save_radar</span>
 <span class="sd">                &#39;OUTLIER_FILTER&#39;: process_outlier_filter</span>
+<span class="sd">                &#39;PhiDP&#39;: process_differential_phase</span>
 <span class="sd">                &#39;PHIDP0_CORRECTION&#39;: process_correct_phidp0</span>
 <span class="sd">                &#39;PHIDP0_ESTIMATE&#39;: process_estimate_phidp0</span>
 <span class="sd">                &#39;PHIDP_KDP_KALMAN&#39;: process_phidp_kdp_Kalman</span>
@@ -131,11 +135,14 @@
 <span class="sd">                &#39;PHIDP_KDP_VULPIANI&#39;: process_phidp_kdp_Vulpiani</span>
 <span class="sd">                &#39;PHIDP_SMOOTH_1W&#39;: process_smooth_phidp_single_window</span>
 <span class="sd">                &#39;PHIDP_SMOOTH_2W&#39;: process_smooth_phidp_double_window</span>
+<span class="sd">                &#39;POL_VARIABLES&#39;: process_pol_variables</span>
 <span class="sd">                &#39;PWR&#39;: process_signal_power</span>
 <span class="sd">                &#39;RAINRATE&#39;: process_rainrate</span>
 <span class="sd">                &#39;RAW&#39;: process_raw</span>
+<span class="sd">                &#39;REFLECTIVITY&#39;: process_reflectivity</span>
 <span class="sd">                &#39;RCS&#39;: process_rcs</span>
 <span class="sd">                &#39;RCS_PR&#39;: process_rcs_pr</span>
+<span class="sd">                &#39;RhoHV&#39;: process_rhohv</span>
 <span class="sd">                &#39;RHOHV_CORRECTION&#39;: process_correct_noise_rhohv</span>
 <span class="sd">                &#39;RHOHV_RAIN&#39;: process_rhohv_rain</span>
 <span class="sd">                &#39;ROI&#39;: process_roi</span>
@@ -147,12 +154,23 @@
 <span class="sd">                &#39;TRAJ_TRT&#39; : process_traj_trt</span>
 <span class="sd">                &#39;VAD&#39;: process_vad</span>
 <span class="sd">                &#39;VEL_FILTER&#39;: process_filter_vel_diff</span>
+<span class="sd">                &#39;VIS&#39;: process_visibility</span>
 <span class="sd">                &#39;VIS_FILTER&#39;: process_filter_visibility</span>
 <span class="sd">                &#39;VOL_REFL&#39;: process_vol_refl</span>
 <span class="sd">                &#39;WIND_VEL&#39;: process_wind_vel</span>
 <span class="sd">                &#39;WINDSHEAR&#39;: process_windshear</span>
+<span class="sd">                &#39;ZDR&#39;: process_differential_reflectivity</span>
 <span class="sd">                &#39;ZDR_PREC&#39;: process_zdr_precip</span>
 <span class="sd">                &#39;ZDR_SNOW&#39;: process_zdr_snow</span>
+<span class="sd">            &#39;SPECTRA&#39; format output:</span>
+<span class="sd">                &#39;FILTER_SPECTRA_NOISE&#39;: process_filter_spectra_noise</span>
+<span class="sd">                &#39;RAW_SPECTRA&#39;: process_raw_spectra</span>
+<span class="sd">                &#39;SPECTRAL_PHASE&#39;: process_spectral_phase</span>
+<span class="sd">                &#39;SPECTRAL_POWER&#39;: process_spectral_power</span>
+<span class="sd">                &#39;SPECTRAL_REFLECTIVITY&#39;: process_spectral_reflectivity</span>
+<span class="sd">                &#39;sPhiDP&#39;: process_spectral_differential_phase</span>
+<span class="sd">                &#39;sRhoHV&#39;: process_spectral_RhoHV</span>
+<span class="sd">                &#39;sZDR&#39;: process_spectral_differential_reflectivity</span>
 <span class="sd">            &#39;COLOCATED_GATES&#39; format output:</span>
 <span class="sd">                &#39;COLOCATED_GATES&#39;: process_colocated_gates</span>
 <span class="sd">            &#39;COSMO_COORD&#39; format output:</span>
@@ -224,6 +242,36 @@
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;RAW_GRID&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_raw_grid&#39;</span>
         <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;GRID&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;RAW_SPECTRA&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_raw_spectra&#39;</span>
+        <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;SPECTRAL_POWER&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_spectral_power&#39;</span>
+        <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;SPECTRAL_PHASE&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_spectral_phase&#39;</span>
+        <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;SPECTRAL_REFLECTIVITY&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_spectral_reflectivity&#39;</span>
+        <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;sZDR&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_spectral_differential_reflectivity&#39;</span>
+        <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;sPhiDP&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_spectral_differential_phase&#39;</span>
+        <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;sRhoHV&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_spectral_rhohv&#39;</span>
+        <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;FILTER_SPECTRA_NOISE&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_filter_spectra_noise&#39;</span>
+        <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;FILTER_0DOPPLER&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_filter_0Doppler&#39;</span>
+        <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;SRHOHV_FILTER&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_filter_srhohv&#39;</span>
+        <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;QVP&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_qvp&#39;</span>
         <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;QVP&#39;</span>
@@ -280,6 +328,8 @@
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_filter_vel_diff&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;VIS_FILTER&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_filter_visibility&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;VIS&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_visibility&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;OUTLIER_FILTER&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_outlier_filter&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;PHIDP0_CORRECTION&#39;</span><span class="p">:</span>
@@ -332,6 +382,20 @@
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_zdr_precip&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;ZDR_SNOW&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_zdr_snow&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;POL_VARIABLES&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_pol_variables&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;REFLECTIVITY&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;ZDR&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_differential_reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;PhiDP&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_differential_phase&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;RhoHV&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_rhohv&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;DOPPLER_VELOCITY&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_Doppler_velocity&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;DOPPLER_WIDTH&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_Doppler_width&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;SELFCONSISTENCY_KDP_PHIDP&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_selfconsistency_kdp_phidp&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;SELFCONSISTENCY_BIAS&#39;</span><span class="p">:</span>
@@ -350,6 +414,8 @@
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_hzt&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;HZT_LOOKUP&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_hzt_lookup_table&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;DEM&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_dem&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;TIME_AVG&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_time_avg&#39;</span>
         <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;TIMEAVG&#39;</span>
@@ -627,8 +693,8 @@
     <span class="n">azi_min</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;azi_min&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">azi_max</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;azi_max&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
-    <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">get_fixed_rng_span_data</span><span class="p">(</span>
-        <span class="n">radar</span><span class="p">,</span> <span class="n">field_names</span><span class="p">,</span> <span class="n">rmin</span><span class="o">=</span><span class="n">rmin</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="n">rmax</span><span class="p">,</span> <span class="n">ele_min</span><span class="o">=</span><span class="n">ele_min</span><span class="p">,</span>
+    <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cut_radar</span><span class="p">(</span>
+        <span class="n">radar</span><span class="p">,</span> <span class="n">field_names</span><span class="p">,</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">rmin</span><span class="p">,</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">rmax</span><span class="p">,</span> <span class="n">ele_min</span><span class="o">=</span><span class="n">ele_min</span><span class="p">,</span>
         <span class="n">ele_max</span><span class="o">=</span><span class="n">ele_max</span><span class="p">,</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">azi_min</span><span class="p">,</span> <span class="n">azi_max</span><span class="o">=</span><span class="n">azi_max</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">radar_aux</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>

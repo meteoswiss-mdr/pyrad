@@ -106,6 +106,13 @@
    :special-members:
    :inherited-members:
    :show-inheritance:
+.. automodule:: pyart.aux_io.rainbow_psr
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
 .. automodule:: pyart.aux_io.rainbow_wrl
    :members:
    :undoc-members:

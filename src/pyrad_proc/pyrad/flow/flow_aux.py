@@ -378,9 +378,15 @@ def _process_datasets(dataset_levels, cfg, dscfg, radar_list, master_voltime,
         if MULTIPROCESSING_DSET:
             jobs = []
             make_global_list = []
+            substitute_object_list = []
+            fields_to_remove_list = []
             for dataset in dataset_levels[level]:
                 print('--- Processing dataset: '+dataset)
                 make_global_list.append(dscfg[dataset]['MAKE_GLOBAL'])
+                substitute_object_list.append(
+                    dscfg[dataset]['SUBSTITUTE_OBJECT'])
+                fields_to_remove_list.append(
+                    dscfg[dataset]['FIELDS_TO_REMOVE'])
 
                 # delay the data hashing
                 radar_list_aux = dask.delayed(radar_list)
@@ -396,10 +402,13 @@ def _process_datasets(dataset_levels, cfg, dscfg, radar_list, master_voltime,
 
                 # add new dataset to radar object if necessary
                 # update dataset config dictionary
-                for job, make_global in zip(jobs, make_global_list):
+                for i, job in enumerate(jobs):
                     dscfg[job[2]] = job[3]
                     _add_dataset(
-                        job[0], radar_list, job[1], make_global=make_global)
+                        job[0], radar_list, job[1],
+                        make_global=make_global_list[i],
+                        substitute_object=substitute_object_list[i],
+                        fields_to_remove=fields_to_remove_list[i])
 
                 del jobs
             except Exception as ee:
@@ -418,7 +427,9 @@ def _process_datasets(dataset_levels, cfg, dscfg, radar_list, master_voltime,
 
                     _add_dataset(
                         new_dataset, radar_list, ind_rad,
-                        make_global=dscfg[dataset]['MAKE_GLOBAL'])
+                        make_global=dscfg[dataset]['MAKE_GLOBAL'],
+                        substitute_object=dscfg[dataset]['SUBSTITUTE_OBJECT'],
+                        fields_to_remove=dscfg[dataset]['FIELDS_TO_REMOVE'])
 
                     del new_dataset
                     gc.collect()
@@ -973,12 +984,6 @@ def _create_cfg_dict(cfgfile):
         cfg.update({'AntennaGain': None})
     if 'attg' not in cfg:
         cfg.update({'attg': None})
-    if 'rmax' not in cfg:
-        cfg.update({'rmax': 0.})
-    if 'elmin' not in cfg:
-        cfg.update({'elmin': -600.})
-    if 'elmax' not in cfg:
-        cfg.update({'elmax': 600.})
     if 'ScanPeriod' not in cfg:
         warn('WARNING: Scan period not specified. ' +
              'Assumed default value 5 min')
@@ -994,7 +999,7 @@ def _create_cfg_dict(cfgfile):
 
     # Convert the following strings to string arrays
     strarr_list = ['datapath', 'cosmopath', 'dempath', 'loadbasepath',
-                   'loadname', 'RadarName', 'RadarRes', 'ScanList',
+                   'psrpath', 'loadname', 'RadarName', 'RadarRes', 'ScanList',
                    'imgformat']
     for param in strarr_list:
         if isinstance(cfg[param], str):
@@ -1028,6 +1033,7 @@ def _create_datacfg_dict(cfg):
     """
 
     datacfg = dict({'datapath': cfg['datapath']})
+    datacfg.update({'psrpath': cfg['psrpath']})
     datacfg.update({'ScanList': cfg['ScanList']})
     datacfg.update({'TimeTol': cfg['TimeTol']})
     datacfg.update({'NumRadars': cfg['NumRadars']})
@@ -1041,15 +1047,29 @@ def _create_datacfg_dict(cfg):
     datacfg.update({'CosmoRunFreq': int(cfg['CosmoRunFreq'])})
     datacfg.update({'CosmoForecasted': int(cfg['CosmoForecasted'])})
     datacfg.update({'path_convention': cfg['path_convention']})
-    datacfg.update({'rmax': cfg['rmax']})
-    datacfg.update({'elmin': cfg['elmin']})
-    datacfg.update({'elmax': cfg['elmax']})
+
+    # Modify size of radar or radar spectra object
+    datacfg.update({'elmin': cfg.get('elmin', None)})
+    datacfg.update({'elmax': cfg.get('elmax', None)})
+    datacfg.update({'azmin': cfg.get('azmin', None)})
+    datacfg.update({'azmax': cfg.get('azmax', None)})
+    datacfg.update({'rmin': cfg.get('rmin', None)})
+    datacfg.update({'rmax': cfg.get('rmax', None)})
+
+    # Modify size of grid object
     datacfg.update({'latmin': cfg.get('latmin', None)})
     datacfg.update({'latmax': cfg.get('latmax', None)})
     datacfg.update({'lonmin': cfg.get('lonmin', None)})
     datacfg.update({'lonmax': cfg.get('lonmax', None)})
     datacfg.update({'altmin': cfg.get('altmin', None)})
     datacfg.update({'altmax': cfg.get('altmax', None)})
+
+    # variables to get the spectral data
+    datacfg.update({'undo_txcorr': cfg.get('undo_txcorr', True)})
+    datacfg.update({'fold': cfg.get('fold', True)})
+    datacfg.update({'positive_away': cfg.get('positive_away', True)})
+    datacfg.update({'cpi': cfg.get('cpi', 'low_prf')})
+
     if 'RadarPosition' in cfg:
         datacfg.update({'RadarPosition': cfg['RadarPosition']})
 
@@ -1081,6 +1101,7 @@ def _create_dscfg_dict(cfg, dataset):
     dscfg.update({'colocgatespath': cfg['colocgatespath']})
     dscfg.update({'excessgatespath': cfg['excessgatespath']})
     dscfg.update({'cosmopath': cfg['cosmopath']})
+    dscfg.update({'dempath': cfg['dempath']})
     dscfg.update({'CosmoRunFreq': cfg['CosmoRunFreq']})
     dscfg.update({'CosmoForecasted': cfg['CosmoForecasted']})
     dscfg.update({'path_convention': cfg['path_convention']})
@@ -1119,15 +1140,20 @@ def _create_dscfg_dict(cfg, dataset):
     dscfg.update({'initialized': False})
     dscfg.update({'global_data': None})
 
-    if 'MAKE_GLOBAL' not in dscfg:
-        dscfg.update({'MAKE_GLOBAL': 0})
-
     # Convert the following strings to string arrays
-    strarr_list = ['datatype']
+    strarr_list = ['datatype', 'FIELDS_TO_REMOVE']
     for param in strarr_list:
         if param in dscfg:
             if isinstance(dscfg[param], str):
                 dscfg[param] = [dscfg[param]]
+
+    # variables to make the data set available in the next level
+    if 'MAKE_GLOBAL' not in dscfg:
+        dscfg.update({'MAKE_GLOBAL': 0})
+    if 'SUBSTITUTE_OBJECT' not in dscfg:
+        dscfg.update({'SUBSTITUTE_OBJECT': 0})
+    if 'FIELDS_TO_REMOVE' not in dscfg:
+        dscfg.update({'FIELDS_TO_REMOVE': None})
 
     return dscfg
 
@@ -1310,7 +1336,7 @@ def _get_masterfile_list(datatypesdescr, starttimes, endtimes, datacfg,
         radarnr, datagroup, _, _, _ = get_datatype_fields(datatypedescr)
         if (datagroup not in (
                 'COSMO', 'RAD4ALPCOSMO', 'DEM', 'RAD4ALPDEM', 'RAD4ALPHYDRO',
-                'RAD4ALPDOPPLER')):
+                'RAD4ALPDOPPLER', 'PSR', 'PSRSPECTRA')):
             masterdatatypedescr = datatypedescr
             if scan_list is not None:
                 masterscan = scan_list[int(radarnr[5:8])-1][0]
@@ -1320,7 +1346,7 @@ def _get_masterfile_list(datatypesdescr, starttimes, endtimes, datacfg,
     if masterdatatypedescr is None:
         for datatypedescr in datatypesdescr:
             radarnr, datagroup, _, _, _ = get_datatype_fields(datatypedescr)
-            if datagroup in ('COSMO', 'DEM'):
+            if datagroup in ('COSMO', 'DEM', 'PSR', 'PSRSPECTRA'):
                 masterdatatypedescr = radarnr+':RAINBOW:dBZ'
                 if scan_list is not None:
                     masterscan = scan_list[int(radarnr[5:8])-1][0]
@@ -1341,7 +1367,8 @@ def _get_masterfile_list(datatypesdescr, starttimes, endtimes, datacfg,
 
 
 @profiler(level=3)
-def _add_dataset(new_dataset, radar_list, ind_rad, make_global=True):
+def _add_dataset(new_dataset, radar_list, ind_rad, make_global=True,
+                 substitute_object=False, fields_to_remove=None):
     """
     adds a new field to an existing radar object
 
@@ -1353,6 +1380,10 @@ def _add_dataset(new_dataset, radar_list, ind_rad, make_global=True):
         the radar object containing the global data
     make_global : boolean
         if true a new field is added to the global data
+    substitute_object : boolean
+        if true the new object will substitute the previous one
+    fields_to_remove : list or None
+        List of fields to be removed from the object
 
     Returns
     -------
@@ -1371,11 +1402,24 @@ def _add_dataset(new_dataset, radar_list, ind_rad, make_global=True):
     if 'radar_out' not in new_dataset:
         return None
 
+    if substitute_object:
+        print('Substituting object')
+        radar_list[ind_rad] = new_dataset['radar_out']
+        return 0
+
     for field in new_dataset['radar_out'].fields:
         print('Adding field: '+field)
         radar_list[ind_rad].add_field(
             field, new_dataset['radar_out'].fields[field],
             replace_existing=True)
+
+    if fields_to_remove is None:
+        return 0
+
+    for field in fields_to_remove:
+        print('Removing field: '+field)
+        del radar_list[ind_rad].fields[field]
+
     return 0
 
 

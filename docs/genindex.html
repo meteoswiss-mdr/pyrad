@@ -352,6 +352,8 @@
 </li>
       <li><a href="prod.html#pyrad.prod.generate_qvp_products">generate_qvp_products() (in module pyrad.prod)</a>
 </li>
+      <li><a href="prod.html#pyrad.prod.generate_spectra_products">generate_spectra_products() (in module pyrad.prod)</a>
+</li>
       <li><a href="prod.html#pyrad.prod.generate_sun_hits_products">generate_sun_hits_products() (in module pyrad.prod)</a>
 </li>
       <li><a href="prod.html#pyrad.prod.generate_time_avg_products">generate_time_avg_products() (in module pyrad.prod)</a>
@@ -378,10 +380,10 @@
 </li>
       <li><a href="io.html#pyrad.io.get_dataset_fields">get_dataset_fields() (in module pyrad.io)</a>
 </li>
-      <li><a href="io.html#pyrad.io.get_datatype_fields">get_datatype_fields() (in module pyrad.io)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="io.html#pyrad.io.get_datatype_fields">get_datatype_fields() (in module pyrad.io)</a>
+</li>
       <li><a href="io.html#pyrad.io.get_datetime">get_datetime() (in module pyrad.io)</a>
 </li>
       <li><a href="io.html#pyrad.io.Trajectory.get_end_time">get_end_time() (pyrad.io.Trajectory method)</a>
@@ -397,8 +399,6 @@
       <li><a href="io.html#pyrad.io.get_file_list">get_file_list() (in module pyrad.io)</a>
 </li>
       <li><a href="util.html#pyrad.util.get_fixed_rng_data">get_fixed_rng_data() (in module pyrad.util)</a>
-</li>
-      <li><a href="util.html#pyrad.util.get_fixed_rng_span_data">get_fixed_rng_span_data() (in module pyrad.util)</a>
 </li>
       <li><a href="io.html#pyrad.io.get_iso0_field">get_iso0_field() (in module pyrad.io)</a>
 </li>
@@ -486,13 +486,23 @@
 </li>
       <li><a href="graph.html#pyrad.graph.plot_along_coord">plot_along_coord() (in module pyrad.graph)</a>
 </li>
+      <li><a href="graph.html#pyrad.graph.plot_amp_phase_Doppler">plot_amp_phase_Doppler() (in module pyrad.graph)</a>
+</li>
+      <li><a href="graph.html#pyrad.graph.plot_amp_phase_range_Doppler">plot_amp_phase_range_Doppler() (in module pyrad.graph)</a>
+</li>
       <li><a href="graph.html#pyrad.graph.plot_antenna_pattern">plot_antenna_pattern() (in module pyrad.graph)</a>
 </li>
       <li><a href="graph.html#pyrad.graph.plot_bscope">plot_bscope() (in module pyrad.graph)</a>
 </li>
       <li><a href="graph.html#pyrad.graph.plot_cappi">plot_cappi() (in module pyrad.graph)</a>
 </li>
+      <li><a href="graph.html#pyrad.graph.plot_complex_Doppler">plot_complex_Doppler() (in module pyrad.graph)</a>
+</li>
+      <li><a href="graph.html#pyrad.graph.plot_complex_range_Doppler">plot_complex_range_Doppler() (in module pyrad.graph)</a>
+</li>
       <li><a href="graph.html#pyrad.graph.plot_density">plot_density() (in module pyrad.graph)</a>
+</li>
+      <li><a href="graph.html#pyrad.graph.plot_Doppler">plot_Doppler() (in module pyrad.graph)</a>
 </li>
       <li><a href="graph.html#pyrad.graph.plot_field_coverage">plot_field_coverage() (in module pyrad.graph)</a>
 </li>
@@ -527,6 +537,8 @@
       <li><a href="graph.html#pyrad.graph.plot_ppi_map">plot_ppi_map() (in module pyrad.graph)</a>
 </li>
       <li><a href="graph.html#pyrad.graph.plot_quantiles">plot_quantiles() (in module pyrad.graph)</a>
+</li>
+      <li><a href="graph.html#pyrad.graph.plot_range_Doppler">plot_range_Doppler() (in module pyrad.graph)</a>
 </li>
       <li><a href="graph.html#pyrad.graph.plot_rhi">plot_rhi() (in module pyrad.graph)</a>
 </li>
@@ -586,6 +598,16 @@
 </li>
       <li><a href="proc.html#pyrad.proc.process_dealias_unwrap_phase">process_dealias_unwrap_phase() (in module pyrad.proc)</a>
 </li>
+      <li><a href="proc.html#pyrad.proc.process_dem">process_dem() (in module pyrad.proc)</a>
+</li>
+      <li><a href="proc.html#pyrad.proc.process_differential_phase">process_differential_phase() (in module pyrad.proc)</a>
+</li>
+      <li><a href="proc.html#pyrad.proc.process_differential_reflectivity">process_differential_reflectivity() (in module pyrad.proc)</a>
+</li>
+      <li><a href="proc.html#pyrad.proc.process_Doppler_velocity">process_Doppler_velocity() (in module pyrad.proc)</a>
+</li>
+      <li><a href="proc.html#pyrad.proc.process_Doppler_width">process_Doppler_width() (in module pyrad.proc)</a>
+</li>
       <li><a href="proc.html#pyrad.proc.process_echo_filter">process_echo_filter() (in module pyrad.proc)</a>
 </li>
       <li><a href="proc.html#pyrad.proc.process_echo_id">process_echo_id() (in module pyrad.proc)</a>
@@ -594,7 +616,13 @@
 </li>
       <li><a href="proc.html#pyrad.proc.process_evp">process_evp() (in module pyrad.proc)</a>
 </li>
+      <li><a href="proc.html#pyrad.proc.process_filter_0Doppler">process_filter_0Doppler() (in module pyrad.proc)</a>
+</li>
       <li><a href="proc.html#pyrad.proc.process_filter_snr">process_filter_snr() (in module pyrad.proc)</a>
+</li>
+      <li><a href="proc.html#pyrad.proc.process_filter_spectra_noise">process_filter_spectra_noise() (in module pyrad.proc)</a>
+</li>
+      <li><a href="proc.html#pyrad.proc.process_filter_srhohv">process_filter_srhohv() (in module pyrad.proc)</a>
 </li>
       <li><a href="proc.html#pyrad.proc.process_filter_vel_diff">process_filter_vel_diff() (in module pyrad.proc)</a>
 </li>
@@ -608,12 +636,12 @@
 </li>
       <li><a href="proc.html#pyrad.proc.process_grid">process_grid() (in module pyrad.proc)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="proc.html#pyrad.proc.process_grid_point">process_grid_point() (in module pyrad.proc)</a>
 </li>
       <li><a href="proc.html#pyrad.proc.process_grid_time_stats">process_grid_time_stats() (in module pyrad.proc)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="proc.html#pyrad.proc.process_grid_time_stats2">process_grid_time_stats2() (in module pyrad.proc)</a>
 </li>
       <li><a href="proc.html#pyrad.proc.process_hydroclass">process_hydroclass() (in module pyrad.proc)</a>
@@ -654,6 +682,8 @@
 </li>
       <li><a href="proc.html#pyrad.proc.process_point_measurement">process_point_measurement() (in module pyrad.proc)</a>
 </li>
+      <li><a href="proc.html#pyrad.proc.process_pol_variables">process_pol_variables() (in module pyrad.proc)</a>
+</li>
       <li><a href="proc.html#pyrad.proc.process_qvp">process_qvp() (in module pyrad.proc)</a>
 </li>
       <li><a href="proc.html#pyrad.proc.process_rainfall_accumulation">process_rainfall_accumulation() (in module pyrad.proc)</a>
@@ -664,9 +694,15 @@
 </li>
       <li><a href="proc.html#pyrad.proc.process_raw_grid">process_raw_grid() (in module pyrad.proc)</a>
 </li>
+      <li><a href="proc.html#pyrad.proc.process_raw_spectra">process_raw_spectra() (in module pyrad.proc)</a>
+</li>
       <li><a href="proc.html#pyrad.proc.process_rcs">process_rcs() (in module pyrad.proc)</a>
 </li>
       <li><a href="proc.html#pyrad.proc.process_rcs_pr">process_rcs_pr() (in module pyrad.proc)</a>
+</li>
+      <li><a href="proc.html#pyrad.proc.process_reflectivity">process_reflectivity() (in module pyrad.proc)</a>
+</li>
+      <li><a href="proc.html#pyrad.proc.process_rhohv">process_rhohv() (in module pyrad.proc)</a>
 </li>
       <li><a href="proc.html#pyrad.proc.process_rhohv_rain">process_rhohv_rain() (in module pyrad.proc)</a>
 </li>
@@ -687,6 +723,18 @@
       <li><a href="proc.html#pyrad.proc.process_smooth_phidp_single_window">process_smooth_phidp_single_window() (in module pyrad.proc)</a>
 </li>
       <li><a href="proc.html#pyrad.proc.process_snr">process_snr() (in module pyrad.proc)</a>
+</li>
+      <li><a href="proc.html#pyrad.proc.process_spectral_differential_phase">process_spectral_differential_phase() (in module pyrad.proc)</a>
+</li>
+      <li><a href="proc.html#pyrad.proc.process_spectral_differential_reflectivity">process_spectral_differential_reflectivity() (in module pyrad.proc)</a>
+</li>
+      <li><a href="proc.html#pyrad.proc.process_spectral_phase">process_spectral_phase() (in module pyrad.proc)</a>
+</li>
+      <li><a href="proc.html#pyrad.proc.process_spectral_power">process_spectral_power() (in module pyrad.proc)</a>
+</li>
+      <li><a href="proc.html#pyrad.proc.process_spectral_reflectivity">process_spectral_reflectivity() (in module pyrad.proc)</a>
+</li>
+      <li><a href="proc.html#pyrad.proc.process_spectral_rhohv">process_spectral_rhohv() (in module pyrad.proc)</a>
 </li>
       <li><a href="proc.html#pyrad.proc.process_sun_hits">process_sun_hits() (in module pyrad.proc)</a>
 </li>
@@ -715,6 +763,8 @@
       <li><a href="proc.html#pyrad.proc.process_trajectory">process_trajectory() (in module pyrad.proc)</a>
 </li>
       <li><a href="proc.html#pyrad.proc.process_vad">process_vad() (in module pyrad.proc)</a>
+</li>
+      <li><a href="proc.html#pyrad.proc.process_visibility">process_visibility() (in module pyrad.proc)</a>
 </li>
       <li><a href="proc.html#pyrad.proc.process_vol_refl">process_vol_refl() (in module pyrad.proc)</a>
 </li>
@@ -782,6 +832,10 @@
 </li>
       <li><a href="io.html#pyrad.io.read_hzt_data">read_hzt_data() (in module pyrad.io)</a>
 </li>
+      <li><a href="io.html#pyrad.io.read_idrisi_data">read_idrisi_data() (in module pyrad.io)</a>
+</li>
+      <li><a href="io.html#pyrad.io.read_idrisi_metadata">read_idrisi_metadata() (in module pyrad.io)</a>
+</li>
       <li><a href="io.html#pyrad.io.read_intercomp_scores_ts">read_intercomp_scores_ts() (in module pyrad.io)</a>
 </li>
       <li><a href="io.html#pyrad.io.read_last_state">read_last_state() (in module pyrad.io)</a>
@@ -804,10 +858,10 @@
 </li>
       <li><a href="io.html#pyrad.io.read_quantiles">read_quantiles() (in module pyrad.io)</a>
 </li>
-      <li><a href="io.html#pyrad.io.read_quantiles_ts">read_quantiles_ts() (in module pyrad.io)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="io.html#pyrad.io.read_quantiles_ts">read_quantiles_ts() (in module pyrad.io)</a>
+</li>
       <li><a href="io.html#pyrad.io.read_rad4alp_cosmo">read_rad4alp_cosmo() (in module pyrad.io)</a>
 </li>
       <li><a href="io.html#pyrad.io.read_rad4alp_vis">read_rad4alp_vis() (in module pyrad.io)</a>
