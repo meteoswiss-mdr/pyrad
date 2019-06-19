@@ -79,7 +79,7 @@ def main():
 
     parser.add_argument(
         '--radarbase', type=str,
-        default='/store/msrad/radar/pyrad_products/rad4alp_thundertracking/',
+        default='/store/msrad/radar/pyrad_products/thundertracking/',
         help='name of folder containing the radar data')
 
     parser.add_argument(
@@ -89,12 +89,12 @@ def main():
 
     parser.add_argument(
         '--datatypes', type=str,
-        default='dBZ,hydro,KDPc,RR,TEMP,uRhoHV,ZDR',
+        default='dBZc,hydroc,KDPc,RRc,RhoHVc,ZDRc',
         help='Name of the polarimetric moments to process. Coma separated')
 
     parser.add_argument(
         '--datasets', type=str,
-        default='dBZ,hydro,KDPc,RR,TEMP,uRhoHV,ZDR',
+        default='dBZc,hydroc,KDPc,RRc,RhoHVc,ZDRc',
         help='Name of the directory containing the datasets')
 
     parser.add_argument(
@@ -170,12 +170,12 @@ def main():
     else:
         for time_dir in time_dir_list:
             # thundertracking TRT files
-            #trt_list.extend(glob.glob(
-            #    args.trtbase+time_dir+'/TRTC_cell/*_tt.trt'))
+            trt_list.extend(glob.glob(
+                args.trtbase+time_dir+'/TRTC_cell/*_tt.trt'))
 
             # regular TRT files
-            trt_list.extend(glob.glob(
-                args.trtbase+time_dir+'/TRTC_cell/*[0123456789].trt'))
+            #trt_list.extend(glob.glob(
+            #    args.trtbase+time_dir+'/TRTC_cell/*[0123456789].trt'))
 
     if len(trt_list) == 0:
         warn('No valid TRT files found in '+args.trtbase)
@@ -190,8 +190,8 @@ def main():
             infostr = os.path.basename(fname).split('.')[0]
             infostr = infostr.replace('_tt', '')
             pyrad_main(
-                 cfgfile_proc, trajfile=fname, infostr=infostr,
-                 trajtype=trajtype)
+                cfgfile_proc, trajfile=fname, infostr=infostr,
+                trajtype=trajtype)
             trt_cell_id_list.append(infostr)
             trt_file_list.append(fname)
         except:
@@ -224,10 +224,15 @@ def main():
                 #    args.radarbase+time_dir[0]+'/trt_traj_tt/',
                 #    args.radarbase+time_dir[1]+'/trt_traj_tt/']
 
-                # TRT trajectories
+                # Thundertracking trajectories with visibility correction
                 file_base2 = [
-                    args.radarbase+time_dir[0]+'/trt_traj/',
-                    args.radarbase+time_dir[1]+'/trt_traj/']
+                    args.radarbase+time_dir[0]+'/trt_traj_vis_filt/',
+                    args.radarbase+time_dir[1]+'/trt_traj_vis_filt/']
+
+                # TRT trajectories
+                # file_base2 = [
+                #     args.radarbase+time_dir[0]+'/trt_traj/',
+                #     args.radarbase+time_dir[1]+'/trt_traj/']
 
             field_name = get_fieldname_pyart(datatype)
             field_dict = get_metadata(field_name)
@@ -269,7 +274,7 @@ def main():
                         labels = [
                             '80.0-percentile', '65.0-percentile',
                             '95.0-percentile']
-                    elif datatype == 'hydro':
+                    elif datatype in ('hydro', 'hydroc'):
                         labels = [
                             'Mode', '2nd most common', '3rd most common',
                             '% points mode', '% points 2nd most common',

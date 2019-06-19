@@ -1036,9 +1036,18 @@ def merge_scans_cosmo_rad4alp(voltime, datatype, cfg, ind_rad=0):
     for scan in cfg['ScanList'][ind_rad]:
         # create the radar object where to store the data
         # taking as reference the metranet polar file
+        # The radar cutting is going to be done at the end
+        cfg_aux = deepcopy(cfg)
+        cfg_aux['rmin'] = None
+        cfg_aux['rmax'] = None
+        cfg_aux['elmin'] = None
+        cfg_aux['elmax'] = None
+        cfg_aux['azmin'] = None
+        cfg_aux['azmax'] = None
         radar_aux = merge_scans_rad4alp(
             cfg['datapath'][ind_rad], [scan], cfg['RadarName'][ind_rad],
-            cfg['RadarRes'][ind_rad], voltime, ['dBZ'], cfg, ind_rad=ind_rad)
+            cfg['RadarRes'][ind_rad], voltime, ['dBZ'], cfg_aux,
+            ind_rad=ind_rad)
 
         if radar_aux is None:
             return None
@@ -1047,8 +1056,7 @@ def merge_scans_cosmo_rad4alp(voltime, datatype, cfg, ind_rad=0):
         filename = find_rad4alpcosmo_file(voltime, datatype, cfg, scan)
         if filename is None:
             return None
-        ngates = radar_aux.ngates
-        cosmo_dict = read_rad4alp_cosmo(filename, datatype, ngates=ngates)
+        cosmo_dict = read_rad4alp_cosmo(filename, datatype)
         radar_aux.add_field(get_fieldname_pyart(datatype), cosmo_dict)
 
         if radar is None:
@@ -1098,19 +1106,26 @@ def merge_scans_dem_rad4alp(voltime, datatype, cfg, ind_rad=0):
     for scan in cfg['ScanList'][ind_rad]:
         # create the radar object where to store the data
         # taking as reference the metranet polar file
+        # The radar cutting is going to be done at the end
+        cfg_aux = deepcopy(cfg)
+        cfg_aux['rmin'] = None
+        cfg_aux['rmax'] = None
+        cfg_aux['elmin'] = None
+        cfg_aux['elmax'] = None
+        cfg_aux['azmin'] = None
+        cfg_aux['azmax'] = None
         radar_aux = merge_scans_rad4alp(
             cfg['datapath'][ind_rad], [scan], cfg['RadarName'][ind_rad],
-            cfg['RadarRes'][ind_rad], voltime, ['dBZ'], cfg, ind_rad=ind_rad)
+            cfg['RadarRes'][ind_rad], voltime, ['dBZ'], cfg_aux,
+            ind_rad=ind_rad)
 
         if radar_aux is None:
             return None
 
         # add visibility data
         radar_aux.fields = dict()
-        ngates = radar_aux.ngates
         radar_aux.add_field(
-            get_fieldname_pyart(datatype),
-            vis_list[int(scan)-1][:, :ngates])
+            get_fieldname_pyart(datatype), vis_list[int(scan)-1])
 
         if radar is None:
             radar = radar_aux
@@ -1196,17 +1211,24 @@ def merge_scans_other_rad4alp(voltime, datatype, cfg, ind_rad=0):
 
         # create the radar object where to store the data
         # taking as reference the metranet polar file
+        # The radar cutting is going to be done at the end
+        cfg_aux = deepcopy(cfg)
+        cfg_aux['rmin'] = None
+        cfg_aux['rmax'] = None
+        cfg_aux['elmin'] = None
+        cfg_aux['elmax'] = None
+        cfg_aux['azmin'] = None
+        cfg_aux['azmax'] = None
         radar_aux = merge_scans_rad4alp(
-            basepath, [scan], radar_name, radar_res, voltime, ['dBZ'], cfg,
-            ind_rad=ind_rad)
+            basepath, [scan], radar_name, radar_res, voltime, ['dBZ'],
+            cfg_aux, ind_rad=ind_rad)
 
         if radar_aux is None:
             return None
 
         # add product data
         radar_aux.fields = dict()
-        ngates = radar_aux.ngates
-        radar_aux.add_field(prod_field, prod_dict[:, :ngates])
+        radar_aux.add_field(prod_field, prod_dict)
 
         if radar is None:
             radar = radar_aux
@@ -1738,19 +1760,8 @@ def merge_fields_dem(basepath, scan_name, datatype_list):
         radar object
 
     """
-    datapath = basepath+datatype_list[0]+'/'+scan_name
     scan_name_aux = scan_name.partition('/')[0]
-    filename = glob.glob(datapath+datatype_list[0]+'_'+scan_name_aux)
     radar = None
-    if not filename:
-        warn('No file found in '+datapath+datatype_list[0]+'_'+scan_name_aux)
-    else:
-        # create radar object
-        radar = get_data_rainbow(filename[0], datatype_list[0])
-
-    if len(datatype_list) == 1:
-        return radar
-
     # add other fields in the same scan
     for datatype in datatype_list:
         datapath = basepath+datatype+'/'+scan_name+'/'
@@ -1758,17 +1769,19 @@ def merge_fields_dem(basepath, scan_name, datatype_list):
         if not filename:
             warn('No file found in '+datapath+datatype+'_' +
                  scan_name_aux)
-        else:
-            radar_aux = get_data_rainbow(filename[0], datatype)
-            if radar is None:
-                radar = radar_aux
-            else:
-                for field_name in radar_aux.fields.keys():
-                    break
-                try:
-                    radar.add_field(field_name, radar_aux.fields[field_name])
-                except (ValueError, KeyError):
-                    warn('Unable to add field '+field_name+' to radar object')
+            continue
+
+        radar_aux = get_data_rainbow(filename[0], datatype)
+        if radar is None:
+            radar = radar_aux
+            continue
+
+        for field_name in radar_aux.fields.keys():
+            break
+        try:
+            radar = radar.add_field(field_name, radar_aux.fields[field_name])
+        except (ValueError, KeyError):
+            warn('Unable to add field '+field_name+' to radar object')
 
     return radar
 
@@ -1788,20 +1801,8 @@ def merge_fields_cosmo(filename_list):
         radar object
 
     """
-    try:
-        radar = pyart.aux_io.read_rainbow_wrl(filename_list[0])
-    except OSError as ee:
-        warn(str(ee))
-        warn('Unable to read file '+filename_list[0])
-        return None
-
-    if radar is None:
-        return None
-
-    if len(filename_list) == 1:
-        return radar
-
     # add other COSMO fields in the same scan
+    radar = None
     for filename in filename_list:
         try:
             radar_aux = pyart.aux_io.read_rainbow_wrl(filename)
@@ -1811,6 +1812,11 @@ def merge_fields_cosmo(filename_list):
             continue
         if radar_aux is None:
             continue
+
+        if radar is None:
+            radar = radar_aux
+            continue
+
         for field_name in radar_aux.fields.keys():
             break
         radar.add_field(field_name, radar_aux.fields[field_name])
