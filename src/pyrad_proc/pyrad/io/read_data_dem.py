@@ -18,7 +18,17 @@ Functions for reading data derived from Digital Elevation Models (DEM)
 from warnings import warn
 import numpy as np
 from scipy.interpolate import NearestNDInterpolator
-from osgeo import gdal
+
+# check existence of gdal
+try:
+    from osgeo import gdal
+    _GDAL_AVAILABLE = True
+except ImportError:
+    try:
+        import gdal
+        _GDAL_AVAILABLE = True
+    except ImportError:
+        _GDAL_AVAILABLE = False
 
 from pyart.config import get_metadata
 from pyart.aux_io import convert_data
@@ -110,6 +120,10 @@ def read_idrisi_data(fname, field_name, fill_value=-99.):
         dictionary with the data and metadata
 
     """
+    if not _GDAL_AVAILABLE:
+        warn("gdal is required to use read_idrisi_data but is not installed")
+        return None
+
     # read the data
     try:
         raster = gdal.Open(fname)
