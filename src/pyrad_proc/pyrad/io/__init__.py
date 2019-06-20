@@ -118,6 +118,7 @@ Writing data
     write_trt_cell_data
     write_trt_cell_scores
     write_trt_cell_lightning
+    write_trt_rpc
     write_rhi_profile
     write_field_coverage
     write_cdf
@@ -230,6 +231,7 @@ from .write_data import write_histogram, write_quantiles, write_ts_lightning
 from .write_data import write_trt_cell_scores, write_trt_cell_lightning
 from .write_data import write_trt_info, write_fixed_angle, write_proc_periods
 from .write_data import write_trt_thundertracking_data, write_ts_grid_data
+from .write_data import write_trt_rpc
 
 from .io_aux import get_save_dir, make_filename, get_new_rainbow_file_name
 from .io_aux import get_datetime, get_dataset_fields, map_hydro, map_Doppler
