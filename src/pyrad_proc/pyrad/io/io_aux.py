@@ -1256,11 +1256,15 @@ def get_fieldname_pyart(datatype):
         field_name = 'frequency_of_occurrence'
     elif datatype == 'RR':
         field_name = 'radar_estimated_rain_rate'
+    elif datatype == 'RRc':
+        field_name = 'corrected_radar_estimated_rain_rate'
     elif datatype == 'Raccu':
         field_name = 'rainfall_accumulation'
 
     elif datatype == 'hydro':
         field_name = 'radar_echo_classification'
+    elif datatype == 'hydroc':
+        field_name = 'corrected_radar_echo_classification'
     elif datatype == 'entropy':
         field_name = 'hydroclass_entropy'
     elif datatype == 'propAG':

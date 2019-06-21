@@ -374,6 +374,9 @@
 <span class="sd">            The units of the returned signal. Can be &#39;ADU&#39;, &#39;dBADU&#39; or &#39;dBm&#39;</span>
 <span class="sd">        subtract_noise : Bool</span>
 <span class="sd">            If True noise will be subtracted from the signal</span>
+<span class="sd">        smooth_window : int or None</span>
+<span class="sd">            Size of the moving Gaussian smoothing window. If none no smoothing</span>
+<span class="sd">            will be applied</span>
 <span class="sd">    radar_list : list of spectra objects</span>
 <span class="sd">        Optional. list of spectra objects</span>
 
@@ -410,10 +413,12 @@
 
     <span class="n">units</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="s1">&#39;dBADU&#39;</span><span class="p">)</span>
     <span class="n">subtract_noise</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;subtract_noise&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">smooth_window</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;smooth_window&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="n">s_pwr</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">retrieve</span><span class="o">.</span><span class="n">compute_spectral_power</span><span class="p">(</span>
         <span class="n">psr</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span> <span class="n">subtract_noise</span><span class="o">=</span><span class="n">subtract_noise</span><span class="p">,</span>
-        <span class="n">signal_field</span><span class="o">=</span><span class="n">signal_field</span><span class="p">,</span> <span class="n">noise_field</span><span class="o">=</span><span class="n">noise_field</span><span class="p">)</span>
+        <span class="n">smooth_window</span><span class="o">=</span><span class="n">smooth_window</span><span class="p">,</span> <span class="n">signal_field</span><span class="o">=</span><span class="n">signal_field</span><span class="p">,</span>
+        <span class="n">noise_field</span><span class="o">=</span><span class="n">noise_field</span><span class="p">)</span>
 
     <span class="c1"># prepare for exit</span>
     <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">psr</span><span class="p">)}</span>
@@ -495,6 +500,9 @@
 <span class="sd">            The input data types</span>
 <span class="sd">        subtract_noise : Bool</span>
 <span class="sd">            If True noise will be subtracted from the signal</span>
+<span class="sd">        smooth_window : int or None</span>
+<span class="sd">            Size of the moving Gaussian smoothing window. If none no smoothing</span>
+<span class="sd">            will be applied</span>
 <span class="sd">    radar_list : list of spectra objects</span>
 <span class="sd">        Optional. list of spectra objects</span>
 
@@ -530,10 +538,11 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
     <span class="n">subtract_noise</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;subtract_noise&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">smooth_window</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;smooth_window&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="n">sdBZ</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">retrieve</span><span class="o">.</span><span class="n">compute_spectral_reflectivity</span><span class="p">(</span>
-        <span class="n">psr</span><span class="p">,</span> <span class="n">subtract_noise</span><span class="o">=</span><span class="n">subtract_noise</span><span class="p">,</span> <span class="n">signal_field</span><span class="o">=</span><span class="n">signal_field</span><span class="p">,</span>
-        <span class="n">noise_field</span><span class="o">=</span><span class="n">noise_field</span><span class="p">)</span>
+        <span class="n">psr</span><span class="p">,</span> <span class="n">subtract_noise</span><span class="o">=</span><span class="n">subtract_noise</span><span class="p">,</span> <span class="n">smooth_window</span><span class="o">=</span><span class="n">smooth_window</span><span class="p">,</span>
+        <span class="n">signal_field</span><span class="o">=</span><span class="n">signal_field</span><span class="p">,</span> <span class="n">noise_field</span><span class="o">=</span><span class="n">noise_field</span><span class="p">)</span>
 
     <span class="c1"># prepare for exit</span>
     <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">psr</span><span class="p">)}</span>
@@ -559,6 +568,9 @@
 <span class="sd">            The input data types</span>
 <span class="sd">        subtract_noise : Bool</span>
 <span class="sd">            If True noise will be subtracted from the signal</span>
+<span class="sd">        smooth_window : int or None</span>
+<span class="sd">            Size of the moving Gaussian smoothing window. If none no smoothing</span>
+<span class="sd">            will be applied</span>
 <span class="sd">    radar_list : list of spectra objects</span>
 <span class="sd">        Optional. list of spectra objects</span>
 
@@ -599,11 +611,12 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
     <span class="n">subtract_noise</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;subtract_noise&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">smooth_window</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;smooth_window&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="n">sZDR</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">retrieve</span><span class="o">.</span><span class="n">compute_spectral_differential_reflectivity</span><span class="p">(</span>
-        <span class="n">psr</span><span class="p">,</span> <span class="n">subtract_noise</span><span class="o">=</span><span class="n">subtract_noise</span><span class="p">,</span> <span class="n">signal_h_field</span><span class="o">=</span><span class="n">signal_h_field</span><span class="p">,</span>
-        <span class="n">signal_v_field</span><span class="o">=</span><span class="n">signal_v_field</span><span class="p">,</span> <span class="n">noise_h_field</span><span class="o">=</span><span class="n">noise_h_field</span><span class="p">,</span>
-        <span class="n">noise_v_field</span><span class="o">=</span><span class="n">noise_v_field</span><span class="p">)</span>
+        <span class="n">psr</span><span class="p">,</span> <span class="n">subtract_noise</span><span class="o">=</span><span class="n">subtract_noise</span><span class="p">,</span> <span class="n">smooth_window</span><span class="o">=</span><span class="n">smooth_window</span><span class="p">,</span>
+        <span class="n">signal_h_field</span><span class="o">=</span><span class="n">signal_h_field</span><span class="p">,</span> <span class="n">signal_v_field</span><span class="o">=</span><span class="n">signal_v_field</span><span class="p">,</span>
+        <span class="n">noise_h_field</span><span class="o">=</span><span class="n">noise_h_field</span><span class="p">,</span> <span class="n">noise_v_field</span><span class="o">=</span><span class="n">noise_v_field</span><span class="p">)</span>
 
     <span class="c1"># prepare for exit</span>
     <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">psr</span><span class="p">)}</span>
@@ -757,6 +770,9 @@
 <span class="sd">            The input data types</span>
 <span class="sd">        subtract_noise : Bool</span>
 <span class="sd">            If True noise will be subtracted from the signal</span>
+<span class="sd">        smooth_window : int or None</span>
+<span class="sd">            Size of the moving Gaussian smoothing window. If none no smoothing</span>
+<span class="sd">            will be applied</span>
 <span class="sd">        variables : list of str</span>
 <span class="sd">            list of variables to compute. Default dBZ</span>
 <span class="sd">    radar_list : list of spectra objects</span>
@@ -800,6 +816,7 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
     <span class="n">subtract_noise</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;subtract_noise&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">smooth_window</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;smooth_window&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">variables</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;variables&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;dBZ&#39;</span><span class="p">])</span>
 
     <span class="n">fields_list</span> <span class="o">=</span> <span class="p">[]</span>
@@ -808,8 +825,9 @@
 
     <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">retrieve</span><span class="o">.</span><span class="n">compute_pol_variables</span><span class="p">(</span>
         <span class="n">psr</span><span class="p">,</span> <span class="n">fields_list</span><span class="p">,</span> <span class="n">subtract_noise</span><span class="o">=</span><span class="n">subtract_noise</span><span class="p">,</span>
-        <span class="n">signal_h_field</span><span class="o">=</span><span class="n">signal_h_field</span><span class="p">,</span> <span class="n">signal_v_field</span><span class="o">=</span><span class="n">signal_v_field</span><span class="p">,</span>
-        <span class="n">noise_h_field</span><span class="o">=</span><span class="n">noise_h_field</span><span class="p">,</span> <span class="n">noise_v_field</span><span class="o">=</span><span class="n">noise_v_field</span><span class="p">)</span>
+        <span class="n">smooth_window</span><span class="o">=</span><span class="n">smooth_window</span><span class="p">,</span> <span class="n">signal_h_field</span><span class="o">=</span><span class="n">signal_h_field</span><span class="p">,</span>
+        <span class="n">signal_v_field</span><span class="o">=</span><span class="n">signal_v_field</span><span class="p">,</span> <span class="n">noise_h_field</span><span class="o">=</span><span class="n">noise_h_field</span><span class="p">,</span>
+        <span class="n">noise_v_field</span><span class="o">=</span><span class="n">noise_v_field</span><span class="p">)</span>
 
     <span class="c1"># prepare for exit</span>
     <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">radar</span><span class="p">}</span>
