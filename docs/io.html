@@ -141,7 +141,7 @@
 <tr class="row-even"><td><a class="reference internal" href="#pyrad.io.read_cosmo_coord" title="pyrad.io.read_cosmo_coord"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_cosmo_coord</span></code></a>(fname[,&nbsp;zmin])</td>
 <td>Reads COSMO coordinates from a netcdf file</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.read_hzt_data" title="pyrad.io.read_hzt_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_hzt_data</span></code></a>(fname[,&nbsp;chy0,&nbsp;chx0])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.read_hzt_data" title="pyrad.io.read_hzt_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_hzt_data</span></code></a>(fname[,&nbsp;chy0,&nbsp;chx0,&nbsp;read_lib])</td>
 <td>Reads iso-0 degree data from an HZT file</td>
 </tr>
 </tbody>
@@ -354,55 +354,58 @@
 <tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.write_trt_cell_lightning" title="pyrad.io.write_trt_cell_lightning"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_trt_cell_lightning</span></code></a>(cell_ID,&nbsp;cell_time,&nbsp;…)</td>
 <td>writes the lightning data for each TRT cell</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.write_rhi_profile" title="pyrad.io.write_rhi_profile"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_rhi_profile</span></code></a>(hvec,&nbsp;data,&nbsp;nvalid_vec,&nbsp;…)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.write_trt_rpc" title="pyrad.io.write_trt_rpc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_trt_rpc</span></code></a>(cell_ID,&nbsp;cell_time,&nbsp;lon,&nbsp;lat,&nbsp;…)</td>
+<td>writes the rimed particles column data for a TRT cell</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.write_rhi_profile" title="pyrad.io.write_rhi_profile"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_rhi_profile</span></code></a>(hvec,&nbsp;data,&nbsp;nvalid_vec,&nbsp;…)</td>
 <td>writes the values of an RHI profile in a text file</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.write_field_coverage" title="pyrad.io.write_field_coverage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_field_coverage</span></code></a>(quantiles,&nbsp;values,&nbsp;…)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.write_field_coverage" title="pyrad.io.write_field_coverage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_field_coverage</span></code></a>(quantiles,&nbsp;values,&nbsp;…)</td>
 <td>writes the quantiles of the coverage on a particular sector</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.write_cdf" title="pyrad.io.write_cdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_cdf</span></code></a>(quantiles,&nbsp;values,&nbsp;ntot,&nbsp;nnan,&nbsp;…)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.write_cdf" title="pyrad.io.write_cdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_cdf</span></code></a>(quantiles,&nbsp;values,&nbsp;ntot,&nbsp;nnan,&nbsp;…)</td>
 <td>writes a cumulative distribution function</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.write_histogram" title="pyrad.io.write_histogram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_histogram</span></code></a>(bin_edges,&nbsp;values,&nbsp;fname[,&nbsp;…])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.write_histogram" title="pyrad.io.write_histogram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_histogram</span></code></a>(bin_edges,&nbsp;values,&nbsp;fname[,&nbsp;…])</td>
 <td>writes a histogram</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.write_quantiles" title="pyrad.io.write_quantiles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_quantiles</span></code></a>(quantiles,&nbsp;values,&nbsp;fname[,&nbsp;…])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.write_quantiles" title="pyrad.io.write_quantiles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_quantiles</span></code></a>(quantiles,&nbsp;values,&nbsp;fname[,&nbsp;…])</td>
 <td>writes quantiles</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.write_ts_polar_data" title="pyrad.io.write_ts_polar_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_ts_polar_data</span></code></a>(dataset,&nbsp;fname)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.write_ts_polar_data" title="pyrad.io.write_ts_polar_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_ts_polar_data</span></code></a>(dataset,&nbsp;fname)</td>
 <td>writes time series of data</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.write_ts_grid_data" title="pyrad.io.write_ts_grid_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_ts_grid_data</span></code></a>(dataset,&nbsp;fname)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.write_ts_grid_data" title="pyrad.io.write_ts_grid_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_ts_grid_data</span></code></a>(dataset,&nbsp;fname)</td>
 <td>writes time series of data</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.write_ts_cum" title="pyrad.io.write_ts_cum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_ts_cum</span></code></a>(dataset,&nbsp;fname)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.write_ts_cum" title="pyrad.io.write_ts_cum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_ts_cum</span></code></a>(dataset,&nbsp;fname)</td>
 <td>writes time series accumulation of data</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.write_monitoring_ts" title="pyrad.io.write_monitoring_ts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_monitoring_ts</span></code></a>(start_time,&nbsp;np_t,&nbsp;…[,&nbsp;…])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.write_monitoring_ts" title="pyrad.io.write_monitoring_ts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_monitoring_ts</span></code></a>(start_time,&nbsp;np_t,&nbsp;…[,&nbsp;…])</td>
 <td>writes time series of data</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.write_excess_gates" title="pyrad.io.write_excess_gates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_excess_gates</span></code></a>(excess_dict,&nbsp;fname)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.write_excess_gates" title="pyrad.io.write_excess_gates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_excess_gates</span></code></a>(excess_dict,&nbsp;fname)</td>
 <td>Writes the position and values of gates that have a frequency of occurrence higher than a particular threshold</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.write_intercomp_scores_ts" title="pyrad.io.write_intercomp_scores_ts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_intercomp_scores_ts</span></code></a>(start_time,&nbsp;stats,&nbsp;…)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.write_intercomp_scores_ts" title="pyrad.io.write_intercomp_scores_ts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_intercomp_scores_ts</span></code></a>(start_time,&nbsp;stats,&nbsp;…)</td>
 <td>writes time series of radar intercomparison scores</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.write_colocated_gates" title="pyrad.io.write_colocated_gates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_colocated_gates</span></code></a>(coloc_gates,&nbsp;fname)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.write_colocated_gates" title="pyrad.io.write_colocated_gates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_colocated_gates</span></code></a>(coloc_gates,&nbsp;fname)</td>
 <td>Writes the position of gates colocated with two radars</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.write_colocated_data" title="pyrad.io.write_colocated_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_colocated_data</span></code></a>(coloc_data,&nbsp;fname)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.write_colocated_data" title="pyrad.io.write_colocated_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_colocated_data</span></code></a>(coloc_data,&nbsp;fname)</td>
 <td>Writes the data of gates colocated with two radars</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.write_colocated_data_time_avg" title="pyrad.io.write_colocated_data_time_avg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_colocated_data_time_avg</span></code></a>(coloc_data,&nbsp;fname)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.write_colocated_data_time_avg" title="pyrad.io.write_colocated_data_time_avg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_colocated_data_time_avg</span></code></a>(coloc_data,&nbsp;fname)</td>
 <td>Writes the time averaged data of gates colocated with two radars</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.write_sun_hits" title="pyrad.io.write_sun_hits"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_sun_hits</span></code></a>(sun_hits,&nbsp;fname)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.write_sun_hits" title="pyrad.io.write_sun_hits"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_sun_hits</span></code></a>(sun_hits,&nbsp;fname)</td>
 <td>Writes sun hits data.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.write_sun_retrieval" title="pyrad.io.write_sun_retrieval"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_sun_retrieval</span></code></a>(sun_retrieval,&nbsp;fname)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.write_sun_retrieval" title="pyrad.io.write_sun_retrieval"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_sun_retrieval</span></code></a>(sun_retrieval,&nbsp;fname)</td>
 <td>Writes sun retrieval data.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.write_fixed_angle" title="pyrad.io.write_fixed_angle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_fixed_angle</span></code></a>(time_data,&nbsp;fixed_angle,&nbsp;…)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.write_fixed_angle" title="pyrad.io.write_fixed_angle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_fixed_angle</span></code></a>(time_data,&nbsp;fixed_angle,&nbsp;…)</td>
 <td>writes an output file with the fixed angle data</td>
 </tr>
 </tbody>
@@ -2506,7 +2509,7 @@ median</p>
 
 <dl class="function">
 <dt id="pyrad.io.read_hzt_data">
-<code class="descclassname">pyrad.io.</code><code class="descname">read_hzt_data</code><span class="sig-paren">(</span><em>fname</em>, <em>chy0=255.0</em>, <em>chx0=-160.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/read_data_hzt.html#read_hzt_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.read_hzt_data" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyrad.io.</code><code class="descname">read_hzt_data</code><span class="sig-paren">(</span><em>fname</em>, <em>chy0=255.0</em>, <em>chx0=-160.0</em>, <em>read_lib='C'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/read_data_hzt.html#read_hzt_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.read_hzt_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads iso-0 degree data from an HZT file</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2516,8 +2519,12 @@ median</p>
 <dt><strong>fname</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
 <dd><p class="first last">name of the file to read</p>
 </dd>
-<dt><strong>chy0, chx0: south west point of grid in Swiss coordinates [km]</strong></dt>
-<dd></dd>
+<dt><strong>chy0, chx0: float</strong></dt>
+<dd><p class="first last">south west point of grid in Swiss coordinates [km]</p>
+</dd>
+<dt><strong>read_lib</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">Type of METRANET read library used. Can be ‘C’ or ‘python’</p>
+</dd>
 </dl>
 </td>
 </tr>
@@ -4623,6 +4630,54 @@ process</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
 <dt><strong>ids, max_rank, nscans, time_start, time_end: array</strong></dt>
 <dd><p class="first last">the cell parameters</p>
+</dd>
+<dt><strong>fname</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">file name where to store the data</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>fname</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">the name of the file where data has written</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.io.write_trt_rpc">
+<code class="descclassname">pyrad.io.</code><code class="descname">write_trt_rpc</code><span class="sig-paren">(</span><em>cell_ID</em>, <em>cell_time</em>, <em>lon</em>, <em>lat</em>, <em>area</em>, <em>rank</em>, <em>hmin</em>, <em>hmax</em>, <em>freq</em>, <em>fname</em>, <em>timeformat='%Y%m%d%H%M'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/write_data.html#write_trt_rpc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.write_trt_rpc" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the rimed particles column data for a TRT cell</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>cell_ID</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of ints</span></dt>
+<dd><p class="first last">the cell ID</p>
+</dd>
+<dt><strong>cell_time</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of datetime</span></dt>
+<dd><p class="first last">the time step</p>
+</dd>
+<dt><strong>lon, lat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of floats</span></dt>
+<dd><p class="first last">the latitude and longitude of the center of the cell</p>
+</dd>
+<dt><strong>area</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of floats</span></dt>
+<dd><p class="first last">the area of the cell</p>
+</dd>
+<dt><strong>rank</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of floats</span></dt>
+<dd><p class="first last">the rank of the cell</p>
+</dd>
+<dt><strong>hmin, hmax</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of floats</span></dt>
+<dd><p class="first last">Minimum and maximum altitude of the rimed particle column</p>
+</dd>
+<dt><strong>freq</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of floats</span></dt>
+<dd><p class="first last">Frequency of the species constituting the rime particle column within
+the limits of it</p>
 </dd>
 <dt><strong>fname</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
 <dd><p class="first last">file name where to store the data</p>

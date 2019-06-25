@@ -40,6 +40,7 @@ Spectral data functions
     :toctree: generated/
 
     process_raw_spectra
+    process_spectra_point
     process_filter_0Doppler
     process_filter_spectra_noise
     process_filter_srhohv
@@ -210,7 +211,7 @@ from .process_grid import process_grid, process_raw_grid, process_grid_point
 from .process_grid import process_grid_time_stats, process_grid_time_stats2
 
 from .process_spectra import process_raw_spectra, process_spectral_power
-from .process_spectra import process_spectral_phase
+from .process_spectra import process_spectra_point, process_spectral_phase
 from .process_spectra import process_spectral_reflectivity
 from .process_spectra import process_spectral_differential_reflectivity
 from .process_spectra import process_spectral_differential_phase
@@ -222,7 +223,6 @@ from .process_spectra import process_differential_reflectivity
 from .process_spectra import process_differential_phase
 from .process_spectra import process_rhohv, process_Doppler_velocity
 from .process_spectra import process_Doppler_width
-
 
 from .process_timeseries import process_point_measurement, process_qvp
 from .process_timeseries import process_rqvp, process_evp, process_svp

@@ -165,6 +165,7 @@
 <span class="sd">            &#39;SPECTRA&#39; format output:</span>
 <span class="sd">                &#39;FILTER_SPECTRA_NOISE&#39;: process_filter_spectra_noise</span>
 <span class="sd">                &#39;RAW_SPECTRA&#39;: process_raw_spectra</span>
+<span class="sd">                &#39;SPECTRA_POINT&#39;: process_spectra_point</span>
 <span class="sd">                &#39;SPECTRAL_PHASE&#39;: process_spectral_phase</span>
 <span class="sd">                &#39;SPECTRAL_POWER&#39;: process_spectral_power</span>
 <span class="sd">                &#39;SPECTRAL_REFLECTIVITY&#39;: process_spectral_reflectivity</span>
@@ -244,6 +245,9 @@
         <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;GRID&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;RAW_SPECTRA&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_raw_spectra&#39;</span>
+        <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;SPECTRA_POINT&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_spectra_point&#39;</span>
         <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;SPECTRAL_POWER&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_spectral_power&#39;</span>

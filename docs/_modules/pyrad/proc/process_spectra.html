@@ -64,6 +64,7 @@
 <span class="sd">    :toctree: generated/</span>
 
 <span class="sd">    process_raw_spectra</span>
+<span class="sd">    process_spectra_point</span>
 <span class="sd">    process_filter_0Doppler</span>
 <span class="sd">    process_filter_srhohv</span>
 <span class="sd">    process_filter_spectra_noise</span>
@@ -86,6 +87,7 @@
 <span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">netCDF4</span> <span class="k">import</span> <span class="n">num2date</span>
 
 <span class="kn">import</span> <span class="nn">pyart</span>
 
@@ -126,6 +128,328 @@
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;ERROR: No valid radar&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
     <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">radar_list</span><span class="p">[</span><span class="n">ind_rad</span><span class="p">])}</span>
+
+    <span class="k">return</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="n">ind_rad</span></div>
+
+
+<div class="viewcode-block" id="process_spectra_point"><a class="viewcode-back" href="../../../proc.html#pyrad.proc.process_spectra_point">[docs]</a><span class="k">def</span> <span class="nf">process_spectra_point</span><span class="p">(</span><span class="n">procstatus</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">radar_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Obtains the spectra data at a point location.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    procstatus : int</span>
+<span class="sd">        Processing status: 0 initializing, 1 processing volume,</span>
+<span class="sd">        2 post-processing</span>
+<span class="sd">    dscfg : dictionary of dictionaries</span>
+<span class="sd">        data set configuration. Accepted Configuration Keywords::</span>
+
+<span class="sd">        datatype : string. Dataset keyword</span>
+<span class="sd">            The data type where we want to extract the point measurement</span>
+<span class="sd">        latlon : boolean. Dataset keyword</span>
+<span class="sd">            if True position is obtained from latitude, longitude information,</span>
+<span class="sd">            otherwise position is obtained from antenna coordinates</span>
+<span class="sd">            (range, azimuth, elevation).</span>
+<span class="sd">        truealt : boolean. Dataset keyword</span>
+<span class="sd">            if True the user input altitude is used to determine the point of</span>
+<span class="sd">            interest.</span>
+<span class="sd">            if False use the altitude at a given radar elevation ele over the</span>
+<span class="sd">            point of interest.</span>
+<span class="sd">        lon : float. Dataset keyword</span>
+<span class="sd">            the longitude [deg]. Use when latlon is True.</span>
+<span class="sd">        lat : float. Dataset keyword</span>
+<span class="sd">            the latitude [deg]. Use when latlon is True.</span>
+<span class="sd">        alt : float. Dataset keyword</span>
+<span class="sd">            altitude [m MSL]. Use when latlon is True.</span>
+<span class="sd">        ele : float. Dataset keyword</span>
+<span class="sd">            radar elevation [deg]. Use when latlon is False or when latlon is</span>
+<span class="sd">            True and truealt is False</span>
+<span class="sd">        azi : float. Dataset keyword</span>
+<span class="sd">            radar azimuth [deg]. Use when latlon is False</span>
+<span class="sd">        rng : float. Dataset keyword</span>
+<span class="sd">            range from radar [m]. Use when latlon is False</span>
+<span class="sd">        AziTol : float. Dataset keyword</span>
+<span class="sd">            azimuthal tolerance to determine which radar azimuth to use [deg]</span>
+<span class="sd">        EleTol : float. Dataset keyword</span>
+<span class="sd">            elevation tolerance to determine which radar elevation to use [deg]</span>
+<span class="sd">        RngTol : float. Dataset keyword</span>
+<span class="sd">            range tolerance to determine which radar bin to use [m]</span>
+
+<span class="sd">    radar_list : list of Radar objects</span>
+<span class="sd">          Optional. list of radar objects</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    new_dataset : dict</span>
+<span class="sd">        dictionary containing the data and metadata at the point of interest</span>
+<span class="sd">    ind_rad : int</span>
+<span class="sd">        radar index</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">procstatus</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="n">field_names</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">datatypedescr</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;datatype&#39;</span><span class="p">]:</span>
+        <span class="n">radarnr</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_datatype_fields</span><span class="p">(</span><span class="n">datatypedescr</span><span class="p">)</span>
+        <span class="n">field_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">))</span>
+
+    <span class="n">ind_rad</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">radarnr</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">8</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">procstatus</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;initialized&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="c1"># prepare for exit</span>
+        <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;psr_poi&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;point_coordinates_WGS84_lon_lat_alt&#39;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;point_coordinates_WGS84_lon_lat_alt&#39;</span><span class="p">]),</span>
+            <span class="s1">&#39;antenna_coordinates_az_el_r&#39;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;antenna_coordinates_az_el_r&#39;</span><span class="p">]),</span>
+            <span class="s1">&#39;final&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="n">ind_rad</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">radar_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">radar_list</span><span class="p">[</span><span class="n">ind_rad</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;ERROR: No valid psr&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="n">psr</span> <span class="o">=</span> <span class="n">radar_list</span><span class="p">[</span><span class="n">ind_rad</span><span class="p">]</span>
+
+    <span class="n">projparams</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">projparams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;proj&#39;</span><span class="p">:</span> <span class="s1">&#39;pyart_aeqd&#39;</span><span class="p">})</span>
+    <span class="n">projparams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;lon_0&#39;</span><span class="p">:</span> <span class="n">psr</span><span class="o">.</span><span class="n">longitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]})</span>
+    <span class="n">projparams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;lat_0&#39;</span><span class="p">:</span> <span class="n">psr</span><span class="o">.</span><span class="n">latitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]})</span>
+
+    <span class="n">truealt</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;truealt&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">latlon</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;latlon&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">latlon</span><span class="p">:</span>
+        <span class="n">lon</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;lon&#39;</span><span class="p">]</span>
+        <span class="n">lat</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;lat&#39;</span><span class="p">]</span>
+        <span class="n">alt</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;alt&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span>
+        <span class="n">latlon_tol</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;latlonTol&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">alt_tol</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;altTol&#39;</span><span class="p">,</span> <span class="mf">100.</span><span class="p">)</span>
+
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">geographic_to_cartesian</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">projparams</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">truealt</span><span class="p">:</span>
+            <span class="n">ke</span> <span class="o">=</span> <span class="mf">4.</span><span class="o">/</span><span class="mf">3.</span>  <span class="c1"># constant for effective radius</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="mf">6378100.</span>  <span class="c1"># earth radius</span>
+            <span class="n">re</span> <span class="o">=</span> <span class="n">a</span> <span class="o">*</span> <span class="n">ke</span>  <span class="c1"># effective radius</span>
+
+            <span class="n">elrad</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;ele&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.</span>
+            <span class="n">r_ground</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span> <span class="o">**</span> <span class="mf">2.</span> <span class="o">+</span> <span class="n">y</span> <span class="o">**</span> <span class="mf">2.</span><span class="p">)</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">r_ground</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">elrad</span><span class="p">)</span>
+            <span class="n">alt_psr</span> <span class="o">=</span> <span class="n">psr</span><span class="o">.</span><span class="n">altitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+                <span class="n">r</span> <span class="o">**</span> <span class="mf">2.</span> <span class="o">+</span> <span class="n">re</span> <span class="o">**</span> <span class="mf">2.</span> <span class="o">+</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">re</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">elrad</span><span class="p">))</span> <span class="o">-</span> <span class="n">re</span>
+            <span class="n">alt_psr</span> <span class="o">=</span> <span class="n">alt_psr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">alt_psr</span> <span class="o">=</span> <span class="n">alt</span>
+
+        <span class="n">r</span><span class="p">,</span> <span class="n">az</span><span class="p">,</span> <span class="n">el</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">cartesian_to_antenna</span><span class="p">(</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">alt_psr</span><span class="o">-</span><span class="n">psr</span><span class="o">.</span><span class="n">altitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">az</span> <span class="o">=</span> <span class="n">az</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">el</span> <span class="o">=</span> <span class="n">el</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;rng&#39;</span><span class="p">]</span>
+        <span class="n">az</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;azi&#39;</span><span class="p">]</span>
+        <span class="n">el</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;ele&#39;</span><span class="p">]</span>
+        <span class="n">azi_tol</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AziTol&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">ele_tol</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;EleTol&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">rng_tol</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;RngTol&#39;</span><span class="p">,</span> <span class="mf">50.</span><span class="p">)</span>
+
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">alt</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">antenna_to_cartesian</span><span class="p">(</span><span class="n">r</span><span class="o">/</span><span class="mf">1000.</span><span class="p">,</span> <span class="n">az</span><span class="p">,</span> <span class="n">el</span><span class="p">)</span>
+        <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">cartesian_to_geographic</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">projparams</span><span class="p">)</span>
+        <span class="n">lon</span> <span class="o">=</span> <span class="n">lon</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">lat</span> <span class="o">=</span> <span class="n">lat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">d_az</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">psr</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">az</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">d_az</span> <span class="o">&gt;</span> <span class="n">azi_tol</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39; No psr bin found for point (az, el, r):(&#39;</span> <span class="o">+</span>
+             <span class="nb">str</span><span class="p">(</span><span class="n">az</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;, &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">el</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;, &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">+</span>
+             <span class="s1">&#39;). Minimum distance to psr azimuth &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">d_az</span><span class="p">)</span> <span class="o">+</span>
+             <span class="s1">&#39; larger than tolerance&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="n">d_el</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">psr</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">el</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">d_el</span> <span class="o">&gt;</span> <span class="n">ele_tol</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39; No psr bin found for point (az, el, r):(&#39;</span> <span class="o">+</span>
+             <span class="nb">str</span><span class="p">(</span><span class="n">az</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;, &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">el</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;, &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">+</span>
+             <span class="s1">&#39;). Minimum distance to psr elevation &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">d_el</span><span class="p">)</span> <span class="o">+</span>
+             <span class="s1">&#39; larger than tolerance&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="n">d_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">psr</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">r</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">d_r</span> <span class="o">&gt;</span> <span class="n">rng_tol</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39; No psr bin found for point (az, el, r):(&#39;</span> <span class="o">+</span>
+             <span class="nb">str</span><span class="p">(</span><span class="n">az</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;, &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">el</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;, &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">+</span>
+             <span class="s1">&#39;). Minimum distance to psr range bin &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">d_r</span><span class="p">)</span> <span class="o">+</span>
+             <span class="s1">&#39; larger than tolerance&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="n">ind_ray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">psr</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">az</span><span class="p">)</span> <span class="o">+</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">psr</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">el</span><span class="p">))</span>
+    <span class="n">ind_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">psr</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">r</span><span class="p">))</span>
+
+    <span class="n">time_poi</span> <span class="o">=</span> <span class="n">num2date</span><span class="p">(</span><span class="n">psr</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">],</span> <span class="n">psr</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">],</span>
+                        <span class="n">psr</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="s1">&#39;calendar&#39;</span><span class="p">])</span>
+
+    <span class="c1"># initialize dataset</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;initialized&#39;</span><span class="p">]:</span>
+        <span class="n">psr_poi</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">psr</span><span class="p">)</span>
+
+        <span class="c1"># prepare space for field</span>
+        <span class="n">psr_poi</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="n">field_names</span><span class="p">:</span>
+            <span class="n">psr_poi</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">psr</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">]))</span>
+            <span class="n">psr_poi</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+
+        <span class="c1"># fixed psr objects parameters</span>
+        <span class="n">psr_poi</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">r</span><span class="p">])</span>
+        <span class="n">psr_poi</span><span class="o">.</span><span class="n">ngates</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="n">psr_poi</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">make_time_unit_str</span><span class="p">(</span><span class="n">time_poi</span><span class="p">)</span>
+        <span class="n">psr_poi</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="n">psr_poi</span><span class="o">.</span><span class="n">scan_type</span> <span class="o">=</span> <span class="s1">&#39;poi_time_series&#39;</span>
+        <span class="n">psr_poi</span><span class="o">.</span><span class="n">sweep_number</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="n">psr_poi</span><span class="o">.</span><span class="n">nsweeps</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">psr_poi</span><span class="o">.</span><span class="n">sweep_mode</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s1">&#39;poi_time_series&#39;</span><span class="p">])</span>
+        <span class="n">psr_poi</span><span class="o">.</span><span class="n">rays_are_indexed</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">psr_poi</span><span class="o">.</span><span class="n">ray_angle_res</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">psr_poi</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">az</span><span class="p">])</span>
+
+        <span class="c1"># ray dependent psr objects parameters</span>
+        <span class="n">psr_poi</span><span class="o">.</span><span class="n">sweep_end_ray_index</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span>
+        <span class="n">psr_poi</span><span class="o">.</span><span class="n">rays_per_sweep</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span>
+        <span class="n">psr_poi</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+        <span class="n">psr_poi</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+        <span class="n">psr_poi</span><span class="o">.</span><span class="n">nrays</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_velocity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_velocity</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="k">if</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_frequency</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+
+        <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;psr_poi&#39;</span><span class="p">:</span> <span class="n">psr_poi</span><span class="p">,</span>
+            <span class="s1">&#39;point_coordinates_WGS84_lon_lat_alt&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">alt</span><span class="p">],</span>
+            <span class="s1">&#39;antenna_coordinates_az_el_r&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">az</span><span class="p">,</span> <span class="n">el</span><span class="p">,</span> <span class="n">r</span><span class="p">]}</span>
+
+        <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;initialized&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">psr_poi</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;psr_poi&#39;</span><span class="p">]</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">num2date</span><span class="p">(</span>
+        <span class="mi">0</span><span class="p">,</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">],</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="s1">&#39;calendar&#39;</span><span class="p">])</span>
+    <span class="n">psr_poi</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+        <span class="n">psr_poi</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="p">(</span><span class="n">time_poi</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">())</span>
+    <span class="n">psr_poi</span><span class="o">.</span><span class="n">sweep_end_ray_index</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">psr_poi</span><span class="o">.</span><span class="n">rays_per_sweep</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">psr_poi</span><span class="o">.</span><span class="n">nrays</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">psr_poi</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">az</span><span class="p">)</span>
+    <span class="n">psr_poi</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">el</span><span class="p">)</span>
+
+    <span class="n">psr_poi</span><span class="o">.</span><span class="n">gate_longitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">nrays</span><span class="p">,</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">ngates</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">*</span><span class="n">lon</span><span class="p">)</span>
+    <span class="n">psr_poi</span><span class="o">.</span><span class="n">gate_latitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">nrays</span><span class="p">,</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">ngates</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">*</span><span class="n">lat</span><span class="p">)</span>
+    <span class="n">psr_poi</span><span class="o">.</span><span class="n">gate_altitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span>
+        <span class="n">alt</span><span class="p">,</span> <span class="p">(</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">nrays</span><span class="p">,</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">ngates</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="n">field_names</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">psr</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Field &#39;</span><span class="o">+</span><span class="n">field_name</span><span class="o">+</span><span class="s1">&#39; not in psr object&#39;</span><span class="p">)</span>
+            <span class="n">poi_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">poi_data</span> <span class="o">=</span> <span class="n">psr</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="n">poi_data</span> <span class="o">=</span> <span class="n">poi_data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">)</span>
+
+        <span class="c1"># Put data in radar object</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">psr_poi</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">poi_data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses_max</span> <span class="o">==</span> <span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">:</span>
+                <span class="n">psr_poi</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">psr_poi</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">poi_data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span> <span class="o">&lt;</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">:</span>
+                <span class="n">poi_data_aux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">))</span>
+                <span class="n">poi_data_aux</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">]</span> <span class="o">=</span> <span class="n">poi_data</span>
+                <span class="n">psr_poi</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">psr_poi</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">poi_data_aux</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">poi_data_aux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">nrays</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">))</span>
+                <span class="n">poi_data_aux</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">nrays</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">:</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">psr_poi</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+                <span class="n">poi_data_aux</span><span class="p">[</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">nrays</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">poi_data</span>
+                <span class="n">psr_poi</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">poi_data_aux</span>
+
+    <span class="k">if</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_velocity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_velocity</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_velocity</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">psr</span><span class="o">.</span><span class="n">Doppler_velocity</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                    <span class="mi">1</span><span class="p">,</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Doppler_data</span> <span class="o">=</span> <span class="n">psr</span><span class="o">.</span><span class="n">Doppler_velocity</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="n">Doppler_data</span> <span class="o">=</span> <span class="n">Doppler_data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses_max</span> <span class="o">==</span> <span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">:</span>
+                <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_velocity</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_velocity</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span>
+                    <span class="n">Doppler_data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span> <span class="o">&lt;</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">:</span>
+                <span class="n">Doppler_aux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">))</span>
+                <span class="n">Doppler_aux</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">]</span> <span class="o">=</span> <span class="n">Doppler_data</span>
+                <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_velocity</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_velocity</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">Doppler_aux</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">Doppler_aux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">nrays</span><span class="p">,</span> <span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">))</span>
+                <span class="n">Doppler_aux</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">nrays</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_velocity</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+                <span class="n">Doppler_aux</span><span class="p">[</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">nrays</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">Doppler_data</span>
+                <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_velocity</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Doppler_aux</span>
+
+    <span class="k">if</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_frequency</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">psr</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                    <span class="mi">1</span><span class="p">,</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Doppler_data</span> <span class="o">=</span> <span class="n">psr</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="n">Doppler_data</span> <span class="o">=</span> <span class="n">Doppler_data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses_max</span> <span class="o">==</span> <span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">:</span>
+                <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span>
+                    <span class="n">Doppler_data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span> <span class="o">&lt;</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">:</span>
+                <span class="n">Doppler_aux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">))</span>
+                <span class="n">Doppler_aux</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">]</span> <span class="o">=</span> <span class="n">Doppler_data</span>
+                <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">Doppler_aux</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">Doppler_aux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">nrays</span><span class="p">,</span> <span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">))</span>
+                <span class="n">Doppler_aux</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">nrays</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+                <span class="n">Doppler_aux</span><span class="p">[</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">nrays</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">Doppler_data</span>
+                <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Doppler_aux</span>
+
+    <span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">,</span> <span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">)</span>
+
+    <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;psr_poi&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">psr_poi</span>
+
+    <span class="c1"># prepare for exit</span>
+    <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">psr_poi</span><span class="p">,</span>
+        <span class="s1">&#39;point_coordinates_WGS84_lon_lat_alt&#39;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;point_coordinates_WGS84_lon_lat_alt&#39;</span><span class="p">]),</span>
+        <span class="s1">&#39;antenna_coordinates_az_el_r&#39;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;antenna_coordinates_az_el_r&#39;</span><span class="p">]),</span>
+        <span class="s1">&#39;final&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
 
     <span class="k">return</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="n">ind_rad</span></div>
 

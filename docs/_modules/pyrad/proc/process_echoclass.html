@@ -593,8 +593,6 @@
 
 <span class="sd">        datatype : list of string. Dataset keyword</span>
 <span class="sd">            The input data types</span>
-<span class="sd">        SNRmin : float. Dataset keyword</span>
-<span class="sd">            The minimum SNR to keep the data.</span>
 <span class="sd">    radar_list : list of Radar objects</span>
 <span class="sd">        Optional. list of radar objects</span>
 
@@ -892,10 +890,19 @@
 <span class="sd">        HYDRO_METHOD : string. Dataset keyword</span>
 <span class="sd">            The hydrometeor classification method. One of the following:</span>
 <span class="sd">            SEMISUPERVISED</span>
-<span class="sd">        RADARCENTROIDS : string. Datset keyword</span>
+<span class="sd">        RADARCENTROIDS : string. Dataset keyword</span>
 <span class="sd">            Used with HYDRO_METHOD SEMISUPERVISED. The name of the radar of</span>
 <span class="sd">            which the derived centroids will be used. One of the following: A</span>
 <span class="sd">            Albis, L Lema, P Plaine Morte, DX50</span>
+<span class="sd">        compute_entropy : bool. Dataset keyword</span>
+<span class="sd">            If true the entropy is computed and the field hydroclass_entropy</span>
+<span class="sd">            is output</span>
+<span class="sd">        output_distances : bool. Dataset keyword</span>
+<span class="sd">            If true the de-mixing algorithm based on the distances to the</span>
+<span class="sd">            centroids is computed and the field proportions of each</span>
+<span class="sd">            hydrometeor in the radar range gate is output</span>
+<span class="sd">        vectorize : bool. Dataset keyword</span>
+<span class="sd">            If true a vectorized version of the algorithm is used</span>
 <span class="sd">    radar_list : list of Radar objects</span>
 <span class="sd">        Optional. list of radar objects</span>
 

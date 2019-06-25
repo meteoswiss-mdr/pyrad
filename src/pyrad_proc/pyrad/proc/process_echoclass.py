@@ -537,8 +537,6 @@ def process_filter_vel_diff(procstatus, dscfg, radar_list=None):
 
         datatype : list of string. Dataset keyword
             The input data types
-        SNRmin : float. Dataset keyword
-            The minimum SNR to keep the data.
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -836,10 +834,19 @@ def process_hydroclass(procstatus, dscfg, radar_list=None):
         HYDRO_METHOD : string. Dataset keyword
             The hydrometeor classification method. One of the following:
             SEMISUPERVISED
-        RADARCENTROIDS : string. Datset keyword
+        RADARCENTROIDS : string. Dataset keyword
             Used with HYDRO_METHOD SEMISUPERVISED. The name of the radar of
             which the derived centroids will be used. One of the following: A
             Albis, L Lema, P Plaine Morte, DX50
+        compute_entropy : bool. Dataset keyword
+            If true the entropy is computed and the field hydroclass_entropy
+            is output
+        output_distances : bool. Dataset keyword
+            If true the de-mixing algorithm based on the distances to the
+            centroids is computed and the field proportions of each
+            hydrometeor in the radar range gate is output
+        vectorize : bool. Dataset keyword
+            If true a vectorized version of the algorithm is used
     radar_list : list of Radar objects
         Optional. list of radar objects
 

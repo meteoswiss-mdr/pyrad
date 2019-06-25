@@ -8,6 +8,7 @@ Functions to processes spectral data.
     :toctree: generated/
 
     process_raw_spectra
+    process_spectra_point
     process_filter_0Doppler
     process_filter_srhohv
     process_filter_spectra_noise
@@ -30,6 +31,7 @@ Functions to processes spectral data.
 from copy import deepcopy
 from warnings import warn
 import numpy as np
+from netCDF4 import num2date
 
 import pyart
 
@@ -70,6 +72,328 @@ def process_raw_spectra(procstatus, dscfg, radar_list=None):
         warn('ERROR: No valid radar')
         return None, None
     new_dataset = {'radar_out': deepcopy(radar_list[ind_rad])}
+
+    return new_dataset, ind_rad
+
+
+def process_spectra_point(procstatus, dscfg, radar_list=None):
+    """
+    Obtains the spectra data at a point location.
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : string. Dataset keyword
+            The data type where we want to extract the point measurement
+        latlon : boolean. Dataset keyword
+            if True position is obtained from latitude, longitude information,
+            otherwise position is obtained from antenna coordinates
+            (range, azimuth, elevation).
+        truealt : boolean. Dataset keyword
+            if True the user input altitude is used to determine the point of
+            interest.
+            if False use the altitude at a given radar elevation ele over the
+            point of interest.
+        lon : float. Dataset keyword
+            the longitude [deg]. Use when latlon is True.
+        lat : float. Dataset keyword
+            the latitude [deg]. Use when latlon is True.
+        alt : float. Dataset keyword
+            altitude [m MSL]. Use when latlon is True.
+        ele : float. Dataset keyword
+            radar elevation [deg]. Use when latlon is False or when latlon is
+            True and truealt is False
+        azi : float. Dataset keyword
+            radar azimuth [deg]. Use when latlon is False
+        rng : float. Dataset keyword
+            range from radar [m]. Use when latlon is False
+        AziTol : float. Dataset keyword
+            azimuthal tolerance to determine which radar azimuth to use [deg]
+        EleTol : float. Dataset keyword
+            elevation tolerance to determine which radar elevation to use [deg]
+        RngTol : float. Dataset keyword
+            range tolerance to determine which radar bin to use [m]
+
+    radar_list : list of Radar objects
+          Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the data and metadata at the point of interest
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus == 0:
+        return None, None
+
+    field_names = []
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+        field_names.append(get_fieldname_pyart(datatype))
+
+    ind_rad = int(radarnr[5:8])-1
+
+    if procstatus == 2:
+        if dscfg['initialized'] == 0:
+            return None, None
+
+        # prepare for exit
+        new_dataset = {
+            'radar_out': dscfg['global_data']['psr_poi'],
+            'point_coordinates_WGS84_lon_lat_alt': (
+                dscfg['global_data']['point_coordinates_WGS84_lon_lat_alt']),
+            'antenna_coordinates_az_el_r': (
+                dscfg['global_data']['antenna_coordinates_az_el_r']),
+            'final': True}
+
+        return new_dataset, ind_rad
+
+    if (radar_list is None) or (radar_list[ind_rad] is None):
+        warn('ERROR: No valid psr')
+        return None, None
+    psr = radar_list[ind_rad]
+
+    projparams = dict()
+    projparams.update({'proj': 'pyart_aeqd'})
+    projparams.update({'lon_0': psr.longitude['data']})
+    projparams.update({'lat_0': psr.latitude['data']})
+
+    truealt = dscfg.get('truealt', True)
+    latlon = dscfg.get('latlon', False)
+
+    if latlon:
+        lon = dscfg['lon']
+        lat = dscfg['lat']
+        alt = dscfg.get('alt', 0.)
+        latlon_tol = dscfg.get('latlonTol', 1.)
+        alt_tol = dscfg.get('altTol', 100.)
+
+        x, y = pyart.core.geographic_to_cartesian(lon, lat, projparams)
+
+        if not truealt:
+            ke = 4./3.  # constant for effective radius
+            a = 6378100.  # earth radius
+            re = a * ke  # effective radius
+
+            elrad = dscfg['ele'] * np.pi / 180.
+            r_ground = np.sqrt(x ** 2. + y ** 2.)
+            r = r_ground / np.cos(elrad)
+            alt_psr = psr.altitude['data']+np.sqrt(
+                r ** 2. + re ** 2. + 2. * r * re * np.sin(elrad)) - re
+            alt_psr = alt_psr[0]
+        else:
+            alt_psr = alt
+
+        r, az, el = pyart.core.cartesian_to_antenna(
+            x, y, alt_psr-psr.altitude['data'])
+        r = r[0]
+        az = az[0]
+        el = el[0]
+    else:
+        r = dscfg['rng']
+        az = dscfg['azi']
+        el = dscfg['ele']
+        azi_tol = dscfg.get('AziTol', 0.5)
+        ele_tol = dscfg.get('EleTol', 0.5)
+        rng_tol = dscfg.get('RngTol', 50.)
+
+        x, y, alt = pyart.core.antenna_to_cartesian(r/1000., az, el)
+        lon, lat = pyart.core.cartesian_to_geographic(x, y, projparams)
+        lon = lon[0]
+        lat = lat[0]
+
+    d_az = np.min(np.abs(psr.azimuth['data'] - az))
+    if d_az > azi_tol:
+        warn(' No psr bin found for point (az, el, r):(' +
+             str(az)+', '+str(el)+', '+str(r) +
+             '). Minimum distance to psr azimuth '+str(d_az) +
+             ' larger than tolerance')
+        return None, None
+
+    d_el = np.min(np.abs(psr.elevation['data'] - el))
+    if d_el > ele_tol:
+        warn(' No psr bin found for point (az, el, r):(' +
+             str(az)+', '+str(el)+', '+str(r) +
+             '). Minimum distance to psr elevation '+str(d_el) +
+             ' larger than tolerance')
+        return None, None
+
+    d_r = np.min(np.abs(psr.range['data'] - r))
+    if d_r > rng_tol:
+        warn(' No psr bin found for point (az, el, r):(' +
+             str(az)+', '+str(el)+', '+str(r) +
+             '). Minimum distance to psr range bin '+str(d_r) +
+             ' larger than tolerance')
+        return None, None
+
+    ind_ray = np.argmin(np.abs(psr.azimuth['data'] - az) +
+                        np.abs(psr.elevation['data'] - el))
+    ind_rng = np.argmin(np.abs(psr.range['data'] - r))
+
+    time_poi = num2date(psr.time['data'][ind_ray], psr.time['units'],
+                        psr.time['calendar'])
+
+    # initialize dataset
+    if not dscfg['initialized']:
+        psr_poi = deepcopy(psr)
+
+        # prepare space for field
+        psr_poi.fields = dict()
+        for field_name in field_names:
+            psr_poi.add_field(field_name, deepcopy(psr.fields[field_name]))
+            psr_poi.fields[field_name]['data'] = np.array([])
+
+        # fixed psr objects parameters
+        psr_poi.range['data'] = np.array([r])
+        psr_poi.ngates = 1
+
+        psr_poi.time['units'] = pyart.io.make_time_unit_str(time_poi)
+        psr_poi.time['data'] = np.array([])
+        psr_poi.scan_type = 'poi_time_series'
+        psr_poi.sweep_number['data'] = np.array([], dtype=np.int32)
+        psr_poi.nsweeps = 1
+        psr_poi.sweep_mode['data'] = np.array(['poi_time_series'])
+        psr_poi.rays_are_indexed = None
+        psr_poi.ray_angle_res = None
+        psr_poi.fixed_angle['data'] = np.array([az])
+
+        # ray dependent psr objects parameters
+        psr_poi.sweep_end_ray_index['data'] = np.array([-1], dtype='int32')
+        psr_poi.rays_per_sweep['data'] = np.array([0], dtype='int32')
+        psr_poi.azimuth['data'] = np.array([], dtype='float64')
+        psr_poi.elevation['data'] = np.array([], dtype='float64')
+        psr_poi.nrays = 0
+
+        if psr_poi.Doppler_velocity is not None:
+            psr_poi.Doppler_velocity['data'] = np.array([])
+        if psr_poi.Doppler_frequency is not None:
+            psr_poi.Doppler_frequency['data'] = np.array([])
+
+        dscfg['global_data'] = {
+            'psr_poi': psr_poi,
+            'point_coordinates_WGS84_lon_lat_alt': [lon, lat, alt],
+            'antenna_coordinates_az_el_r': [az, el, r]}
+
+        dscfg['initialized'] = 1
+
+    psr_poi = dscfg['global_data']['psr_poi']
+    start_time = num2date(
+        0, psr_poi.time['units'], psr_poi.time['calendar'])
+    psr_poi.time['data'] = np.append(
+        psr_poi.time['data'], (time_poi - start_time).total_seconds())
+    psr_poi.sweep_end_ray_index['data'][0] += 1
+    psr_poi.rays_per_sweep['data'][0] += 1
+    psr_poi.nrays += 1
+    psr_poi.azimuth['data'] = np.append(psr_poi.azimuth['data'], az)
+    psr_poi.elevation['data'] = np.append(psr_poi.elevation['data'], el)
+
+    psr_poi.gate_longitude['data'] = (
+        np.ones((psr_poi.nrays, psr_poi.ngates), dtype='float64')*lon)
+    psr_poi.gate_latitude['data'] = (
+        np.ones((psr_poi.nrays, psr_poi.ngates), dtype='float64')*lat)
+    psr_poi.gate_altitude['data'] = np.broadcast_to(
+        alt, (psr_poi.nrays, psr_poi.ngates))
+
+    for field_name in field_names:
+        if field_name not in psr.fields:
+            warn('Field '+field_name+' not in psr object')
+            poi_data = np.ma.masked_all((1, 1, psr.npulses_max))
+        else:
+            poi_data = psr.fields[field_name]['data'][ind_ray, ind_rng, :]
+            poi_data = poi_data.reshape(1, 1, psr.npulses_max)
+
+        # Put data in radar object
+        if np.size(psr_poi.fields[field_name]['data']) == 0:
+            psr_poi.fields[field_name]['data'] = poi_data.reshape(
+                1, 1, psr_poi.npulses_max)
+        else:
+            if psr_poi.npulses_max == psr.npulses_max:
+                psr_poi.fields[field_name]['data'] = np.ma.append(
+                    psr_poi.fields[field_name]['data'], poi_data, axis=0)
+            elif psr.npulses_max < psr_poi.npulses_max:
+                poi_data_aux = np.ma.masked_all((1, 1, psr_poi.npulses_max))
+                poi_data_aux[0, 0, 0:psr.npulses_max] = poi_data
+                psr_poi.fields[field_name]['data'] = np.ma.append(
+                    psr_poi.fields[field_name]['data'], poi_data_aux, axis=0)
+            else:
+                poi_data_aux = np.ma.masked_all(
+                    (psr_poi.nrays, 1, psr.npulses_max))
+                poi_data_aux[0:psr_poi.nrays-1, :, 0:psr_poi.npulses_max] = (
+                    psr_poi.fields[field_name]['data'])
+                poi_data_aux[psr_poi.nrays-1, :, :] = poi_data
+                psr_poi.fields[field_name]['data'] = poi_data_aux
+
+    if psr_poi.Doppler_velocity is not None:
+        if np.size(psr_poi.Doppler_velocity['data']) == 0:
+            psr_poi.Doppler_velocity['data'] = (
+                psr.Doppler_velocity['data'][ind_ray, :].reshape(
+                    1, psr_poi.npulses_max))
+        else:
+            Doppler_data = psr.Doppler_velocity['data'][ind_ray, :]
+            Doppler_data = Doppler_data.reshape(1, psr.npulses_max)
+
+            if psr_poi.npulses_max == psr.npulses_max:
+                psr_poi.Doppler_velocity['data'] = np.ma.append(
+                    psr_poi.Doppler_velocity['data'],
+                    Doppler_data, axis=0)
+            elif psr.npulses_max < psr_poi.npulses_max:
+                Doppler_aux = np.ma.masked_all((1, psr_poi.npulses_max))
+                Doppler_aux[0, 0:psr.npulses_max] = Doppler_data
+                psr_poi.Doppler_velocity['data'] = np.ma.append(
+                    psr_poi.Doppler_velocity['data'], Doppler_aux, axis=0)
+            else:
+                Doppler_aux = np.ma.masked_all(
+                    (psr_poi.nrays, psr.npulses_max))
+                Doppler_aux[0:psr_poi.nrays-1, 0:psr_poi.npulses_max] = (
+                    psr_poi.Doppler_velocity['data'])
+                Doppler_aux[psr_poi.nrays-1, :] = Doppler_data
+                psr_poi.Doppler_velocity['data'] = Doppler_aux
+
+    if psr_poi.Doppler_frequency is not None:
+        if np.size(psr_poi.Doppler_frequency['data']) == 0:
+            psr_poi.Doppler_frequency['data'] = (
+                psr.Doppler_frequency['data'][ind_ray, :].reshape(
+                    1, psr_poi.npulses_max))
+        else:
+            Doppler_data = psr.Doppler_frequency['data'][ind_ray, :]
+            Doppler_data = Doppler_data.reshape(1, psr.npulses_max)
+
+            if psr_poi.npulses_max == psr.npulses_max:
+                psr_poi.Doppler_frequency['data'] = np.ma.append(
+                    psr_poi.Doppler_frequency['data'],
+                    Doppler_data, axis=0)
+            elif psr.npulses_max < psr_poi.npulses_max:
+                Doppler_aux = np.ma.masked_all((1, psr_poi.npulses_max))
+                Doppler_aux[0, 0:psr.npulses_max] = Doppler_data
+                psr_poi.Doppler_frequency['data'] = np.ma.append(
+                    psr_poi.Doppler_frequency['data'], Doppler_aux, axis=0)
+            else:
+                Doppler_aux = np.ma.masked_all(
+                    (psr_poi.nrays, psr.npulses_max))
+                Doppler_aux[0:psr_poi.nrays-1, 0:psr_poi.npulses_max] = (
+                    psr_poi.Doppler_frequency['data'])
+                Doppler_aux[psr_poi.nrays-1, :] = Doppler_data
+                psr_poi.Doppler_frequency['data'] = Doppler_aux
+
+    psr_poi.npulses_max = max(psr_poi.npulses_max, psr.npulses_max)
+
+    dscfg['global_data']['psr_poi'] = psr_poi
+
+    # prepare for exit
+    new_dataset = {
+        'radar_out': psr_poi,
+        'point_coordinates_WGS84_lon_lat_alt': (
+            dscfg['global_data']['point_coordinates_WGS84_lon_lat_alt']),
+        'antenna_coordinates_az_el_r': (
+            dscfg['global_data']['antenna_coordinates_az_el_r']),
+        'final': False}
 
     return new_dataset, ind_rad
 
