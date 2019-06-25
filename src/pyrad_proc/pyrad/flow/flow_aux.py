@@ -984,6 +984,8 @@ def _create_cfg_dict(cfgfile):
         cfg.update({'AntennaGain': None})
     if 'attg' not in cfg:
         cfg.update({'attg': None})
+    if 'metranet_read_lib' not in cfg:
+        cfg.update({'metranet_read_lib': 'C'})
     if 'ScanPeriod' not in cfg:
         warn('WARNING: Scan period not specified. ' +
              'Assumed default value 5 min')
@@ -1047,6 +1049,7 @@ def _create_datacfg_dict(cfg):
     datacfg.update({'CosmoRunFreq': int(cfg['CosmoRunFreq'])})
     datacfg.update({'CosmoForecasted': int(cfg['CosmoForecasted'])})
     datacfg.update({'path_convention': cfg['path_convention']})
+    datacfg.update({'metranet_read_lib': cfg['metranet_read_lib']})
 
     # Modify size of radar or radar spectra object
     datacfg.update({'elmin': cfg.get('elmin', None)})
@@ -1105,6 +1108,7 @@ def _create_dscfg_dict(cfg, dataset):
     dscfg.update({'CosmoRunFreq': cfg['CosmoRunFreq']})
     dscfg.update({'CosmoForecasted': cfg['CosmoForecasted']})
     dscfg.update({'path_convention': cfg['path_convention']})
+    dscfg.update({'metranet_read_lib': cfg['metranet_read_lib']})
     dscfg.update({'RadarName': cfg['RadarName']})
     dscfg.update({'ScanPeriod': cfg['ScanPeriod']})
     dscfg.update({'mflossh': cfg['mflossh']})

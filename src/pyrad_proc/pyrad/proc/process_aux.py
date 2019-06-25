@@ -109,6 +109,7 @@ def get_process_func(dataset_type, dsname):
             'SPECTRA' format output:
                 'FILTER_SPECTRA_NOISE': process_filter_spectra_noise
                 'RAW_SPECTRA': process_raw_spectra
+                'SPECTRA_POINT': process_spectra_point
                 'SPECTRAL_PHASE': process_spectral_phase
                 'SPECTRAL_POWER': process_spectral_power
                 'SPECTRAL_REFLECTIVITY': process_spectral_reflectivity
@@ -188,6 +189,9 @@ def get_process_func(dataset_type, dsname):
         dsformat = 'GRID'
     elif dataset_type == 'RAW_SPECTRA':
         func_name = 'process_raw_spectra'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'SPECTRA_POINT':
+        func_name = 'process_spectra_point'
         dsformat = 'SPECTRA'
     elif dataset_type == 'SPECTRAL_POWER':
         func_name = 'process_spectral_power'

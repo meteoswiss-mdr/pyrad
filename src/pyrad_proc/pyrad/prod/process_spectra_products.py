@@ -20,18 +20,109 @@ from ..graph.plots_spectra import plot_range_Doppler, plot_Doppler
 from ..graph.plots_spectra import plot_complex_range_Doppler
 from ..graph.plots_spectra import plot_amp_phase_range_Doppler
 from ..graph.plots_spectra import plot_complex_Doppler, plot_amp_phase_Doppler
+from ..graph.plots_spectra import plot_time_Doppler, plot_complex_time_Doppler
+from ..graph.plots_spectra import plot_amp_phase_time_Doppler
+
+from pyart.util import datetime_from_radar
 
 
 def generate_spectra_products(dataset, prdcfg):
     """
-    generates grid products. Accepted product types:
-        'COMPLEX_RANGE_DOPPLER': Plots the complex spectra range-Doppler
+    generates spectra products. Accepted product types:
+        'AMPLITUDE_PHASE_DOPPLER': Plots a complex Doppler spectrum
+            making two separate plots for the module and phase of the signal
             User defined parameters:
-                coord1, coord2: dict
-                    The two lat-lon coordinates marking the limits. They have
-                    the keywords 'lat' and 'lon' [degree]. The altitude limits
-                    are defined by the parameters in 'rhiImageConfig' in the
-                    'loc' configuration file
+                ray, rng : int
+                    index of the ray and range to plot
+                xaxis_info : str
+                    The xaxis type. Can be 'Doppler_velocity' or
+                    'Doppler frequency'
+                ampli_vmin, ampli_vmax, phase_vmin, phase_vmax : float or None
+                    Minimum and maximum of the color scale for the module and
+                    phase
+        'AMPLITUDE_PHASE_RANGE_DOPPLER': Plots a complex spectra range-Doppler
+            making two separate plots for the module and phase of the signal
+            User defined parameters:
+                ray : int
+                    index of the ray to plot
+                xaxis_info : str
+                    The xaxis type. Can be 'Doppler_velocity' or
+                    'Doppler frequency'
+                ampli_vmin, ampli_vmax, phase_vmin, phase_vmax : float or None
+                    Minimum and maximum of the color scale for the module and
+                    phase
+        'AMPLITUDE_PHASE_TIME_DOPPLER': Plots a complex spectra time-Doppler
+            making two separate plots for the module and phase of the signal
+            User defined parameters:
+                xaxis_info : str
+                    The xaxis type. Can be 'Doppler_velocity' or
+                    'Doppler frequency'
+                ampli_vmin, ampli_vmax, phase_vmin, phase_vmax : float or None
+                    Minimum and maximum of the color scale for the module and
+                    phase
+                plot_type : str
+                    Can be 'final' or 'temporal'. If final the data is only
+                    plotted at the end of the processing
+        'COMPLEX_DOPPLER': Plots a complex Doppler spectrum making two
+            separate plots for the real and imaginary parts
+            User defined parameters:
+                ray, rng : int
+                    index of the ray and range to plot
+                xaxis_info : str
+                    The xaxis type. Can be 'Doppler_velocity' or
+                    'Doppler frequency'
+                vmin, vmax : float or None
+                    Minimum and maximum of the color scale
+        'COMPLEX_RANGE_DOPPLER': Plots the complex spectra range-Doppler
+            making two separate plots for the real and imaginary parts
+            User defined parameters:
+                ray : int
+                    index of the ray to plot
+                xaxis_info : str
+                    The xaxis type. Can be 'Doppler_velocity' or
+                    'Doppler frequency'
+                vmin, vmax : float or None
+                    Minimum and maximum of the color scale
+        'COMPLEX_TIME_DOPPLER': Plots the complex spectra time-Doppler
+            making two separate plots for the real and imaginary parts
+            User defined parameters:
+                xaxis_info : str
+                    The xaxis type. Can be 'Doppler_velocity' or
+                    'Doppler frequency'
+                vmin, vmax : float or None
+                    Minimum and maximum of the color scale
+                plot_type : str
+                    Can be 'final' or 'temporal'. If final the data is only
+                    plotted at the end of the processing
+        'DOPPLER': Plots a Doppler spectrum variable
+            User defined parameters:
+                ray, rng : int
+                    index of the ray and range to plot
+                xaxis_info : str
+                    The xaxis type. Can be 'Doppler_velocity' or
+                    'Doppler frequency'
+                vmin, vmax : float or None
+                    Minimum and maximum of the color scale
+        'RANGE_DOPPLER': Makes a range-Doppler plot of spectral data
+            User defined parameters:
+                ray : int
+                    index of the ray to plot
+                xaxis_info : str
+                    The xaxis type. Can be 'Doppler_velocity' or
+                    'Doppler frequency'
+                vmin, vmax : float or None
+                    Minimum and maximum of the color scale
+        'TIME_DOPPLER': Makes a time-Doppler plot of spectral data at a point
+            of interest.
+            User defined parameters:
+                xaxis_info : str
+                    The xaxis type. Can be 'Doppler_velocity' or
+                    'Doppler frequency'
+                vmin, vmax : float or None
+                    Minimum and maximum of the color scale
+                plot_type : str
+                    Can be 'final' or 'temporal'. If final the data is only
+                    plotted at the end of the processing
 
     Parameters
     ----------
@@ -71,7 +162,7 @@ def generate_spectra_products(dataset, prdcfg):
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
-            'surface', prdcfg['dstype'], prdcfg['voltype'],
+            'range_Doppler', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='ray'+str(ray),
             timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
@@ -81,6 +172,65 @@ def generate_spectra_products(dataset, prdcfg):
         plot_range_Doppler(
             dataset['radar_out'], field_name, ray, prdcfg, fname_list,
             xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+    if prdcfg['type'] == 'TIME_DOPPLER':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # user defined values
+        xaxis_info = prdcfg.get('xaxis_info', 'Doppler_velocity')
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
+        plot_type = prdcfg.get('plot_type', 'final')
+
+        if plot_type == 'final' and not dataset['final']:
+            return None
+
+        if 'antenna_coordinates_az_el_r' in dataset:
+            az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
+            el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
+            r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
+            gateinfo = ('az'+az+'r'+r+'el'+el)
+        else:
+            lon = '{:.3f}'.format(
+                dataset['point_coordinates_WGS84_lon_lat_alt'][0])
+            lat = '{:.3f}'.format(
+                dataset['point_coordinates_WGS84_lon_lat_alt'][1])
+            alt = '{:.1f}'.format(
+                dataset['point_coordinates_WGS84_lon_lat_alt'][2])
+            gateinfo = ('lon'+lon+'lat'+lat+'alt'+alt)
+
+        time_info = datetime_from_radar(dataset['radar_out'])
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=time_info)
+
+        fname_list = make_filename(
+            'time_Doppler', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo=gateinfo,
+            timeinfo=time_info, runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        if dataset['radar_out'].nrays == 1:
+            plot_Doppler(
+                dataset['radar_out'], field_name, 0, 0, prdcfg, fname_list,
+                xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
+        else:
+            plot_time_Doppler(
+                dataset['radar_out'], field_name, prdcfg, fname_list,
+                xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -107,7 +257,7 @@ def generate_spectra_products(dataset, prdcfg):
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
-            'surface', prdcfg['dstype'], prdcfg['voltype'],
+            'Doppler', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='ray'+str(ray)+'rng'+str(rng),
             timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
@@ -142,7 +292,7 @@ def generate_spectra_products(dataset, prdcfg):
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
-            'surface', prdcfg['dstype'], prdcfg['voltype'],
+            'c_range_Doppler', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='ray'+str(ray),
             timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
@@ -152,6 +302,65 @@ def generate_spectra_products(dataset, prdcfg):
         plot_complex_range_Doppler(
             dataset['radar_out'], field_name, ray, prdcfg, fname_list,
             xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+    if prdcfg['type'] == 'COMPLEX_TIME_DOPPLER':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # user defined values
+        xaxis_info = prdcfg.get('xaxis_info', 'Doppler_velocity')
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
+        plot_type = prdcfg.get('plot_type', 'final')
+
+        if plot_type == 'final' and not dataset['final']:
+            return None
+
+        if 'antenna_coordinates_az_el_r' in dataset:
+            az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
+            el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
+            r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
+            gateinfo = ('az'+az+'r'+r+'el'+el)
+        else:
+            lon = '{:.3f}'.format(
+                dataset['point_coordinates_WGS84_lon_lat_alt'][0])
+            lat = '{:.3f}'.format(
+                dataset['point_coordinates_WGS84_lon_lat_alt'][1])
+            alt = '{:.1f}'.format(
+                dataset['point_coordinates_WGS84_lon_lat_alt'][2])
+            gateinfo = ('lon'+lon+'lat'+lat+'alt'+alt)
+
+        time_info = datetime_from_radar(dataset['radar_out'])
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=time_info)
+
+        fname_list = make_filename(
+            'c_time_Doppler', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo=gateinfo,
+            timeinfo=time_info, runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        if dataset['radar_out'].nrays == 1:
+            plot_complex_Doppler(
+                dataset['radar_out'], field_name, 0, 0, prdcfg, fname_list,
+                xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
+        else:
+            plot_complex_time_Doppler(
+                dataset['radar_out'], field_name, prdcfg, fname_list,
+                xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -178,7 +387,7 @@ def generate_spectra_products(dataset, prdcfg):
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
-            'surface', prdcfg['dstype'], prdcfg['voltype'],
+            'c_Doppler', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='ray'+str(ray)+'rng'+str(rng),
             timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
@@ -216,7 +425,7 @@ def generate_spectra_products(dataset, prdcfg):
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
-            'surface', prdcfg['dstype'], prdcfg['voltype'],
+            'ap_Doppler', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='ray'+str(ray)+'rng'+str(rng),
             timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
@@ -255,7 +464,7 @@ def generate_spectra_products(dataset, prdcfg):
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
-            'surface', prdcfg['dstype'], prdcfg['voltype'],
+            'ap_range_Doppler', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='ray'+str(ray),
             timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
@@ -267,6 +476,72 @@ def generate_spectra_products(dataset, prdcfg):
             xaxis_info=xaxis_info, ampli_vmin=ampli_vmin,
             ampli_vmax=ampli_vmax, phase_vmin=phase_vmin,
             phase_vmax=phase_vmax)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+    if prdcfg['type'] == 'AMPLITUDE_PHASE_TIME_DOPPLER':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # user defined values
+        ray = prdcfg.get('ray', 0)
+        xaxis_info = prdcfg.get('xaxis_info', 'Doppler_velocity')
+        ampli_vmin = prdcfg.get('ampli_vmin', None)
+        ampli_vmax = prdcfg.get('ampli_vmax', None)
+        phase_vmin = prdcfg.get('phase_vmin', None)
+        phase_vmax = prdcfg.get('phase_vmax', None)
+        plot_type = prdcfg.get('plot_type', 'final')
+
+        if plot_type == 'final' and not dataset['final']:
+            return None
+
+        if 'antenna_coordinates_az_el_r' in dataset:
+            az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
+            el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
+            r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
+            gateinfo = ('az'+az+'r'+r+'el'+el)
+        else:
+            lon = '{:.3f}'.format(
+                dataset['point_coordinates_WGS84_lon_lat_alt'][0])
+            lat = '{:.3f}'.format(
+                dataset['point_coordinates_WGS84_lon_lat_alt'][1])
+            alt = '{:.1f}'.format(
+                dataset['point_coordinates_WGS84_lon_lat_alt'][2])
+            gateinfo = ('lon'+lon+'lat'+lat+'alt'+alt)
+
+        time_info = datetime_from_radar(dataset['radar_out'])
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=time_info)
+
+        fname_list = make_filename(
+            'ap_time_Doppler', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo=gateinfo,
+            timeinfo=time_info, runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        if dataset['radar_out'].nrays == 1:
+            plot_amp_phase_Doppler(
+                dataset['radar_out'], field_name, 0, 0, prdcfg, fname_list,
+                xaxis_info=xaxis_info, ampli_vmin=ampli_vmin,
+                ampli_vmax=ampli_vmax, phase_vmin=phase_vmin,
+                phase_vmax=phase_vmax)
+        else:
+            plot_amp_phase_time_Doppler(
+                dataset['radar_out'], field_name, prdcfg, fname_list,
+                xaxis_info=xaxis_info, ampli_vmin=ampli_vmin,
+                ampli_vmax=ampli_vmax, phase_vmin=phase_vmin,
+                phase_vmax=phase_vmax)
 
         print('----- save to '+' '.join(fname_list))
 

@@ -45,12 +45,15 @@ Plots
     plot_ml_ts
     plot_sun_hits
     plot_sun_retrieval_ts
-    plot_range_Doppler
     plot_Doppler
-    plot_complex_range_Doppler
-    plot_amp_phase_range_Doppler
     plot_complex_Doppler
     plot_amp_phase_Doppler
+    plot_range_Doppler
+    plot_complex_range_Doppler
+    plot_amp_phase_range_Doppler
+    plot_time_Doppler
+    plot_complex_time_Doppler
+    plot_amp_phase_time_Doppler
     get_colobar_label
     get_field_name
     _plot_time_range
@@ -73,6 +76,8 @@ from .plots_grid import plot_longitude_slice, plot_latlon_slice
 from .plots_spectra import plot_range_Doppler, plot_complex_range_Doppler
 from .plots_spectra import plot_amp_phase_range_Doppler, plot_Doppler
 from .plots_spectra import plot_complex_Doppler, plot_amp_phase_Doppler
+from .plots_spectra import plot_time_Doppler, plot_complex_time_Doppler
+from .plots_spectra import plot_amp_phase_time_Doppler
 
 from .plots_timeseries import plot_timeseries, plot_timeseries_comp
 from .plots_timeseries import plot_monitoring_ts, plot_intercomp_scores_ts
