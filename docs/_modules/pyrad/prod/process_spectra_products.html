@@ -79,6 +79,8 @@
 <span class="kn">from</span> <span class="nn">..graph.plots_spectra</span> <span class="k">import</span> <span class="n">plot_time_Doppler</span><span class="p">,</span> <span class="n">plot_complex_time_Doppler</span>
 <span class="kn">from</span> <span class="nn">..graph.plots_spectra</span> <span class="k">import</span> <span class="n">plot_amp_phase_time_Doppler</span>
 
+<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">find_ray_index</span><span class="p">,</span> <span class="n">find_rng_index</span>
+
 <span class="kn">from</span> <span class="nn">pyart.util</span> <span class="k">import</span> <span class="n">datetime_from_radar</span>
 
 
@@ -88,8 +90,15 @@
 <span class="sd">        &#39;AMPLITUDE_PHASE_DOPPLER&#39;: Plots a complex Doppler spectrum</span>
 <span class="sd">            making two separate plots for the module and phase of the signal</span>
 <span class="sd">            User defined parameters:</span>
-<span class="sd">                ray, rng : int</span>
-<span class="sd">                    index of the ray and range to plot</span>
+<span class="sd">                azi, ele, rng : float</span>
+<span class="sd">                    azimuth and elevation (deg) and range (m) of the ray to</span>
+<span class="sd">                    plot</span>
+<span class="sd">                azi_to, ele_tol, rng_tol : float</span>
+<span class="sd">                    azimuth and elevation (deg) and range (m) tolerance</span>
+<span class="sd">                    respect to nominal position to plot. Default 1, 1, 50.</span>
+<span class="sd">                ind_ray, ind_rng : int</span>
+<span class="sd">                    index of the ray and range to plot. Alternative to</span>
+<span class="sd">                    defining its antenna coordinates</span>
 <span class="sd">                xaxis_info : str</span>
 <span class="sd">                    The xaxis type. Can be &#39;Doppler_velocity&#39; or</span>
 <span class="sd">                    &#39;Doppler frequency&#39;</span>
@@ -99,8 +108,14 @@
 <span class="sd">        &#39;AMPLITUDE_PHASE_RANGE_DOPPLER&#39;: Plots a complex spectra range-Doppler</span>
 <span class="sd">            making two separate plots for the module and phase of the signal</span>
 <span class="sd">            User defined parameters:</span>
-<span class="sd">                ray : int</span>
-<span class="sd">                    index of the ray to plot</span>
+<span class="sd">                azi, ele : float</span>
+<span class="sd">                    azimuth and elevation (deg) of the ray to plot</span>
+<span class="sd">                azi_to, ele_tol : float</span>
+<span class="sd">                    azimuth and elevation (deg) tolerance respect to nominal</span>
+<span class="sd">                    position to plot. Default 1, 1.</span>
+<span class="sd">                ind_ray : int</span>
+<span class="sd">                    index of the ray to plot. Alternative to</span>
+<span class="sd">                    defining its antenna coordinates</span>
 <span class="sd">                xaxis_info : str</span>
 <span class="sd">                    The xaxis type. Can be &#39;Doppler_velocity&#39; or</span>
 <span class="sd">                    &#39;Doppler frequency&#39;</span>
@@ -122,8 +137,15 @@
 <span class="sd">        &#39;COMPLEX_DOPPLER&#39;: Plots a complex Doppler spectrum making two</span>
 <span class="sd">            separate plots for the real and imaginary parts</span>
 <span class="sd">            User defined parameters:</span>
-<span class="sd">                ray, rng : int</span>
-<span class="sd">                    index of the ray and range to plot</span>
+<span class="sd">                azi, ele, rng : float</span>
+<span class="sd">                    azimuth and elevation (deg) and range (m) of the ray to</span>
+<span class="sd">                    plot</span>
+<span class="sd">                azi_to, ele_tol, rng_tol : float</span>
+<span class="sd">                    azimuth and elevation (deg) and range (m) tolerance</span>
+<span class="sd">                    respect to nominal position to plot. Default 1, 1, 50.</span>
+<span class="sd">                ind_ray, ind_rng : int</span>
+<span class="sd">                    index of the ray and range to plot. Alternative to</span>
+<span class="sd">                    defining its antenna coordinates</span>
 <span class="sd">                xaxis_info : str</span>
 <span class="sd">                    The xaxis type. Can be &#39;Doppler_velocity&#39; or</span>
 <span class="sd">                    &#39;Doppler frequency&#39;</span>
@@ -132,8 +154,14 @@
 <span class="sd">        &#39;COMPLEX_RANGE_DOPPLER&#39;: Plots the complex spectra range-Doppler</span>
 <span class="sd">            making two separate plots for the real and imaginary parts</span>
 <span class="sd">            User defined parameters:</span>
-<span class="sd">                ray : int</span>
-<span class="sd">                    index of the ray to plot</span>
+<span class="sd">                azi, ele : float</span>
+<span class="sd">                    azimuth and elevation (deg) of the ray to plot</span>
+<span class="sd">                azi_to, ele_tol : float</span>
+<span class="sd">                    azimuth and elevation (deg) tolerance respect to nominal</span>
+<span class="sd">                    position to plot. Default 1, 1.</span>
+<span class="sd">                ind_ray : int</span>
+<span class="sd">                    index of the ray to plot. Alternative to</span>
+<span class="sd">                    defining its antenna coordinates</span>
 <span class="sd">                xaxis_info : str</span>
 <span class="sd">                    The xaxis type. Can be &#39;Doppler_velocity&#39; or</span>
 <span class="sd">                    &#39;Doppler frequency&#39;</span>
@@ -152,8 +180,15 @@
 <span class="sd">                    plotted at the end of the processing</span>
 <span class="sd">        &#39;DOPPLER&#39;: Plots a Doppler spectrum variable</span>
 <span class="sd">            User defined parameters:</span>
-<span class="sd">                ray, rng : int</span>
-<span class="sd">                    index of the ray and range to plot</span>
+<span class="sd">                azi, ele, rng : float</span>
+<span class="sd">                    azimuth and elevation (deg) and range (m) of the ray to</span>
+<span class="sd">                    plot</span>
+<span class="sd">                azi_to, ele_tol, rng_tol : float</span>
+<span class="sd">                    azimuth and elevation (deg) and range (m) tolerance</span>
+<span class="sd">                    respect to nominal position to plot. Default 1, 1, 50.</span>
+<span class="sd">                ind_ray, ind_rng : int</span>
+<span class="sd">                    index of the ray and range to plot. Alternative to</span>
+<span class="sd">                    defining its antenna coordinates</span>
 <span class="sd">                xaxis_info : str</span>
 <span class="sd">                    The xaxis type. Can be &#39;Doppler_velocity&#39; or</span>
 <span class="sd">                    &#39;Doppler frequency&#39;</span>
@@ -161,8 +196,14 @@
 <span class="sd">                    Minimum and maximum of the color scale</span>
 <span class="sd">        &#39;RANGE_DOPPLER&#39;: Makes a range-Doppler plot of spectral data</span>
 <span class="sd">            User defined parameters:</span>
-<span class="sd">                ray : int</span>
-<span class="sd">                    index of the ray to plot</span>
+<span class="sd">                azi, ele : float</span>
+<span class="sd">                    azimuth and elevation (deg) of the ray to plot</span>
+<span class="sd">                azi_to, ele_tol : float</span>
+<span class="sd">                    azimuth and elevation (deg) tolerance respect to nominal</span>
+<span class="sd">                    position to plot. Default 1, 1.</span>
+<span class="sd">                ind_ray : int</span>
+<span class="sd">                    index of the ray to plot. Alternative to</span>
+<span class="sd">                    defining its antenna coordinates</span>
 <span class="sd">                xaxis_info : str</span>
 <span class="sd">                    The xaxis type. Can be &#39;Doppler_velocity&#39; or</span>
 <span class="sd">                    &#39;Doppler frequency&#39;</span>
@@ -193,7 +234,6 @@
 <span class="sd">    None or name of generated files</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">dssavedir</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dsname&#39;</span><span class="p">]</span>
     <span class="k">if</span> <span class="s1">&#39;dssavename&#39;</span> <span class="ow">in</span> <span class="n">prdcfg</span><span class="p">:</span>
         <span class="n">dssavedir</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dssavename&#39;</span><span class="p">]</span>
@@ -208,7 +248,28 @@
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="c1"># user defined values</span>
-        <span class="n">ray</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ray&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">azi</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;azi&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">ele</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ele&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">azi_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;azi_tol&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">ele_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ele_tol&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">azi</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">ele</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ind_ray</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ind_ray&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">azi</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">]</span>
+            <span class="n">ele</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ind_ray</span> <span class="o">=</span> <span class="n">find_ray_index</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">ele</span><span class="p">,</span> <span class="n">azi</span><span class="p">,</span>
+                <span class="n">ele_tol</span><span class="o">=</span><span class="n">ele_tol</span><span class="p">,</span> <span class="n">azi_tol</span><span class="o">=</span><span class="n">azi_tol</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ind_ray</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Ray azi=&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">azi</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;, ele=&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ele</span><span class="p">)</span> <span class="o">+</span>
+                 <span class="s1">&#39; out of radar coverage&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">gateinfo</span> <span class="o">=</span> <span class="s1">&#39;az&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">azi</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;el&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ele</span><span class="p">)</span>
+
         <span class="n">xaxis_info</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;xaxis_info&#39;</span><span class="p">,</span> <span class="s1">&#39;Doppler_velocity&#39;</span><span class="p">)</span>
         <span class="n">vmin</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vmin&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">vmax</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vmax&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -219,15 +280,20 @@
 
         <span class="n">fname_list</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
             <span class="s1">&#39;range_Doppler&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
-            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;ray&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ray</span><span class="p">),</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="n">gateinfo</span><span class="p">,</span>
             <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
 
-        <span class="n">plot_range_Doppler</span><span class="p">(</span>
-            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ray</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
-            <span class="n">xaxis_info</span><span class="o">=</span><span class="n">xaxis_info</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">ngates</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">plot_Doppler</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_ray</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span>
+                <span class="n">fname_list</span><span class="p">,</span> <span class="n">xaxis_info</span><span class="o">=</span><span class="n">xaxis_info</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plot_range_Doppler</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_ray</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
+                <span class="n">xaxis_info</span><span class="o">=</span><span class="n">xaxis_info</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----- save to &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fname_list</span><span class="p">))</span>
 
@@ -302,8 +368,36 @@
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="c1"># user defined values</span>
-        <span class="n">ray</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ray&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">rng</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rng&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">azi</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;azi&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">ele</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ele&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rng&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">azi_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;azi_tol&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">ele_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ele_tol&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">rng_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rng_tol&#39;</span><span class="p">,</span> <span class="mf">50.</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">azi</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">ele</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">rng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ind_ray</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ind_ray&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">ind_rng</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ind_rng&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">azi</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">]</span>
+            <span class="n">ele</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">]</span>
+            <span class="n">rng</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rng</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ind_ray</span> <span class="o">=</span> <span class="n">find_ray_index</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">ele</span><span class="p">,</span> <span class="n">azi</span><span class="p">,</span>
+                <span class="n">ele_tol</span><span class="o">=</span><span class="n">ele_tol</span><span class="p">,</span> <span class="n">azi_tol</span><span class="o">=</span><span class="n">azi_tol</span><span class="p">)</span>
+            <span class="n">ind_rng</span> <span class="o">=</span> <span class="n">find_rng_index</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">rng</span><span class="p">,</span> <span class="n">rng_tol</span><span class="o">=</span><span class="n">rng_tol</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ind_rng</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">ind_ray</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Point azi=&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">azi</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;, ele=&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ele</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;, rng=&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span> <span class="o">+</span>
+                 <span class="s1">&#39; out of radar coverage&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">gateinfo</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39;az&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">azi</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;el&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ele</span><span class="p">)</span> <span class="o">+</span>
+            <span class="s1">&#39;r&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rng</span><span class="p">))</span>
+
         <span class="n">xaxis_info</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;xaxis_info&#39;</span><span class="p">,</span> <span class="s1">&#39;Doppler_velocity&#39;</span><span class="p">)</span>
         <span class="n">vmin</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vmin&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">vmax</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vmax&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -314,15 +408,15 @@
 
         <span class="n">fname_list</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
             <span class="s1">&#39;Doppler&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
-            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;ray&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ray</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;rng&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">rng</span><span class="p">),</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="n">gateinfo</span><span class="p">,</span>
             <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
 
         <span class="n">plot_Doppler</span><span class="p">(</span>
-            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ray</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
-            <span class="n">xaxis_info</span><span class="o">=</span><span class="n">xaxis_info</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
+            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_ray</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span>
+            <span class="n">fname_list</span><span class="p">,</span> <span class="n">xaxis_info</span><span class="o">=</span><span class="n">xaxis_info</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----- save to &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fname_list</span><span class="p">))</span>
 
@@ -338,7 +432,28 @@
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="c1"># user defined values</span>
-        <span class="n">ray</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ray&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">azi</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;azi&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">ele</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ele&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">azi_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;azi_tol&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">ele_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ele_tol&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">azi</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">ele</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ind_ray</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ind_ray&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">azi</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">]</span>
+            <span class="n">ele</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ind_ray</span> <span class="o">=</span> <span class="n">find_ray_index</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">ele</span><span class="p">,</span> <span class="n">azi</span><span class="p">,</span>
+                <span class="n">ele_tol</span><span class="o">=</span><span class="n">ele_tol</span><span class="p">,</span> <span class="n">azi_tol</span><span class="o">=</span><span class="n">azi_tol</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ind_ray</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Ray azi=&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">azi</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;, ele=&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ele</span><span class="p">)</span> <span class="o">+</span>
+                 <span class="s1">&#39; out of radar coverage&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">gateinfo</span> <span class="o">=</span> <span class="s1">&#39;az&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">azi</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;el&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ele</span><span class="p">)</span>
+
         <span class="n">xaxis_info</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;xaxis_info&#39;</span><span class="p">,</span> <span class="s1">&#39;Doppler_velocity&#39;</span><span class="p">)</span>
         <span class="n">vmin</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vmin&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">vmax</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vmax&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -349,15 +464,20 @@
 
         <span class="n">fname_list</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
             <span class="s1">&#39;c_range_Doppler&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
-            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;ray&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ray</span><span class="p">),</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="n">gateinfo</span><span class="p">,</span>
             <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
 
-        <span class="n">plot_complex_range_Doppler</span><span class="p">(</span>
-            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ray</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
-            <span class="n">xaxis_info</span><span class="o">=</span><span class="n">xaxis_info</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">ngates</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">plot_complex_Doppler</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_ray</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span>
+                <span class="n">fname_list</span><span class="p">,</span> <span class="n">xaxis_info</span><span class="o">=</span><span class="n">xaxis_info</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plot_complex_range_Doppler</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_ray</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
+                <span class="n">xaxis_info</span><span class="o">=</span><span class="n">xaxis_info</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----- save to &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fname_list</span><span class="p">))</span>
 
@@ -432,8 +552,36 @@
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="c1"># user defined values</span>
-        <span class="n">ray</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ray&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">rng</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rng&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">azi</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;azi&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">ele</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ele&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rng&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">azi_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;azi_tol&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">ele_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ele_tol&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">rng_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rng_tol&#39;</span><span class="p">,</span> <span class="mf">50.</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">azi</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">ele</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">rng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ind_ray</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ind_ray&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">ind_rng</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ind_rng&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">azi</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">]</span>
+            <span class="n">ele</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">]</span>
+            <span class="n">rng</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rng</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ind_ray</span> <span class="o">=</span> <span class="n">find_ray_index</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">ele</span><span class="p">,</span> <span class="n">azi</span><span class="p">,</span>
+                <span class="n">ele_tol</span><span class="o">=</span><span class="n">ele_tol</span><span class="p">,</span> <span class="n">azi_tol</span><span class="o">=</span><span class="n">azi_tol</span><span class="p">)</span>
+            <span class="n">ind_rng</span> <span class="o">=</span> <span class="n">find_rng_index</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">rng</span><span class="p">,</span> <span class="n">rng_tol</span><span class="o">=</span><span class="n">rng_tol</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ind_rng</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">ind_ray</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Point azi=&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">azi</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;, ele=&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ele</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;, rng=&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span> <span class="o">+</span>
+                 <span class="s1">&#39; out of radar coverage&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">gateinfo</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39;az&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">azi</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;el&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ele</span><span class="p">)</span> <span class="o">+</span>
+            <span class="s1">&#39;r&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rng</span><span class="p">))</span>
+
         <span class="n">xaxis_info</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;xaxis_info&#39;</span><span class="p">,</span> <span class="s1">&#39;Doppler_velocity&#39;</span><span class="p">)</span>
         <span class="n">vmin</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vmin&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">vmax</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vmax&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -444,15 +592,15 @@
 
         <span class="n">fname_list</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
             <span class="s1">&#39;c_Doppler&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
-            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;ray&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ray</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;rng&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">rng</span><span class="p">),</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="n">gateinfo</span><span class="p">,</span>
             <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
 
         <span class="n">plot_complex_Doppler</span><span class="p">(</span>
-            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ray</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
-            <span class="n">xaxis_info</span><span class="o">=</span><span class="n">xaxis_info</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
+            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_ray</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span>
+            <span class="n">fname_list</span><span class="p">,</span> <span class="n">xaxis_info</span><span class="o">=</span><span class="n">xaxis_info</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----- save to &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fname_list</span><span class="p">))</span>
 
@@ -468,8 +616,36 @@
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="c1"># user defined values</span>
-        <span class="n">ray</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ray&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">rng</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rng&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">azi</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;azi&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">ele</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ele&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rng&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">azi_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;azi_tol&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">ele_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ele_tol&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">rng_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rng_tol&#39;</span><span class="p">,</span> <span class="mf">50.</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">azi</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">ele</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">rng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ind_ray</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ind_ray&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">ind_rng</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ind_rng&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">azi</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">]</span>
+            <span class="n">ele</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">]</span>
+            <span class="n">rng</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rng</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ind_ray</span> <span class="o">=</span> <span class="n">find_ray_index</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">ele</span><span class="p">,</span> <span class="n">azi</span><span class="p">,</span>
+                <span class="n">ele_tol</span><span class="o">=</span><span class="n">ele_tol</span><span class="p">,</span> <span class="n">azi_tol</span><span class="o">=</span><span class="n">azi_tol</span><span class="p">)</span>
+            <span class="n">ind_rng</span> <span class="o">=</span> <span class="n">find_rng_index</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">rng</span><span class="p">,</span> <span class="n">rng_tol</span><span class="o">=</span><span class="n">rng_tol</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ind_rng</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">ind_ray</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Point azi=&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">azi</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;, ele=&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ele</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;, rng=&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span> <span class="o">+</span>
+                 <span class="s1">&#39; out of radar coverage&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">gateinfo</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39;az&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">azi</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;el&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ele</span><span class="p">)</span> <span class="o">+</span>
+            <span class="s1">&#39;r&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rng</span><span class="p">))</span>
+
         <span class="n">xaxis_info</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;xaxis_info&#39;</span><span class="p">,</span> <span class="s1">&#39;Doppler_velocity&#39;</span><span class="p">)</span>
         <span class="n">ampli_vmin</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ampli_vmin&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">ampli_vmax</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ampli_vmax&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -482,15 +658,15 @@
 
         <span class="n">fname_list</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
             <span class="s1">&#39;ap_Doppler&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
-            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;ray&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ray</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;rng&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">rng</span><span class="p">),</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="n">gateinfo</span><span class="p">,</span>
             <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
 
         <span class="n">plot_amp_phase_Doppler</span><span class="p">(</span>
-            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ray</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
-            <span class="n">xaxis_info</span><span class="o">=</span><span class="n">xaxis_info</span><span class="p">,</span> <span class="n">ampli_vmin</span><span class="o">=</span><span class="n">ampli_vmin</span><span class="p">,</span>
+            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_ray</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span>
+            <span class="n">fname_list</span><span class="p">,</span> <span class="n">xaxis_info</span><span class="o">=</span><span class="n">xaxis_info</span><span class="p">,</span> <span class="n">ampli_vmin</span><span class="o">=</span><span class="n">ampli_vmin</span><span class="p">,</span>
             <span class="n">ampli_vmax</span><span class="o">=</span><span class="n">ampli_vmax</span><span class="p">,</span> <span class="n">phase_vmin</span><span class="o">=</span><span class="n">phase_vmin</span><span class="p">,</span>
             <span class="n">phase_vmax</span><span class="o">=</span><span class="n">phase_vmax</span><span class="p">)</span>
 
@@ -508,7 +684,28 @@
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="c1"># user defined values</span>
-        <span class="n">ray</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ray&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">azi</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;azi&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">ele</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ele&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">azi_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;azi_tol&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">ele_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ele_tol&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">azi</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">ele</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ind_ray</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ind_ray&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">azi</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">]</span>
+            <span class="n">ele</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ind_ray</span> <span class="o">=</span> <span class="n">find_ray_index</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">ele</span><span class="p">,</span> <span class="n">azi</span><span class="p">,</span>
+                <span class="n">ele_tol</span><span class="o">=</span><span class="n">ele_tol</span><span class="p">,</span> <span class="n">azi_tol</span><span class="o">=</span><span class="n">azi_tol</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ind_ray</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Ray azi=&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">azi</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;, ele=&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ele</span><span class="p">)</span> <span class="o">+</span>
+                 <span class="s1">&#39; out of radar coverage&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">gateinfo</span> <span class="o">=</span> <span class="s1">&#39;az&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">azi</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;el&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ele</span><span class="p">)</span>
+
         <span class="n">xaxis_info</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;xaxis_info&#39;</span><span class="p">,</span> <span class="s1">&#39;Doppler_velocity&#39;</span><span class="p">)</span>
         <span class="n">ampli_vmin</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ampli_vmin&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">ampli_vmax</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ampli_vmax&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -521,17 +718,24 @@
 
         <span class="n">fname_list</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
             <span class="s1">&#39;ap_range_Doppler&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
-            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;ray&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ray</span><span class="p">),</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="n">gateinfo</span><span class="p">,</span>
             <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
 
-        <span class="n">plot_amp_phase_range_Doppler</span><span class="p">(</span>
-            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ray</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
-            <span class="n">xaxis_info</span><span class="o">=</span><span class="n">xaxis_info</span><span class="p">,</span> <span class="n">ampli_vmin</span><span class="o">=</span><span class="n">ampli_vmin</span><span class="p">,</span>
-            <span class="n">ampli_vmax</span><span class="o">=</span><span class="n">ampli_vmax</span><span class="p">,</span> <span class="n">phase_vmin</span><span class="o">=</span><span class="n">phase_vmin</span><span class="p">,</span>
-            <span class="n">phase_vmax</span><span class="o">=</span><span class="n">phase_vmax</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">ngates</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">plot_amp_phase_Doppler</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_ray</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span>
+                <span class="n">fname_list</span><span class="p">,</span> <span class="n">xaxis_info</span><span class="o">=</span><span class="n">xaxis_info</span><span class="p">,</span> <span class="n">ampli_vmin</span><span class="o">=</span><span class="n">ampli_vmin</span><span class="p">,</span>
+                <span class="n">ampli_vmax</span><span class="o">=</span><span class="n">ampli_vmax</span><span class="p">,</span> <span class="n">phase_vmin</span><span class="o">=</span><span class="n">phase_vmin</span><span class="p">,</span>
+                <span class="n">phase_vmax</span><span class="o">=</span><span class="n">phase_vmax</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plot_amp_phase_range_Doppler</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_ray</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
+                <span class="n">xaxis_info</span><span class="o">=</span><span class="n">xaxis_info</span><span class="p">,</span> <span class="n">ampli_vmin</span><span class="o">=</span><span class="n">ampli_vmin</span><span class="p">,</span>
+                <span class="n">ampli_vmax</span><span class="o">=</span><span class="n">ampli_vmax</span><span class="p">,</span> <span class="n">phase_vmin</span><span class="o">=</span><span class="n">phase_vmin</span><span class="p">,</span>
+                <span class="n">phase_vmax</span><span class="o">=</span><span class="n">phase_vmax</span><span class="p">)</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----- save to &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fname_list</span><span class="p">))</span>
 
@@ -547,7 +751,6 @@
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="c1"># user defined values</span>
-        <span class="n">ray</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ray&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">xaxis_info</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;xaxis_info&#39;</span><span class="p">,</span> <span class="s1">&#39;Doppler_velocity&#39;</span><span class="p">)</span>
         <span class="n">ampli_vmin</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ampli_vmin&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">ampli_vmax</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ampli_vmax&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>

@@ -1400,14 +1400,13 @@ def merge_fields_psr_spectra(basepath, basepath_psr, scan_name, voltime,
             warn('Unknown data type '+datatype)
             continue
 
-        filename_psr = glob.glob(filestr)
-        if not filename_psr:
+        filenames_psr = glob.glob(filestr)
+        if not filenames_psr:
             warn('No file found in '+filestr)
             continue
 
-        filename_psr = filename_psr[0]
         psr_aux = pyart.aux_io.read_rainbow_psr_spectra(
-            filename, filename_psr,
+            filename, filenames_psr,
             field_names=[get_fieldname_pyart(datatype)],
             undo_txcorr=undo_txcorr, fold=fold, positive_away=positive_away,
             cpi=cpi, azi_min=azi_min, azi_max=azi_max, ele_min=ele_min,
@@ -1487,14 +1486,13 @@ def merge_fields_psr(basepath, basepath_psr, scan_name, voltime,
             warn('Unknown data type '+datatype)
             continue
 
-        filename_psr = glob.glob(filestr)
-        if not filename_psr:
+        filenames_psr = glob.glob(filestr)
+        if not filenames_psr:
             warn('No file found in '+filestr)
             continue
 
-        filename_psr = filename_psr[0]
         radar_aux = pyart.aux_io.read_rainbow_psr(
-            filename, filename_psr,
+            filename, filenames_psr,
             field_names=[get_fieldname_pyart(datatype)],
             undo_txcorr=undo_txcorr, cpi=cpi, azi_min=azi_min,
             azi_max=azi_max, ele_min=ele_min, ele_max=ele_max,

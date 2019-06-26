@@ -1456,14 +1456,13 @@
             <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unknown data type &#39;</span><span class="o">+</span><span class="n">datatype</span><span class="p">)</span>
             <span class="k">continue</span>
 
-        <span class="n">filename_psr</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">filestr</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename_psr</span><span class="p">:</span>
+        <span class="n">filenames_psr</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">filestr</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filenames_psr</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">filestr</span><span class="p">)</span>
             <span class="k">continue</span>
 
-        <span class="n">filename_psr</span> <span class="o">=</span> <span class="n">filename_psr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">psr_aux</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_rainbow_psr_spectra</span><span class="p">(</span>
-            <span class="n">filename</span><span class="p">,</span> <span class="n">filename_psr</span><span class="p">,</span>
+            <span class="n">filename</span><span class="p">,</span> <span class="n">filenames_psr</span><span class="p">,</span>
             <span class="n">field_names</span><span class="o">=</span><span class="p">[</span><span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)],</span>
             <span class="n">undo_txcorr</span><span class="o">=</span><span class="n">undo_txcorr</span><span class="p">,</span> <span class="n">fold</span><span class="o">=</span><span class="n">fold</span><span class="p">,</span> <span class="n">positive_away</span><span class="o">=</span><span class="n">positive_away</span><span class="p">,</span>
             <span class="n">cpi</span><span class="o">=</span><span class="n">cpi</span><span class="p">,</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">azi_min</span><span class="p">,</span> <span class="n">azi_max</span><span class="o">=</span><span class="n">azi_max</span><span class="p">,</span> <span class="n">ele_min</span><span class="o">=</span><span class="n">ele_min</span><span class="p">,</span>
@@ -1543,14 +1542,13 @@
             <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unknown data type &#39;</span><span class="o">+</span><span class="n">datatype</span><span class="p">)</span>
             <span class="k">continue</span>
 
-        <span class="n">filename_psr</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">filestr</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename_psr</span><span class="p">:</span>
+        <span class="n">filenames_psr</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">filestr</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filenames_psr</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">filestr</span><span class="p">)</span>
             <span class="k">continue</span>
 
-        <span class="n">filename_psr</span> <span class="o">=</span> <span class="n">filename_psr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_rainbow_psr</span><span class="p">(</span>
-            <span class="n">filename</span><span class="p">,</span> <span class="n">filename_psr</span><span class="p">,</span>
+            <span class="n">filename</span><span class="p">,</span> <span class="n">filenames_psr</span><span class="p">,</span>
             <span class="n">field_names</span><span class="o">=</span><span class="p">[</span><span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)],</span>
             <span class="n">undo_txcorr</span><span class="o">=</span><span class="n">undo_txcorr</span><span class="p">,</span> <span class="n">cpi</span><span class="o">=</span><span class="n">cpi</span><span class="p">,</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">azi_min</span><span class="p">,</span>
             <span class="n">azi_max</span><span class="o">=</span><span class="n">azi_max</span><span class="p">,</span> <span class="n">ele_min</span><span class="o">=</span><span class="n">ele_min</span><span class="p">,</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">ele_max</span><span class="p">,</span>
