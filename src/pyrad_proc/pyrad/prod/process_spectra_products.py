@@ -23,6 +23,8 @@ from ..graph.plots_spectra import plot_complex_Doppler, plot_amp_phase_Doppler
 from ..graph.plots_spectra import plot_time_Doppler, plot_complex_time_Doppler
 from ..graph.plots_spectra import plot_amp_phase_time_Doppler
 
+from ..util.radar_utils import find_ray_index, find_rng_index
+
 from pyart.util import datetime_from_radar
 
 
@@ -32,8 +34,15 @@ def generate_spectra_products(dataset, prdcfg):
         'AMPLITUDE_PHASE_DOPPLER': Plots a complex Doppler spectrum
             making two separate plots for the module and phase of the signal
             User defined parameters:
-                ray, rng : int
-                    index of the ray and range to plot
+                azi, ele, rng : float
+                    azimuth and elevation (deg) and range (m) of the ray to
+                    plot
+                azi_to, ele_tol, rng_tol : float
+                    azimuth and elevation (deg) and range (m) tolerance
+                    respect to nominal position to plot. Default 1, 1, 50.
+                ind_ray, ind_rng : int
+                    index of the ray and range to plot. Alternative to
+                    defining its antenna coordinates
                 xaxis_info : str
                     The xaxis type. Can be 'Doppler_velocity' or
                     'Doppler frequency'
@@ -43,8 +52,14 @@ def generate_spectra_products(dataset, prdcfg):
         'AMPLITUDE_PHASE_RANGE_DOPPLER': Plots a complex spectra range-Doppler
             making two separate plots for the module and phase of the signal
             User defined parameters:
-                ray : int
-                    index of the ray to plot
+                azi, ele : float
+                    azimuth and elevation (deg) of the ray to plot
+                azi_to, ele_tol : float
+                    azimuth and elevation (deg) tolerance respect to nominal
+                    position to plot. Default 1, 1.
+                ind_ray : int
+                    index of the ray to plot. Alternative to
+                    defining its antenna coordinates
                 xaxis_info : str
                     The xaxis type. Can be 'Doppler_velocity' or
                     'Doppler frequency'
@@ -66,8 +81,15 @@ def generate_spectra_products(dataset, prdcfg):
         'COMPLEX_DOPPLER': Plots a complex Doppler spectrum making two
             separate plots for the real and imaginary parts
             User defined parameters:
-                ray, rng : int
-                    index of the ray and range to plot
+                azi, ele, rng : float
+                    azimuth and elevation (deg) and range (m) of the ray to
+                    plot
+                azi_to, ele_tol, rng_tol : float
+                    azimuth and elevation (deg) and range (m) tolerance
+                    respect to nominal position to plot. Default 1, 1, 50.
+                ind_ray, ind_rng : int
+                    index of the ray and range to plot. Alternative to
+                    defining its antenna coordinates
                 xaxis_info : str
                     The xaxis type. Can be 'Doppler_velocity' or
                     'Doppler frequency'
@@ -76,8 +98,14 @@ def generate_spectra_products(dataset, prdcfg):
         'COMPLEX_RANGE_DOPPLER': Plots the complex spectra range-Doppler
             making two separate plots for the real and imaginary parts
             User defined parameters:
-                ray : int
-                    index of the ray to plot
+                azi, ele : float
+                    azimuth and elevation (deg) of the ray to plot
+                azi_to, ele_tol : float
+                    azimuth and elevation (deg) tolerance respect to nominal
+                    position to plot. Default 1, 1.
+                ind_ray : int
+                    index of the ray to plot. Alternative to
+                    defining its antenna coordinates
                 xaxis_info : str
                     The xaxis type. Can be 'Doppler_velocity' or
                     'Doppler frequency'
@@ -96,8 +124,15 @@ def generate_spectra_products(dataset, prdcfg):
                     plotted at the end of the processing
         'DOPPLER': Plots a Doppler spectrum variable
             User defined parameters:
-                ray, rng : int
-                    index of the ray and range to plot
+                azi, ele, rng : float
+                    azimuth and elevation (deg) and range (m) of the ray to
+                    plot
+                azi_to, ele_tol, rng_tol : float
+                    azimuth and elevation (deg) and range (m) tolerance
+                    respect to nominal position to plot. Default 1, 1, 50.
+                ind_ray, ind_rng : int
+                    index of the ray and range to plot. Alternative to
+                    defining its antenna coordinates
                 xaxis_info : str
                     The xaxis type. Can be 'Doppler_velocity' or
                     'Doppler frequency'
@@ -105,8 +140,14 @@ def generate_spectra_products(dataset, prdcfg):
                     Minimum and maximum of the color scale
         'RANGE_DOPPLER': Makes a range-Doppler plot of spectral data
             User defined parameters:
-                ray : int
-                    index of the ray to plot
+                azi, ele : float
+                    azimuth and elevation (deg) of the ray to plot
+                azi_to, ele_tol : float
+                    azimuth and elevation (deg) tolerance respect to nominal
+                    position to plot. Default 1, 1.
+                ind_ray : int
+                    index of the ray to plot. Alternative to
+                    defining its antenna coordinates
                 xaxis_info : str
                     The xaxis type. Can be 'Doppler_velocity' or
                     'Doppler frequency'
@@ -137,7 +178,6 @@ def generate_spectra_products(dataset, prdcfg):
     None or name of generated files
 
     """
-
     dssavedir = prdcfg['dsname']
     if 'dssavename' in prdcfg:
         dssavedir = prdcfg['dssavename']
@@ -152,7 +192,28 @@ def generate_spectra_products(dataset, prdcfg):
             return None
 
         # user defined values
-        ray = prdcfg.get('ray', 0)
+        azi = prdcfg.get('azi', None)
+        ele = prdcfg.get('ele', None)
+        azi_tol = prdcfg.get('azi_tol', 1.)
+        ele_tol = prdcfg.get('ele_tol', 1.)
+
+        if azi is None or ele is None:
+            ind_ray = prdcfg.get('ind_ray', 0)
+            azi = dataset['radar_out'].azimuth['data'][ind_ray]
+            ele = dataset['radar_out'].elevation['data'][ind_ray]
+        else:
+            ind_ray = find_ray_index(
+                dataset['radar_out'].elevation['data'],
+                dataset['radar_out'].azimuth['data'], ele, azi,
+                ele_tol=ele_tol, azi_tol=azi_tol)
+
+        if ind_ray is None:
+            warn('Ray azi='+str(azi)+', ele='+str(ele) +
+                 ' out of radar coverage')
+            return None
+
+        gateinfo = 'az'+'{:.1f}'.format(azi)+'el'+'{:.1f}'.format(ele)
+
         xaxis_info = prdcfg.get('xaxis_info', 'Doppler_velocity')
         vmin = prdcfg.get('vmin', None)
         vmax = prdcfg.get('vmax', None)
@@ -163,15 +224,20 @@ def generate_spectra_products(dataset, prdcfg):
 
         fname_list = make_filename(
             'range_Doppler', prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'], prdcfginfo='ray'+str(ray),
+            prdcfg['imgformat'], prdcfginfo=gateinfo,
             timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        plot_range_Doppler(
-            dataset['radar_out'], field_name, ray, prdcfg, fname_list,
-            xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
+        if dataset['radar_out'].ngates == 1:
+            plot_Doppler(
+                dataset['radar_out'], field_name, ind_ray, 0, prdcfg,
+                fname_list, xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
+        else:
+            plot_range_Doppler(
+                dataset['radar_out'], field_name, ind_ray, prdcfg, fname_list,
+                xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -246,8 +312,36 @@ def generate_spectra_products(dataset, prdcfg):
             return None
 
         # user defined values
-        ray = prdcfg.get('ray', 0)
-        rng = prdcfg.get('rng', 0)
+        azi = prdcfg.get('azi', None)
+        ele = prdcfg.get('ele', None)
+        rng = prdcfg.get('rng', None)
+        azi_tol = prdcfg.get('azi_tol', 1.)
+        ele_tol = prdcfg.get('ele_tol', 1.)
+        rng_tol = prdcfg.get('rng_tol', 50.)
+
+        if azi is None or ele is None or rng is None:
+            ind_ray = prdcfg.get('ind_ray', 0)
+            ind_rng = prdcfg.get('ind_rng', 0)
+            azi = dataset['radar_out'].azimuth['data'][ind_ray]
+            ele = dataset['radar_out'].elevation['data'][ind_ray]
+            rng = dataset['radar_out'].range['data'][ind_rng]
+        else:
+            ind_ray = find_ray_index(
+                dataset['radar_out'].elevation['data'],
+                dataset['radar_out'].azimuth['data'], ele, azi,
+                ele_tol=ele_tol, azi_tol=azi_tol)
+            ind_rng = find_rng_index(
+                dataset['radar_out'].range['data'], rng, rng_tol=rng_tol)
+
+        if ind_rng is None or ind_ray is None:
+            warn('Point azi='+str(azi)+', ele='+str(ele)+', rng='+str(rng) +
+                 ' out of radar coverage')
+            return None
+
+        gateinfo = (
+            'az'+'{:.1f}'.format(azi)+'el'+'{:.1f}'.format(ele) +
+            'r'+'{:.1f}'.format(rng))
+
         xaxis_info = prdcfg.get('xaxis_info', 'Doppler_velocity')
         vmin = prdcfg.get('vmin', None)
         vmax = prdcfg.get('vmax', None)
@@ -258,15 +352,15 @@ def generate_spectra_products(dataset, prdcfg):
 
         fname_list = make_filename(
             'Doppler', prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'], prdcfginfo='ray'+str(ray)+'rng'+str(rng),
+            prdcfg['imgformat'], prdcfginfo=gateinfo,
             timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
         plot_Doppler(
-            dataset['radar_out'], field_name, ray, rng, prdcfg, fname_list,
-            xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
+            dataset['radar_out'], field_name, ind_ray, ind_rng, prdcfg,
+            fname_list, xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -282,7 +376,28 @@ def generate_spectra_products(dataset, prdcfg):
             return None
 
         # user defined values
-        ray = prdcfg.get('ray', 0)
+        azi = prdcfg.get('azi', None)
+        ele = prdcfg.get('ele', None)
+        azi_tol = prdcfg.get('azi_tol', 1.)
+        ele_tol = prdcfg.get('ele_tol', 1.)
+
+        if azi is None or ele is None:
+            ind_ray = prdcfg.get('ind_ray', 0)
+            azi = dataset['radar_out'].azimuth['data'][ind_ray]
+            ele = dataset['radar_out'].elevation['data'][ind_ray]
+        else:
+            ind_ray = find_ray_index(
+                dataset['radar_out'].elevation['data'],
+                dataset['radar_out'].azimuth['data'], ele, azi,
+                ele_tol=ele_tol, azi_tol=azi_tol)
+
+        if ind_ray is None:
+            warn('Ray azi='+str(azi)+', ele='+str(ele) +
+                 ' out of radar coverage')
+            return None
+
+        gateinfo = 'az'+'{:.1f}'.format(azi)+'el'+'{:.1f}'.format(ele)
+
         xaxis_info = prdcfg.get('xaxis_info', 'Doppler_velocity')
         vmin = prdcfg.get('vmin', None)
         vmax = prdcfg.get('vmax', None)
@@ -293,15 +408,20 @@ def generate_spectra_products(dataset, prdcfg):
 
         fname_list = make_filename(
             'c_range_Doppler', prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'], prdcfginfo='ray'+str(ray),
+            prdcfg['imgformat'], prdcfginfo=gateinfo,
             timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        plot_complex_range_Doppler(
-            dataset['radar_out'], field_name, ray, prdcfg, fname_list,
-            xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
+        if dataset['radar_out'].ngates == 1:
+            plot_complex_Doppler(
+                dataset['radar_out'], field_name, ind_ray, 0, prdcfg,
+                fname_list, xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
+        else:
+            plot_complex_range_Doppler(
+                dataset['radar_out'], field_name, ind_ray, prdcfg, fname_list,
+                xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -376,8 +496,36 @@ def generate_spectra_products(dataset, prdcfg):
             return None
 
         # user defined values
-        ray = prdcfg.get('ray', 0)
-        rng = prdcfg.get('rng', 0)
+        azi = prdcfg.get('azi', None)
+        ele = prdcfg.get('ele', None)
+        rng = prdcfg.get('rng', None)
+        azi_tol = prdcfg.get('azi_tol', 1.)
+        ele_tol = prdcfg.get('ele_tol', 1.)
+        rng_tol = prdcfg.get('rng_tol', 50.)
+
+        if azi is None or ele is None or rng is None:
+            ind_ray = prdcfg.get('ind_ray', 0)
+            ind_rng = prdcfg.get('ind_rng', 0)
+            azi = dataset['radar_out'].azimuth['data'][ind_ray]
+            ele = dataset['radar_out'].elevation['data'][ind_ray]
+            rng = dataset['radar_out'].range['data'][ind_rng]
+        else:
+            ind_ray = find_ray_index(
+                dataset['radar_out'].elevation['data'],
+                dataset['radar_out'].azimuth['data'], ele, azi,
+                ele_tol=ele_tol, azi_tol=azi_tol)
+            ind_rng = find_rng_index(
+                dataset['radar_out'].range['data'], rng, rng_tol=rng_tol)
+
+        if ind_rng is None or ind_ray is None:
+            warn('Point azi='+str(azi)+', ele='+str(ele)+', rng='+str(rng) +
+                 ' out of radar coverage')
+            return None
+
+        gateinfo = (
+            'az'+'{:.1f}'.format(azi)+'el'+'{:.1f}'.format(ele) +
+            'r'+'{:.1f}'.format(rng))
+
         xaxis_info = prdcfg.get('xaxis_info', 'Doppler_velocity')
         vmin = prdcfg.get('vmin', None)
         vmax = prdcfg.get('vmax', None)
@@ -388,15 +536,15 @@ def generate_spectra_products(dataset, prdcfg):
 
         fname_list = make_filename(
             'c_Doppler', prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'], prdcfginfo='ray'+str(ray)+'rng'+str(rng),
+            prdcfg['imgformat'], prdcfginfo=gateinfo,
             timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
         plot_complex_Doppler(
-            dataset['radar_out'], field_name, ray, rng, prdcfg, fname_list,
-            xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
+            dataset['radar_out'], field_name, ind_ray, ind_rng, prdcfg,
+            fname_list, xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -412,8 +560,36 @@ def generate_spectra_products(dataset, prdcfg):
             return None
 
         # user defined values
-        ray = prdcfg.get('ray', 0)
-        rng = prdcfg.get('rng', 0)
+        azi = prdcfg.get('azi', None)
+        ele = prdcfg.get('ele', None)
+        rng = prdcfg.get('rng', None)
+        azi_tol = prdcfg.get('azi_tol', 1.)
+        ele_tol = prdcfg.get('ele_tol', 1.)
+        rng_tol = prdcfg.get('rng_tol', 50.)
+
+        if azi is None or ele is None or rng is None:
+            ind_ray = prdcfg.get('ind_ray', 0)
+            ind_rng = prdcfg.get('ind_rng', 0)
+            azi = dataset['radar_out'].azimuth['data'][ind_ray]
+            ele = dataset['radar_out'].elevation['data'][ind_ray]
+            rng = dataset['radar_out'].range['data'][ind_rng]
+        else:
+            ind_ray = find_ray_index(
+                dataset['radar_out'].elevation['data'],
+                dataset['radar_out'].azimuth['data'], ele, azi,
+                ele_tol=ele_tol, azi_tol=azi_tol)
+            ind_rng = find_rng_index(
+                dataset['radar_out'].range['data'], rng, rng_tol=rng_tol)
+
+        if ind_rng is None or ind_ray is None:
+            warn('Point azi='+str(azi)+', ele='+str(ele)+', rng='+str(rng) +
+                 ' out of radar coverage')
+            return None
+
+        gateinfo = (
+            'az'+'{:.1f}'.format(azi)+'el'+'{:.1f}'.format(ele) +
+            'r'+'{:.1f}'.format(rng))
+
         xaxis_info = prdcfg.get('xaxis_info', 'Doppler_velocity')
         ampli_vmin = prdcfg.get('ampli_vmin', None)
         ampli_vmax = prdcfg.get('ampli_vmax', None)
@@ -426,15 +602,15 @@ def generate_spectra_products(dataset, prdcfg):
 
         fname_list = make_filename(
             'ap_Doppler', prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'], prdcfginfo='ray'+str(ray)+'rng'+str(rng),
+            prdcfg['imgformat'], prdcfginfo=gateinfo,
             timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
         plot_amp_phase_Doppler(
-            dataset['radar_out'], field_name, ray, rng, prdcfg, fname_list,
-            xaxis_info=xaxis_info, ampli_vmin=ampli_vmin,
+            dataset['radar_out'], field_name, ind_ray, ind_rng, prdcfg,
+            fname_list, xaxis_info=xaxis_info, ampli_vmin=ampli_vmin,
             ampli_vmax=ampli_vmax, phase_vmin=phase_vmin,
             phase_vmax=phase_vmax)
 
@@ -452,7 +628,28 @@ def generate_spectra_products(dataset, prdcfg):
             return None
 
         # user defined values
-        ray = prdcfg.get('ray', 0)
+        azi = prdcfg.get('azi', None)
+        ele = prdcfg.get('ele', None)
+        azi_tol = prdcfg.get('azi_tol', 1.)
+        ele_tol = prdcfg.get('ele_tol', 1.)
+
+        if azi is None or ele is None:
+            ind_ray = prdcfg.get('ind_ray', 0)
+            azi = dataset['radar_out'].azimuth['data'][ind_ray]
+            ele = dataset['radar_out'].elevation['data'][ind_ray]
+        else:
+            ind_ray = find_ray_index(
+                dataset['radar_out'].elevation['data'],
+                dataset['radar_out'].azimuth['data'], ele, azi,
+                ele_tol=ele_tol, azi_tol=azi_tol)
+
+        if ind_ray is None:
+            warn('Ray azi='+str(azi)+', ele='+str(ele) +
+                 ' out of radar coverage')
+            return None
+
+        gateinfo = 'az'+'{:.1f}'.format(azi)+'el'+'{:.1f}'.format(ele)
+
         xaxis_info = prdcfg.get('xaxis_info', 'Doppler_velocity')
         ampli_vmin = prdcfg.get('ampli_vmin', None)
         ampli_vmax = prdcfg.get('ampli_vmax', None)
@@ -465,17 +662,24 @@ def generate_spectra_products(dataset, prdcfg):
 
         fname_list = make_filename(
             'ap_range_Doppler', prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'], prdcfginfo='ray'+str(ray),
+            prdcfg['imgformat'], prdcfginfo=gateinfo,
             timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        plot_amp_phase_range_Doppler(
-            dataset['radar_out'], field_name, ray, prdcfg, fname_list,
-            xaxis_info=xaxis_info, ampli_vmin=ampli_vmin,
-            ampli_vmax=ampli_vmax, phase_vmin=phase_vmin,
-            phase_vmax=phase_vmax)
+        if dataset['radar_out'].ngates == 1:
+            plot_amp_phase_Doppler(
+                dataset['radar_out'], field_name, ind_ray, 0, prdcfg,
+                fname_list, xaxis_info=xaxis_info, ampli_vmin=ampli_vmin,
+                ampli_vmax=ampli_vmax, phase_vmin=phase_vmin,
+                phase_vmax=phase_vmax)
+        else:
+            plot_amp_phase_range_Doppler(
+                dataset['radar_out'], field_name, ind_ray, prdcfg, fname_list,
+                xaxis_info=xaxis_info, ampli_vmin=ampli_vmin,
+                ampli_vmax=ampli_vmax, phase_vmin=phase_vmin,
+                phase_vmax=phase_vmax)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -491,7 +695,6 @@ def generate_spectra_products(dataset, prdcfg):
             return None
 
         # user defined values
-        ray = prdcfg.get('ray', 0)
         xaxis_info = prdcfg.get('xaxis_info', 'Doppler_velocity')
         ampli_vmin = prdcfg.get('ampli_vmin', None)
         ampli_vmax = prdcfg.get('ampli_vmax', None)
