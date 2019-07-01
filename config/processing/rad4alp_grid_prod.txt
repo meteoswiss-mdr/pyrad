@@ -222,17 +222,24 @@ RZC STRUCT 3
 POH STRUCT 3
     type STRING RAW_GRID
     datatype STRING RAD4ALPGRID:BZC
-    products STRUCT 2
+    products STRUCT 3
         SURFACE STRUCT 3
             type  STRING SURFACE_IMAGE
             voltype STRING POH
             level INT 0
-        SURFACE_CONTOUR STRUCT 4
+        CONTOUR STRUCT 4
             type  STRING SURFACE_CONTOUR
             voltype STRING POH
             level INT 0
             contour_values FLTARR 1
                 80.
+        SURFACE_CONTOUR STRUCT 5
+            type  STRING SURFACE_CONTOUR_OVERPLOT
+            voltype STRING POH
+            contourtype STRING POH
+            level INT 0
+            contour_values FLTARR 1
+                90.
 
 VIL STRUCT 3
     type STRING RAW_GRID

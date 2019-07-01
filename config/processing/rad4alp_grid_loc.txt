@@ -28,7 +28,7 @@ rhiImageConfig STRUCT 2
 #   ymin       FLOAT  0.     # min alitude [km]
 #   ymax       FLOAT  18.    # max altitude [km]
 
-gridMapImageConfig STRUCT 11
+gridMapImageConfig STRUCT 12
    xsize      FLOAT  10.   # image size [inches] (default dots per inch (dpi):72)
    ysize      FLOAT  8.   # image size [inches] (default dots per inch (dpi):72)
    lonmin     FLOAT  8. # Min longitude [deg]
@@ -37,20 +37,26 @@ gridMapImageConfig STRUCT 11
    latmin     FLOAT 47. # Min latitude [deg]
    latmax     FLOAT 48. # Max latitude [deg]
    latstep    FLOAT 0.5
-   mapres     STRING h  # map resolution (10m, 50m, 110m)
+   mapres     STRING 10m  # map resolution (10m, 50m, 110m)
+   background_zoom INT 8
    dpi        INT    72     # dots per inch (72 web quality, 300 print quality)
-   maps STRARR 10        # maps to overplot (cartopy)
+   maps STRARR 6        # maps to overplot (cartopy)
        countries
        provinces
-       urban_areas
-       roads
-       railroads
-       coastlines
        lakes
        lakes_europe
        rivers
        rivers_europe
-       # relief
+#       urban_areas
+#       roads
+#       railroads
+#       coastlines
+#       lakes
+#       lakes_europe
+#       rivers
+#       rivers_europe
+#       relief
+#       populated_places
 
 # basemap mapres: c (crude), l (low), i (intermediate), h (high), f (full)
 # cartopy mapres: '110m', '50m', '10m'

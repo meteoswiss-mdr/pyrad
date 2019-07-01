@@ -1205,7 +1205,8 @@ def plot_LMA_EUCLID(basepath, fname_LMA, fname_EUCLID, roi):
     plot_scatter_comp(
         nflashes_LMA_common, nflashes_cell_common, [fname],
         labelx='LMA flashes', labely='Euclid CG strokes',
-        titl='LMA flashes vs Euclid CG strokes\nReduced LMA domain only', axis=None, metadata=None, dpi=72)
+        titl='LMA flashes vs Euclid CG strokes\nReduced LMA domain only',
+        axis='equal', metadata=None, dpi=72)
 
     print("----- plot to '%s'" % fname)
 

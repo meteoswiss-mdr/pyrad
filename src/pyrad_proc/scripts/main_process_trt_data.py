@@ -117,7 +117,7 @@ def main():
         data_output_base = args.trtbase+time_dir+'/TRTC_cell_plots/'
 
         flist = glob.glob(data_input_path+'*.trt')
-
+        
         for fname in flist:
             print('Reading TRT trajectory file '+fname)
             (traj_ID, yyyymmddHHMM, lon, lat, _, _, _, area, vel_x, vel_y,
@@ -189,7 +189,7 @@ def main():
 
             figfname = data_output_path+str(traj_ID[0])+'_rank.png'
             plot_timeseries(
-                yyyymmddHHMM, [RANKr], [figfname], labelx='Time UTC',
+                yyyymmddHHMM, [RANKr/10.], [figfname], labelx='Time UTC',
                 labely='Rank [-]', title=str(traj_ID[0])+' cell rank')
 
             figfname = data_output_path+str(traj_ID[0])+'_lightning.png'

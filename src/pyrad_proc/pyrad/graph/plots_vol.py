@@ -18,7 +18,6 @@ Functions to plot radar volume data
     plot_traj
     plot_rhi_contour
     plot_ppi_contour
-    plot_pos
     plot_rhi_profile
     plot_along_coord
     plot_field_coverage
@@ -37,8 +36,6 @@ mpl.rcParams.update({'font.size': 16})
 mpl.rcParams.update({'font.family':  "sans-serif"})
 
 import matplotlib.pyplot as plt
-
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import pyart
 
@@ -195,20 +192,22 @@ def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
     if resolution not in ('110m', '50m', '10m'):
         warn('Unknown map resolution: '+resolution)
         resolution = '110m'
+    background_zoom = prdcfg['ppiMapImageConfig'].get('background_zoom', 8)
 
     lon_lines = np.arange(np.floor(min_lon), np.ceil(max_lon)+1, lonstep)
     lat_lines = np.arange(np.floor(min_lat), np.ceil(max_lat)+1, latstep)
 
     fig = plt.figure(figsize=[xsize, ysize], dpi=dpi)
-    ax = fig.add_subplot(111, aspect='equal')
+    ax = fig.add_subplot(111)
 
     display_map = pyart.graph.RadarMapDisplay(radar)
     display_map.plot_ppi_map(
         field_name, sweep=ind_el, norm=norm, ticks=ticks, ticklabs=ticklabs,
         min_lon=min_lon, max_lon=max_lon, min_lat=min_lat, max_lat=max_lat,
-        resolution=resolution, lat_lines=lat_lines, lon_lines=lon_lines,
-        maps_list=prdcfg['ppiMapImageConfig']['maps'],
-        colorbar_flag=False, fig=fig, ax=ax)
+        resolution=resolution, background_zoom=background_zoom,
+        lat_lines=lat_lines, lon_lines=lon_lines,
+        maps_list=prdcfg['ppiMapImageConfig']['maps'], ax=ax, fig=fig,
+        colorbar_flag=True, alpha=1)
 
     if 'rngRing' in prdcfg['ppiMapImageConfig']:
         if prdcfg['ppiMapImageConfig']['rngRing'] > 0:
@@ -218,15 +217,8 @@ def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
             for rng_ring in rng_rings:
                 display_map.plot_range_ring(rng_ring, ax=ax)
 
-    # Adapt the axes of the colorbar
-    divider = make_axes_locatable(ax)
-    cax = divider.append_axes("right", size="5%", pad=0.05)
-
-    display_map.plot_colorbar(mappable=display_map.plots[0],
-                              cax=cax, field=field_name, ax=ax)
-
     for fname in fname_list:
-        fig.savefig(fname, dpi=dpi, bbox_inches='tight')
+        fig.savefig(fname, dpi=dpi)
 
     plt.close(fig)
 
@@ -1217,98 +1209,6 @@ def plot_ppi_contour(radar, field_name, ind_el, prdcfg, fname_list,
         ax.autoscale(False)
         ax.contour(x, y, data, contour_values, colors='k',
                    linewidths=linewidths)
-
-    if save_fig:
-        for fname in fname_list:
-            fig.savefig(fname, dpi=dpi)
-        plt.close(fig)
-
-        return fname_list
-
-    return (fig, ax)
-
-
-def plot_pos(lat, lon, alt, fname_list, ax=None, fig=None, save_fig=True,
-             sort_altitude='No', dpi=72, alpha=1., cb_label='height [m MSL]',
-             titl='Position', xlabel='Lon [Deg]', ylabel='Lat [Deg]',
-             limits=None, vmin=None, vmax=None):
-    """
-    plots a trajectory on a Cartesian surface
-
-    Parameters
-    ----------
-    lat, lon, alt : float array
-        Points coordinates
-    fname_list : list of str
-        list of names of the files where to store the plot
-    fig : Figure
-        Figure to add the colorbar to. If none a new figure will be created
-    ax : Axis
-        Axis to plot on. if fig is None a new axis will be created
-    save_fig : bool
-        if true save the figure if false it does not close the plot and
-        returns the handle to the figure
-    sort_altitude : str
-        String indicating whether to sort the altitude data. Can be 'No',
-        'Lowest_on_top' or 'Highest_on_top'
-    dpi : int
-        Pixel density
-    alpha : float
-        Transparency
-    cb_label : str
-        Color bar label
-    titl : str
-        Plot title
-    limits : tupple or None
-        The limits of the field to plot
-
-    Returns
-    -------
-    fname_list : list of str or
-    fig, ax : tupple
-        list of names of the saved plots or handle of the figure an axes
-
-    """
-    if sort_altitude in ('Lowest_on_top', 'Highest_on_top'):
-        ind = np.argsort(alt)
-        if sort_altitude == 'Lowest_on_top':
-            ind = ind[::-1]
-        lat = lat[ind]
-        lon = lon[ind]
-        alt = alt[ind]
-
-    if vmin is None:
-        vmin = alt.min()
-    if vmax is None:
-        vmax = alt.max()
-    marker = 'x'
-    col = alt
-    cmap = 'viridis'
-    norm = plt.Normalize(vmin, vmax)
-
-    if fig is None:
-        fig = plt.figure(figsize=[10, 8], dpi=dpi)
-        ax = fig.add_subplot(111, aspect='equal')
-    else:
-        ax.autoscale(False)
-
-    cax = ax.scatter(
-        lon, lat, c=col, marker=marker, alpha=alpha, cmap=cmap, norm=norm)
-
-    if limits is not None:
-        ax.set_xlim(limits[0], limits[1])
-        ax.set_ylim(limits[2], limits[3])
-
-    # plot colorbar
-    cb = fig.colorbar(cax, orientation='horizontal')
-    cb.set_label(cb_label)
-
-    ax.set_title(titl)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-
-    # Turn on the grid
-    ax.grid()
 
     if save_fig:
         for fname in fname_list:
