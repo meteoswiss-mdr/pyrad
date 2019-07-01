@@ -27,9 +27,8 @@ from ..io.write_data import write_histogram
 from ..graph.plots_grid import plot_surface, plot_surface_contour
 from ..graph.plots_grid import plot_longitude_slice, plot_latitude_slice
 from ..graph.plots_grid import plot_latlon_slice
-from ..graph.plots_vol import plot_pos
 from ..graph.plots_aux import get_colobar_label, get_field_name
-from ..graph.plots import plot_histogram
+from ..graph.plots import plot_histogram, plot_pos
 
 from ..util.radar_utils import compute_histogram
 

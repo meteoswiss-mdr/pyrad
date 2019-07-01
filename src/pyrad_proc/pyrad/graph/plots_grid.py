@@ -18,6 +18,12 @@ Functions to plot data in a Cartesian grid format
 from warnings import warn
 import numpy as np
 
+try:
+    import cartopy
+    _CARTOPY_AVAILABLE = True
+except ImportError:
+    _CARTOPY_AVAILABLE = False
+
 import matplotlib as mpl
 mpl.use('Agg')
 
@@ -33,7 +39,7 @@ from .plots_aux import get_norm
 
 
 def plot_surface(grid, field_name, level, prdcfg, fname_list, titl=None,
-                 save_fig=True, use_basemap=True):
+                 save_fig=True, use_basemap=False):
     """
     plots a surface from gridded data
 
@@ -79,7 +85,7 @@ def plot_surface(grid, field_name, level, prdcfg, fname_list, titl=None,
     lat_lines = np.arange(np.floor(min_lat), np.ceil(max_lat)+1, latstep)
 
     fig = plt.figure(figsize=[xsize, ysize], dpi=dpi)
-    ax = fig.add_subplot(111, aspect='equal')
+    ax = fig.add_subplot(111)
 
     if use_basemap:
         resolution = prdcfg['gridMapImageConfig'].get('mapres', 'l')
@@ -111,11 +117,14 @@ def plot_surface(grid, field_name, level, prdcfg, fname_list, titl=None,
         if resolution not in ('110m', '50m', '10m'):
             warn('Unknown map resolution: '+resolution)
             resolution = '110m'
+        background_zoom = prdcfg['gridMapImageConfig'].get(
+            'background_zoom', 8)
 
         display = pyart.graph.GridMapDisplay(grid)
-        ax, fig = display.plot_grid(
+        fig, ax = display.plot_grid(
             field_name, level=level, norm=norm, ticks=ticks, ticklabs=ticklabs,
-            resolution=resolution, lat_lines=lat_lines, lon_lines=lon_lines,
+            resolution=resolution, background_zoom=background_zoom,
+            lat_lines=lat_lines, lon_lines=lon_lines,
             maps_list=prdcfg['gridMapImageConfig']['maps'],
             title=titl, ax=ax, fig=fig)
         # display.plot_crosshairs(lon=lon, lat=lat)
@@ -133,7 +142,7 @@ def plot_surface(grid, field_name, level, prdcfg, fname_list, titl=None,
 def plot_surface_contour(grid, field_name, level, prdcfg, fname_list,
                          contour_values=None, linewidths=1.5, ax=None,
                          fig=None, display=None, save_fig=True,
-                         use_basemap=True):
+                         use_basemap=False):
     """
     plots a surface from gridded data
 
@@ -197,9 +206,9 @@ def plot_surface_contour(grid, field_name, level, prdcfg, fname_list,
         lat_lines = np.arange(np.floor(min_lat), np.ceil(max_lat)+1, latstep)
 
         fig = plt.figure(figsize=[xsize, ysize], dpi=dpi)
-        ax = fig.add_subplot(111, aspect='equal')
+        ax = fig.add_subplot(111)
 
-        if use_basemap:
+        if use_basemap or not _CARTOPY_AVAILABLE:
             resolution = prdcfg['gridMapImageConfig'].get('mapres', 'l')
             if resolution not in ('c', 'l', 'i', 'h', 'f'):
                 warn('Unknown map resolution: '+resolution)
@@ -236,15 +245,18 @@ def plot_surface_contour(grid, field_name, level, prdcfg, fname_list,
             if resolution not in ('110m', '50m', '10m'):
                 warn('Unknown map resolution: '+resolution)
                 resolution = '110m'
+            background_zoom = prdcfg['gridMapImageConfig'].get(
+                'background_zoom', 8)
 
             display = pyart.graph.GridMapDisplay(grid)
-            ax, fig = display.plot_grid_contour(
+            fig, ax = display.plot_grid_contour(
                 field_name, level=level, ax=ax, fig=fig, lat_lines=lat_lines,
                 lon_lines=lon_lines, contour_values=contour_values,
                 linewidths=linewidths, resolution=resolution,
-                map_list=prdcfg['gridMapImageConfig']['maps'])
+                background_zoom=background_zoom,
+                maps_list=prdcfg['gridMapImageConfig']['maps'])
     else:
-        if use_basemap:
+        if use_basemap or not _CARTOPY_AVAILABLE:
             lons, lats = grid.get_point_longitude_latitude(edges=False)
             data = grid.fields[field_name]['data'][level, :, :]
 
@@ -258,7 +270,7 @@ def plot_surface_contour(grid, field_name, level, prdcfg, fname_list,
 
             ax.contour(
                 lons, lats, data, contour_values, colors='k',
-                linewidths=linewidths)
+                linewidths=linewidths, transform=cartopy.crs.PlateCarree())
 
     if save_fig:
         for fname in fname_list:
