@@ -29,7 +29,7 @@ from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 from ..io.read_data_sensor import read_trt_traj_data
 from ..util.radar_utils import belongs_roi_indices, get_target_elevations
 from ..util.radar_utils import find_neighbour_gates, compute_directional_stats
-from ..util.radar_utils import get_fixed_rng_data, get_fixed_rng_span_data
+from ..util.radar_utils import get_fixed_rng_data
 
 
 def get_process_func(dataset_type, dsname):
@@ -54,9 +54,12 @@ def get_process_func(dataset_type, dsname):
                 'CLT_TO_SAN': process_clt_to_echo_id
                 'COSMO': process_cosmo
                 'COSMO_LOOKUP': process_cosmo_lookup_table
+                'DEM': process_dem
                 'DEALIAS_FOURDD': process_dealias_fourdd
                 'DEALIAS_REGION': process_dealias_region_based
                 'DEALIAS_UNWRAP': process_dealias_unwrap_phase
+                'DOPPLER_VELOCITY': process_Doppler_velocity
+                'DOPPLER_WIDTH': process_Doppler_width
                 'ECHO_FILTER': process_echo_filter
                 'FIXED_RNG': process_fixed_rng
                 'FIXED_RNG_SPAN': process_fixed_rng_span
@@ -68,6 +71,7 @@ def get_process_func(dataset_type, dsname):
                 'L': process_l
                 'NCVOL': process_save_radar
                 'OUTLIER_FILTER': process_outlier_filter
+                'PhiDP': process_differential_phase
                 'PHIDP0_CORRECTION': process_correct_phidp0
                 'PHIDP0_ESTIMATE': process_estimate_phidp0
                 'PHIDP_KDP_KALMAN': process_phidp_kdp_Kalman
@@ -75,11 +79,14 @@ def get_process_func(dataset_type, dsname):
                 'PHIDP_KDP_VULPIANI': process_phidp_kdp_Vulpiani
                 'PHIDP_SMOOTH_1W': process_smooth_phidp_single_window
                 'PHIDP_SMOOTH_2W': process_smooth_phidp_double_window
+                'POL_VARIABLES': process_pol_variables
                 'PWR': process_signal_power
                 'RAINRATE': process_rainrate
                 'RAW': process_raw
+                'REFLECTIVITY': process_reflectivity
                 'RCS': process_rcs
                 'RCS_PR': process_rcs_pr
+                'RhoHV': process_rhohv
                 'RHOHV_CORRECTION': process_correct_noise_rhohv
                 'RHOHV_RAIN': process_rhohv_rain
                 'ROI': process_roi
@@ -91,12 +98,24 @@ def get_process_func(dataset_type, dsname):
                 'TRAJ_TRT' : process_traj_trt
                 'VAD': process_vad
                 'VEL_FILTER': process_filter_vel_diff
+                'VIS': process_visibility
                 'VIS_FILTER': process_filter_visibility
                 'VOL_REFL': process_vol_refl
                 'WIND_VEL': process_wind_vel
                 'WINDSHEAR': process_windshear
+                'ZDR': process_differential_reflectivity
                 'ZDR_PREC': process_zdr_precip
                 'ZDR_SNOW': process_zdr_snow
+            'SPECTRA' format output:
+                'FILTER_SPECTRA_NOISE': process_filter_spectra_noise
+                'RAW_SPECTRA': process_raw_spectra
+                'SPECTRA_POINT': process_spectra_point
+                'SPECTRAL_PHASE': process_spectral_phase
+                'SPECTRAL_POWER': process_spectral_power
+                'SPECTRAL_REFLECTIVITY': process_spectral_reflectivity
+                'sPhiDP': process_spectral_differential_phase
+                'sRhoHV': process_spectral_RhoHV
+                'sZDR': process_spectral_differential_reflectivity
             'COLOCATED_GATES' format output:
                 'COLOCATED_GATES': process_colocated_gates
             'COSMO_COORD' format output:
@@ -168,6 +187,39 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'RAW_GRID':
         func_name = 'process_raw_grid'
         dsformat = 'GRID'
+    elif dataset_type == 'RAW_SPECTRA':
+        func_name = 'process_raw_spectra'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'SPECTRA_POINT':
+        func_name = 'process_spectra_point'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'SPECTRAL_POWER':
+        func_name = 'process_spectral_power'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'SPECTRAL_PHASE':
+        func_name = 'process_spectral_phase'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'SPECTRAL_REFLECTIVITY':
+        func_name = 'process_spectral_reflectivity'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'sZDR':
+        func_name = 'process_spectral_differential_reflectivity'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'sPhiDP':
+        func_name = 'process_spectral_differential_phase'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'sRhoHV':
+        func_name = 'process_spectral_rhohv'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'FILTER_SPECTRA_NOISE':
+        func_name = 'process_filter_spectra_noise'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'FILTER_0DOPPLER':
+        func_name = 'process_filter_0Doppler'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'SRHOHV_FILTER':
+        func_name = 'process_filter_srhohv'
+        dsformat = 'SPECTRA'
     elif dataset_type == 'QVP':
         func_name = 'process_qvp'
         dsformat = 'QVP'
@@ -224,6 +276,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_filter_vel_diff'
     elif dataset_type == 'VIS_FILTER':
         func_name = 'process_filter_visibility'
+    elif dataset_type == 'VIS':
+        func_name = 'process_visibility'
     elif dataset_type == 'OUTLIER_FILTER':
         func_name = 'process_outlier_filter'
     elif dataset_type == 'PHIDP0_CORRECTION':
@@ -276,6 +330,20 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_zdr_precip'
     elif dataset_type == 'ZDR_SNOW':
         func_name = 'process_zdr_snow'
+    elif dataset_type == 'POL_VARIABLES':
+        func_name = 'process_pol_variables'
+    elif dataset_type == 'REFLECTIVITY':
+        func_name = 'process_reflectivity'
+    elif dataset_type == 'ZDR':
+        func_name = 'process_differential_reflectivity'
+    elif dataset_type == 'PhiDP':
+        func_name = 'process_differential_phase'
+    elif dataset_type == 'RhoHV':
+        func_name = 'process_rhohv'
+    elif dataset_type == 'DOPPLER_VELOCITY':
+        func_name = 'process_Doppler_velocity'
+    elif dataset_type == 'DOPPLER_WIDTH':
+        func_name = 'process_Doppler_width'
     elif dataset_type == 'SELFCONSISTENCY_KDP_PHIDP':
         func_name = 'process_selfconsistency_kdp_phidp'
     elif dataset_type == 'SELFCONSISTENCY_BIAS':
@@ -294,6 +362,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_hzt'
     elif dataset_type == 'HZT_LOOKUP':
         func_name = 'process_hzt_lookup_table'
+    elif dataset_type == 'DEM':
+        func_name = 'process_dem'
     elif dataset_type == 'TIME_AVG':
         func_name = 'process_time_avg'
         dsformat = 'TIMEAVG'
@@ -571,8 +641,8 @@ def process_fixed_rng_span(procstatus, dscfg, radar_list=None):
     azi_min = dscfg.get('azi_min', None)
     azi_max = dscfg.get('azi_max', None)
 
-    radar_aux = get_fixed_rng_span_data(
-        radar, field_names, rmin=rmin, rmax=rmax, ele_min=ele_min,
+    radar_aux = pyart.util.cut_radar(
+        radar, field_names, rng_min=rmin, rng_max=rmax, ele_min=ele_min,
         ele_max=ele_max, azi_min=azi_min, azi_max=azi_max)
 
     if radar_aux is None:

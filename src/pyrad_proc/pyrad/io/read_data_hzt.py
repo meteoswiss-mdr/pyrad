@@ -16,12 +16,24 @@ Functions for reading HZT data
 """
 from warnings import warn
 import datetime
+import platform
 import numpy as np
 from scipy.interpolate import NearestNDInterpolator
 from scipy.spatial import cKDTree
 
 from pyart.config import get_metadata, get_field_name
-from pyart.aux_io import read_product
+from pyart.aux_io import read_product_c
+from pyart.aux_io import get_library
+
+# check existence of METRANET library
+try:
+    METRANET_LIB = get_library(momentms=False)
+    if platform.system() == 'Linux':
+        METRANET_LIB = get_library(momentms=True)
+    _METRANETLIB_AVAILABLE = True
+except SystemExit:
+    _METRANETLIB_AVAILABLE = False
+
 from ..io.read_data_cosmo import _put_radar_in_swiss_coord
 
 
@@ -156,7 +168,7 @@ def get_iso0_field(hzt_data, hzt_ind, z_radar, field_name='height_over_iso0'):
     return field_dict
 
 
-def read_hzt_data(fname, chy0=255., chx0=-160.):
+def read_hzt_data(fname, chy0=255., chx0=-160., read_lib='C'):
     """
     Reads iso-0 degree data from an HZT file
 
@@ -164,7 +176,10 @@ def read_hzt_data(fname, chy0=255., chx0=-160.):
     ----------
     fname : str
         name of the file to read
-    chy0, chx0: south west point of grid in Swiss coordinates [km]
+    chy0, chx0: float
+        south west point of grid in Swiss coordinates [km]
+    read_lib : str
+        Type of METRANET read library used. Can be 'C' or 'python'
 
     Returns
     -------
@@ -172,7 +187,15 @@ def read_hzt_data(fname, chy0=255., chx0=-160.):
         dictionary with the data and metadata
 
     """
-    ret = read_product(fname, physic_value=True, masked_array=True)
+    if read_lib == 'C' and _METRANETLIB_AVAILABLE:
+        ret = read_product_c(fname, physic_value=True, masked_array=True)
+    elif read_lib == 'python':
+        ret = read_product_py(fname, physic_value=True, masked_array=True)
+    else:
+        warn('METRANET C-library reader not available or unknown ' +
+             'library type. Python library will be used')
+        ret = read_product_py(fname, physic_value=True, masked_array=True)
+
     if ret is None:
         warn('Unable to read HZT file '+fname)
         return None

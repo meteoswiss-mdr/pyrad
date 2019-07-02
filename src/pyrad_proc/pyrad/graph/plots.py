@@ -7,6 +7,8 @@ Functions to plot Pyrad datasets
 .. autosummary::
     :toctree: generated/
 
+    plot_pos
+    plot_pos_map
     plot_density
     plot_scatter
     plot_quantiles
@@ -18,9 +20,17 @@ Functions to plot Pyrad datasets
 
 """
 
+from warnings import warn
 from copy import deepcopy
 
 import numpy as np
+
+try:
+    import cartopy
+    from cartopy.io.img_tiles import Stamen
+    _CARTOPY_AVAILABLE = True
+except ImportError:
+    _CARTOPY_AVAILABLE = False
 
 import matplotlib as mpl
 mpl.use('Agg')
@@ -36,6 +46,237 @@ import pyart
 from .plots_aux import get_colobar_label, get_field_name
 
 from ..util.radar_utils import compute_quantiles_from_hist
+
+
+def plot_pos(lat, lon, alt, fname_list, ax=None, fig=None, save_fig=True,
+             sort_altitude='No', dpi=72, alpha=1., cb_label='height [m MSL]',
+             titl='Position', xlabel='Lon [Deg]', ylabel='Lat [Deg]',
+             limits=None, vmin=None, vmax=None):
+    """
+    plots a trajectory on a Cartesian surface
+
+    Parameters
+    ----------
+    lat, lon, alt : float array
+        Points coordinates
+    fname_list : list of str
+        list of names of the files where to store the plot
+    fig : Figure
+        Figure to add the colorbar to. If none a new figure will be created
+    ax : Axis
+        Axis to plot on. if fig is None a new axis will be created
+    save_fig : bool
+        if true save the figure if false it does not close the plot and
+        returns the handle to the figure
+    sort_altitude : str
+        String indicating whether to sort the altitude data. Can be 'No',
+        'Lowest_on_top' or 'Highest_on_top'
+    dpi : int
+        Pixel density
+    alpha : float
+        Transparency
+    cb_label : str
+        Color bar label
+    titl : str
+        Plot title
+    xlabel, ylabel : str
+        The labels of the X and Y axis
+    limits : tupple or None
+        The limits of the field to plot
+    vmin, vmax : float
+        The limits of the color scale
+
+    Returns
+    -------
+    fname_list : list of str or
+    fig, ax : tupple
+        list of names of the saved plots or handle of the figure an axes
+    """
+    if sort_altitude in ('Lowest_on_top', 'Highest_on_top'):
+        ind = np.argsort(alt)
+        if sort_altitude == 'Lowest_on_top':
+            ind = ind[::-1]
+        lat = lat[ind]
+        lon = lon[ind]
+        alt = alt[ind]
+
+    if vmin is None:
+        vmin = alt.min()
+    if vmax is None:
+        vmax = alt.max()
+    marker = 'x'
+    col = alt
+    cmap = 'viridis'
+    norm = plt.Normalize(vmin, vmax)
+
+    if fig is None:
+        fig = plt.figure(figsize=[10, 8], dpi=dpi)
+        ax = fig.add_subplot(111, aspect='equal')
+    else:
+        ax.autoscale(False)
+
+    cax = ax.scatter(
+        lon, lat, c=col, marker=marker, alpha=alpha, cmap=cmap, norm=norm)
+
+    if limits is not None:
+        ax.set_xlim(limits[0], limits[1])
+        ax.set_ylim(limits[2], limits[3])
+
+    # plot colorbar
+    cb = fig.colorbar(cax, orientation='horizontal')
+    cb.set_label(cb_label)
+
+    ax.set_title(titl)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+
+    # Turn on the grid
+    ax.grid()
+
+    if save_fig:
+        for fname in fname_list:
+            fig.savefig(fname, dpi=dpi)
+        plt.close(fig)
+
+        return fname_list
+
+    return (fig, ax)
+
+
+def plot_pos_map(lat, lon, alt, fname_list, ax=None, fig=None, save_fig=True,
+                 sort_altitude='No', dpi=72, alpha=1.,
+                 cb_label='height [m MSL]', titl='Position',
+                 xlabel='Lon [Deg]', ylabel='Lat [Deg]', limits=None,
+                 vmin=None, vmax=None, lon_step=0.3, lat_step=0.1,
+                 background_zoom=8):
+    """
+    plots a trajectory on a map
+
+    Parameters
+    ----------
+    lat, lon, alt : float array
+        Points coordinates
+    fname_list : list of str
+        list of names of the files where to store the plot
+    fig : Figure
+        Figure to add the colorbar to. If none a new figure will be created
+    ax : Axis
+        Axis to plot on. if fig is None a new axis will be created
+    save_fig : bool
+        if true save the figure if false it does not close the plot and
+        returns the handle to the figure
+    sort_altitude : str
+        String indicating whether to sort the altitude data. Can be 'No',
+        'Lowest_on_top' or 'Highest_on_top'
+    dpi : int
+        Pixel density
+    alpha : float
+        Transparency
+    cb_label : str
+        Color bar label
+    titl : str
+        Plot title
+    xlabel, ylabel : str
+        The labels of the X and Y axis
+    limits : tupple or None
+        The limits of the field to plot
+    vmin, vmax : float
+        The limits of the color scale
+    lon_step, lat_step : float
+        The step interval of the latitude, longitude lines to plot
+    background_zoom : int
+        The zoom of the background image. A higher number will give more level
+        of detail at the expense of speed.
+
+    Returns
+    -------
+    fname_list : list of str or
+    fig, ax : tupple
+        list of names of the saved plots or handle of the figure an axes
+
+    """
+    if not _CARTOPY_AVAILABLE:
+        warn('Unable to plot trajectory on a map. Cartopy not available')
+        return ['']
+
+    if sort_altitude in ('Lowest_on_top', 'Highest_on_top'):
+        ind = np.argsort(alt)
+        if sort_altitude == 'Lowest_on_top':
+            ind = ind[::-1]
+        lat = lat[ind]
+        lon = lon[ind]
+        alt = alt[ind]
+
+    if vmin is None:
+        vmin = alt.min()
+    if vmax is None:
+        vmax = alt.max()
+    marker = 'x'
+    col = alt
+    cmap = 'viridis'
+    norm = plt.Normalize(vmin, vmax)
+
+    # get background map instance
+    stamen_terrain = Stamen('terrain-background')
+    projection = cartopy.crs.PlateCarree()
+
+    # set map limits and lat/lon lines
+    if limits is None:
+        limits = [np.min(lon), np.max(lon), np.min(lat), np.max(lat)]
+
+    lon_lines = np.arange(limits[0], limits[1]+1, lon_step)
+    lat_lines = np.arange(limits[2], limits[3]+1, lat_step)
+
+    if fig is None:
+        fig = plt.figure(figsize=[10, 8], dpi=dpi)
+
+        # draw background
+        ax = fig.add_subplot(111, projection=stamen_terrain.crs)
+        ax.set_extent(limits, crs=projection)
+        ax.add_image(stamen_terrain, background_zoom)
+
+        # add countries
+        countries = cartopy.feature.NaturalEarthFeature(
+            category='cultural',
+            name='admin_0_countries',
+            scale='10m',
+            facecolor='none')
+        ax.add_feature(countries, edgecolor='black')
+
+        # draw grid lines and labels
+        gl = ax.gridlines(xlocs=lon_lines, ylocs=lat_lines, draw_labels=True)
+        gl.xlabels_top = False
+        gl.ylabels_right = False
+
+        ax.text(0.5, -0.2, xlabel, va='bottom', ha='center',
+                rotation='horizontal', rotation_mode='anchor',
+                transform=ax.transAxes)
+
+        ax.text(-0.1, 0.55, ylabel, va='bottom', ha='center',
+                rotation='vertical', rotation_mode='anchor',
+                transform=ax.transAxes)
+    else:
+        ax.autoscale(False)
+
+    # plot data
+    cax = ax.scatter(
+        lon, lat, c=col, marker=marker, alpha=alpha, cmap=cmap, norm=norm,
+        transform=projection)
+
+    # plot colorbar
+    cb = fig.colorbar(cax, orientation='horizontal')
+    cb.set_label(cb_label)
+
+    ax.set_title(titl)
+
+    if save_fig:
+        for fname in fname_list:
+            fig.savefig(fname, dpi=dpi)
+        plt.close(fig)
+
+        return fname_list
+
+    return (fig, ax)
 
 
 def plot_density(hist_obj, hist_type, field_name, ind_sweep, prdcfg,

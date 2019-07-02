@@ -33,6 +33,31 @@ Gridded data functions
     process_grid_time_stats
     process_grid_time_stats2
 
+Spectral data functions
+=======================
+
+.. autosummary::
+    :toctree: generated/
+
+    process_raw_spectra
+    process_spectra_point
+    process_filter_0Doppler
+    process_filter_spectra_noise
+    process_filter_srhohv
+    process_spectral_power
+    process_spectral_phase
+    process_spectral_reflectivity
+    process_spectral_differential_reflectivity
+    process_spectral_differential_phase
+    process_spectral_rhohv
+    process_pol_variables
+    process_reflectivity
+    process_differential_reflectivity
+    process_differential_phase
+    process_rhohv
+    process_Doppler_velocity
+    process_Doppler_width
+
 Echo classification and filtering
 =================================
 
@@ -167,6 +192,15 @@ COSMO data
     process_hzt_coord
 
 
+DEM data
+==========
+
+.. autosummary::
+    :toctree: generated/
+
+    process_dem
+    process_visibility
+
 """
 
 from .process_aux import get_process_func, process_raw, process_save_radar
@@ -175,6 +209,20 @@ from .process_aux import process_fixed_rng, process_fixed_rng_span
 
 from .process_grid import process_grid, process_raw_grid, process_grid_point
 from .process_grid import process_grid_time_stats, process_grid_time_stats2
+
+from .process_spectra import process_raw_spectra, process_spectral_power
+from .process_spectra import process_spectra_point, process_spectral_phase
+from .process_spectra import process_spectral_reflectivity
+from .process_spectra import process_spectral_differential_reflectivity
+from .process_spectra import process_spectral_differential_phase
+from .process_spectra import process_spectral_rhohv, process_filter_0Doppler
+from .process_spectra import process_filter_spectra_noise
+from .process_spectra import process_filter_srhohv
+from .process_spectra import process_pol_variables, process_reflectivity
+from .process_spectra import process_differential_reflectivity
+from .process_spectra import process_differential_phase
+from .process_spectra import process_rhohv, process_Doppler_velocity
+from .process_spectra import process_Doppler_width
 
 from .process_timeseries import process_point_measurement, process_qvp
 from .process_timeseries import process_rqvp, process_evp, process_svp
@@ -231,5 +279,7 @@ from .process_Doppler import process_vad
 from .process_cosmo import process_cosmo, process_cosmo_lookup_table
 from .process_cosmo import process_cosmo_coord, process_hzt
 from .process_cosmo import process_hzt_lookup_table, process_hzt_coord
+
+from .process_dem import process_dem, process_visibility
 
 __all__ = [s for s in dir() if not s.startswith('_')]

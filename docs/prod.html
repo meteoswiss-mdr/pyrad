@@ -124,16 +124,19 @@
 <tr class="row-even"><td><a class="reference internal" href="#pyrad.prod.generate_monitoring_products" title="pyrad.prod.generate_monitoring_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_monitoring_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
 <td>generates a monitoring product.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.generate_grid_products" title="pyrad.prod.generate_grid_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_grid_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.generate_spectra_products" title="pyrad.prod.generate_spectra_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_spectra_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
+<td>generates spectra products. Accepted product types:</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.prod.generate_grid_products" title="pyrad.prod.generate_grid_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_grid_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
 <td>generates grid products. Accepted product types:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.prod.generate_grid_time_avg_products" title="pyrad.prod.generate_grid_time_avg_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_grid_time_avg_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.generate_grid_time_avg_products" title="pyrad.prod.generate_grid_time_avg_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_grid_time_avg_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
 <td>generates time average products. Accepted product types:</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.generate_traj_product" title="pyrad.prod.generate_traj_product"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_traj_product</span></code></a>(traj,&nbsp;prdcfg)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.prod.generate_traj_product" title="pyrad.prod.generate_traj_product"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_traj_product</span></code></a>(traj,&nbsp;prdcfg)</td>
 <td>Generates trajectory products. Accepted product types:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.prod.generate_ml_products" title="pyrad.prod.generate_ml_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_ml_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.prod.generate_ml_products" title="pyrad.prod.generate_ml_products"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_ml_products</span></code></a>(dataset,&nbsp;prdcfg)</td>
 <td>Generates melting layer products. Accepted product types:</td>
 </tr>
 </tbody>
@@ -747,6 +750,219 @@ status of the processing</p>
 <dt><strong>filename</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
 <dd><p class="first last">the name of the file created. None otherwise</p>
 </dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.prod.generate_spectra_products">
+<code class="descclassname">pyrad.prod.</code><code class="descname">generate_spectra_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_spectra_products.html#generate_spectra_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.generate_spectra_products" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>generates spectra products. Accepted product types:</dt>
+<dd><dl class="first last docutils">
+<dt>‘AMPLITUDE_PHASE_DOPPLER’: Plots a complex Doppler spectrum</dt>
+<dd><p class="first">making two separate plots for the module and phase of the signal
+User defined parameters:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>azi, ele, rng <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>azimuth and elevation (deg) and range (m) of the ray to
+plot</dd>
+<dt>azi_to, ele_tol, rng_tol <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>azimuth and elevation (deg) and range (m) tolerance
+respect to nominal position to plot. Default 1, 1, 50.</dd>
+<dt>ind_ray, ind_rng <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>index of the ray and range to plot. Alternative to
+defining its antenna coordinates</dd>
+<dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>The xaxis type. Can be ‘Doppler_velocity’ or
+‘Doppler frequency’</dd>
+<dt>ampli_vmin, ampli_vmax, phase_vmin, phase_vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
+<dd>Minimum and maximum of the color scale for the module and
+phase</dd>
+</dl>
+</div></blockquote>
+</dd>
+<dt>‘AMPLITUDE_PHASE_RANGE_DOPPLER’: Plots a complex spectra range-Doppler</dt>
+<dd><p class="first">making two separate plots for the module and phase of the signal
+User defined parameters:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>azi, ele <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>azimuth and elevation (deg) of the ray to plot</dd>
+<dt>azi_to, ele_tol <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>azimuth and elevation (deg) tolerance respect to nominal
+position to plot. Default 1, 1.</dd>
+<dt>ind_ray <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>index of the ray to plot. Alternative to
+defining its antenna coordinates</dd>
+<dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>The xaxis type. Can be ‘Doppler_velocity’ or
+‘Doppler frequency’</dd>
+<dt>ampli_vmin, ampli_vmax, phase_vmin, phase_vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
+<dd>Minimum and maximum of the color scale for the module and
+phase</dd>
+</dl>
+</div></blockquote>
+</dd>
+<dt>‘AMPLITUDE_PHASE_TIME_DOPPLER’: Plots a complex spectra time-Doppler</dt>
+<dd><p class="first">making two separate plots for the module and phase of the signal
+User defined parameters:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>The xaxis type. Can be ‘Doppler_velocity’ or
+‘Doppler frequency’</dd>
+<dt>ampli_vmin, ampli_vmax, phase_vmin, phase_vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
+<dd>Minimum and maximum of the color scale for the module and
+phase</dd>
+<dt>plot_type <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Can be ‘final’ or ‘temporal’. If final the data is only
+plotted at the end of the processing</dd>
+</dl>
+</div></blockquote>
+</dd>
+<dt>‘COMPLEX_DOPPLER’: Plots a complex Doppler spectrum making two</dt>
+<dd><p class="first">separate plots for the real and imaginary parts
+User defined parameters:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>azi, ele, rng <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>azimuth and elevation (deg) and range (m) of the ray to
+plot</dd>
+<dt>azi_to, ele_tol, rng_tol <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>azimuth and elevation (deg) and range (m) tolerance
+respect to nominal position to plot. Default 1, 1, 50.</dd>
+<dt>ind_ray, ind_rng <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>index of the ray and range to plot. Alternative to
+defining its antenna coordinates</dd>
+<dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>The xaxis type. Can be ‘Doppler_velocity’ or
+‘Doppler frequency’</dd>
+<dt>vmin, vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
+<dd>Minimum and maximum of the color scale</dd>
+</dl>
+</div></blockquote>
+</dd>
+<dt>‘COMPLEX_RANGE_DOPPLER’: Plots the complex spectra range-Doppler</dt>
+<dd><p class="first">making two separate plots for the real and imaginary parts
+User defined parameters:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>azi, ele <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>azimuth and elevation (deg) of the ray to plot</dd>
+<dt>azi_to, ele_tol <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>azimuth and elevation (deg) tolerance respect to nominal
+position to plot. Default 1, 1.</dd>
+<dt>ind_ray <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>index of the ray to plot. Alternative to
+defining its antenna coordinates</dd>
+<dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>The xaxis type. Can be ‘Doppler_velocity’ or
+‘Doppler frequency’</dd>
+<dt>vmin, vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
+<dd>Minimum and maximum of the color scale</dd>
+</dl>
+</div></blockquote>
+</dd>
+<dt>‘COMPLEX_TIME_DOPPLER’: Plots the complex spectra time-Doppler</dt>
+<dd><p class="first">making two separate plots for the real and imaginary parts
+User defined parameters:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>The xaxis type. Can be ‘Doppler_velocity’ or
+‘Doppler frequency’</dd>
+<dt>vmin, vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
+<dd>Minimum and maximum of the color scale</dd>
+<dt>plot_type <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Can be ‘final’ or ‘temporal’. If final the data is only
+plotted at the end of the processing</dd>
+</dl>
+</div></blockquote>
+</dd>
+<dt>‘DOPPLER’: Plots a Doppler spectrum variable</dt>
+<dd><dl class="first last docutils">
+<dt>User defined parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>azi, ele, rng <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>azimuth and elevation (deg) and range (m) of the ray to
+plot</dd>
+<dt>azi_to, ele_tol, rng_tol <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>azimuth and elevation (deg) and range (m) tolerance
+respect to nominal position to plot. Default 1, 1, 50.</dd>
+<dt>ind_ray, ind_rng <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>index of the ray and range to plot. Alternative to
+defining its antenna coordinates</dd>
+<dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>The xaxis type. Can be ‘Doppler_velocity’ or
+‘Doppler frequency’</dd>
+<dt>vmin, vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
+<dd>Minimum and maximum of the color scale</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>‘RANGE_DOPPLER’: Makes a range-Doppler plot of spectral data</dt>
+<dd><dl class="first last docutils">
+<dt>User defined parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>azi, ele <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>azimuth and elevation (deg) of the ray to plot</dd>
+<dt>azi_to, ele_tol <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>azimuth and elevation (deg) tolerance respect to nominal
+position to plot. Default 1, 1.</dd>
+<dt>ind_ray <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>index of the ray to plot. Alternative to
+defining its antenna coordinates</dd>
+<dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>The xaxis type. Can be ‘Doppler_velocity’ or
+‘Doppler frequency’</dd>
+<dt>vmin, vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
+<dd>Minimum and maximum of the color scale</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>‘TIME_DOPPLER’: Makes a time-Doppler plot of spectral data at a point</dt>
+<dd><p class="first">of interest.
+User defined parameters:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>The xaxis type. Can be ‘Doppler_velocity’ or
+‘Doppler frequency’</dd>
+<dt>vmin, vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
+<dd>Minimum and maximum of the color scale</dd>
+<dt>plot_type <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Can be ‘final’ or ‘temporal’. If final the data is only
+plotted at the end of the processing</dd>
+</dl>
+</div></blockquote>
+</dd>
+</dl>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">spectra</span></dt>
+<dd><p class="first last">spectra object</p>
+</dd>
+<dt><strong>prdcfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first last">product configuration dictionary of dictionaries</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>None or name of generated files</strong></dt>
+<dd></dd>
 </dl>
 </td>
 </tr>
@@ -1746,6 +1962,7 @@ what the functions do check the function documentation:</p>
 ‘COLOCATED_GATES’: generate_colocated_gates_products
 ‘COSMO_COORD’: generate_cosmo_coord_products
 ‘GRID’: generate_grid_products
+‘SPECTRA’: generate_spectra_products
 ‘GRID_TIMEAVG’: generate_grid_time_avg_products
 ‘INTERCOMP’: generate_intercomp_products
 ‘ML’: generate_ml_products

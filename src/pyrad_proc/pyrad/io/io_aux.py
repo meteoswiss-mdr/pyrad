@@ -1058,14 +1058,66 @@ def get_fieldname_pyart(datatype):
         field_name = 'signal_power_hh'
     elif datatype == 'dBmv':
         field_name = 'signal_power_vv'
+
     elif datatype == 'Nh':
         field_name = 'noisedBZ_hh'
     elif datatype == 'Nv':
         field_name = 'noisedBZ_vv'
+    elif datatype == 'NdBADUh':
+        field_name = 'noisedBADU_hh'
+    elif datatype == 'NdBADUv':
+        field_name = 'noisedBADU_vv'
+    elif datatype == 'NdBmh':
+        field_name = 'noisedBm_hh'
+    elif datatype == 'NdBmv':
+        field_name = 'noisedBm_vv'
+    elif datatype == 'NADUh':
+        field_name = 'noiseADU_hh'
+    elif datatype == 'NADUv':
+        field_name = 'noiseADU_vv'
+
+    elif datatype == 'TXh':
+        field_name = 'transmitted_signal_power_h'
+    elif datatype == 'TXv':
+        field_name = 'transmitted_signal_power_v'
+
     elif datatype == 'SNRh':
         field_name = 'signal_to_noise_ratio_hh'
     elif datatype == 'SNRv':
         field_name = 'signal_to_noise_ratio_vv'
+
+    # spectral data
+    elif datatype == 'ShhADU':
+        field_name = 'complex_spectra_hh_ADU'
+    elif datatype == 'SvvADU':
+        field_name = 'complex_spectra_vv_ADU'
+    elif datatype == 'sPhhADU':
+        field_name = 'spectral_power_hh_ADU'
+    elif datatype == 'sPvvADU':
+        field_name = 'spectral_power_vv_ADU'
+    elif datatype == 'sPhhdBADU':
+        field_name = 'spectral_power_hh_dBADU'
+    elif datatype == 'sPvvdBADU':
+        field_name = 'spectral_power_vv_dBADU'
+    elif datatype == 'sPhhdBm':
+        field_name = 'spectral_power_hh_dBm'
+    elif datatype == 'sPvvdBm':
+        field_name = 'spectral_power_vv_dBm'
+    elif datatype == 'sPhasehh':
+        field_name = 'spectral_phase_hh'
+    elif datatype == 'sPhasevv':
+        field_name = 'spectral_phase_vv'
+
+    elif datatype == 'sdBZ':
+        field_name = 'spectral_reflectivity_hh'
+    elif datatype == 'sdBZv':
+        field_name = 'spectral_reflectivity_vv'
+    elif datatype == 'sZDR':
+        field_name = 'spectral_differential_reflectivity'
+    elif datatype == 'sPhiDP':
+        field_name = 'spectral_differential_phase'
+    elif datatype == 'sRhoHV':
+        field_name = 'spectral_copolar_correlation_coefficient'
 
     elif datatype == 'dBm_sun_hit':
         field_name = 'sun_hit_power_h'
@@ -1189,6 +1241,10 @@ def get_fieldname_pyart(datatype):
 
     elif datatype == 'VIS':
         field_name = 'visibility'
+    elif datatype == 'minvisel':
+        field_name = 'minimum_visible_elevation'
+    elif datatype == 'minvisalt':
+        field_name = 'minimum_visible_altitude'
 
     elif datatype == 'echoID':
         field_name = 'radar_echo_id'
@@ -1200,11 +1256,15 @@ def get_fieldname_pyart(datatype):
         field_name = 'frequency_of_occurrence'
     elif datatype == 'RR':
         field_name = 'radar_estimated_rain_rate'
+    elif datatype == 'RRc':
+        field_name = 'corrected_radar_estimated_rain_rate'
     elif datatype == 'Raccu':
         field_name = 'rainfall_accumulation'
 
     elif datatype == 'hydro':
         field_name = 'radar_echo_classification'
+    elif datatype == 'hydroc':
+        field_name = 'corrected_radar_echo_classification'
     elif datatype == 'entropy':
         field_name = 'hydroclass_entropy'
     elif datatype == 'propAG':
@@ -1625,7 +1685,8 @@ def get_file_list(datadescriptor, starttimes, endtimes, cfg, scan=None):
                         fpath_strf = dataset[
                             dataset.find("D")+2:dataset.find("F")-2]
                     except AttributeError:
-                        warn('Unknown ODIM directory and/or date convention, check product config file')
+                        warn('Unknown ODIM directory and/or date ' +
+                             'convention, check product config file')
                     daydir = (
                         starttime+datetime.timedelta(days=i)).strftime(
                             fpath_strf)
@@ -1711,7 +1772,7 @@ def get_file_list(datadescriptor, starttimes, endtimes, cfg, scan=None):
             filenamestr = str(filename)
             fdatetime = get_datetime(filenamestr, datadescriptor)
             if fdatetime is not None:
-                if (fdatetime >= starttime) and (fdatetime <= endtime):
+                if starttime <= fdatetime <= endtime:
                     filelist.append(filenamestr)
 
     return sorted(filelist)

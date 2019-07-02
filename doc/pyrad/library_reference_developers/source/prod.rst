@@ -50,6 +50,13 @@
    :special-members:
    :inherited-members:
    :show-inheritance:
+.. automodule:: pyrad.prod.process_spectra_products
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
 .. automodule:: pyrad.prod.process_traj_products
    :members:
    :undoc-members:

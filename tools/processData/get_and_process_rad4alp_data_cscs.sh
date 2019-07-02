@@ -49,7 +49,7 @@
 # --MP_PROD : Parallelize product generation. Default 0
 # --MP_PROF : Profile parallelization. Default 0
 umask 0002;
-export PATH="/store/msrad/utils/anaconda3/bin:$PATH"
+export PATH="/store/msrad/utils/anaconda3-pyrad/bin/:$PATH"
 
 pyradpath="$HOME/pyrad/src/pyrad_proc/scripts/"
 
@@ -361,7 +361,7 @@ for ((iday=0; iday<${nday}; iday++)); do
             proc_start=`date +%s`
 
             LOGFILE=$HOME/log/${DAY}_${RADAR}${RES}_rm_rad4alp_data_CSCS.log
-            bash $HOME/pyrad/tools/copyData/rm_rad4alp_data_CSCS_2.sh -r $RADAR -e $RES -d $DAY -p $DATA_DESTBASE >$LOGFILE 2>$LOGFILE
+            bash $HOME/pyrad/tools/copyData/rm_rad4alp_data_CSCS_2.sh -r $RADAR -e $RES -d $DAY --start_time ${START_TIME} --end_time ${END_TIME} -p $DATA_DESTBASE --ele $ELE >$LOGFILE 2>$LOGFILE
 
             proc_end=`date +%s`
             runtime=$((proc_end-proc_start))

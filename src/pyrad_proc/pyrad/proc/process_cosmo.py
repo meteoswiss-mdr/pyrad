@@ -217,6 +217,9 @@ def process_hzt(procstatus, dscfg, radar_list=None):
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
+        metranet_read_lib : str. Global keyword
+            Type of METRANET reader library used to read the data.
+            Can be 'C' or 'python'
         datatype : string. Dataset keyword
             arbitrary data type
         keep_in_memory : int. Dataset keyword
@@ -267,7 +270,8 @@ def process_hzt(procstatus, dscfg, radar_list=None):
 
     if keep_in_memory:
         if dscfg['initialized'] == 0:
-            hzt_data = read_hzt_data(fname)
+            hzt_data = read_hzt_data(
+                fname, read_lib=dscfg['metranet_read_lib'])
             if hzt_data is None:
                 warn('HZT data not found')
                 return None, None
@@ -285,7 +289,8 @@ def process_hzt(procstatus, dscfg, radar_list=None):
 
         hzt_coord = dscfg['global_data']['hzt_coord']
         if fname != dscfg['global_data']['hzt_fname']:
-            hzt_data = read_hzt_data(fname)
+            hzt_data = read_hzt_data(
+                fname, read_lib=dscfg['metranet_read_lib'])
             if hzt_data is None:
                 warn('HZT data not found')
                 return None, None
@@ -296,7 +301,7 @@ def process_hzt(procstatus, dscfg, radar_list=None):
             print('raw HZT data already in memory')
             hzt_data = dscfg['global_data']['hzt_data']
     else:
-        hzt_data = read_hzt_data(fname)
+        hzt_data = read_hzt_data(fname, read_lib=dscfg['metranet_read_lib'])
         if hzt_data is None:
             warn('HZT data not found')
             return None, None
@@ -540,6 +545,9 @@ def process_hzt_lookup_table(procstatus, dscfg, radar_list=None):
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
+        metranet_read_lib : str. Global keyword
+            Type of METRANET reader library used to read the data.
+            Can be 'C' or 'python'
         datatype : string. Dataset keyword
             arbitrary data type
         lookup_table : int. Dataset keyword
@@ -595,7 +603,8 @@ def process_hzt_lookup_table(procstatus, dscfg, radar_list=None):
                 return None, None
             hzt_radar = pyart.io.read_cfradial(fname_ind2[0])
         else:
-            hzt_data = read_hzt_data(fname)
+            hzt_data = read_hzt_data(
+                fname, read_lib=dscfg['metranet_read_lib'])
             if hzt_data is None:
                 warn('HZT data not found')
                 return None, None
@@ -617,7 +626,7 @@ def process_hzt_lookup_table(procstatus, dscfg, radar_list=None):
         dscfg['initialized'] = 1
 
     if fname != dscfg['global_data']['hzt_fname']:
-        hzt_data = read_hzt_data(fname)
+        hzt_data = read_hzt_data(fname, read_lib=dscfg['metranet_read_lib'])
         if hzt_data is None:
             warn('HZT data not found')
             return None, None
@@ -764,6 +773,9 @@ def process_hzt_coord(procstatus, dscfg, radar_list=None):
     dscfg : dictionary of dictionaries
         data set configuration. Accepted Configuration Keywords::
 
+        metranet_read_lib : str. Global keyword
+            Type of METRANET reader library used to read the data.
+            Can be 'C' or 'python'
         datatype : string. Dataset keyword
             arbitrary data type
         cosmopath : string. General keyword
@@ -797,7 +809,7 @@ def process_hzt_coord(procstatus, dscfg, radar_list=None):
 
     fname = find_hzt_file(dscfg['timeinfo'], dscfg, ind_rad=ind_rad)
 
-    hzt_data = read_hzt_data(fname)
+    hzt_data = read_hzt_data(fname, read_lib=dscfg['metranet_read_lib'])
     if hzt_data is None:
         warn('HZT data not found')
         return None, None

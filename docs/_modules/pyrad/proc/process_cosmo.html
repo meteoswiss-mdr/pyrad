@@ -273,6 +273,9 @@
 <span class="sd">    dscfg : dictionary of dictionaries</span>
 <span class="sd">        data set configuration. Accepted Configuration Keywords::</span>
 
+<span class="sd">        metranet_read_lib : str. Global keyword</span>
+<span class="sd">            Type of METRANET reader library used to read the data.</span>
+<span class="sd">            Can be &#39;C&#39; or &#39;python&#39;</span>
 <span class="sd">        datatype : string. Dataset keyword</span>
 <span class="sd">            arbitrary data type</span>
 <span class="sd">        keep_in_memory : int. Dataset keyword</span>
@@ -323,7 +326,8 @@
 
     <span class="k">if</span> <span class="n">keep_in_memory</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;initialized&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">hzt_data</span> <span class="o">=</span> <span class="n">read_hzt_data</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+            <span class="n">hzt_data</span> <span class="o">=</span> <span class="n">read_hzt_data</span><span class="p">(</span>
+                <span class="n">fname</span><span class="p">,</span> <span class="n">read_lib</span><span class="o">=</span><span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;metranet_read_lib&#39;</span><span class="p">])</span>
             <span class="k">if</span> <span class="n">hzt_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;HZT data not found&#39;</span><span class="p">)</span>
                 <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
@@ -341,7 +345,8 @@
 
         <span class="n">hzt_coord</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;hzt_coord&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">fname</span> <span class="o">!=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;hzt_fname&#39;</span><span class="p">]:</span>
-            <span class="n">hzt_data</span> <span class="o">=</span> <span class="n">read_hzt_data</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+            <span class="n">hzt_data</span> <span class="o">=</span> <span class="n">read_hzt_data</span><span class="p">(</span>
+                <span class="n">fname</span><span class="p">,</span> <span class="n">read_lib</span><span class="o">=</span><span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;metranet_read_lib&#39;</span><span class="p">])</span>
             <span class="k">if</span> <span class="n">hzt_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;HZT data not found&#39;</span><span class="p">)</span>
                 <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
@@ -352,7 +357,7 @@
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;raw HZT data already in memory&#39;</span><span class="p">)</span>
             <span class="n">hzt_data</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;hzt_data&#39;</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">hzt_data</span> <span class="o">=</span> <span class="n">read_hzt_data</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="n">hzt_data</span> <span class="o">=</span> <span class="n">read_hzt_data</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">read_lib</span><span class="o">=</span><span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;metranet_read_lib&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">hzt_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;HZT data not found&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
@@ -596,6 +601,9 @@
 <span class="sd">    dscfg : dictionary of dictionaries</span>
 <span class="sd">        data set configuration. Accepted Configuration Keywords::</span>
 
+<span class="sd">        metranet_read_lib : str. Global keyword</span>
+<span class="sd">            Type of METRANET reader library used to read the data.</span>
+<span class="sd">            Can be &#39;C&#39; or &#39;python&#39;</span>
 <span class="sd">        datatype : string. Dataset keyword</span>
 <span class="sd">            arbitrary data type</span>
 <span class="sd">        lookup_table : int. Dataset keyword</span>
@@ -651,7 +659,8 @@
                 <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
             <span class="n">hzt_radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read_cfradial</span><span class="p">(</span><span class="n">fname_ind2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">hzt_data</span> <span class="o">=</span> <span class="n">read_hzt_data</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+            <span class="n">hzt_data</span> <span class="o">=</span> <span class="n">read_hzt_data</span><span class="p">(</span>
+                <span class="n">fname</span><span class="p">,</span> <span class="n">read_lib</span><span class="o">=</span><span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;metranet_read_lib&#39;</span><span class="p">])</span>
             <span class="k">if</span> <span class="n">hzt_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;HZT data not found&#39;</span><span class="p">)</span>
                 <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
@@ -673,7 +682,7 @@
         <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;initialized&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="k">if</span> <span class="n">fname</span> <span class="o">!=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;hzt_fname&#39;</span><span class="p">]:</span>
-        <span class="n">hzt_data</span> <span class="o">=</span> <span class="n">read_hzt_data</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="n">hzt_data</span> <span class="o">=</span> <span class="n">read_hzt_data</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">read_lib</span><span class="o">=</span><span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;metranet_read_lib&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">hzt_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;HZT data not found&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
@@ -820,6 +829,9 @@
 <span class="sd">    dscfg : dictionary of dictionaries</span>
 <span class="sd">        data set configuration. Accepted Configuration Keywords::</span>
 
+<span class="sd">        metranet_read_lib : str. Global keyword</span>
+<span class="sd">            Type of METRANET reader library used to read the data.</span>
+<span class="sd">            Can be &#39;C&#39; or &#39;python&#39;</span>
 <span class="sd">        datatype : string. Dataset keyword</span>
 <span class="sd">            arbitrary data type</span>
 <span class="sd">        cosmopath : string. General keyword</span>
@@ -853,7 +865,7 @@
 
     <span class="n">fname</span> <span class="o">=</span> <span class="n">find_hzt_file</span><span class="p">(</span><span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
 
-    <span class="n">hzt_data</span> <span class="o">=</span> <span class="n">read_hzt_data</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="n">hzt_data</span> <span class="o">=</span> <span class="n">read_hzt_data</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">read_lib</span><span class="o">=</span><span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;metranet_read_lib&#39;</span><span class="p">])</span>
     <span class="k">if</span> <span class="n">hzt_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;HZT data not found&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>

@@ -1250,7 +1250,7 @@ def generate_vol_products(dataset, prdcfg):
 
         # mask unclassified data
         field = deepcopy(dataset['radar_out'].fields[field_name]['data'])
-        if prdcfg['voltype'] == 'hydro':
+        if prdcfg['voltype'] in ('hydro', 'hydroc'):
             field = np.ma.masked_equal(field, 1)
 
         # user defined parameters
@@ -2090,7 +2090,7 @@ def generate_vol_products(dataset, prdcfg):
 
         # mask unclassified data
         field = deepcopy(dataset['radar_out'].fields[field_name]['data'])
-        if prdcfg['voltype'] == 'hydro':
+        if prdcfg['voltype'] in ('hydro', 'hydroc'):
             field = np.ma.masked_equal(field, 1)
 
         # user defined variables

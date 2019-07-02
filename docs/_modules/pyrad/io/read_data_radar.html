@@ -65,6 +65,8 @@
 
 <span class="sd">    get_data</span>
 <span class="sd">    merge_scans_rainbow</span>
+<span class="sd">    merge_scans_psr</span>
+<span class="sd">    merge_scans_psr_spectra</span>
 <span class="sd">    merge_scans_dem</span>
 <span class="sd">    merge_scans_rad4alp</span>
 <span class="sd">	merge_scans_odim</span>
@@ -73,6 +75,8 @@
 <span class="sd">    merge_scans_dem_rad4alp</span>
 <span class="sd">    merge_scans_other_rad4alp</span>
 <span class="sd">    merge_fields_rainbow</span>
+<span class="sd">    merge_fields_psr</span>
+<span class="sd">    merge_fields_psr_spectra</span>
 <span class="sd">    merge_fields_rad4alp_grid</span>
 <span class="sd">    merge_fields_pyrad</span>
 <span class="sd">    merge_fields_pyradgrid</span>
@@ -90,6 +94,7 @@
 
 <span class="kn">import</span> <span class="nn">glob</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">platform</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
@@ -104,6 +109,19 @@
     <span class="n">_WRADLIB_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
 
 <span class="kn">import</span> <span class="nn">pyart</span>
+
+<span class="kn">from</span> <span class="nn">pyart.aux_io</span> <span class="k">import</span> <span class="n">read_product_py</span>
+<span class="kn">from</span> <span class="nn">pyart.aux_io</span> <span class="k">import</span> <span class="n">read_product_c</span>
+<span class="kn">from</span> <span class="nn">pyart.aux_io</span> <span class="k">import</span> <span class="n">get_library</span>
+
+<span class="c1"># check existence of METRANET library</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">METRANET_LIB</span> <span class="o">=</span> <span class="n">get_library</span><span class="p">(</span><span class="n">momentms</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;Linux&#39;</span><span class="p">:</span>
+        <span class="n">METRANET_LIB</span> <span class="o">=</span> <span class="n">get_library</span><span class="p">(</span><span class="n">momentms</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_METRANETLIB_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">SystemExit</span><span class="p">:</span>
+    <span class="n">_METRANETLIB_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
 
 <span class="kn">from</span> <span class="nn">.read_data_other</span> <span class="k">import</span> <span class="n">read_status</span><span class="p">,</span> <span class="n">read_rad4alp_cosmo</span><span class="p">,</span> <span class="n">read_rad4alp_vis</span>
 <span class="kn">from</span> <span class="nn">.read_data_mxpol</span> <span class="k">import</span> <span class="n">pyrad_MXPOL</span><span class="p">,</span> <span class="n">pyrad_MCH</span>
@@ -135,6 +153,8 @@
 <span class="sd">            &#39;RAINBOW&#39;: Propietary Leonardo format</span>
 <span class="sd">            &#39;COSMO&#39;: COSMO model data saved in Rainbow file format</span>
 <span class="sd">            &#39;DEM&#39;: Visibility data saved in Rainbow file format</span>
+<span class="sd">            &#39;PSR&#39;: Reads PSR data file to extract range gate information</span>
+<span class="sd">                (Noise and transmitted power)</span>
 
 <span class="sd">            &#39;RAD4ALP&#39;: METRANET format used for the operational MeteoSwiss</span>
 <span class="sd">                data. To find out which datatype to use to match a particular</span>
@@ -180,6 +200,9 @@
 <span class="sd">                product is stored.</span>
 <span class="sd">                Example: ODIMPYRAD:RR,RZC,SAVEVOL</span>
 
+<span class="sd">            &#39;PSRSPECTRA&#39;: Format used to store Rainbow power spectra</span>
+<span class="sd">                recordings.</span>
+
 <span class="sd">        &#39;RAINBOW&#39;, &#39;RAD4ALP&#39;, &#39;ODIM&#39; and &#39;MXPOL&#39; are primary data file sources</span>
 <span class="sd">        and they cannot be mixed for the same radar. It is also the case for</span>
 <span class="sd">        their complementary data files, i.e. &#39;COSMO&#39; and &#39;RAD4ALPCOSMO&#39;, etc.</span>
@@ -219,6 +242,9 @@
     <span class="n">datatype_pyradgrid</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">dataset_pyradgrid</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">product_pyradgrid</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">datatype_psr</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">datatype_psrspectra</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
     <span class="k">for</span> <span class="n">datatypedescr</span> <span class="ow">in</span> <span class="n">datatypesdescr</span><span class="p">:</span>
         <span class="n">radarnr</span><span class="p">,</span> <span class="n">datagroup</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">product</span> <span class="o">=</span> <span class="n">get_datatype_fields</span><span class="p">(</span>
             <span class="n">datatypedescr</span><span class="p">)</span>
@@ -261,7 +287,10 @@
             <span class="n">datatype_pyradgrid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
             <span class="n">dataset_pyradgrid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
             <span class="n">product_pyradgrid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">product</span><span class="p">)</span>
-
+        <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;PSR&#39;</span><span class="p">:</span>
+            <span class="n">datatype_psr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;PSRSPECTRA&#39;</span><span class="p">:</span>
+            <span class="n">datatype_psrspectra</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
 
     <span class="n">ind_rad</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">radarnr</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">8</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span>
 
@@ -281,6 +310,8 @@
     <span class="n">ndatatypes_rad4alpgif</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_rad4alpgif</span><span class="p">)</span>
     <span class="n">ndatatypes_rad4alpbin</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_rad4alpbin</span><span class="p">)</span>
     <span class="n">ndatatypes_pyradgrid</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_pyradgrid</span><span class="p">)</span>
+    <span class="n">ndatatypes_psr</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_psr</span><span class="p">)</span>
+    <span class="n">ndatatypes_psrspectra</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_psrspectra</span><span class="p">)</span>
 
     <span class="n">radar</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">ndatatypes_rainbow</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">_WRADLIB_AVAILABLE</span><span class="p">:</span>
@@ -314,6 +345,38 @@
         <span class="n">radar</span> <span class="o">=</span> <span class="n">merge_fields_rad4alp_grid</span><span class="p">(</span>
             <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_rad4alpgrid</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
 
+    <span class="k">elif</span> <span class="n">ndatatypes_psrspectra</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">radar</span> <span class="o">=</span> <span class="n">merge_scans_psr_spectra</span><span class="p">(</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;psrpath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanList&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanPeriod&#39;</span><span class="p">],</span>
+            <span class="n">datatype_psrspectra</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">radarnr</span><span class="o">=</span><span class="n">radarnr</span><span class="p">)</span>
+
+    <span class="c1"># add other radar object files</span>
+    <span class="k">if</span> <span class="n">ndatatypes_cfradial</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">merge_fields_pyrad</span><span class="p">(</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;loadbasepath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;loadname&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">voltime</span><span class="p">,</span>
+            <span class="n">datatype_cfradial</span><span class="p">,</span> <span class="n">dataset_cfradial</span><span class="p">,</span> <span class="n">product_cfradial</span><span class="p">,</span>
+            <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">],</span> <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span>
+            <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span> <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">])</span>
+        <span class="n">radar</span> <span class="o">=</span> <span class="n">add_field</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ndatatypes_odimpyrad</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">merge_fields_pyrad</span><span class="p">(</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;loadbasepath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;loadname&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">voltime</span><span class="p">,</span>
+            <span class="n">datatype_odimpyrad</span><span class="p">,</span> <span class="n">dataset_odimpyrad</span><span class="p">,</span> <span class="n">product_odimpyrad</span><span class="p">,</span>
+            <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">],</span> <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span>
+            <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span> <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">],</span>
+            <span class="n">termination</span><span class="o">=</span><span class="s1">&#39;.h5&#39;</span><span class="p">)</span>
+        <span class="n">radar</span> <span class="o">=</span> <span class="n">add_field</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
+
+    <span class="c1"># add rainbow ray data from psr files</span>
+    <span class="k">if</span> <span class="n">ndatatypes_psr</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">radar</span> <span class="o">=</span> <span class="n">merge_scans_psr</span><span class="p">(</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;psrpath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanList&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanPeriod&#39;</span><span class="p">],</span>
+            <span class="n">datatype_psr</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">radarnr</span><span class="o">=</span><span class="n">radarnr</span><span class="p">)</span>
+
+    <span class="c1"># add other grid object files</span>
     <span class="k">if</span> <span class="n">ndatatypes_rad4alpgif</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">radar</span> <span class="o">=</span> <span class="n">merge_fields_rad4alp_grid</span><span class="p">(</span>
             <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_rad4alpgif</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">,</span> <span class="n">ftype</span><span class="o">=</span><span class="s1">&#39;gif&#39;</span><span class="p">)</span>
@@ -322,18 +385,6 @@
         <span class="n">radar</span> <span class="o">=</span> <span class="n">merge_fields_rad4alp_grid</span><span class="p">(</span>
             <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_rad4alpbin</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">,</span> <span class="n">ftype</span><span class="o">=</span><span class="s1">&#39;bin&#39;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">ndatatypes_cfradial</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">merge_fields_pyrad</span><span class="p">(</span>
-            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;loadbasepath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;loadname&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">voltime</span><span class="p">,</span>
-            <span class="n">datatype_cfradial</span><span class="p">,</span> <span class="n">dataset_cfradial</span><span class="p">,</span> <span class="n">product_cfradial</span><span class="p">,</span>
-            <span class="n">rmax</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">])</span>
-        <span class="n">radar</span> <span class="o">=</span> <span class="n">add_field</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">ndatatypes_odimpyrad</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">merge_fields_pyrad</span><span class="p">(</span>
-            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;loadbasepath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;loadname&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">voltime</span><span class="p">,</span>
-            <span class="n">datatype_odimpyrad</span><span class="p">,</span> <span class="n">dataset_odimpyrad</span><span class="p">,</span> <span class="n">product_odimpyrad</span><span class="p">,</span>
-            <span class="n">rmax</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">],</span> <span class="n">termination</span><span class="o">=</span><span class="s1">&#39;.h5&#39;</span><span class="p">)</span>
-        <span class="n">radar</span> <span class="o">=</span> <span class="n">add_field</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">ndatatypes_pyradgrid</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">merge_fields_pyradgrid</span><span class="p">(</span>
             <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;loadbasepath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;loadname&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">voltime</span><span class="p">,</span>
@@ -374,7 +425,9 @@
     <span class="c1"># add DEM files to the radar field</span>
     <span class="k">if</span> <span class="n">ndatatypes_dem</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">_WRADLIB_AVAILABLE</span><span class="p">:</span>
         <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">merge_scans_dem</span><span class="p">(</span>
-            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;dempath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanList&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">datatype_dem</span><span class="p">)</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;dempath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanList&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">datatype_dem</span><span class="p">,</span>
+            <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">],</span> <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span>
+            <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span> <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">])</span>
         <span class="n">radar</span> <span class="o">=</span> <span class="n">add_field</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
 
     <span class="k">elif</span> <span class="n">ndatatypes_rad4alpdem</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -408,6 +461,7 @@
                          <span class="s2">&quot;&#39; to radar object&quot;</span>
                          <span class="s2">&quot;: (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
 
+    <span class="c1"># add rad4alp radar data</span>
     <span class="k">if</span> <span class="n">ndatatypes_rad4alphydro</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">if</span> <span class="p">((</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarRes&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span>
                 <span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarName&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)):</span>
@@ -459,7 +513,6 @@
                         <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Unable to add field &#39;&quot;</span><span class="o">+</span><span class="n">field_name</span> <span class="o">+</span>
                              <span class="s2">&quot;&#39; to radar object&quot;</span>
                              <span class="s2">&quot;: (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
-
 
     <span class="c1"># if it is specified, get the position from the config file</span>
     <span class="k">if</span> <span class="s1">&#39;RadarPosition&#39;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">:</span>
@@ -542,23 +595,139 @@
     <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">radar</span>
 
-    <span class="c1"># keep only PPIs within elevation limits</span>
-    <span class="k">if</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="o">-</span><span class="mf">600.</span> <span class="ow">or</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mf">600.</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">radar</span><span class="o">.</span><span class="n">scan_type</span> <span class="o">==</span> <span class="s1">&#39;ppi&#39;</span><span class="p">:</span>
-            <span class="n">ind_sweeps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
-                <span class="n">radar</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span>
-                <span class="n">radar</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">]))[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">ind_sweeps</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Elevation angles outside of specified angle range. &#39;</span> <span class="o">+</span>
-                     <span class="s1">&#39;Min angle: &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">])</span> <span class="o">+</span>
-                     <span class="s1">&#39; Max angle: &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">]))</span>
-                <span class="k">return</span> <span class="kc">None</span>
-            <span class="n">radar</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">extract_sweeps</span><span class="p">(</span><span class="n">ind_sweeps</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cut_radar</span><span class="p">(</span>
+        <span class="n">radar</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">],</span>
+        <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span>
+        <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">])</span>
+
+
+<span class="k">def</span> <span class="nf">merge_scans_psr</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">basepath_psr</span><span class="p">,</span> <span class="n">scan_list</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">scan_period</span><span class="p">,</span>
+                    <span class="n">datatype_list</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">radarnr</span><span class="o">=</span><span class="s1">&#39;RADAR001&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    merge rainbow scans</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    basepath : str</span>
+<span class="sd">        base path of rainbow radar data</span>
+<span class="sd">    basepath_psr : str</span>
+<span class="sd">        name of the base path where to find the PSR data</span>
+<span class="sd">    scan_list : list</span>
+<span class="sd">        list of scans</span>
+<span class="sd">    voltime: datetime object</span>
+<span class="sd">        reference time of the scan</span>
+<span class="sd">    scan_period : float</span>
+<span class="sd">        time from reference time where to look for other scans data</span>
+<span class="sd">    datatype_list : list</span>
+<span class="sd">        lists of data types to get</span>
+<span class="sd">    cfg : dict</span>
+<span class="sd">        configuration dictionary</span>
+<span class="sd">    radarnr : str</span>
+<span class="sd">        radar identifier number</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    radar : Radar</span>
+<span class="sd">        radar object</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">datadescriptor</span> <span class="o">=</span> <span class="n">radarnr</span><span class="o">+</span><span class="s1">&#39;:RAINBOW:dBZ&#39;</span>
+    <span class="n">endtime</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">+</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="n">scan_period</span><span class="p">)</span>
+
+    <span class="n">radar</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">scan</span> <span class="ow">in</span> <span class="n">scan_list</span><span class="p">:</span>
+        <span class="n">filelist</span> <span class="o">=</span> <span class="n">get_file_list</span><span class="p">(</span><span class="n">datadescriptor</span><span class="p">,</span> <span class="p">[</span><span class="n">voltime</span><span class="p">],</span> <span class="p">[</span><span class="n">endtime</span><span class="p">],</span>
+                                 <span class="n">cfg</span><span class="p">,</span> <span class="n">scan</span><span class="o">=</span><span class="n">scan</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filelist</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;ERROR: No data file found for scan &#39;</span><span class="si">%s</span><span class="s2">&#39; &quot;</span>
+                 <span class="s2">&quot;between </span><span class="si">%s</span><span class="s2"> and </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">scan</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">endtime</span><span class="p">))</span>
+            <span class="k">continue</span>
+        <span class="n">scantime</span> <span class="o">=</span> <span class="n">get_datetime</span><span class="p">(</span><span class="n">filelist</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">datadescriptor</span><span class="p">)</span>
+
+        <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">merge_fields_psr</span><span class="p">(</span>
+            <span class="n">basepath</span><span class="p">,</span> <span class="n">basepath_psr</span><span class="p">,</span> <span class="n">scan</span><span class="p">,</span> <span class="n">scantime</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span>
+            <span class="n">undo_txcorr</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;undo_txcorr&#39;</span><span class="p">],</span> <span class="n">cpi</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;cpi&#39;</span><span class="p">],</span>
+            <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span> <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">],</span> <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span>
+            <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">radar_aux</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">radar</span>
 
 
-<span class="k">def</span> <span class="nf">merge_scans_dem</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan_list</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">merge_scans_psr_spectra</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">basepath_psr</span><span class="p">,</span> <span class="n">scan_list</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span>
+                            <span class="n">scan_period</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span>
+                            <span class="n">radarnr</span><span class="o">=</span><span class="s1">&#39;RADAR001&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    merge rainbow scans</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    basepath : str</span>
+<span class="sd">        base path of rad4alp radar data</span>
+<span class="sd">    basepath_psr : str</span>
+<span class="sd">        name of the base path where to find the PSR data</span>
+<span class="sd">    scan_list : list</span>
+<span class="sd">        list of scans</span>
+<span class="sd">    voltime: datetime object</span>
+<span class="sd">        reference time of the scan</span>
+<span class="sd">    scan_period : float</span>
+<span class="sd">        time from reference time where to look for other scans data</span>
+<span class="sd">    datatype_list : list</span>
+<span class="sd">        lists of data types to get</span>
+<span class="sd">    cfg : dict</span>
+<span class="sd">        configuration dictionary</span>
+<span class="sd">    radarnr : str</span>
+<span class="sd">        radar identifier number</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    radar : Radar</span>
+<span class="sd">        radar object</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">datadescriptor</span> <span class="o">=</span> <span class="n">radarnr</span><span class="o">+</span><span class="s1">&#39;:RAINBOW:dBZ&#39;</span>
+    <span class="n">endtime</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">+</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="n">scan_period</span><span class="p">)</span>
+
+    <span class="n">psr</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">scan</span> <span class="ow">in</span> <span class="n">scan_list</span><span class="p">:</span>
+        <span class="n">filelist</span> <span class="o">=</span> <span class="n">get_file_list</span><span class="p">(</span><span class="n">datadescriptor</span><span class="p">,</span> <span class="p">[</span><span class="n">voltime</span><span class="p">],</span> <span class="p">[</span><span class="n">endtime</span><span class="p">],</span>
+                                 <span class="n">cfg</span><span class="p">,</span> <span class="n">scan</span><span class="o">=</span><span class="n">scan</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filelist</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;ERROR: No data file found for scan &#39;</span><span class="si">%s</span><span class="s2">&#39; &quot;</span>
+                 <span class="s2">&quot;between </span><span class="si">%s</span><span class="s2"> and </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">scan</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">endtime</span><span class="p">))</span>
+            <span class="k">continue</span>
+        <span class="n">scantime</span> <span class="o">=</span> <span class="n">get_datetime</span><span class="p">(</span><span class="n">filelist</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">datadescriptor</span><span class="p">)</span>
+
+        <span class="n">psr_aux</span> <span class="o">=</span> <span class="n">merge_fields_psr_spectra</span><span class="p">(</span>
+            <span class="n">basepath</span><span class="p">,</span> <span class="n">basepath_psr</span><span class="p">,</span> <span class="n">scan</span><span class="p">,</span> <span class="n">scantime</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span>
+            <span class="n">undo_txcorr</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;undo_txcorr&#39;</span><span class="p">],</span> <span class="n">fold</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;fold&#39;</span><span class="p">],</span>
+            <span class="n">positive_away</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;positive_away&#39;</span><span class="p">],</span> <span class="n">cpi</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;cpi&#39;</span><span class="p">],</span>
+            <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">],</span> <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span>
+            <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span> <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">psr_aux</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">psr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">psr</span> <span class="o">=</span> <span class="n">psr_aux</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">psr</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_spectra</span><span class="p">(</span><span class="n">psr</span><span class="p">,</span> <span class="n">psr_aux</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">psr</span>
+
+
+<span class="k">def</span> <span class="nf">merge_scans_dem</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan_list</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span> <span class="n">rng_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">rng_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">azi_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">azi_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ele_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">ele_max</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    merge rainbow scans</span>
 
@@ -572,6 +741,12 @@
 <span class="sd">        lists of data types to get</span>
 <span class="sd">    radarnr : str</span>
 <span class="sd">        radar identifier number</span>
+<span class="sd">    rng_min, rng_max : float</span>
+<span class="sd">        The range limits [m]. If None the entire coverage of the radar is</span>
+<span class="sd">        going to be used</span>
+<span class="sd">    ele_min, ele_max, azi_min, azi_max : float or None</span>
+<span class="sd">        The limits of the grid [deg]. If None the limits will be the limits</span>
+<span class="sd">        of the radar volume</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -579,17 +754,24 @@
 <span class="sd">        radar object</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">radar</span> <span class="o">=</span> <span class="n">merge_fields_dem</span><span class="p">(</span>
-        <span class="n">basepath</span><span class="p">,</span> <span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">datatype_list</span><span class="p">)</span>
+    <span class="n">radar</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">scan</span> <span class="ow">in</span> <span class="n">scan_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+        <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">merge_fields_dem</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">radar_aux</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
 
-    <span class="c1"># merge scans into a single radar instance</span>
-    <span class="n">nscans</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">scan_list</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">nscans</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">scan</span> <span class="ow">in</span> <span class="n">scan_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-            <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">merge_fields_dem</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">)</span>
-            <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
+            <span class="k">continue</span>
 
-    <span class="k">return</span> <span class="n">radar</span>
+        <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">radar</span>
+
+    <span class="k">return</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cut_radar</span><span class="p">(</span>
+        <span class="n">radar</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">rng_min</span><span class="p">,</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">rng_max</span><span class="p">,</span>
+        <span class="n">ele_min</span><span class="o">=</span><span class="n">ele_min</span><span class="p">,</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">ele_max</span><span class="p">,</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">azi_min</span><span class="p">,</span> <span class="n">azi_max</span><span class="o">=</span><span class="n">azi_max</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">merge_scans_rad4alp</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan_list</span><span class="p">,</span> <span class="n">radar_name</span><span class="p">,</span> <span class="n">radar_res</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span>
@@ -649,8 +831,13 @@
                 <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">radar</span>
 
-    <span class="k">return</span> <span class="n">radar</span>
+    <span class="k">return</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cut_radar</span><span class="p">(</span>
+        <span class="n">radar</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">],</span>
+        <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span>
+        <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">])</span>
 
 
 <span class="k">def</span> <span class="nf">merge_scans_odim</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan_list</span><span class="p">,</span> <span class="n">radar_name</span><span class="p">,</span> <span class="n">radar_res</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span>
@@ -731,7 +918,14 @@
             <span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">datatype_list</span><span class="p">,</span> <span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">scan_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">radar</span>
+        <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">radar</span>
+
+        <span class="k">return</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cut_radar</span><span class="p">(</span>
+            <span class="n">radar</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span>
+            <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">],</span> <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span>
+            <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span>
+            <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">])</span>
 
     <span class="c1"># merge the elevations into a single radar instance</span>
     <span class="k">for</span> <span class="n">scan</span> <span class="ow">in</span> <span class="n">scan_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
@@ -759,7 +953,13 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">radar</span>
+    <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">radar</span>
+
+    <span class="k">return</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cut_radar</span><span class="p">(</span>
+        <span class="n">radar</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">],</span>
+        <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span>
+        <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">])</span>
 
 
 <span class="k">def</span> <span class="nf">merge_scans_mxpol</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan_list</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
@@ -788,36 +988,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">radar</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;path_convention&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;LTE&#39;</span><span class="p">:</span>
-        <span class="n">sub1</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">voltime</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
-        <span class="n">sub2</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%m&#39;</span><span class="p">)</span>
-        <span class="n">sub3</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">dayinfo</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">timeinfo</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%H%M&#39;</span><span class="p">)</span>
-        <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">sub1</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">sub2</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">sub3</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
-        <span class="n">scanname</span> <span class="o">=</span> <span class="s1">&#39;MXPol-polar-&#39;</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;-&#39;</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*-&#39;</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">scanname</span><span class="o">+</span><span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">daydir</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">dayinfo</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">timeinfo</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%H%M&#39;</span><span class="p">)</span>
-        <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">daydir</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">datapath</span><span class="p">):</span>
-            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;WARNING: Unknown datapath &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">datapath</span><span class="p">)</span>
-            <span class="k">return</span> <span class="kc">None</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span>
-            <span class="n">datapath</span><span class="o">+</span><span class="s1">&#39;MXPol-polar-&#39;</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;-&#39;</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*-&#39;</span> <span class="o">+</span>
-            <span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;.nc&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found matching &#39;</span><span class="o">+</span><span class="n">datapath</span><span class="o">+</span><span class="n">scanname</span><span class="o">+</span><span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">radar</span> <span class="o">=</span> <span class="n">get_data_mxpol</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">datatype_list</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">scan_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">radar</span>
-
-    <span class="c1"># merge the elevations into a single radar instance</span>
-    <span class="k">for</span> <span class="n">scan</span> <span class="ow">in</span> <span class="n">scan_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+    <span class="k">for</span> <span class="n">scan</span> <span class="ow">in</span> <span class="n">scan_list</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;path_convention&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;LTE&#39;</span><span class="p">:</span>
             <span class="n">sub1</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">voltime</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
             <span class="n">sub2</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%m&#39;</span><span class="p">)</span>
@@ -839,15 +1010,23 @@
                 <span class="n">datapath</span><span class="o">+</span><span class="s1">&#39;MXPol-polar-&#39;</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;-&#39;</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*-&#39;</span><span class="o">+</span><span class="n">scan</span><span class="o">+</span><span class="s1">&#39;.nc&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath</span><span class="o">+</span><span class="n">scanname</span><span class="o">+</span><span class="n">scan</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">get_data_mxpol</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">datatype_list</span><span class="p">)</span>
+            <span class="k">continue</span>
 
-            <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
+        <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">get_data_mxpol</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">datatype_list</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">radar</span>
+        <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
+            <span class="k">continue</span>
+
+        <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">radar</span>
+
+    <span class="k">return</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cut_radar</span><span class="p">(</span>
+        <span class="n">radar</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">],</span>
+        <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span>
+        <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">])</span>
 
 
 <span class="k">def</span> <span class="nf">merge_scans_cosmo</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
@@ -872,42 +1051,31 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">radar</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="c1"># look for COSMO data</span>
-    <span class="n">filename_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="n">datatype_list</span><span class="p">:</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">find_cosmo_file</span><span class="p">(</span>
-            <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanList&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
-            <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">filename_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">scan</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanList&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]:</span>
+        <span class="n">filename_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="n">datatype_list</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">find_cosmo_file</span><span class="p">(</span>
+                <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">scan</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">filename_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
 
-    <span class="n">nfiles_valid</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">filename_list</span><span class="p">)</span>
+        <span class="n">nfiles_valid</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">filename_list</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">nfiles_valid</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">merge_fields_cosmo</span><span class="p">(</span><span class="n">filename_list</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">nfiles_valid</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">radar</span> <span class="o">=</span> <span class="n">merge_fields_cosmo</span><span class="p">(</span><span class="n">filename_list</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span>
+                    <span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
 
-    <span class="c1"># merge scans into a single radar instance</span>
-    <span class="n">nscans</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanList&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">])</span>
-    <span class="k">if</span> <span class="n">nscans</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">scan</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanList&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">][</span><span class="mi">1</span><span class="p">:]:</span>
-            <span class="n">filename_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-            <span class="k">for</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="n">datatype_list</span><span class="p">:</span>
-                <span class="n">filename</span> <span class="o">=</span> <span class="n">find_cosmo_file</span><span class="p">(</span>
-                    <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">scan</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">filename_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">radar</span>
 
-            <span class="n">nfiles_valid</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">filename_list</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">nfiles_valid</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">merge_fields_cosmo</span><span class="p">(</span><span class="n">filename_list</span><span class="p">)</span>
-
-                <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span>
-                        <span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">radar</span>
+    <span class="k">return</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cut_radar</span><span class="p">(</span>
+        <span class="n">radar</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">],</span>
+        <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span>
+        <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">])</span>
 
 
 <span class="k">def</span> <span class="nf">merge_scans_cosmo_rad4alp</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
@@ -938,9 +1106,18 @@
     <span class="k">for</span> <span class="n">scan</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanList&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]:</span>
         <span class="c1"># create the radar object where to store the data</span>
         <span class="c1"># taking as reference the metranet polar file</span>
+        <span class="c1"># The radar cutting is going to be done at the end</span>
+        <span class="n">cfg_aux</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+        <span class="n">cfg_aux</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cfg_aux</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cfg_aux</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cfg_aux</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cfg_aux</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cfg_aux</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">merge_scans_rad4alp</span><span class="p">(</span>
             <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="p">[</span><span class="n">scan</span><span class="p">],</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarName&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span>
-            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarRes&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">voltime</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;dBZ&#39;</span><span class="p">],</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarRes&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">voltime</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;dBZ&#39;</span><span class="p">],</span> <span class="n">cfg_aux</span><span class="p">,</span>
+            <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">radar_aux</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -949,8 +1126,7 @@
         <span class="n">filename</span> <span class="o">=</span> <span class="n">find_rad4alpcosmo_file</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">scan</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
-        <span class="n">ngates</span> <span class="o">=</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">ngates</span>
-        <span class="n">cosmo_dict</span> <span class="o">=</span> <span class="n">read_rad4alp_cosmo</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">ngates</span><span class="o">=</span><span class="n">ngates</span><span class="p">)</span>
+        <span class="n">cosmo_dict</span> <span class="o">=</span> <span class="n">read_rad4alp_cosmo</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">datatype</span><span class="p">)</span>
         <span class="n">radar_aux</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">),</span> <span class="n">cosmo_dict</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -958,7 +1134,13 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">radar</span>
+    <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">radar</span>
+
+    <span class="k">return</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cut_radar</span><span class="p">(</span>
+        <span class="n">radar</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">],</span>
+        <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span>
+        <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">])</span>
 
 
 <span class="k">def</span> <span class="nf">merge_scans_dem_rad4alp</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
@@ -994,26 +1176,39 @@
     <span class="k">for</span> <span class="n">scan</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanList&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]:</span>
         <span class="c1"># create the radar object where to store the data</span>
         <span class="c1"># taking as reference the metranet polar file</span>
+        <span class="c1"># The radar cutting is going to be done at the end</span>
+        <span class="n">cfg_aux</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+        <span class="n">cfg_aux</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cfg_aux</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cfg_aux</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cfg_aux</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cfg_aux</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cfg_aux</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">merge_scans_rad4alp</span><span class="p">(</span>
             <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="p">[</span><span class="n">scan</span><span class="p">],</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarName&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span>
-            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarRes&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">voltime</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;dBZ&#39;</span><span class="p">],</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarRes&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">voltime</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;dBZ&#39;</span><span class="p">],</span> <span class="n">cfg_aux</span><span class="p">,</span>
+            <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">radar_aux</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="c1"># add visibility data</span>
         <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="n">ngates</span> <span class="o">=</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">ngates</span>
         <span class="n">radar_aux</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span>
-            <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">),</span>
-            <span class="n">vis_list</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">scan</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">][:,</span> <span class="p">:</span><span class="n">ngates</span><span class="p">])</span>
+            <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">),</span> <span class="n">vis_list</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">scan</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
         <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">radar</span>
+    <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">radar</span>
+
+    <span class="k">return</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cut_radar</span><span class="p">(</span>
+        <span class="n">radar</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">],</span>
+        <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span>
+        <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">])</span>
 
 
 <span class="k">def</span> <span class="nf">merge_scans_other_rad4alp</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
@@ -1072,8 +1267,17 @@
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="n">filename_prod</span> <span class="o">=</span> <span class="n">filename_prod</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">prod_obj</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_product</span><span class="p">(</span>
-            <span class="n">filename_prod</span><span class="p">,</span> <span class="n">physic_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;metranet_read_lib&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;C&#39;</span> <span class="ow">and</span> <span class="n">_METRANETLIB_AVAILABLE</span><span class="p">:</span>
+            <span class="n">prod_obj</span> <span class="o">=</span> <span class="n">read_product_c</span><span class="p">(</span>
+                <span class="n">filename_prod</span><span class="p">,</span> <span class="n">physic_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;metranet_read_lib&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;python&#39;</span><span class="p">:</span>
+            <span class="n">prod_obj</span> <span class="o">=</span> <span class="n">read_product_py</span><span class="p">(</span>
+                <span class="n">filename_prod</span><span class="p">,</span> <span class="n">physic_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;METRANET C-library reader not available or unknown &#39;</span> <span class="o">+</span>
+                 <span class="s1">&#39;library type. Python library will be used&#39;</span><span class="p">)</span>
+            <span class="n">prod_obj</span> <span class="o">=</span> <span class="n">read_product_py</span><span class="p">(</span>
+                <span class="n">filename_prod</span><span class="p">,</span> <span class="n">physic_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">prod_obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read file &#39;</span><span class="o">+</span><span class="n">filename_prod</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -1086,24 +1290,37 @@
 
         <span class="c1"># create the radar object where to store the data</span>
         <span class="c1"># taking as reference the metranet polar file</span>
+        <span class="c1"># The radar cutting is going to be done at the end</span>
+        <span class="n">cfg_aux</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+        <span class="n">cfg_aux</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cfg_aux</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cfg_aux</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cfg_aux</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cfg_aux</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cfg_aux</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">merge_scans_rad4alp</span><span class="p">(</span>
-            <span class="n">basepath</span><span class="p">,</span> <span class="p">[</span><span class="n">scan</span><span class="p">],</span> <span class="n">radar_name</span><span class="p">,</span> <span class="n">radar_res</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;dBZ&#39;</span><span class="p">],</span> <span class="n">cfg</span><span class="p">,</span>
-            <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
+            <span class="n">basepath</span><span class="p">,</span> <span class="p">[</span><span class="n">scan</span><span class="p">],</span> <span class="n">radar_name</span><span class="p">,</span> <span class="n">radar_res</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;dBZ&#39;</span><span class="p">],</span>
+            <span class="n">cfg_aux</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">radar_aux</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="c1"># add product data</span>
         <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="n">ngates</span> <span class="o">=</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">ngates</span>
-        <span class="n">radar_aux</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">prod_field</span><span class="p">,</span> <span class="n">prod_dict</span><span class="p">[:,</span> <span class="p">:</span><span class="n">ngates</span><span class="p">])</span>
+        <span class="n">radar_aux</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">prod_field</span><span class="p">,</span> <span class="n">prod_dict</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">radar</span>
+    <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">radar</span>
+
+    <span class="k">return</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cut_radar</span><span class="p">(</span>
+        <span class="n">radar</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">],</span>
+        <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span>
+        <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">])</span>
 
 
 <span class="k">def</span> <span class="nf">merge_fields_rainbow</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan_name</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">):</span>
@@ -1176,6 +1393,184 @@
     <span class="k">return</span> <span class="n">radar</span>
 
 
+<span class="k">def</span> <span class="nf">merge_fields_psr_spectra</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">basepath_psr</span><span class="p">,</span> <span class="n">scan_name</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span>
+                             <span class="n">datatype_list</span><span class="p">,</span> <span class="n">undo_txcorr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fold</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                             <span class="n">positive_away</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cpi</span><span class="o">=</span><span class="s1">&#39;low_prf&#39;</span><span class="p">,</span> <span class="n">azi_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">azi_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ele_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ele_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">rng_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rng_max</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    merge Rainbow fields into a single radar object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    basepath : str</span>
+<span class="sd">        name of the base path where to find the data</span>
+<span class="sd">    basepath_psr : str</span>
+<span class="sd">        name of the base path where to find the PSR data</span>
+<span class="sd">    scan_name: str</span>
+<span class="sd">        name of the scan</span>
+<span class="sd">    voltime : datetime object</span>
+<span class="sd">        reference time of the scan</span>
+<span class="sd">    datatype_list : list</span>
+<span class="sd">        lists of data types to get</span>
+<span class="sd">    undo_txcorr: Bool</span>
+<span class="sd">        If True the correction of the transmitted power is removed from the</span>
+<span class="sd">        noise signal</span>
+<span class="sd">    fold: Bool</span>
+<span class="sd">        If True the spectra is folded so that 0-Doppler is in the middle</span>
+<span class="sd">    positive_away: Bool</span>
+<span class="sd">        If True the spectra is reversed so that positive velocities are</span>
+<span class="sd">        away from the radar</span>
+<span class="sd">    cpi : str</span>
+<span class="sd">        The CPI to use. Can be &#39;low_prf&#39;, &#39;intermediate_prf&#39;, &#39;high_prf&#39; or</span>
+<span class="sd">        &#39;all&#39;</span>
+<span class="sd">    azi_min, azi_max, ele_min, ele_max : float or None</span>
+<span class="sd">        The minimum and maximum angles to keep (deg)</span>
+<span class="sd">    rng_min, rng_max : float or None</span>
+<span class="sd">        The minimum and maximum ranges to keep (m)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    psr : radar spectra object</span>
+<span class="sd">        radar spectra object</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">psr</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Find reference file</span>
+    <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">scan_name</span><span class="o">+</span><span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+    <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M%S&#39;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;00&#39;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">fdatetime</span><span class="o">+</span><span class="s1">&#39;dBZ.*&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No reference file found in &#39;</span><span class="o">+</span><span class="n">datapath</span><span class="o">+</span><span class="n">fdatetime</span><span class="o">+</span><span class="s1">&#39;dBZ.*&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">psr</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">datapath_psr</span> <span class="o">=</span> <span class="n">basepath_psr</span><span class="o">+</span><span class="n">scan_name</span><span class="o">+</span><span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+    <span class="k">for</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="n">datatype_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;ShhADU&#39;</span><span class="p">,</span> <span class="s1">&#39;NADUh&#39;</span><span class="p">):</span>
+            <span class="n">filestr</span> <span class="o">=</span> <span class="n">datapath_psr</span><span class="o">+</span><span class="n">fdatetime</span><span class="o">+</span><span class="s1">&#39;_*_*.ufh.psr.rd&#39;</span>
+        <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;SvvADU&#39;</span><span class="p">,</span> <span class="s1">&#39;NADUv&#39;</span><span class="p">):</span>
+            <span class="n">filestr</span> <span class="o">=</span> <span class="n">datapath_psr</span><span class="o">+</span><span class="n">fdatetime</span><span class="o">+</span><span class="s1">&#39;_*_*.ufv.psr.rd&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unknown data type &#39;</span><span class="o">+</span><span class="n">datatype</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="n">filenames_psr</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">filestr</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filenames_psr</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">filestr</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="n">psr_aux</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_rainbow_psr_spectra</span><span class="p">(</span>
+            <span class="n">filename</span><span class="p">,</span> <span class="n">filenames_psr</span><span class="p">,</span>
+            <span class="n">field_names</span><span class="o">=</span><span class="p">[</span><span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)],</span>
+            <span class="n">undo_txcorr</span><span class="o">=</span><span class="n">undo_txcorr</span><span class="p">,</span> <span class="n">fold</span><span class="o">=</span><span class="n">fold</span><span class="p">,</span> <span class="n">positive_away</span><span class="o">=</span><span class="n">positive_away</span><span class="p">,</span>
+            <span class="n">cpi</span><span class="o">=</span><span class="n">cpi</span><span class="p">,</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">azi_min</span><span class="p">,</span> <span class="n">azi_max</span><span class="o">=</span><span class="n">azi_max</span><span class="p">,</span> <span class="n">ele_min</span><span class="o">=</span><span class="n">ele_min</span><span class="p">,</span>
+            <span class="n">ele_max</span><span class="o">=</span><span class="n">ele_max</span><span class="p">,</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">rng_min</span><span class="p">,</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">rng_max</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">psr_aux</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">psr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">psr</span> <span class="o">=</span> <span class="n">psr_aux</span>
+            <span class="k">continue</span>
+
+        <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="n">psr_aux</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">psr</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">psr_aux</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">])</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">)</span> <span class="k">as</span> <span class="n">ee</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Unable to add field &#39;&quot;</span><span class="o">+</span><span class="n">field_name</span><span class="o">+</span><span class="s2">&quot;&#39; to radar spectra &quot;</span>
+                     <span class="s2">&quot;object: (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">psr</span>
+
+
+<span class="k">def</span> <span class="nf">merge_fields_psr</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">basepath_psr</span><span class="p">,</span> <span class="n">scan_name</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span>
+                     <span class="n">datatype_list</span><span class="p">,</span> <span class="n">undo_txcorr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cpi</span><span class="o">=</span><span class="s1">&#39;low_prf&#39;</span><span class="p">,</span>
+                     <span class="n">azi_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">azi_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ele_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ele_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">rng_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rng_max</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    merge Rainbow fields into a single radar object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    basepath : str</span>
+<span class="sd">        name of the base path where to find the data</span>
+<span class="sd">    basepath_psr : str</span>
+<span class="sd">        name of the base path where to find the PSR data</span>
+<span class="sd">    scan_name: str</span>
+<span class="sd">        name of the scan</span>
+<span class="sd">    voltime : datetime object</span>
+<span class="sd">        reference time of the scan</span>
+<span class="sd">    datatype_list : list</span>
+<span class="sd">        lists of data types to get</span>
+<span class="sd">    undo_txcorr : Bool</span>
+<span class="sd">        If true the correction for transmitted power is undone when</span>
+<span class="sd">        getting the noise</span>
+<span class="sd">    cpi : str</span>
+<span class="sd">        The CPI to use. Can be &#39;low_prf&#39;, &#39;intermediate_prf&#39;, &#39;high_prf&#39;,</span>
+<span class="sd">        &#39;mean&#39;, &#39;all&#39;. If &#39;mean&#39; the mean within the angle step is taken</span>
+<span class="sd">    azi_min, azi_max, ele_min, ele_max : float or None</span>
+<span class="sd">        The minimum and maximum angles to keep (deg)</span>
+<span class="sd">    rng_min, rng_max : float or None</span>
+<span class="sd">        The minimum and maximum ranges to keep (m)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    radar : Radar</span>
+<span class="sd">        radar object</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">radar</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Find reference file</span>
+    <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">scan_name</span><span class="o">+</span><span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+    <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M%S&#39;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;00&#39;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">fdatetime</span><span class="o">+</span><span class="s1">&#39;dBZ.*&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No reference file found in &#39;</span><span class="o">+</span><span class="n">datapath</span><span class="o">+</span><span class="n">fdatetime</span><span class="o">+</span><span class="s1">&#39;dBZ.*&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">radar</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">datapath_psr</span> <span class="o">=</span> <span class="n">basepath_psr</span><span class="o">+</span><span class="n">scan_name</span><span class="o">+</span><span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+    <span class="k">for</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="n">datatype_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;Nh&#39;</span><span class="p">,</span> <span class="s1">&#39;NdBADUh&#39;</span><span class="p">,</span> <span class="s1">&#39;NdBmh&#39;</span><span class="p">,</span> <span class="s1">&#39;TXh&#39;</span><span class="p">):</span>
+            <span class="n">filestr</span> <span class="o">=</span> <span class="n">datapath_psr</span><span class="o">+</span><span class="n">fdatetime</span><span class="o">+</span><span class="s1">&#39;_*_*.ufh.psr.rd&#39;</span>
+        <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;Nv&#39;</span><span class="p">,</span> <span class="s1">&#39;NdBADUv&#39;</span><span class="p">,</span> <span class="s1">&#39;NdBmv&#39;</span><span class="p">,</span> <span class="s1">&#39;TXv&#39;</span><span class="p">):</span>
+            <span class="n">filestr</span> <span class="o">=</span> <span class="n">datapath_psr</span><span class="o">+</span><span class="n">fdatetime</span><span class="o">+</span><span class="s1">&#39;_*_*.ufv.psr.rd&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unknown data type &#39;</span><span class="o">+</span><span class="n">datatype</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="n">filenames_psr</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">filestr</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filenames_psr</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">filestr</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_rainbow_psr</span><span class="p">(</span>
+            <span class="n">filename</span><span class="p">,</span> <span class="n">filenames_psr</span><span class="p">,</span>
+            <span class="n">field_names</span><span class="o">=</span><span class="p">[</span><span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)],</span>
+            <span class="n">undo_txcorr</span><span class="o">=</span><span class="n">undo_txcorr</span><span class="p">,</span> <span class="n">cpi</span><span class="o">=</span><span class="n">cpi</span><span class="p">,</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">azi_min</span><span class="p">,</span>
+            <span class="n">azi_max</span><span class="o">=</span><span class="n">azi_max</span><span class="p">,</span> <span class="n">ele_min</span><span class="o">=</span><span class="n">ele_min</span><span class="p">,</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">ele_max</span><span class="p">,</span>
+            <span class="n">rng_min</span><span class="o">=</span><span class="n">rng_min</span><span class="p">,</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">rng_max</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">radar_aux</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
+            <span class="k">continue</span>
+
+        <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">radar</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">])</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">)</span> <span class="k">as</span> <span class="n">ee</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Unable to add field &#39;&quot;</span><span class="o">+</span><span class="n">field_name</span><span class="o">+</span><span class="s2">&quot;&#39; to radar object&quot;</span>
+                     <span class="s2">&quot;: (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">radar</span>
+
+
 <span class="k">def</span> <span class="nf">merge_fields_rad4alp_grid</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                               <span class="n">ftype</span><span class="o">=</span><span class="s1">&#39;METRANET&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -1201,8 +1596,6 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">grid</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">basepath</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
-
     <span class="k">for</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="n">datatype_list</span><span class="p">:</span>
         <span class="c1"># read product data file</span>
         <span class="n">acronym</span><span class="p">,</span> <span class="n">termination</span> <span class="o">=</span> <span class="n">get_rad4alp_prod_fname</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
@@ -1232,7 +1625,8 @@
         <span class="n">filename_prod</span> <span class="o">=</span> <span class="n">filename_prod</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">ftype</span> <span class="o">==</span> <span class="s1">&#39;METRANET&#39;</span><span class="p">:</span>
-            <span class="n">grid_aux</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_cartesian_metranet</span><span class="p">(</span><span class="n">filename_prod</span><span class="p">)</span>
+            <span class="n">grid_aux</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_cartesian_metranet</span><span class="p">(</span>
+                <span class="n">filename_prod</span><span class="p">,</span> <span class="n">reader</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;metranet_read_lib&#39;</span><span class="p">])</span>
         <span class="k">elif</span> <span class="n">ftype</span> <span class="o">==</span> <span class="s1">&#39;gif&#39;</span><span class="p">:</span>
             <span class="n">grid_aux</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_gif</span><span class="p">(</span><span class="n">filename_prod</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1267,7 +1661,8 @@
 
 
 <span class="k">def</span> <span class="nf">merge_fields_pyrad</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">loadname</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span>
-                       <span class="n">dataset_list</span><span class="p">,</span> <span class="n">product_list</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+                       <span class="n">dataset_list</span><span class="p">,</span> <span class="n">product_list</span><span class="p">,</span> <span class="n">rng_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rng_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">azi_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">azi_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ele_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ele_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                        <span class="n">termination</span><span class="o">=</span><span class="s1">&#39;.nc&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    merge fields from Pyrad-generated files into a single radar object.</span>
@@ -1288,8 +1683,12 @@
 <span class="sd">        Used to get path.</span>
 <span class="sd">    product_list : list</span>
 <span class="sd">        list of products. Used to get path</span>
-<span class="sd">    rmax : float</span>
-<span class="sd">        maximum range that will be kept.</span>
+<span class="sd">    rng_min, rng_max : float</span>
+<span class="sd">        The range limits [m]. If None the entire coverage of the radar is</span>
+<span class="sd">        going to be used</span>
+<span class="sd">    ele_min, ele_max, azi_min, azi_max : float or None</span>
+<span class="sd">        The limits of the grid [deg]. If None the limits will be the limits</span>
+<span class="sd">        of the radar volume</span>
 <span class="sd">    termination : str</span>
 <span class="sd">        file termination type. Can be &#39;.nc&#39; or &#39;.h5&#39;</span>
 
@@ -1299,93 +1698,47 @@
 <span class="sd">        radar object</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">datapath</span> <span class="o">=</span> <span class="p">(</span><span class="n">basepath</span><span class="o">+</span><span class="n">loadname</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;/&#39;</span> <span class="o">+</span>
-                <span class="n">dataset_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">product_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
     <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M%S&#39;</span><span class="p">)</span>
-    <span class="n">filename</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">fdatetime</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="o">+</span><span class="n">datatype_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">termination</span><span class="p">)</span>
 
-    <span class="c1"># create radar object</span>
     <span class="n">radar</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath</span><span class="o">+</span><span class="n">fdatetime</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="o">+</span><span class="n">datatype_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span>
-             <span class="s1">&#39;.nc&#39;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataset_list</span><span class="p">):</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">basepath</span><span class="o">+</span><span class="n">loadname</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;/&#39;</span> <span class="o">+</span>
+            <span class="n">dataset</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">product_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="o">+</span><span class="n">fdatetime</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="o">+</span><span class="n">datatype_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="n">termination</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath</span><span class="o">+</span><span class="n">fdatetime</span><span class="o">+</span><span class="s1">&#39;*&#39;</span> <span class="o">+</span>
+                 <span class="n">datatype_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;.nc&#39;</span><span class="p">)</span>
+            <span class="k">continue</span>
+
         <span class="k">if</span> <span class="n">termination</span> <span class="o">==</span> <span class="s1">&#39;.nc&#39;</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read_cfradial</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read_cfradial</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
             <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">ee</span><span class="p">:</span>
                 <span class="n">warn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
                 <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read file &#39;</span><span class="o">+</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_odim_h5</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_odim_h5</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
             <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">ee</span><span class="p">:</span>
                 <span class="n">warn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
                 <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read file &#39;</span><span class="o">+</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">rmax</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">:</span>
-            <span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span>
-                <span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">rmax</span><span class="p">]</span>
-            <span class="n">radar</span><span class="o">.</span><span class="n">ngates</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
-            <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
-                <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][:,</span> <span class="p">:</span><span class="n">radar</span><span class="o">.</span><span class="n">ngates</span><span class="p">])</span>
-            <span class="n">radar</span><span class="o">.</span><span class="n">gate_x</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">gate_x</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][:,</span> <span class="p">:</span><span class="n">radar</span><span class="o">.</span><span class="n">ngates</span><span class="p">]</span>
-            <span class="n">radar</span><span class="o">.</span><span class="n">init_gate_x_y_z</span><span class="p">()</span>
-            <span class="n">radar</span><span class="o">.</span><span class="n">init_gate_longitude_latitude</span><span class="p">()</span>
-            <span class="n">radar</span><span class="o">.</span><span class="n">init_gate_altitude</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">radar_aux</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
 
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="c1"># add other fields in the same scan</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataset_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-            <span class="n">datapath</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">basepath</span><span class="o">+</span><span class="n">loadname</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;/&#39;</span> <span class="o">+</span>
-                <span class="n">dataset</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">product_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
-            <span class="n">filename</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span>
-                <span class="n">datapath</span><span class="o">+</span><span class="n">fdatetime</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="o">+</span><span class="n">datatype_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="n">termination</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
-                <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath</span><span class="o">+</span><span class="n">fdatetime</span><span class="o">+</span><span class="s1">&#39;*&#39;</span> <span class="o">+</span>
-                     <span class="n">datatype_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;.nc&#39;</span><span class="p">)</span>
-                <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
+            <span class="k">continue</span>
 
-            <span class="k">if</span> <span class="n">termination</span> <span class="o">==</span> <span class="s1">&#39;.nc&#39;</span><span class="p">:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read_cfradial</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-                <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">ee</span><span class="p">:</span>
-                    <span class="n">warn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
-                    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read file &#39;</span><span class="o">+</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_odim_h5</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-                <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">ee</span><span class="p">:</span>
-                    <span class="n">warn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
-                    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read file &#39;</span><span class="o">+</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="k">if</span> <span class="n">radar_aux</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">rmax</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">:</span>
-                <span class="n">radar_aux</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span>
-                    <span class="n">radar_aux</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">rmax</span><span class="p">]</span>
-                <span class="n">radar_aux</span><span class="o">.</span><span class="n">ngates</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">radar_aux</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
-                <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
-                    <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span>
-                            <span class="p">:,</span> <span class="p">:</span><span class="n">radar_aux</span><span class="o">.</span><span class="n">ngates</span><span class="p">])</span>
-                <span class="n">radar_aux</span><span class="o">.</span><span class="n">gate_x</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">radar_aux</span><span class="o">.</span><span class="n">gate_x</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][:,</span> <span class="p">:</span><span class="n">radar_aux</span><span class="o">.</span><span class="n">ngates</span><span class="p">])</span>
-                <span class="n">radar_aux</span><span class="o">.</span><span class="n">init_gate_x_y_z</span><span class="p">()</span>
-                <span class="n">radar_aux</span><span class="o">.</span><span class="n">init_gate_longitude_latitude</span><span class="p">()</span>
-                <span class="n">radar_aux</span><span class="o">.</span><span class="n">init_gate_altitude</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">radar_aux</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">add_field</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
+        <span class="n">radar</span> <span class="o">=</span> <span class="n">add_field</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">radar</span>
 
-    <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
-        <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
-            <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
-
-    <span class="k">return</span> <span class="n">radar</span>
+    <span class="k">return</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cut_radar</span><span class="p">(</span>
+        <span class="n">radar</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">rng_min</span><span class="p">,</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">rng_max</span><span class="p">,</span>
+        <span class="n">ele_min</span><span class="o">=</span><span class="n">ele_min</span><span class="p">,</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">ele_max</span><span class="p">,</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">azi_min</span><span class="p">,</span> <span class="n">azi_max</span><span class="o">=</span><span class="n">azi_max</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">merge_fields_pyradgrid</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">loadname</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span>
@@ -1485,19 +1838,8 @@
 <span class="sd">        radar object</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">datatype_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">scan_name</span>
     <span class="n">scan_name_aux</span> <span class="o">=</span> <span class="n">scan_name</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">filename</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">datatype_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">scan_name_aux</span><span class="p">)</span>
     <span class="n">radar</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath</span><span class="o">+</span><span class="n">datatype_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">scan_name_aux</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># create radar object</span>
-        <span class="n">radar</span> <span class="o">=</span> <span class="n">get_data_rainbow</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">datatype_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">radar</span>
-
     <span class="c1"># add other fields in the same scan</span>
     <span class="k">for</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="n">datatype_list</span><span class="p">:</span>
         <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">datatype</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">scan_name</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
@@ -1505,17 +1847,19 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath</span><span class="o">+</span><span class="n">datatype</span><span class="o">+</span><span class="s1">&#39;_&#39;</span> <span class="o">+</span>
                  <span class="n">scan_name_aux</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">get_data_rainbow</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">datatype</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                    <span class="k">break</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">radar</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">])</span>
-                <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
-                    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to add field &#39;</span><span class="o">+</span><span class="n">field_name</span><span class="o">+</span><span class="s1">&#39; to radar object&#39;</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">get_data_rainbow</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">datatype</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
+            <span class="k">continue</span>
+
+        <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">break</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">radar</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">])</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to add field &#39;</span><span class="o">+</span><span class="n">field_name</span><span class="o">+</span><span class="s1">&#39; to radar object&#39;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">radar</span>
 
@@ -1535,20 +1879,8 @@
 <span class="sd">        radar object</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_rainbow_wrl</span><span class="p">(</span><span class="n">filename_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">ee</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read file &#39;</span><span class="o">+</span><span class="n">filename_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">return</span> <span class="kc">None</span>
-
-    <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">None</span>
-
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filename_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">radar</span>
-
     <span class="c1"># add other COSMO fields in the same scan</span>
+    <span class="n">radar</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filename_list</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_rainbow_wrl</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
@@ -1558,6 +1890,11 @@
             <span class="k">continue</span>
         <span class="k">if</span> <span class="n">radar_aux</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
+            <span class="k">continue</span>
+
         <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="k">break</span>
         <span class="n">radar</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">])</span>
@@ -1660,7 +1997,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_metranet</span><span class="p">(</span>
-                <span class="n">filename</span><span class="p">,</span> <span class="n">field_names</span><span class="o">=</span><span class="n">metranet_field_names</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">])</span>
+                <span class="n">filename</span><span class="p">,</span> <span class="n">field_names</span><span class="o">=</span><span class="n">metranet_field_names</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">ee</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Unable to read file &#39;&quot;</span><span class="o">+</span><span class="n">filename</span><span class="o">+</span><span class="s2">&quot;: (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
             <span class="k">return</span> <span class="kc">None</span>

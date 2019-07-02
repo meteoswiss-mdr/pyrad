@@ -7,6 +7,8 @@ Auxiliary plotting functions
 .. autosummary::
     :toctree: generated/
 
+    generate_complex_range_Doppler_title
+    generate_complex_Doppler_title
     generate_fixed_rng_span_title
     generate_fixed_rng_title
     get_colobar_label
@@ -25,6 +27,74 @@ mpl.use('Agg')
 # Increase a bit font size
 mpl.rcParams.update({'font.size': 16})
 mpl.rcParams.update({'font.family':  "sans-serif"})
+
+
+def generate_complex_range_Doppler_title(radar, field, ray, datetime_format=None):
+    """
+    creates the fixed range plot title
+
+    Parameters
+    ----------
+    radar : radar
+        The radar object
+    field : str
+        name of the field
+    stat : str
+        The statistic computed
+    datetime_forat : str or None
+        The date time format to use
+
+    Returns
+    -------
+    titl : str
+        The plot title
+
+    """
+    begin_time = pyart.graph.common.generate_radar_time_begin(radar)
+    if datetime_format:
+        time_str = begin_time.strftime(datetime_format)
+    else:
+        time_str = begin_time.isoformat() + 'Z'
+    l1 = "%s azi%.1f-ele%.1f deg. %s " % (
+        pyart.graph.common.generate_radar_name(radar),
+        radar.azimuth['data'][ray], radar.elevation['data'][ray], time_str)
+    field_name = pyart.graph.common.generate_field_name(radar, field)
+    return l1 + '\n' + field_name
+
+
+def generate_complex_Doppler_title(radar, field, ray, rng,
+                                   datetime_format=None):
+    """
+    creates the fixed range plot title
+
+    Parameters
+    ----------
+    radar : radar
+        The radar object
+    field : str
+        name of the field
+    stat : str
+        The statistic computed
+    datetime_forat : str or None
+        The date time format to use
+
+    Returns
+    -------
+    titl : str
+        The plot title
+
+    """
+    begin_time = pyart.graph.common.generate_radar_time_begin(radar)
+    if datetime_format:
+        time_str = begin_time.strftime(datetime_format)
+    else:
+        time_str = begin_time.isoformat() + 'Z'
+    l1 = "%s azi%.1f-ele%.1f deg rng%.1f km. %s " % (
+        pyart.graph.common.generate_radar_name(radar),
+        radar.azimuth['data'][ray], radar.elevation['data'][ray],
+        radar.range['data'][rng]/1000., time_str)
+    field_name = pyart.graph.common.generate_field_name(radar, field)
+    return l1 + '\n' + field_name
 
 
 def generate_fixed_rng_span_title(radar, field, stat, datetime_format=None):

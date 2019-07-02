@@ -19,6 +19,7 @@ Functions for writing pyrad output data
     write_trt_thundertracking_data
     write_trt_cell_scores
     write_trt_cell_lightning
+    write_trt_rpc
     write_rhi_profile
     write_field_coverage
     write_cdf
@@ -662,7 +663,7 @@ def write_trt_cell_scores(
 
 def write_trt_cell_lightning(
         cell_ID, cell_time, lon, lat, area, rank, nflash, flash_density,
-        fname):
+        fname, timeformat='%Y%m%d%H%M'):
     """
     writes the lightning data for each TRT cell
 
@@ -702,13 +703,71 @@ def write_trt_cell_lightning(
         for i, traj_ID_el in enumerate(cell_ID):
             writer.writerow({
                 'traj_ID': traj_ID_el,
-                'yyyymmddHHMM': cell_time[i].strftime('%Y%m%d%H%M'),
+                'yyyymmddHHMM': cell_time[i].strftime(timeformat),
                 'lon': lon[i],
                 'lat': lat[i],
                 'area': area[i],
                 'RANKr': rank[i],
                 'nflashes': nflash[i],
                 'flash_dens': flash_density[i],
+            })
+
+        csvfile.close()
+
+    return fname
+
+
+def write_trt_rpc(cell_ID, cell_time, lon, lat, area, rank, hmin, hmax, freq,
+                  fname, timeformat='%Y%m%d%H%M'):
+    """
+    writes the rimed particles column data for a TRT cell
+
+    Parameters
+    ----------
+    cell_ID : array of ints
+        the cell ID
+    cell_time : array of datetime
+        the time step
+    lon, lat : array of floats
+        the latitude and longitude of the center of the cell
+    area : array of floats
+        the area of the cell
+    rank : array of floats
+        the rank of the cell
+    hmin, hmax : array of floats
+        Minimum and maximum altitude of the rimed particle column
+    freq : array of floats
+        Frequency of the species constituting the rime particle column within
+        the limits of it
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    hmin = hmin.filled(fill_value=get_fillvalue())
+    hmax = hmax.filled(fill_value=get_fillvalue())
+    freq = freq.filled(fill_value=get_fillvalue())
+    with open(fname, 'w', newline='') as csvfile:
+        fieldnames = [
+            'traj_ID', 'yyyymmddHHMM', 'lon', 'lat', 'area', 'RANKr',
+            'hmin', 'hmax', 'freq']
+        writer = csv.DictWriter(csvfile, fieldnames)
+        writer.writeheader()
+        for i, traj_ID_el in enumerate(cell_ID):
+            writer.writerow({
+                'traj_ID': traj_ID_el,
+                'yyyymmddHHMM': cell_time[i].strftime(timeformat),
+                'lon': lon[i],
+                'lat': lat[i],
+                'area': area[i],
+                'RANKr': rank[i],
+                'hmin': hmin[i],
+                'hmax': hmax[i],
+                'freq': freq[i]
             })
 
         csvfile.close()

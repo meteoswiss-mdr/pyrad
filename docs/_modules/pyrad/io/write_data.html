@@ -75,6 +75,7 @@
 <span class="sd">    write_trt_thundertracking_data</span>
 <span class="sd">    write_trt_cell_scores</span>
 <span class="sd">    write_trt_cell_lightning</span>
+<span class="sd">    write_trt_rpc</span>
 <span class="sd">    write_rhi_profile</span>
 <span class="sd">    write_field_coverage</span>
 <span class="sd">    write_cdf</span>
@@ -718,7 +719,7 @@
 
 <div class="viewcode-block" id="write_trt_cell_lightning"><a class="viewcode-back" href="../../../io.html#pyrad.io.write_trt_cell_lightning">[docs]</a><span class="k">def</span> <span class="nf">write_trt_cell_lightning</span><span class="p">(</span>
         <span class="n">cell_ID</span><span class="p">,</span> <span class="n">cell_time</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">area</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">nflash</span><span class="p">,</span> <span class="n">flash_density</span><span class="p">,</span>
-        <span class="n">fname</span><span class="p">):</span>
+        <span class="n">fname</span><span class="p">,</span> <span class="n">timeformat</span><span class="o">=</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    writes the lightning data for each TRT cell</span>
 
@@ -758,13 +759,71 @@
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">traj_ID_el</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cell_ID</span><span class="p">):</span>
             <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">({</span>
                 <span class="s1">&#39;traj_ID&#39;</span><span class="p">:</span> <span class="n">traj_ID_el</span><span class="p">,</span>
-                <span class="s1">&#39;yyyymmddHHMM&#39;</span><span class="p">:</span> <span class="n">cell_time</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;yyyymmddHHMM&#39;</span><span class="p">:</span> <span class="n">cell_time</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">timeformat</span><span class="p">),</span>
                 <span class="s1">&#39;lon&#39;</span><span class="p">:</span> <span class="n">lon</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                 <span class="s1">&#39;lat&#39;</span><span class="p">:</span> <span class="n">lat</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                 <span class="s1">&#39;area&#39;</span><span class="p">:</span> <span class="n">area</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                 <span class="s1">&#39;RANKr&#39;</span><span class="p">:</span> <span class="n">rank</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                 <span class="s1">&#39;nflashes&#39;</span><span class="p">:</span> <span class="n">nflash</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                 <span class="s1">&#39;flash_dens&#39;</span><span class="p">:</span> <span class="n">flash_density</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="p">})</span>
+
+        <span class="n">csvfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">fname</span></div>
+
+
+<div class="viewcode-block" id="write_trt_rpc"><a class="viewcode-back" href="../../../io.html#pyrad.io.write_trt_rpc">[docs]</a><span class="k">def</span> <span class="nf">write_trt_rpc</span><span class="p">(</span><span class="n">cell_ID</span><span class="p">,</span> <span class="n">cell_time</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">area</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">hmin</span><span class="p">,</span> <span class="n">hmax</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span>
+                  <span class="n">fname</span><span class="p">,</span> <span class="n">timeformat</span><span class="o">=</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    writes the rimed particles column data for a TRT cell</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cell_ID : array of ints</span>
+<span class="sd">        the cell ID</span>
+<span class="sd">    cell_time : array of datetime</span>
+<span class="sd">        the time step</span>
+<span class="sd">    lon, lat : array of floats</span>
+<span class="sd">        the latitude and longitude of the center of the cell</span>
+<span class="sd">    area : array of floats</span>
+<span class="sd">        the area of the cell</span>
+<span class="sd">    rank : array of floats</span>
+<span class="sd">        the rank of the cell</span>
+<span class="sd">    hmin, hmax : array of floats</span>
+<span class="sd">        Minimum and maximum altitude of the rimed particle column</span>
+<span class="sd">    freq : array of floats</span>
+<span class="sd">        Frequency of the species constituting the rime particle column within</span>
+<span class="sd">        the limits of it</span>
+<span class="sd">    fname : str</span>
+<span class="sd">        file name where to store the data</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fname : str</span>
+<span class="sd">        the name of the file where data has written</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">hmin</span> <span class="o">=</span> <span class="n">hmin</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">fill_value</span><span class="o">=</span><span class="n">get_fillvalue</span><span class="p">())</span>
+    <span class="n">hmax</span> <span class="o">=</span> <span class="n">hmax</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">fill_value</span><span class="o">=</span><span class="n">get_fillvalue</span><span class="p">())</span>
+    <span class="n">freq</span> <span class="o">=</span> <span class="n">freq</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">fill_value</span><span class="o">=</span><span class="n">get_fillvalue</span><span class="p">())</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+        <span class="n">fieldnames</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;traj_ID&#39;</span><span class="p">,</span> <span class="s1">&#39;yyyymmddHHMM&#39;</span><span class="p">,</span> <span class="s1">&#39;lon&#39;</span><span class="p">,</span> <span class="s1">&#39;lat&#39;</span><span class="p">,</span> <span class="s1">&#39;area&#39;</span><span class="p">,</span> <span class="s1">&#39;RANKr&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;hmin&#39;</span><span class="p">,</span> <span class="s1">&#39;hmax&#39;</span><span class="p">,</span> <span class="s1">&#39;freq&#39;</span><span class="p">]</span>
+        <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">fieldnames</span><span class="p">)</span>
+        <span class="n">writer</span><span class="o">.</span><span class="n">writeheader</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">traj_ID_el</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cell_ID</span><span class="p">):</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">({</span>
+                <span class="s1">&#39;traj_ID&#39;</span><span class="p">:</span> <span class="n">traj_ID_el</span><span class="p">,</span>
+                <span class="s1">&#39;yyyymmddHHMM&#39;</span><span class="p">:</span> <span class="n">cell_time</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">timeformat</span><span class="p">),</span>
+                <span class="s1">&#39;lon&#39;</span><span class="p">:</span> <span class="n">lon</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="s1">&#39;lat&#39;</span><span class="p">:</span> <span class="n">lat</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="s1">&#39;area&#39;</span><span class="p">:</span> <span class="n">area</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="s1">&#39;RANKr&#39;</span><span class="p">:</span> <span class="n">rank</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="s1">&#39;hmin&#39;</span><span class="p">:</span> <span class="n">hmin</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="s1">&#39;hmax&#39;</span><span class="p">:</span> <span class="n">hmax</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="s1">&#39;freq&#39;</span><span class="p">:</span> <span class="n">freq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
             <span class="p">})</span>
 
         <span class="n">csvfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
