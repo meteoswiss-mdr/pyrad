@@ -150,7 +150,7 @@
         <span class="c1"># prepare for exit</span>
         <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;time&#39;</span><span class="p">],</span>
-            <span class="s1">&#39;datatype&#39;</span><span class="p">:</span> <span class="s1">&#39;RR&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;datatype&#39;</span><span class="p">:</span> <span class="n">datatype</span><span class="p">,</span>
             <span class="s1">&#39;point_coordinates_WGS84_lon_lat_alt&#39;</span><span class="p">:</span> <span class="p">(</span>
                 <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;point_coordinates_WGS84_lon_lat_alt&#39;</span><span class="p">]),</span>
             <span class="s1">&#39;antenna_coordinates_az_el_r&#39;</span><span class="p">:</span> <span class="p">(</span>
@@ -204,8 +204,10 @@
         <span class="n">az</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;azi&#39;</span><span class="p">]</span>
         <span class="n">el</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;ele&#39;</span><span class="p">]</span>
 
-        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">alt</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">antenna_to_cartesian</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">az</span><span class="p">,</span> <span class="n">el</span><span class="p">)</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">alt</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">antenna_to_cartesian</span><span class="p">(</span><span class="n">r</span><span class="o">/</span><span class="mf">1000.</span><span class="p">,</span> <span class="n">az</span><span class="p">,</span> <span class="n">el</span><span class="p">)</span>
         <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">cartesian_to_geographic</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">projparams</span><span class="p">)</span>
+        <span class="n">lon</span> <span class="o">=</span> <span class="n">lon</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">lat</span> <span class="o">=</span> <span class="n">lat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="n">d_az</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">az</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">d_az</span> <span class="o">&gt;</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;AziTol&#39;</span><span class="p">]:</span>

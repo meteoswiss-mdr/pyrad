@@ -72,12 +72,24 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">platform</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="k">import</span> <span class="n">NearestNDInterpolator</span>
 <span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="k">import</span> <span class="n">cKDTree</span>
 
 <span class="kn">from</span> <span class="nn">pyart.config</span> <span class="k">import</span> <span class="n">get_metadata</span><span class="p">,</span> <span class="n">get_field_name</span>
-<span class="kn">from</span> <span class="nn">pyart.aux_io</span> <span class="k">import</span> <span class="n">read_product</span>
+<span class="kn">from</span> <span class="nn">pyart.aux_io</span> <span class="k">import</span> <span class="n">read_product_c</span>
+<span class="kn">from</span> <span class="nn">pyart.aux_io</span> <span class="k">import</span> <span class="n">get_library</span>
+
+<span class="c1"># check existence of METRANET library</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">METRANET_LIB</span> <span class="o">=</span> <span class="n">get_library</span><span class="p">(</span><span class="n">momentms</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;Linux&#39;</span><span class="p">:</span>
+        <span class="n">METRANET_LIB</span> <span class="o">=</span> <span class="n">get_library</span><span class="p">(</span><span class="n">momentms</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_METRANETLIB_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">SystemExit</span><span class="p">:</span>
+    <span class="n">_METRANETLIB_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+
 <span class="kn">from</span> <span class="nn">..io.read_data_cosmo</span> <span class="k">import</span> <span class="n">_put_radar_in_swiss_coord</span>
 
 
@@ -212,7 +224,7 @@
     <span class="k">return</span> <span class="n">field_dict</span></div>
 
 
-<div class="viewcode-block" id="read_hzt_data"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_hzt_data">[docs]</a><span class="k">def</span> <span class="nf">read_hzt_data</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">chy0</span><span class="o">=</span><span class="mf">255.</span><span class="p">,</span> <span class="n">chx0</span><span class="o">=-</span><span class="mf">160.</span><span class="p">):</span>
+<div class="viewcode-block" id="read_hzt_data"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_hzt_data">[docs]</a><span class="k">def</span> <span class="nf">read_hzt_data</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">chy0</span><span class="o">=</span><span class="mf">255.</span><span class="p">,</span> <span class="n">chx0</span><span class="o">=-</span><span class="mf">160.</span><span class="p">,</span> <span class="n">read_lib</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads iso-0 degree data from an HZT file</span>
 
@@ -220,7 +232,10 @@
 <span class="sd">    ----------</span>
 <span class="sd">    fname : str</span>
 <span class="sd">        name of the file to read</span>
-<span class="sd">    chy0, chx0: south west point of grid in Swiss coordinates [km]</span>
+<span class="sd">    chy0, chx0: float</span>
+<span class="sd">        south west point of grid in Swiss coordinates [km]</span>
+<span class="sd">    read_lib : str</span>
+<span class="sd">        Type of METRANET read library used. Can be &#39;C&#39; or &#39;python&#39;</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -228,7 +243,15 @@
 <span class="sd">        dictionary with the data and metadata</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">ret</span> <span class="o">=</span> <span class="n">read_product</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">physic_value</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">read_lib</span> <span class="o">==</span> <span class="s1">&#39;C&#39;</span> <span class="ow">and</span> <span class="n">_METRANETLIB_AVAILABLE</span><span class="p">:</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">read_product_c</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">physic_value</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">read_lib</span> <span class="o">==</span> <span class="s1">&#39;python&#39;</span><span class="p">:</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">read_product_py</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">physic_value</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;METRANET C-library reader not available or unknown &#39;</span> <span class="o">+</span>
+             <span class="s1">&#39;library type. Python library will be used&#39;</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">read_product_py</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">physic_value</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="n">ret</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read HZT file &#39;</span><span class="o">+</span><span class="n">fname</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>

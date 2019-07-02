@@ -78,6 +78,7 @@
 
 <span class="kn">from</span> <span class="nn">..io.write_data</span> <span class="k">import</span> <span class="n">write_cdf</span><span class="p">,</span> <span class="n">write_rhi_profile</span><span class="p">,</span> <span class="n">write_field_coverage</span>
 <span class="kn">from</span> <span class="nn">..io.write_data</span> <span class="k">import</span> <span class="n">write_last_state</span><span class="p">,</span> <span class="n">write_histogram</span><span class="p">,</span> <span class="n">write_quantiles</span>
+<span class="kn">from</span> <span class="nn">..io.write_data</span> <span class="k">import</span> <span class="n">write_fixed_angle</span>
 
 <span class="kn">from</span> <span class="nn">..graph.plots_vol</span> <span class="k">import</span> <span class="n">plot_ppi</span><span class="p">,</span> <span class="n">plot_ppi_map</span><span class="p">,</span> <span class="n">plot_rhi</span><span class="p">,</span> <span class="n">plot_cappi</span>
 <span class="kn">from</span> <span class="nn">..graph.plots_vol</span> <span class="k">import</span> <span class="n">plot_bscope</span><span class="p">,</span> <span class="n">plot_rhi_profile</span><span class="p">,</span> <span class="n">plot_along_coord</span>
@@ -172,6 +173,9 @@
 <span class="sd">                ele_res, azi_res: float or None</span>
 <span class="sd">                    The resolution of the fixed grid [deg]. If None it will be</span>
 <span class="sd">                    obtained from the separation between angles</span>
+<span class="sd">                vmin, vmax : float or None</span>
+<span class="sd">                    Min and Max values of the color scale. If None the values</span>
+<span class="sd">                    are taken from the Py-ART config file</span>
 <span class="sd">        &#39;FIXED_RNG_SPAN_IMAGE&#39;: Plots a user-defined statistic over a fixed</span>
 <span class="sd">            range image</span>
 <span class="sd">            User defined parameters:</span>
@@ -511,6 +515,8 @@
 <span class="sd">                    The compression options allowed by the hdf5. Depends on</span>
 <span class="sd">                    the type of compression. Default 6 (The gzip compression</span>
 <span class="sd">                    level).</span>
+<span class="sd">        &#39;SAVE_FIXED_ANGLE&#39;: Saves the position of the first fix angle in a</span>
+<span class="sd">            csv file</span>
 <span class="sd">        &#39;TIME_RANGE&#39;: Plots a time-range plot</span>
 <span class="sd">            User defined parameters:</span>
 <span class="sd">                anglenr: float</span>
@@ -579,7 +585,7 @@
         <span class="n">fname_list</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
             <span class="s1">&#39;ppi&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;el&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">el</span><span class="p">),</span>
-            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -618,7 +624,7 @@
                 <span class="s1">&#39;ppi&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
                 <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span>
                 <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;el&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;angle&#39;</span><span class="p">]),</span>
-                <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+                <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
                 <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -667,7 +673,7 @@
         <span class="n">fname_list</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
             <span class="s1">&#39;ppi_map&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;el&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">el</span><span class="p">),</span>
-            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -711,7 +717,7 @@
             <span class="s1">&#39;ppi&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;-&#39;</span><span class="o">+</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;contourtype&#39;</span><span class="p">],</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;el&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">el</span><span class="p">),</span>
-            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -767,7 +773,7 @@
                 <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;-&#39;</span><span class="o">+</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;contourtype&#39;</span><span class="p">],</span>
                 <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span>
                 <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;el&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;angle&#39;</span><span class="p">]),</span>
-                <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+                <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
                 <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -816,7 +822,7 @@
         <span class="n">fname_list</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
             <span class="s1">&#39;ppi&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;el&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">el</span><span class="p">),</span>
-            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -853,7 +859,7 @@
                 <span class="s1">&#39;ppi&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
                 <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span>
                 <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;el&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;angle&#39;</span><span class="p">]),</span>
-                <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+                <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
                 <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -892,7 +898,7 @@
         <span class="n">fname_list</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
             <span class="s1">&#39;rhi&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;az&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">az</span><span class="p">),</span>
-            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -929,7 +935,7 @@
                 <span class="s1">&#39;rhi&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
                 <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span>
                 <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;az&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;angle&#39;</span><span class="p">]),</span>
-                <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+                <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
                 <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -982,7 +988,7 @@
             <span class="s1">&#39;rhi&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;-&#39;</span><span class="o">+</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;contourtype&#39;</span><span class="p">],</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;az&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">az</span><span class="p">),</span>
-            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -1035,7 +1041,7 @@
                 <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;-&#39;</span><span class="o">+</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;contourtype&#39;</span><span class="p">],</span>
                 <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span>
                 <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;az&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;angle&#39;</span><span class="p">]),</span>
-                <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+                <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
                 <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -1085,7 +1091,7 @@
         <span class="n">fname_list</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
             <span class="s1">&#39;rhi&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;az&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">az</span><span class="p">),</span>
-            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -1122,7 +1128,7 @@
                 <span class="s1">&#39;rhi&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
                 <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span>
                 <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;az&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;angle&#39;</span><span class="p">]),</span>
-                <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+                <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
                 <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -1247,7 +1253,7 @@
         <span class="n">fname_list</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
             <span class="s1">&#39;rhi_profile&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="n">prdcfginfo</span><span class="p">,</span>
-            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -1262,7 +1268,7 @@
         <span class="n">fname</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
             <span class="s1">&#39;rhi_profile&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
             <span class="p">[</span><span class="s1">&#39;csv&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="n">prdcfginfo</span><span class="p">,</span>
-            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="n">fname</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
 
@@ -1300,7 +1306,7 @@
 
         <span class="c1"># mask unclassified data</span>
         <span class="n">field</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
-        <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;hydro&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;hydro&#39;</span><span class="p">,</span> <span class="s1">&#39;hydroc&#39;</span><span class="p">):</span>
             <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># user defined parameters</span>
@@ -1766,7 +1772,7 @@
                 <span class="s1">&#39;ppi&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
                 <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span>
                 <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;el&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;angle&#39;</span><span class="p">]),</span>
-                <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+                <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
                 <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -1800,7 +1806,7 @@
             <span class="s1">&#39;cappi&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span>
             <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;alt&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">]),</span>
-            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -1825,6 +1831,8 @@
         <span class="n">ang_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AngTol&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
         <span class="n">azi_res</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;azi_res&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">ele_res</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ele_res&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">vmin</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vmin&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">vmax</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vmax&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
         <span class="n">savedir</span> <span class="o">=</span> <span class="n">get_save_dir</span><span class="p">(</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;basepath&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;procname&#39;</span><span class="p">],</span> <span class="n">dssavedir</span><span class="p">,</span>
@@ -1835,14 +1843,15 @@
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span>
             <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;rng&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                 <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]),</span>
-            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
 
         <span class="n">plot_fixed_rng</span><span class="p">(</span>
             <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
-            <span class="n">azi_res</span><span class="o">=</span><span class="n">azi_res</span><span class="p">,</span> <span class="n">ele_res</span><span class="o">=</span><span class="n">ele_res</span><span class="p">,</span> <span class="n">ang_tol</span><span class="o">=</span><span class="n">ang_tol</span><span class="p">)</span>
+            <span class="n">azi_res</span><span class="o">=</span><span class="n">azi_res</span><span class="p">,</span> <span class="n">ele_res</span><span class="o">=</span><span class="n">ele_res</span><span class="p">,</span> <span class="n">ang_tol</span><span class="o">=</span><span class="n">ang_tol</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span>
+            <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----- save to &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fname_list</span><span class="p">))</span>
 
@@ -1873,7 +1882,7 @@
             <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;rng&#39;</span> <span class="o">+</span>
             <span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="o">+</span><span class="s1">&#39;-&#39;</span> <span class="o">+</span>
             <span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
-            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -1989,7 +1998,8 @@
 
         <span class="n">fname_list</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;mode&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
-            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span>
+            <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -2024,7 +2034,7 @@
             <span class="s1">&#39;b-scope&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span>
             <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;ang&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ang</span><span class="p">),</span>
-            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -2057,7 +2067,7 @@
             <span class="s1">&#39;time-range&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span>
             <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;ang&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ang</span><span class="p">),</span>
-            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -2136,7 +2146,7 @@
 
         <span class="c1"># mask unclassified data</span>
         <span class="n">field</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
-        <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;hydro&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;hydro&#39;</span><span class="p">,</span> <span class="s1">&#39;hydroc&#39;</span><span class="p">):</span>
             <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># user defined variables</span>
@@ -2298,7 +2308,7 @@
         <span class="n">fname_list</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
             <span class="s1">&#39;coverage&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span>
-            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -2318,7 +2328,8 @@
 
         <span class="n">fname</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
             <span class="s1">&#39;coverage&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
-            <span class="p">[</span><span class="s1">&#39;csv&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">[</span><span class="s1">&#39;csv&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span>
+            <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="n">fname</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
 
@@ -2464,7 +2475,7 @@
         <span class="n">fname_list</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
             <span class="s1">&#39;cdf&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
             <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span>
-            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
@@ -2486,7 +2497,8 @@
         <span class="c1"># store cdf values</span>
         <span class="n">fname</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
             <span class="s1">&#39;cdf&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
-            <span class="p">[</span><span class="s1">&#39;txt&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">[</span><span class="s1">&#39;txt&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span>
+            <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="n">fname</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
 
@@ -2616,6 +2628,35 @@
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;saved file: &#39;</span><span class="o">+</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;lastStateFile&#39;</span><span class="p">])</span>
 
         <span class="k">return</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;lastStateFile&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;SAVE_FIXED_ANGLE&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="s1">&#39; Field type &#39;</span> <span class="o">+</span> <span class="n">field_name</span> <span class="o">+</span>
+                <span class="s1">&#39; not available in data set. Skipping product &#39;</span> <span class="o">+</span>
+                <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">savedir</span> <span class="o">=</span> <span class="n">get_save_dir</span><span class="p">(</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;basepath&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;procname&#39;</span><span class="p">],</span> <span class="n">dssavedir</span><span class="p">,</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;prdname&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
+            <span class="s1">&#39;ts&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="s1">&#39;fixed_angle&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;csv&#39;</span><span class="p">],</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
+
+        <span class="n">write_fixed_angle</span><span class="p">(</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">latitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">longitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">altitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">fname</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;saved file: &#39;</span><span class="o">+</span><span class="n">fname</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fname</span>
 
     <span class="n">warn</span><span class="p">(</span><span class="s1">&#39; Unsupported product type: &#39;</span> <span class="o">+</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
     <span class="k">return</span> <span class="kc">None</span></div>

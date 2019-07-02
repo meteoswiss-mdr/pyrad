@@ -7,20 +7,26 @@ Functions for writing pyrad output data
 .. autosummary::
     :toctree: generated/
 
+    write_proc_periods
+    write_fixed_angle
     write_ts_lightning
     send_msg
     write_alarm_msg
     write_last_state
     write_smn
+    write_trt_info
     write_trt_cell_data
+    write_trt_thundertracking_data
     write_trt_cell_scores
     write_trt_cell_lightning
+    write_trt_rpc
     write_rhi_profile
     write_field_coverage
     write_cdf
     write_histogram
     write_quantiles
     write_ts_polar_data
+    write_ts_grid_data
     write_ts_ml
     write_ts_cum
     write_monitoring_ts
@@ -49,6 +55,93 @@ import numpy as np
 from pyart.config import get_fillvalue
 
 from .io_aux import generate_field_name_str
+
+
+
+def write_proc_periods(start_times, end_times, fname):
+    """
+    writes an output file containing start and stop times of periods to
+    process
+
+    Parameters
+    ----------
+    start_times, end_times : datetime object
+        The starting and ending times of the periods
+    fname : str
+        The name of the file where to write
+
+    Returns
+    -------
+    fname : str
+        the name of the file containing the content
+
+    """
+    with open(fname, 'w', newline='') as csvfile:
+        field_names = ['start_time', 'end_time']
+        writer = csv.DictWriter(csvfile, field_names)
+        writer.writeheader()
+
+        for start_time, end_time in zip(start_times, end_times):
+            dict_row = {
+                'start_time': start_time.strftime('%Y%m%d%H%M%S'),
+                'end_time': end_time.strftime('%Y%m%d%H%M%S')
+            }
+            writer.writerow(dict_row)
+        csvfile.close()
+
+    return fname
+
+
+def write_fixed_angle(time_data, fixed_angle, rad_lat, rad_lon, rad_alt,
+                      fname):
+    """
+    writes an output file with the fixed angle data
+
+    Parameters
+    ----------
+    time_data : datetime object
+        The scan time
+    fixed_angle : float
+        The first fixed angle in the scan
+    rad_lat, rad_lon, rad_alt : float
+        Latitude, longitude [deg] and altitude [m MSL] of the radar
+    fname : str
+        The name of the file where to write
+
+    Returns
+    -------
+    fname : str
+        the name of the file containing the content
+
+    """
+    filelist = glob.glob(fname)
+    if not filelist:
+        with open(fname, 'w', newline='') as csvfile:
+            fieldnames = [
+                'date_time', 'rad_lat', 'rad_lon', 'rad_alt', 'fixed_angle']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writeheader()
+            writer.writerow({
+                'date_time': time_data.strftime('%Y%m%d%H%M%S'),
+                'rad_lat': rad_lat,
+                'rad_lon': rad_lon,
+                'rad_alt': rad_alt,
+                'fixed_angle': fixed_angle})
+
+            csvfile.close()
+    else:
+        with open(fname, 'a', newline='') as csvfile:
+            fieldnames = [
+                'date_time', 'rad_lat', 'rad_lon', 'rad_alt', 'fixed_angle']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writerow({
+                'date_time': time_data.strftime('%Y%m%d%H%M%S'),
+                'rad_lat': rad_lat,
+                'rad_lon': rad_lon,
+                'rad_alt': rad_alt,
+                'fixed_angle': fixed_angle})
+
+            csvfile.close()
 
 
 def write_ts_lightning(flashnr, time_data, time_in_flash, lat, lon, alt, dBm,
@@ -295,6 +388,42 @@ def write_smn(datetime_vec, value_avg_vec, value_std_vec, fname):
     return fname
 
 
+def write_trt_info(ids, max_rank, nscans, time_start, time_end, fname):
+    """
+    writes TRT info of the thundertracking
+
+    Parameters
+    ----------
+    ids, max_rank, nscans, time_start, time_end: array
+        the cell parameters
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    with open(fname, 'w', newline='') as csvfile:
+        fieldnames = [
+            'id', 'max_rank', 'nscans_Xband', 'time_start', 'time_end']
+        writer = csv.DictWriter(csvfile, fieldnames)
+        writer.writeheader()
+        for i, id_cell in enumerate(ids):
+            writer.writerow({
+                'id': id_cell,
+                'max_rank': max_rank[i],
+                'nscans_Xband': nscans[i],
+                'time_start': time_start[i].strftime('%Y%m%d%H%M'),
+                'time_end': time_end[i].strftime('%Y%m%d%H%M')
+            })
+
+        csvfile.close()
+
+    return fname
+
+
 def write_trt_cell_data(
         traj_ID, yyyymmddHHMM, lon, lat, ell_L, ell_S, ell_or, area,
         vel_x, vel_y, det, RANKr, CG_n, CG_p, CG, CG_percent_p, ET45,
@@ -319,59 +448,156 @@ def write_trt_cell_data(
         the name of the file where data has written
 
     """
-    with open(fname, 'w', newline='') as csvfile:
-        fieldnames = [
-            'traj_ID', 'yyyymmddHHMM', 'lon', 'lat', 'ell_L', 'ell_S',
-            'ell_or', 'area', 'vel_x', 'vel_y', 'det', 'RANKr', 'CG-',
-            'CG+', 'CG', '%CG+', 'ET45', 'ET45m', 'ET15', 'ET15m',
-            'VIL', 'maxH', 'maxHm', 'POH', 'RANK', 'Dvel_x', 'Dvel_y',
-            'cell_contour_lon-lat']
-        writer = csv.DictWriter(csvfile, fieldnames)
-        writer.writeheader()
-        for i, traj_ID_el in enumerate(traj_ID):
-            cell_contour_aux = cell_contour[i]
-            npoints_contour = len(cell_contour_aux['lon'])
-            cell_contour_arr = np.empty(2*npoints_contour, dtype=float)
-            cell_contour_arr[0:-1:2] = cell_contour_aux['lon']
-            cell_contour_arr[1::2] = cell_contour_aux['lat']
-            cell_contour_str = str(cell_contour_arr[0])
-            for j in range(1, 2*npoints_contour):
-                cell_contour_str += ' '+str(cell_contour_arr[j])
+    try:
+        with open(fname, 'w', newline='') as csvfile:
+            fieldnames = [
+                'traj_ID', 'yyyymmddHHMM', 'lon', 'lat', 'ell_L', 'ell_S',
+                'ell_or', 'area', 'vel_x', 'vel_y', 'det', 'RANKr', 'CG-',
+                'CG+', 'CG', '%CG+', 'ET45', 'ET45m', 'ET15', 'ET15m',
+                'VIL', 'maxH', 'maxHm', 'POH', 'RANK', 'Dvel_x', 'Dvel_y',
+                'cell_contour_lon-lat']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writeheader()
+            for i, traj_ID_el in enumerate(traj_ID):
+                cell_contour_aux = cell_contour[i]
+                npoints_contour = len(cell_contour_aux['lon'])
+                cell_contour_arr = np.empty(2*npoints_contour, dtype=float)
+                cell_contour_arr[0:-1:2] = cell_contour_aux['lon']
+                cell_contour_arr[1::2] = cell_contour_aux['lat']
+                cell_contour_str = str(cell_contour_arr[0])
+                for j in range(1, 2*npoints_contour):
+                    cell_contour_str += ' '+str(cell_contour_arr[j])
 
-            writer.writerow({
-                'traj_ID': traj_ID_el,
-                'yyyymmddHHMM': yyyymmddHHMM[i].strftime('%Y%m%d%H%M'),
-                'lon': lon[i],
-                'lat': lat[i],
-                'ell_L': ell_L[i],
-                'ell_S': ell_S[i],
-                'ell_or': ell_or[i],
-                'area': area[i],
-                'vel_x': vel_x[i],
-                'vel_y': vel_y[i],
-                'det': det[i],
-                'RANKr': RANKr[i],
-                'CG-': CG_n[i],
-                'CG+': CG_p[i],
-                'CG': CG[i],
-                '%CG+': CG_percent_p[i],
-                'ET45': ET45[i],
-                'ET45m': ET45m[i],
-                'ET15': ET15[i],
-                'ET15m': ET15m[i],
-                'VIL': VIL[i],
-                'maxH': maxH[i],
-                'maxHm': maxHm[i],
-                'POH': POH[i],
-                'RANK': RANK[i],
-                'Dvel_x': Dvel_x[i],
-                'Dvel_y': Dvel_y[i],
-                'cell_contour_lon-lat': cell_contour_str
-            })
+                writer.writerow({
+                    'traj_ID': traj_ID_el,
+                    'yyyymmddHHMM': yyyymmddHHMM[i].strftime('%Y%m%d%H%M'),
+                    'lon': lon[i],
+                    'lat': lat[i],
+                    'ell_L': ell_L[i],
+                    'ell_S': ell_S[i],
+                    'ell_or': ell_or[i],
+                    'area': area[i],
+                    'vel_x': vel_x[i],
+                    'vel_y': vel_y[i],
+                    'det': det[i],
+                    'RANKr': RANKr[i],
+                    'CG-': CG_n[i],
+                    'CG+': CG_p[i],
+                    'CG': CG[i],
+                    '%CG+': CG_percent_p[i],
+                    'ET45': ET45[i],
+                    'ET45m': ET45m[i],
+                    'ET15': ET15[i],
+                    'ET15m': ET15m[i],
+                    'VIL': VIL[i],
+                    'maxH': maxH[i],
+                    'maxHm': maxHm[i],
+                    'POH': POH[i],
+                    'RANK': RANK[i],
+                    'Dvel_x': Dvel_x[i],
+                    'Dvel_y': Dvel_y[i],
+                    'cell_contour_lon-lat': cell_contour_str
+                })
 
-        csvfile.close()
+            csvfile.close()
 
-    return fname
+            return fname
+    except EnvironmentError:
+        warn('Unable to write on file '+fname)
+        return None
+
+
+def write_trt_thundertracking_data(
+        traj_ID, scan_ordered_time, scan_time, azi, rng, yyyymmddHHMM, lon,
+        lat, ell_L, ell_S, ell_or, area, vel_x, vel_y, det, RANKr, CG_n, CG_p,
+        CG, CG_percent_p, ET45, ET45m, ET15, ET15m, VIL, maxH, maxHm, POH,
+        RANK, Dvel_x, Dvel_y, cell_contour, fname):
+    """
+    writes TRT cell data of the thundertracking scan
+
+    Parameters
+    ----------
+    traj_ID, scan_ordered_time, scan_time, azi, rng, yyyymmddHHMM, lon, lat,
+    ell_L, ell_S, ell_or, area, vel_x, vel_y, det, RANKr, CG_n, CG_p, CG,
+    CG_percent_p, ET45, ET45m, ET15, ET15m, VIL, maxH, maxHm, POH, RANK,
+    Dvel_x, Dvel_y, cell_contour:
+        the cell parameters
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    try:
+        with open(fname, 'w', newline='') as csvfile:
+            fieldnames = [
+                'traj_ID', 'scan_ordered_time', 'scan_time', 'azi', 'rng',
+                'yyyymmddHHMM', 'lon', 'lat', 'ell_L', 'ell_S', 'ell_or',
+                'area', 'vel_x', 'vel_y', 'det', 'RANKr', 'CG-', 'CG+', 'CG',
+                '%CG+', 'ET45', 'ET45m', 'ET15', 'ET15m', 'VIL', 'maxH',
+                'maxHm', 'POH', 'RANK', 'Dvel_x', 'Dvel_y',
+                'cell_contour_lon-lat']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writeheader()
+            for i, traj_ID_el in enumerate(traj_ID):
+                cell_contour_aux = cell_contour[i]
+                npoints_contour = len(cell_contour_aux['lon'])
+                cell_contour_arr = np.empty(2*npoints_contour, dtype=float)
+                cell_contour_arr[0:-1:2] = cell_contour_aux['lon']
+                cell_contour_arr[1::2] = cell_contour_aux['lat']
+                cell_contour_str = str(cell_contour_arr[0])
+                for j in range(1, 2*npoints_contour):
+                    cell_contour_str += ' '+str(cell_contour_arr[j])
+
+                if np.ma.is_masked(scan_time[i]):
+                    scan_time_str = get_fillvalue()
+                else:
+                    scan_time_str = scan_time[i].strftime('%Y%m%d%H%M%S')
+                writer.writerow({
+                    'traj_ID': traj_ID_el,
+                    'scan_ordered_time': scan_ordered_time[i].strftime(
+                        '%Y%m%d%H%M%S.%f'),
+                    'scan_time': scan_time_str,
+                    'azi': azi[i],
+                    'rng': rng[i],
+                    'yyyymmddHHMM': yyyymmddHHMM[i].strftime('%Y%m%d%H%M'),
+                    'lon': lon[i],
+                    'lat': lat[i],
+                    'ell_L': ell_L[i],
+                    'ell_S': ell_S[i],
+                    'ell_or': ell_or[i],
+                    'area': area[i],
+                    'vel_x': vel_x[i],
+                    'vel_y': vel_y[i],
+                    'det': det[i],
+                    'RANKr': RANKr[i],
+                    'CG-': CG_n[i],
+                    'CG+': CG_p[i],
+                    'CG': CG[i],
+                    '%CG+': CG_percent_p[i],
+                    'ET45': ET45[i],
+                    'ET45m': ET45m[i],
+                    'ET15': ET15[i],
+                    'ET15m': ET15m[i],
+                    'VIL': VIL[i],
+                    'maxH': maxH[i],
+                    'maxHm': maxHm[i],
+                    'POH': POH[i],
+                    'RANK': RANK[i],
+                    'Dvel_x': Dvel_x[i],
+                    'Dvel_y': Dvel_y[i],
+                    'cell_contour_lon-lat': cell_contour_str
+                })
+
+            csvfile.close()
+
+            return fname
+    except EnvironmentError:
+        warn('Unable to write on file '+fname)
+        return None
 
 
 def write_trt_cell_scores(
@@ -437,7 +663,7 @@ def write_trt_cell_scores(
 
 def write_trt_cell_lightning(
         cell_ID, cell_time, lon, lat, area, rank, nflash, flash_density,
-        fname):
+        fname, timeformat='%Y%m%d%H%M'):
     """
     writes the lightning data for each TRT cell
 
@@ -477,13 +703,71 @@ def write_trt_cell_lightning(
         for i, traj_ID_el in enumerate(cell_ID):
             writer.writerow({
                 'traj_ID': traj_ID_el,
-                'yyyymmddHHMM': cell_time[i].strftime('%Y%m%d%H%M'),
+                'yyyymmddHHMM': cell_time[i].strftime(timeformat),
                 'lon': lon[i],
                 'lat': lat[i],
                 'area': area[i],
                 'RANKr': rank[i],
                 'nflashes': nflash[i],
                 'flash_dens': flash_density[i],
+            })
+
+        csvfile.close()
+
+    return fname
+
+
+def write_trt_rpc(cell_ID, cell_time, lon, lat, area, rank, hmin, hmax, freq,
+                  fname, timeformat='%Y%m%d%H%M'):
+    """
+    writes the rimed particles column data for a TRT cell
+
+    Parameters
+    ----------
+    cell_ID : array of ints
+        the cell ID
+    cell_time : array of datetime
+        the time step
+    lon, lat : array of floats
+        the latitude and longitude of the center of the cell
+    area : array of floats
+        the area of the cell
+    rank : array of floats
+        the rank of the cell
+    hmin, hmax : array of floats
+        Minimum and maximum altitude of the rimed particle column
+    freq : array of floats
+        Frequency of the species constituting the rime particle column within
+        the limits of it
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    hmin = hmin.filled(fill_value=get_fillvalue())
+    hmax = hmax.filled(fill_value=get_fillvalue())
+    freq = freq.filled(fill_value=get_fillvalue())
+    with open(fname, 'w', newline='') as csvfile:
+        fieldnames = [
+            'traj_ID', 'yyyymmddHHMM', 'lon', 'lat', 'area', 'RANKr',
+            'hmin', 'hmax', 'freq']
+        writer = csv.DictWriter(csvfile, fieldnames)
+        writer.writeheader()
+        for i, traj_ID_el in enumerate(cell_ID):
+            writer.writerow({
+                'traj_ID': traj_ID_el,
+                'yyyymmddHHMM': cell_time[i].strftime(timeformat),
+                'lon': lon[i],
+                'lat': lat[i],
+                'area': area[i],
+                'RANKr': rank[i],
+                'hmin': hmin[i],
+                'hmax': hmax[i],
+                'freq': freq[i]
             })
 
         csvfile.close()
@@ -907,6 +1191,71 @@ def write_ts_polar_data(dataset, fname):
                  'az': dataset['used_antenna_coordinates_az_el_r'][0],
                  'el': dataset['used_antenna_coordinates_az_el_r'][1],
                  'r': dataset['used_antenna_coordinates_az_el_r'][2],
+                 'value': dataset['value']})
+            csvfile.close()
+
+    return fname
+
+
+def write_ts_grid_data(dataset, fname):
+    """
+    writes time series of data
+
+    Parameters
+    ----------
+    dataset : dict
+        dictionary containing the time series parameters
+
+    fname : str
+        file name where to store the data
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    filelist = glob.glob(fname)
+    if not filelist:
+        with open(fname, 'w', newline='') as csvfile:
+            csvfile.write('# Gridded data timeseries data file\n')
+            csvfile.write('# Comment lines are preceded by "#"\n')
+            csvfile.write('# Description: \n')
+            csvfile.write('# Time series of a gridded data over a ' +
+                          'fixed location.\n')
+            csvfile.write(
+                '# Nominal location [lon, lat, alt]: ' +
+                str(dataset['point_coordinates_WGS84_lon_lat_alt']) + '\n')
+            csvfile.write(
+                '# Grid points used [iz, iy, ix]: ' +
+                str(dataset['grid_points_iz_iy_ix'])+'\n')
+            csvfile.write(
+                '# Data: '+generate_field_name_str(dataset['datatype'])+'\n')
+            csvfile.write('# Fill Value: '+str(get_fillvalue())+'\n')
+            csvfile.write(
+                '# Start: ' +
+                dataset['time'].strftime('%Y-%m-%d %H:%M:%S UTC')+'\n')
+            csvfile.write('#\n')
+
+            fieldnames = ['date', 'lon', 'lat', 'alt', 'value']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writeheader()
+            writer.writerow(
+                {'date': dataset['time'].strftime('%Y-%m-%d %H:%M:%S.%f'),
+                 'lon': dataset['used_coordinates_WGS84_lon_lat_alt'][0],
+                 'lat': dataset['used_coordinates_WGS84_lon_lat_alt'][1],
+                 'alt': dataset['used_coordinates_WGS84_lon_lat_alt'][2],
+                 'value': dataset['value']})
+            csvfile.close()
+    else:
+        with open(fname, 'a', newline='') as csvfile:
+            fieldnames = ['date', 'lon', 'lat', 'alt', 'value']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writerow(
+                {'date': dataset['time'].strftime('%Y-%m-%d %H:%M:%S.%f'),
+                 'lon': dataset['used_coordinates_WGS84_lon_lat_alt'][0],
+                 'lat': dataset['used_coordinates_WGS84_lon_lat_alt'][1],
+                 'alt': dataset['used_coordinates_WGS84_lon_lat_alt'][2],
                  'value': dataset['value']})
             csvfile.close()
 

@@ -50,6 +50,13 @@
    :special-members:
    :inherited-members:
    :show-inheritance:
+.. automodule:: pyrad.io.read_data_dem
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
 .. automodule:: pyrad.io.read_data_sensor
    :members:
    :undoc-members:

@@ -7,10 +7,17 @@ Functions for reading data from other sensors
 .. autosummary::
     :toctree: generated/
 
+    read_windmills_data
+    read_thundertracking_info
+    read_trt_info_all
+    read_trt_info_all2
+    read_trt_info
+    read_trt_info2
     read_trt_scores
     read_trt_cell_lightning
     read_trt_data
     read_trt_traj_data
+    read_trt_thundertracking_traj_data
     read_lightning
     read_meteorage
     read_lightning_traj
@@ -24,6 +31,7 @@ Functions for reading data from other sensors
 """
 
 import os
+import glob
 import datetime
 import csv
 from warnings import warn
@@ -33,6 +41,577 @@ import re
 import numpy as np
 
 from pyart.config import get_fillvalue
+
+
+def read_windmills_data(fname):
+    """
+    Read the wind mills data csv file
+
+    Parameters
+    ----------
+    fname : str
+        path of the windmill data file
+
+    Returns
+    -------
+    windmill_dict : dict
+        A dictionary containing all the parameters or None
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                (row for row in csvfile if (
+                    not row.startswith('#') and
+                    not row.startswith('@') and not row.startswith(" ")
+                    and row)),
+#                fieldnames=[
+#                    'Datum(Remote)', 'Uhrzeit(Remote)', 'Datum(Server)',
+#                    'Uhrzeit(Server)', 'Zeitdifferenz', 'Windgeschwindigkeit',
+#                    'Windgeschwindigkeit Max', 'Windgeschwindigkeit Min',
+#                    'Rotordrehzahl', 'Rotordrehzahl Max', 'Rotordrehzahl Min',
+#                    'Leistung', 'Leistung Max', 'Leistung Min',
+#                    'Gondelposition', 'Windrichtung', 'Generator Umdr.',
+#                    'Stop Fault', 'T Aussen', 'T Getriebe', 'T Lager A',
+#                    'T Lager B', 'T Gondel', 'T Getriebelager',
+#                    'T Wellenlager', 'Scheinleistung', 'cos phi',
+#                    'Blindleistung', 'Spannung L1-N', 'Spannung L2-N',
+#                    'Spannung L3-N', 'Strom L1', 'Strom L2', 'Strom L3',
+#                    'Blattwinkel 1', 'Blattwinkel 2',  'Blattwinkel 3',
+#                    'Blattwinkel 1 (Soll)', 'Blattwinkel 2 (Soll)',
+#                    'Blattwinkel 3 (Soll)', 'cos phi (Soll)',
+#                    'Betriebszustand', 'T Getriebelager B', 'Netz Freq.',
+#                    'T Hydraulic Oil', 'T Gear Oil', 'Air Pressure',
+#                    'Leistung Vorgabe', 'Blindleistung Vorgabe',
+#                    'Statortemperatur L1', 'Statortemperatur L2',
+#                    'Statortemperatur L3', 'xxx', 't (Innerhalb Windgrenzen)',
+#                    'Active Power Reference Value', 'Exported active energy',
+#                    'Exported active energy (red. op-mode)',
+#                    'Setpoint in percent', 'Setpoint active power in percent',
+#                    'Internal setpoint max power',
+#                    'Internal setpoint stop WTG',
+#                    'Internal setpoint start WTG',
+#                    'Grid Possible Power (avg)',
+#                    'Max. Grid Active Power (Setpoint)',
+#                    'Min. Operatingstate', 'Wind Speed 2', 'Wind Speed 3',
+#                    'Wind Direction 2', 'Relative Humidity',
+#                    'T Generator Bearing DE', 'T Generator Bearing NDE',
+#                    'Wind Speed 4', 'Wind Speed 5', 'Wind Speed 6',
+#                    'Wind Speed 7', 'Wind Speed 8', 'Wind Direction 3',
+#                    'Wind Direction 4', 'T Outside 2',
+#                    'Wind Speed Sensor 1 (avg)', 'Wind Speed Sensor 1 (min)',
+#                    'Wind Speed Sensor 1 (max)',
+#                    'Wind Speed Sensor 1 (stddev)',
+#                    'Wind Speed Sensor 2 (avg)', 'Wind Speed Sensor 2 (min)',
+#                    'Wind Speed Sensor 2 (max)',
+#                    'Wind Speed Sensor 2 (stddev)',
+#                    'T Ground Controller (avg)', 'T Ground Controller (min)',
+#                    'T Ground Controller (max)', 'T Ground Controller (std)',
+#                    'T Top Controller (avg)', 'T Top Controller (min)',
+#                    'T Top Controller (max)', 'T Top Controller (stddev)',
+#                    'Ice Level', 'External setpoint power factor',
+#                    'Setpoint power from grid operator',
+#                    'Setpoint power from direct marketer',
+#                    'Setpoint power from customer',
+#                    'Setpoint active power controller',
+#                    'T Gear Oil Inlet (avg)', 'T Gear Oil Inlet (min)',
+#                    'T Gear Oil Inlet (max)', 'T Gear Oil Inlet (stddev)',
+#                    'Calculated By ROTORsoft'],
+                delimiter=';')
+            nrows = sum(1 for row in reader)
+
+            if nrows == 0:
+                warn('No data in file '+fname)
+                return None
+
+            dt_remote = np.ma.masked_all(nrows, dtype=datetime.datetime)
+            dt_server = np.ma.masked_all(nrows, dtype=datetime.datetime)
+            rotor_speed_avg = np.ma.masked_all(nrows, dtype=float)
+            rotor_speed_min = np.ma.masked_all(nrows, dtype=float)
+            rotor_speed_max = np.ma.masked_all(nrows, dtype=float)
+            nacelle_pos = np.ma.masked_all(nrows, dtype=float)
+            blade_angle_1 = np.ma.masked_all(nrows, dtype=float)
+            blade_angle_2 = np.ma.masked_all(nrows, dtype=float)
+            blade_angle_3 = np.ma.masked_all(nrows, dtype=float)
+            t_outside = np.ma.masked_all(nrows, dtype=float)
+            ice_level = np.ma.masked_all(nrows, dtype=float)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                (row for row in csvfile if (
+                    not row.startswith('#') and
+                    not row.startswith('@') and not row.startswith(" ")
+                    and row)),
+#                fieldnames=[
+#                    'Datum(Remote)', 'Uhrzeit(Remote)', 'Datum(Server)',
+#                    'Uhrzeit(Server)', 'Zeitdifferenz', 'Windgeschwindigkeit',
+#                    'Windgeschwindigkeit Max', 'Windgeschwindigkeit Min',
+#                    'Rotordrehzahl', 'Rotordrehzahl Max', 'Rotordrehzahl Min',
+#                    'Leistung', 'Leistung Max', 'Leistung Min',
+#                    'Gondelposition', 'Windrichtung', 'Generator Umdr.',
+#                    'Stop Fault', 'T Aussen', 'T Getriebe', 'T Lager A',
+#                    'T Lager B', 'T Gondel', 'T Getriebelager',
+#                    'T Wellenlager', 'Scheinleistung', 'cos phi',
+#                    'Blindleistung', 'Spannung L1-N', 'Spannung L2-N',
+#                    'Spannung L3-N', 'Strom L1', 'Strom L2', 'Strom L3',
+#                    'Blattwinkel 1', 'Blattwinkel 2',  'Blattwinkel 3',
+#                    'Blattwinkel 1 (Soll)', 'Blattwinkel 2 (Soll)',
+#                    'Blattwinkel 3 (Soll)', 'cos phi (Soll)',
+#                    'Betriebszustand', 'T Getriebelager B', 'Netz Freq.',
+#                    'T Hydraulic Oil', 'T Gear Oil', 'Air Pressure',
+#                    'Leistung Vorgabe', 'Blindleistung Vorgabe',
+#                    'Statortemperatur L1', 'Statortemperatur L2',
+#                    'Statortemperatur L3', 'xxx', 't (Innerhalb Windgrenzen)',
+#                    'Active Power Reference Value', 'Exported active energy',
+#                    'Exported active energy (red. op-mode)',
+#                    'Setpoint in percent', 'Setpoint active power in percent',
+#                    'Internal setpoint max power',
+#                    'Internal setpoint stop WTG',
+#                    'Internal setpoint start WTG',
+#                    'Grid Possible Power (avg)',
+#                    'Max. Grid Active Power (Setpoint)',
+#                    'Min. Operatingstate', 'Wind Speed 2', 'Wind Speed 3',
+#                    'Wind Direction 2', 'Relative Humidity',
+#                    'T Generator Bearing DE', 'T Generator Bearing NDE',
+#                    'Wind Speed 4', 'Wind Speed 5', 'Wind Speed 6',
+#                    'Wind Speed 7', 'Wind Speed 8', 'Wind Direction 3',
+#                    'Wind Direction 4', 'T Outside 2',
+#                    'Wind Speed Sensor 1 (avg)', 'Wind Speed Sensor 1 (min)',
+#                    'Wind Speed Sensor 1 (max)',
+#                    'Wind Speed Sensor 1 (stddev)',
+#                    'Wind Speed Sensor 2 (avg)', 'Wind Speed Sensor 2 (min)',
+#                    'Wind Speed Sensor 2 (max)',
+#                    'Wind Speed Sensor 2 (stddev)',
+#                    'T Ground Controller (avg)', 'T Ground Controller (min)',
+#                    'T Ground Controller (max)', 'T Ground Controller (std)',
+#                    'T Top Controller (avg)', 'T Top Controller (min)',
+#                    'T Top Controller (max)', 'T Top Controller (stddev)',
+#                    'Ice Level', 'External setpoint power factor',
+#                    'Setpoint power from grid operator',
+#                    'Setpoint power from direct marketer',
+#                    'Setpoint power from customer',
+#                    'Setpoint active power controller',
+#                    'T Gear Oil Inlet (avg)', 'T Gear Oil Inlet (min)',
+#                    'T Gear Oil Inlet (max)', 'T Gear Oil Inlet (stddev)',
+#                    'Calculated By ROTORsoft'],
+                delimiter=';')
+
+            for i, row in enumerate(reader):
+                dt_remote[i] = datetime.datetime.strptime(
+                    row['Datum(Remote)']+' '+row['Uhrzeit(Remote)'],
+                    '%d.%m.%Y %H:%M:%S')
+                dt_server[i] = datetime.datetime.strptime(
+                    row['Datum(Server)']+' '+row['Uhrzeit(Server)'],
+                    '%d.%m.%Y %H:%M:%S')
+                rotor_speed_avg[i] = float(
+                    row['Rotordrehzahl'].replace(',', '.'))
+                rotor_speed_min[i] = float(
+                    row['Rotordrehzahl Max'].replace(',', '.'))
+                rotor_speed_max[i] = float(
+                    row['Rotordrehzahl Min'].replace(',', '.'))
+                nacelle_pos[i] = float(
+                    row['Gondelposition'].replace(',', '.'))
+                blade_angle_1[i] = float(
+                    row['Blattwinkel 1'].replace(',', '.'))
+                blade_angle_2[i] = float(
+                    row['Blattwinkel 2'].replace(',', '.'))
+                blade_angle_3[i] = float(
+                    row['Blattwinkel 3'].replace(',', '.'))
+                t_outside[i] = float(
+                    row['T Aussen'].replace(',', '.'))
+                ice_level[i] = float(
+                    row['Ice Level'].replace(',', '.'))
+
+            csvfile.close()
+
+            windmill_dict = {
+                'dt_remote': dt_remote,
+                'dt_server': dt_server,
+                'rotor_speed_avg': rotor_speed_avg,
+                'rotor_speed_min': rotor_speed_min,
+                'rotor_speed_max': rotor_speed_max,
+                'nacelle_pos': nacelle_pos,
+                'blade_angle_1': blade_angle_1,
+                'blade_angle_2': blade_angle_2,
+                'blade_angle_3': blade_angle_3,
+                't_outside': t_outside,
+                'ice_level': ice_level,
+            }
+
+            return windmill_dict
+
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return None
+
+
+def read_thundertracking_info(fname):
+    """
+    Reads the TRT info used for thundertracking
+
+    Parameters
+    ----------
+    fname : str
+        Name of the file containing the info
+
+    Returns
+    -------
+    A tupple containing the read values. None otherwise. The read values are
+    id, max_rank, nscans_Xband, time_start, time_end
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                (row for row in csvfile if not row.startswith('#')),
+                delimiter=',')
+            nrows = sum(1 for row in reader)
+
+            if nrows == 0:
+                warn('No data in file '+fname)
+                return None, None, None, None, None
+
+            cell_id = np.empty(nrows, dtype=int)
+            max_rank = np.empty(nrows, dtype=float)
+            nscans_Xband = np.empty(nrows, dtype=int)
+            time_start = np.empty(nrows, dtype=datetime.datetime)
+            time_end = np.empty(nrows, dtype=datetime.datetime)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                (row for row in csvfile if not row.startswith('#')),
+                delimiter=',')
+            for i, row in enumerate(reader):
+                cell_id[i] = int(row['id'])
+                max_rank[i] = float(row['max_rank'])
+                nscans_Xband[i] = int(row['nscans_Xband'])
+                time_start[i] = datetime.datetime.strptime(
+                    row['time_start'], '%Y%m%d%H%M')
+                time_end[i] = datetime.datetime.strptime(
+                    row['time_end'], '%Y%m%d%H%M')
+
+            csvfile.close()
+
+            return cell_id, max_rank, nscans_Xband, time_start, time_end
+
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return None, None, None, None, None
+
+
+def read_trt_info_all(info_path):
+    """
+    Reads all the TRT info files
+
+    Parameters
+    ----------
+    info_path : str
+        directory where the files are stored
+
+    Returns
+    -------
+    A tupple containing the read values. None otherwise. The read values are
+    trt_time, id, rank, nscans, azi, rng, lat, lon, ell_l, ell_s, ell_or,
+    vel_x, vel_y, det
+
+    """
+    file_list = glob.glob(info_path+'*.txt')
+    if not file_list:
+        warn('No info files in '+info_path)
+        return None
+
+    trt_time = np.array([], dtype=datetime.datetime)
+    cell_id = np.array([], dtype=int)
+    rank = np.array([])
+    nscans = np.array([], dtype=int)
+    azi = np.array([])
+    rng = np.array([])
+    lat = np.array([])
+    lon = np.array([])
+    ell_l = np.array([])
+    ell_s = np.array([])
+    ell_or = np.array([])
+    vel_x = np.array([])
+    vel_y = np.array([])
+    det = np.array([])
+
+    for file in file_list:
+        (trt_time_aux, id_aux, rank_aux, nscans_aux, azi_aux, rng_aux,
+         lat_aux, lon_aux, ell_l_aux, ell_s_aux, ell_or_aux, vel_x_aux,
+         vel_y_aux, det_aux) = read_trt_info(file)
+
+        if trt_time_aux is None:
+            continue
+
+        trt_time = np.append(trt_time, trt_time_aux)
+        cell_id = np.append(cell_id, id_aux)
+        rank = np.append(rank, rank_aux)
+        nscans = np.append(nscans, nscans_aux)
+        azi = np.append(azi, azi_aux)
+        rng = np.append(rng, rng_aux)
+        lat = np.append(lat, lat_aux)
+        lon = np.append(lon, lon_aux)
+        ell_l = np.append(ell_l, ell_l_aux)
+        ell_s = np.append(ell_s, ell_s_aux)
+        ell_or = np.append(ell_or, ell_or_aux)
+        vel_x = np.append(vel_x, vel_x_aux)
+        vel_y = np.append(vel_y, vel_y_aux)
+        det = np.append(det, det_aux)
+
+    return (
+        trt_time, cell_id, rank, nscans, azi, rng, lat, lon, ell_l, ell_s,
+        ell_or, vel_x, vel_y, det)
+
+
+def read_trt_info_all2(info_path):
+    """
+    Reads all the TRT info files
+
+    Parameters
+    ----------
+    info_path : str
+        directory where the files are stored
+
+    Returns
+    -------
+    A tupple containing the read values. None otherwise. The read values are
+    trt_time, id, rank, scan_time, azi, rng, lat, lon, ell_l, ell_s, ell_or,
+    vel_x, vel_y, det
+
+    """
+    file_list = glob.glob(info_path+'*.txt')
+    if not file_list:
+        warn('No info files in '+info_path)
+        return None
+
+    trt_time = np.ma.array([], dtype=datetime.datetime)
+    cell_id = np.ma.array([], dtype=int)
+    rank = np.ma.array([])
+    scan_time = np.ma.array([], dtype=datetime.datetime)
+    azi = np.ma.array([])
+    rng = np.ma.array([])
+    lat = np.ma.array([])
+    lon = np.ma.array([])
+    ell_l = np.ma.array([])
+    ell_s = np.ma.array([])
+    ell_or = np.ma.array([])
+    vel_x = np.ma.array([])
+    vel_y = np.ma.array([])
+    det = np.ma.array([])
+
+    for file in file_list:
+        (trt_time_aux, id_aux, rank_aux, scan_time_aux, azi_aux, rng_aux,
+         lat_aux, lon_aux, ell_l_aux, ell_s_aux, ell_or_aux, vel_x_aux,
+         vel_y_aux, det_aux) = read_trt_info(file)
+
+        if trt_time_aux is None:
+            continue
+
+        trt_time = np.ma.append(trt_time, trt_time_aux)
+        cell_id = np.ma.append(cell_id, id_aux)
+        rank = np.ma.append(rank, rank_aux)
+        scan_time = np.ma.append(scan_time, scan_time_aux)
+        azi = np.ma.append(azi, azi_aux)
+        rng = np.ma.append(rng, rng_aux)
+        lat = np.ma.append(lat, lat_aux)
+        lon = np.ma.append(lon, lon_aux)
+        ell_l = np.ma.append(ell_l, ell_l_aux)
+        ell_s = np.ma.append(ell_s, ell_s_aux)
+        ell_or = np.ma.append(ell_or, ell_or_aux)
+        vel_x = np.ma.append(vel_x, vel_x_aux)
+        vel_y = np.ma.append(vel_y, vel_y_aux)
+        det = np.ma.append(det, det_aux)
+
+    return (
+        trt_time, cell_id, rank, scan_time, azi, rng, lat, lon, ell_l, ell_s,
+        ell_or, vel_x, vel_y, det)
+
+
+def read_trt_info(fname):
+    """
+    Reads the TRT info used for thundertracking and contained in a text file.
+
+    Parameters
+    ----------
+    fname : str
+        path of the TRT info file
+
+    Returns
+    -------
+    A tupple containing the read values. None otherwise. The read values are
+    trt_time, id, rank, nscans, azi, rng, lat, lon, ell_l, ell_s, ell_or,
+    vel_x, vel_y, det
+
+    """
+    try:
+
+        with open(fname, 'r', newline='') as txtfile:
+            # read file contents
+            cell_id = np.array([], dtype=int)
+            azi = np.array([])
+            rng = np.array([])
+            rank = np.array([])
+            trt_time = np.array([], dtype=datetime.datetime)
+            vel_x = np.array([])
+            vel_y = np.array([])
+            ell_l = np.array([])
+            ell_s = np.array([])
+            ell_or = np.array([])
+            det = np.array([])
+            lat = np.array([])
+            lon = np.array([])
+            nscans = np.array([], dtype=int)
+
+            nscans_aux = -1
+            while 0 == 0:
+                line = txtfile.readline()
+                if not line:
+                    break
+                fields = line.split()
+
+                if fields[2] == ':TRT:':
+                    if nscans_aux != -1:
+                        nscans = np.append(nscans, nscans_aux)
+                    cell_id = np.append(cell_id, int(fields[3].split('=')[1]))
+                    azi = np.append(azi, float(fields[4].split('=')[1]))
+                    rng = np.append(rng, float(fields[5].split('=')[1]))
+                    rank = np.append(rank, float(fields[6].split('=')[1]))
+                    trt_time = np.append(
+                        trt_time,
+                        datetime.datetime.strptime(
+                            fields[7].split('=')[1], '%Y%m%d%H%M'))
+                    vel_x = np.append(vel_x, float(fields[8].split('=')[1]))
+                    vel_y = np.append(vel_y, float(fields[9].split('=')[1]))
+                    ell_l = np.append(ell_l, float(fields[10].split('=')[1]))
+                    ell_s = np.append(ell_s, float(fields[11].split('=')[1]))
+                    ell_or = np.append(
+                        ell_or, float(fields[12].split('=')[1]))
+                    det = np.append(det, float(fields[13].split('=')[1]))
+                    if np.size(fields) == 16:
+                        lat = np.append(lat, float(fields[14].split('=')[1]))
+                        lon = np.append(lon, float(fields[15].split('=')[1]))
+                    else:
+                        lat = -9999.
+                        lon = -9999.
+                    nscans_aux = 0
+                elif fields[2] == ':START':
+                    nscans_aux += 1
+
+            nscans = np.append(nscans, nscans_aux)
+            return (
+                trt_time, cell_id, rank, nscans, azi, rng, lat, lon, ell_l,
+                ell_s, ell_or, vel_x, vel_y, det)
+
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return (
+            None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None)
+
+
+def read_trt_info2(fname):
+    """
+    Reads the TRT info used for thundertracking and contained in a text file.
+
+    Parameters
+    ----------
+    fname : str
+        path of the TRT info file
+
+    Returns
+    -------
+    A tupple containing the read values. None otherwise. The read values are
+    trt_time, id, rank, scan_time, azi, rng, lat, lon, ell_l, ell_s, ell_or,
+    vel_x, vel_y, det
+
+    """
+    try:
+
+        with open(fname, 'r', newline='') as txtfile:
+            # read file contents
+            cell_id = np.ma.array([], dtype=int)
+            azi = np.ma.array([])
+            rng = np.ma.array([])
+            rank = np.ma.array([], dtype=int)
+            trt_time = np.ma.array([], dtype=datetime.datetime)
+            vel_x = np.ma.array([])
+            vel_y = np.ma.array([])
+            ell_l = np.ma.array([])
+            ell_s = np.ma.array([])
+            ell_or = np.ma.array([])
+            det = np.ma.array([])
+            lat = np.ma.array([])
+            lon = np.ma.array([])
+            scan_time = np.ma.array([], dtype=datetime.datetime)
+
+            nscans_aux = -1
+            while 0 == 0:
+                line = txtfile.readline()
+                if not line:
+                    break
+                fields = line.split()
+
+                if fields[2] == ':TRT:':
+                    cell_id_aux = int(fields[3].split('=')[1])
+                    azi_aux = float(fields[4].split('=')[1])
+                    rng_aux = float(fields[5].split('=')[1])
+                    rank_aux = int(fields[6].split('=')[1])
+                    trt_time_aux = datetime.datetime.strptime(
+                        fields[7].split('=')[1], '%Y%m%d%H%M')
+                    vel_x_aux = float(fields[8].split('=')[1])
+                    vel_y_aux = float(fields[9].split('=')[1])
+                    ell_l_aux = float(fields[10].split('=')[1])
+                    ell_s_aux = float(fields[11].split('=')[1])
+                    ell_or_aux = float(fields[12].split('=')[1])
+                    det_aux = float(fields[13].split('=')[1])
+                    if np.size(fields) == 16:
+                        lat_aux = float(fields[14].split('=')[1])
+                        lon_aux = float(fields[15].split('=')[1])
+                    else:
+                        lat_aux = np.ma.masked
+                        lon_aux = np.ma.masked
+                elif fields[2] == ':START':
+                    scan_time_aux = datetime.datetime.strptime(
+                        fields[0]+' '+fields[1], '%Y-%m-%d %H:%M:%S.%f')
+
+                    cell_id = np.ma.append(cell_id, cell_id_aux)
+                    azi = np.ma.append(azi, azi_aux)
+                    rng = np.ma.append(rng, rng_aux)
+                    rank = np.ma.append(rank, rank_aux)
+                    trt_time = np.ma.append(trt_time, trt_time_aux)
+                    vel_x = np.ma.append(vel_x, vel_x_aux)
+                    vel_y = np.ma.append(vel_y, vel_y_aux)
+                    ell_l = np.ma.append(ell_l, ell_l_aux)
+                    ell_s = np.ma.append(ell_s, ell_s_aux)
+                    ell_or = np.ma.append(ell_or, ell_or_aux)
+                    det = np.ma.append(det, det_aux)
+                    lat = np.ma.append(lat, lat_aux)
+                    lon = np.ma.append(lon, lon_aux)
+                    scan_time = np.ma.append(scan_time, scan_time_aux)
+
+            if trt_time.size == 0:
+                warn('No valid X-band scans in '+fname)
+                return (
+                    None, None, None, None, None, None, None, None, None,
+                    None, None, None, None, None)
+
+            return (
+                trt_time, cell_id, rank, scan_time, azi, rng, lat, lon, ell_l,
+                ell_s, ell_or, vel_x, vel_y, det)
+
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return (
+            None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None)
 
 
 def read_trt_scores(fname):
@@ -397,8 +976,8 @@ def read_trt_data(fname):
 
 def read_trt_traj_data(fname):
     """
-    Reads the TRT cell data contained in a text file. The file has the following
-    fields:
+    Reads the TRT cell data contained in a text file. The file has the
+    following fields:
         traj_ID
         yyyymmddHHMM
 
@@ -572,6 +1151,202 @@ def read_trt_traj_data(fname):
             None, None, None, None, None, None, None, None, None, None, None,
             None, None, None, None, None, None, None, None, None, None, None,
             None, None, None, None, None, None)
+
+
+def read_trt_thundertracking_traj_data(fname):
+    """
+    Reads the TRT cell data contained in a text file. The file has the
+    following fields:
+        traj_ID
+        scan_ordered_time
+        scan_time
+        azi
+        rng
+        yyyymmddHHMM
+
+        lon [deg]
+        lat [deg]
+        ell_L [km] long
+        ell_S [km] short
+        ell_or [deg] orientation
+        area [km2]
+
+        vel_x [km/h] cell speed
+        vel_y [km/h]
+        det [dBZ] detection threshold
+        RANKr from 0 to 40 (int)
+
+        CG- number (int)
+        CG+ number (int)
+        CG number (int)
+        %CG+ [%]
+
+        ET45  [km] echotop 45 max
+        ET45m [km] echotop 45 median
+        ET15 [km] echotop 15 max
+        ET15m [km] echotop 15 median
+        VIL [kg/m2] vertical integrated liquid content
+        maxH [km] height of maximum reflectivity (maximum on the cell)
+        maxHm [km] height of maximum reflectivity (median per cell)
+        POH [%]
+        RANK (deprecated)
+
+        Standard deviation of the current time step cell velocity respect to
+        the previous time:
+        Dvel_x [km/h]
+        Dvel_y [km/h]
+
+        cell_contour_lon-lat
+
+    Parameters
+    ----------
+    fname : str
+        path of the TRT data file
+
+    Returns
+    -------
+    A tupple containing the read values. None otherwise
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                (row for row in csvfile if (
+                    not row.startswith('#') and
+                    not row.startswith('@') and row)),
+                delimiter=',')
+            nrows = sum(1 for row in reader)
+
+            traj_ID = np.ma.masked_all(nrows, dtype=int)
+            scan_ordered_time = np.ma.masked_all(nrows, dtype=datetime.datetime)
+            scan_time = np.ma.masked_all(nrows, dtype=datetime.datetime)
+            azi = np.ma.masked_all(nrows, dtype=float)
+            rng = np.ma.masked_all(nrows, dtype=float)
+            yyyymmddHHMM = np.ma.masked_all(nrows, dtype=datetime.datetime)
+            lon = np.ma.masked_all(nrows, dtype=float)
+            lat = np.ma.masked_all(nrows, dtype=float)
+            ell_L = np.ma.masked_all(nrows, dtype=float)
+            ell_S = np.ma.masked_all(nrows, dtype=float)
+            ell_or = np.ma.masked_all(nrows, dtype=float)
+            area = np.ma.masked_all(nrows, dtype=float)
+            vel_x = np.ma.masked_all(nrows, dtype=float)
+            vel_y = np.ma.masked_all(nrows, dtype=float)
+            det = np.ma.masked_all(nrows, dtype=float)
+            RANKr = np.ma.masked_all(nrows, dtype=int)
+            CG_n = np.ma.masked_all(nrows, dtype=int)
+            CG_p = np.ma.masked_all(nrows, dtype=int)
+            CG = np.ma.masked_all(nrows, dtype=int)
+            CG_percent_p = np.ma.masked_all(nrows, dtype=float)
+            ET45 = np.ma.masked_all(nrows, dtype=float)
+            ET45m = np.ma.masked_all(nrows, dtype=float)
+            ET15 = np.ma.masked_all(nrows, dtype=float)
+            ET15m = np.ma.masked_all(nrows, dtype=float)
+            VIL = np.ma.masked_all(nrows, dtype=float)
+            maxH = np.ma.masked_all(nrows, dtype=float)
+            maxHm = np.ma.masked_all(nrows, dtype=float)
+            POH = np.ma.masked_all(nrows, dtype=float)
+            RANK = np.ma.masked_all(nrows, dtype=float)
+            Dvel_x = np.ma.masked_all(nrows, dtype=float)
+            Dvel_y = np.ma.masked_all(nrows, dtype=float)
+            cell_contour = np.ma.masked_all(nrows, dtype=dict)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                (row for row in csvfile if (
+                    not row.startswith('#') and
+                    not row.startswith('@') and row)),
+                delimiter=',')
+
+            for i, row in enumerate(reader):
+                traj_ID[i] = int(row['traj_ID'])
+                scan_ordered_time[i] = datetime.datetime.strptime(
+                    row['scan_ordered_time'].strip(), '%Y%m%d%H%M%S.%f')
+                if float(row['scan_time'].strip()) != get_fillvalue():
+                    scan_time[i] = datetime.datetime.strptime(
+                        row['scan_time'].strip(), '%Y%m%d%H%M%S')
+                azi[i] = float(row['azi'].strip())
+                rng[i] = float(row['rng'].strip())
+                yyyymmddHHMM[i] = datetime.datetime.strptime(
+                    row['yyyymmddHHMM'].strip(), '%Y%m%d%H%M')
+                lon[i] = float(row['lon'].strip())
+                lat[i] = float(row['lat'].strip())
+                ell_L[i] = float(row['ell_L'].strip())
+                ell_S[i] = float(row['ell_S'].strip())
+                ell_or[i] = float(row['ell_or'].strip())
+                area[i] = float(row['area'].strip())
+                vel_x[i] = float(row['vel_x'].strip())
+                vel_y[i] = float(row['vel_y'].strip())
+                det[i] = float(row['det'].strip())
+                RANKr[i] = int(row['RANKr'].strip())
+                CG_n[i] = int(row['CG-'].strip())
+                CG_p[i] = int(row['CG+'].strip())
+                CG[i] = int(row['CG'].strip())
+                CG_percent_p[i] = float(row['%CG+'].strip())
+                ET45[i] = float(row['ET45'].strip())
+                ET45m[i] = float(row['ET45m'].strip())
+                ET15[i] = float(row['ET15'].strip())
+                ET15m[i] = float(row['ET15m'].strip())
+                VIL[i] = float(row['VIL'].strip())
+                maxH[i] = float(row['maxH'].strip())
+                maxHm[i] = float(row['maxHm'].strip())
+                POH[i] = float(row['POH'].strip())
+                RANK[i] = float(row['RANK'].strip())
+                Dvel_x[i] = float(row['Dvel_x'].strip())
+                Dvel_y[i] = float(row['Dvel_y'].strip())
+
+                cell_contour_str_arr = row['cell_contour_lon-lat'].split()
+                cell_contour_arr = np.empty(
+                    len(cell_contour_str_arr), dtype=float)
+                for j, cell_contour_el in enumerate(cell_contour_str_arr):
+                    cell_contour_arr[j] = float(cell_contour_el)
+
+                cell_contour_dict = {
+                    'lon': cell_contour_arr[0::2],
+                    'lat': cell_contour_arr[1::2]
+                }
+                cell_contour[i] = cell_contour_dict
+
+            csvfile.close()
+
+            azi = np.ma.masked_invalid(azi)
+            rng = np.ma.masked_invalid(rng)
+            lon = np.ma.masked_invalid(lon)
+            lat = np.ma.masked_invalid(lat)
+            ell_L = np.ma.masked_invalid(ell_L)
+            ell_S = np.ma.masked_invalid(ell_S)
+            ell_or = np.ma.masked_invalid(ell_or)
+            area = np.ma.masked_invalid(area)
+            vel_x = np.ma.masked_invalid(vel_x)
+            vel_y = np.ma.masked_invalid(vel_y)
+            det = np.ma.masked_invalid(det)
+            CG_percent_p = np.ma.masked_invalid(CG_percent_p)
+            ET45 = np.ma.masked_invalid(ET45)
+            ET45m = np.ma.masked_invalid(ET45m)
+            ET15 = np.ma.masked_invalid(ET15)
+            ET15m = np.ma.masked_invalid(ET15m)
+            VIL = np.ma.masked_invalid(VIL)
+            maxH = np.ma.masked_invalid(maxH)
+            maxHm = np.ma.masked_invalid(maxHm)
+            POH = np.ma.masked_invalid(POH)
+            RANK = np.ma.masked_invalid(RANK)
+            Dvel_x = np.ma.masked_invalid(Dvel_x)
+            Dvel_y = np.ma.masked_invalid(Dvel_y)
+
+            return (
+                traj_ID, scan_ordered_time, scan_time, azi, rng, yyyymmddHHMM,
+                lon, lat, ell_L, ell_S, ell_or, area, vel_x, vel_y, det,
+                RANKr, CG_n, CG_p, CG, CG_percent_p, ET45, ET45m, ET15, ET15m,
+                VIL, maxH, maxHm, POH, RANK, Dvel_x, Dvel_y, cell_contour)
+
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return (
+            None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None, None, None)
 
 
 def read_lightning(fname, filter_data=True):
@@ -941,7 +1716,7 @@ def get_sensor_data(date, datatype, cfg):
         label = 'RG'
         period = (sensordate[1]-sensordate[0]).total_seconds()
     elif cfg['sensor'] == 'disdro':
-        if (datatype == 'dBZ') or (datatype == 'dBZc'):
+        if datatype in ('dBZ', 'dBZc'):
             sensor_datatype = 'dBZ'
         else:
             sensor_datatype = datatype

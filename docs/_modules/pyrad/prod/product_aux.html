@@ -75,6 +75,8 @@
 <span class="kn">from</span> <span class="nn">.process_vol_products</span> <span class="k">import</span> <span class="n">generate_vol_products</span>
 <span class="kn">from</span> <span class="nn">.process_grid_products</span> <span class="k">import</span> <span class="n">generate_grid_products</span>
 <span class="kn">from</span> <span class="nn">.process_grid_products</span> <span class="k">import</span> <span class="n">generate_sparse_grid_products</span>
+<span class="kn">from</span> <span class="nn">.process_grid_products</span> <span class="k">import</span> <span class="n">generate_grid_time_avg_products</span>
+<span class="kn">from</span> <span class="nn">.process_spectra_products</span> <span class="k">import</span> <span class="n">generate_spectra_products</span>
 <span class="kn">from</span> <span class="nn">.process_timeseries_products</span> <span class="k">import</span> <span class="n">generate_timeseries_products</span>
 <span class="kn">from</span> <span class="nn">.process_traj_products</span> <span class="k">import</span> <span class="n">generate_traj_product</span>
 <span class="kn">from</span> <span class="nn">.process_monitoring_products</span> <span class="k">import</span> <span class="n">generate_monitoring_products</span>
@@ -97,6 +99,8 @@
 <span class="sd">            &#39;COLOCATED_GATES&#39;: generate_colocated_gates_products</span>
 <span class="sd">            &#39;COSMO_COORD&#39;: generate_cosmo_coord_products</span>
 <span class="sd">            &#39;GRID&#39;: generate_grid_products</span>
+<span class="sd">            &#39;SPECTRA&#39;: generate_spectra_products</span>
+<span class="sd">            &#39;GRID_TIMEAVG&#39;: generate_grid_time_avg_products</span>
 <span class="sd">            &#39;INTERCOMP&#39;: generate_intercomp_products</span>
 <span class="sd">            &#39;ML&#39;: generate_ml_products</span>
 <span class="sd">            &#39;MONITORING&#39;: generate_monitoring_products</span>
@@ -121,10 +125,14 @@
         <span class="n">func</span> <span class="o">=</span> <span class="n">generate_timeseries_products</span>
     <span class="k">elif</span> <span class="n">dsformat</span> <span class="o">==</span> <span class="s1">&#39;GRID&#39;</span><span class="p">:</span>
         <span class="n">func</span> <span class="o">=</span> <span class="n">generate_grid_products</span>
+    <span class="k">elif</span> <span class="n">dsformat</span> <span class="o">==</span> <span class="s1">&#39;SPECTRA&#39;</span><span class="p">:</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="n">generate_spectra_products</span>
     <span class="k">elif</span> <span class="n">dsformat</span> <span class="o">==</span> <span class="s1">&#39;SPARSE_GRID&#39;</span><span class="p">:</span>
         <span class="n">func</span> <span class="o">=</span> <span class="n">generate_sparse_grid_products</span>
     <span class="k">elif</span> <span class="n">dsformat</span> <span class="o">==</span> <span class="s1">&#39;TIMEAVG&#39;</span><span class="p">:</span>
         <span class="n">func</span> <span class="o">=</span> <span class="n">generate_time_avg_products</span>
+    <span class="k">elif</span> <span class="n">dsformat</span> <span class="o">==</span> <span class="s1">&#39;GRID_TIMEAVG&#39;</span><span class="p">:</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="n">generate_grid_time_avg_products</span>
     <span class="k">elif</span> <span class="n">dsformat</span> <span class="o">==</span> <span class="s1">&#39;SUN_HITS&#39;</span><span class="p">:</span>
         <span class="n">func</span> <span class="o">=</span> <span class="n">generate_sun_hits_products</span>
     <span class="k">elif</span> <span class="n">dsformat</span> <span class="o">==</span> <span class="s1">&#39;MONITORING&#39;</span><span class="p">:</span>

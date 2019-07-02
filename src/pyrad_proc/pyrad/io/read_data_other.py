@@ -7,6 +7,7 @@ Functions for reading auxiliary data
 .. autosummary::
     :toctree: generated/
 
+    read_proc_periods
     read_profile_ts
     read_histogram_ts
     read_quantiles_ts
@@ -51,6 +52,48 @@ from pyart.config import get_fillvalue, get_metadata
 from .io_aux import get_fieldname_pyart, _get_datetime
 
 
+def read_proc_periods(fname):
+    """
+    Reads a file containing the start and stop times of periods to process
+
+    Parameters
+    ----------
+    fname : str
+        name of the file to read
+
+    Returns
+    -------
+    starttimes, endtimes : array of datetime objects or None
+        The start and end times of the periods to process if the reading has
+        been successful
+
+    """
+    try:
+        with open(fname, 'r', newline='') as csvfile:
+            # first count the lines
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            nrows = sum(1 for row in reader)
+            startimes = np.empty(nrows, dtype=datetime.datetime)
+            endtimes = np.empty(nrows, dtype=datetime.datetime)
+
+            # now read the data
+            csvfile.seek(0)
+            reader = csv.DictReader(
+                row for row in csvfile if not row.startswith('#'))
+            for i, row in enumerate(reader):
+                startimes[i] = datetime.datetime.strptime(
+                    row['start_time'], '%Y%m%d%H%M%S')
+                endtimes[i] = datetime.datetime.strptime(
+                    row['end_time'], '%Y%m%d%H%M%S')
+
+            return startimes, endtimes
+    except EnvironmentError as ee:
+        warn(str(ee))
+        warn('Unable to read file '+fname)
+        return None, None
+
+
 def read_profile_ts(fname_list, labels, hres=None, label_nr=0, t_res=300.):
     """
     Reads a colection of profile data file and creates a time series
@@ -71,7 +114,7 @@ def read_profile_ts(fname_list, labels, hres=None, label_nr=0, t_res=300.):
 
     Returns
     -------
-    tbin_edges, hbin_edges, np_ma, data_ma, datetime_arr[0] : tupple
+    tbin_edges, hbin_edges, np_ma, data_ma, datetime_arr : tupple
         The read data. None otherwise
 
     """
@@ -109,7 +152,7 @@ def read_profile_ts(fname_list, labels, hres=None, label_nr=0, t_res=300.):
             t_res = 300.
     tbin_edges = np.append(dt_s-t_res, dt_s[-1])
 
-    return tbin_edges, hbin_edges, np_ma, data_ma, datetime_arr[0]
+    return tbin_edges, hbin_edges, np_ma, data_ma, datetime_arr
 
 
 def read_histogram_ts(fname_list, datatype, t_res=300.):
@@ -128,7 +171,7 @@ def read_histogram_ts(fname_list, datatype, t_res=300.):
 
     Returns
     -------
-    tbin_edges, bin_edges, data_ma, datetime_arr[0] : tupple
+    tbin_edges, bin_edges, data_ma, datetime_arr : tupple
         The read data. None otherwise
 
     """
@@ -167,7 +210,7 @@ def read_histogram_ts(fname_list, datatype, t_res=300.):
             t_res = 300.
     tbin_edges = np.append(dt_s-t_res, dt_s[-1])
 
-    return tbin_edges, bin_edges, data_ma, datetime_arr[0]
+    return tbin_edges, bin_edges, data_ma, datetime_arr
 
 
 def read_quantiles_ts(fname_list, step=5., qmin=0., qmax=100., t_res=300.):
@@ -186,7 +229,7 @@ def read_quantiles_ts(fname_list, step=5., qmin=0., qmax=100., t_res=300.):
 
     Returns
     -------
-    tbin_edges, qbin_edges, data_ma, datetime_arr[0] : tupple
+    tbin_edges, qbin_edges, data_ma, datetime_arr : tupple
         The read data. None otherwise
 
     """
@@ -226,7 +269,7 @@ def read_quantiles_ts(fname_list, step=5., qmin=0., qmax=100., t_res=300.):
             t_res = 300.
     tbin_edges = np.append(dt_s-t_res, dt_s[-1])
 
-    return tbin_edges, qbin_edges, data_ma, datetime_arr[0]
+    return tbin_edges, qbin_edges, data_ma, datetime_arr
 
 
 def read_rhi_profile(fname, labels=['50.0-percentile', '25.0-percentile',
@@ -409,7 +452,7 @@ def read_rad4alp_cosmo(fname, datatype, ngates=0):
             if ngates > 0:
                 field['data'] = field['data'][:, :ngates]
             return field
-        
+
         warn('Unknown COSMO data type '+datatype)
         return None
     except EnvironmentError as ee:

@@ -26,16 +26,16 @@ function postprocessing {
 #  $5 : Set to 1, if the log file must be renamed.
 #  $6 : Appendix to log file if $5 is true.
 function dataquality {
-    if [ $6 != 0 ]; then
+    if [ $7 != 0 ]; then
         # Rename logfiles (day changed)
-        if [ -f $5 ]; then
-            mv $5 $5$7
+        if [ -f $6 ]; then
+            mv $6 $6$8
         fi
     fi
 
     # Run postproc processing
     cd ${pyradpath}
-    python -u main_process_data_birds.py $1 $2 $3 --storepath $4 >>$5 2>>$5
+    python -u main_process_data_birds.py $1 $2 $3 -i $4 --storepath $5 >>$6 2>>$6
 }
 
 # set permits
@@ -84,7 +84,7 @@ echo "END TIME OF DATA TO BE PROCESSED "${END_TIME}000000
 CONFIGFILE=rad4alp_birds_PH${RADAR}.txt
 LOGFILE=/srn/scratch/log/rad4alp_pyrad_birds_PH${RADAR}.log
 STOREPATH=/srn/analysis/pyrad_products/rad4alp_birds_PH${RADAR}/
-dataquality $CONFIGFILE  ${START_TIME}000001 ${END_TIME}000000 $STOREPATH $LOGFILE $RENAME_LOGFILES $LOG_APPENDIX
+dataquality $CONFIGFILE  ${START_TIME}000001 ${END_TIME}000000 ${RADAR} $STOREPATH $LOGFILE $RENAME_LOGFILES $LOG_APPENDIX
 
 # Transfer data to Vogelwarte
 cd $STOREPATH

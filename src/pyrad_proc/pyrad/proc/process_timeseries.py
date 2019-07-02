@@ -94,7 +94,7 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
         # prepare for exit
         new_dataset = {
             'time': dscfg['global_data']['time'],
-            'datatype': 'RR',
+            'datatype': datatype,
             'point_coordinates_WGS84_lon_lat_alt': (
                 dscfg['global_data']['point_coordinates_WGS84_lon_lat_alt']),
             'antenna_coordinates_az_el_r': (
@@ -148,8 +148,10 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
         az = dscfg['azi']
         el = dscfg['ele']
 
-        x, y, alt = pyart.core.antenna_to_cartesian(r, az, el)
+        x, y, alt = pyart.core.antenna_to_cartesian(r/1000., az, el)
         lon, lat = pyart.core.cartesian_to_geographic(x, y, projparams)
+        lon = lon[0]
+        lat = lat[0]
 
     d_az = np.min(np.abs(radar.azimuth['data'] - az))
     if d_az > dscfg['AziTol']:

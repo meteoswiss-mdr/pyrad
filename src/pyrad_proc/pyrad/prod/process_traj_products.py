@@ -15,7 +15,7 @@ from warnings import warn
 
 from ..io.io_aux import get_save_dir, make_filename
 from ..io.timeseries import TimeSeries
-from ..graph.plots_vol import plot_pos
+from ..graph.plots import plot_pos
 
 
 def generate_traj_product(traj, prdcfg):

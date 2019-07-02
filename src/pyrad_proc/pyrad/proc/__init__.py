@@ -17,9 +17,46 @@ Auxiliary functions
     process_raw
     process_save_radar
     process_fixed_rng
+    process_fixed_rng_span
     process_roi
-    process_grid
     process_azimuthal_average
+
+Gridded data functions
+======================
+
+.. autosummary::
+    :toctree: generated/
+
+    process_raw_grid
+    process_grid
+    process_grid_point
+    process_grid_time_stats
+    process_grid_time_stats2
+
+Spectral data functions
+=======================
+
+.. autosummary::
+    :toctree: generated/
+
+    process_raw_spectra
+    process_spectra_point
+    process_filter_0Doppler
+    process_filter_spectra_noise
+    process_filter_srhohv
+    process_spectral_power
+    process_spectral_phase
+    process_spectral_reflectivity
+    process_spectral_differential_reflectivity
+    process_spectral_differential_phase
+    process_spectral_rhohv
+    process_pol_variables
+    process_reflectivity
+    process_differential_reflectivity
+    process_differential_phase
+    process_rhohv
+    process_Doppler_velocity
+    process_Doppler_width
 
 Echo classification and filtering
 =================================
@@ -80,6 +117,8 @@ Monitoring, calibration and noise correction
     process_time_avg
     process_weighted_time_avg
     process_time_avg_flag
+    process_time_stats
+    process_time_stats2
     process_colocated_gates
     process_intercomp
     process_intercomp_time_avg
@@ -97,6 +136,7 @@ Retrievals
     process_l
     process_cdr
     process_rainrate
+    process_rainfall_accumulation
     process_vol_refl
     process_bird_density
 
@@ -152,11 +192,37 @@ COSMO data
     process_hzt_coord
 
 
+DEM data
+==========
+
+.. autosummary::
+    :toctree: generated/
+
+    process_dem
+    process_visibility
+
 """
 
 from .process_aux import get_process_func, process_raw, process_save_radar
-from .process_aux import process_grid, process_roi, process_azimuthal_average
-from .process_aux import process_fixed_rng
+from .process_aux import process_roi, process_azimuthal_average
+from .process_aux import process_fixed_rng, process_fixed_rng_span
+
+from .process_grid import process_grid, process_raw_grid, process_grid_point
+from .process_grid import process_grid_time_stats, process_grid_time_stats2
+
+from .process_spectra import process_raw_spectra, process_spectral_power
+from .process_spectra import process_spectra_point, process_spectral_phase
+from .process_spectra import process_spectral_reflectivity
+from .process_spectra import process_spectral_differential_reflectivity
+from .process_spectra import process_spectral_differential_phase
+from .process_spectra import process_spectral_rhohv, process_filter_0Doppler
+from .process_spectra import process_filter_spectra_noise
+from .process_spectra import process_filter_srhohv
+from .process_spectra import process_pol_variables, process_reflectivity
+from .process_spectra import process_differential_reflectivity
+from .process_spectra import process_differential_phase
+from .process_spectra import process_rhohv, process_Doppler_velocity
+from .process_spectra import process_Doppler_width
 
 from .process_timeseries import process_point_measurement, process_qvp
 from .process_timeseries import process_rqvp, process_evp, process_svp
@@ -189,8 +255,8 @@ from .process_calib import process_gc_monitoring, process_sun_hits
 from .process_calib import process_time_avg_std
 
 from .process_intercomp import process_time_avg, process_weighted_time_avg
-from .process_intercomp import process_time_avg_flag
-from .process_intercomp import process_colocated_gates
+from .process_intercomp import process_time_avg_flag, process_time_stats
+from .process_intercomp import process_colocated_gates, process_time_stats2
 from .process_intercomp import process_intercomp, process_intercomp_time_avg
 
 from .process_monitoring import process_zdr_snow, process_zdr_precip
@@ -202,7 +268,7 @@ from .process_monitoring import process_monitoring
 from .process_retrieve import process_signal_power, process_snr
 from .process_retrieve import process_l, process_cdr, process_bird_density
 from .process_retrieve import process_rainrate, process_vol_refl, process_rcs
-from .process_retrieve import process_rcs_pr
+from .process_retrieve import process_rcs_pr, process_rainfall_accumulation
 
 from .process_Doppler import process_wind_vel, process_windshear
 from .process_Doppler import process_dealias_fourdd
@@ -213,5 +279,7 @@ from .process_Doppler import process_vad
 from .process_cosmo import process_cosmo, process_cosmo_lookup_table
 from .process_cosmo import process_cosmo_coord, process_hzt
 from .process_cosmo import process_hzt_lookup_table, process_hzt_coord
+
+from .process_dem import process_dem, process_visibility
 
 __all__ = [s for s in dir() if not s.startswith('_')]

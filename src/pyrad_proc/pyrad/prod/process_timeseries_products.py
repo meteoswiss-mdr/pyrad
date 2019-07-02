@@ -24,6 +24,7 @@ from ..io.read_data_sensor import get_sensor_data
 from ..io.read_data_other import read_timeseries
 
 from ..io.write_data import write_ts_polar_data, write_ts_cum
+from ..io.write_data import write_ts_grid_data
 
 from ..graph.plots_timeseries import plot_timeseries, plot_timeseries_comp
 from ..graph.plots_vol import plot_cappi, plot_traj
@@ -178,24 +179,43 @@ def generate_timeseries_products(dataset, prdcfg):
             return None
 
         dpi = prdcfg.get('dpi', 72)
+        set_time_info = prdcfg.get('set_time_info', 1)
 
-        az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
-        el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
-        r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
-        gateinfo = ('az'+az+'r'+r+'el'+el)
+        if 'antenna_coordinates_az_el_r' in dataset:
+            az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
+            el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
+            r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
+            gateinfo = ('az'+az+'r'+r+'el'+el)
+        else:
+            lon = '{:.3f}'.format(
+                dataset['point_coordinates_WGS84_lon_lat_alt'][0])
+            lat = '{:.3f}'.format(
+                dataset['point_coordinates_WGS84_lon_lat_alt'][1])
+            alt = '{:.1f}'.format(
+                dataset['point_coordinates_WGS84_lon_lat_alt'][2])
+            gateinfo = ('lon'+lon+'lat'+lat+'alt'+alt)
+
+        timeinfo = None
+        timeformat = None
+        if set_time_info:
+            timeinfo = prdcfg['timeinfo']
+            timeformat = '%Y%m%d'
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdsavedir, timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=timeinfo)
 
         csvfname = make_filename(
             'ts', prdcfg['dstype'], dataset['datatype'], ['csv'],
-            prdcfginfo=gateinfo, timeinfo=prdcfg['timeinfo'],
-            timeformat='%Y%m%d')[0]
+            prdcfginfo=gateinfo, timeinfo=timeinfo,
+            timeformat=timeformat)[0]
 
         csvfname = savedir+csvfname
 
-        write_ts_polar_data(dataset, csvfname)
+        if 'antenna_coordinates_az_el_r' in dataset:
+            write_ts_polar_data(dataset, csvfname)
+        else:
+            write_ts_grid_data(dataset, csvfname)
         print('saved CSV file: '+csvfname)
 
         date, value = read_timeseries(csvfname)
@@ -208,15 +228,22 @@ def generate_timeseries_products(dataset, prdcfg):
         vmin = prdcfg.get('vmin', None)
         vmax = prdcfg.get('vmax', None)
 
+        timeinfo_fig = None
+        if set_time_info:
+            timeinfo_fig = date[0]
+
         figfname_list = make_filename(
             'ts', prdcfg['dstype'], dataset['datatype'],
             prdcfg['imgformat'], prdcfginfo=gateinfo,
-            timeinfo=date[0], timeformat='%Y%m%d')
+            timeinfo=timeinfo_fig, timeformat=timeformat)
 
         for i, figfname in enumerate(figfname_list):
             figfname_list[i] = savedir+figfname
 
-        label1 = 'Radar (az, el, r): ('+az+', '+el+', '+r+')'
+        if 'antenna_coordinates_az_el_r' in dataset:
+            label1 = 'Radar (az, el, r): ('+az+', '+el+', '+r+')'
+        else:
+            label1 = 'Grid (lon, lat, alt): ('+lon+', '+lat+', '+alt+')'
         titl = ('Time Series '+date[0].strftime('%Y-%m-%d'))
 
         labely = generate_field_name_str(dataset['datatype'])
@@ -237,10 +264,19 @@ def generate_timeseries_products(dataset, prdcfg):
         vmin = prdcfg.get('vmin', None)
         vmax = prdcfg.get('vmax', None)
 
-        az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
-        el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
-        r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
-        gateinfo = ('az'+az+'r'+r+'el'+el)
+        if 'antenna_coordinates_az_el_r' in dataset:
+            az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
+            el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
+            r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
+            gateinfo = ('az'+az+'r'+r+'el'+el)
+        else:
+            lon = '{:.3f}'.format(
+                dataset['point_coordinates_WGS84_lon_lat_alt'][0])
+            lat = '{:.3f}'.format(
+                dataset['point_coordinates_WGS84_lon_lat_alt'][1])
+            alt = '{:.1f}'.format(
+                dataset['point_coordinates_WGS84_lon_lat_alt'][2])
+            gateinfo = ('lon'+lon+'lat'+lat+'alt'+alt)
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -268,7 +304,10 @@ def generate_timeseries_products(dataset, prdcfg):
         for i, figfname in enumerate(figfname_list):
             figfname_list[i] = savedir+figfname
 
-        label1 = 'Radar (az, el, r): ('+az+', '+el+', '+r+')'
+        if 'antenna_coordinates_az_el_r' in dataset:
+            label1 = 'Radar (az, el, r): ('+az+', '+el+', '+r+')'
+        else:
+            label1 = 'Grid (lon, lat, alt): ('+lon+', '+lat+', '+alt+')'
         titl = ('Time Series Acc. '+date[0].strftime('%Y-%m-%d'))
 
         labely = 'Radar estimated rainfall accumulation (mm)'
@@ -288,10 +327,19 @@ def generate_timeseries_products(dataset, prdcfg):
 
         dpi = prdcfg.get('dpi', 72)
 
-        az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
-        el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
-        r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
-        gateinfo = ('az'+az+'r'+r+'el'+el)
+        if 'antenna_coordinates_az_el_r' in dataset:
+            az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
+            el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
+            r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
+            gateinfo = ('az'+az+'r'+r+'el'+el)
+        else:
+            lon = '{:.3f}'.format(
+                dataset['point_coordinates_WGS84_lon_lat_alt'][0])
+            lat = '{:.3f}'.format(
+                dataset['point_coordinates_WGS84_lon_lat_alt'][1])
+            alt = '{:.1f}'.format(
+                dataset['point_coordinates_WGS84_lon_lat_alt'][2])
+            gateinfo = ('lon'+lon+'lat'+lat+'alt'+alt)
 
         savedir_ts = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -334,7 +382,10 @@ def generate_timeseries_products(dataset, prdcfg):
         for i, figfname in enumerate(figfname_list):
             figfname_list[i] = savedir+figfname
 
-        label1 = 'Radar (az, el, r): ('+az+', '+el+', '+r+')'
+        if 'antenna_coordinates_az_el_r' in dataset:
+            label1 = 'Radar (az, el, r): ('+az+', '+el+', '+r+')'
+        else:
+            label1 = 'Grid (lon, lat, alt): ('+lon+', '+lat+', '+alt+')'
         label2 = sensortype+' '+prdcfg['sensorid']
         titl = 'Time Series Comp. '+radardate[0].strftime('%Y-%m-%d')
         labely = generate_field_name_str(dataset['datatype'])
@@ -353,10 +404,19 @@ def generate_timeseries_products(dataset, prdcfg):
 
         dpi = prdcfg.get('dpi', 72)
 
-        az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
-        el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
-        r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
-        gateinfo = ('az'+az+'r'+r+'el'+el)
+        if 'antenna_coordinates_az_el_r' in dataset:
+            az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
+            el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
+            r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
+            gateinfo = ('az'+az+'r'+r+'el'+el)
+        else:
+            lon = '{:.3f}'.format(
+                dataset['point_coordinates_WGS84_lon_lat_alt'][0])
+            lat = '{:.3f}'.format(
+                dataset['point_coordinates_WGS84_lon_lat_alt'][1])
+            alt = '{:.1f}'.format(
+                dataset['point_coordinates_WGS84_lon_lat_alt'][2])
+            gateinfo = ('lon'+lon+'lat'+lat+'alt'+alt)
 
         savedir_ts = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -399,7 +459,10 @@ def generate_timeseries_products(dataset, prdcfg):
         for i, figfname in enumerate(figfname_list):
             figfname_list[i] = savedir+figfname
 
-        label1 = 'Radar (az, el, r): ('+az+', '+el+', '+r+')'
+        if 'antenna_coordinates_az_el_r' in dataset:
+            label1 = 'Radar (az, el, r): ('+az+', '+el+', '+r+')'
+        else:
+            label1 = 'Grid (lon, lat, alt): ('+lon+', '+lat+', '+alt+')'
         label2 = sensortype+' '+prdcfg['sensorid']
         titl = ('Time Series Acc. Comp. ' +
                 radardate[0].strftime('%Y-%m-%d'))

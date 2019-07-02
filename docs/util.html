@@ -97,35 +97,35 @@
 <tr class="row-even"><td><a class="reference internal" href="#pyrad.util.time_series_statistics" title="pyrad.util.time_series_statistics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_series_statistics</span></code></a>(t_in_vec,&nbsp;val_in_vec)</td>
 <td>Computes statistics over a time-averaged series.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.join_time_series" title="pyrad.util.join_time_series"><code class="xref py py-obj docutils literal notranslate"><span class="pre">join_time_series</span></code></a>(t1,&nbsp;val1,&nbsp;t2,&nbsp;val2[,&nbsp;dropnan])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.find_contiguous_times" title="pyrad.util.find_contiguous_times"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_contiguous_times</span></code></a>(times[,&nbsp;step])</td>
+<td>Given and array of ordered times, find those contiguous according to a maximum time step</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.join_time_series" title="pyrad.util.join_time_series"><code class="xref py py-obj docutils literal notranslate"><span class="pre">join_time_series</span></code></a>(t1,&nbsp;val1,&nbsp;t2,&nbsp;val2[,&nbsp;dropnan])</td>
 <td>joins time_series.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.get_range_bins_to_avg" title="pyrad.util.get_range_bins_to_avg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_range_bins_to_avg</span></code></a>(rad1_rng,&nbsp;rad2_rng)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.get_range_bins_to_avg" title="pyrad.util.get_range_bins_to_avg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_range_bins_to_avg</span></code></a>(rad1_rng,&nbsp;rad2_rng)</td>
 <td>Compares the resolution of two radars and determines if and which radar has to be averaged and the length of the averaging window</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.find_ray_index" title="pyrad.util.find_ray_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_ray_index</span></code></a>(ele_vec,&nbsp;azi_vec,&nbsp;ele,&nbsp;azi[,&nbsp;…])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.find_ray_index" title="pyrad.util.find_ray_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_ray_index</span></code></a>(ele_vec,&nbsp;azi_vec,&nbsp;ele,&nbsp;azi[,&nbsp;…])</td>
 <td>Find the ray index corresponding to a particular elevation and azimuth</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.find_rng_index" title="pyrad.util.find_rng_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_rng_index</span></code></a>(rng_vec,&nbsp;rng[,&nbsp;rng_tol])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.find_rng_index" title="pyrad.util.find_rng_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_rng_index</span></code></a>(rng_vec,&nbsp;rng[,&nbsp;rng_tol])</td>
 <td>Find the range index corresponding to a particular range</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.find_nearest_gate" title="pyrad.util.find_nearest_gate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_nearest_gate</span></code></a>(radar,&nbsp;lat,&nbsp;lon[,&nbsp;latlon_tol])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.find_nearest_gate" title="pyrad.util.find_nearest_gate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_nearest_gate</span></code></a>(radar,&nbsp;lat,&nbsp;lon[,&nbsp;latlon_tol])</td>
 <td>Find the radar gate closest to a lat,lon point</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.find_neighbour_gates" title="pyrad.util.find_neighbour_gates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_neighbour_gates</span></code></a>(radar,&nbsp;azi,&nbsp;rng[,&nbsp;…])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.find_neighbour_gates" title="pyrad.util.find_neighbour_gates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_neighbour_gates</span></code></a>(radar,&nbsp;azi,&nbsp;rng[,&nbsp;…])</td>
 <td>Find the neighbouring gates within +-delta_azi and +-delta_rng</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.find_colocated_indexes" title="pyrad.util.find_colocated_indexes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_colocated_indexes</span></code></a>(radar1,&nbsp;radar2,&nbsp;…)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.find_colocated_indexes" title="pyrad.util.find_colocated_indexes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_colocated_indexes</span></code></a>(radar1,&nbsp;radar2,&nbsp;…)</td>
 <td>Given the theoretical elevation, azimuth and range of the co-located gates of two radars and a given tolerance returns the indices of the gates for the current radars</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.get_target_elevations" title="pyrad.util.get_target_elevations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_target_elevations</span></code></a>(radar_in)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.get_target_elevations" title="pyrad.util.get_target_elevations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_target_elevations</span></code></a>(radar_in)</td>
 <td>Gets RHI target elevations</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.get_fixed_rng_data" title="pyrad.util.get_fixed_rng_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_fixed_rng_data</span></code></a>(radar,&nbsp;field_names,&nbsp;fixed_rng)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.get_fixed_rng_data" title="pyrad.util.get_fixed_rng_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_fixed_rng_data</span></code></a>(radar,&nbsp;field_names,&nbsp;fixed_rng)</td>
 <td>Creates a 2D-grid with (azi, ele) data at a fixed range</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.get_fixed_rng_span_data" title="pyrad.util.get_fixed_rng_span_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_fixed_rng_span_data</span></code></a>(radar,&nbsp;field_names)</td>
-<td>Creates a 2D-grid with (azi, ele) data representing a user-defined statistic over a fixed range span</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.time_avg_range" title="pyrad.util.time_avg_range"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_avg_range</span></code></a>(timeinfo,&nbsp;avg_starttime,&nbsp;…)</td>
 <td>finds the new start and end time of an averaging</td>
@@ -700,6 +700,36 @@ the current radars</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="pyrad.util.find_contiguous_times">
+<code class="descclassname">pyrad.util.</code><code class="descname">find_contiguous_times</code><span class="sig-paren">(</span><em>times</em>, <em>step=600</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#find_contiguous_times"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.find_contiguous_times" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given and array of ordered times, find those contiguous according to
+a maximum time step</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>times</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of datetimes</span></dt>
+<dd><p class="first last">The array of times</p>
+</dd>
+<dt><strong>step</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The time step [s]</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>start_times, end_times</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of date times</span></dt>
+<dd><p class="first last">The start and end of each consecutive time period</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="pyrad.util.find_nearest_gate">
 <code class="descclassname">pyrad.util.</code><code class="descname">find_nearest_gate</code><span class="sig-paren">(</span><em>radar</em>, <em>lat</em>, <em>lon</em>, <em>latlon_tol=0.0005</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#find_nearest_gate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.find_nearest_gate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the radar gate closest to a lat,lon point</p>
@@ -1059,44 +1089,6 @@ tolerance. azi: nearest azimuth, ele: nearest elevation</p>
 </dd>
 <dt><strong>rng_tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
 <dd><p class="first last">The tolerance between the nominal range and the actual radar range [m]</p>
-</dd>
-<dt><strong>ele_min, ele_max, azi_min, azi_max</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
-<dd><p class="first last">The limits of the grid [deg]. If None the limits will be the limits
-of the radar volume</p>
-</dd>
-</dl>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>radar</strong> <span class="classifier-delimiter">:</span> <span class="classifier">radar object</span></dt>
-<dd><p class="first last">The radar object containing only the desired data</p>
-</dd>
-</dl>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="pyrad.util.get_fixed_rng_span_data">
-<code class="descclassname">pyrad.util.</code><code class="descname">get_fixed_rng_span_data</code><span class="sig-paren">(</span><em>radar</em>, <em>field_names</em>, <em>rmin=None</em>, <em>rmax=None</em>, <em>ele_min=None</em>, <em>ele_max=None</em>, <em>azi_min=None</em>, <em>azi_max=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/radar_utils.html#get_fixed_rng_span_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.get_fixed_rng_span_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a 2D-grid with (azi, ele) data representing a user-defined
-statistic over a fixed range span</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>radar</strong> <span class="classifier-delimiter">:</span> <span class="classifier">radar object</span></dt>
-<dd><p class="first last">The radar object containing the data</p>
-</dd>
-<dt><strong>field_name</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd><p class="first last">The field name</p>
-</dd>
-<dt><strong>rmin, rmax</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd><p class="first last">The range limits [m]. If None the entire coverage of the radar is
-going to be used</p>
 </dd>
 <dt><strong>ele_min, ele_max, azi_min, azi_max</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
 <dd><p class="first last">The limits of the grid [deg]. If None the limits will be the limits

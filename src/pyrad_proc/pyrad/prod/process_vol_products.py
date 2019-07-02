@@ -22,6 +22,7 @@ from ..io.io_aux import get_save_dir, make_filename, get_fieldname_pyart
 
 from ..io.write_data import write_cdf, write_rhi_profile, write_field_coverage
 from ..io.write_data import write_last_state, write_histogram, write_quantiles
+from ..io.write_data import write_fixed_angle
 
 from ..graph.plots_vol import plot_ppi, plot_ppi_map, plot_rhi, plot_cappi
 from ..graph.plots_vol import plot_bscope, plot_rhi_profile, plot_along_coord
@@ -116,6 +117,9 @@ def generate_vol_products(dataset, prdcfg):
                 ele_res, azi_res: float or None
                     The resolution of the fixed grid [deg]. If None it will be
                     obtained from the separation between angles
+                vmin, vmax : float or None
+                    Min and Max values of the color scale. If None the values
+                    are taken from the Py-ART config file
         'FIXED_RNG_SPAN_IMAGE': Plots a user-defined statistic over a fixed
             range image
             User defined parameters:
@@ -455,6 +459,8 @@ def generate_vol_products(dataset, prdcfg):
                     The compression options allowed by the hdf5. Depends on
                     the type of compression. Default 6 (The gzip compression
                     level).
+        'SAVE_FIXED_ANGLE': Saves the position of the first fix angle in a
+            csv file
         'TIME_RANGE': Plots a time-range plot
             User defined parameters:
                 anglenr: float
@@ -523,7 +529,7 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'ppi', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -562,7 +568,7 @@ def generate_vol_products(dataset, prdcfg):
                 'ppi', prdcfg['dstype'], prdcfg['voltype'],
                 prdcfg['imgformat'],
                 prdcfginfo='el'+'{:.1f}'.format(prdcfg['angle']),
-                timeinfo=prdcfg['timeinfo'])
+                timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
             for i, fname in enumerate(fname_list):
                 fname_list[i] = savedir+fname
@@ -611,7 +617,7 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'ppi_map', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -655,7 +661,7 @@ def generate_vol_products(dataset, prdcfg):
             'ppi', prdcfg['dstype'],
             prdcfg['voltype']+'-'+prdcfg['contourtype'],
             prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -711,7 +717,7 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfg['voltype']+'-'+prdcfg['contourtype'],
                 prdcfg['imgformat'],
                 prdcfginfo='el'+'{:.1f}'.format(prdcfg['angle']),
-                timeinfo=prdcfg['timeinfo'])
+                timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
             for i, fname in enumerate(fname_list):
                 fname_list[i] = savedir+fname
@@ -760,7 +766,7 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'ppi', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -797,7 +803,7 @@ def generate_vol_products(dataset, prdcfg):
                 'ppi', prdcfg['dstype'], prdcfg['voltype'],
                 prdcfg['imgformat'],
                 prdcfginfo='el'+'{:.1f}'.format(prdcfg['angle']),
-                timeinfo=prdcfg['timeinfo'])
+                timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
             for i, fname in enumerate(fname_list):
                 fname_list[i] = savedir+fname
@@ -836,7 +842,7 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'rhi', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='az'+'{:.1f}'.format(az),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -873,7 +879,7 @@ def generate_vol_products(dataset, prdcfg):
                 'rhi', prdcfg['dstype'], prdcfg['voltype'],
                 prdcfg['imgformat'],
                 prdcfginfo='az'+'{:.1f}'.format(prdcfg['angle']),
-                timeinfo=prdcfg['timeinfo'])
+                timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
             for i, fname in enumerate(fname_list):
                 fname_list[i] = savedir+fname
@@ -926,7 +932,7 @@ def generate_vol_products(dataset, prdcfg):
             'rhi', prdcfg['dstype'],
             prdcfg['voltype']+'-'+prdcfg['contourtype'],
             prdcfg['imgformat'], prdcfginfo='az'+'{:.1f}'.format(az),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -979,7 +985,7 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfg['voltype']+'-'+prdcfg['contourtype'],
                 prdcfg['imgformat'],
                 prdcfginfo='az'+'{:.1f}'.format(prdcfg['angle']),
-                timeinfo=prdcfg['timeinfo'])
+                timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
             for i, fname in enumerate(fname_list):
                 fname_list[i] = savedir+fname
@@ -1029,7 +1035,7 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'rhi', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo='az'+'{:.1f}'.format(az),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -1066,7 +1072,7 @@ def generate_vol_products(dataset, prdcfg):
                 'rhi', prdcfg['dstype'], prdcfg['voltype'],
                 prdcfg['imgformat'],
                 prdcfginfo='az'+'{:.1f}'.format(prdcfg['angle']),
-                timeinfo=prdcfg['timeinfo'])
+                timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
             for i, fname in enumerate(fname_list):
                 fname_list[i] = savedir+fname
@@ -1191,7 +1197,7 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], prdcfginfo=prdcfginfo,
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -1206,7 +1212,7 @@ def generate_vol_products(dataset, prdcfg):
         fname = make_filename(
             'rhi_profile', prdcfg['dstype'], prdcfg['voltype'],
             ['csv'], prdcfginfo=prdcfginfo,
-            timeinfo=prdcfg['timeinfo'])[0]
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])[0]
 
         fname = savedir+fname
 
@@ -1244,7 +1250,7 @@ def generate_vol_products(dataset, prdcfg):
 
         # mask unclassified data
         field = deepcopy(dataset['radar_out'].fields[field_name]['data'])
-        if prdcfg['voltype'] == 'hydro':
+        if prdcfg['voltype'] in ('hydro', 'hydroc'):
             field = np.ma.masked_equal(field, 1)
 
         # user defined parameters
@@ -1710,7 +1716,7 @@ def generate_vol_products(dataset, prdcfg):
                 'ppi', prdcfg['dstype'], prdcfg['voltype'],
                 prdcfg['imgformat'],
                 prdcfginfo='el'+'{:.1f}'.format(prdcfg['angle']),
-                timeinfo=prdcfg['timeinfo'])
+                timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
             for i, fname in enumerate(fname_list):
                 fname_list[i] = savedir+fname
@@ -1744,7 +1750,7 @@ def generate_vol_products(dataset, prdcfg):
             'cappi', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
             prdcfginfo='alt'+'{:.1f}'.format(prdcfg['altitude']),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -1769,6 +1775,8 @@ def generate_vol_products(dataset, prdcfg):
         ang_tol = prdcfg.get('AngTol', 1.)
         azi_res = prdcfg.get('azi_res', None)
         ele_res = prdcfg.get('ele_res', None)
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -1779,14 +1787,15 @@ def generate_vol_products(dataset, prdcfg):
             prdcfg['imgformat'],
             prdcfginfo='rng'+'{:.1f}'.format(
                 dataset['radar_out'].range['data'][0]),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
         plot_fixed_rng(
             dataset['radar_out'], field_name, prdcfg, fname_list,
-            azi_res=azi_res, ele_res=ele_res, ang_tol=ang_tol)
+            azi_res=azi_res, ele_res=ele_res, ang_tol=ang_tol, vmin=vmin,
+            vmax=vmax)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -1817,7 +1826,7 @@ def generate_vol_products(dataset, prdcfg):
             prdcfginfo='rng' +
             '{:.1f}'.format(dataset['radar_out'].range['data'][0])+'-' +
             '{:.1f}'.format(dataset['radar_out'].range['data'][-1]),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -1933,7 +1942,8 @@ def generate_vol_products(dataset, prdcfg):
 
         fname_list = make_filename(
             prdcfg['mode'], prdcfg['dstype'], prdcfg['voltype'],
-            prdcfg['imgformat'], timeinfo=prdcfg['timeinfo'])
+            prdcfg['imgformat'], timeinfo=prdcfg['timeinfo'],
+            runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -1968,7 +1978,7 @@ def generate_vol_products(dataset, prdcfg):
             'b-scope', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
             prdcfginfo='ang'+'{:.1f}'.format(ang),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -2001,7 +2011,7 @@ def generate_vol_products(dataset, prdcfg):
             'time-range', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
             prdcfginfo='ang'+'{:.1f}'.format(ang),
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -2080,7 +2090,7 @@ def generate_vol_products(dataset, prdcfg):
 
         # mask unclassified data
         field = deepcopy(dataset['radar_out'].fields[field_name]['data'])
-        if prdcfg['voltype'] == 'hydro':
+        if prdcfg['voltype'] in ('hydro', 'hydroc'):
             field = np.ma.masked_equal(field, 1)
 
         # user defined variables
@@ -2242,7 +2252,7 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'coverage', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -2262,7 +2272,8 @@ def generate_vol_products(dataset, prdcfg):
 
         fname = make_filename(
             'coverage', prdcfg['dstype'], prdcfg['voltype'],
-            ['csv'], timeinfo=prdcfg['timeinfo'])[0]
+            ['csv'], timeinfo=prdcfg['timeinfo'],
+            runinfo=prdcfg['runinfo'])[0]
 
         fname = savedir+fname
 
@@ -2408,7 +2419,7 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = make_filename(
             'cdf', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'],
-            timeinfo=prdcfg['timeinfo'])
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
@@ -2430,7 +2441,8 @@ def generate_vol_products(dataset, prdcfg):
         # store cdf values
         fname = make_filename(
             'cdf', prdcfg['dstype'], prdcfg['voltype'],
-            ['txt'], timeinfo=prdcfg['timeinfo'])[0]
+            ['txt'], timeinfo=prdcfg['timeinfo'],
+            runinfo=prdcfg['runinfo'])[0]
 
         fname = savedir+fname
 
@@ -2560,6 +2572,35 @@ def generate_vol_products(dataset, prdcfg):
         print('saved file: '+prdcfg['lastStateFile'])
 
         return prdcfg['lastStateFile']
+
+    if prdcfg['type'] == 'SAVE_FIXED_ANGLE':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=None)
+
+        fname = make_filename(
+            'ts', prdcfg['dstype'], 'fixed_angle', ['csv'],
+            timeinfo=None, runinfo=prdcfg['runinfo'])[0]
+
+        fname = savedir+fname
+
+        write_fixed_angle(
+            prdcfg['timeinfo'], dataset['radar_out'].fixed_angle['data'][0],
+            dataset['radar_out'].latitude['data'][0],
+            dataset['radar_out'].longitude['data'][0],
+            dataset['radar_out'].altitude['data'][0],
+            fname)
+        print('saved file: '+fname)
+
+        return fname
 
     warn(' Unsupported product type: ' + prdcfg['type'])
     return None

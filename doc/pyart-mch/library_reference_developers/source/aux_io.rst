@@ -43,6 +43,13 @@
    :special-members:
    :inherited-members:
    :show-inheritance:
+.. automodule:: pyart.aux_io.metranet_cartesian_reader
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
 .. automodule:: pyart.aux_io.metranet_reader
    :members:
    :undoc-members:
@@ -64,6 +71,13 @@
    :special-members:
    :inherited-members:
    :show-inheritance:
+.. automodule:: pyart.aux_io.odim_h5_writer
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
 .. automodule:: pyart.aux_io.pattern
    :members:
    :undoc-members:
@@ -71,7 +85,28 @@
    :special-members:
    :inherited-members:
    :show-inheritance:
+.. automodule:: pyart.aux_io.rad4alp_bin_reader
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
+.. automodule:: pyart.aux_io.rad4alp_gif_reader
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
 .. automodule:: pyart.aux_io.radx
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
+.. automodule:: pyart.aux_io.rainbow_psr
    :members:
    :undoc-members:
    :private-members:

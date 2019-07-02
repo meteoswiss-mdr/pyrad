@@ -123,7 +123,8 @@
 <span class="sd">    trajfile : str</span>
 <span class="sd">        path to file describing the trajectory</span>
 <span class="sd">    trajtype : str</span>
-<span class="sd">        type of trajectory file. Can be either &#39;plane&#39; or &#39;lightning&#39;</span>
+<span class="sd">        type of trajectory file. Can be either &#39;plane&#39;, &#39;lightning&#39; or</span>
+<span class="sd">        &#39;proc_periods&#39;</span>
 <span class="sd">    flashnr : int</span>
 <span class="sd">        If larger than 0 will select a flash in a lightning trajectory file.</span>
 <span class="sd">        If 0 the data corresponding to the trajectory of all flashes will be</span>
@@ -181,7 +182,7 @@
     <span class="n">cfg</span> <span class="o">=</span> <span class="n">_create_cfg_dict</span><span class="p">(</span><span class="n">cfgfile</span><span class="p">)</span>
     <span class="n">datacfg</span> <span class="o">=</span> <span class="n">_create_datacfg_dict</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
 
-    <span class="n">starttime</span><span class="p">,</span> <span class="n">endtime</span><span class="p">,</span> <span class="n">traj</span> <span class="o">=</span> <span class="n">_get_times_and_traj</span><span class="p">(</span>
+    <span class="n">starttimes</span><span class="p">,</span> <span class="n">endtimes</span><span class="p">,</span> <span class="n">traj</span> <span class="o">=</span> <span class="n">_get_times_and_traj</span><span class="p">(</span>
         <span class="n">trajfile</span><span class="p">,</span> <span class="n">starttime</span><span class="p">,</span> <span class="n">endtime</span><span class="p">,</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanPeriod&#39;</span><span class="p">],</span>
         <span class="n">last_state_file</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;lastStateFile&#39;</span><span class="p">],</span> <span class="n">trajtype</span><span class="o">=</span><span class="n">trajtype</span><span class="p">,</span>
         <span class="n">flashnr</span><span class="o">=</span><span class="n">flashnr</span><span class="p">)</span>
@@ -198,21 +199,21 @@
     <span class="n">dataset_levels</span> <span class="o">=</span> <span class="n">_get_datasets_list</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
 
     <span class="n">masterfilelist</span><span class="p">,</span> <span class="n">masterdatatypedescr</span><span class="p">,</span> <span class="n">masterscan</span> <span class="o">=</span> <span class="n">_get_masterfile_list</span><span class="p">(</span>
-        <span class="n">datatypesdescr_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">starttime</span><span class="p">,</span> <span class="n">endtime</span><span class="p">,</span> <span class="n">datacfg</span><span class="p">,</span>
+        <span class="n">datatypesdescr_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">starttimes</span><span class="p">,</span> <span class="n">endtimes</span><span class="p">,</span> <span class="n">datacfg</span><span class="p">,</span>
         <span class="n">scan_list</span><span class="o">=</span><span class="n">datacfg</span><span class="p">[</span><span class="s1">&#39;ScanList&#39;</span><span class="p">])</span>
 
     <span class="n">nvolumes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">masterfilelist</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">nvolumes</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
             <span class="s2">&quot;ERROR: Could not find any valid volumes between &quot;</span> <span class="o">+</span>
-            <span class="n">starttime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; and &quot;</span> <span class="o">+</span>
-            <span class="n">endtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; for &quot;</span> <span class="o">+</span>
+            <span class="n">starttimes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; and &quot;</span> <span class="o">+</span>
+            <span class="n">endtimes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; for &quot;</span> <span class="o">+</span>
             <span class="s2">&quot;master scan &#39;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">masterscan</span><span class="p">)</span> <span class="o">+</span>
             <span class="s2">&quot;&#39; and master data type &#39;&quot;</span> <span class="o">+</span> <span class="n">masterdatatypedescr</span> <span class="o">+</span>
             <span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;- Number of volumes to process: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nvolumes</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;- Start time: &#39;</span> <span class="o">+</span> <span class="n">starttime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;- end time: &#39;</span> <span class="o">+</span> <span class="n">endtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;- Start time: &#39;</span> <span class="o">+</span> <span class="n">starttimes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;- end time: &#39;</span> <span class="o">+</span> <span class="n">endtimes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">))</span>
 
     <span class="c1"># initial processing of the datasets</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">- Initializing datasets:&#39;</span><span class="p">)</span>

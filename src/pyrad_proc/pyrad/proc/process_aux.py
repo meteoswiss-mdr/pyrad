@@ -1,6 +1,6 @@
 """
 pyrad.proc.process_aux
-=============================
+======================
 
 Auxiliary functions. Functions to determine the process type, pass raw data to
 the product generation functions, save radar data and extract data at
@@ -13,8 +13,8 @@ determined points or regions of interest.
     process_raw
     process_save_radar
     process_fixed_rng
+    process_fixed_rng_span
     process_roi
-    process_grid
     process_azimuthal_average
 
 """
@@ -29,7 +29,7 @@ from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 from ..io.read_data_sensor import read_trt_traj_data
 from ..util.radar_utils import belongs_roi_indices, get_target_elevations
 from ..util.radar_utils import find_neighbour_gates, compute_directional_stats
-from ..util.radar_utils import get_fixed_rng_data, get_fixed_rng_span_data
+from ..util.radar_utils import get_fixed_rng_data
 
 
 def get_process_func(dataset_type, dsname):
@@ -54,9 +54,12 @@ def get_process_func(dataset_type, dsname):
                 'CLT_TO_SAN': process_clt_to_echo_id
                 'COSMO': process_cosmo
                 'COSMO_LOOKUP': process_cosmo_lookup_table
+                'DEM': process_dem
                 'DEALIAS_FOURDD': process_dealias_fourdd
                 'DEALIAS_REGION': process_dealias_region_based
                 'DEALIAS_UNWRAP': process_dealias_unwrap_phase
+                'DOPPLER_VELOCITY': process_Doppler_velocity
+                'DOPPLER_WIDTH': process_Doppler_width
                 'ECHO_FILTER': process_echo_filter
                 'FIXED_RNG': process_fixed_rng
                 'FIXED_RNG_SPAN': process_fixed_rng_span
@@ -68,6 +71,7 @@ def get_process_func(dataset_type, dsname):
                 'L': process_l
                 'NCVOL': process_save_radar
                 'OUTLIER_FILTER': process_outlier_filter
+                'PhiDP': process_differential_phase
                 'PHIDP0_CORRECTION': process_correct_phidp0
                 'PHIDP0_ESTIMATE': process_estimate_phidp0
                 'PHIDP_KDP_KALMAN': process_phidp_kdp_Kalman
@@ -75,11 +79,14 @@ def get_process_func(dataset_type, dsname):
                 'PHIDP_KDP_VULPIANI': process_phidp_kdp_Vulpiani
                 'PHIDP_SMOOTH_1W': process_smooth_phidp_single_window
                 'PHIDP_SMOOTH_2W': process_smooth_phidp_double_window
+                'POL_VARIABLES': process_pol_variables
                 'PWR': process_signal_power
                 'RAINRATE': process_rainrate
                 'RAW': process_raw
+                'REFLECTIVITY': process_reflectivity
                 'RCS': process_rcs
                 'RCS_PR': process_rcs_pr
+                'RhoHV': process_rhohv
                 'RHOHV_CORRECTION': process_correct_noise_rhohv
                 'RHOHV_RAIN': process_rhohv_rain
                 'ROI': process_roi
@@ -91,19 +98,35 @@ def get_process_func(dataset_type, dsname):
                 'TRAJ_TRT' : process_traj_trt
                 'VAD': process_vad
                 'VEL_FILTER': process_filter_vel_diff
+                'VIS': process_visibility
                 'VIS_FILTER': process_filter_visibility
                 'VOL_REFL': process_vol_refl
                 'WIND_VEL': process_wind_vel
                 'WINDSHEAR': process_windshear
+                'ZDR': process_differential_reflectivity
                 'ZDR_PREC': process_zdr_precip
                 'ZDR_SNOW': process_zdr_snow
+            'SPECTRA' format output:
+                'FILTER_SPECTRA_NOISE': process_filter_spectra_noise
+                'RAW_SPECTRA': process_raw_spectra
+                'SPECTRA_POINT': process_spectra_point
+                'SPECTRAL_PHASE': process_spectral_phase
+                'SPECTRAL_POWER': process_spectral_power
+                'SPECTRAL_REFLECTIVITY': process_spectral_reflectivity
+                'sPhiDP': process_spectral_differential_phase
+                'sRhoHV': process_spectral_RhoHV
+                'sZDR': process_spectral_differential_reflectivity
             'COLOCATED_GATES' format output:
                 'COLOCATED_GATES': process_colocated_gates
             'COSMO_COORD' format output:
                 'COSMO_COORD': process_cosmo_coord
                 'HZT_COORD': process_hzt_coord
             'GRID' format output:
+                'RAW_GRID': process_raw_grid
                 'GRID': process_grid
+            'GRID_TIMEAVG' format output:
+                'GRID_TIME_STATS': process_grid_time_stats
+                'GRID_TIME_STATS2': process_grid_time_stats2
             'INTERCOMP' format output:
                 'INTERCOMP': process_intercomp
                 'INTERCOMP_TIME_AVG': process_intercomp_time_avg
@@ -130,7 +153,11 @@ def get_process_func(dataset_type, dsname):
                 'FLAG_TIME_AVG': process_time_avg_flag
                 'TIME_AVG': process_time_avg
                 'WEIGHTED_TIME_AVG': process_weighted_time_avg
+                'TIME_STATS': process_time_stats
+                'TIME_STATS2': process_time_stats2
+                'RAIN_ACCU': process_rainfall_accumulation
             'TIMESERIES' format output:
+                'GRID_POINT_MEASUREMENT': process_grid_point
                 'POINT_MEASUREMENT': 'process_point_measurement'
                 'TRAJ_ANTENNA_PATTERN': process_traj_antenna_pattern
                 'TRAJ_ATPLANE': process_traj_atplane
@@ -155,8 +182,44 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'AZI_AVG':
         func_name = process_azimuthal_average
     elif dataset_type == 'GRID':
-        func_name = process_grid
+        func_name = 'process_grid'
         dsformat = 'GRID'
+    elif dataset_type == 'RAW_GRID':
+        func_name = 'process_raw_grid'
+        dsformat = 'GRID'
+    elif dataset_type == 'RAW_SPECTRA':
+        func_name = 'process_raw_spectra'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'SPECTRA_POINT':
+        func_name = 'process_spectra_point'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'SPECTRAL_POWER':
+        func_name = 'process_spectral_power'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'SPECTRAL_PHASE':
+        func_name = 'process_spectral_phase'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'SPECTRAL_REFLECTIVITY':
+        func_name = 'process_spectral_reflectivity'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'sZDR':
+        func_name = 'process_spectral_differential_reflectivity'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'sPhiDP':
+        func_name = 'process_spectral_differential_phase'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'sRhoHV':
+        func_name = 'process_spectral_rhohv'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'FILTER_SPECTRA_NOISE':
+        func_name = 'process_filter_spectra_noise'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'FILTER_0DOPPLER':
+        func_name = 'process_filter_0Doppler'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'SRHOHV_FILTER':
+        func_name = 'process_filter_srhohv'
+        dsformat = 'SPECTRA'
     elif dataset_type == 'QVP':
         func_name = 'process_qvp'
         dsformat = 'QVP'
@@ -213,6 +276,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_filter_vel_diff'
     elif dataset_type == 'VIS_FILTER':
         func_name = 'process_filter_visibility'
+    elif dataset_type == 'VIS':
+        func_name = 'process_visibility'
     elif dataset_type == 'OUTLIER_FILTER':
         func_name = 'process_outlier_filter'
     elif dataset_type == 'PHIDP0_CORRECTION':
@@ -237,6 +302,9 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_attenuation'
     elif dataset_type == 'RAINRATE':
         func_name = 'process_rainrate'
+    elif dataset_type == 'RAIN_ACCU':
+        func_name = 'process_rainfall_accumulation'
+        dsformat = 'TIMEAVG'
     elif dataset_type == 'DEALIAS_FOURDD':
         func_name = 'process_dealias_fourdd'
     elif dataset_type == 'DEALIAS_REGION':
@@ -262,6 +330,20 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_zdr_precip'
     elif dataset_type == 'ZDR_SNOW':
         func_name = 'process_zdr_snow'
+    elif dataset_type == 'POL_VARIABLES':
+        func_name = 'process_pol_variables'
+    elif dataset_type == 'REFLECTIVITY':
+        func_name = 'process_reflectivity'
+    elif dataset_type == 'ZDR':
+        func_name = 'process_differential_reflectivity'
+    elif dataset_type == 'PhiDP':
+        func_name = 'process_differential_phase'
+    elif dataset_type == 'RhoHV':
+        func_name = 'process_rhohv'
+    elif dataset_type == 'DOPPLER_VELOCITY':
+        func_name = 'process_Doppler_velocity'
+    elif dataset_type == 'DOPPLER_WIDTH':
+        func_name = 'process_Doppler_width'
     elif dataset_type == 'SELFCONSISTENCY_KDP_PHIDP':
         func_name = 'process_selfconsistency_kdp_phidp'
     elif dataset_type == 'SELFCONSISTENCY_BIAS':
@@ -280,6 +362,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_hzt'
     elif dataset_type == 'HZT_LOOKUP':
         func_name = 'process_hzt_lookup_table'
+    elif dataset_type == 'DEM':
+        func_name = 'process_dem'
     elif dataset_type == 'TIME_AVG':
         func_name = 'process_time_avg'
         dsformat = 'TIMEAVG'
@@ -289,6 +373,18 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'FLAG_TIME_AVG':
         func_name = 'process_time_avg_flag'
         dsformat = 'TIMEAVG'
+    elif dataset_type == 'TIME_STATS':
+        func_name = 'process_time_stats'
+        dsformat = 'TIMEAVG'
+    elif dataset_type == 'TIME_STATS2':
+        func_name = 'process_time_stats2'
+        dsformat = 'TIMEAVG'
+    elif dataset_type == 'GRID_TIME_STATS':
+        func_name = 'process_grid_time_stats'
+        dsformat = 'GRID_TIMEAVG'
+    elif dataset_type == 'GRID_TIME_STATS2':
+        func_name = 'process_grid_time_stats2'
+        dsformat = 'GRID_TIMEAVG'
     elif dataset_type == 'COLOCATED_GATES':
         func_name = 'process_colocated_gates'
         dsformat = 'COLOCATED_GATES'
@@ -318,6 +414,9 @@ def get_process_func(dataset_type, dsname):
         dsformat = 'SUN_HITS'
     elif dataset_type == 'POINT_MEASUREMENT':
         func_name = 'process_point_measurement'
+        dsformat = 'TIMESERIES'
+    elif dataset_type == 'GRID_POINT_MEASUREMENT':
+        func_name = 'process_grid_point'
         dsformat = 'TIMESERIES'
     elif dataset_type == 'ROI':
         func_name = process_roi
@@ -542,8 +641,8 @@ def process_fixed_rng_span(procstatus, dscfg, radar_list=None):
     azi_min = dscfg.get('azi_min', None)
     azi_max = dscfg.get('azi_max', None)
 
-    radar_aux = get_fixed_rng_span_data(
-        radar, field_names, rmin=rmin, rmax=rmax, ele_min=ele_min,
+    radar_aux = pyart.util.cut_radar(
+        radar, field_names, rng_min=rmin, rng_max=rmax, ele_min=ele_min,
         ele_max=ele_max, azi_min=azi_min, azi_max=azi_max)
 
     if radar_aux is None:
@@ -583,21 +682,29 @@ def process_roi(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
+    field_names_aux = []
     for datatypedescr in dscfg['datatype']:
-        radarnr, _, datatype, _, _ = get_datatype_fields(
-            datatypedescr)
-        break
-    field_name = get_fieldname_pyart(datatype)
-    ind_rad = int(radarnr[5:8])-1
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+        field_names_aux.append(get_fieldname_pyart(datatype))
 
+    ind_rad = int(radarnr[5:8])-1
     if (radar_list is None) or (radar_list[ind_rad] is None):
         warn('ERROR: No valid radar')
         return None, None
     radar = radar_list[ind_rad]
 
-    if field_name not in radar.fields:
-        warn('Unable to extract ROI information. ' +
-             'Field not available')
+    # keep only fields present in radar object
+    field_names = []
+    nfields_available = 0
+    for field_name in field_names_aux:
+        if field_name not in radar.fields:
+            warn('Field name '+field_name+' not available in radar object')
+            continue
+        field_names.append(field_name)
+        nfields_available += 1
+
+    if nfields_available == 0:
+        warn("Fields not available in radar data")
         return None, None
 
     if 'trtfile' in dscfg:
@@ -715,150 +822,13 @@ def process_roi(procstatus, dscfg, radar_list=None):
         radar.gate_z['data'][inds_ray, inds_rng].T)
 
     new_dataset['radar_out'].fields = dict()
-    field_dict = deepcopy(radar.fields[field_name])
-    field_dict['data'] = radar.fields[field_name]['data'][inds_ray, inds_rng].T
-    new_dataset['radar_out'].add_field(field_name, field_dict)
+    for field_name in field_names:
+        field_dict = deepcopy(radar.fields[field_name])
+        field_dict['data'] = (
+            radar.fields[field_name]['data'][inds_ray, inds_rng].T)
+        new_dataset['radar_out'].add_field(field_name, field_dict)
 
     return new_dataset['radar_out'], ind_rad
-
-
-def process_grid(procstatus, dscfg, radar_list=None):
-    """
-    Puts the radar data in a regular grid
-
-    Parameters
-    ----------
-    procstatus : int
-        Processing status: 0 initializing, 1 processing volume,
-        2 post-processing
-    dscfg : dictionary of dictionaries
-        data set configuration. Accepted Configuration Keywords::
-
-        datatype : string. Dataset keyword
-            The data type where we want to extract the point measurement
-        gridconfig : dictionary. Dataset keyword
-            Dictionary containing some or all of this keywords:
-            xmin, xmax, ymin, ymax, zmin, zmax : floats
-                minimum and maximum horizontal distance from grid origin [km]
-                and minimum and maximum vertical distance from grid origin [m]
-                Defaults -40, 40, -40, 40, 0., 10000.
-            hres, vres : floats
-                horizontal and vertical grid resolution [m]
-                Defaults 1000., 500.
-            latorig, lonorig, altorig : floats
-                latitude and longitude of grid origin [deg] and altitude of
-                grid origin [m MSL]
-                Defaults the latitude, longitude and altitude of the radar
-        wfunc : str
-            the weighting function used to combine the radar gates close to a
-            grid point. Possible values BARNES, CRESSMAN, NEAREST_NEIGHBOUR
-            Default NEAREST_NEIGHBOUR
-        roif_func : str
-            the function used to compute the region of interest.
-            Possible values: dist_beam, constant
-        roi : float
-             the (minimum) radius of the region of interest in m. Default half
-             the largest resolution
-
-    radar_list : list of Radar objects
-        Optional. list of radar objects
-
-    Returns
-    -------
-    new_dataset : dict
-        dictionary containing the gridded data
-    ind_rad : int
-        radar index
-
-    """
-    if procstatus != 1:
-        return None, None
-
-    for datatypedescr in dscfg['datatype']:
-        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
-        break
-    field_name = get_fieldname_pyart(datatype)
-    ind_rad = int(radarnr[5:8])-1
-
-    if (radar_list is None) or (radar_list[ind_rad] is None):
-        warn('ERROR: No valid radar')
-        return None, None
-
-    radar = radar_list[ind_rad]
-
-    if field_name not in radar.fields:
-        warn('Field name '+field_name+' not available in radar object')
-        return None, None
-
-    # default parameters
-    xmin = -40.
-    xmax = 40.
-    ymin = -40.
-    ymax = 40.
-    zmin = 0.
-    zmax = 10000.
-    hres = 1000.
-    vres = 500.
-    lat = float(radar.latitude['data'])
-    lon = float(radar.longitude['data'])
-    alt = float(radar.altitude['data'])
-
-    if 'gridConfig' in dscfg:
-        if 'xmin' in dscfg['gridConfig']:
-            xmin = dscfg['gridConfig']['xmin']
-        if 'xmax' in dscfg['gridConfig']:
-            xmax = dscfg['gridConfig']['xmax']
-        if 'ymin' in dscfg['gridConfig']:
-            ymin = dscfg['gridConfig']['ymin']
-        if 'ymax' in dscfg['gridConfig']:
-            ymax = dscfg['gridConfig']['ymax']
-        if 'zmin' in dscfg['gridConfig']:
-            zmin = dscfg['gridConfig']['zmin']
-        if 'zmax' in dscfg['gridConfig']:
-            zmax = dscfg['gridConfig']['zmax']
-        if 'hres' in dscfg['gridConfig']:
-            hres = dscfg['gridConfig']['hres']
-        if 'vres' in dscfg['gridConfig']:
-            vres = dscfg['gridConfig']['vres']
-        if 'latorig' in dscfg['gridConfig']:
-            lat = dscfg['gridConfig']['latorig']
-        if 'lonorig' in dscfg['gridConfig']:
-            lon = dscfg['gridConfig']['lonorig']
-        if 'altorig' in dscfg['gridConfig']:
-            alt = dscfg['gridConfig']['altorig']
-
-    wfunc = dscfg.get('wfunc', 'NEAREST_NEIGHBOUR')
-    roi_func = dscfg.get('roi_func', 'dist_beam')
-
-    # number of grid points in cappi
-    nz = int((zmax-zmin)/vres)+1
-    ny = int((ymax-ymin)*1000./hres)+1
-    nx = int((xmax-xmin)*1000./hres)+1
-
-    min_radius = dscfg.get('roi', np.max([vres, hres])/2.)
-    # parameters to determine the gates to use for each grid point
-    beamwidth = 1.
-    beam_spacing = 1.
-    if 'radar_beam_width_h' in radar.instrument_parameters:
-        beamwidth = radar.instrument_parameters[
-            'radar_beam_width_h']['data'][0]
-
-    if radar.ray_angle_res is not None:
-        beam_spacing = radar.ray_angle_res['data'][0]
-
-    # cartesian mapping
-    grid = pyart.map.grid_from_radars(
-        (radar,), gridding_algo='map_to_grid',
-        weighting_function=wfunc,
-        roi_func=roi_func, h_factor=1.0, nb=beamwidth, bsp=beam_spacing,
-        min_radius=min_radius, constant_roi=min_radius,
-        grid_shape=(nz, ny, nx),
-        grid_limits=((zmin, zmax), (ymin*1000., ymax*1000.),
-                     (xmin*1000., xmax*1000.)),
-        grid_origin=(lat, lon), grid_origin_alt=alt,
-        fields=[field_name])
-
-    return grid, ind_rad
 
 
 def process_azimuthal_average(procstatus, dscfg, radar_list=None):
@@ -875,27 +845,13 @@ def process_azimuthal_average(procstatus, dscfg, radar_list=None):
 
         datatype : string. Dataset keyword
             The data type where we want to extract the point measurement
-        gridconfig : dictionary. Dataset keyword
-            Dictionary containing some or all of this keywords:
-            xmin, xmax, ymin, ymax, zmin, zmax : floats
-                minimum and maximum horizontal distance from grid origin [km]
-                and minimum and maximum vertical distance from grid origin [m]
-                Defaults -40, 40, -40, 40, 0., 10000.
-            hres, vres : floats
-                horizontal and vertical grid resolution [m]
-                Defaults 1000., 500.
-            latorig, lonorig, altorig : floats
-                latitude and longitude of grid origin [deg] and altitude of
-                grid origin [m MSL]
-                Defaults the latitude, longitude and altitude of the radar
-        wfunc : str
-            the weighting function used to combine the radar gates close to a
-            grid point. Possible values BARNES, CRESSMAN, NEAREST_NEIGHBOUR
-            Default NEAREST_NEIGHBOUR
-        roif_func : str
-            the function used to compute the region of interest.
-            Possible values: dist_beam, constant
-        roi : float
+        angle : float or None. Dataset keyword
+            The
+        delta_azi : float. Dataset keyword
+
+        avg_type : str. Dataset keyword
+
+        nvalid_min : int. Dataset keyword
              the (minimum) radius of the region of interest in m. Default half
              the largest resolution
 
@@ -913,20 +869,29 @@ def process_azimuthal_average(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
+    field_names_aux = []
     for datatypedescr in dscfg['datatype']:
         radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
-        break
-    field_name = get_fieldname_pyart(datatype)
-    ind_rad = int(radarnr[5:8])-1
+        field_names_aux.append(get_fieldname_pyart(datatype))
 
+    ind_rad = int(radarnr[5:8])-1
     if (radar_list is None) or (radar_list[ind_rad] is None):
         warn('ERROR: No valid radar')
         return None, None
-
     radar = radar_list[ind_rad]
 
-    if field_name not in radar.fields:
-        warn('Field name '+field_name+' not available in radar object')
+    # keep only fields present in radar object
+    field_names = []
+    nfields_available = 0
+    for field_name in field_names_aux:
+        if field_name not in radar.fields:
+            warn('Field name '+field_name+' not available in radar object')
+            continue
+        field_names.append(field_name)
+        nfields_available += 1
+
+    if nfields_available == 0:
+        warn("Fields not available in radar data")
         return None, None
 
     # default parameters
@@ -974,10 +939,16 @@ def process_azimuthal_average(procstatus, dscfg, radar_list=None):
     radar_rhi.ray_angle_res = None
 
     # average radar data
-    field_dict = pyart.config.get_metadata(field_name)
-    field_dict['data'] = np.ma.masked_all((radar_ppi.nsweeps, radar_ppi.ngates))
     if angle is None:
         fixed_angle = np.zeros(radar_ppi.nsweeps)
+
+    fields_dict = dict()
+    for field_name in field_names:
+        fields_dict.update(
+            {field_name: pyart.config.get_metadata(field_name)})
+        fields_dict[field_name]['data'] = np.ma.masked_all(
+            (radar_ppi.nsweeps, radar_ppi.ngates))
+
     for sweep in range(radar_ppi.nsweeps):
         radar_aux = deepcopy(radar_ppi)
         radar_aux = radar_aux.extract_sweeps([sweep])
@@ -986,22 +957,27 @@ def process_azimuthal_average(procstatus, dscfg, radar_list=None):
         inds_ray, inds_rng = find_neighbour_gates(
             radar_aux, angle, None, delta_azi=delta_azi, delta_rng=None)
 
-        # keep only data we are interested in
-        field_aux = radar_aux.fields[field_name]['data'][:, inds_rng]
-        field_aux = field_aux[inds_ray, :]
-
-        vals, _ = compute_directional_stats(
-            field_aux, avg_type=avg_type, nvalid_min=nvalid_min, axis=0)
-
-        field_dict['data'][sweep, :] = vals
         if angle is None:
             fixed_angle[sweep] = np.median(radar_aux.azimuth['data'][inds_ray])
+
+        # keep only data we are interested in
+        for field_name in field_names:
+            field_aux = radar_aux.fields[field_name]['data'][:, inds_rng]
+            field_aux = field_aux[inds_ray, :]
+
+            vals, _ = compute_directional_stats(
+                field_aux, avg_type=avg_type, nvalid_min=nvalid_min, axis=0)
+
+            fields_dict[field_name]['data'][sweep, :] = vals
+
     if angle is None:
         radar_rhi.fixed_angle['data'] = np.array([np.mean(fixed_angle)])
     else:
         radar_rhi.fixed_angle['data'] = np.array([angle])
     radar_rhi.azimuth['data'] *= radar_rhi.fixed_angle['data'][0]
-    radar_rhi.add_field(field_name, field_dict)
+
+    for field_name in field_names:
+        radar_rhi.add_field(field_name, fields_dict[field_name])
 
     # prepare for exit
     new_dataset = {'radar_out': radar_rhi}
