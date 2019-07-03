@@ -699,7 +699,7 @@ def merge_scans_dem(basepath, scan_list, datatype_list, rng_min=None,
 
     """
     radar = None
-    for scan in scan_list[1:]:
+    for scan in scan_list:
         radar_aux = merge_fields_dem(basepath, scan, datatype_list)
         if radar_aux is None:
             continue
