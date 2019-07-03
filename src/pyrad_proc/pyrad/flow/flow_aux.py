@@ -58,7 +58,7 @@ from ..io.config import read_config
 from ..io.read_data_radar import get_data
 from ..io.io_aux import get_datetime, get_file_list, get_scan_list
 from ..io.io_aux import get_dataset_fields, get_datatype_fields
-from ..io.io_aux import get_new_rainbow_file_name
+from ..io.io_aux import get_new_rainbow_file_name, get_fieldname_pyart
 from ..io.trajectory import Trajectory
 from ..io.read_data_other import read_last_state, read_proc_periods
 
@@ -1421,8 +1421,12 @@ def _add_dataset(new_dataset, radar_list, ind_rad, make_global=True,
         return 0
 
     for field in fields_to_remove:
-        print('Removing field: '+field)
-        del radar_list[ind_rad].fields[field]
+        field_pyart = get_fieldname_pyart(field)
+        print('Removing field: '+field_pyart)
+        if field_pyart not in radar_list[ind_rad].fields:
+            print('Field '+field_pyart+' not in radar object')
+            continue
+        del radar_list[ind_rad].fields[field_pyart]
 
     return 0
 
