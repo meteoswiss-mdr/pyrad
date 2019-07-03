@@ -2265,11 +2265,13 @@
             <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">break</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;WARNING: Unable to get COSMO &#39;</span><span class="o">+</span><span class="n">datatype</span><span class="o">+</span><span class="s1">&#39; information&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">fname</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="k">return</span> <span class="n">fname</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;WARNING: Unable to get COSMO &#39;</span><span class="o">+</span><span class="n">datatype</span><span class="o">+</span><span class="s1">&#39; information&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
 
 
 <div class="viewcode-block" id="find_raw_cosmo_file"><a class="viewcode-back" href="../../../io.html#pyrad.io.find_raw_cosmo_file">[docs]</a><span class="k">def</span> <span class="nf">find_raw_cosmo_file</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
@@ -2297,7 +2299,7 @@
     <span class="n">runhour0</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">voltime</span><span class="o">.</span><span class="n">hour</span><span class="o">/</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;CosmoRunFreq&#39;</span><span class="p">])</span><span class="o">*</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;CosmoRunFreq&#39;</span><span class="p">]</span>
     <span class="n">runtime0</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">hour</span><span class="o">=</span><span class="n">runhour0</span><span class="p">,</span> <span class="n">minute</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">second</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
-    <span class="c1"># look for cosmo file</span>
+    <span class="c1"># look for cosmo file in raw</span>
     <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">nruns_to_check</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;CosmoForecasted&#39;</span><span class="p">]</span><span class="o">/</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;CosmoRunFreq&#39;</span><span class="p">])</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nruns_to_check</span><span class="p">):</span>
@@ -2322,11 +2324,38 @@
         <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
             <span class="k">break</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;WARNING: Unable to get COSMO &#39;</span><span class="o">+</span><span class="n">datatype</span><span class="o">+</span><span class="s1">&#39; information&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">fname</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="k">return</span> <span class="n">fname</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+    <span class="c1"># look for cosmo file in raw1</span>
+    <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nruns_to_check</span><span class="p">):</span>
+        <span class="n">runtime</span> <span class="o">=</span> <span class="n">runtime0</span><span class="o">-</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">i</span> <span class="o">*</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;CosmoRunFreq&#39;</span><span class="p">])</span>
+        <span class="n">runtimestr</span> <span class="o">=</span> <span class="n">runtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">)</span>
+
+        <span class="n">daydir</span> <span class="o">=</span> <span class="n">runtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;cosmopath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span><span class="o">+</span><span class="n">datatype</span><span class="o">+</span><span class="s1">&#39;/raw1/&#39;</span><span class="o">+</span><span class="n">daydir</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+        <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;cosmo-1&#39;</span><span class="p">,</span> <span class="s1">&#39;cosmo-2&#39;</span><span class="p">,</span> <span class="s1">&#39;cosmo-7&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;TEMP&#39;</span><span class="p">:</span>
+                <span class="n">search_name</span> <span class="o">=</span> <span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">model</span><span class="o">+</span><span class="s1">&#39;_MDR_3D_&#39;</span><span class="o">+</span><span class="n">runtimestr</span><span class="o">+</span><span class="s1">&#39;.nc&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;WIND&#39;</span><span class="p">:</span>
+                <span class="n">search_name</span> <span class="o">=</span> <span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">model</span><span class="o">+</span><span class="s1">&#39;_MDR_3DWIND_&#39;</span><span class="o">+</span><span class="n">runtimestr</span><span class="o">+</span><span class="s1">&#39;.nc&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to get COSMO &#39;</span><span class="o">+</span><span class="n">datatype</span><span class="o">+</span><span class="s1">&#39;. Unknown variable&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Looking for file: &#39;</span><span class="o">+</span><span class="n">search_name</span><span class="p">)</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">search_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">fname</span><span class="p">:</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">break</span>
+
+        <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+            <span class="k">break</span>
+
+    <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">fname</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;WARNING: Unable to get COSMO &#39;</span><span class="o">+</span><span class="n">datatype</span><span class="o">+</span><span class="s1">&#39; information&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="find_hzt_file"><a class="viewcode-back" href="../../../io.html#pyrad.io.find_hzt_file">[docs]</a><span class="k">def</span> <span class="nf">find_hzt_file</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
