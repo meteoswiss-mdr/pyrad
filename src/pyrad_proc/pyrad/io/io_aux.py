@@ -2209,11 +2209,13 @@ def find_cosmo_file(voltime, datatype, cfg, scanid, ind_rad=0):
             found = True
             break
 
-    if not found:
-        warn('WARNING: Unable to get COSMO '+datatype+' information')
-        return None
+    if found:
+        return fname[0]
 
-    return fname[0]
+    warn('WARNING: Unable to get COSMO '+datatype+' information')
+    return None
+
+
 
 
 def find_raw_cosmo_file(voltime, datatype, cfg, ind_rad=0):
@@ -2241,7 +2243,7 @@ def find_raw_cosmo_file(voltime, datatype, cfg, ind_rad=0):
     runhour0 = int(voltime.hour/cfg['CosmoRunFreq'])*cfg['CosmoRunFreq']
     runtime0 = voltime.replace(hour=runhour0, minute=0, second=0)
 
-    # look for cosmo file
+    # look for cosmo file in raw
     found = False
     nruns_to_check = int(cfg['CosmoForecasted']/cfg['CosmoRunFreq'])
     for i in range(nruns_to_check):
@@ -2266,11 +2268,38 @@ def find_raw_cosmo_file(voltime, datatype, cfg, ind_rad=0):
         if found:
             break
 
-    if not found:
-        warn('WARNING: Unable to get COSMO '+datatype+' information')
-        return None
+    if found:
+        return fname[0]
 
-    return fname[0]
+    # look for cosmo file in raw1
+    found = False
+    for i in range(nruns_to_check):
+        runtime = runtime0-datetime.timedelta(hours=i * cfg['CosmoRunFreq'])
+        runtimestr = runtime.strftime('%Y%m%d%H')
+
+        daydir = runtime.strftime('%Y-%m-%d')
+        datapath = cfg['cosmopath'][ind_rad]+datatype+'/raw1/'+daydir+'/'
+        for model in ('cosmo-1', 'cosmo-2', 'cosmo-7'):
+            if datatype == 'TEMP':
+                search_name = (datapath+model+'_MDR_3D_'+runtimestr+'.nc')
+            elif datatype == 'WIND':
+                search_name = (datapath+model+'_MDR_3DWIND_'+runtimestr+'.nc')
+            else:
+                warn('Unable to get COSMO '+datatype+'. Unknown variable')
+            print('Looking for file: '+search_name)
+            fname = glob.glob(search_name)
+            if fname:
+                found = True
+                break
+
+        if found:
+            break
+
+    if found:
+        return fname[0]
+
+    warn('WARNING: Unable to get COSMO '+datatype+' information')
+    return None
 
 
 def find_hzt_file(voltime, cfg, ind_rad=0):
