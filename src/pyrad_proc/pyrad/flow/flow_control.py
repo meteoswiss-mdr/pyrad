@@ -14,6 +14,7 @@ functions to control the Pyrad data processing flow
 from __future__ import print_function
 import warnings
 from warnings import warn
+import traceback
 import os
 from datetime import datetime
 from datetime import timedelta
@@ -39,6 +40,7 @@ from ..io.write_data import write_last_state
 ALLOW_USER_BREAK = False
 
 try:
+    import dask
     from dask.diagnostics import Profiler, ResourceProfiler, CacheProfiler
     from dask.diagnostics import visualize
     from distributed import Client
@@ -51,7 +53,8 @@ except ImportError:
 
 def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
          flashnr=0, infostr="", MULTIPROCESSING_DSET=False,
-         MULTIPROCESSING_PROD=False, PROFILE_MULTIPROCESSING=False):
+         MULTIPROCESSING_PROD=False, PROFILE_MULTIPROCESSING=False,
+         USE_CHILD_PROCESS=True):
     """
     Main flow control. Processes radar data off-line over a period of time
     given either by the user, a trajectory file, or determined by the last
@@ -84,6 +87,10 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
         parallelized
     PROFILE_MULTIPROCESSING : Bool
         If true and code parallelized the multiprocessing is profiled
+    USE_CHILD_PROCESS : Bool
+        If true the reading and processing of the data will be performed by
+        a child process controlled by dask. This is done to make sure all
+        memory used is released.
 
     """
     print("- PYRAD version: %s (compiled %s by %s)" %
@@ -103,6 +110,7 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
         MULTIPROCESSING_DSET = False
         MULTIPROCESSING_PROD = False
         PROFILE_MULTIPROCESSING = False
+        USE_CHILD_PROCESS = False
 
     # check if multiprocessing profiling is necessary
     if not MULTIPROCESSING_DSET and not MULTIPROCESSING_PROD:
@@ -179,18 +187,51 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
 
         master_voltime = get_datetime(masterfile, masterdatatypedescr)
 
-        radar_list = _get_radars_data(
-            master_voltime, datatypesdescr_list, datacfg,
-            num_radars=datacfg['NumRadars'])
+        if USE_CHILD_PROCESS:
+            jobs = []
+            jobs.append(dask.delayed(_get_radars_data)(
+                master_voltime, datatypesdescr_list, datacfg,
+                num_radars=datacfg['NumRadars']))
 
-        # process all data sets
-        dscfg, traj = _process_datasets(
-            dataset_levels, cfg, dscfg, radar_list, master_voltime, traj=traj,
-            infostr=infostr, MULTIPROCESSING_DSET=MULTIPROCESSING_DSET,
-            MULTIPROCESSING_PROD=MULTIPROCESSING_PROD)
+            try:
+                jobs = dask.compute(*jobs)
+                radar_list = jobs[0]
 
-        # delete variables
-        del radar_list
+                jobs = []
+                dscfg_aux = dask.delayed(dscfg)
+                traj_aux = dask.delayed(traj)
+                jobs.append(dask.delayed(_process_datasets)(
+                    dataset_levels, cfg, dscfg_aux, radar_list,
+                    master_voltime, traj=traj_aux, infostr=infostr,
+                    MULTIPROCESSING_DSET=MULTIPROCESSING_DSET,
+                    MULTIPROCESSING_PROD=MULTIPROCESSING_PROD))
+                try:
+                    jobs = dask.compute(*jobs)
+                    dscfg = jobs[0][0]
+                    traj = jobs[0][1]
+                    del jobs
+                    del radar_list
+
+                except Exception as ee:
+                    warn(str(ee))
+                    traceback.print_exc()
+            except Exception as ee:
+                warn(str(ee))
+                traceback.print_exc()
+
+        else:
+            radar_list = _get_radars_data(
+                master_voltime, datatypesdescr_list, datacfg,
+                num_radars=datacfg['NumRadars'])
+
+            # process all data sets
+            dscfg, traj = _process_datasets(
+                dataset_levels, cfg, dscfg, radar_list, master_voltime, traj=traj,
+                infostr=infostr, MULTIPROCESSING_DSET=MULTIPROCESSING_DSET,
+                MULTIPROCESSING_PROD=MULTIPROCESSING_PROD)
+
+            # delete variables
+            del radar_list
 
         gc.collect()
 
