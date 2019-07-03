@@ -37,7 +37,7 @@ from ..io.io_aux import get_fieldname_cosmo
 
 def cosmo2radar_data(radar, cosmo_coord, cosmo_data, time_index=0,
                      slice_xy=True, slice_z=False,
-                     field_names=['temperature']):
+                     field_names=['temperature'], dtype=np.float32):
     """
     get the COSMO value corresponding to each radar gate using nearest
     neighbour interpolation
@@ -61,6 +61,8 @@ def cosmo2radar_data(radar, cosmo_coord, cosmo_data, time_index=0,
         of the radar field
     field_names : str
         names of COSMO fields to convert (default temperature)
+    dtype : numpy data type object
+        the data type of the output data
 
     Returns
     -------
@@ -102,7 +104,7 @@ def cosmo2radar_data(radar, cosmo_coord, cosmo_data, time_index=0,
 
             # put field
             field_dict = get_metadata(field)
-            field_dict['data'] = data_interp.astype(float)
+            field_dict['data'] = data_interp.astype(dtype)
             cosmo_fields.append({field: field_dict})
 
             del data_interp
@@ -366,7 +368,7 @@ def read_cosmo_coord(fname, zmin=None):
         return None
 
 
-def _ncvar_to_dict(ncvar, dtype='float64'):
+def _ncvar_to_dict(ncvar, dtype=np.float32):
     """ Convert a NetCDF Dataset variable to a dictionary. """
     # copy all attributes
     d = dict((k, getattr(ncvar, k)) for k in ncvar.ncattrs())

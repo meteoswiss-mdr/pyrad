@@ -2244,7 +2244,7 @@ def interpol_field(radar_dest, radar_orig, field_name, fill_value=None,
         fill_value=fill_value)
     field_dest = deepcopy(radar_orig.fields[field_name])
     field_dest['data'] = np.ma.masked_all(
-        (radar_dest.nrays, radar_dest.ngates))
+        (radar_dest.nrays, radar_dest.ngates), dtype=field_orig_data.dtype)
 
     for sweep in range(radar_dest.nsweeps):
         sweep_start_dest = radar_dest.sweep_start_ray_index['data'][sweep]
@@ -2262,7 +2262,7 @@ def interpol_field(radar_dest, radar_orig, field_name, fill_value=None,
                  str(sweep)+' with fixed angle '+str(fixed_angle)+'+/-' +
                  str(ang_tol))
             field_dest_sweep = np.ma.masked_all(
-                (nrays_sweep, radar_dest.ngates), dtype=float)
+                (nrays_sweep, radar_dest.ngates), dtype=field_orig_data.dtype)
         else:
             sweep_start_orig = radar_orig.sweep_start_ray_index['data'][
                 ind_sweep_orig]

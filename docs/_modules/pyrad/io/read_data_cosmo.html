@@ -93,7 +93,7 @@
 
 <div class="viewcode-block" id="cosmo2radar_data"><a class="viewcode-back" href="../../../io.html#pyrad.io.cosmo2radar_data">[docs]</a><span class="k">def</span> <span class="nf">cosmo2radar_data</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">cosmo_coord</span><span class="p">,</span> <span class="n">cosmo_data</span><span class="p">,</span> <span class="n">time_index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                      <span class="n">slice_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">slice_z</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                     <span class="n">field_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">]):</span>
+                     <span class="n">field_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    get the COSMO value corresponding to each radar gate using nearest</span>
 <span class="sd">    neighbour interpolation</span>
@@ -117,6 +117,8 @@
 <span class="sd">        of the radar field</span>
 <span class="sd">    field_names : str</span>
 <span class="sd">        names of COSMO fields to convert (default temperature)</span>
+<span class="sd">    dtype : numpy data type object</span>
+<span class="sd">        the data type of the output data</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -158,7 +160,7 @@
 
             <span class="c1"># put field</span>
             <span class="n">field_dict</span> <span class="o">=</span> <span class="n">get_metadata</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
-            <span class="n">field_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_interp</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+            <span class="n">field_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_interp</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
             <span class="n">cosmo_fields</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="n">field</span><span class="p">:</span> <span class="n">field_dict</span><span class="p">})</span>
 
             <span class="k">del</span> <span class="n">data_interp</span>
@@ -422,7 +424,7 @@
         <span class="k">return</span> <span class="kc">None</span></div>
 
 
-<span class="k">def</span> <span class="nf">_ncvar_to_dict</span><span class="p">(</span><span class="n">ncvar</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_ncvar_to_dict</span><span class="p">(</span><span class="n">ncvar</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Convert a NetCDF Dataset variable to a dictionary. &quot;&quot;&quot;</span>
     <span class="c1"># copy all attributes</span>
     <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ncvar</span><span class="p">,</span> <span class="n">k</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">ncvar</span><span class="o">.</span><span class="n">ncattrs</span><span class="p">())</span>

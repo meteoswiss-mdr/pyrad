@@ -1204,7 +1204,7 @@ of the radar field</p>
 
 <dl class="function">
 <dt id="pyrad.io.cosmo2radar_data">
-<code class="descclassname">pyrad.io.</code><code class="descname">cosmo2radar_data</code><span class="sig-paren">(</span><em>radar, cosmo_coord, cosmo_data, time_index=0, slice_xy=True, slice_z=False, field_names=['temperature']</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/read_data_cosmo.html#cosmo2radar_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.cosmo2radar_data" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyrad.io.</code><code class="descname">cosmo2radar_data</code><span class="sig-paren">(</span><em>radar, cosmo_coord, cosmo_data, time_index=0, slice_xy=True, slice_z=False, field_names=['temperature'], dtype=&lt;class 'numpy.float32'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/read_data_cosmo.html#cosmo2radar_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.cosmo2radar_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>get the COSMO value corresponding to each radar gate using nearest
 neighbour interpolation</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1235,6 +1235,9 @@ of the radar field</p>
 </dd>
 <dt><strong>field_names</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
 <dd><p class="first last">names of COSMO fields to convert (default temperature)</p>
+</dd>
+<dt><strong>dtype</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy data type object</span></dt>
+<dd><p class="first last">the data type of the output data</p>
 </dd>
 </dl>
 </td>
