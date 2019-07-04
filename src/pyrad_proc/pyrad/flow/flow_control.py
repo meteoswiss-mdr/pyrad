@@ -55,7 +55,7 @@ except ImportError:
 def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
          flashnr=0, infostr="", MULTIPROCESSING_DSET=False,
          MULTIPROCESSING_PROD=False, PROFILE_MULTIPROCESSING=False,
-         USE_CHILD_PROCESS=True):
+         USE_CHILD_PROCESS=False):
     """
     Main flow control. Processes radar data off-line over a period of time
     given either by the user, a trajectory file, or determined by the last
@@ -118,7 +118,7 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
             not USE_CHILD_PROCESS):
         PROFILE_MULTIPROCESSING = False
     elif (int(MULTIPROCESSING_DSET)+int(MULTIPROCESSING_PROD) +
-            int(USE_CHILD_PROCESS) > 1):
+          int(USE_CHILD_PROCESS) > 1):
         PROFILE_MULTIPROCESSING = False
 
     if (int(MULTIPROCESSING_DSET)+int(MULTIPROCESSING_PROD) +
@@ -190,8 +190,6 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
         print('\n- master file: {}'.format(os.path.basename(masterfile)))
 
         master_voltime = get_datetime(masterfile, masterdatatypedescr)
-
-        # print(sys.getsizeof(dscfg))
 
         if USE_CHILD_PROCESS:
             data_reading = dask.delayed(_get_radars_data)(
