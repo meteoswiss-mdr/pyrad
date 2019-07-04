@@ -70,6 +70,8 @@
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">timedelta</span>
@@ -95,6 +97,7 @@
 <span class="n">ALLOW_USER_BREAK</span> <span class="o">=</span> <span class="kc">False</span>
 
 <span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">dask</span>
     <span class="kn">from</span> <span class="nn">dask.diagnostics</span> <span class="k">import</span> <span class="n">Profiler</span><span class="p">,</span> <span class="n">ResourceProfiler</span><span class="p">,</span> <span class="n">CacheProfiler</span>
     <span class="kn">from</span> <span class="nn">dask.diagnostics</span> <span class="k">import</span> <span class="n">visualize</span>
     <span class="kn">from</span> <span class="nn">distributed</span> <span class="k">import</span> <span class="n">Client</span>
@@ -107,7 +110,8 @@
 
 <div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../flow.html#pyrad.flow.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">cfgfile</span><span class="p">,</span> <span class="n">starttime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">endtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">trajfile</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">trajtype</span><span class="o">=</span><span class="s1">&#39;plane&#39;</span><span class="p">,</span>
          <span class="n">flashnr</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">infostr</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">MULTIPROCESSING_DSET</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-         <span class="n">MULTIPROCESSING_PROD</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">PROFILE_MULTIPROCESSING</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+         <span class="n">MULTIPROCESSING_PROD</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">PROFILE_MULTIPROCESSING</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+         <span class="n">USE_CHILD_PROCESS</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Main flow control. Processes radar data off-line over a period of time</span>
 <span class="sd">    given either by the user, a trajectory file, or determined by the last</span>
@@ -140,12 +144,16 @@
 <span class="sd">        parallelized</span>
 <span class="sd">    PROFILE_MULTIPROCESSING : Bool</span>
 <span class="sd">        If true and code parallelized the multiprocessing is profiled</span>
+<span class="sd">    USE_CHILD_PROCESS : Bool</span>
+<span class="sd">        If true the reading and processing of the data will be performed by</span>
+<span class="sd">        a child process controlled by dask. This is done to make sure all</span>
+<span class="sd">        memory used is released.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;- PYRAD version: </span><span class="si">%s</span><span class="s2"> (compiled </span><span class="si">%s</span><span class="s2"> by </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span>
-          <span class="p">(</span><span class="n">pyrad_version</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="n">pyrad_version</span><span class="o">.</span><span class="n">compile_date_time</span><span class="p">,</span>
-           <span class="n">pyrad_version</span><span class="o">.</span><span class="n">username</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;- PYART version: &quot;</span> <span class="o">+</span> <span class="n">pyart_version</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;- PYRAD version: </span><span class="si">{}</span><span class="s2"> (compiled </span><span class="si">{}</span><span class="s2"> by </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">pyrad_version</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="n">pyrad_version</span><span class="o">.</span><span class="n">compile_date_time</span><span class="p">,</span>
+        <span class="n">pyrad_version</span><span class="o">.</span><span class="n">username</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;- PYART version: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pyart_version</span><span class="o">.</span><span class="n">version</span><span class="p">))</span>
 
     <span class="c1"># Define behaviour of warnings</span>
     <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;always&#39;</span><span class="p">)</span>  <span class="c1"># always print matching warnings</span>
@@ -159,14 +167,18 @@
         <span class="n">MULTIPROCESSING_DSET</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">MULTIPROCESSING_PROD</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">PROFILE_MULTIPROCESSING</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">USE_CHILD_PROCESS</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="c1"># check if multiprocessing profiling is necessary</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">MULTIPROCESSING_DSET</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">MULTIPROCESSING_PROD</span><span class="p">:</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">MULTIPROCESSING_DSET</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">MULTIPROCESSING_PROD</span> <span class="ow">and</span>
+            <span class="ow">not</span> <span class="n">USE_CHILD_PROCESS</span><span class="p">):</span>
         <span class="n">PROFILE_MULTIPROCESSING</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="k">elif</span> <span class="n">MULTIPROCESSING_DSET</span> <span class="ow">and</span> <span class="n">MULTIPROCESSING_PROD</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">MULTIPROCESSING_DSET</span><span class="p">)</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="n">MULTIPROCESSING_PROD</span><span class="p">)</span> <span class="o">+</span>
+          <span class="nb">int</span><span class="p">(</span><span class="n">USE_CHILD_PROCESS</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
         <span class="n">PROFILE_MULTIPROCESSING</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="k">if</span> <span class="n">MULTIPROCESSING_DSET</span> <span class="ow">and</span> <span class="n">MULTIPROCESSING_PROD</span><span class="p">:</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">MULTIPROCESSING_DSET</span><span class="p">)</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="n">MULTIPROCESSING_PROD</span><span class="p">)</span> <span class="o">+</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">USE_CHILD_PROCESS</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
         <span class="c1"># necessary to launch tasks from tasks</span>
         <span class="n">Client</span><span class="p">()</span>
 
@@ -188,7 +200,7 @@
         <span class="n">flashnr</span><span class="o">=</span><span class="n">flashnr</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">infostr</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;- Info string : &#39;</span> <span class="o">+</span> <span class="n">infostr</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;- Info string : </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">infostr</span><span class="p">))</span>
 
     <span class="c1"># get data types and levels</span>
     <span class="n">datatypesdescr_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -205,15 +217,15 @@
     <span class="n">nvolumes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">masterfilelist</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">nvolumes</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;ERROR: Could not find any valid volumes between &quot;</span> <span class="o">+</span>
-            <span class="n">starttimes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; and &quot;</span> <span class="o">+</span>
-            <span class="n">endtimes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; for &quot;</span> <span class="o">+</span>
-            <span class="s2">&quot;master scan &#39;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">masterscan</span><span class="p">)</span> <span class="o">+</span>
-            <span class="s2">&quot;&#39; and master data type &#39;&quot;</span> <span class="o">+</span> <span class="n">masterdatatypedescr</span> <span class="o">+</span>
-            <span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;- Number of volumes to process: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nvolumes</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;- Start time: &#39;</span> <span class="o">+</span> <span class="n">starttimes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;- end time: &#39;</span> <span class="o">+</span> <span class="n">endtimes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">))</span>
+            <span class="s2">&quot;ERROR: Could not find any valid volumes between &quot;</span>
+            <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> and </span><span class="si">{}</span><span class="s2"> for master scan &#39;</span><span class="si">{}</span><span class="s2">&#39; and master data type &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">starttimes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">),</span>
+                <span class="n">endtimes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">),</span> <span class="n">masterscan</span><span class="p">,</span>
+                <span class="n">masterdatatypedescr</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;- Number of volumes to process: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nvolumes</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;- Start time: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">starttimes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;- end time: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">endtimes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)))</span>
 
     <span class="c1"># initial processing of the datasets</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">- Initializing datasets:&#39;</span><span class="p">)</span>
@@ -231,22 +243,53 @@
             <span class="k">except</span> <span class="n">queue</span><span class="o">.</span><span class="n">Empty</span><span class="p">:</span>
                 <span class="k">pass</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">- master file: &#39;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">masterfile</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">- master file: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">masterfile</span><span class="p">)))</span>
 
         <span class="n">master_voltime</span> <span class="o">=</span> <span class="n">get_datetime</span><span class="p">(</span><span class="n">masterfile</span><span class="p">,</span> <span class="n">masterdatatypedescr</span><span class="p">)</span>
 
-        <span class="n">radar_list</span> <span class="o">=</span> <span class="n">_get_radars_data</span><span class="p">(</span>
-            <span class="n">master_voltime</span><span class="p">,</span> <span class="n">datatypesdescr_list</span><span class="p">,</span> <span class="n">datacfg</span><span class="p">,</span>
-            <span class="n">num_radars</span><span class="o">=</span><span class="n">datacfg</span><span class="p">[</span><span class="s1">&#39;NumRadars&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">USE_CHILD_PROCESS</span><span class="p">:</span>
+            <span class="n">data_reading</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">_get_radars_data</span><span class="p">)(</span>
+                <span class="n">master_voltime</span><span class="p">,</span> <span class="n">datatypesdescr_list</span><span class="p">,</span> <span class="n">datacfg</span><span class="p">,</span>
+                <span class="n">num_radars</span><span class="o">=</span><span class="n">datacfg</span><span class="p">[</span><span class="s1">&#39;NumRadars&#39;</span><span class="p">])</span>
 
-        <span class="c1"># process all data sets</span>
-        <span class="n">dscfg</span><span class="p">,</span> <span class="n">traj</span> <span class="o">=</span> <span class="n">_process_datasets</span><span class="p">(</span>
-            <span class="n">dataset_levels</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">radar_list</span><span class="p">,</span> <span class="n">master_voltime</span><span class="p">,</span> <span class="n">traj</span><span class="o">=</span><span class="n">traj</span><span class="p">,</span>
-            <span class="n">infostr</span><span class="o">=</span><span class="n">infostr</span><span class="p">,</span> <span class="n">MULTIPROCESSING_DSET</span><span class="o">=</span><span class="n">MULTIPROCESSING_DSET</span><span class="p">,</span>
-            <span class="n">MULTIPROCESSING_PROD</span><span class="o">=</span><span class="n">MULTIPROCESSING_PROD</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">radar_list</span> <span class="o">=</span> <span class="n">data_reading</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+                <span class="k">del</span> <span class="n">data_reading</span>
 
-        <span class="c1"># delete variables</span>
-        <span class="k">del</span> <span class="n">radar_list</span>
+                <span class="n">dscfg_aux</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">dscfg</span><span class="p">)</span>
+                <span class="n">traj_aux</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">traj</span><span class="p">)</span>
+                <span class="n">data_processing</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">_process_datasets</span><span class="p">)(</span>
+                    <span class="n">dataset_levels</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">dscfg_aux</span><span class="p">,</span> <span class="n">radar_list</span><span class="p">,</span>
+                    <span class="n">master_voltime</span><span class="p">,</span> <span class="n">traj</span><span class="o">=</span><span class="n">traj_aux</span><span class="p">,</span> <span class="n">infostr</span><span class="o">=</span><span class="n">infostr</span><span class="p">,</span>
+                    <span class="n">MULTIPROCESSING_DSET</span><span class="o">=</span><span class="n">MULTIPROCESSING_DSET</span><span class="p">,</span>
+                    <span class="n">MULTIPROCESSING_PROD</span><span class="o">=</span><span class="n">MULTIPROCESSING_PROD</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">dscfg</span><span class="p">,</span> <span class="n">traj</span> <span class="o">=</span> <span class="n">data_processing</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+                    <span class="k">del</span> <span class="n">data_processing</span>
+                    <span class="k">del</span> <span class="n">radar_list</span>
+                    <span class="k">del</span> <span class="n">dscfg_aux</span>
+                    <span class="k">del</span> <span class="n">traj_aux</span>
+
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ee</span><span class="p">:</span>
+                    <span class="n">warn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
+                    <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ee</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
+                <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">radar_list</span> <span class="o">=</span> <span class="n">_get_radars_data</span><span class="p">(</span>
+                <span class="n">master_voltime</span><span class="p">,</span> <span class="n">datatypesdescr_list</span><span class="p">,</span> <span class="n">datacfg</span><span class="p">,</span>
+                <span class="n">num_radars</span><span class="o">=</span><span class="n">datacfg</span><span class="p">[</span><span class="s1">&#39;NumRadars&#39;</span><span class="p">])</span>
+
+            <span class="c1"># process all data sets</span>
+            <span class="n">dscfg</span><span class="p">,</span> <span class="n">traj</span> <span class="o">=</span> <span class="n">_process_datasets</span><span class="p">(</span>
+                <span class="n">dataset_levels</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">radar_list</span><span class="p">,</span> <span class="n">master_voltime</span><span class="p">,</span> <span class="n">traj</span><span class="o">=</span><span class="n">traj</span><span class="p">,</span>
+                <span class="n">infostr</span><span class="o">=</span><span class="n">infostr</span><span class="p">,</span> <span class="n">MULTIPROCESSING_DSET</span><span class="o">=</span><span class="n">MULTIPROCESSING_DSET</span><span class="p">,</span>
+                <span class="n">MULTIPROCESSING_PROD</span><span class="o">=</span><span class="n">MULTIPROCESSING_PROD</span><span class="p">)</span>
+
+            <span class="c1"># delete variables</span>
+            <span class="k">del</span> <span class="n">radar_list</span>
 
         <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
 

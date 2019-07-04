@@ -86,7 +86,7 @@
 </table>
 <dl class="function">
 <dt id="pyrad.flow.main">
-<code class="descclassname">pyrad.flow.</code><code class="descname">main</code><span class="sig-paren">(</span><em>cfgfile</em>, <em>starttime=None</em>, <em>endtime=None</em>, <em>trajfile=''</em>, <em>trajtype='plane'</em>, <em>flashnr=0</em>, <em>infostr=''</em>, <em>MULTIPROCESSING_DSET=False</em>, <em>MULTIPROCESSING_PROD=False</em>, <em>PROFILE_MULTIPROCESSING=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_control.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.main" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyrad.flow.</code><code class="descname">main</code><span class="sig-paren">(</span><em>cfgfile</em>, <em>starttime=None</em>, <em>endtime=None</em>, <em>trajfile=''</em>, <em>trajtype='plane'</em>, <em>flashnr=0</em>, <em>infostr=''</em>, <em>MULTIPROCESSING_DSET=False</em>, <em>MULTIPROCESSING_PROD=False</em>, <em>PROFILE_MULTIPROCESSING=False</em>, <em>USE_CHILD_PROCESS=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/flow/flow_control.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.flow.main" title="Permalink to this definition">¶</a></dt>
 <dd><p>Main flow control. Processes radar data off-line over a period of time
 given either by the user, a trajectory file, or determined by the last
 volume processed and the current time. Multiple radars can be processed
@@ -128,6 +128,11 @@ parallelized</p>
 </dd>
 <dt><strong>PROFILE_MULTIPROCESSING</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Bool</span></dt>
 <dd><p class="first last">If true and code parallelized the multiprocessing is profiled</p>
+</dd>
+<dt><strong>USE_CHILD_PROCESS</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Bool</span></dt>
+<dd><p class="first last">If true the reading and processing of the data will be performed by
+a child process controlled by dask. This is done to make sure all
+memory used is released.</p>
 </dd>
 </dl>
 </td>
