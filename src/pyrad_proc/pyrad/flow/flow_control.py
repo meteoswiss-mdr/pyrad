@@ -14,6 +14,7 @@ functions to control the Pyrad data processing flow
 from __future__ import print_function
 import warnings
 from warnings import warn
+import sys
 import traceback
 import os
 from datetime import datetime
@@ -93,10 +94,10 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
         memory used is released.
 
     """
-    print("- PYRAD version: %s (compiled %s by %s)" %
-          (pyrad_version.version, pyrad_version.compile_date_time,
-           pyrad_version.username))
-    print("- PYART version: " + pyart_version.version)
+    print("- PYRAD version: {} (compiled {} by {})".format(
+        pyrad_version.version, pyrad_version.compile_date_time,
+        pyrad_version.username))
+    print("- PYART version: {}".format(pyart_version.version))
 
     # Define behaviour of warnings
     warnings.simplefilter('always')  # always print matching warnings
@@ -113,12 +114,15 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
         USE_CHILD_PROCESS = False
 
     # check if multiprocessing profiling is necessary
-    if not MULTIPROCESSING_DSET and not MULTIPROCESSING_PROD:
+    if (not MULTIPROCESSING_DSET and not MULTIPROCESSING_PROD and
+            not USE_CHILD_PROCESS):
         PROFILE_MULTIPROCESSING = False
-    elif MULTIPROCESSING_DSET and MULTIPROCESSING_PROD:
+    elif (int(MULTIPROCESSING_DSET)+int(MULTIPROCESSING_PROD) +
+            int(USE_CHILD_PROCESS) > 1):
         PROFILE_MULTIPROCESSING = False
 
-    if MULTIPROCESSING_DSET and MULTIPROCESSING_PROD:
+    if (int(MULTIPROCESSING_DSET)+int(MULTIPROCESSING_PROD) +
+            int(USE_CHILD_PROCESS) > 1):
         # necessary to launch tasks from tasks
         Client()
 
@@ -140,7 +144,7 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
         flashnr=flashnr)
 
     if infostr:
-        print('- Info string : ' + infostr)
+        print('- Info string : {}'.format(infostr))
 
     # get data types and levels
     datatypesdescr_list = list()
@@ -157,15 +161,15 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
     nvolumes = len(masterfilelist)
     if nvolumes == 0:
         raise ValueError(
-            "ERROR: Could not find any valid volumes between " +
-            starttimes[0].strftime('%Y-%m-%d %H:%M:%S') + " and " +
-            endtimes[-1].strftime('%Y-%m-%d %H:%M:%S') + " for " +
-            "master scan '" + str(masterscan) +
-            "' and master data type '" + masterdatatypedescr +
-            "'")
-    print('- Number of volumes to process: ' + str(nvolumes))
-    print('- Start time: ' + starttimes[0].strftime("%Y-%m-%d %H:%M:%S"))
-    print('- end time: ' + endtimes[-1].strftime("%Y-%m-%d %H:%M:%S"))
+            "ERROR: Could not find any valid volumes between "
+            "{} and {} for master scan '{}' and master data type '{}'".format(
+                starttimes[0].strftime('%Y-%m-%d %H:%M:%S'),
+                endtimes[-1].strftime('%Y-%m-%d %H:%M:%S'), masterscan,
+                masterdatatypedescr))
+    print('- Number of volumes to process: {}'.format(nvolumes))
+    print('- Start time: {}'.format(
+        starttimes[0].strftime("%Y-%m-%d %H:%M:%S")))
+    print('- end time: {}'.format(endtimes[-1].strftime("%Y-%m-%d %H:%M:%S")))
 
     # initial processing of the datasets
     print('\n\n- Initializing datasets:')
@@ -183,34 +187,34 @@ def main(cfgfile, starttime=None, endtime=None, trajfile="", trajtype='plane',
             except queue.Empty:
                 pass
 
-        print('\n- master file: ' + os.path.basename(masterfile))
+        print('\n- master file: {}'.format(os.path.basename(masterfile)))
 
         master_voltime = get_datetime(masterfile, masterdatatypedescr)
 
+        # print(sys.getsizeof(dscfg))
+
         if USE_CHILD_PROCESS:
-            jobs = []
-            jobs.append(dask.delayed(_get_radars_data)(
+            data_reading = dask.delayed(_get_radars_data)(
                 master_voltime, datatypesdescr_list, datacfg,
-                num_radars=datacfg['NumRadars']))
+                num_radars=datacfg['NumRadars'])
 
             try:
-                jobs = dask.compute(*jobs)
-                radar_list = jobs[0]
+                radar_list = data_reading.compute()
+                del data_reading
 
-                jobs = []
                 dscfg_aux = dask.delayed(dscfg)
                 traj_aux = dask.delayed(traj)
-                jobs.append(dask.delayed(_process_datasets)(
+                data_processing = dask.delayed(_process_datasets)(
                     dataset_levels, cfg, dscfg_aux, radar_list,
                     master_voltime, traj=traj_aux, infostr=infostr,
                     MULTIPROCESSING_DSET=MULTIPROCESSING_DSET,
-                    MULTIPROCESSING_PROD=MULTIPROCESSING_PROD))
+                    MULTIPROCESSING_PROD=MULTIPROCESSING_PROD)
                 try:
-                    jobs = dask.compute(*jobs)
-                    dscfg = jobs[0][0]
-                    traj = jobs[0][1]
-                    del jobs
+                    dscfg, traj = data_processing.compute()
+                    del data_processing
                     del radar_list
+                    del dscfg_aux
+                    del traj_aux
 
                 except Exception as ee:
                     warn(str(ee))
