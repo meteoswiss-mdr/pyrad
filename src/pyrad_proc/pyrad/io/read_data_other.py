@@ -896,7 +896,7 @@ def read_timeseries(fname):
             date = list()
             for i, row in enumerate(reader):
                 date.append(datetime.datetime.strptime(
-                    row['date'], '%Y-%m-%d %H:%M:%S.%f'))
+                    row['date'][0:19], '%Y-%m-%d %H:%M:%S'))
                 value[i] = float(row['value'])
 
             value = np.ma.masked_values(value, get_fillvalue())
