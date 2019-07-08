@@ -18,6 +18,7 @@ Functions to plot radar volume data
     plot_traj
     plot_rhi_contour
     plot_ppi_contour
+    plot_roi_contour
     plot_rhi_profile
     plot_along_coord
     plot_field_coverage
@@ -27,6 +28,20 @@ Functions to plot radar volume data
 from warnings import warn
 
 import numpy as np
+
+try:
+    import cartopy
+    from cartopy.io.img_tiles import Stamen
+    _CARTOPY_AVAILABLE = True
+except ImportError:
+    _CARTOPY_AVAILABLE = False
+
+try:
+    import shapely
+    _SHAPELY_AVAILABLE = True
+except ImportError:
+    warn('shapely not available')
+    _SHAPELY_AVAILABLE = False
 
 import matplotlib as mpl
 mpl.use('Agg')
@@ -153,7 +168,8 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
     return fname_list
 
 
-def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
+def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list,
+                 save_fig=True):
     """
     plots a PPI on a geographic map
 
@@ -169,11 +185,15 @@ def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
         dictionary containing the product configuration
     fname_list : list of str
         list of names of the files where to store the plot
+    save_fig : bool
+        if true save the figure. If false it does not close the plot and
+        returns the handle to the figure
 
     Returns
     -------
-    fname_list : list of str
-        list of names of the created plots
+    fname_list : list of str or
+    fig, ax, display : tupple
+        list of names of the saved plots or handle of the figure an axes
 
     """
     dpi = prdcfg['ppiImageConfig'].get('dpi', 72)
@@ -209,6 +229,8 @@ def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
         maps_list=prdcfg['ppiMapImageConfig']['maps'], ax=ax, fig=fig,
         colorbar_flag=True, alpha=1)
 
+    ax = display_map.ax
+
     if 'rngRing' in prdcfg['ppiMapImageConfig']:
         if prdcfg['ppiMapImageConfig']['rngRing'] > 0:
             rng_rings = np.arange(
@@ -217,12 +239,14 @@ def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list):
             for rng_ring in rng_rings:
                 display_map.plot_range_ring(rng_ring, ax=ax)
 
-    for fname in fname_list:
-        fig.savefig(fname, dpi=dpi)
+    if save_fig:
+        for fname in fname_list:
+            fig.savefig(fname, dpi=dpi)
+        plt.close(fig)
 
-    plt.close(fig)
+        return fname_list
 
-    return fname_list
+    return (fig, ax, display_map)
 
 
 def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
@@ -1209,6 +1233,126 @@ def plot_ppi_contour(radar, field_name, ind_el, prdcfg, fname_list,
         ax.autoscale(False)
         ax.contour(x, y, data, contour_values, colors='k',
                    linewidths=linewidths)
+
+    if save_fig:
+        for fname in fname_list:
+            fig.savefig(fname, dpi=dpi)
+        plt.close(fig)
+
+        return fname_list
+
+    return (fig, ax)
+
+
+def plot_roi_contour(roi_dict, prdcfg, fname_list, plot_center=True,
+                     xlabel='Lon [Deg]', ylabel='Lat [Deg]',
+                     titl='TRT cell position', ax=None,
+                     fig=None, save_fig=True):
+    """
+    plots the contour of a region of interest on a map
+
+    Parameters
+    ----------
+    roi_dict : dict
+        dictionary containing lon_roi, lat_roi, the points defining the
+        contour
+    prdcfg : dict
+        dictionary containing the product configuration
+    fname_list : list of str
+        list of names of the files where to store the plot
+    plot_center : bool
+        If True a marked with the center of the roi is plotted
+    fig : Figure
+        Figure to add the colorbar to. If none a new figure will be created
+    ax : Axis
+        Axis to plot on. if fig is None a new axis will be created
+    save_fig : bool
+        if true save the figure if false it does not close the plot and
+        returns the handle to the figure
+
+    Returns
+    -------
+    fname_list : list of str or
+    fig, ax : tupple
+        list of names of the saved plots or handle of the figure an axes
+
+    """
+    if not _SHAPELY_AVAILABLE or not _CARTOPY_AVAILABLE:
+        warn('Unable to plot ROI contour: Missing shapely and/or'
+             ' cartopy modules')
+        return None
+
+    dpi = prdcfg['ppiMapImageConfig'].get('dpi', 72)
+
+    # create polygon to plot
+    polygon = shapely.geometry.Polygon(list(zip(
+        roi_dict['lon'], roi_dict['lat'])))
+
+    # display data
+    if fig is None:
+        xsize = prdcfg['ppiMapImageConfig']['xsize']
+        ysize = prdcfg['ppiMapImageConfig']['ysize']
+        lonstep = prdcfg['ppiMapImageConfig'].get('lonstep', 0.5)
+        latstep = prdcfg['ppiMapImageConfig'].get('latstep', 0.5)
+        min_lon = prdcfg['ppiMapImageConfig'].get('lonmin', 2.5)
+        max_lon = prdcfg['ppiMapImageConfig'].get('lonmax', 12.5)
+        min_lat = prdcfg['ppiMapImageConfig'].get('latmin', 43.5)
+        max_lat = prdcfg['ppiMapImageConfig'].get('latmax', 49.5)
+        resolution = prdcfg['ppiMapImageConfig'].get('mapres', '110m')
+        if resolution not in ('110m', '50m', '10m'):
+            warn('Unknown map resolution: '+resolution)
+            resolution = '110m'
+        background_zoom = prdcfg['ppiMapImageConfig'].get(
+            'background_zoom', 8)
+
+        lon_lines = np.arange(np.floor(min_lon), np.ceil(max_lon)+1, lonstep)
+        lat_lines = np.arange(np.floor(min_lat), np.ceil(max_lat)+1, latstep)
+        limits = [min_lon, max_lon, min_lat, max_lat]
+
+        # get background map instance
+        stamen_terrain = Stamen('terrain-background')
+        projection = cartopy.crs.PlateCarree()
+
+        fig = plt.figure(figsize=[xsize, ysize], dpi=dpi)
+
+        # draw background
+        ax = fig.add_subplot(111, projection=stamen_terrain.crs)
+        ax.set_extent(limits, crs=projection)
+        ax.add_image(stamen_terrain, background_zoom)
+
+        # add countries
+        countries = cartopy.feature.NaturalEarthFeature(
+            category='cultural',
+            name='admin_0_countries',
+            scale=resolution,
+            facecolor='none')
+        ax.add_feature(countries, edgecolor='black')
+
+        # draw grid lines and labels
+        gl = ax.gridlines(xlocs=lon_lines, ylocs=lat_lines, draw_labels=True)
+        gl.xlabels_top = False
+        gl.ylabels_right = False
+
+        ax.text(0.5, -0.2, xlabel, va='bottom', ha='center',
+                rotation='horizontal', rotation_mode='anchor',
+                transform=ax.transAxes)
+
+        ax.text(-0.1, 0.55, ylabel, va='bottom', ha='center',
+                rotation='vertical', rotation_mode='anchor',
+                transform=ax.transAxes)
+
+        ax.set_title(titl)
+    else:
+        ax.autoscale(False)
+
+    ax.add_geometries(
+        [polygon], cartopy.crs.PlateCarree(), facecolor='none',
+        edgecolor='k')
+
+    if 'lon_center' in roi_dict and 'lat_center' in roi_dict and plot_center:
+        ax.scatter(
+            [roi_dict['lon_center']], [roi_dict['lat_center']], c='k',
+            marker='x', transform=cartopy.crs.PlateCarree())
 
     if save_fig:
         for fname in fname_list:

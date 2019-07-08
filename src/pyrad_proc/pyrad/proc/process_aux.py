@@ -96,6 +96,7 @@ def get_process_func(dataset_type, dsname):
                 'SNR': process_snr
                 'SNR_FILTER': process_filter_snr
                 'TRAJ_TRT' : process_traj_trt
+                'TRAJ_TRT_CONTOUR' : process_traj_trt_contour
                 'VAD': process_vad
                 'VEL_FILTER': process_filter_vel_diff
                 'VIS': process_visibility
@@ -434,6 +435,8 @@ def get_process_func(dataset_type, dsname):
         dsformat = 'TIMESERIES'
     elif dataset_type == 'TRAJ_TRT':
         func_name = 'process_traj_trt'
+    elif dataset_type == 'TRAJ_TRT_CONTOUR':
+        func_name = 'process_traj_trt_contour'
     elif dataset_type == 'FIXED_RNG':
         func_name = process_fixed_rng
     elif dataset_type == 'FIXED_RNG_SPAN':
