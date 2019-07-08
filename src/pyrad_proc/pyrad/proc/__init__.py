@@ -177,6 +177,7 @@ Trajectory functions
     process_traj_antenna_pattern
     process_traj_lightning
     process_traj_trt
+    process_traj_trt_contour
 
 COSMO data
 ==========
@@ -230,7 +231,7 @@ from .process_timeseries import process_time_height
 
 from .process_traj import process_trajectory, process_traj_atplane
 from .process_traj import process_traj_antenna_pattern, process_traj_lightning
-from .process_traj import process_traj_trt
+from .process_traj import process_traj_trt, process_traj_trt_contour
 
 from .process_echoclass import process_echo_id, process_birds_id
 from .process_echoclass import process_echo_filter, process_clt_to_echo_id

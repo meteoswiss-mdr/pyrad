@@ -29,6 +29,7 @@ from ..graph.plots_vol import plot_bscope, plot_rhi_profile, plot_along_coord
 from ..graph.plots_vol import plot_field_coverage, plot_time_range
 from ..graph.plots_vol import plot_rhi_contour, plot_ppi_contour
 from ..graph.plots_vol import plot_fixed_rng, plot_fixed_rng_span
+from ..graph.plots_vol import plot_roi_contour
 from ..graph.plots import plot_quantiles, plot_histogram
 from ..graph.plots_aux import get_colobar_label, get_field_name
 
@@ -201,6 +202,13 @@ def generate_vol_products(dataset, prdcfg):
                     compute. If None a default list of quantiles will be
                     computed
         'PPI_MAP': Plots a PPI image over a map. The map resolution and the
+            type of maps used are defined in the variables 'mapres' and 'maps'
+            in 'ppiMapImageConfig' in the loc config file.
+            User defined parameters:
+                anglenr: float
+                    The elevation angle number
+        'PPIMAP_ROI_OVERPLOT': Over plots a polygon delimiting a region of
+            interest on a PPI map. The map resolution and the
             type of maps used are defined in the variables 'mapres' and 'maps'
             in 'ppiMapImageConfig' in the loc config file.
             User defined parameters:
@@ -680,6 +688,44 @@ def generate_vol_products(dataset, prdcfg):
         fname_list = plot_ppi_contour(
             dataset['radar_out'], contour_name, ind_el, prdcfg, fname_list,
             contour_values=contour_values, ax=ax, fig=fig, save_fig=True)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+    if prdcfg['type'] == 'PPIMAP_ROI_OVERPLOT':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        el_vec = np.sort(dataset['radar_out'].fixed_angle['data'])
+        el = el_vec[prdcfg['anglenr']]
+        ind_el = np.where(
+            dataset['radar_out'].fixed_angle['data'] == el)[0][0]
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            'ppi_map', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo='el'+'{:.1f}'.format(el),
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        fig, ax, _ = plot_ppi_map(
+            dataset['radar_out'], field_name, ind_el, prdcfg, fname_list,
+            save_fig=False)
+
+        fname_list = plot_roi_contour(
+            dataset['roi_dict'], prdcfg, fname_list, ax=ax, fig=fig,
+            save_fig=True)
 
         print('----- save to '+' '.join(fname_list))
 

@@ -85,6 +85,7 @@
 <span class="kn">from</span> <span class="nn">..graph.plots_vol</span> <span class="k">import</span> <span class="n">plot_field_coverage</span><span class="p">,</span> <span class="n">plot_time_range</span>
 <span class="kn">from</span> <span class="nn">..graph.plots_vol</span> <span class="k">import</span> <span class="n">plot_rhi_contour</span><span class="p">,</span> <span class="n">plot_ppi_contour</span>
 <span class="kn">from</span> <span class="nn">..graph.plots_vol</span> <span class="k">import</span> <span class="n">plot_fixed_rng</span><span class="p">,</span> <span class="n">plot_fixed_rng_span</span>
+<span class="kn">from</span> <span class="nn">..graph.plots_vol</span> <span class="k">import</span> <span class="n">plot_roi_contour</span>
 <span class="kn">from</span> <span class="nn">..graph.plots</span> <span class="k">import</span> <span class="n">plot_quantiles</span><span class="p">,</span> <span class="n">plot_histogram</span>
 <span class="kn">from</span> <span class="nn">..graph.plots_aux</span> <span class="k">import</span> <span class="n">get_colobar_label</span><span class="p">,</span> <span class="n">get_field_name</span>
 
@@ -257,6 +258,13 @@
 <span class="sd">                    compute. If None a default list of quantiles will be</span>
 <span class="sd">                    computed</span>
 <span class="sd">        &#39;PPI_MAP&#39;: Plots a PPI image over a map. The map resolution and the</span>
+<span class="sd">            type of maps used are defined in the variables &#39;mapres&#39; and &#39;maps&#39;</span>
+<span class="sd">            in &#39;ppiMapImageConfig&#39; in the loc config file.</span>
+<span class="sd">            User defined parameters:</span>
+<span class="sd">                anglenr: float</span>
+<span class="sd">                    The elevation angle number</span>
+<span class="sd">        &#39;PPIMAP_ROI_OVERPLOT&#39;: Over plots a polygon delimiting a region of</span>
+<span class="sd">            interest on a PPI map. The map resolution and the</span>
 <span class="sd">            type of maps used are defined in the variables &#39;mapres&#39; and &#39;maps&#39;</span>
 <span class="sd">            in &#39;ppiMapImageConfig&#39; in the loc config file.</span>
 <span class="sd">            User defined parameters:</span>
@@ -736,6 +744,44 @@
         <span class="n">fname_list</span> <span class="o">=</span> <span class="n">plot_ppi_contour</span><span class="p">(</span>
             <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">contour_name</span><span class="p">,</span> <span class="n">ind_el</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
             <span class="n">contour_values</span><span class="o">=</span><span class="n">contour_values</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span> <span class="n">save_fig</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----- save to &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fname_list</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">fname_list</span>
+
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PPIMAP_ROI_OVERPLOT&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="s1">&#39; Field type &#39;</span> <span class="o">+</span> <span class="n">field_name</span> <span class="o">+</span>
+                <span class="s1">&#39; not available in data set. Skipping product &#39;</span> <span class="o">+</span>
+                <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">el_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+        <span class="n">el</span> <span class="o">=</span> <span class="n">el_vec</span><span class="p">[</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;anglenr&#39;</span><span class="p">]]</span>
+        <span class="n">ind_el</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">el</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">savedir</span> <span class="o">=</span> <span class="n">get_save_dir</span><span class="p">(</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;basepath&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;procname&#39;</span><span class="p">],</span> <span class="n">dssavedir</span><span class="p">,</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;prdname&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+
+        <span class="n">fname_list</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
+            <span class="s1">&#39;ppi_map&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;imgformat&#39;</span><span class="p">],</span> <span class="n">prdcfginfo</span><span class="o">=</span><span class="s1">&#39;el&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">el</span><span class="p">),</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
+            <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
+
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">plot_ppi_map</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_el</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
+            <span class="n">save_fig</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">fname_list</span> <span class="o">=</span> <span class="n">plot_roi_contour</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;roi_dict&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span>
+            <span class="n">save_fig</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----- save to &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fname_list</span><span class="p">))</span>
 

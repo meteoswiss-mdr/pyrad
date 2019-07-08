@@ -64,7 +64,7 @@ def plot_surface(grid, field_name, level, prdcfg, fname_list, titl=None,
     Returns
     -------
     fname_list : list of str or
-    fig, ax : tupple
+    fig, ax, display : tupple
         list of names of the saved plots or handle of the figure an axes
 
     """

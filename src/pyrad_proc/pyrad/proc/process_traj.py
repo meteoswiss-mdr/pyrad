@@ -10,10 +10,12 @@ the product generation functions.
 
     process_trajectory
     process_traj_trt
+    process_traj_trt_contour
     process_traj_lightning
     process_traj_atplane
     process_traj_antenna_pattern
     _get_ts_values_antenna_pattern
+    _get_contour_trt
     _get_gates
     _get_gates_trt
     _get_gates_antenna_pattern
@@ -112,6 +114,12 @@ def process_traj_trt(procstatus, dscfg, radar_list=None, trajectory=None):
         alt_min, alt_max : float. Dataset keyword
             Minimum and maximum altitude of the data inside the TRT cell to
             retrieve [m MSL]. Default None
+        cell_center : Bool. Dataset keyword
+            If True only the range gate closest to the center of the cell is
+            extracted. Default False
+        latlon_tol : Float. Dataset keyword
+            Tolerance in lat/lon when extracting data only from the center of
+            the TRT cell. Default 0.01
     radar_list : list of Radar objects
         Optional. list of radar objects
     trajectory : Trajectory object
@@ -119,8 +127,9 @@ def process_traj_trt(procstatus, dscfg, radar_list=None, trajectory=None):
 
     Returns
     -------
-    trajectory : Trajectory object
-        Object holding time series
+    new_dataset : dictionary
+        Dictionary containing radar_out, a radar object containing only data
+        from inside the TRT cell
     ind_rad : int
         radar index
 
@@ -232,6 +241,85 @@ def process_traj_trt(procstatus, dscfg, radar_list=None, trajectory=None):
         radar_roi.add_field(field_name, field_dict)
 
     new_dataset = {'radar_out': radar_roi}
+
+    return new_dataset, ind_rad
+
+
+def process_traj_trt_contour(procstatus, dscfg, radar_list=None, trajectory=None):
+    """
+    Gets the TRT cell contour corresponding to each radar volume
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        time_tol : float. Dataset keyword
+            tolerance between reference time of the radar volume and that of
+            the TRT cell [s]. Default 100.
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+    trajectory : Trajectory object
+        containing trajectory samples
+
+    Returns
+    -------
+    new_dataset : dict
+        Dictionary containing radar_out and roi_dict. Radar out is the current
+        radar object. roi_dict contains the positions defining the TRT cell
+        contour
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    # Process
+    field_names = []
+    datatypes = []
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+        field_names.append(get_fieldname_pyart(datatype))
+        datatypes.append(datatype)
+
+    ind_rad = int(radarnr[5:8])-1
+    if ((radar_list is None) or (radar_list[ind_rad] is None)):
+        warn('ERROR: No valid radar found')
+        return None, None
+
+    # keep locally only field of interest in radar object
+    radar = deepcopy(radar_list[ind_rad])
+    radar.fields = dict()
+    nfields_available = 0
+    for field_name in field_names:
+        if field_name not in radar_list[ind_rad].fields:
+            warn("Datatype '%s' not available in radar data" % field_name)
+            continue
+        radar.add_field(field_name, radar_list[ind_rad].fields[field_name])
+        nfields_available += 1
+
+    if nfields_available == 0:
+        warn("Fields not available in radar data")
+        return None, None
+
+    # get TRT cell corresponding to current radar volume
+    time_tol = dscfg.get('TimeTol', 100.)
+
+    roi_dict = _get_contour_trt(
+        radar, trajectory, dscfg['timeinfo'], time_tol=time_tol)
+
+    if roi_dict is None:
+        return None, None
+
+    new_dataset = {
+        'radar_out': radar,
+        'roi_dict': roi_dict}
 
     return new_dataset, ind_rad
 
@@ -1293,6 +1381,76 @@ def _get_ts_values_antenna_pattern(radar, trajectory, tadict, traj_ind,
                     trajectory.time_vector[tind],
                     np.concatenate([[avg], qvals, [nvals_valid]]))
     return True
+
+
+def _get_contour_trt(radar, trajectory, voltime, time_tol=100.):
+    """
+    Get the TRT cell contour corresponding to the current radar
+
+    Parameters
+    ----------
+    radar : radar object
+        The radar containing
+    trajectory : trajectory object
+        Object containing the TRT cell position and dimensions
+    voltime : datetime object
+        The radar volume reference time
+    time_tol : float
+        Time tolerance where to look for data [s]
+
+    Returns
+    -------
+    lon_roi, lat_roi : array of floats
+        The lat/lon defining the TRT cell contour
+
+    """
+    dt = np.empty(trajectory.time_vector.size, dtype=float)
+    for i, time_traj in enumerate(trajectory.time_vector):
+        dt[i] = np.abs((voltime - time_traj).total_seconds())
+    if dt.min() > time_tol:
+        warn('No TRT data for radar volume time {}'.format(voltime))
+        return None
+    ind = np.argmin(dt)
+
+    lon_roi = trajectory.cell_contour[ind]['lon']
+    lat_roi = trajectory.cell_contour[ind]['lat']
+    lat_center = trajectory.wgs84_lat_deg[ind]
+    lon_center = trajectory.wgs84_lon_deg[ind]
+
+    roi_dict = {
+        'lon': lon_roi,
+        'lat': lat_roi,
+        'lon_center': lon_center,
+        'lat_center': lat_center}
+
+    # extract the data within the ROI boundaries
+    inds_ray, inds_rng = np.indices(np.shape(radar.gate_longitude['data']))
+
+    mask = np.logical_and(
+        np.logical_and(
+            radar.gate_latitude['data'] >= roi_dict['lat'].min(),
+            radar.gate_latitude['data'] <= roi_dict['lat'].max()),
+        np.logical_and(
+            radar.gate_longitude['data'] >= roi_dict['lon'].min(),
+            radar.gate_longitude['data'] <= roi_dict['lon'].max()))
+
+    if np.all(mask == 0):
+        warn('No values within ROI')
+        return None
+
+    inds_ray = inds_ray[mask]
+    inds_rng = inds_rng[mask]
+
+    # extract the data inside the ROI
+    lat = radar.gate_latitude['data'][mask]
+    lon = radar.gate_longitude['data'][mask]
+    inds, is_roi = belongs_roi_indices(lat, lon, roi_dict)
+
+    if is_roi == 'None':
+        warn('No values within ROI')
+        return None
+
+    return roi_dict
 
 
 def _get_gates(radar, az, el, rr, tt, trajdict, ang_tol=1.2):

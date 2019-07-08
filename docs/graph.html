@@ -205,13 +205,16 @@
 <tr class="row-even"><td><a class="reference internal" href="#pyrad.graph.plot_amp_phase_time_Doppler" title="pyrad.graph.plot_amp_phase_time_Doppler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_amp_phase_time_Doppler</span></code></a>(spectra,&nbsp;…[,&nbsp;…])</td>
 <td>Makes a complex time-Doppler plot plotting separately the module and the phase of the signal</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.graph.get_colobar_label" title="pyrad.graph.get_colobar_label"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_colobar_label</span></code></a>(field_dict,&nbsp;field_name)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.graph.plot_roi_contour" title="pyrad.graph.plot_roi_contour"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_roi_contour</span></code></a>(roi_dict,&nbsp;prdcfg,&nbsp;fname_list)</td>
+<td>plots the contour of a region of interest on a map</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.graph.get_colobar_label" title="pyrad.graph.get_colobar_label"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_colobar_label</span></code></a>(field_dict,&nbsp;field_name)</td>
 <td>creates the colorbar label using field metadata</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.graph.get_field_name" title="pyrad.graph.get_field_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_field_name</span></code></a>(field_dict,&nbsp;field)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.graph.get_field_name" title="pyrad.graph.get_field_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_field_name</span></code></a>(field_dict,&nbsp;field)</td>
 <td>Return a nice field name for a particular field</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">_plot_time_range</span></code>(rad_time,&nbsp;rad_range,&nbsp;…[,&nbsp;…])</td>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">_plot_time_range</span></code>(rad_time,&nbsp;rad_range,&nbsp;…[,&nbsp;…])</td>
 <td>plots a time-range plot</td>
 </tr>
 </tbody>
@@ -1665,7 +1668,7 @@ returns the handle to the figure</p>
 
 <dl class="function">
 <dt id="pyrad.graph.plot_ppi_map">
-<code class="descclassname">pyrad.graph.</code><code class="descname">plot_ppi_map</code><span class="sig-paren">(</span><em>radar</em>, <em>field_name</em>, <em>ind_el</em>, <em>prdcfg</em>, <em>fname_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots_vol.html#plot_ppi_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_ppi_map" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyrad.graph.</code><code class="descname">plot_ppi_map</code><span class="sig-paren">(</span><em>radar</em>, <em>field_name</em>, <em>ind_el</em>, <em>prdcfg</em>, <em>fname_list</em>, <em>save_fig=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots_vol.html#plot_ppi_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_ppi_map" title="Permalink to this definition">¶</a></dt>
 <dd><p>plots a PPI on a geographic map</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1687,12 +1690,18 @@ returns the handle to the figure</p>
 <dt><strong>fname_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
 <dd><p class="first last">list of names of the files where to store the plot</p>
 </dd>
+<dt><strong>save_fig</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd><p class="first last">if true save the figure. If false it does not close the plot and
+returns the handle to the figure</p>
+</dd>
 </dl>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>fname_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
-<dd><p class="first last">list of names of the created plots</p>
+<dt><strong>fname_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str or</span></dt>
+<dd></dd>
+<dt><strong>fig, ax, display</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tupple</span></dt>
+<dd><p class="first last">list of names of the saved plots or handle of the figure an axes</p>
 </dd>
 </dl>
 </td>
@@ -1970,6 +1979,54 @@ returns the handle to the figure</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="pyrad.graph.plot_roi_contour">
+<code class="descclassname">pyrad.graph.</code><code class="descname">plot_roi_contour</code><span class="sig-paren">(</span><em>roi_dict</em>, <em>prdcfg</em>, <em>fname_list</em>, <em>plot_center=True</em>, <em>xlabel='Lon [Deg]'</em>, <em>ylabel='Lat [Deg]'</em>, <em>titl='TRT cell position'</em>, <em>ax=None</em>, <em>fig=None</em>, <em>save_fig=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots_vol.html#plot_roi_contour"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_roi_contour" title="Permalink to this definition">¶</a></dt>
+<dd><p>plots the contour of a region of interest on a map</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>roi_dict</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing lon_roi, lat_roi, the points defining the
+contour</p>
+</dd>
+<dt><strong>prdcfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the product configuration</p>
+</dd>
+<dt><strong>fname_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd><p class="first last">list of names of the files where to store the plot</p>
+</dd>
+<dt><strong>plot_center</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd><p class="first last">If True a marked with the center of the roi is plotted</p>
+</dd>
+<dt><strong>fig</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Figure</span></dt>
+<dd><p class="first last">Figure to add the colorbar to. If none a new figure will be created</p>
+</dd>
+<dt><strong>ax</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Axis</span></dt>
+<dd><p class="first last">Axis to plot on. if fig is None a new axis will be created</p>
+</dd>
+<dt><strong>save_fig</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd><p class="first last">if true save the figure if false it does not close the plot and
+returns the handle to the figure</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>fname_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str or</span></dt>
+<dd></dd>
+<dt><strong>fig, ax</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tupple</span></dt>
+<dd><p class="first last">list of names of the saved plots or handle of the figure an axes</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="pyrad.graph.plot_scatter">
 <code class="descclassname">pyrad.graph.</code><code class="descname">plot_scatter</code><span class="sig-paren">(</span><em>bin_edges1</em>, <em>bin_edges2</em>, <em>hist_2d</em>, <em>field_name1</em>, <em>field_name2</em>, <em>fname_list</em>, <em>prdcfg</em>, <em>metadata=None</em>, <em>lin_regr=None</em>, <em>lin_regr_slope1=None</em>, <em>rad1_name='RADAR001'</em>, <em>rad2_name='RADAR002'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots.html#plot_scatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_scatter" title="Permalink to this definition">¶</a></dt>
 <dd><p>2D histogram</p>
@@ -2198,7 +2255,7 @@ returns the handle to the figure</p>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
 <dt><strong>fname_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str or</span></dt>
 <dd></dd>
-<dt><strong>fig, ax</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tupple</span></dt>
+<dt><strong>fig, ax, display</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tupple</span></dt>
 <dd><p class="first last">list of names of the saved plots or handle of the figure an axes</p>
 </dd>
 </dl>

@@ -55,6 +55,7 @@ Plots
     plot_time_Doppler
     plot_complex_time_Doppler
     plot_amp_phase_time_Doppler
+    plot_roi_contour
     get_colobar_label
     get_field_name
     _plot_time_range
@@ -69,7 +70,7 @@ from .plots_vol import plot_ppi, plot_ppi_map, plot_rhi, plot_bscope
 from .plots_vol import plot_time_range, plot_cappi, plot_rhi_profile
 from .plots_vol import plot_along_coord, plot_field_coverage, plot_traj
 from .plots_vol import _plot_time_range, plot_rhi_contour, plot_ppi_contour
-from .plots_vol import plot_fixed_rng, plot_fixed_rng_span
+from .plots_vol import plot_fixed_rng, plot_fixed_rng_span, plot_roi_contour
 
 from .plots_grid import plot_surface, plot_latitude_slice
 from .plots_grid import plot_longitude_slice, plot_latlon_slice
