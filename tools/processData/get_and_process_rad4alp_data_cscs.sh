@@ -63,11 +63,11 @@ DATA_DESTBASE=/store/msrad/radar/rad4alp/rawdata/
 
 GET_COSMO=1
 RM_COSMO=0
-COSMO_DESTBASE=/store/msrad/cosmo/cosmo1/TEMP/raw1/
+COSMO_DESTBASE=/store/msrad/cosmo/TEMP/raw/
 
 GET_HZT=0
 RM_HZT=0
-HZT_DESTBASE=/store/msrad/cosmo/cosmo1/HZT/
+HZT_DESTBASE=/store/msrad/cosmo/HZT/
 
 info_vec='None'
 cfgpath_vec="$HOME/pyrad/config/processing/"
