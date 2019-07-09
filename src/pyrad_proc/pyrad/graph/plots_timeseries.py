@@ -537,7 +537,7 @@ def plot_ml_ts(dt_ml_arr, ml_top_avg_arr, ml_top_std_arr, thick_avg_arr,
     ax.plot(dt_ml_arr, thick_avg_arr+thick_std_arr, 'rx-', label='avg+std')
     ax.plot(dt_ml_arr, thick_avg_arr-thick_std_arr, 'rx-', label='avg-std')
     # plt.legend(loc='best')
-    ax.ylabel('Thickness [m]')
+    ax.set_ylabel('Thickness [m]')
     ax.set_ylim([0., 3000.])
     ax.set_xlim([dt_ml_arr[0], dt_ml_arr[-1]])
 
