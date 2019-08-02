@@ -592,8 +592,9 @@ def merge_scans_psr(basepath, basepath_psr, scan_list, voltime, scan_period,
         radar_aux = merge_fields_psr(
             basepath, basepath_psr, scan, scantime, datatype_list,
             undo_txcorr=cfg['undo_txcorr'], cpi=cfg['cpi'],
-            azi_min=cfg['azmin'], azi_max=cfg['azmax'], ele_min=cfg['elmin'],
-            ele_max=cfg['elmax'], rng_min=cfg['rmin'], rng_max=cfg['rmax'])
+            ang_tol=cfg['ang_tol'], azi_min=cfg['azmin'],
+            azi_max=cfg['azmax'], ele_min=cfg['elmin'], ele_max=cfg['elmax'],
+            rng_min=cfg['rmin'], rng_max=cfg['rmax'])
 
         if radar_aux is None:
             continue
@@ -655,8 +656,9 @@ def merge_scans_psr_spectra(basepath, basepath_psr, scan_list, voltime,
             basepath, basepath_psr, scan, scantime, datatype_list,
             undo_txcorr=cfg['undo_txcorr'], fold=cfg['fold'],
             positive_away=cfg['positive_away'], cpi=cfg['cpi'],
-            rng_min=cfg['rmin'], rng_max=cfg['rmax'], ele_min=cfg['elmin'],
-            ele_max=cfg['elmax'], azi_min=cfg['azmin'], azi_max=cfg['azmax'])
+            ang_tol=cfg['ang_tol'], rng_min=cfg['rmin'], rng_max=cfg['rmax'],
+            ele_min=cfg['elmin'], ele_max=cfg['elmax'], azi_min=cfg['azmin'],
+            azi_max=cfg['azmax'])
 
         if psr_aux is None:
             continue
@@ -1339,9 +1341,9 @@ def merge_fields_rainbow(basepath, scan_name, voltime, datatype_list):
 
 def merge_fields_psr_spectra(basepath, basepath_psr, scan_name, voltime,
                              datatype_list, undo_txcorr=True, fold=True,
-                             positive_away=True, cpi='low_prf', azi_min=None,
-                             azi_max=None, ele_min=None, ele_max=None,
-                             rng_min=None, rng_max=None):
+                             positive_away=True, cpi='low_prf', ang_tol=0.5,
+                             azi_min=None, azi_max=None, ele_min=None,
+                             ele_max=None, rng_min=None, rng_max=None):
     """
     merge Rainbow fields into a single radar object.
 
@@ -1368,6 +1370,9 @@ def merge_fields_psr_spectra(basepath, basepath_psr, scan_name, voltime,
     cpi : str
         The CPI to use. Can be 'low_prf', 'intermediate_prf', 'high_prf' or
         'all'
+    ang_tol : float
+        Tolerated angle distance between nominal radar angle and angle in
+        PSR files
     azi_min, azi_max, ele_min, ele_max : float or None
         The minimum and maximum angles to keep (deg)
     rng_min, rng_max : float or None
@@ -1409,8 +1414,9 @@ def merge_fields_psr_spectra(basepath, basepath_psr, scan_name, voltime,
             filename, filenames_psr,
             field_names=[get_fieldname_pyart(datatype)],
             undo_txcorr=undo_txcorr, fold=fold, positive_away=positive_away,
-            cpi=cpi, azi_min=azi_min, azi_max=azi_max, ele_min=ele_min,
-            ele_max=ele_max, rng_min=rng_min, rng_max=rng_max)
+            cpi=cpi, ang_tol=ang_tol, azi_min=azi_min, azi_max=azi_max,
+            ele_min=ele_min, ele_max=ele_max, rng_min=rng_min,
+            rng_max=rng_max)
 
         if psr_aux is None:
             continue
@@ -1431,8 +1437,8 @@ def merge_fields_psr_spectra(basepath, basepath_psr, scan_name, voltime,
 
 def merge_fields_psr(basepath, basepath_psr, scan_name, voltime,
                      datatype_list, undo_txcorr=True, cpi='low_prf',
-                     azi_min=None, azi_max=None, ele_min=None, ele_max=None,
-                     rng_min=None, rng_max=None):
+                     ang_tol=0.5, azi_min=None, azi_max=None, ele_min=None,
+                     ele_max=None, rng_min=None, rng_max=None):
     """
     merge Rainbow fields into a single radar object.
 
@@ -1454,6 +1460,9 @@ def merge_fields_psr(basepath, basepath_psr, scan_name, voltime,
     cpi : str
         The CPI to use. Can be 'low_prf', 'intermediate_prf', 'high_prf',
         'mean', 'all'. If 'mean' the mean within the angle step is taken
+    ang_tol : float
+        Tolerated angle distance between nominal radar angle and angle in
+        PSR files
     azi_min, azi_max, ele_min, ele_max : float or None
         The minimum and maximum angles to keep (deg)
     rng_min, rng_max : float or None
@@ -1494,9 +1503,9 @@ def merge_fields_psr(basepath, basepath_psr, scan_name, voltime,
         radar_aux = pyart.aux_io.read_rainbow_psr(
             filename, filenames_psr,
             field_names=[get_fieldname_pyart(datatype)],
-            undo_txcorr=undo_txcorr, cpi=cpi, azi_min=azi_min,
-            azi_max=azi_max, ele_min=ele_min, ele_max=ele_max,
-            rng_min=rng_min, rng_max=rng_max)
+            undo_txcorr=undo_txcorr, cpi=cpi, ang_tol=ang_tol,
+            azi_min=azi_min, azi_max=azi_max, ele_min=ele_min,
+            ele_max=ele_max, rng_min=rng_min, rng_max=rng_max)
 
         if radar_aux is None:
             continue
