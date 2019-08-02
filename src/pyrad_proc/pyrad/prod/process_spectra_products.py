@@ -12,6 +12,7 @@ Functions for obtaining Pyrad products from spectra datasets
 """
 
 from warnings import warn
+from copy import deepcopy
 
 from ..io.io_aux import get_fieldname_pyart
 from ..io.io_aux import get_save_dir, make_filename
@@ -26,6 +27,7 @@ from ..graph.plots_spectra import plot_amp_phase_time_Doppler
 from ..util.radar_utils import find_ray_index, find_rng_index
 
 from pyart.util import datetime_from_radar
+from pyart.aux_io import write_spectra
 
 
 def generate_spectra_products(dataset, prdcfg):
@@ -153,6 +155,21 @@ def generate_spectra_products(dataset, prdcfg):
                     'Doppler frequency'
                 vmin, vmax : float or None
                     Minimum and maximum of the color scale
+        'SAVEALL': Saves radar spectra volume data including all or a list of
+            userdefined fields in a netcdf file
+            User defined parameters:
+                datatypes: list of str or None
+                    The list of data types to save. If it is None, all fields
+                    in the radar object will be saved
+                physical: Bool
+                    If True the data will be saved in physical units (floats).
+                    Otherwise it will be quantized and saved as binary
+        'SAVEVOL': Saves one field of a radar spectra volume data in a netcdf
+            file
+            User defined parameters:
+                physical: Bool
+                    If True the data will be saved in physical units (floats).
+                    Otherwise it will be quantized and saved as binary
         'TIME_DOPPLER': Makes a time-Doppler plot of spectral data at a point
             of interest.
             User defined parameters:
@@ -749,6 +766,79 @@ def generate_spectra_products(dataset, prdcfg):
         print('----- save to '+' '.join(fname_list))
 
         return fname_list
+
+    if prdcfg['type'] == 'SAVEVOL':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        file_type = prdcfg.get('file_type', 'nc')
+        physical = prdcfg.get('physical', True)
+
+        new_dataset = deepcopy(dataset['radar_out'])
+        new_dataset.fields = dict()
+        new_dataset.add_field(
+            field_name, dataset['radar_out'].fields[field_name])
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'savevol', prdcfg['dstype'], prdcfg['voltype'], [file_type],
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])[0]
+
+        fname = savedir+fname
+
+        write_spectra(fname, new_dataset, physical=physical)
+
+        print('saved file: '+fname)
+
+        return fname
+
+    if prdcfg['type'] == 'SAVEALL':
+        file_type = prdcfg.get('file_type', 'nc')
+        datatypes = prdcfg.get('datatypes', None)
+        physical = prdcfg.get('physical', True)
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname = make_filename(
+            'savevol', prdcfg['dstype'], 'all_fields', [file_type],
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])[0]
+
+        fname = savedir+fname
+
+        field_names = None
+        if datatypes is not None:
+            field_names = []
+            for datatype in datatypes:
+                field_names.append(get_fieldname_pyart(datatype))
+
+
+        if field_names is not None:
+            radar_aux = deepcopy(dataset['radar_out'])
+            radar_aux.fields = dict()
+            for field_name in field_names:
+                if field_name not in dataset['radar_out'].fields:
+                    warn(field_name+' not in radar object')
+                else:
+                    radar_aux.add_field(
+                        field_name,
+                        dataset['radar_out'].fields[field_name])
+        else:
+            radar_aux = dataset['radar_out']
+        write_spectra(fname, radar_aux, physical=physical)
+
+        print('saved file: '+fname)
+
+        return fname
 
     warn(' Unsupported product type: ' + prdcfg['type'])
     return None
