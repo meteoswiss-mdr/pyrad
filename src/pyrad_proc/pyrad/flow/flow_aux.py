@@ -1072,6 +1072,7 @@ def _create_datacfg_dict(cfg):
     datacfg.update({'fold': cfg.get('fold', True)})
     datacfg.update({'positive_away': cfg.get('positive_away', True)})
     datacfg.update({'cpi': cfg.get('cpi', 'low_prf')})
+    datacfg.update({'ang_tol': cfg.get('ang_tol', 0.5)})
 
     if 'RadarPosition' in cfg:
         datacfg.update({'RadarPosition': cfg['RadarPosition']})

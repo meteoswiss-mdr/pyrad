@@ -648,8 +648,9 @@
         <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">merge_fields_psr</span><span class="p">(</span>
             <span class="n">basepath</span><span class="p">,</span> <span class="n">basepath_psr</span><span class="p">,</span> <span class="n">scan</span><span class="p">,</span> <span class="n">scantime</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span>
             <span class="n">undo_txcorr</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;undo_txcorr&#39;</span><span class="p">],</span> <span class="n">cpi</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;cpi&#39;</span><span class="p">],</span>
-            <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span> <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">],</span> <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span>
-            <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">])</span>
+            <span class="n">ang_tol</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ang_tol&#39;</span><span class="p">],</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span>
+            <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">],</span> <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span>
+            <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">])</span>
 
         <span class="k">if</span> <span class="n">radar_aux</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">continue</span>
@@ -711,8 +712,9 @@
             <span class="n">basepath</span><span class="p">,</span> <span class="n">basepath_psr</span><span class="p">,</span> <span class="n">scan</span><span class="p">,</span> <span class="n">scantime</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span>
             <span class="n">undo_txcorr</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;undo_txcorr&#39;</span><span class="p">],</span> <span class="n">fold</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;fold&#39;</span><span class="p">],</span>
             <span class="n">positive_away</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;positive_away&#39;</span><span class="p">],</span> <span class="n">cpi</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;cpi&#39;</span><span class="p">],</span>
-            <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">],</span> <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span>
-            <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span> <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">])</span>
+            <span class="n">ang_tol</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ang_tol&#39;</span><span class="p">],</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">],</span>
+            <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span>
+            <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">])</span>
 
         <span class="k">if</span> <span class="n">psr_aux</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">continue</span>
@@ -1395,9 +1397,9 @@
 
 <span class="k">def</span> <span class="nf">merge_fields_psr_spectra</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">basepath_psr</span><span class="p">,</span> <span class="n">scan_name</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span>
                              <span class="n">datatype_list</span><span class="p">,</span> <span class="n">undo_txcorr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fold</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                             <span class="n">positive_away</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cpi</span><span class="o">=</span><span class="s1">&#39;low_prf&#39;</span><span class="p">,</span> <span class="n">azi_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                             <span class="n">azi_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ele_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ele_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                             <span class="n">rng_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rng_max</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                             <span class="n">positive_away</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cpi</span><span class="o">=</span><span class="s1">&#39;low_prf&#39;</span><span class="p">,</span> <span class="n">ang_tol</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                             <span class="n">azi_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">azi_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ele_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">ele_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rng_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rng_max</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    merge Rainbow fields into a single radar object.</span>
 
@@ -1424,6 +1426,9 @@
 <span class="sd">    cpi : str</span>
 <span class="sd">        The CPI to use. Can be &#39;low_prf&#39;, &#39;intermediate_prf&#39;, &#39;high_prf&#39; or</span>
 <span class="sd">        &#39;all&#39;</span>
+<span class="sd">    ang_tol : float</span>
+<span class="sd">        Tolerated angle distance between nominal radar angle and angle in</span>
+<span class="sd">        PSR files</span>
 <span class="sd">    azi_min, azi_max, ele_min, ele_max : float or None</span>
 <span class="sd">        The minimum and maximum angles to keep (deg)</span>
 <span class="sd">    rng_min, rng_max : float or None</span>
@@ -1465,8 +1470,9 @@
             <span class="n">filename</span><span class="p">,</span> <span class="n">filenames_psr</span><span class="p">,</span>
             <span class="n">field_names</span><span class="o">=</span><span class="p">[</span><span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)],</span>
             <span class="n">undo_txcorr</span><span class="o">=</span><span class="n">undo_txcorr</span><span class="p">,</span> <span class="n">fold</span><span class="o">=</span><span class="n">fold</span><span class="p">,</span> <span class="n">positive_away</span><span class="o">=</span><span class="n">positive_away</span><span class="p">,</span>
-            <span class="n">cpi</span><span class="o">=</span><span class="n">cpi</span><span class="p">,</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">azi_min</span><span class="p">,</span> <span class="n">azi_max</span><span class="o">=</span><span class="n">azi_max</span><span class="p">,</span> <span class="n">ele_min</span><span class="o">=</span><span class="n">ele_min</span><span class="p">,</span>
-            <span class="n">ele_max</span><span class="o">=</span><span class="n">ele_max</span><span class="p">,</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">rng_min</span><span class="p">,</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">rng_max</span><span class="p">)</span>
+            <span class="n">cpi</span><span class="o">=</span><span class="n">cpi</span><span class="p">,</span> <span class="n">ang_tol</span><span class="o">=</span><span class="n">ang_tol</span><span class="p">,</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">azi_min</span><span class="p">,</span> <span class="n">azi_max</span><span class="o">=</span><span class="n">azi_max</span><span class="p">,</span>
+            <span class="n">ele_min</span><span class="o">=</span><span class="n">ele_min</span><span class="p">,</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">ele_max</span><span class="p">,</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">rng_min</span><span class="p">,</span>
+            <span class="n">rng_max</span><span class="o">=</span><span class="n">rng_max</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">psr_aux</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">continue</span>
@@ -1487,8 +1493,8 @@
 
 <span class="k">def</span> <span class="nf">merge_fields_psr</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">basepath_psr</span><span class="p">,</span> <span class="n">scan_name</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span>
                      <span class="n">datatype_list</span><span class="p">,</span> <span class="n">undo_txcorr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cpi</span><span class="o">=</span><span class="s1">&#39;low_prf&#39;</span><span class="p">,</span>
-                     <span class="n">azi_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">azi_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ele_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ele_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                     <span class="n">rng_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rng_max</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                     <span class="n">ang_tol</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">azi_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">azi_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ele_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">ele_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rng_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rng_max</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    merge Rainbow fields into a single radar object.</span>
 
@@ -1510,6 +1516,9 @@
 <span class="sd">    cpi : str</span>
 <span class="sd">        The CPI to use. Can be &#39;low_prf&#39;, &#39;intermediate_prf&#39;, &#39;high_prf&#39;,</span>
 <span class="sd">        &#39;mean&#39;, &#39;all&#39;. If &#39;mean&#39; the mean within the angle step is taken</span>
+<span class="sd">    ang_tol : float</span>
+<span class="sd">        Tolerated angle distance between nominal radar angle and angle in</span>
+<span class="sd">        PSR files</span>
 <span class="sd">    azi_min, azi_max, ele_min, ele_max : float or None</span>
 <span class="sd">        The minimum and maximum angles to keep (deg)</span>
 <span class="sd">    rng_min, rng_max : float or None</span>
@@ -1550,9 +1559,9 @@
         <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_rainbow_psr</span><span class="p">(</span>
             <span class="n">filename</span><span class="p">,</span> <span class="n">filenames_psr</span><span class="p">,</span>
             <span class="n">field_names</span><span class="o">=</span><span class="p">[</span><span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)],</span>
-            <span class="n">undo_txcorr</span><span class="o">=</span><span class="n">undo_txcorr</span><span class="p">,</span> <span class="n">cpi</span><span class="o">=</span><span class="n">cpi</span><span class="p">,</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">azi_min</span><span class="p">,</span>
-            <span class="n">azi_max</span><span class="o">=</span><span class="n">azi_max</span><span class="p">,</span> <span class="n">ele_min</span><span class="o">=</span><span class="n">ele_min</span><span class="p">,</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">ele_max</span><span class="p">,</span>
-            <span class="n">rng_min</span><span class="o">=</span><span class="n">rng_min</span><span class="p">,</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">rng_max</span><span class="p">)</span>
+            <span class="n">undo_txcorr</span><span class="o">=</span><span class="n">undo_txcorr</span><span class="p">,</span> <span class="n">cpi</span><span class="o">=</span><span class="n">cpi</span><span class="p">,</span> <span class="n">ang_tol</span><span class="o">=</span><span class="n">ang_tol</span><span class="p">,</span>
+            <span class="n">azi_min</span><span class="o">=</span><span class="n">azi_min</span><span class="p">,</span> <span class="n">azi_max</span><span class="o">=</span><span class="n">azi_max</span><span class="p">,</span> <span class="n">ele_min</span><span class="o">=</span><span class="n">ele_min</span><span class="p">,</span>
+            <span class="n">ele_max</span><span class="o">=</span><span class="n">ele_max</span><span class="p">,</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">rng_min</span><span class="p">,</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">rng_max</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">radar_aux</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">continue</span>
