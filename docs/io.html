@@ -1398,8 +1398,9 @@ using a precomputed look up table of the nearest neighbour</p>
 <dd><p class="first">list of radar field types to read.
 Format : [radarnr]:[datagroup]:[datatype],[dataset],[product]
 ‘dataset’ is only specified for data groups ‘ODIM’,
-‘CFRADIAL’ ‘ODIMPYRAD’ and ‘PYRADGRID’. ‘product’ is only specified
-for data groups ‘CFRADIAL’, ‘ODIMPYRAD’ and ‘PYRADGRID’
+‘CFRADIAL’ ‘ODIMPYRAD’ ‘PYRADGRID’ and ‘NETCDFSPECTRA’.
+‘product’ is only specified for data groups ‘CFRADIAL’, ‘ODIMPYRAD’,
+‘PYRADGRID’ and ‘NETCDFSPECTRA’
 The data group specifies the type file from which data is extracted.
 It can be:</p>
 <blockquote>
@@ -1465,6 +1466,9 @@ Example: ODIMPYRAD:RR,RZC,SAVEVOL</p>
 </dd>
 <dt>‘PSRSPECTRA’: Format used to store Rainbow power spectra</dt>
 <dd><p class="first last">recordings.</p>
+</dd>
+<dt>‘NETCDFSPECTRA’: Format analogous to CFRadial and used to store</dt>
+<dd><p class="first last">Doppler spectral</p>
 </dd>
 </dl>
 </div></blockquote>

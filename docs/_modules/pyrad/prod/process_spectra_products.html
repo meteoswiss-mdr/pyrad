@@ -68,6 +68,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
 
 <span class="kn">from</span> <span class="nn">..io.io_aux</span> <span class="k">import</span> <span class="n">get_fieldname_pyart</span>
 <span class="kn">from</span> <span class="nn">..io.io_aux</span> <span class="k">import</span> <span class="n">get_save_dir</span><span class="p">,</span> <span class="n">make_filename</span>
@@ -82,6 +83,7 @@
 <span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">find_ray_index</span><span class="p">,</span> <span class="n">find_rng_index</span>
 
 <span class="kn">from</span> <span class="nn">pyart.util</span> <span class="k">import</span> <span class="n">datetime_from_radar</span>
+<span class="kn">from</span> <span class="nn">pyart.aux_io</span> <span class="k">import</span> <span class="n">write_spectra</span>
 
 
 <div class="viewcode-block" id="generate_spectra_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.generate_spectra_products">[docs]</a><span class="k">def</span> <span class="nf">generate_spectra_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>
@@ -209,6 +211,21 @@
 <span class="sd">                    &#39;Doppler frequency&#39;</span>
 <span class="sd">                vmin, vmax : float or None</span>
 <span class="sd">                    Minimum and maximum of the color scale</span>
+<span class="sd">        &#39;SAVEALL&#39;: Saves radar spectra volume data including all or a list of</span>
+<span class="sd">            userdefined fields in a netcdf file</span>
+<span class="sd">            User defined parameters:</span>
+<span class="sd">                datatypes: list of str or None</span>
+<span class="sd">                    The list of data types to save. If it is None, all fields</span>
+<span class="sd">                    in the radar object will be saved</span>
+<span class="sd">                physical: Bool</span>
+<span class="sd">                    If True the data will be saved in physical units (floats).</span>
+<span class="sd">                    Otherwise it will be quantized and saved as binary</span>
+<span class="sd">        &#39;SAVEVOL&#39;: Saves one field of a radar spectra volume data in a netcdf</span>
+<span class="sd">            file</span>
+<span class="sd">            User defined parameters:</span>
+<span class="sd">                physical: Bool</span>
+<span class="sd">                    If True the data will be saved in physical units (floats).</span>
+<span class="sd">                    Otherwise it will be quantized and saved as binary</span>
 <span class="sd">        &#39;TIME_DOPPLER&#39;: Makes a time-Doppler plot of spectral data at a point</span>
 <span class="sd">            of interest.</span>
 <span class="sd">            User defined parameters:</span>
@@ -805,6 +822,79 @@
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----- save to &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fname_list</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">fname_list</span>
+
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;SAVEVOL&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="s1">&#39; Field type &#39;</span> <span class="o">+</span> <span class="n">field_name</span> <span class="o">+</span>
+                <span class="s1">&#39; not available in data set. Skipping product &#39;</span> <span class="o">+</span>
+                <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">file_type</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;file_type&#39;</span><span class="p">,</span> <span class="s1">&#39;nc&#39;</span><span class="p">)</span>
+        <span class="n">physical</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;physical&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">new_dataset</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">])</span>
+        <span class="n">new_dataset</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">new_dataset</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span>
+            <span class="n">field_name</span><span class="p">,</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">])</span>
+
+        <span class="n">savedir</span> <span class="o">=</span> <span class="n">get_save_dir</span><span class="p">(</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;basepath&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;procname&#39;</span><span class="p">],</span> <span class="n">dssavedir</span><span class="p">,</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;prdname&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
+            <span class="s1">&#39;savevol&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;voltype&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">file_type</span><span class="p">],</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
+
+        <span class="n">write_spectra</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="n">physical</span><span class="o">=</span><span class="n">physical</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;saved file: &#39;</span><span class="o">+</span><span class="n">fname</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fname</span>
+
+    <span class="k">if</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;SAVEALL&#39;</span><span class="p">:</span>
+        <span class="n">file_type</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;file_type&#39;</span><span class="p">,</span> <span class="s1">&#39;nc&#39;</span><span class="p">)</span>
+        <span class="n">datatypes</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;datatypes&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">physical</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;physical&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">savedir</span> <span class="o">=</span> <span class="n">get_save_dir</span><span class="p">(</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;basepath&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;procname&#39;</span><span class="p">],</span> <span class="n">dssavedir</span><span class="p">,</span>
+            <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;prdname&#39;</span><span class="p">],</span> <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">])</span>
+
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">make_filename</span><span class="p">(</span>
+            <span class="s1">&#39;savevol&#39;</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;dstype&#39;</span><span class="p">],</span> <span class="s1">&#39;all_fields&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">file_type</span><span class="p">],</span>
+            <span class="n">timeinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">runinfo</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;runinfo&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
+
+        <span class="n">field_names</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">datatypes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">field_names</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="n">datatypes</span><span class="p">:</span>
+                <span class="n">field_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">))</span>
+
+
+        <span class="k">if</span> <span class="n">field_names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">])</span>
+            <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="n">field_names</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+                    <span class="n">warn</span><span class="p">(</span><span class="n">field_name</span><span class="o">+</span><span class="s1">&#39; not in radar object&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">radar_aux</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span>
+                        <span class="n">field_name</span><span class="p">,</span>
+                        <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span>
+        <span class="n">write_spectra</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">,</span> <span class="n">physical</span><span class="o">=</span><span class="n">physical</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;saved file: &#39;</span><span class="o">+</span><span class="n">fname</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fname</span>
 
     <span class="n">warn</span><span class="p">(</span><span class="s1">&#39; Unsupported product type: &#39;</span> <span class="o">+</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
     <span class="k">return</span> <span class="kc">None</span></div>

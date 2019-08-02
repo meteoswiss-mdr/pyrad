@@ -1717,7 +1717,8 @@ def get_file_list(datadescriptor, starttimes, endtimes, cfg, scan=None):
                     continue
                 for filename in dayfilelist:
                     t_filelist.append(filename)
-            elif datagroup in ('CFRADIAL', 'ODIMPYRAD', 'PYRADGRID'):
+            elif datagroup in ('CFRADIAL', 'ODIMPYRAD', 'PYRADGRID',
+                               'NETCDFSPECTRA'):
                 termination = '.nc'
                 if datagroup == 'ODIMPYRAD':
                     termination = '.h5'
@@ -2055,7 +2056,8 @@ def get_datatype_fields(datadescriptor):
             product = None
         else:
             datagroup = descrfields[1]
-            if datagroup in ('CFRADIAL', 'ODIMPYRAD', 'PYRADGRID'):
+            if datagroup in ('CFRADIAL', 'ODIMPYRAD', 'PYRADGRID',
+                             'NETCDFSPECTRA'):
                 descrfields2 = descrfields[2].split(',')
                 datatype = descrfields2[0]
                 dataset = descrfields2[1]
@@ -2078,7 +2080,8 @@ def get_datatype_fields(datadescriptor):
     else:
         radarnr = 'RADAR001'
         datagroup = descrfields[0]
-        if datagroup in ('CFRADIAL', 'ODIMPYRAD', 'PYRADGRID'):
+        if datagroup in ('CFRADIAL', 'ODIMPYRAD', 'PYRADGRID',
+                         'NETCDFSPECTRA'):
             descrfields2 = descrfields[1].split(',')
             datatype = descrfields2[0]
             dataset = descrfields2[1]
@@ -2434,7 +2437,8 @@ def _get_datetime(fname, datagroup, ftime_format=None):
 
     """
     bfile = os.path.basename(fname)
-    if datagroup in ('RAINBOW', 'CFRADIAL', 'ODIMPYRAD', 'PYRADGRID'):
+    if datagroup in ('RAINBOW', 'CFRADIAL', 'ODIMPYRAD', 'PYRADGRID',
+                     'NETCDFSPECTRA'):
         datetimestr = bfile[0:14]
         fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d%H%M%S')
     elif datagroup in ('RAD4ALP', 'RAD4ALPGRID', 'RAD4ALPGIF', 'RAD4ALPBIN'):

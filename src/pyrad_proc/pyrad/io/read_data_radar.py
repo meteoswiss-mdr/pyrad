@@ -24,6 +24,7 @@ Functions for reading radar data files
     merge_fields_rad4alp_grid
     merge_fields_pyrad
     merge_fields_pyradgrid
+    merge_fields_pyrad_spectra
     merge_fields_dem
     merge_fields_cosmo
     get_data_rainbow
@@ -90,8 +91,9 @@ def get_data(voltime, datatypesdescr, cfg):
         list of radar field types to read.
         Format : [radarnr]:[datagroup]:[datatype],[dataset],[product]
         'dataset' is only specified for data groups 'ODIM',
-        'CFRADIAL' 'ODIMPYRAD' and 'PYRADGRID'. 'product' is only specified
-        for data groups 'CFRADIAL', 'ODIMPYRAD' and 'PYRADGRID'
+        'CFRADIAL' 'ODIMPYRAD' 'PYRADGRID' and 'NETCDFSPECTRA'.
+        'product' is only specified for data groups 'CFRADIAL', 'ODIMPYRAD',
+        'PYRADGRID' and 'NETCDFSPECTRA'
         The data group specifies the type file from which data is extracted.
         It can be:
             'RAINBOW': Propietary Leonardo format
@@ -147,6 +149,9 @@ def get_data(voltime, datatypesdescr, cfg):
             'PSRSPECTRA': Format used to store Rainbow power spectra
                 recordings.
 
+            'NETCDFSPECTRA': Format analogous to CFRadial and used to store
+                Doppler spectral
+
         'RAINBOW', 'RAD4ALP', 'ODIM' and 'MXPOL' are primary data file sources
         and they cannot be mixed for the same radar. It is also the case for
         their complementary data files, i.e. 'COSMO' and 'RAD4ALPCOSMO', etc.
@@ -188,6 +193,9 @@ def get_data(voltime, datatypesdescr, cfg):
     product_pyradgrid = list()
     datatype_psr = list()
     datatype_psrspectra = list()
+    datatype_netcdfspectra = list()
+    dataset_netcdfspectra = list()
+    product_netcdfspectra = list()
 
     for datatypedescr in datatypesdescr:
         radarnr, datagroup, datatype, dataset, product = get_datatype_fields(
@@ -235,6 +243,10 @@ def get_data(voltime, datatypesdescr, cfg):
             datatype_psr.append(datatype)
         elif datagroup == 'PSRSPECTRA':
             datatype_psrspectra.append(datatype)
+        elif datagroup == 'NETCDFSPECTRA':
+            datatype_netcdfspectra.append(datatype)
+            dataset_netcdfspectra.append(dataset)
+            product_netcdfspectra.append(product)
 
     ind_rad = int(radarnr[5:8])-1
 
@@ -256,6 +268,7 @@ def get_data(voltime, datatypesdescr, cfg):
     ndatatypes_pyradgrid = len(datatype_pyradgrid)
     ndatatypes_psr = len(datatype_psr)
     ndatatypes_psrspectra = len(datatype_psrspectra)
+    ndatatypes_netcdfspectra = len(datatype_netcdfspectra)
 
     radar = None
     if ndatatypes_rainbow > 0 and _WRADLIB_AVAILABLE:
@@ -319,6 +332,16 @@ def get_data(voltime, datatypesdescr, cfg):
             cfg['datapath'][ind_rad], cfg['psrpath'][ind_rad],
             cfg['ScanList'][ind_rad], voltime, cfg['ScanPeriod'],
             datatype_psr, cfg, radarnr=radarnr)
+
+    # add other radar spectra object files
+    if ndatatypes_netcdfspectra > 0:
+        radar_aux = merge_fields_pyrad_spectra(
+            cfg['loadbasepath'][ind_rad], cfg['loadname'][ind_rad], voltime,
+            datatype_netcdfspectra, dataset_netcdfspectra,
+            product_netcdfspectra, rng_min=cfg['rmin'], rng_max=cfg['rmax'],
+            ele_min=cfg['elmin'], ele_max=cfg['elmax'], azi_min=cfg['azmin'],
+            azi_max=cfg['azmax'])
+        radar = add_field(radar, radar_aux)
 
     # add other grid object files
     if ndatatypes_rad4alpgif > 0:
@@ -1690,6 +1713,87 @@ def merge_fields_pyrad(basepath, loadname, voltime, datatype_list,
         return radar
 
     return pyart.util.cut_radar(
+        radar, radar.fields.keys(), rng_min=rng_min, rng_max=rng_max,
+        ele_min=ele_min, ele_max=ele_max, azi_min=azi_min, azi_max=azi_max)
+
+
+def merge_fields_pyrad_spectra(basepath, loadname, voltime, datatype_list,
+                               dataset_list, product_list, rng_min=None,
+                               rng_max=None, azi_min=None, azi_max=None,
+                               ele_min=None, ele_max=None, termination='.nc'):
+    """
+    merge fields from Pyrad-generated files into a single radar spectra
+    object. Accepted file types are netcdf
+
+    Parameters
+    ----------
+    basepath : str
+        name of the base path where to find the data
+    loadname: str
+        name of the saving directory
+    voltime : datetime object
+        reference time of the scan
+    datatype_list : list
+        list of data types to get
+    dataset_list : list
+        list of datasets that produced the data type to get.
+        Used to get path.
+    product_list : list
+        list of products. Used to get path
+    rng_min, rng_max : float
+        The range limits [m]. If None the entire coverage of the radar is
+        going to be used
+    ele_min, ele_max, azi_min, azi_max : float or None
+        The limits of the grid [deg]. If None the limits will be the limits
+        of the radar volume
+    termination : str
+        file termination type. Can be '.nc' or '.h5'
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+    fdatetime = voltime.strftime('%Y%m%d%H%M%S')
+
+    radar = None
+    for i, dataset in enumerate(dataset_list):
+        datapath = (
+            basepath+loadname+'/'+voltime.strftime('%Y-%m-%d')+'/' +
+            dataset+'/'+product_list[i]+'/')
+        filename = glob.glob(
+            datapath+fdatetime+'*'+datatype_list[i]+termination)
+        if not filename:
+            warn('No file found in '+datapath+fdatetime+'*' +
+                 datatype_list[i]+'.nc')
+            continue
+
+        if termination == '.nc':
+            try:
+                radar_aux = pyart.aux_io.read_spectra(filename[0])
+            except OSError as ee:
+                warn(str(ee))
+                warn('Unable to read file '+filename[0])
+        # else:
+        #     try:
+        #         radar_aux = pyart.aux_io.read_odim_h5(filename[0])
+        #     except OSError as ee:
+        #         warn(str(ee))
+        #         warn('Unable to read file '+filename[0])
+        if radar_aux is None:
+            continue
+
+        if radar is None:
+            radar = radar_aux
+            continue
+
+        radar = add_field(radar, radar_aux)
+
+    if radar is None:
+        return radar
+
+    return pyart.util.cut_radar_spectra(
         radar, radar.fields.keys(), rng_min=rng_min, rng_max=rng_max,
         ele_min=ele_min, ele_max=ele_max, azi_min=azi_min, azi_max=azi_max)
 

@@ -80,6 +80,7 @@
 <span class="sd">    merge_fields_rad4alp_grid</span>
 <span class="sd">    merge_fields_pyrad</span>
 <span class="sd">    merge_fields_pyradgrid</span>
+<span class="sd">    merge_fields_pyrad_spectra</span>
 <span class="sd">    merge_fields_dem</span>
 <span class="sd">    merge_fields_cosmo</span>
 <span class="sd">    get_data_rainbow</span>
@@ -146,8 +147,9 @@
 <span class="sd">        list of radar field types to read.</span>
 <span class="sd">        Format : [radarnr]:[datagroup]:[datatype],[dataset],[product]</span>
 <span class="sd">        &#39;dataset&#39; is only specified for data groups &#39;ODIM&#39;,</span>
-<span class="sd">        &#39;CFRADIAL&#39; &#39;ODIMPYRAD&#39; and &#39;PYRADGRID&#39;. &#39;product&#39; is only specified</span>
-<span class="sd">        for data groups &#39;CFRADIAL&#39;, &#39;ODIMPYRAD&#39; and &#39;PYRADGRID&#39;</span>
+<span class="sd">        &#39;CFRADIAL&#39; &#39;ODIMPYRAD&#39; &#39;PYRADGRID&#39; and &#39;NETCDFSPECTRA&#39;.</span>
+<span class="sd">        &#39;product&#39; is only specified for data groups &#39;CFRADIAL&#39;, &#39;ODIMPYRAD&#39;,</span>
+<span class="sd">        &#39;PYRADGRID&#39; and &#39;NETCDFSPECTRA&#39;</span>
 <span class="sd">        The data group specifies the type file from which data is extracted.</span>
 <span class="sd">        It can be:</span>
 <span class="sd">            &#39;RAINBOW&#39;: Propietary Leonardo format</span>
@@ -203,6 +205,9 @@
 <span class="sd">            &#39;PSRSPECTRA&#39;: Format used to store Rainbow power spectra</span>
 <span class="sd">                recordings.</span>
 
+<span class="sd">            &#39;NETCDFSPECTRA&#39;: Format analogous to CFRadial and used to store</span>
+<span class="sd">                Doppler spectral</span>
+
 <span class="sd">        &#39;RAINBOW&#39;, &#39;RAD4ALP&#39;, &#39;ODIM&#39; and &#39;MXPOL&#39; are primary data file sources</span>
 <span class="sd">        and they cannot be mixed for the same radar. It is also the case for</span>
 <span class="sd">        their complementary data files, i.e. &#39;COSMO&#39; and &#39;RAD4ALPCOSMO&#39;, etc.</span>
@@ -244,6 +249,9 @@
     <span class="n">product_pyradgrid</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">datatype_psr</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">datatype_psrspectra</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">datatype_netcdfspectra</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">dataset_netcdfspectra</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">product_netcdfspectra</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
     <span class="k">for</span> <span class="n">datatypedescr</span> <span class="ow">in</span> <span class="n">datatypesdescr</span><span class="p">:</span>
         <span class="n">radarnr</span><span class="p">,</span> <span class="n">datagroup</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">product</span> <span class="o">=</span> <span class="n">get_datatype_fields</span><span class="p">(</span>
@@ -291,6 +299,10 @@
             <span class="n">datatype_psr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;PSRSPECTRA&#39;</span><span class="p">:</span>
             <span class="n">datatype_psrspectra</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;NETCDFSPECTRA&#39;</span><span class="p">:</span>
+            <span class="n">datatype_netcdfspectra</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+            <span class="n">dataset_netcdfspectra</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+            <span class="n">product_netcdfspectra</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">product</span><span class="p">)</span>
 
     <span class="n">ind_rad</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">radarnr</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">8</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span>
 
@@ -312,6 +324,7 @@
     <span class="n">ndatatypes_pyradgrid</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_pyradgrid</span><span class="p">)</span>
     <span class="n">ndatatypes_psr</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_psr</span><span class="p">)</span>
     <span class="n">ndatatypes_psrspectra</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_psrspectra</span><span class="p">)</span>
+    <span class="n">ndatatypes_netcdfspectra</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_netcdfspectra</span><span class="p">)</span>
 
     <span class="n">radar</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">ndatatypes_rainbow</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">_WRADLIB_AVAILABLE</span><span class="p">:</span>
@@ -375,6 +388,16 @@
             <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;psrpath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span>
             <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanList&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanPeriod&#39;</span><span class="p">],</span>
             <span class="n">datatype_psr</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">radarnr</span><span class="o">=</span><span class="n">radarnr</span><span class="p">)</span>
+
+    <span class="c1"># add other radar spectra object files</span>
+    <span class="k">if</span> <span class="n">ndatatypes_netcdfspectra</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">merge_fields_pyrad_spectra</span><span class="p">(</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;loadbasepath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;loadname&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">voltime</span><span class="p">,</span>
+            <span class="n">datatype_netcdfspectra</span><span class="p">,</span> <span class="n">dataset_netcdfspectra</span><span class="p">,</span>
+            <span class="n">product_netcdfspectra</span><span class="p">,</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">],</span>
+            <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span>
+            <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">])</span>
+        <span class="n">radar</span> <span class="o">=</span> <span class="n">add_field</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
 
     <span class="c1"># add other grid object files</span>
     <span class="k">if</span> <span class="n">ndatatypes_rad4alpgif</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -1746,6 +1769,87 @@
         <span class="k">return</span> <span class="n">radar</span>
 
     <span class="k">return</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cut_radar</span><span class="p">(</span>
+        <span class="n">radar</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">rng_min</span><span class="p">,</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">rng_max</span><span class="p">,</span>
+        <span class="n">ele_min</span><span class="o">=</span><span class="n">ele_min</span><span class="p">,</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">ele_max</span><span class="p">,</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">azi_min</span><span class="p">,</span> <span class="n">azi_max</span><span class="o">=</span><span class="n">azi_max</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">merge_fields_pyrad_spectra</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">loadname</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span>
+                               <span class="n">dataset_list</span><span class="p">,</span> <span class="n">product_list</span><span class="p">,</span> <span class="n">rng_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                               <span class="n">rng_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">azi_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">azi_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                               <span class="n">ele_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ele_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">termination</span><span class="o">=</span><span class="s1">&#39;.nc&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    merge fields from Pyrad-generated files into a single radar spectra</span>
+<span class="sd">    object. Accepted file types are netcdf</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    basepath : str</span>
+<span class="sd">        name of the base path where to find the data</span>
+<span class="sd">    loadname: str</span>
+<span class="sd">        name of the saving directory</span>
+<span class="sd">    voltime : datetime object</span>
+<span class="sd">        reference time of the scan</span>
+<span class="sd">    datatype_list : list</span>
+<span class="sd">        list of data types to get</span>
+<span class="sd">    dataset_list : list</span>
+<span class="sd">        list of datasets that produced the data type to get.</span>
+<span class="sd">        Used to get path.</span>
+<span class="sd">    product_list : list</span>
+<span class="sd">        list of products. Used to get path</span>
+<span class="sd">    rng_min, rng_max : float</span>
+<span class="sd">        The range limits [m]. If None the entire coverage of the radar is</span>
+<span class="sd">        going to be used</span>
+<span class="sd">    ele_min, ele_max, azi_min, azi_max : float or None</span>
+<span class="sd">        The limits of the grid [deg]. If None the limits will be the limits</span>
+<span class="sd">        of the radar volume</span>
+<span class="sd">    termination : str</span>
+<span class="sd">        file termination type. Can be &#39;.nc&#39; or &#39;.h5&#39;</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    radar : Radar</span>
+<span class="sd">        radar object</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M%S&#39;</span><span class="p">)</span>
+
+    <span class="n">radar</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataset_list</span><span class="p">):</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">basepath</span><span class="o">+</span><span class="n">loadname</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;/&#39;</span> <span class="o">+</span>
+            <span class="n">dataset</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">product_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="o">+</span><span class="n">fdatetime</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="o">+</span><span class="n">datatype_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="n">termination</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath</span><span class="o">+</span><span class="n">fdatetime</span><span class="o">+</span><span class="s1">&#39;*&#39;</span> <span class="o">+</span>
+                 <span class="n">datatype_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;.nc&#39;</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">termination</span> <span class="o">==</span> <span class="s1">&#39;.nc&#39;</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_spectra</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">ee</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to read file &#39;</span><span class="o">+</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="c1"># else:</span>
+        <span class="c1">#     try:</span>
+        <span class="c1">#         radar_aux = pyart.aux_io.read_odim_h5(filename[0])</span>
+        <span class="c1">#     except OSError as ee:</span>
+        <span class="c1">#         warn(str(ee))</span>
+        <span class="c1">#         warn(&#39;Unable to read file &#39;+filename[0])</span>
+        <span class="k">if</span> <span class="n">radar_aux</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
+            <span class="k">continue</span>
+
+        <span class="n">radar</span> <span class="o">=</span> <span class="n">add_field</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">radar</span>
+
+    <span class="k">return</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cut_radar_spectra</span><span class="p">(</span>
         <span class="n">radar</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">rng_min</span><span class="p">,</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">rng_max</span><span class="p">,</span>
         <span class="n">ele_min</span><span class="o">=</span><span class="n">ele_min</span><span class="p">,</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">ele_max</span><span class="p">,</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">azi_min</span><span class="p">,</span> <span class="n">azi_max</span><span class="o">=</span><span class="n">azi_max</span><span class="p">)</span>
 

@@ -927,6 +927,31 @@ defining its antenna coordinates</dd>
 </dd>
 </dl>
 </dd>
+<dt>‘SAVEALL’: Saves radar spectra volume data including all or a list of</dt>
+<dd><p class="first">userdefined fields in a netcdf file
+User defined parameters:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>datatypes: list of str or None</dt>
+<dd>The list of data types to save. If it is None, all fields
+in the radar object will be saved</dd>
+<dt>physical: Bool</dt>
+<dd>If True the data will be saved in physical units (floats).
+Otherwise it will be quantized and saved as binary</dd>
+</dl>
+</div></blockquote>
+</dd>
+<dt>‘SAVEVOL’: Saves one field of a radar spectra volume data in a netcdf</dt>
+<dd><p class="first">file
+User defined parameters:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>physical: Bool</dt>
+<dd>If True the data will be saved in physical units (floats).
+Otherwise it will be quantized and saved as binary</dd>
+</dl>
+</div></blockquote>
+</dd>
 <dt>‘TIME_DOPPLER’: Makes a time-Doppler plot of spectral data at a point</dt>
 <dd><p class="first">of interest.
 User defined parameters:</p>
