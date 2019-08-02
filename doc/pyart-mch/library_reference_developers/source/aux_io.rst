@@ -36,7 +36,14 @@
    :special-members:
    :inherited-members:
    :show-inheritance:
-.. automodule:: pyart.aux_io.metranet
+.. automodule:: pyart.aux_io.metranet_c
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
+.. automodule:: pyart.aux_io.metranet_python
    :members:
    :undoc-members:
    :private-members:
@@ -121,6 +128,13 @@
    :inherited-members:
    :show-inheritance:
 .. automodule:: pyart.aux_io.sinarame_h5
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
+.. automodule:: pyart.aux_io.spectra
    :members:
    :undoc-members:
    :private-members:
