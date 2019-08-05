@@ -14,6 +14,8 @@ Functions for obtaining Pyrad products from spectra datasets
 from warnings import warn
 from copy import deepcopy
 
+import numpy as np
+
 from ..io.io_aux import get_fieldname_pyart
 from ..io.io_aux import get_save_dir, make_filename
 
@@ -23,6 +25,9 @@ from ..graph.plots_spectra import plot_amp_phase_range_Doppler
 from ..graph.plots_spectra import plot_complex_Doppler, plot_amp_phase_Doppler
 from ..graph.plots_spectra import plot_time_Doppler, plot_complex_time_Doppler
 from ..graph.plots_spectra import plot_amp_phase_time_Doppler
+from ..graph.plots_spectra import plot_angle_Doppler
+from ..graph.plots_spectra import plot_complex_angle_Doppler
+from ..graph.plots_spectra import plot_amp_phase_angle_Doppler
 
 from ..util.radar_utils import find_ray_index, find_rng_index
 
@@ -33,6 +38,27 @@ from pyart.aux_io import write_spectra
 def generate_spectra_products(dataset, prdcfg):
     """
     generates spectra products. Accepted product types:
+        'AMPLITUDE_PHASE_ANGLE_DOPPLER': Makes an angle Doppler plot of
+            complex spectra. The plot can be along azimuth or along range.
+            It is plotted separately the module and the phase of the signal.
+            User defined parameters:
+                along_azi : bool
+                    If true the plot is performed along azimuth, otherwise
+                    along range. Default true
+                ang : float
+                    The fixed angle (deg). Default 0.
+                rng : float
+                    The fixed range (m). Default 0.
+                ang_tol : float
+                    The fixed angle tolerance (deg). Default 1.
+                rng_tol : float
+                    The fixed range tolerance (m). Default 50.
+                xaxis_info : str
+                    The xaxis type. Can be 'Doppler_velocity' or
+                    'Doppler frequency'
+                ampli_vmin, ampli_vmax, phase_vmin, phase_vmax : float or None
+                    Minimum and maximum of the color scale for the module and
+                    phase
         'AMPLITUDE_PHASE_DOPPLER': Plots a complex Doppler spectrum
             making two separate plots for the module and phase of the signal
             User defined parameters:
@@ -80,6 +106,45 @@ def generate_spectra_products(dataset, prdcfg):
                 plot_type : str
                     Can be 'final' or 'temporal'. If final the data is only
                     plotted at the end of the processing
+        'ANGLE_DOPPLER': Makes an angle Doppler plot. The plot can be along
+            azimuth or along range
+            User defined parameters:
+                along_azi : bool
+                    If true the plot is performed along azimuth, otherwise
+                    along range. Default true
+                ang : float
+                    The fixed angle (deg). Default 0.
+                rng : float
+                    The fixed range (m). Default 0.
+                ang_tol : float
+                    The fixed angle tolerance (deg). Default 1.
+                rng_tol : float
+                    The fixed range tolerance (m). Default 50.
+                xaxis_info : str
+                    The xaxis type. Can be 'Doppler_velocity' or
+                    'Doppler frequency'
+                vmin, vmax : float or None
+                    Minimum and maximum of the color scale
+        'COMPLEX_ANGLE_DOPPLER': Makes an angle Doppler plot of complex
+            spectra. The plot can be along azimuth or along range. The real
+            and imaginary parts are plotted separately
+            User defined parameters:
+                along_azi : bool
+                    If true the plot is performed along azimuth, otherwise
+                    along range. Default true
+                ang : float
+                    The fixed angle (deg). Default 0.
+                rng : float
+                    The fixed range (m). Default 0.
+                ang_tol : float
+                    The fixed angle tolerance (deg). Default 1.
+                rng_tol : float
+                    The fixed range tolerance (m). Default 50.
+                xaxis_info : str
+                    The xaxis type. Can be 'Doppler_velocity' or
+                    'Doppler frequency'
+                vmin, vmax : float or None
+                    Minimum and maximum of the color scale
         'COMPLEX_DOPPLER': Plots a complex Doppler spectrum making two
             separate plots for the real and imaginary parts
             User defined parameters:
@@ -255,6 +320,85 @@ def generate_spectra_products(dataset, prdcfg):
             plot_range_Doppler(
                 dataset['radar_out'], field_name, ind_ray, prdcfg, fname_list,
                 xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+    if prdcfg['type'] == 'ANGLE_DOPPLER':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # user defined values
+        along_azi = prdcfg.get('along_azi', True)
+        ang = prdcfg.get('ang', 0)
+        rng = prdcfg.get('rng', 0)
+        ang_tol = prdcfg.get('ang_tol', 1.)
+        rng_tol = prdcfg.get('rng_tol', 50.)
+
+        ind_rng = find_rng_index(
+            dataset['radar_out'].range['data'], rng, rng_tol=rng_tol)
+
+        if ind_rng is None:
+            warn('No data at rng='+str(rng))
+            return None
+
+        if along_azi:
+            ind_rays = np.where(np.logical_and(
+                dataset['radar_out'].elevation['data'] <= ang+ang_tol,
+                dataset['radar_out'].elevation['data'] >= ang-ang_tol))[0]
+        else:
+            ind_rays = np.where(np.logical_and(
+                dataset['radar_out'].azimuth['data'] <= ang+ang_tol,
+                dataset['radar_out'].azimuth['data'] >= ang-ang_tol))[0]
+
+        if ind_rays.size == 0:
+            warn('No data for angle '+str(ang))
+            return None
+
+        # sort angles
+        if along_azi:
+            ang_selected = dataset['radar_out'].azimuth['data'][ind_rays]
+
+        else:
+            ang_selected = dataset['radar_out'].elevation['data'][ind_rays]
+        ind_rays = ind_rays[np.argsort(ang_selected)]
+
+        if along_azi:
+            gateinfo = 'azi'+'{:.1f}'.format(ang)+'rng'+'{:.1f}'.format(rng)
+        else:
+            gateinfo = 'ele'+'{:.1f}'.format(ang)+'rng'+'{:.1f}'.format(rng)
+
+        xaxis_info = prdcfg.get('xaxis_info', 'Doppler_velocity')
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            'range_Doppler', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo=gateinfo,
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        if ind_rays.size == 1:
+            plot_Doppler(
+                dataset['radar_out'], field_name, ind_rays, ind_rng, prdcfg,
+                fname_list, xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
+        else:
+            plot_angle_Doppler(
+                dataset['radar_out'], field_name, ang, ind_rays, ind_rng, prdcfg,
+                fname_list, xaxis_info=xaxis_info, along_azi=along_azi,
+                vmin=vmin, vmax=vmax)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -439,6 +583,85 @@ def generate_spectra_products(dataset, prdcfg):
             plot_complex_range_Doppler(
                 dataset['radar_out'], field_name, ind_ray, prdcfg, fname_list,
                 xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+    if prdcfg['type'] == 'COMPLEX_ANGLE_DOPPLER':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # user defined values
+        along_azi = prdcfg.get('along_azi', True)
+        ang = prdcfg.get('ang', 0)
+        rng = prdcfg.get('rng', 0)
+        ang_tol = prdcfg.get('ang_tol', 1.)
+        rng_tol = prdcfg.get('rng_tol', 50.)
+
+        ind_rng = find_rng_index(
+            dataset['radar_out'].range['data'], rng, rng_tol=rng_tol)
+
+        if ind_rng is None:
+            warn('No data at rng='+str(rng))
+            return None
+
+        if along_azi:
+            ind_rays = np.where(np.logical_and(
+                dataset['radar_out'].elevation['data'] <= ang+ang_tol,
+                dataset['radar_out'].elevation['data'] >= ang-ang_tol))[0]
+        else:
+            ind_rays = np.where(np.logical_and(
+                dataset['radar_out'].azimuth['data'] <= ang+ang_tol,
+                dataset['radar_out'].azimuth['data'] >= ang-ang_tol))[0]
+
+        if ind_rays.size == 0:
+            warn('No data for angle '+str(ang))
+            return None
+
+        # sort angles
+        if along_azi:
+            ang_selected = dataset['radar_out'].azimuth['data'][ind_rays]
+
+        else:
+            ang_selected = dataset['radar_out'].elevation['data'][ind_rays]
+        ind_rays = ind_rays[np.argsort(ang_selected)]
+
+        if along_azi:
+            gateinfo = 'azi'+'{:.1f}'.format(ang)+'rng'+'{:.1f}'.format(rng)
+        else:
+            gateinfo = 'ele'+'{:.1f}'.format(ang)+'rng'+'{:.1f}'.format(rng)
+
+        xaxis_info = prdcfg.get('xaxis_info', 'Doppler_velocity')
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            'range_Doppler', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo=gateinfo,
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        if ind_rays.size == 1:
+            plot_complex_Doppler(
+                dataset['radar_out'], field_name, ind_rays, ind_rng, prdcfg,
+                fname_list, xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
+        else:
+            plot_complex_angle_Doppler(
+                dataset['radar_out'], field_name, ang, ind_rays, ind_rng, prdcfg,
+                fname_list, xaxis_info=xaxis_info, along_azi=along_azi,
+                vmin=vmin, vmax=vmax)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -697,6 +920,90 @@ def generate_spectra_products(dataset, prdcfg):
                 xaxis_info=xaxis_info, ampli_vmin=ampli_vmin,
                 ampli_vmax=ampli_vmax, phase_vmin=phase_vmin,
                 phase_vmax=phase_vmax)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+    if prdcfg['type'] == 'AMPLITUDE_PHASE_ANGLE_DOPPLER':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # user defined values
+        along_azi = prdcfg.get('along_azi', True)
+        ang = prdcfg.get('ang', 0)
+        rng = prdcfg.get('rng', 0)
+        ang_tol = prdcfg.get('ang_tol', 1.)
+        rng_tol = prdcfg.get('rng_tol', 50.)
+
+        ind_rng = find_rng_index(
+            dataset['radar_out'].range['data'], rng, rng_tol=rng_tol)
+
+        if ind_rng is None:
+            warn('No data at rng='+str(rng))
+            return None
+
+        if along_azi:
+            ind_rays = np.where(np.logical_and(
+                dataset['radar_out'].elevation['data'] <= ang+ang_tol,
+                dataset['radar_out'].elevation['data'] >= ang-ang_tol))[0]
+        else:
+            ind_rays = np.where(np.logical_and(
+                dataset['radar_out'].azimuth['data'] <= ang+ang_tol,
+                dataset['radar_out'].azimuth['data'] >= ang-ang_tol))[0]
+
+        if ind_rays.size == 0:
+            warn('No data for angle '+str(ang))
+            return None
+
+        # sort angles
+        if along_azi:
+            ang_selected = dataset['radar_out'].azimuth['data'][ind_rays]
+
+        else:
+            ang_selected = dataset['radar_out'].elevation['data'][ind_rays]
+        ind_rays = ind_rays[np.argsort(ang_selected)]
+
+        if along_azi:
+            gateinfo = 'azi'+'{:.1f}'.format(ang)+'rng'+'{:.1f}'.format(rng)
+        else:
+            gateinfo = 'ele'+'{:.1f}'.format(ang)+'rng'+'{:.1f}'.format(rng)
+
+        xaxis_info = prdcfg.get('xaxis_info', 'Doppler_velocity')
+        ampli_vmin = prdcfg.get('ampli_vmin', None)
+        ampli_vmax = prdcfg.get('ampli_vmax', None)
+        phase_vmin = prdcfg.get('phase_vmin', None)
+        phase_vmax = prdcfg.get('phase_vmax', None)
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            'range_Doppler', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], prdcfginfo=gateinfo,
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        if ind_rays.size == 1:
+            plot_amp_phase_Doppler(
+                dataset['radar_out'], field_name, ind_rays, ind_rng, prdcfg,
+                fname_list, xaxis_info=xaxis_info, ampli_vmin=ampli_vmin,
+                ampli_vmax=ampli_vmax, phase_vmin=phase_vmin,
+                phase_vmax=phase_vmax)
+        else:
+            plot_amp_phase_angle_Doppler(
+                dataset['radar_out'], field_name, ang, ind_rays, ind_rng, prdcfg,
+                fname_list, xaxis_info=xaxis_info, along_azi=along_azi,
+                ampli_vmin=ampli_vmin, ampli_vmax=ampli_vmax,
+                phase_vmin=phase_vmin, phase_vmax=phase_vmax)
 
         print('----- save to '+' '.join(fname_list))
 

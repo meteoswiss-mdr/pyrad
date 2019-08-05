@@ -8,6 +8,7 @@ Auxiliary plotting functions
     :toctree: generated/
 
     generate_complex_range_Doppler_title
+    generate_angle_Doppler_title
     generate_complex_Doppler_title
     generate_fixed_rng_span_title
     generate_fixed_rng_title
@@ -58,6 +59,49 @@ def generate_complex_range_Doppler_title(radar, field, ray, datetime_format=None
     l1 = "%s azi%.1f-ele%.1f deg. %s " % (
         pyart.graph.common.generate_radar_name(radar),
         radar.azimuth['data'][ray], radar.elevation['data'][ray], time_str)
+    field_name = pyart.graph.common.generate_field_name(radar, field)
+    return l1 + '\n' + field_name
+
+
+def generate_angle_Doppler_title(radar, field, ang, ind_rng,
+                                 along_azi=True, datetime_format=None):
+    """
+    creates the angle-Doppler plot title
+
+    Parameters
+    ----------
+    radar : radar
+        The radar object
+    field : str
+        name of the field
+    ang : float
+        The fixed angle
+    ind_rng : int
+        the index of the fixed range
+    along_azi : bool
+        If true the plot is performed along azimuth, otherwise it is performed
+        along elevation
+    datetime_forat : str or None
+        The date time format to use
+
+    Returns
+    -------
+    titl : str
+        The plot title
+
+    """
+    begin_time = pyart.graph.common.generate_radar_time_begin(radar)
+    if datetime_format:
+        time_str = begin_time.strftime(datetime_format)
+    else:
+        time_str = begin_time.isoformat() + 'Z'
+    if along_azi:
+        ang_type = 'ele'
+    else:
+        ang_type = 'azi'
+    l1 = "%s %s%.1f deg-rng%.1f m. %s " % (
+        pyart.graph.common.generate_radar_name(radar),
+        ang_type, ang, radar.range['data'][ind_rng], time_str)
     field_name = pyart.graph.common.generate_field_name(radar, field)
     return l1 + '\n' + field_name
 
