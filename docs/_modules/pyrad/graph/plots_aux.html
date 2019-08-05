@@ -64,6 +64,7 @@
 <span class="sd">    :toctree: generated/</span>
 
 <span class="sd">    generate_complex_range_Doppler_title</span>
+<span class="sd">    generate_angle_Doppler_title</span>
 <span class="sd">    generate_complex_Doppler_title</span>
 <span class="sd">    generate_fixed_rng_span_title</span>
 <span class="sd">    generate_fixed_rng_title</span>
@@ -114,6 +115,49 @@
     <span class="n">l1</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> azi</span><span class="si">%.1f</span><span class="s2">-ele</span><span class="si">%.1f</span><span class="s2"> deg. </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span>
         <span class="n">pyart</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">generate_radar_name</span><span class="p">(</span><span class="n">radar</span><span class="p">),</span>
         <span class="n">radar</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ray</span><span class="p">],</span> <span class="n">radar</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ray</span><span class="p">],</span> <span class="n">time_str</span><span class="p">)</span>
+    <span class="n">field_name</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">generate_field_name</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">l1</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">field_name</span>
+
+
+<span class="k">def</span> <span class="nf">generate_angle_Doppler_title</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">ang</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">,</span>
+                                 <span class="n">along_azi</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">datetime_format</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    creates the angle-Doppler plot title</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    radar : radar</span>
+<span class="sd">        The radar object</span>
+<span class="sd">    field : str</span>
+<span class="sd">        name of the field</span>
+<span class="sd">    ang : float</span>
+<span class="sd">        The fixed angle</span>
+<span class="sd">    ind_rng : int</span>
+<span class="sd">        the index of the fixed range</span>
+<span class="sd">    along_azi : bool</span>
+<span class="sd">        If true the plot is performed along azimuth, otherwise it is performed</span>
+<span class="sd">        along elevation</span>
+<span class="sd">    datetime_forat : str or None</span>
+<span class="sd">        The date time format to use</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    titl : str</span>
+<span class="sd">        The plot title</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">begin_time</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">generate_radar_time_begin</span><span class="p">(</span><span class="n">radar</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">datetime_format</span><span class="p">:</span>
+        <span class="n">time_str</span> <span class="o">=</span> <span class="n">begin_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">datetime_format</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">time_str</span> <span class="o">=</span> <span class="n">begin_time</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;Z&#39;</span>
+    <span class="k">if</span> <span class="n">along_azi</span><span class="p">:</span>
+        <span class="n">ang_type</span> <span class="o">=</span> <span class="s1">&#39;ele&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ang_type</span> <span class="o">=</span> <span class="s1">&#39;azi&#39;</span>
+    <span class="n">l1</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s%.1f</span><span class="s2"> deg-rng</span><span class="si">%.1f</span><span class="s2"> m. </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span>
+        <span class="n">pyart</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">generate_radar_name</span><span class="p">(</span><span class="n">radar</span><span class="p">),</span>
+        <span class="n">ang_type</span><span class="p">,</span> <span class="n">ang</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rng</span><span class="p">],</span> <span class="n">time_str</span><span class="p">)</span>
     <span class="n">field_name</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">generate_field_name</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">l1</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">field_name</span>
 

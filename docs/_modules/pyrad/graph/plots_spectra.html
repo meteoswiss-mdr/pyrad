@@ -64,11 +64,14 @@
 <span class="sd">    :toctree: generated/</span>
 
 <span class="sd">    plot_range_Doppler</span>
+<span class="sd">    plot_angle_Doppler</span>
 <span class="sd">    plot_time_Doppler</span>
 <span class="sd">    plot_Doppler</span>
 <span class="sd">    plot_complex_range_Doppler</span>
+<span class="sd">    plot_complex_angle_Doppler</span>
 <span class="sd">    plot_complex_time_Doppler</span>
 <span class="sd">    plot_amp_phase_range_Doppler</span>
+<span class="sd">    plot_amp_phase_angle_Doppler</span>
 <span class="sd">    plot_amp_phase_time_Doppler</span>
 <span class="sd">    plot_complex_Doppler</span>
 <span class="sd">    plot_amp_phase_Doppler</span>
@@ -93,6 +96,7 @@
 <span class="kn">from</span> <span class="nn">.plots_aux</span> <span class="k">import</span> <span class="n">get_colobar_label</span><span class="p">,</span> <span class="n">get_norm</span>
 <span class="kn">from</span> <span class="nn">.plots_aux</span> <span class="k">import</span> <span class="n">generate_complex_range_Doppler_title</span>
 <span class="kn">from</span> <span class="nn">.plots_aux</span> <span class="k">import</span> <span class="n">generate_complex_Doppler_title</span>
+<span class="kn">from</span> <span class="nn">.plots_aux</span> <span class="k">import</span> <span class="n">generate_angle_Doppler_title</span>
 
 
 <div class="viewcode-block" id="plot_range_Doppler"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_range_Doppler">[docs]</a><span class="k">def</span> <span class="nf">plot_range_Doppler</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ray</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
@@ -186,6 +190,133 @@
     <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
     <span class="n">cax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span>
         <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">field_2D</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span>
+        <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">titl</span><span class="p">)</span>
+
+    <span class="n">cb</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cax</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ticks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cb</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">ticks</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ticklabs</span><span class="p">:</span>
+        <span class="n">cb</span><span class="o">.</span><span class="n">set_ticklabels</span><span class="p">(</span><span class="n">ticklabs</span><span class="p">)</span>
+    <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="n">clabel</span><span class="p">)</span>
+
+    <span class="c1"># Make a tight layout</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">fname_list</span><span class="p">:</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fname_list</span></div>
+
+
+<div class="viewcode-block" id="plot_angle_Doppler"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_angle_Doppler">[docs]</a><span class="k">def</span> <span class="nf">plot_angle_Doppler</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ang</span><span class="p">,</span> <span class="n">ind_rays</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span>
+                       <span class="n">fname_list</span><span class="p">,</span> <span class="n">xaxis_info</span><span class="o">=</span><span class="s1">&#39;Doppler_velocity&#39;</span><span class="p">,</span>
+                       <span class="n">yaxis_pos</span><span class="o">=</span><span class="s1">&#39;centre&#39;</span><span class="p">,</span> <span class="n">along_azi</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">titl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">clabel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Makes an angle-Doppler plot</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    spectra : radar spectra object</span>
+<span class="sd">        object containing the spectra to plot</span>
+<span class="sd">    field_name : str</span>
+<span class="sd">        name of the field to plot</span>
+<span class="sd">    ang : float</span>
+<span class="sd">        The fixed angle</span>
+<span class="sd">    ind_rays : 1D int array</span>
+<span class="sd">        The indices of the rays to plot</span>
+<span class="sd">    ind_rng : int</span>
+<span class="sd">        The index of the range to plot</span>
+<span class="sd">    prdcfg : dict</span>
+<span class="sd">        dictionary containing the product configuration</span>
+<span class="sd">    fname_list : list of str</span>
+<span class="sd">        list of names of the files where to store the plot</span>
+<span class="sd">    xaxis_info : str</span>
+<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39; or &#39;Doppler_frequency&#39;</span>
+<span class="sd">    yaxis_pos : str</span>
+<span class="sd">        the position that the y point represents in the y-axis bin. Can be</span>
+<span class="sd">        &#39;start&#39;, end&#39; or &#39;centre&#39;</span>
+<span class="sd">    along_azi : bool</span>
+<span class="sd">        If true the plot is performed along azimuth. If false it is performed</span>
+<span class="sd">        along elevation</span>
+<span class="sd">    titl : str or None</span>
+<span class="sd">        The plot title</span>
+<span class="sd">    clabel : str or None</span>
+<span class="sd">        The color bar label</span>
+<span class="sd">    vmin, vmax : float or None</span>
+<span class="sd">        The value limits</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fname_list : list of str</span>
+<span class="sd">        list of names of the saved plots</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dpi</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;ppiImageConfig&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dpi&#39;</span><span class="p">,</span> <span class="mi">72</span><span class="p">)</span>
+    <span class="n">xsize</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;ppiImageConfig&#39;</span><span class="p">][</span><span class="s1">&#39;xsize&#39;</span><span class="p">]</span>
+    <span class="n">ysize</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;ppiImageConfig&#39;</span><span class="p">][</span><span class="s1">&#39;ysize&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">xaxis_info</span> <span class="o">==</span> <span class="s1">&#39;Doppler_velocity&#39;</span><span class="p">:</span>
+        <span class="n">xaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Doppler_velocity</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Doppler velocity (m/s)&#39;</span>
+    <span class="k">elif</span> <span class="n">xaxis_info</span> <span class="o">==</span> <span class="s1">&#39;Doppler_frequency&#39;</span><span class="p">:</span>
+        <span class="n">xaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Doppler frequency (Hz)&#39;</span>
+    <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;Angle (deg)&#39;</span>
+
+    <span class="k">if</span> <span class="n">along_azi</span><span class="p">:</span>
+        <span class="n">yaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">yaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">]</span>
+
+    <span class="n">xaxis_lim</span><span class="p">,</span> <span class="n">yaxis_lim</span><span class="p">,</span> <span class="n">xaxis_size</span> <span class="o">=</span> <span class="n">_create_irregular_grid</span><span class="p">(</span>
+        <span class="n">xaxis</span><span class="p">,</span> <span class="n">yaxis</span><span class="p">,</span> <span class="n">yaxis_pos</span><span class="o">=</span><span class="n">yaxis_pos</span><span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="n">ind_rng</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">zpoints</span> <span class="o">=</span> <span class="n">_adapt_data_to_irregular_grid</span><span class="p">(</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">xaxis_size</span><span class="p">,</span> <span class="n">xaxis_lim</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xaxis_lim</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># display data</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cmap</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">ticks</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">ticklabs</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">field_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">field_dict</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">clabel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">clabel</span> <span class="o">=</span> <span class="n">get_colobar_label</span><span class="p">(</span><span class="n">field_dict</span><span class="p">,</span> <span class="n">field_name</span><span class="p">)</span>
+
+        <span class="n">cmap</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_field_colormap</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+
+        <span class="n">norm</span><span class="p">,</span> <span class="n">ticks</span><span class="p">,</span> <span class="n">ticklabs</span> <span class="o">=</span> <span class="n">get_norm</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">vmin</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vmin</span> <span class="o">=</span> <span class="n">vmax</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">norm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># if norm is set do not override with vmin/vmax</span>
+                <span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_field_limits</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">norm</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">clabel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">clabel</span> <span class="o">=</span> <span class="s1">&#39;value&#39;</span>
+        <span class="k">if</span> <span class="n">vmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">zpoints</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">zpoints</span><span class="p">)</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">[</span><span class="n">xsize</span><span class="p">,</span> <span class="n">ysize</span><span class="p">],</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">titl</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">titl</span> <span class="o">=</span> <span class="n">generate_angle_Doppler_title</span><span class="p">(</span>
+            <span class="n">spectra</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ang</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">,</span> <span class="n">along_azi</span><span class="o">=</span><span class="n">along_azi</span><span class="p">,</span>
+            <span class="n">datetime_format</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+    <span class="n">cax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">pcolor</span><span class="p">(</span>
+        <span class="n">xaxis_lim</span><span class="p">,</span> <span class="n">yaxis_lim</span><span class="p">,</span> <span class="n">zpoints</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span>
         <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
@@ -529,6 +660,149 @@
     <span class="k">return</span> <span class="n">fname_list</span></div>
 
 
+<div class="viewcode-block" id="plot_complex_angle_Doppler"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_complex_angle_Doppler">[docs]</a><span class="k">def</span> <span class="nf">plot_complex_angle_Doppler</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ang</span><span class="p">,</span> <span class="n">ind_rays</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">,</span>
+                               <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
+                               <span class="n">xaxis_info</span><span class="o">=</span><span class="s1">&#39;Doppler_velocity&#39;</span><span class="p">,</span>
+                               <span class="n">yaxis_pos</span><span class="o">=</span><span class="s1">&#39;centre&#39;</span><span class="p">,</span> <span class="n">along_azi</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">titl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                               <span class="n">clabel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Makes an angle-Doppler plot of complex spectra</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    spectra : radar spectra object</span>
+<span class="sd">        object containing the spectra to plot</span>
+<span class="sd">    field_name : str</span>
+<span class="sd">        name of the field to plot</span>
+<span class="sd">    ang : float</span>
+<span class="sd">        The fixed angle</span>
+<span class="sd">    ind_rays : 1D int array</span>
+<span class="sd">        The indices of the rays to plot</span>
+<span class="sd">    ind_rng : int</span>
+<span class="sd">        The index of the range to plot</span>
+<span class="sd">    prdcfg : dict</span>
+<span class="sd">        dictionary containing the product configuration</span>
+<span class="sd">    fname_list : list of str</span>
+<span class="sd">        list of names of the files where to store the plot</span>
+<span class="sd">    xaxis_info : str</span>
+<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39; or &#39;Doppler_frequency&#39;</span>
+<span class="sd">    yaxis_pos : str</span>
+<span class="sd">        the position that the y point represents in the y-axis bin. Can be</span>
+<span class="sd">        &#39;start&#39;, end&#39; or &#39;centre&#39;</span>
+<span class="sd">    along_azi : bool</span>
+<span class="sd">        If true the plot is performed along azimuth. If false it is performed</span>
+<span class="sd">        along elevation</span>
+<span class="sd">    titl : str or None</span>
+<span class="sd">        The plot title</span>
+<span class="sd">    clabel : str or None</span>
+<span class="sd">        The color bar label</span>
+<span class="sd">    vmin, vmax : float or None</span>
+<span class="sd">        The value limits</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fname_list : list of str</span>
+<span class="sd">        list of names of the saved plots</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dpi</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;ppiImageConfig&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dpi&#39;</span><span class="p">,</span> <span class="mi">72</span><span class="p">)</span>
+    <span class="n">xsize</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;ppiImageConfig&#39;</span><span class="p">][</span><span class="s1">&#39;xsize&#39;</span><span class="p">]</span>
+    <span class="n">ysize</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;ppiImageConfig&#39;</span><span class="p">][</span><span class="s1">&#39;ysize&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">xaxis_info</span> <span class="o">==</span> <span class="s1">&#39;Doppler_velocity&#39;</span><span class="p">:</span>
+        <span class="n">xaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Doppler_velocity</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Doppler velocity (m/s)&#39;</span>
+    <span class="k">elif</span> <span class="n">xaxis_info</span> <span class="o">==</span> <span class="s1">&#39;Doppler_frequency&#39;</span><span class="p">:</span>
+        <span class="n">xaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Doppler frequency (Hz)&#39;</span>
+    <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;Angle (deg)&#39;</span>
+
+    <span class="k">if</span> <span class="n">along_azi</span><span class="p">:</span>
+        <span class="n">yaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">yaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">]</span>
+
+    <span class="n">xaxis_lim</span><span class="p">,</span> <span class="n">yaxis_lim</span><span class="p">,</span> <span class="n">xaxis_size</span> <span class="o">=</span> <span class="n">_create_irregular_grid</span><span class="p">(</span>
+        <span class="n">xaxis</span><span class="p">,</span> <span class="n">yaxis</span><span class="p">,</span> <span class="n">yaxis_pos</span><span class="o">=</span><span class="n">yaxis_pos</span><span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="n">ind_rng</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">field_2D</span> <span class="o">=</span> <span class="n">_adapt_data_to_irregular_grid</span><span class="p">(</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">xaxis_size</span><span class="p">,</span> <span class="n">xaxis_lim</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xaxis_lim</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">re_field_2D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">field_2D</span><span class="p">)</span>
+    <span class="n">im_field_2D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="n">field_2D</span><span class="p">)</span>
+
+    <span class="c1"># display data</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cmap</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">ticks</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">ticklabs</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">field_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">field_dict</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">clabel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">clabel</span> <span class="o">=</span> <span class="n">get_colobar_label</span><span class="p">(</span><span class="n">field_dict</span><span class="p">,</span> <span class="n">field_name</span><span class="p">)</span>
+
+        <span class="n">cmap</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_field_colormap</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+
+        <span class="n">norm</span><span class="p">,</span> <span class="n">ticks</span><span class="p">,</span> <span class="n">ticklabs</span> <span class="o">=</span> <span class="n">get_norm</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">vmin</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vmin</span> <span class="o">=</span> <span class="n">vmax</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">norm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># if norm is set do not override with vmin/vmax</span>
+                <span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_field_limits</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">norm</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">clabel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">clabel</span> <span class="o">=</span> <span class="s1">&#39;value&#39;</span>
+        <span class="k">if</span> <span class="n">vmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">re_field_2D</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">im_field_2D</span><span class="p">)])</span>
+        <span class="k">if</span> <span class="n">vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">re_field_2D</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">im_field_2D</span><span class="p">)])</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">[</span><span class="n">xsize</span><span class="p">,</span> <span class="n">ysize</span><span class="p">],</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">titl</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">titl</span> <span class="o">=</span> <span class="n">generate_angle_Doppler_title</span><span class="p">(</span>
+            <span class="n">spectra</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ang</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">,</span> <span class="n">along_azi</span><span class="o">=</span><span class="n">along_azi</span><span class="p">,</span>
+            <span class="n">datetime_format</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="n">titl</span><span class="p">)</span>
+
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
+    <span class="n">cax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">pcolor</span><span class="p">(</span>
+        <span class="n">xaxis_lim</span><span class="p">,</span> <span class="n">yaxis_lim</span><span class="p">,</span> <span class="n">re_field_2D</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span>
+        <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Real part&#39;</span><span class="p">)</span>
+
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
+    <span class="n">cax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">pcolor</span><span class="p">(</span>
+        <span class="n">xaxis_lim</span><span class="p">,</span> <span class="n">yaxis_lim</span><span class="p">,</span> <span class="n">im_field_2D</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span>
+        <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Imaginary part&#39;</span><span class="p">)</span>
+
+    <span class="n">cb</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cax</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ticks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cb</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">ticks</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ticklabs</span><span class="p">:</span>
+        <span class="n">cb</span><span class="o">.</span><span class="n">set_ticklabels</span><span class="p">(</span><span class="n">ticklabs</span><span class="p">)</span>
+    <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="n">clabel</span><span class="p">)</span>
+
+    <span class="c1"># Make a tight layout</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">top</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">fname_list</span><span class="p">:</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fname_list</span></div>
+
+
 <div class="viewcode-block" id="plot_complex_time_Doppler"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_complex_time_Doppler">[docs]</a><span class="k">def</span> <span class="nf">plot_complex_time_Doppler</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
                               <span class="n">xaxis_info</span><span class="o">=</span><span class="s1">&#39;Doppler_velocity&#39;</span><span class="p">,</span>
                               <span class="n">yaxis_pos</span><span class="o">=</span><span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="n">titl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clabel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -783,6 +1057,170 @@
     <span class="n">cax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span>
         <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">phase_field_2D</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">phase_vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">phase_vmax</span><span class="p">,</span>
         <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Phase&#39;</span><span class="p">)</span>
+
+    <span class="n">cb</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cax</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ticks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cb</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">ticks</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ticklabs</span><span class="p">:</span>
+        <span class="n">cb</span><span class="o">.</span><span class="n">set_ticklabels</span><span class="p">(</span><span class="n">ticklabs</span><span class="p">)</span>
+    <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="n">clabel</span><span class="p">)</span>
+
+    <span class="c1"># Make a tight layout</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">top</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">fname_list</span><span class="p">:</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fname_list</span></div>
+
+
+<div class="viewcode-block" id="plot_amp_phase_angle_Doppler"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_amp_phase_angle_Doppler">[docs]</a><span class="k">def</span> <span class="nf">plot_amp_phase_angle_Doppler</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ang</span><span class="p">,</span> <span class="n">ind_rays</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">,</span>
+                                 <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
+                                 <span class="n">xaxis_info</span><span class="o">=</span><span class="s1">&#39;Doppler_velocity&#39;</span><span class="p">,</span>
+                                 <span class="n">yaxis_pos</span><span class="o">=</span><span class="s1">&#39;centre&#39;</span><span class="p">,</span> <span class="n">along_azi</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                 <span class="n">titl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clabel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ampli_vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                 <span class="n">ampli_vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">phase_vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                 <span class="n">phase_vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Makes an angle-Doppler plot of complex spectra</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    spectra : radar spectra object</span>
+<span class="sd">        object containing the spectra to plot</span>
+<span class="sd">    field_name : str</span>
+<span class="sd">        name of the field to plot</span>
+<span class="sd">    ang : float</span>
+<span class="sd">        The fixed angle</span>
+<span class="sd">    ind_rays : 1D int array</span>
+<span class="sd">        The indices of the rays to plot</span>
+<span class="sd">    ind_rng : int</span>
+<span class="sd">        The index of the range to plot</span>
+<span class="sd">    prdcfg : dict</span>
+<span class="sd">        dictionary containing the product configuration</span>
+<span class="sd">    fname_list : list of str</span>
+<span class="sd">        list of names of the files where to store the plot</span>
+<span class="sd">    xaxis_info : str</span>
+<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39; or &#39;Doppler_frequency&#39;</span>
+<span class="sd">    yaxis_pos : str</span>
+<span class="sd">        the position that the y point represents in the y-axis bin. Can be</span>
+<span class="sd">        &#39;start&#39;, end&#39; or &#39;centre&#39;</span>
+<span class="sd">    along_azi : bool</span>
+<span class="sd">        If true the plot is performed along azimuth. If false it is performed</span>
+<span class="sd">        along elevation</span>
+<span class="sd">    titl : str or None</span>
+<span class="sd">        The plot title</span>
+<span class="sd">    clabel : str or None</span>
+<span class="sd">        The color bar label</span>
+<span class="sd">    ampli_vmin, ampli_vmax, phase_vmin, phase_vmax : float or None</span>
+<span class="sd">        The value limits</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fname_list : list of str</span>
+<span class="sd">        list of names of the saved plots</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dpi</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;ppiImageConfig&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dpi&#39;</span><span class="p">,</span> <span class="mi">72</span><span class="p">)</span>
+    <span class="n">xsize</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;ppiImageConfig&#39;</span><span class="p">][</span><span class="s1">&#39;xsize&#39;</span><span class="p">]</span>
+    <span class="n">ysize</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;ppiImageConfig&#39;</span><span class="p">][</span><span class="s1">&#39;ysize&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">xaxis_info</span> <span class="o">==</span> <span class="s1">&#39;Doppler_velocity&#39;</span><span class="p">:</span>
+        <span class="n">xaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Doppler_velocity</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Doppler velocity (m/s)&#39;</span>
+    <span class="k">elif</span> <span class="n">xaxis_info</span> <span class="o">==</span> <span class="s1">&#39;Doppler_frequency&#39;</span><span class="p">:</span>
+        <span class="n">xaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Doppler frequency (Hz)&#39;</span>
+    <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;Angle (deg)&#39;</span>
+
+    <span class="k">if</span> <span class="n">along_azi</span><span class="p">:</span>
+        <span class="n">yaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">yaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">]</span>
+
+    <span class="n">xaxis_lim</span><span class="p">,</span> <span class="n">yaxis_lim</span><span class="p">,</span> <span class="n">xaxis_size</span> <span class="o">=</span> <span class="n">_create_irregular_grid</span><span class="p">(</span>
+        <span class="n">xaxis</span><span class="p">,</span> <span class="n">yaxis</span><span class="p">,</span> <span class="n">yaxis_pos</span><span class="o">=</span><span class="n">yaxis_pos</span><span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="n">ind_rng</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">field_2D</span> <span class="o">=</span> <span class="n">_adapt_data_to_irregular_grid</span><span class="p">(</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">xaxis_size</span><span class="p">,</span> <span class="n">xaxis_lim</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xaxis_lim</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">ampli_field_2D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">field_2D</span><span class="p">)</span>
+    <span class="n">phase_field_2D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">field_2D</span><span class="p">,</span> <span class="n">deg</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># display data</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cmap</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">ticks</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">ticklabs</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">field_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">field_dict</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">clabel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">clabel</span> <span class="o">=</span> <span class="n">get_colobar_label</span><span class="p">(</span><span class="n">field_dict</span><span class="p">,</span> <span class="n">field_name</span><span class="p">)</span>
+
+        <span class="n">cmap</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_field_colormap</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+
+        <span class="n">norm</span><span class="p">,</span> <span class="n">ticks</span><span class="p">,</span> <span class="n">ticklabs</span> <span class="o">=</span> <span class="n">get_norm</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ampli_vmin</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">ampli_vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ampli_vmin</span> <span class="o">=</span> <span class="n">ampli_vmax</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">norm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># if norm is set do not override with vmin/vmax</span>
+                <span class="n">ampli_vmin</span><span class="p">,</span> <span class="n">ampli_vmax</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_field_limits</span><span class="p">(</span>
+                    <span class="n">field_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">norm</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">phase_vmin</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">phase_vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">phase_vmin</span> <span class="o">=</span> <span class="n">phase_vmax</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">norm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># if norm is set do not override with vmin/vmax</span>
+                <span class="n">phase_vmin</span><span class="p">,</span> <span class="n">phase_vmax</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">180.</span><span class="p">,</span> <span class="mf">180.</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">norm</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">clabel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">clabel</span> <span class="o">=</span> <span class="s1">&#39;value&#39;</span>
+        <span class="k">if</span> <span class="n">ampli_vmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ampli_vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">ampli_field_2D</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ampli_vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ampli_vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">ampli_field_2D</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">phase_vmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">phase_vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">phase_field_2D</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">phase_vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">phase_vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">phase_field_2D</span><span class="p">)</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">[</span><span class="n">xsize</span><span class="p">,</span> <span class="n">ysize</span><span class="p">],</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">titl</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">titl</span> <span class="o">=</span> <span class="n">generate_angle_Doppler_title</span><span class="p">(</span>
+            <span class="n">spectra</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ang</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">,</span> <span class="n">along_azi</span><span class="o">=</span><span class="n">along_azi</span><span class="p">,</span>
+            <span class="n">datetime_format</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="n">titl</span><span class="p">)</span>
+
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
+    <span class="n">cax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">pcolor</span><span class="p">(</span>
+        <span class="n">xaxis_lim</span><span class="p">,</span> <span class="n">yaxis_lim</span><span class="p">,</span> <span class="n">ampli_field_2D</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">ampli_vmin</span><span class="p">,</span>
+        <span class="n">vmax</span><span class="o">=</span><span class="n">ampli_vmax</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Amplitude&#39;</span><span class="p">)</span>
+
+    <span class="n">cb</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cax</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ticks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cb</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">ticks</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ticklabs</span><span class="p">:</span>
+        <span class="n">cb</span><span class="o">.</span><span class="n">set_ticklabels</span><span class="p">(</span><span class="n">ticklabs</span><span class="p">)</span>
+    <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="n">clabel</span><span class="p">)</span>
+
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
+    <span class="n">cax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">pcolor</span><span class="p">(</span>
+        <span class="n">xaxis_lim</span><span class="p">,</span> <span class="n">yaxis_lim</span><span class="p">,</span> <span class="n">phase_field_2D</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">phase_vmin</span><span class="p">,</span>
+        <span class="n">vmax</span><span class="o">=</span><span class="n">phase_vmax</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Phase&#39;</span><span class="p">)</span>

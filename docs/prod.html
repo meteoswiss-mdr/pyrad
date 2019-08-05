@@ -763,6 +763,32 @@ status of the processing</p>
 <dd><dl class="docutils">
 <dt>generates spectra products. Accepted product types:</dt>
 <dd><dl class="first last docutils">
+<dt>‘AMPLITUDE_PHASE_ANGLE_DOPPLER’: Makes an angle Doppler plot of</dt>
+<dd><p class="first">complex spectra. The plot can be along azimuth or along range.
+It is plotted separately the module and the phase of the signal.
+User defined parameters:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>along_azi <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd>If true the plot is performed along azimuth, otherwise
+along range. Default true</dd>
+<dt>ang <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>The fixed angle (deg). Default 0.</dd>
+<dt>rng <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>The fixed range (m). Default 0.</dd>
+<dt>ang_tol <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>The fixed angle tolerance (deg). Default 1.</dd>
+<dt>rng_tol <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>The fixed range tolerance (m). Default 50.</dd>
+<dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>The xaxis type. Can be ‘Doppler_velocity’ or
+‘Doppler frequency’</dd>
+<dt>ampli_vmin, ampli_vmax, phase_vmin, phase_vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
+<dd>Minimum and maximum of the color scale for the module and
+phase</dd>
+</dl>
+</div></blockquote>
+</dd>
 <dt>‘AMPLITUDE_PHASE_DOPPLER’: Plots a complex Doppler spectrum</dt>
 <dd><p class="first">making two separate plots for the module and phase of the signal
 User defined parameters:</p>
@@ -822,6 +848,55 @@ phase</dd>
 <dt>plot_type <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
 <dd>Can be ‘final’ or ‘temporal’. If final the data is only
 plotted at the end of the processing</dd>
+</dl>
+</div></blockquote>
+</dd>
+<dt>‘ANGLE_DOPPLER’: Makes an angle Doppler plot. The plot can be along</dt>
+<dd><p class="first">azimuth or along range
+User defined parameters:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>along_azi <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd>If true the plot is performed along azimuth, otherwise
+along range. Default true</dd>
+<dt>ang <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>The fixed angle (deg). Default 0.</dd>
+<dt>rng <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>The fixed range (m). Default 0.</dd>
+<dt>ang_tol <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>The fixed angle tolerance (deg). Default 1.</dd>
+<dt>rng_tol <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>The fixed range tolerance (m). Default 50.</dd>
+<dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>The xaxis type. Can be ‘Doppler_velocity’ or
+‘Doppler frequency’</dd>
+<dt>vmin, vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
+<dd>Minimum and maximum of the color scale</dd>
+</dl>
+</div></blockquote>
+</dd>
+<dt>‘COMPLEX_ANGLE_DOPPLER’: Makes an angle Doppler plot of complex</dt>
+<dd><p class="first">spectra. The plot can be along azimuth or along range. The real
+and imaginary parts are plotted separately
+User defined parameters:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>along_azi <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd>If true the plot is performed along azimuth, otherwise
+along range. Default true</dd>
+<dt>ang <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>The fixed angle (deg). Default 0.</dd>
+<dt>rng <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>The fixed range (m). Default 0.</dd>
+<dt>ang_tol <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>The fixed angle tolerance (deg). Default 1.</dd>
+<dt>rng_tol <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>The fixed range tolerance (m). Default 50.</dd>
+<dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>The xaxis type. Can be ‘Doppler_velocity’ or
+‘Doppler frequency’</dd>
+<dt>vmin, vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
+<dd>Minimum and maximum of the color scale</dd>
 </dl>
 </div></blockquote>
 </dd>

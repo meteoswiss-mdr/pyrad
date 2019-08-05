@@ -52,6 +52,9 @@ Plots
     plot_range_Doppler
     plot_complex_range_Doppler
     plot_amp_phase_range_Doppler
+    plot_angle_Doppler
+    plot_complex_angle_Doppler
+    plot_amp_phase_angle_Doppler
     plot_time_Doppler
     plot_complex_time_Doppler
     plot_amp_phase_time_Doppler
@@ -79,7 +82,9 @@ from .plots_spectra import plot_range_Doppler, plot_complex_range_Doppler
 from .plots_spectra import plot_amp_phase_range_Doppler, plot_Doppler
 from .plots_spectra import plot_complex_Doppler, plot_amp_phase_Doppler
 from .plots_spectra import plot_time_Doppler, plot_complex_time_Doppler
-from .plots_spectra import plot_amp_phase_time_Doppler
+from .plots_spectra import plot_amp_phase_time_Doppler, plot_angle_Doppler
+from .plots_spectra import plot_complex_angle_Doppler
+from .plots_spectra import plot_amp_phase_angle_Doppler
 
 from .plots_timeseries import plot_timeseries, plot_timeseries_comp
 from .plots_timeseries import plot_monitoring_ts, plot_intercomp_scores_ts
