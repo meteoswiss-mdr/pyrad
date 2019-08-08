@@ -465,6 +465,9 @@ def plot_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
     ax.set_xlim([xaxis[0], xaxis[-1]])
     ax.set_title(titl)
 
+    # Turn on the grid
+    ax.grid()
+
     # Make a tight layout
     fig.tight_layout()
 
@@ -877,8 +880,7 @@ def plot_complex_time_Doppler(spectra, field_name, prdcfg, fname_list,
 def plot_amp_phase_range_Doppler(spectra, field_name, ray, prdcfg, fname_list,
                                  xaxis_info='Doppler_velocity', titl=None,
                                  ampli_vmin=None, ampli_vmax=None,
-                                 phase_vmin=None, phase_vmax=None,
-                                 clabel=None):
+                                 phase_vmin=None, phase_vmax=None):
     """
     Makes a complex range-Doppler plot plotting separately the module and the
     phase of the signal
@@ -901,8 +903,6 @@ def plot_amp_phase_range_Doppler(spectra, field_name, ray, prdcfg, fname_list,
         The plot title
     ampli_vmin, ampli_vmax, phase_vmin, phase_vmax : float or None
         The value limits
-    clabel : str or None
-        The label of color bar
 
     Returns
     -------
@@ -942,10 +942,6 @@ def plot_amp_phase_range_Doppler(spectra, field_name, ray, prdcfg, fname_list,
     ticks = None
     ticklabs = None
     if field_name is not None:
-        field_dict = pyart.config.get_metadata(field_name)
-        if clabel is None:
-            clabel = get_colobar_label(field_dict, field_name)
-
         cmap = pyart.config.get_field_colormap(field_name)
 
         norm, ticks, ticklabs = get_norm(field_name)
@@ -964,8 +960,6 @@ def plot_amp_phase_range_Doppler(spectra, field_name, ray, prdcfg, fname_list,
         else:
             norm = None
     else:
-        if clabel is None:
-            clabel = 'value'
         if ampli_vmin is None:
             ampli_vmin = np.ma.min(ampli_field_2D)
         if ampli_vmax is None:
@@ -995,7 +989,7 @@ def plot_amp_phase_range_Doppler(spectra, field_name, ray, prdcfg, fname_list,
         cb.set_ticks(ticks)
     if ticklabs:
         cb.set_ticklabels(ticklabs)
-    cb.set_label(clabel)
+    cb.set_label('Amplitude (-)')
 
     ax = fig.add_subplot(122)
     cax = ax.pcolormesh(
@@ -1010,7 +1004,7 @@ def plot_amp_phase_range_Doppler(spectra, field_name, ray, prdcfg, fname_list,
         cb.set_ticks(ticks)
     if ticklabs:
         cb.set_ticklabels(ticklabs)
-    cb.set_label(clabel)
+    cb.set_label('Phase (deg)')
 
     # Make a tight layout
     fig.tight_layout()
@@ -1028,9 +1022,8 @@ def plot_amp_phase_angle_Doppler(spectra, field_name, ang, ind_rays, ind_rng,
                                  prdcfg, fname_list,
                                  xaxis_info='Doppler_velocity',
                                  yaxis_pos='centre', along_azi=True,
-                                 titl=None, clabel=None, ampli_vmin=None,
-                                 ampli_vmax=None, phase_vmin=None,
-                                 phase_vmax=None,):
+                                 titl=None, ampli_vmin=None, ampli_vmax=None,
+                                 phase_vmin=None, phase_vmax=None,):
     """
     Makes an angle-Doppler plot of complex spectra
 
@@ -1060,8 +1053,6 @@ def plot_amp_phase_angle_Doppler(spectra, field_name, ang, ind_rays, ind_rng,
         along elevation
     titl : str or None
         The plot title
-    clabel : str or None
-        The color bar label
     ampli_vmin, ampli_vmax, phase_vmin, phase_vmax : float or None
         The value limits
 
@@ -1105,10 +1096,6 @@ def plot_amp_phase_angle_Doppler(spectra, field_name, ang, ind_rays, ind_rng,
     ticks = None
     ticklabs = None
     if field_name is not None:
-        field_dict = pyart.config.get_metadata(field_name)
-        if clabel is None:
-            clabel = get_colobar_label(field_dict, field_name)
-
         cmap = pyart.config.get_field_colormap(field_name)
 
         norm, ticks, ticklabs = get_norm(field_name)
@@ -1127,8 +1114,6 @@ def plot_amp_phase_angle_Doppler(spectra, field_name, ang, ind_rays, ind_rng,
         else:
             norm = None
     else:
-        if clabel is None:
-            clabel = 'value'
         if ampli_vmin is None:
             ampli_vmin = np.ma.min(ampli_field_2D)
         if ampli_vmax is None:
@@ -1159,7 +1144,7 @@ def plot_amp_phase_angle_Doppler(spectra, field_name, ang, ind_rays, ind_rng,
         cb.set_ticks(ticks)
     if ticklabs:
         cb.set_ticklabels(ticklabs)
-    cb.set_label(clabel)
+    cb.set_label('Amplitude (-)')
 
     ax = fig.add_subplot(122)
     cax = ax.pcolor(
@@ -1174,7 +1159,7 @@ def plot_amp_phase_angle_Doppler(spectra, field_name, ang, ind_rays, ind_rng,
         cb.set_ticks(ticks)
     if ticklabs:
         cb.set_ticklabels(ticklabs)
-    cb.set_label(clabel)
+    cb.set_label('Phase (deg)')
 
     # Make a tight layout
     fig.tight_layout()
@@ -1192,7 +1177,7 @@ def plot_amp_phase_time_Doppler(spectra, field_name, prdcfg, fname_list,
                                 xaxis_info='Doppler_velocity',
                                 yaxis_pos='start', titl=None, ampli_vmin=None,
                                 ampli_vmax=None, phase_vmin=None,
-                                phase_vmax=None, clabel=None):
+                                phase_vmax=None):
     """
     Makes a complex time-Doppler plot plotting separately the module and the
     phase of the signal
@@ -1216,8 +1201,6 @@ def plot_amp_phase_time_Doppler(spectra, field_name, prdcfg, fname_list,
         The plot title
     ampli_vmin, ampli_vmax, phase_vmin, phase_vmax : float or None
         The value limits
-    clabel : str or None
-        The label of color bar
 
     Returns
     -------
@@ -1253,10 +1236,6 @@ def plot_amp_phase_time_Doppler(spectra, field_name, prdcfg, fname_list,
     ticks = None
     ticklabs = None
     if field_name is not None:
-        field_dict = pyart.config.get_metadata(field_name)
-        if clabel is None:
-            clabel = get_colobar_label(field_dict, field_name)
-
         cmap = pyart.config.get_field_colormap(field_name)
 
         norm, ticks, ticklabs = get_norm(field_name)
@@ -1275,8 +1254,6 @@ def plot_amp_phase_time_Doppler(spectra, field_name, prdcfg, fname_list,
         else:
             norm = None
     else:
-        if clabel is None:
-            clabel = 'value'
         if ampli_vmin is None:
             ampli_vmin = np.ma.min(ampli_field_2D)
         if ampli_vmax is None:
@@ -1306,7 +1283,7 @@ def plot_amp_phase_time_Doppler(spectra, field_name, prdcfg, fname_list,
         cb.set_ticks(ticks)
     if ticklabs:
         cb.set_ticklabels(ticklabs)
-    cb.set_label(clabel)
+    cb.set_label('Amplitude (-)')
 
     ax = fig.add_subplot(122)
     cax = ax.pcolor(
@@ -1321,7 +1298,7 @@ def plot_amp_phase_time_Doppler(spectra, field_name, prdcfg, fname_list,
         cb.set_ticks(ticks)
     if ticklabs:
         cb.set_ticklabels(ticklabs)
-    cb.set_label(clabel)
+    cb.set_label('Phase (deg)')
 
     # Make a tight layout
     fig.tight_layout()
@@ -1413,6 +1390,9 @@ def plot_complex_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
     ax.set_xlim([xaxis[0], xaxis[-1]])
     ax.set_title('Real part')
 
+    # Turn on the grid
+    ax.grid()
+
     ax = fig.add_subplot(122)
     ax.plot(xaxis, im_field, marker='x')
     ax.set_xlabel(xlabel)
@@ -1420,6 +1400,9 @@ def plot_complex_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
     ax.set_ylim(bottom=vmin, top=vmax)
     ax.set_xlim([xaxis[0], xaxis[-1]])
     ax.set_title('Imaginary part')
+
+    # Turn on the grid
+    ax.grid()
 
     # Make a tight layout
     fig.tight_layout()
@@ -1434,9 +1417,9 @@ def plot_complex_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
 
 
 def plot_amp_phase_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
-                           xaxis_info='Doppler_velocity', ylabel=None,
-                           titl=None, ampli_vmin=None, ampli_vmax=None,
-                           phase_vmin=None, phase_vmax=None):
+                           xaxis_info='Doppler_velocity', titl=None,
+                           ampli_vmin=None, ampli_vmax=None, phase_vmin=None,
+                           phase_vmax=None):
     """
     Makes a complex Doppler plot plotting separately the module and the phase
     of the signal
@@ -1455,8 +1438,6 @@ def plot_amp_phase_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
         list of names of the files where to store the plot
     xaxis_info : str
         Type of x-axis. Can be 'Doppler_velocity' or 'Doppler_frequency'
-    ylabel : str or None
-        The label of the y-axis
     titl : str or None
         The plot title
     ampli_vmin, ampli_vmax, phase_vmin, phase_vmax : float or None
@@ -1486,9 +1467,6 @@ def plot_amp_phase_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
 
     # display data
     if field_name is not None:
-        if ylabel is None:
-            field_dict = pyart.config.get_metadata(field_name)
-            ylabel = get_colobar_label(field_dict, field_name)
         if ampli_vmin is None or ampli_vmax is None:
             ampli_vmin, ampli_vmax = pyart.config.get_field_limits(
                 field_name)
@@ -1514,18 +1492,24 @@ def plot_amp_phase_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
     ax = fig.add_subplot(121)
     ax.plot(xaxis, ampli_field, marker='x')
     ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
+    ax.set_ylabel('Amplitude (-)')
     ax.set_ylim(bottom=ampli_vmin, top=ampli_vmax)
     ax.set_xlim([xaxis[0], xaxis[-1]])
     ax.set_title('Amplitude')
 
+    # Turn on the grid
+    ax.grid()
+
     ax = fig.add_subplot(122)
     ax.plot(xaxis, phase_field, marker='x')
     ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
+    ax.set_ylabel('Phase (deg)')
     ax.set_ylim(bottom=phase_vmin, top=phase_vmax)
     ax.set_xlim([xaxis[0], xaxis[-1]])
     ax.set_title('Phase')
+
+    # Turn on the grid
+    ax.grid()
 
     # Make a tight layout
     fig.tight_layout()

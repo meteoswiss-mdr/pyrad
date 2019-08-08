@@ -164,14 +164,17 @@
 <span class="sd">                &#39;ZDR_PREC&#39;: process_zdr_precip</span>
 <span class="sd">                &#39;ZDR_SNOW&#39;: process_zdr_snow</span>
 <span class="sd">            &#39;SPECTRA&#39; format output:</span>
+<span class="sd">                &#39;FILTER_0DOPPLER&#39;: process_filter_0Doppler</span>
 <span class="sd">                &#39;FILTER_SPECTRA_NOISE&#39;: process_filter_spectra_noise</span>
 <span class="sd">                &#39;RAW_SPECTRA&#39;: process_raw_spectra</span>
+<span class="sd">                &#39;SPECTRA_ANGULAR_AVERAGE&#39;: process_spectra_ang_avg</span>
 <span class="sd">                &#39;SPECTRA_POINT&#39;: process_spectra_point</span>
 <span class="sd">                &#39;SPECTRAL_PHASE&#39;: process_spectral_phase</span>
 <span class="sd">                &#39;SPECTRAL_POWER&#39;: process_spectral_power</span>
 <span class="sd">                &#39;SPECTRAL_REFLECTIVITY&#39;: process_spectral_reflectivity</span>
 <span class="sd">                &#39;sPhiDP&#39;: process_spectral_differential_phase</span>
 <span class="sd">                &#39;sRhoHV&#39;: process_spectral_RhoHV</span>
+<span class="sd">                &#39;SRHOHV_FILTER&#39;: process_filter_srhohv</span>
 <span class="sd">                &#39;sZDR&#39;: process_spectral_differential_reflectivity</span>
 <span class="sd">            &#39;COLOCATED_GATES&#39; format output:</span>
 <span class="sd">                &#39;COLOCATED_GATES&#39;: process_colocated_gates</span>
@@ -276,6 +279,9 @@
         <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;SRHOHV_FILTER&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_filter_srhohv&#39;</span>
+        <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;SPECTRA_ANGULAR_AVERAGE&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_spectra_ang_avg&#39;</span>
         <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;QVP&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_qvp&#39;</span>

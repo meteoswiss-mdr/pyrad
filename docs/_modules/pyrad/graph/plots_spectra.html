@@ -521,6 +521,9 @@
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="n">xaxis</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xaxis</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">titl</span><span class="p">)</span>
 
+    <span class="c1"># Turn on the grid</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+
     <span class="c1"># Make a tight layout</span>
     <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 
@@ -933,8 +936,7 @@
 <div class="viewcode-block" id="plot_amp_phase_range_Doppler"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_amp_phase_range_Doppler">[docs]</a><span class="k">def</span> <span class="nf">plot_amp_phase_range_Doppler</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ray</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
                                  <span class="n">xaxis_info</span><span class="o">=</span><span class="s1">&#39;Doppler_velocity&#39;</span><span class="p">,</span> <span class="n">titl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                  <span class="n">ampli_vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ampli_vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                                 <span class="n">phase_vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">phase_vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                                 <span class="n">clabel</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                                 <span class="n">phase_vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">phase_vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Makes a complex range-Doppler plot plotting separately the module and the</span>
 <span class="sd">    phase of the signal</span>
@@ -957,8 +959,6 @@
 <span class="sd">        The plot title</span>
 <span class="sd">    ampli_vmin, ampli_vmax, phase_vmin, phase_vmax : float or None</span>
 <span class="sd">        The value limits</span>
-<span class="sd">    clabel : str or None</span>
-<span class="sd">        The label of color bar</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -998,10 +998,6 @@
     <span class="n">ticks</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">ticklabs</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">field_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">field_dict</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">clabel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">clabel</span> <span class="o">=</span> <span class="n">get_colobar_label</span><span class="p">(</span><span class="n">field_dict</span><span class="p">,</span> <span class="n">field_name</span><span class="p">)</span>
-
         <span class="n">cmap</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_field_colormap</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
 
         <span class="n">norm</span><span class="p">,</span> <span class="n">ticks</span><span class="p">,</span> <span class="n">ticklabs</span> <span class="o">=</span> <span class="n">get_norm</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
@@ -1020,8 +1016,6 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">norm</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">clabel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">clabel</span> <span class="o">=</span> <span class="s1">&#39;value&#39;</span>
         <span class="k">if</span> <span class="n">ampli_vmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">ampli_vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">ampli_field_2D</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">ampli_vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1051,7 +1045,7 @@
         <span class="n">cb</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">ticks</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">ticklabs</span><span class="p">:</span>
         <span class="n">cb</span><span class="o">.</span><span class="n">set_ticklabels</span><span class="p">(</span><span class="n">ticklabs</span><span class="p">)</span>
-    <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="n">clabel</span><span class="p">)</span>
+    <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s1">&#39;Amplitude (-)&#39;</span><span class="p">)</span>
 
     <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
     <span class="n">cax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span>
@@ -1066,7 +1060,7 @@
         <span class="n">cb</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">ticks</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">ticklabs</span><span class="p">:</span>
         <span class="n">cb</span><span class="o">.</span><span class="n">set_ticklabels</span><span class="p">(</span><span class="n">ticklabs</span><span class="p">)</span>
-    <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="n">clabel</span><span class="p">)</span>
+    <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s1">&#39;Phase (deg)&#39;</span><span class="p">)</span>
 
     <span class="c1"># Make a tight layout</span>
     <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
@@ -1084,9 +1078,8 @@
                                  <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
                                  <span class="n">xaxis_info</span><span class="o">=</span><span class="s1">&#39;Doppler_velocity&#39;</span><span class="p">,</span>
                                  <span class="n">yaxis_pos</span><span class="o">=</span><span class="s1">&#39;centre&#39;</span><span class="p">,</span> <span class="n">along_azi</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                                 <span class="n">titl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clabel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ampli_vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                                 <span class="n">ampli_vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">phase_vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                                 <span class="n">phase_vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,):</span>
+                                 <span class="n">titl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ampli_vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ampli_vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                 <span class="n">phase_vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">phase_vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Makes an angle-Doppler plot of complex spectra</span>
 
@@ -1116,8 +1109,6 @@
 <span class="sd">        along elevation</span>
 <span class="sd">    titl : str or None</span>
 <span class="sd">        The plot title</span>
-<span class="sd">    clabel : str or None</span>
-<span class="sd">        The color bar label</span>
 <span class="sd">    ampli_vmin, ampli_vmax, phase_vmin, phase_vmax : float or None</span>
 <span class="sd">        The value limits</span>
 
@@ -1161,10 +1152,6 @@
     <span class="n">ticks</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">ticklabs</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">field_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">field_dict</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">clabel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">clabel</span> <span class="o">=</span> <span class="n">get_colobar_label</span><span class="p">(</span><span class="n">field_dict</span><span class="p">,</span> <span class="n">field_name</span><span class="p">)</span>
-
         <span class="n">cmap</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_field_colormap</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
 
         <span class="n">norm</span><span class="p">,</span> <span class="n">ticks</span><span class="p">,</span> <span class="n">ticklabs</span> <span class="o">=</span> <span class="n">get_norm</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
@@ -1183,8 +1170,6 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">norm</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">clabel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">clabel</span> <span class="o">=</span> <span class="s1">&#39;value&#39;</span>
         <span class="k">if</span> <span class="n">ampli_vmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">ampli_vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">ampli_field_2D</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">ampli_vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1215,7 +1200,7 @@
         <span class="n">cb</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">ticks</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">ticklabs</span><span class="p">:</span>
         <span class="n">cb</span><span class="o">.</span><span class="n">set_ticklabels</span><span class="p">(</span><span class="n">ticklabs</span><span class="p">)</span>
-    <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="n">clabel</span><span class="p">)</span>
+    <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s1">&#39;Amplitude (-)&#39;</span><span class="p">)</span>
 
     <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
     <span class="n">cax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">pcolor</span><span class="p">(</span>
@@ -1230,7 +1215,7 @@
         <span class="n">cb</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">ticks</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">ticklabs</span><span class="p">:</span>
         <span class="n">cb</span><span class="o">.</span><span class="n">set_ticklabels</span><span class="p">(</span><span class="n">ticklabs</span><span class="p">)</span>
-    <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="n">clabel</span><span class="p">)</span>
+    <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s1">&#39;Phase (deg)&#39;</span><span class="p">)</span>
 
     <span class="c1"># Make a tight layout</span>
     <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
@@ -1248,7 +1233,7 @@
                                 <span class="n">xaxis_info</span><span class="o">=</span><span class="s1">&#39;Doppler_velocity&#39;</span><span class="p">,</span>
                                 <span class="n">yaxis_pos</span><span class="o">=</span><span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="n">titl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ampli_vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                 <span class="n">ampli_vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">phase_vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                                <span class="n">phase_vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clabel</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                                <span class="n">phase_vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Makes a complex time-Doppler plot plotting separately the module and the</span>
 <span class="sd">    phase of the signal</span>
@@ -1272,8 +1257,6 @@
 <span class="sd">        The plot title</span>
 <span class="sd">    ampli_vmin, ampli_vmax, phase_vmin, phase_vmax : float or None</span>
 <span class="sd">        The value limits</span>
-<span class="sd">    clabel : str or None</span>
-<span class="sd">        The label of color bar</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1309,10 +1292,6 @@
     <span class="n">ticks</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">ticklabs</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">field_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">field_dict</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">clabel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">clabel</span> <span class="o">=</span> <span class="n">get_colobar_label</span><span class="p">(</span><span class="n">field_dict</span><span class="p">,</span> <span class="n">field_name</span><span class="p">)</span>
-
         <span class="n">cmap</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_field_colormap</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
 
         <span class="n">norm</span><span class="p">,</span> <span class="n">ticks</span><span class="p">,</span> <span class="n">ticklabs</span> <span class="o">=</span> <span class="n">get_norm</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
@@ -1331,8 +1310,6 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">norm</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">clabel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">clabel</span> <span class="o">=</span> <span class="s1">&#39;value&#39;</span>
         <span class="k">if</span> <span class="n">ampli_vmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">ampli_vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">ampli_field_2D</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">ampli_vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1362,7 +1339,7 @@
         <span class="n">cb</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">ticks</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">ticklabs</span><span class="p">:</span>
         <span class="n">cb</span><span class="o">.</span><span class="n">set_ticklabels</span><span class="p">(</span><span class="n">ticklabs</span><span class="p">)</span>
-    <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="n">clabel</span><span class="p">)</span>
+    <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s1">&#39;Amplitude (-)&#39;</span><span class="p">)</span>
 
     <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
     <span class="n">cax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">pcolor</span><span class="p">(</span>
@@ -1377,7 +1354,7 @@
         <span class="n">cb</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">ticks</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">ticklabs</span><span class="p">:</span>
         <span class="n">cb</span><span class="o">.</span><span class="n">set_ticklabels</span><span class="p">(</span><span class="n">ticklabs</span><span class="p">)</span>
-    <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="n">clabel</span><span class="p">)</span>
+    <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s1">&#39;Phase (deg)&#39;</span><span class="p">)</span>
 
     <span class="c1"># Make a tight layout</span>
     <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
@@ -1469,6 +1446,9 @@
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="n">xaxis</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xaxis</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Real part&#39;</span><span class="p">)</span>
 
+    <span class="c1"># Turn on the grid</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+
     <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xaxis</span><span class="p">,</span> <span class="n">im_field</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
@@ -1476,6 +1456,9 @@
     <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">bottom</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="n">xaxis</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xaxis</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Imaginary part&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Turn on the grid</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
 
     <span class="c1"># Make a tight layout</span>
     <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
@@ -1490,9 +1473,9 @@
 
 
 <div class="viewcode-block" id="plot_amp_phase_Doppler"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_amp_phase_Doppler">[docs]</a><span class="k">def</span> <span class="nf">plot_amp_phase_Doppler</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ray</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
-                           <span class="n">xaxis_info</span><span class="o">=</span><span class="s1">&#39;Doppler_velocity&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                           <span class="n">titl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ampli_vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ampli_vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                           <span class="n">phase_vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">phase_vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                           <span class="n">xaxis_info</span><span class="o">=</span><span class="s1">&#39;Doppler_velocity&#39;</span><span class="p">,</span> <span class="n">titl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                           <span class="n">ampli_vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ampli_vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">phase_vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                           <span class="n">phase_vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Makes a complex Doppler plot plotting separately the module and the phase</span>
 <span class="sd">    of the signal</span>
@@ -1511,8 +1494,6 @@
 <span class="sd">        list of names of the files where to store the plot</span>
 <span class="sd">    xaxis_info : str</span>
 <span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39; or &#39;Doppler_frequency&#39;</span>
-<span class="sd">    ylabel : str or None</span>
-<span class="sd">        The label of the y-axis</span>
 <span class="sd">    titl : str or None</span>
 <span class="sd">        The plot title</span>
 <span class="sd">    ampli_vmin, ampli_vmax, phase_vmin, phase_vmax : float or None</span>
@@ -1542,9 +1523,6 @@
 
     <span class="c1"># display data</span>
     <span class="k">if</span> <span class="n">field_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">ylabel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">field_dict</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
-            <span class="n">ylabel</span> <span class="o">=</span> <span class="n">get_colobar_label</span><span class="p">(</span><span class="n">field_dict</span><span class="p">,</span> <span class="n">field_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">ampli_vmin</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">ampli_vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">ampli_vmin</span><span class="p">,</span> <span class="n">ampli_vmax</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_field_limits</span><span class="p">(</span>
                 <span class="n">field_name</span><span class="p">)</span>
@@ -1570,18 +1548,24 @@
     <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xaxis</span><span class="p">,</span> <span class="n">ampli_field</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Amplitude (-)&#39;</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">bottom</span><span class="o">=</span><span class="n">ampli_vmin</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="n">ampli_vmax</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="n">xaxis</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xaxis</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Amplitude&#39;</span><span class="p">)</span>
 
+    <span class="c1"># Turn on the grid</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+
     <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xaxis</span><span class="p">,</span> <span class="n">phase_field</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Phase (deg)&#39;</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">bottom</span><span class="o">=</span><span class="n">phase_vmin</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="n">phase_vmax</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="n">xaxis</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xaxis</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Phase&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Turn on the grid</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
 
     <span class="c1"># Make a tight layout</span>
     <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>

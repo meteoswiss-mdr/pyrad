@@ -85,7 +85,7 @@
 <span class="kn">from</span> <span class="nn">..graph.plots_vol</span> <span class="k">import</span> <span class="n">plot_field_coverage</span><span class="p">,</span> <span class="n">plot_time_range</span>
 <span class="kn">from</span> <span class="nn">..graph.plots_vol</span> <span class="k">import</span> <span class="n">plot_rhi_contour</span><span class="p">,</span> <span class="n">plot_ppi_contour</span>
 <span class="kn">from</span> <span class="nn">..graph.plots_vol</span> <span class="k">import</span> <span class="n">plot_fixed_rng</span><span class="p">,</span> <span class="n">plot_fixed_rng_span</span>
-<span class="kn">from</span> <span class="nn">..graph.plots_vol</span> <span class="k">import</span> <span class="n">plot_roi_contour</span>
+<span class="kn">from</span> <span class="nn">..graph.plots_vol</span> <span class="k">import</span> <span class="n">plot_roi_contour</span><span class="p">,</span> <span class="n">plot_ray</span>
 <span class="kn">from</span> <span class="nn">..graph.plots</span> <span class="k">import</span> <span class="n">plot_quantiles</span><span class="p">,</span> <span class="n">plot_histogram</span>
 <span class="kn">from</span> <span class="nn">..graph.plots_aux</span> <span class="k">import</span> <span class="n">get_colobar_label</span><span class="p">,</span> <span class="n">get_field_name</span>
 
@@ -2085,8 +2085,13 @@
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
             <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
 
-        <span class="n">plot_bscope</span><span class="p">(</span>
-            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_ang</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">rays_per_sweep</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ang</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">plot_bscope</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_ang</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plot_ray</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extract_sweeps</span><span class="p">([</span><span class="n">ind_ang</span><span class="p">]),</span> <span class="n">field_name</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----- save to &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fname_list</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">fname_list</span>

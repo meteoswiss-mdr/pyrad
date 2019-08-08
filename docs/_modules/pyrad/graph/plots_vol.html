@@ -63,6 +63,7 @@
 <span class="sd">.. autosummary::</span>
 <span class="sd">    :toctree: generated/</span>
 
+<span class="sd">    plot_ray</span>
 <span class="sd">    plot_ppi</span>
 <span class="sd">    plot_ppi_map</span>
 <span class="sd">    plot_rhi</span>
@@ -112,10 +113,83 @@
 
 <span class="kn">from</span> <span class="nn">.plots_aux</span> <span class="k">import</span> <span class="n">get_colobar_label</span><span class="p">,</span> <span class="n">get_norm</span><span class="p">,</span> <span class="n">generate_fixed_rng_title</span>
 <span class="kn">from</span> <span class="nn">.plots_aux</span> <span class="k">import</span> <span class="n">generate_fixed_rng_span_title</span>
+<span class="kn">from</span> <span class="nn">.plots_aux</span> <span class="k">import</span> <span class="n">generate_complex_range_Doppler_title</span>
 <span class="kn">from</span> <span class="nn">.plots</span> <span class="k">import</span> <span class="n">plot_quantiles</span><span class="p">,</span> <span class="n">plot_histogram</span>
 
 <span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">compute_quantiles_sweep</span><span class="p">,</span> <span class="n">find_ang_index</span>
 <span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">compute_histogram_sweep</span>
+
+
+<div class="viewcode-block" id="plot_ray"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_ray">[docs]</a><span class="k">def</span> <span class="nf">plot_ray</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_ray</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">titl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">save_fig</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    plots a ray</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    radar : Radar object</span>
+<span class="sd">        object containing the radar data to plot</span>
+<span class="sd">    field_name : str</span>
+<span class="sd">        name of the radar field to plot</span>
+<span class="sd">    ind_ray : int</span>
+<span class="sd">        ray index to plot</span>
+<span class="sd">    prdcfg : dict</span>
+<span class="sd">        dictionary containing the product configuration</span>
+<span class="sd">    fname_list : list of str</span>
+<span class="sd">        list of names of the files where to store the plot</span>
+<span class="sd">    plot_type : str</span>
+<span class="sd">        type of plot (PPI, QUANTILES or HISTOGRAM)</span>
+<span class="sd">    titl : str</span>
+<span class="sd">        Plot title</span>
+<span class="sd">    vmin, vmax : float</span>
+<span class="sd">        min and max values of the y axis</span>
+<span class="sd">    save_fig : bool</span>
+<span class="sd">        if true save the figure. If false it does not close the plot and</span>
+<span class="sd">        returns the handle to the figure</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fname_list : list of str or</span>
+<span class="sd">    fig, ax : tupple</span>
+<span class="sd">        list of names of the saved plots or handle of the figure an axes</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rng_km</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">/</span><span class="mf">1000.</span>
+    <span class="n">dpi</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;ppiImageConfig&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dpi&#39;</span><span class="p">,</span> <span class="mi">72</span><span class="p">)</span>
+
+    <span class="n">xsize</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;ppiImageConfig&#39;</span><span class="p">][</span><span class="s1">&#39;xsize&#39;</span><span class="p">]</span>
+    <span class="n">ysize</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;ppiImageConfig&#39;</span><span class="p">][</span><span class="s1">&#39;ysize&#39;</span><span class="p">]</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">[</span><span class="n">xsize</span><span class="p">,</span> <span class="n">ysize</span><span class="p">],</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">titl</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">titl</span> <span class="o">=</span> <span class="n">generate_complex_range_Doppler_title</span><span class="p">(</span>
+            <span class="n">radar</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_ray</span><span class="p">)</span>
+    <span class="n">labely</span> <span class="o">=</span> <span class="n">get_colobar_label</span><span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">],</span> <span class="n">field_name</span><span class="p">)</span>
+
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">rng_km</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">,</span> <span class="p">:],</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">titl</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Range (km)&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">labely</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">bottom</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="n">rng_km</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rng_km</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+
+    <span class="c1"># Turn on the grid</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+
+    <span class="c1"># Make a tight layout</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">save_fig</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">fname_list</span><span class="p">:</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fname_list</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="plot_ppi"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_ppi">[docs]</a><span class="k">def</span> <span class="nf">plot_ppi</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_el</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;PPI&#39;</span><span class="p">,</span>

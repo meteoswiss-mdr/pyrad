@@ -7,6 +7,7 @@ Functions to plot radar volume data
 .. autosummary::
     :toctree: generated/
 
+    plot_ray
     plot_ppi
     plot_ppi_map
     plot_rhi
@@ -56,10 +57,83 @@ import pyart
 
 from .plots_aux import get_colobar_label, get_norm, generate_fixed_rng_title
 from .plots_aux import generate_fixed_rng_span_title
+from .plots_aux import generate_complex_range_Doppler_title
 from .plots import plot_quantiles, plot_histogram
 
 from ..util.radar_utils import compute_quantiles_sweep, find_ang_index
 from ..util.radar_utils import compute_histogram_sweep
+
+
+def plot_ray(radar, field_name, ind_ray, prdcfg, fname_list, titl=None,
+             vmin=None, vmax=None, save_fig=True):
+    """
+    plots a ray
+
+    Parameters
+    ----------
+    radar : Radar object
+        object containing the radar data to plot
+    field_name : str
+        name of the radar field to plot
+    ind_ray : int
+        ray index to plot
+    prdcfg : dict
+        dictionary containing the product configuration
+    fname_list : list of str
+        list of names of the files where to store the plot
+    plot_type : str
+        type of plot (PPI, QUANTILES or HISTOGRAM)
+    titl : str
+        Plot title
+    vmin, vmax : float
+        min and max values of the y axis
+    save_fig : bool
+        if true save the figure. If false it does not close the plot and
+        returns the handle to the figure
+
+    Returns
+    -------
+    fname_list : list of str or
+    fig, ax : tupple
+        list of names of the saved plots or handle of the figure an axes
+
+    """
+    rng_km = radar.range['data']/1000.
+    dpi = prdcfg['ppiImageConfig'].get('dpi', 72)
+
+    xsize = prdcfg['ppiImageConfig']['xsize']
+    ysize = prdcfg['ppiImageConfig']['ysize']
+    fig = plt.figure(figsize=[xsize, ysize], dpi=dpi)
+
+    if titl is None:
+        titl = generate_complex_range_Doppler_title(
+            radar, field_name, ind_ray)
+    labely = get_colobar_label(radar.fields[field_name], field_name)
+
+    ax = fig.add_subplot(111)
+
+    ax.plot(rng_km, radar.fields[field_name]['data'][ind_ray, :], marker='x')
+
+    ax.set_title(titl)
+    ax.set_xlabel('Range (km)')
+    ax.set_ylabel(labely)
+    ax.set_ylim(bottom=vmin, top=vmax)
+    ax.set_xlim([rng_km[0], rng_km[-1]])
+
+    # Turn on the grid
+    ax.grid()
+
+    # Make a tight layout
+    fig.tight_layout()
+
+    if save_fig:
+        for fname in fname_list:
+            fig.savefig(fname, dpi=dpi)
+        plt.close(fig)
+
+        return fname_list
+
+    return (fig, ax)
 
 
 def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',

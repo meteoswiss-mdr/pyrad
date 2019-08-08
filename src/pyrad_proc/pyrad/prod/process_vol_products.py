@@ -29,7 +29,7 @@ from ..graph.plots_vol import plot_bscope, plot_rhi_profile, plot_along_coord
 from ..graph.plots_vol import plot_field_coverage, plot_time_range
 from ..graph.plots_vol import plot_rhi_contour, plot_ppi_contour
 from ..graph.plots_vol import plot_fixed_rng, plot_fixed_rng_span
-from ..graph.plots_vol import plot_roi_contour
+from ..graph.plots_vol import plot_roi_contour, plot_ray
 from ..graph.plots import plot_quantiles, plot_histogram
 from ..graph.plots_aux import get_colobar_label, get_field_name
 
@@ -2029,8 +2029,13 @@ def generate_vol_products(dataset, prdcfg):
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        plot_bscope(
-            dataset['radar_out'], field_name, ind_ang, prdcfg, fname_list)
+        if dataset['radar_out'].rays_per_sweep['data'][ind_ang] > 1:
+            plot_bscope(
+                dataset['radar_out'], field_name, ind_ang, prdcfg, fname_list)
+        else:
+            plot_ray(
+                dataset['radar_out'].extract_sweeps([ind_ang]), field_name, 0,
+                prdcfg, fname_list)
         print('----- save to '+' '.join(fname_list))
 
         return fname_list
