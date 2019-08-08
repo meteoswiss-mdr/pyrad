@@ -44,6 +44,7 @@ Spectral data functions
     process_filter_0Doppler
     process_filter_spectra_noise
     process_filter_srhohv
+    process_spectra_ang_avg
     process_spectral_power
     process_spectral_phase
     process_spectral_reflectivity
@@ -223,7 +224,7 @@ from .process_spectra import process_pol_variables, process_reflectivity
 from .process_spectra import process_differential_reflectivity
 from .process_spectra import process_differential_phase
 from .process_spectra import process_rhohv, process_Doppler_velocity
-from .process_spectra import process_Doppler_width
+from .process_spectra import process_Doppler_width, process_spectra_ang_avg
 
 from .process_timeseries import process_point_measurement, process_qvp
 from .process_timeseries import process_rqvp, process_evp, process_svp

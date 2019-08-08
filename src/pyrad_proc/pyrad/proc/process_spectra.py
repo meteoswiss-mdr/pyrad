@@ -12,6 +12,7 @@ Functions to processes spectral data.
     process_filter_0Doppler
     process_filter_srhohv
     process_filter_spectra_noise
+    process_spectra_ang_avg
     process_spectral_power
     process_spectral_phase
     process_spectral_reflectivity
@@ -452,7 +453,6 @@ def process_filter_0Doppler(procstatus, dscfg, radar_list=None):
         axis = psr.Doppler_frequency['data']
 
     fields = dict()
-    field_name_list_aux = []
     for field_name in field_name_list:
         if field_name not in psr.fields:
             warn('Unable to filter 0-Doppler. Missing field '+field_name)
@@ -465,12 +465,11 @@ def process_filter_0Doppler(procstatus, dscfg, radar_list=None):
                 axis[ray, :] <= filter_width/2.))
             field['data'][ray, :, ind] = np.ma.masked
         fields.update({field_name: field})
-        field_name_list_aux.append(field_name)
 
     # prepare for exit
     new_dataset = {'radar_out': deepcopy(psr)}
     new_dataset['radar_out'].fields = dict()
-    for field_name in field_name_list_aux:
+    for field_name in fields.keys():
         new_dataset['radar_out'].add_field(field_name, fields[field_name])
 
     return new_dataset, ind_rad
@@ -518,6 +517,10 @@ def process_filter_srhohv(procstatus, dscfg, radar_list=None):
         else:
             field_name_list.append(get_fieldname_pyart(datatype))
 
+    if not sRhoHV_found:
+        warn('sRhoHV field is required for sRhoHV filtering')
+        return None, None
+
     ind_rad = int(radarnr[5:8])-1
     if (radar_list is None) or (radar_list[ind_rad] is None):
         warn('ERROR: No valid radar')
@@ -540,7 +543,7 @@ def process_filter_srhohv(procstatus, dscfg, radar_list=None):
             continue
 
         field = deepcopy(psr.fields[field_name])
-        field['data'][np.ma.abs(sRhoHV) >= sRhoHV_threshold] = np.ma.masked
+        field['data'][np.ma.abs(sRhoHV) <= sRhoHV_threshold] = np.ma.masked
         fields.update({field_name: field})
         field_name_list_aux.append(field_name)
 
@@ -585,12 +588,23 @@ def process_filter_spectra_noise(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
+    field_name_list = []
+    signal_found = False
+    noise_found = False
     for datatypedescr in dscfg['datatype']:
         radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
-        if datatype in ('ShhADU', 'SvvADU'):
+        if datatype in ('ShhADU', 'SvvADU') and not signal_found:
             signal_field = get_fieldname_pyart(datatype)
-        elif datatype in ('NADUh', 'NADUv'):
+            signal_found = True
+        elif datatype in ('NADUh', 'NADUv') and not noise_found:
             noise_field = get_fieldname_pyart(datatype)
+            noise_found = True
+        else:
+            field_name_list.append(get_fieldname_pyart(datatype))
+
+    if not signal_found or not noise_found:
+        warn('Signal and noise fields are required for noise filtering')
+        return None, None
 
     ind_rad = int(radarnr[5:8])-1
     if (radar_list is None) or (radar_list[ind_rad] is None):
@@ -604,6 +618,7 @@ def process_filter_spectra_noise(procstatus, dscfg, radar_list=None):
 
     clipping_level = dscfg.get('clipping_level', 10.)
 
+    # get Doppler bins below clipping level
     clip_pwr = (
         psr.fields[noise_field]['data']*np.power(10., 0.1*clipping_level))
 
@@ -613,13 +628,118 @@ def process_filter_spectra_noise(procstatus, dscfg, radar_list=None):
 
     mask = np.ma.less_equal(s_pwr['data'], clip_pwr)
 
-    field = deepcopy(psr.fields[signal_field])
-    field['data'][mask] = np.ma.masked
-
-    # prepare for exit
+    # filter data
     new_dataset = {'radar_out': deepcopy(psr)}
     new_dataset['radar_out'].fields = dict()
-    new_dataset['radar_out'].add_field(signal_field, field)
+    for field_name in field_name_list:
+        if field_name not in psr.fields:
+            warn('Unable to filter field '+field_name)
+            continue
+
+        new_dataset['radar_out'].add_field(
+            field_name, psr.fields[field_name])
+        new_dataset['radar_out'].fields[field_name]['data'][mask] = (
+            np.ma.masked)
+
+    return new_dataset, ind_rad
+
+
+def process_spectra_ang_avg(procstatus, dscfg, radar_list=None):
+    """
+    Function to average the spectra over the rays. This function is
+    intended mainly for vertically pointing scans. The function assumes
+    the volume is composed of a single sweep, it averages over the number
+    of rays specified by the user and produces a single ray output.
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted configuration keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        navg : int
+            Number of spectra to average. If -1 all spectra will be averaged.
+            Default -1.
+    radar_list : list of spectra objects
+        Optional. list of spectra objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the output
+    ind_rad : int
+        radar index
+
+    """
+
+    if procstatus != 1:
+        return None, None
+
+    field_name_list = []
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+        field_name_list.append(get_fieldname_pyart(datatype))
+
+    ind_rad = int(radarnr[5:8])-1
+    if (radar_list is None) or (radar_list[ind_rad] is None):
+        warn('ERROR: No valid radar')
+        return None, None
+    psr = radar_list[ind_rad]
+
+    navg = dscfg.get('navg', -1)
+
+    # keep only fields of interest
+    psr_aux = deepcopy(psr)
+    psr_aux.fields = dict()
+    for field_name in field_name_list:
+        if field_name not in psr.fields:
+            warn('Field '+field_name+' missing')
+            continue
+        psr_aux.add_field(field_name, psr.fields[field_name])
+
+    psr_aux = pyart.util.interpol_spectra(psr_aux)
+
+    if navg == -1:
+        navg = psr.nrays
+    elif navg > psr.nrays:
+        warn('Number of rays '+str(psr.nrays)+' smaller than number of '
+             'desired spectra to average '+str(navg))
+        navg = psr.nrays
+
+    for field_name in psr_aux.fields.keys():
+        data_mean = np.ma.mean(
+            psr_aux.fields[field_name]['data'][
+                0:navg, :, 0:psr_aux.npulses_max], axis=0)
+        psr_aux.fields[field_name]['data'] =  np.ma.masked_all(
+            (1, psr_aux.ngates, psr_aux.npulses_max),
+            dtype=psr_aux.fields[field_name]['data'].dtype)
+        psr_aux.fields[field_name]['data'][0, :, :] = data_mean
+
+    psr_aux.time['data'] = np.array([psr_aux.time['data'][int(navg/2)]])
+    psr_aux.azimuth['data'] = np.array([0], dtype=np.float32)
+    psr_aux.elevation['data'] = np.array(
+        [psr_aux.elevation['data'][int(navg/2)]])
+    psr_aux.nrays = 1
+    psr_aux.sweep_end_ray_index['data'] = np.array([0.], dtype=np.int32)
+
+    psr_aux.init_rays_per_sweep()
+    psr_aux.init_gate_x_y_z()
+    psr_aux.init_gate_longitude_latitude()
+    psr_aux.init_gate_altitude()
+
+    if psr_aux.Doppler_velocity is not None:
+        psr_aux.Doppler_velocity['data'] = np.ma.expand_dims(
+            psr_aux.Doppler_velocity['data'][0, :], axis=0)
+    if psr_aux.Doppler_frequency is not None:
+        psr_aux.Doppler_frequency['data'] = np.ma.expand_dims(
+            psr_aux.Doppler_frequency['data'][0, :], axis=0)
+
+    # prepare for exit
+    new_dataset = {'radar_out': psr_aux}
 
     return new_dataset, ind_rad
 
@@ -787,12 +907,20 @@ def process_spectral_reflectivity(procstatus, dscfg, radar_list=None):
         return None, None
 
     noise_field = None
+    signal_field = None
+    pwr_field = None
     for datatypedescr in dscfg['datatype']:
         radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype in ('ShhADU', 'SvvADU'):
             signal_field = get_fieldname_pyart(datatype)
         elif datatype in ('NADUh', 'NADUv'):
             noise_field = get_fieldname_pyart(datatype)
+        elif datatype in ('sPhhADU', 'sPvvADU'):
+            pwr_field = get_fieldname_pyart(datatype)
+
+    if pwr_field is None and signal_field is None:
+        warn('Either signal or power fields must be specified')
+        return None, None
 
     ind_rad = int(radarnr[5:8])-1
     if (radar_list is None) or (radar_list[ind_rad] is None):
@@ -800,16 +928,26 @@ def process_spectral_reflectivity(procstatus, dscfg, radar_list=None):
         return None, None
     psr = radar_list[ind_rad]
 
-    if signal_field not in psr.fields:
+    compute_power = True
+    if pwr_field is not None:
+        compute_power = False
+
+    if compute_power and signal_field not in psr.fields:
         warn('Unable to obtain spectral reflectivity. Missing field ' +
              signal_field)
+        return None, None
+
+    if not compute_power and pwr_field not in psr.fields:
+        warn('Unable to obtain spectral reflectivity. Missing field ' +
+             pwr_field)
         return None, None
 
     subtract_noise = dscfg.get('subtract_noise', False)
     smooth_window = dscfg.get('smooth_window', None)
 
     sdBZ = pyart.retrieve.compute_spectral_reflectivity(
-        psr, subtract_noise=subtract_noise, smooth_window=smooth_window,
+        psr, compute_power=compute_power, subtract_noise=subtract_noise,
+        smooth_window=smooth_window, pwr_field=pwr_field,
         signal_field=signal_field, noise_field=noise_field)
 
     # prepare for exit
@@ -856,6 +994,10 @@ def process_spectral_differential_reflectivity(procstatus, dscfg, radar_list=Non
 
     noise_h_field = None
     noise_v_field = None
+    signal_h_field = None
+    signal_v_field = None
+    pwr_h_field = None
+    pwr_v_field = None
     for datatypedescr in dscfg['datatype']:
         radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'ShhADU':
@@ -866,6 +1008,10 @@ def process_spectral_differential_reflectivity(procstatus, dscfg, radar_list=Non
             noise_h_field = get_fieldname_pyart(datatype)
         elif datatype == 'NADUv':
             noise_v_field = get_fieldname_pyart(datatype)
+        elif datatype == 'sPhhADU':
+            pwr_h_field = get_fieldname_pyart(datatype)
+        elif datatype == 'sPvvADU':
+            pwr_v_field = get_fieldname_pyart(datatype)
 
     ind_rad = int(radarnr[5:8])-1
     if (radar_list is None) or (radar_list[ind_rad] is None):
@@ -873,7 +1019,17 @@ def process_spectral_differential_reflectivity(procstatus, dscfg, radar_list=Non
         return None, None
     psr = radar_list[ind_rad]
 
-    if signal_h_field not in psr.fields or signal_v_field not in psr.fields:
+    compute_power = True
+    if pwr_h_field is not None and pwr_v_field is not None:
+        compute_power = False
+
+    if (compute_power and (signal_h_field not in psr.fields or
+                           signal_v_field not in psr.fields)):
+        warn('Unable to obtain spectral differential reflectivity. ' +
+             'Missing fields')
+        return None, None
+    if (not compute_power and (pwr_h_field not in psr.fields or
+                               pwr_v_field not in psr.fields)):
         warn('Unable to obtain spectral differential reflectivity. ' +
              'Missing fields')
         return None, None
@@ -882,9 +1038,11 @@ def process_spectral_differential_reflectivity(procstatus, dscfg, radar_list=Non
     smooth_window = dscfg.get('smooth_window', None)
 
     sZDR = pyart.retrieve.compute_spectral_differential_reflectivity(
-        psr, subtract_noise=subtract_noise, smooth_window=smooth_window,
-        signal_h_field=signal_h_field, signal_v_field=signal_v_field,
-        noise_h_field=noise_h_field, noise_v_field=noise_v_field)
+        psr, compute_power=compute_power, subtract_noise=subtract_noise,
+        smooth_window=smooth_window, pwr_h_field=pwr_h_field,
+        pwr_v_field=pwr_v_field, signal_h_field=signal_h_field,
+        signal_v_field=signal_v_field, noise_h_field=noise_h_field,
+        noise_v_field=noise_v_field)
 
     # prepare for exit
     new_dataset = {'radar_out': deepcopy(psr)}
@@ -923,12 +1081,17 @@ def process_spectral_differential_phase(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
+    signal_h_field = None
+    signal_v_field = None
+    srhohv_field = None
     for datatypedescr in dscfg['datatype']:
         radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'ShhADU':
             signal_h_field = get_fieldname_pyart(datatype)
         elif datatype == 'SvvADU':
             signal_v_field = get_fieldname_pyart(datatype)
+        elif datatype == 'sRhoHV':
+            srhohv_field = get_fieldname_pyart(datatype)
 
     ind_rad = int(radarnr[5:8])-1
     if (radar_list is None) or (radar_list[ind_rad] is None):
@@ -936,13 +1099,23 @@ def process_spectral_differential_phase(procstatus, dscfg, radar_list=None):
         return None, None
     psr = radar_list[ind_rad]
 
-    if signal_h_field not in psr.fields or signal_v_field not in psr.fields:
+    use_rhohv = False
+    if srhohv_field is not None:
+        use_rhohv = True
+
+    if (not use_rhohv and (signal_h_field not in psr.fields or
+                           signal_v_field not in psr.fields)):
+        warn('Unable to obtain spectral signal differential phase. ' +
+             'Missing fields')
+        return None, None
+    if use_rhohv and srhohv_field not in psr.fields:
         warn('Unable to obtain spectral signal differential phase. ' +
              'Missing fields')
         return None, None
 
     sPhiDP = pyart.retrieve.compute_spectral_differential_phase(
-        psr, signal_h_field=signal_h_field, signal_v_field=signal_v_field)
+        psr, use_rhohv=use_rhohv, srhohv_field=srhohv_field,
+        signal_h_field=signal_h_field, signal_v_field=signal_v_field)
 
     # prepare for exit
     new_dataset = {'radar_out': deepcopy(psr)}
@@ -1061,6 +1234,9 @@ def process_pol_variables(procstatus, dscfg, radar_list=None):
     noise_v_field = None
     signal_h_field = None
     signal_v_field = None
+    pwr_h_field = None
+    pwr_v_field = None
+    srhohv_field = None
     for datatypedescr in dscfg['datatype']:
         radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'ShhADU':
@@ -1071,6 +1247,12 @@ def process_pol_variables(procstatus, dscfg, radar_list=None):
             noise_h_field = get_fieldname_pyart(datatype)
         elif datatype == 'NADUv':
             noise_v_field = get_fieldname_pyart(datatype)
+        elif datatype == 'sPhhADU':
+            pwr_h_field = get_fieldname_pyart(datatype)
+        elif datatype == 'sPvvADU':
+            pwr_v_field = get_fieldname_pyart(datatype)
+        elif datatype == 'sRhoHV':
+            srhohv_field = get_fieldname_pyart(datatype)
 
     ind_rad = int(radarnr[5:8])-1
     if (radar_list is None) or (radar_list[ind_rad] is None):
@@ -1078,9 +1260,20 @@ def process_pol_variables(procstatus, dscfg, radar_list=None):
         return None, None
     psr = radar_list[ind_rad]
 
-    if signal_h_field not in psr.fields and signal_v_field not in psr.fields:
-        warn('Unable to obtain polarimetric variables. ' +
-             'Missing fields')
+    use_pwr = False
+    if (pwr_h_field is not None or pwr_v_field is not None or
+            srhohv_field is not None):
+        use_pwr = True
+
+    if (not use_pwr and (signal_h_field not in psr.fields and
+                         signal_v_field not in psr.fields)):
+        warn('Unable to obtain polarimetric variables. Missing fields')
+        return None, None
+
+    if (use_pwr and (pwr_h_field not in psr.fields and
+                     pwr_h_field not in psr.fields and
+                     srhohv_field not in psr.fields)):
+        warn('Unable to obtain polarimetric variables. Missing fields')
         return None, None
 
     subtract_noise = dscfg.get('subtract_noise', False)
@@ -1092,10 +1285,11 @@ def process_pol_variables(procstatus, dscfg, radar_list=None):
         fields_list.append(get_fieldname_pyart(variable))
 
     radar = pyart.retrieve.compute_pol_variables(
-        psr, fields_list, subtract_noise=subtract_noise,
-        smooth_window=smooth_window, signal_h_field=signal_h_field,
-        signal_v_field=signal_v_field, noise_h_field=noise_h_field,
-        noise_v_field=noise_v_field)
+        psr, fields_list, use_pwr=use_pwr, subtract_noise=subtract_noise,
+        smooth_window=smooth_window, srhohv_field=srhohv_field,
+        pwr_h_field=pwr_h_field, pwr_v_field=pwr_v_field,
+        signal_h_field=signal_h_field, signal_v_field=signal_v_field,
+        noise_h_field=noise_h_field, noise_v_field=noise_v_field)
 
     # prepare for exit
     new_dataset = {'radar_out': radar}
@@ -1309,6 +1503,11 @@ def process_rhohv(procstatus, dscfg, radar_list=None):
 
     noise_h_field = None
     noise_v_field = None
+    signal_h_field = None
+    signal_v_field = None
+    pwr_h_field = None
+    pwr_v_field = None
+    srhohv_field = None
     for datatypedescr in dscfg['datatype']:
         radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'ShhADU':
@@ -1319,6 +1518,12 @@ def process_rhohv(procstatus, dscfg, radar_list=None):
             noise_h_field = get_fieldname_pyart(datatype)
         elif datatype == 'NADUv':
             noise_v_field = get_fieldname_pyart(datatype)
+        elif datatype == 'sPhhADU':
+            pwr_h_field = get_fieldname_pyart(datatype)
+        elif datatype == 'sPvvADU':
+            pwr_v_field = get_fieldname_pyart(datatype)
+        elif datatype == 'sRhoHV':
+            srhohv_field = get_fieldname_pyart(datatype)
 
     ind_rad = int(radarnr[5:8])-1
     if (radar_list is None) or (radar_list[ind_rad] is None):
@@ -1326,15 +1531,27 @@ def process_rhohv(procstatus, dscfg, radar_list=None):
         return None, None
     psr = radar_list[ind_rad]
 
-    if signal_h_field not in psr.fields or signal_v_field not in psr.fields:
-        warn('Unable to obtain RhoHV. ' +
-             'Missing fields')
+    use_rhohv = False
+    if srhohv_field is not None:
+        use_rhohv = True
+
+    if (not use_rhohv and (signal_h_field not in psr.fields or
+                           signal_v_field not in psr.fields)):
+        warn('Unable to obtain RhoHV. Missing fields')
+        return None, None
+
+    if use_rhohv and (srhohv_field not in psr.fields or
+                      pwr_h_field not in psr.fields or
+                      pwr_v_field not in psr.fields):
+        warn('Unable to obtain RhoHV. Missing fields')
         return None, None
 
     subtract_noise = dscfg.get('subtract_noise', False)
 
     RhoHV = pyart.retrieve.compute_rhohv(
-        psr, subtract_noise=subtract_noise, signal_h_field=signal_h_field,
+        psr, use_rhohv=use_rhohv, subtract_noise=subtract_noise,
+        srhohv_field=srhohv_field, pwr_h_field=pwr_h_field,
+        pwr_v_field=pwr_v_field, signal_h_field=signal_h_field,
         signal_v_field=signal_v_field, noise_h_field=noise_h_field,
         noise_v_field=noise_v_field)
 

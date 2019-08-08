@@ -108,14 +108,17 @@ def get_process_func(dataset_type, dsname):
                 'ZDR_PREC': process_zdr_precip
                 'ZDR_SNOW': process_zdr_snow
             'SPECTRA' format output:
+                'FILTER_0DOPPLER': process_filter_0Doppler
                 'FILTER_SPECTRA_NOISE': process_filter_spectra_noise
                 'RAW_SPECTRA': process_raw_spectra
+                'SPECTRA_ANGULAR_AVERAGE': process_spectra_ang_avg
                 'SPECTRA_POINT': process_spectra_point
                 'SPECTRAL_PHASE': process_spectral_phase
                 'SPECTRAL_POWER': process_spectral_power
                 'SPECTRAL_REFLECTIVITY': process_spectral_reflectivity
                 'sPhiDP': process_spectral_differential_phase
                 'sRhoHV': process_spectral_RhoHV
+                'SRHOHV_FILTER': process_filter_srhohv
                 'sZDR': process_spectral_differential_reflectivity
             'COLOCATED_GATES' format output:
                 'COLOCATED_GATES': process_colocated_gates
@@ -220,6 +223,9 @@ def get_process_func(dataset_type, dsname):
         dsformat = 'SPECTRA'
     elif dataset_type == 'SRHOHV_FILTER':
         func_name = 'process_filter_srhohv'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'SPECTRA_ANGULAR_AVERAGE':
+        func_name = 'process_spectra_ang_avg'
         dsformat = 'SPECTRA'
     elif dataset_type == 'QVP':
         func_name = 'process_qvp'

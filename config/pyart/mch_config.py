@@ -1384,7 +1384,7 @@ DEFAULT_METADATA = {
         'coordinates': 'elevation azimuth range'},
 
     spectral_copolar_correlation_coefficient: {
-        'units': 'deg',
+        'units': '-',
         'standard_name': 'spectral_copolar_correlation_coefficient',
         'long_name': 'Spectral copolar correlation coefficient (RHOHV)',
         'coordinates': 'elevation azimuth range'},
