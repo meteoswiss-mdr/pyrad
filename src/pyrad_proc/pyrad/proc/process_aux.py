@@ -49,6 +49,7 @@ def get_process_func(dataset_type, dsname):
                 'BIAS_CORRECTION': process_correct_bias
                 'BIRDS_ID': process_birds_id
                 'BIRD_DENSITY': process_bird_density
+                'CCOR': process_ccor
                 'CDF': process_cdf
                 'CDR': process_cdr
                 'CLT_TO_SAN': process_clt_to_echo_id
@@ -185,6 +186,8 @@ def get_process_func(dataset_type, dsname):
         func_name = process_raw
     elif dataset_type == 'AZI_AVG':
         func_name = process_azimuthal_average
+    elif dataset_type == 'CCOR':
+        func_name = 'process_ccor'
     elif dataset_type == 'GRID':
         func_name = 'process_grid'
         dsformat = 'GRID'

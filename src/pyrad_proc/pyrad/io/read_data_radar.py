@@ -1420,9 +1420,9 @@ def merge_fields_psr_spectra(basepath, basepath_psr, scan_name, voltime,
 
     datapath_psr = basepath_psr+scan_name+voltime.strftime('%Y-%m-%d')+'/'
     for datatype in datatype_list:
-        if datatype in ('ShhADU', 'NADUh'):
+        if datatype in ('ShhADUu', 'NADUh'):
             filestr = datapath_psr+fdatetime+'_*_*.ufh.psr.rd'
-        elif datatype in ('SvvADU', 'NADUv'):
+        elif datatype in ('SvvADUu', 'NADUv'):
             filestr = datapath_psr+fdatetime+'_*_*.ufv.psr.rd'
         else:
             warn('Unknown data type '+datatype)

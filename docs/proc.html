@@ -381,34 +381,37 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_signal_power" title="pyrad.proc.process_signal_power"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_signal_power</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_ccor" title="pyrad.proc.process_ccor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_ccor</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<td>Computes the Clutter Correction Ratio, i.e.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_signal_power" title="pyrad.proc.process_signal_power"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_signal_power</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
 <td>Computes the signal power in dBm</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_rcs" title="pyrad.proc.process_rcs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_rcs</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_rcs" title="pyrad.proc.process_rcs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_rcs</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Computes the radar cross-section (assuming a point target) from radar reflectivity.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_rcs_pr" title="pyrad.proc.process_rcs_pr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_rcs_pr</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_rcs_pr" title="pyrad.proc.process_rcs_pr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_rcs_pr</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Computes the radar cross-section (assuming a point target) from radar reflectivity by first computing the received power and then the RCS from it.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_snr" title="pyrad.proc.process_snr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_snr</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_snr" title="pyrad.proc.process_snr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_snr</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Computes SNR</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_l" title="pyrad.proc.process_l"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_l</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_l" title="pyrad.proc.process_l"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_l</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Computes L parameter</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_cdr" title="pyrad.proc.process_cdr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_cdr</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_cdr" title="pyrad.proc.process_cdr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_cdr</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Computes Circular Depolarization Ratio</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_rainrate" title="pyrad.proc.process_rainrate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_rainrate</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_rainrate" title="pyrad.proc.process_rainrate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_rainrate</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Estimates rainfall rate from polarimetric moments</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_rainfall_accumulation" title="pyrad.proc.process_rainfall_accumulation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_rainfall_accumulation</span></code></a>(procstatus,&nbsp;dscfg)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_rainfall_accumulation" title="pyrad.proc.process_rainfall_accumulation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_rainfall_accumulation</span></code></a>(procstatus,&nbsp;dscfg)</td>
 <td>Computes rainfall accumulation fields</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_vol_refl" title="pyrad.proc.process_vol_refl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_vol_refl</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_vol_refl" title="pyrad.proc.process_vol_refl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_vol_refl</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Computes the volumetric reflectivity in 10log10(cm^2 km^-3)</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_bird_density" title="pyrad.proc.process_bird_density"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_bird_density</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_bird_density" title="pyrad.proc.process_bird_density"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_bird_density</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
 <td>Computes the bird density from the volumetric reflectivity</td>
 </tr>
 </tbody>
@@ -568,6 +571,7 @@ the function documentation:</p>
 ‘BIAS_CORRECTION’: process_correct_bias
 ‘BIRDS_ID’: process_birds_id
 ‘BIRD_DENSITY’: process_bird_density
+‘CCOR’: process_ccor
 ‘CDF’: process_cdf
 ‘CDR’: process_cdr
 ‘CLT_TO_SAN’: process_clt_to_echo_id
@@ -960,6 +964,48 @@ the largest resolution</p>
 <code class="descclassname">pyrad.proc.</code><code class="descname">process_birds_id</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_echoclass.html#process_birds_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_birds_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>identifies echoes as 0: No data, 1: Noise, 2: Clutter,
 3: Birds</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first">data set configuration. Accepted Configuration Keywords:</p>
+<dl class="last docutils">
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">list of string. Dataset keyword</span></dt>
+<dd><p class="first last">The input data types</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the output</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.proc.process_ccor">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_ccor</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_retrieve.html#process_ccor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_ccor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the Clutter Correction Ratio, i.e. the ratio between the
+signal without Doppler filtering and the signal with Doppler filtering</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
