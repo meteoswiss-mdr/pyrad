@@ -130,6 +130,7 @@ Retrievals
 .. autosummary::
     :toctree: generated/
 
+    process_ccor
     process_signal_power
     process_rcs
     process_rcs_pr
@@ -267,7 +268,7 @@ from .process_monitoring import process_selfconsistency_kdp_phidp
 from .process_monitoring import process_selfconsistency_bias
 from .process_monitoring import process_monitoring
 
-from .process_retrieve import process_signal_power, process_snr
+from .process_retrieve import process_signal_power, process_snr, process_ccor
 from .process_retrieve import process_l, process_cdr, process_bird_density
 from .process_retrieve import process_rainrate, process_vol_refl, process_rcs
 from .process_retrieve import process_rcs_pr, process_rainfall_accumulation

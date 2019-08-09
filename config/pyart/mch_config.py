@@ -53,6 +53,9 @@ corrected_unfiltered_reflectivity = 'corrected_unfiltered_reflectivity'
 corrected_reflectivity = 'corrected_reflectivity'
 corrected_reflectivity_vv = 'corrected_reflectivity_vv'
 
+clutter_correction_ratio_hh = 'clutter_correction_ratio_hh'
+clutter_correction_ratio_vv = 'clutter_correction_ratio_vv'
+
 reflectivity_bias = 'reflectivity_bias'
 
 volumetric_reflectivity = 'volumetric_reflectivity'
@@ -105,6 +108,30 @@ spectral_differential_reflectivity = 'spectral_differential_reflectivity'
 spectral_differential_phase = 'spectral_differential_phase'
 spectral_copolar_correlation_coefficient = (
     'spectral_copolar_correlation_coefficient')
+
+unfiltered_complex_spectra_hh_ADU = 'unfiltered_complex_spectra_hh_ADU'
+unfiltered_complex_spectra_vv_ADU = 'unfiltered_complex_spectra_vv_ADU'
+
+unfiltered_spectral_power_hh_ADU = 'unfiltered_spectral_power_hh_ADU'
+unfiltered_spectral_power_vv_ADU = 'unfiltered_spectral_power_vv_ADU'
+
+unfiltered_spectral_power_hh_dBADU = 'unfiltered_spectral_power_hh_dBADU'
+unfiltered_spectral_power_vv_dBADU = 'unfiltered_spectral_power_vv_dBADU'
+
+unfiltered_spectral_power_hh_dBm = 'unfiltered_spectral_power_hh_dBm'
+unfiltered_spectral_power_vv_dBm = 'unfiltered_spectral_power_vv_dBm'
+
+unfiltered_spectral_phase_hh = 'unfiltered_spectral_phase_hh'
+unfiltered_spectral_phase_vv = 'unfiltered_spectral_phase_vv'
+
+unfiltered_spectral_reflectivity_hh = 'unfiltered_spectral_reflectivity_hh'
+unfiltered_spectral_reflectivity_vv = 'unfiltered_spectral_reflectivity_vv'
+unfiltered_spectral_differential_reflectivity = (
+    'unfiltered_spectral_differential_reflectivity')
+unfiltered_spectral_differential_phase = (
+    'unfiltered_spectral_differential_phase')
+unfiltered_spectral_copolar_correlation_coefficient = (
+    'unfiltered_spectral_copolar_correlation_coefficient')
 
 # Mean Doppler velocity fields, VEL
 velocity = 'velocity'
@@ -354,6 +381,8 @@ DEFAULT_FIELD_NAMES = {
     'reflectivity_vv': reflectivity_vv,
     'corrected_reflectivity_vv': corrected_reflectivity_vv,
     'unfiltered_reflectivity_vv': unfiltered_reflectivity_vv,
+    'clutter_correction_ratio_hh': clutter_correction_ratio_hh,
+    'clutter_correction_ratio_vv': clutter_correction_ratio_vv,
     'reflectivity_bias': reflectivity_bias,
     'signal_power_hh': signal_power_hh,
     'signal_power_vv': signal_power_vv,
@@ -449,6 +478,24 @@ DEFAULT_FIELD_NAMES = {
     'spectral_differential_phase': spectral_differential_phase,
     'spectral_copolar_correlation_coefficient': (
         spectral_copolar_correlation_coefficient),
+    'unfiltered_complex_spectra_hh_ADU': unfiltered_complex_spectra_hh_ADU,
+    'unfiltered_complex_spectra_vv_ADU': unfiltered_complex_spectra_vv_ADU,
+    'unfiltered_spectral_power_hh_ADU': unfiltered_spectral_power_hh_ADU,
+    'unfiltered_spectral_power_vv_ADU': unfiltered_spectral_power_vv_ADU,
+    'unfiltered_spectral_power_hh_dBADU': unfiltered_spectral_power_hh_dBADU,
+    'unfiltered_spectral_power_vv_dBADU': unfiltered_spectral_power_vv_dBADU,
+    'unfiltered_spectral_power_hh_dBm': unfiltered_spectral_power_hh_dBm,
+    'unfiltered_spectral_power_vv_dBm': unfiltered_spectral_power_vv_dBm,
+    'unfiltered_spectral_phase_hh': unfiltered_spectral_phase_hh,
+    'unfiltered_spectral_phase_vv': unfiltered_spectral_phase_vv,
+    'unfiltered_spectral_reflectivity_hh': unfiltered_spectral_reflectivity_hh,
+    'unfiltered_spectral_reflectivity_vv': unfiltered_spectral_reflectivity_vv,
+    'unfiltered_spectral_differential_reflectivity': (
+        unfiltered_spectral_differential_reflectivity),
+    'unfiltered_spectral_differential_phase': (
+        unfiltered_spectral_differential_phase),
+    'unfiltered_spectral_copolar_correlation_coefficient': (
+        unfiltered_spectral_copolar_correlation_coefficient),
     'rain_rate': rain_rate,
     'bird_density': bird_density,
     'sun_hit_h': sun_hit_h,
@@ -901,6 +948,20 @@ DEFAULT_METADATA = {
         'long_name': 'Corrected Vertical Reflectivity',
         'coordinates': 'elevation azimuth range'},
 
+    clutter_correction_ratio_hh: {
+        'units': 'dB',
+        'standard_name': 'clutter_correction_ratio_hh',
+        'long_name': 'Horizontal Clutter Correction Ratio',
+        'valid_min': 0.0,
+        'coordinates': 'elevation azimuth range'},
+
+    clutter_correction_ratio_vv: {
+        'units': 'dB',
+        'standard_name': 'clutter_correction_ratio_vv',
+        'long_name': 'Vertical Clutter Correction Ratio',
+        'valid_min': 0.0,
+        'coordinates': 'elevation azimuth range'},
+
     volumetric_reflectivity: {
         'units': '10log10(cm2/km3)',
         'standard_name': 'volumetric_reflectivity',
@@ -1320,7 +1381,7 @@ DEFAULT_METADATA = {
     spectral_power_vv_ADU: {
         'units': 'ADU',
         'standard_name': 'spectral_power_vv_ADU',
-        'long_name': 'spectral power horizontal',
+        'long_name': 'spectral power vertical',
         'coordinates': 'elevation azimuth range'},
 
     spectral_power_hh_dBADU: {
@@ -1332,7 +1393,7 @@ DEFAULT_METADATA = {
     spectral_power_vv_dBADU: {
         'units': 'dBADU',
         'standard_name': 'spectral_power_vv_dBADU',
-        'long_name': 'spectral power horizontal',
+        'long_name': 'spectral power vertical',
         'coordinates': 'elevation azimuth range'},
 
     spectral_power_hh_dBm: {
@@ -1344,7 +1405,7 @@ DEFAULT_METADATA = {
     spectral_power_vv_dBm: {
         'units': 'dBm',
         'standard_name': 'spectral_power_vv_dBm',
-        'long_name': 'spectral power horizontal',
+        'long_name': 'spectral power vertical',
         'coordinates': 'elevation azimuth range'},
 
     spectral_phase_hh: {
@@ -1387,6 +1448,96 @@ DEFAULT_METADATA = {
         'units': '-',
         'standard_name': 'spectral_copolar_correlation_coefficient',
         'long_name': 'Spectral copolar correlation coefficient (RHOHV)',
+        'coordinates': 'elevation azimuth range'},
+
+    unfiltered_complex_spectra_hh_ADU: {
+        'units': 'ADU',
+        'standard_name': 'unfiltered_complex_spectra_hh_ADU',
+        'long_name': 'Unfiltered complex spectra horizontal',
+        'coordinates': 'elevation azimuth range'},
+
+    unfiltered_complex_spectra_vv_ADU: {
+        'units': 'ADU',
+        'standard_name': 'unfiltered_complex_spectra_vv_ADU',
+        'long_name': 'Unfiltered complex spectra vertical',
+        'coordinates': 'elevation azimuth range'},
+
+    unfiltered_spectral_power_hh_ADU: {
+        'units': 'ADU',
+        'standard_name': 'unfiltered_spectral_power_hh_ADU',
+        'long_name': 'Unfiltered spectral power horizontal',
+        'coordinates': 'elevation azimuth range'},
+
+    unfiltered_spectral_power_vv_ADU: {
+        'units': 'ADU',
+        'standard_name': 'unfiltered_spectral_power_vv_ADU',
+        'long_name': 'Unfiltered spectral power vertical',
+        'coordinates': 'elevation azimuth range'},
+
+    unfiltered_spectral_power_hh_dBADU: {
+        'units': 'dBADU',
+        'standard_name': 'unfiltered_spectral_power_hh_dBADU',
+        'long_name': 'Unfiltered spectral power horizontal',
+        'coordinates': 'elevation azimuth range'},
+
+    unfiltered_spectral_power_vv_dBADU: {
+        'units': 'dBADU',
+        'standard_name': 'unfiltered_spectral_power_vv_dBADU',
+        'long_name': 'Unfiltered spectral power vertical',
+        'coordinates': 'elevation azimuth range'},
+
+    unfiltered_spectral_power_hh_dBm: {
+        'units': 'dBm',
+        'standard_name': 'unfiltered_spectral_power_hh_dBm',
+        'long_name': 'Unfiltered spectral power horizontal',
+        'coordinates': 'elevation azimuth range'},
+
+    unfiltered_spectral_power_vv_dBm: {
+        'units': 'dBm',
+        'standard_name': 'unfiltered_spectral_power_vv_dBm',
+        'long_name': 'Unfiltered spectral power vertical',
+        'coordinates': 'elevation azimuth range'},
+
+    unfiltered_spectral_phase_hh: {
+        'units': 'deg',
+        'standard_name': 'unfiltered_spectral_phase_hh',
+        'long_name': 'Unfiltered spectral phase horizontal',
+        'coordinates': 'elevation azimuth range'},
+
+    unfiltered_spectral_phase_vv: {
+        'units': 'deg',
+        'standard_name': 'unfiltered_spectral_phase_vv',
+        'long_name': 'Unfiltered spectral phase vertical',
+        'coordinates': 'elevation azimuth range'},
+
+    unfiltered_spectral_reflectivity_hh: {
+        'units': 'dBZ',
+        'standard_name': 'unfiltered_spectral_reflectivity_hh',
+        'long_name': 'Unfiltered Spectral Horizontal Reflectivity',
+        'coordinates': 'elevation azimuth range'},
+
+    unfiltered_spectral_reflectivity_vv: {
+        'units': 'dBZ',
+        'standard_name': 'unfiltered_spectral_reflectivity_vv',
+        'long_name': 'Unfiltered Spectral Vertical Reflectivity',
+        'coordinates': 'elevation azimuth range'},
+
+    unfiltered_spectral_differential_reflectivity: {
+        'units': 'dBZ',
+        'standard_name': 'unfiltered_spectral_differential_reflectivity',
+        'long_name': 'Unfiltered Spectral Differential Reflectivity',
+        'coordinates': 'elevation azimuth range'},
+
+    unfiltered_spectral_differential_phase: {
+        'units': 'deg',
+        'standard_name': 'unfiltered_spectral_differential_phase',
+        'long_name': 'Unfiltered Spectral Differential Phase',
+        'coordinates': 'elevation azimuth range'},
+
+    unfiltered_spectral_copolar_correlation_coefficient: {
+        'units': '-',
+        'standard_name': 'unfiltered_spectral_copolar_correlation_coefficient',
+        'long_name': 'Unfiltered Spectral copolar correlation coefficient (RHOHV)',
         'coordinates': 'elevation azimuth range'},
 
     rain_rate: {
@@ -2583,10 +2734,14 @@ DEFAULT_FIELD_COLORMAP = {
     radar_cross_section_vv: 'pyart_NWSRef',
     spectral_reflectivity_hh: 'pyart_NWSRef',
     spectral_reflectivity_vv: 'pyart_NWSRef',
+    unfiltered_spectral_reflectivity_hh: 'pyart_NWSRef',
+    unfiltered_spectral_reflectivity_vv: 'pyart_NWSRef',
 
     signal_to_noise_ratio: 'pyart_Carbone17',
     signal_to_noise_ratio_hh: 'pyart_Carbone17',
     signal_to_noise_ratio_vv: 'pyart_Carbone17',
+    clutter_correction_ratio_hh: 'pyart_Carbone17',
+    clutter_correction_ratio_vv: 'pyart_Carbone17',
 
     visibility: 'pyart_Carbone17',
     frequency_of_occurrence: 'pyart_Carbone17',
@@ -2638,6 +2793,7 @@ DEFAULT_FIELD_COLORMAP = {
     differential_reflectivity_in_snow: 'pyart_RefDiff',
     differential_reflectivity_column_height: 'pyart_RefDiff',
     spectral_differential_reflectivity: 'pyart_RefDiff',
+    unfiltered_spectral_differential_reflectivity: 'pyart_RefDiff',
 
     cross_correlation_ratio: 'pyart_RefDiff',
     corrected_cross_correlation_ratio:  'pyart_RefDiff',
@@ -2646,6 +2802,7 @@ DEFAULT_FIELD_COLORMAP = {
     logarithmic_cross_correlation_ratio: 'pyart_RefDiff',
     cross_correlation_ratio_in_rain: 'pyart_RefDiff',
     spectral_copolar_correlation_coefficient: 'pyart_RefDiff',
+    unfiltered_spectral_copolar_correlation_coefficient: 'pyart_RefDiff',
 
     differential_phase: 'pyart_Wild25',
     unfolded_differential_phase: 'pyart_Wild25',
@@ -2656,6 +2813,9 @@ DEFAULT_FIELD_COLORMAP = {
     spectral_phase_hh: 'pyart_Wild25',
     spectral_phase_vv: 'pyart_Wild25',
     spectral_differential_phase: 'pyart_Wild25',
+    unfiltered_spectral_phase_hh: 'pyart_Wild25',
+    unfiltered_spectral_phase_vv: 'pyart_Wild25',
+    unfiltered_spectral_differential_phase: 'pyart_Wild25',
 
     specific_differential_phase: 'pyart_Theodore16',
     corrected_specific_differential_phase: 'pyart_Theodore16',
@@ -2752,6 +2912,8 @@ DEFAULT_FIELD_LIMITS = {
     radar_cross_section_vv: (-50., 55.),
     # spectral_reflectivity_hh: (-60., 45.),
     # spectral_reflectivity_vv: (-60., 45.),
+    # unfiltered_spectral_reflectivity_hh: (-60., 45.),
+    # unfiltered_spectral_reflectivity_vv: (-60., 45.),
 
     signal_power_hh: (-130., 0.),
     signal_power_vv: (-130., 0.),
@@ -2797,6 +2959,7 @@ DEFAULT_FIELD_LIMITS = {
     differential_reflectivity_in_snow: (-10., 10.),
     differential_reflectivity_column_height: (0., 6.),
     spectral_differential_reflectivity: (-1., 8.),
+    unfiltered_spectral_differential_reflectivity: (-1., 8.),
 
     cross_correlation_ratio: (0.7, 1.),
     corrected_cross_correlation_ratio: (0.7, 1.),
@@ -2805,6 +2968,7 @@ DEFAULT_FIELD_LIMITS = {
     logarithmic_cross_correlation_ratio: (0, 4),
     cross_correlation_ratio_in_rain: (0.9, 1.),
     # spectral_copolar_correlation_coefficient: (0.7, 1),
+    # unfiltered_spectral_copolar_correlation_coefficient: (0.7, 1),
 
     differential_phase: (-180., 180.),
     unfolded_differential_phase: (-180., 180.),
@@ -2815,6 +2979,9 @@ DEFAULT_FIELD_LIMITS = {
     spectral_phase_hh: (-180., 180.),
     spectral_phase_vv: (-180., 180.),
     spectral_differential_phase: (-180., 180.),
+    unfiltered_spectral_phase_hh: (-180., 180.),
+    unfiltered_spectral_phase_vv: (-180., 180.),
+    unfiltered_spectral_differential_phase: (-180., 180.),
 
     specific_differential_phase: (-1., 2.),
     corrected_specific_differential_phase: (-1., 2.),

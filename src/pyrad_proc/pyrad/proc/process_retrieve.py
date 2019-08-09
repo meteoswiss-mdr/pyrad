@@ -7,6 +7,7 @@ Functions for retrieving new moments and products
 .. autosummary::
     :toctree: generated/
 
+    process_ccor
     process_signal_power
     process_rcs_pr
     process_rcs
@@ -33,6 +34,68 @@ from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 from ..io.read_data_radar import interpol_field
 
 from ..util.radar_utils import time_avg_range
+
+
+def process_ccor(procstatus, dscfg, radar_list=None):
+    """
+    Computes the Clutter Correction Ratio, i.e. the ratio between the
+    signal without Doppler filtering and the signal with Doppler filtering
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the output
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+        if datatype in ('dBZ', 'dBZv'):
+            filt_field = get_fieldname_pyart(datatype)
+        elif datatype in ('dBuZ', 'dBuZv'):
+            unfilt_field = get_fieldname_pyart(datatype)
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if filt_field not in radar.fields or unfilt_field not in radar.fields:
+        warn('Unable to compute CCOR. Missing fields')
+        return None, None
+
+    ccor_field = 'clutter_correction_ratio_hh'
+    if 'vv' in filt_field:
+        ccor_field = 'clutter_correction_ratio_vv'
+
+    ccor = pyart.retrieve.compute_ccor(
+        radar, filt_field=filt_field, unfilt_field=unfilt_field,
+        ccor_field=ccor_field)
+
+    # prepare for exit
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field(ccor_field, ccor)
+
+    return new_dataset, ind_rad
 
 
 def process_signal_power(procstatus, dscfg, radar_list=None):
