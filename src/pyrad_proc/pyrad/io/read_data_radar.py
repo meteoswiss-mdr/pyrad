@@ -323,7 +323,7 @@ def get_data(voltime, datatypesdescr, cfg):
             datatype_odimpyrad, dataset_odimpyrad, product_odimpyrad,
             rng_min=cfg['rmin'], rng_max=cfg['rmax'], ele_min=cfg['elmin'],
             ele_max=cfg['elmax'], azi_min=cfg['azmin'], azi_max=cfg['azmax'],
-            termination='.h5')
+            termination='.h*')
         radar = add_field(radar, radar_aux)
 
     # add rainbow ray data from psr files
@@ -819,7 +819,7 @@ def merge_scans_odim(basepath, scan_list, radar_name, radar_res, voltime,
     basepath : str
         base path of odim radar data
     scan_list : list
-        list of scans (h5)
+        list of scans
     voltime: datetime object
         reference time of the scan
     datatype_list : list
@@ -881,7 +881,7 @@ def merge_scans_odim(basepath, scan_list, radar_name, radar_res, voltime,
             datapath = basepath+'P'+radar_res+radar_name+'/'
             filename = glob.glob(datapath+basename+timeinfo+'*'+scan_list[0] + '*')
     if not filename:
-        warn('No file found in '+datapath[0]+basename+timeinfo+'*.h5')
+        warn('No file found in '+datapath[0]+basename+timeinfo+'*.h*')
     else:
         radar = get_data_odim(
             filename[0], datatype_list, scan_list[0], cfg, ind_rad=ind_rad)
@@ -1666,7 +1666,7 @@ def merge_fields_pyrad(basepath, loadname, voltime, datatype_list,
         The limits of the grid [deg]. If None the limits will be the limits
         of the radar volume
     termination : str
-        file termination type. Can be '.nc' or '.h5'
+        file termination type. Can be '.nc' or '.h*'
 
     Returns
     -------
@@ -1747,7 +1747,7 @@ def merge_fields_pyrad_spectra(basepath, loadname, voltime, datatype_list,
         The limits of the grid [deg]. If None the limits will be the limits
         of the radar volume
     termination : str
-        file termination type. Can be '.nc' or '.h5'
+        file termination type. Can be '.nc' or '.h*'
 
     Returns
     -------
@@ -1823,7 +1823,7 @@ def merge_fields_pyradgrid(basepath, loadname, voltime, datatype_list,
     cfg : dict
         dictionary containing configuration parameters
     termination : str
-        file termination type. Can be '.nc' or '.h5'
+        file termination type. Can be '.nc' or '.h*'
 
     Returns
     -------
