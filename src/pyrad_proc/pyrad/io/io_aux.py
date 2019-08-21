@@ -1726,7 +1726,7 @@ def get_file_list(datadescriptor, starttimes, endtimes, cfg, scan=None):
                         starttime+datetime.timedelta(days=i)).strftime(
                             fpath_strf)
                     datapath = (cfg['datapath'][ind_rad] + daydir+'/')
-                    dayfilelist = glob.glob(datapath+'*'+scan+'*.h5')
+                    dayfilelist = glob.glob(datapath+'*'+scan+'*.h*')
                 else:
                     dayinfo = (starttime+datetime.timedelta(days=i)).strftime(
                         '%y%j')
@@ -1756,7 +1756,7 @@ def get_file_list(datadescriptor, starttimes, endtimes, cfg, scan=None):
                                'NETCDFSPECTRA'):
                 termination = '.nc'
                 if datagroup == 'ODIMPYRAD':
-                    termination = '.h5'
+                    termination = '.h*'
 
                 daydir = (
                     starttime+datetime.timedelta(days=i)).strftime(
