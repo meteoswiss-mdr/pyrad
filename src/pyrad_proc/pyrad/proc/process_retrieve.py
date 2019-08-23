@@ -112,34 +112,24 @@ def process_signal_power(procstatus, dscfg, radar_list=None):
 
         datatype : list of string. Dataset keyword
             The input data types
-        mflossv : float. Global keyword
-            The matching filter losses of the vertical channel. Used if input
-            is vertical reflectivity
-        radconstv : float. Global keyword
-            The vertical channel radar constant. Used if input is vertical
-            reflectivity
-        lrxv : float. Global keyword
-            The receiver losses from the antenna feed to the reference point.
-            [dB] positive value
-            Used if input is vertical reflectivity
-        lradomev : float. Global keyword
-            The 1-way dry radome losses [dB] positive value.
-            Used if input is vertical reflectivity
-        mflossh : float. Global keyword
-            The matching filter losses of the vertical channel. Used if input
-            is horizontal reflectivity
-        radconsth : float. Global keyword
-            The horizontal channel radar constant. Used if input is horizontal
-            reflectivity
-        lrxh : float. Global keyword
-            The receiver losses from the antenna feed to the reference point.
-            [dB] positive value
-            Used if input is horizontal reflectivity
-        lradomeh : float. Global keyword
-            The 1-way dry radome losses [dB] positive value.
-            Used if input is horizontal reflectivity
+        mflossh, mflossv : float. Dataset keyword
+            The matching filter losses of the horizontal (vertical) channel
+            [dB]. If None it will be obtained from the attribute
+            radar_calibration of the radar object. Defaults to 0
+        radconsth, radconstv : float. Dataset keyword
+            The horizontal (vertical) channel radar constant. If None it will
+            be obtained from the attribute radar_calibration of the radar
+            object
+        lrxh, lrxv : float. Global keyword
+            The horizontal (vertical) receiver losses from the antenna feed to
+            the reference point. [dB] positive value. Default 0
+        lradomeh, lradomev : float. Global keyword
+            The 1-way dry radome horizontal (vertical) channel losses.
+            [dB] positive value. Default 0.
         attg : float. Dataset keyword
-            The gas attenuation
+            The gas attenuation [dB/km]. If none it will be obtained from the
+            attribute radar_calibration of the radar object or assigned
+            according to the radar frequency. Defaults to 0.
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -182,20 +172,26 @@ def process_signal_power(procstatus, dscfg, radar_list=None):
         warn('Unable to obtain signal power. Missing field '+refl_field)
         return None, None
 
+    lrx = 0.
+    lradome = 0.
     if refl_field.endswith('_vv'):
         pwr_field = 'signal_power_vv'
 
         lmf = dscfg.get('mflossv', None)
         radconst = dscfg.get('radconstv', None)
-        lrx = dscfg.get('lrxv', 0.)
-        lradome = dscfg.get('lradomev', 0.)
+        if 'lrxv' in dscfg:
+            lrx = dscfg['lrxv'][ind_rad]
+        if 'lradomev' in dscfg:
+            lradome = dscfg['lradomev'][ind_rad]
     else:
         pwr_field = 'signal_power_hh'
 
         lmf = dscfg.get('mflossh', None)
         radconst = dscfg.get('radconsth', None)
-        lrx = dscfg.get('lrxh', 0.)
-        lradome = dscfg.get('lradomeh', 0.)
+        if 'lrxh' in dscfg:
+            lrx = dscfg['lrxh'][ind_rad]
+        if 'lradomeh' in dscfg:
+            lradome = dscfg['lradomeh'][ind_rad]
 
     attg = dscfg.get('attg', None)
 
@@ -227,54 +223,38 @@ def process_rcs_pr(procstatus, dscfg, radar_list=None):
 
         datatype : list of string. Dataset keyword
             The input data types
-        antenna_gain : float. Global keyword
-            The antenna gain [dB]
-        txpwrv : float. Global keyword
-            The transmitted power of the vertical channel [dBm]. Used if input
-            is vertical reflectivity
-        mflossv : float. Global keyword
-            The matching filter losses of the vertical channel. Used if input
-            is vertical reflectivity
-        radconstv : float. Global keyword
-            The vertical channel radar constant. Used if input is vertical
-            reflectivity
-        lrxv : float. Global keyword
-            The receiver losses from the antenna feed to the reference point.
-            [dB] positive value
-            Used if input is vertical reflectivity
-        ltxv : float. Global keyword
-            The transmitter losses from the output of the high power amplifier
-            to the antenna feed.
-            [dB] positive value
-            Used if input is vertical reflectivity
-        lradomev : float. Global keyword
-            The 1-way dry radome losses [dB] positive value.
-            Used if input is vertical reflectivity
-        txpwrh : float. Global keyword
-            The transmitted power of the horizontal channel [dBm]. Used if input
-            is horizontal reflectivity
-        mflossh : float. Global keyword
-            The matching filter losses of the vertical channel. Used if input
-            is horizontal reflectivity
-        radconsth : float. Global keyword
-            The horizontal channel radar constant. Used if input is horizontal
-            reflectivity
-        lrxh : float. Global keyword
-            The receiver losses from the antenna feed to the reference point.
-            [dB] positive value
-            Used if input is horizontal reflectivity
-        ltxh : float. Global keyword
-            The transmitter losses from the output of the high power amplifier
-            to the antenna feed.
-            [dB] positive value
-            Used if input is horizontal reflectivity
-        lradomeh : float. Global keyword
-            The 1-way dry radome losses [dB] positive value.
-            Used if input is horizontal reflectivity
+        AntennaGainH, AntennaGainV : float. Dataset keyword
+            The horizontal (vertical) polarization antenna gain [dB]. If None
+            it will be obtained from the attribute instrument_parameters of
+            the radar object
+        txpwrh, txpwrv : float. Dataset keyword
+            The transmitted power of the horizontal (vertical) channel [dBm].
+            If None it will be obtained from the attribute radar_calibration
+            of the radar object
+        mflossh, mflossv : float. Dataset keyword
+            The matching filter losses of the horizontal (vertical) channel
+            [dB]. If None it will be obtained from the attribute
+            radar_calibration of the radar object. Defaults to 0
+        radconsth, radconstv : float. Dataset keyword
+            The horizontal (vertical) channel radar constant. If None it will
+            be obtained from the attribute radar_calibration of the radar
+            object
+        lrxh, lrxv : float. Global keyword
+            The horizontal (vertical) receiver losses from the antenna feed to
+            the reference point. [dB] positive value. Default 0
+        ltxh, ltxv : float. Global keyword
+            The horizontal (vertical) transmitter losses from the output of the
+            high power amplifier to the antenna feed. [dB] positive value.
+            Default 0
+        lradomeh, lradomev : float. Global keyword
+            The 1-way dry radome horizontal (vertical) channel losses.
+            [dB] positive value. Default 0.
         attg : float. Dataset keyword
-            The gas attenuation
-    radar_list : list of Radar objects
-        Optional. list of radar objects
+            The gas attenuation [dB/km]. If none it will be obtained from the
+            attribute radar_calibration of the radar object or assigned
+            according to the radar frequency. Defaults to 0.
+        radar_list : list of Radar objects
+            Optional. list of radar objects
 
     Returns
     -------
@@ -315,26 +295,36 @@ def process_rcs_pr(procstatus, dscfg, radar_list=None):
         warn('Unable to obtain RCS. Missing field '+refl_field)
         return None, None
 
+    lrx = 0.
+    lradome = 0.
+    ltx = 0.
     if refl_field.endswith('_vv'):
         rcs_field = 'radar_cross_section_vv'
 
         lmf = dscfg.get('mflossv', None)
         radconst = dscfg.get('radconstv', None)
-        lrx = dscfg.get('lrxv', 0.)
-        ltx = dscfg.get('ltxv', 0.)
-        lradome = dscfg.get('lradomev', 0.)
+        antenna_gain = dscfg.get('AntennaGainH', None)
         tx_pwr = dscfg.get('txpwrv', None)
+        if 'lrxv' in dscfg:
+            lrx = dscfg['lrxv'][ind_rad]
+        if 'ltxv' in dscfg:
+            ltx = dscfg['ltxv'][ind_rad]
+        if 'lradomev' in dscfg:
+            lradome = dscfg['lradomev'][ind_rad]
     else:
         rcs_field = 'radar_cross_section_hh'
 
         lmf = dscfg.get('mflossh', None)
         radconst = dscfg.get('radconsth', None)
-        lrx = dscfg.get('lrxh', 0.)
-        ltx = dscfg.get('ltxh', 0.)
-        lradome = dscfg.get('lradomeh', 0.)
+        antenna_gain = dscfg.get('AntennaGainV', None)
         tx_pwr = dscfg.get('txpwrh', None)
+        if 'lrxh' in dscfg:
+            lrx = dscfg['lrxh'][ind_rad]
+        if 'ltxh' in dscfg:
+            ltx = dscfg['ltxh'][ind_rad]
+        if 'lradomeh' in dscfg:
+            lradome = dscfg['lradomeh'][ind_rad]
 
-    antenna_gain = dscfg.get('AntennaGain', None)
     attg = dscfg.get('attg', None)
 
     rcs_dict = pyart.retrieve.compute_rcs_from_pr(

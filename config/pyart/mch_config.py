@@ -787,6 +787,16 @@ DEFAULT_METADATA = {
         'meta_group': 'instrument_parameters',
         'long_name': 'Number of samples used to compute moments'},
 
+    'radar_antenna_gain_h': {
+        'units': 'dB',
+        'meta_group': 'instrument_parameters',
+        'long_name': 'Antenna gain H polarization'},
+
+    'radar_antenna_gain_v': {
+        'units': 'dB',
+        'meta_group': 'instrument_parameters',
+        'long_name': 'Antenna gain V polarization'},
+
     # metadata for radar calibration constant
     'calibration_constant_hh': {
         'units': 'dB',
@@ -824,10 +834,16 @@ DEFAULT_METADATA = {
         'long_name': 'dBADU to dBm V polarization',
     },
 
-    'matched_filter_loss': {
+    'matched_filter_loss_h': {
         'units': 'dB',
         'meta_group': 'radar_calibration',
-        'long_name': 'matched filter loss',
+        'long_name': 'matched filter loss H polarization',
+    },
+
+    'matched_filter_loss_v': {
+        'units': 'dB',
+        'meta_group': 'radar_calibration',
+        'long_name': 'matched filter loss V polarization',
     },
 
     'path_attenuation': {

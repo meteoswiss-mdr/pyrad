@@ -57,6 +57,11 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
             The default freezing level height. It will be used if no
             temperature field name is specified or the temperature field is
             not in the radar object. Default 2000.
+        frequency : float. Dataset keyword
+            the radar frequency [Hz]. If None that of the key
+            frequency in attribute instrument_parameters of the radar
+            object will be used. If the key or the attribute are not present
+            the selfconsistency will not be computed
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -141,6 +146,16 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
                  str(fzl)+' m')
 
     if dscfg['initialized'] == 0:
+        freq = dscfg.get('frequency', None)
+        if freq is None:
+            if (radar.instrument_parameters is not None and
+                    'frequency' in radar.instrument_parameters):
+                freq = radar.instrument_parameters['frequency']['data'][0]
+            else:
+                warn('Unable to retrieve PhiDP and KDP using ' +
+                     'self-consistency. Unknown radar frequency')
+                return None, None
+
         # get frequency band
         freq_band = pyart.retrieve.get_freq_band(
             radar.instrument_parameters['frequency']['data'][0])
@@ -242,6 +257,11 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
             minimum phase shift [deg]. Default 2.
         dphidp_max : float. Dataset keyword
             maximum phase shift [deg]. Default 16.
+        frequency : float. Dataset keyword
+            the radar frequency [Hz]. If None that of the key
+            frequency in attribute instrument_parameters of the radar
+            object will be used. If the key or the attribute are not present
+            the selfconsistency will not be computed
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -328,6 +348,16 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
                  str(fzl)+' m')
 
     if dscfg['initialized'] == 0:
+        freq = dscfg.get('frequency', None)
+        if freq is None:
+            if (radar.instrument_parameters is not None and
+                    'frequency' in radar.instrument_parameters):
+                freq = radar.instrument_parameters['frequency']['data'][0]
+            else:
+                warn('Unable to retrieve PhiDP and KDP using ' +
+                     'self-consistency. Unknown radar frequency')
+                return None, None
+
         # get frequency band
         freq_band = pyart.retrieve.get_freq_band(
             radar.instrument_parameters['frequency']['data'][0])

@@ -63,12 +63,10 @@ mflossv FLOAT 1.
 # the coefficient is actually that of S-band but this is the one used operationally for rad4alp radars
 attg FLOAT 0.008
 
-# radar beamwidth
-RadarBeamwidth FLOAT 1.0
-
 # antenna gain [dB]
 # H 45.2 V 45
-AntennaGain FLOAT 45.2
+AntennaGainH FLOAT 45.2
+AntennaGainV FLOAT 45.
 
 # receiver losses from antenna feed to reference point [dB]
 lrxh FLOAT 2.55
@@ -77,7 +75,7 @@ lrxv FLOAT 2.70
 # dry radome losses [dB]
 lradomeh FLOAT 0.2
 lradomev FLOAT 0.2
-  
+
 ## Image config
 ppiImageConfig STRUCT 7
    xsize      FLOAT    8.   # image size [inches] (default dots per inch (dpi):72)
@@ -87,7 +85,7 @@ ppiImageConfig STRUCT 7
    ymin       FLOAT -100.0  # Min distance on vertical axis [km]
    ymax       FLOAT  100.0  # Max distance on vertical axis [km]
    rngRing    FLOAT  20.0   # distance between range rings (0 no range ring) [km]
-   
+
 # Image config
 sunhitsImageConfig STRUCT 8
    xsize FLOAT  8.   # image size [inches] (default dots per inch (dpi):72)
@@ -98,8 +96,8 @@ sunhitsImageConfig STRUCT 8
    elmax FLOAT  2.0  # Max el [deg]
    azres FLOAT  0.1  # az resolution [deg]
    elres FLOAT  0.1  # el resolution [deg]
-   
-   
+
+
 ppiMapImageConfig STRUCT 9
    rngRing    FLOAT  20.0   # distance between range rings (0 no range ring) [km]
    xsize      FLOAT  7.   # image size [inches] (default dots per inch (dpi):72)

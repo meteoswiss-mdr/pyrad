@@ -5,7 +5,7 @@
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
 dataSetList STRARR 1
-    l0:TEMP
+    l0:dBm
 #    l0:ZH
 #    l0:ZH_TIME_HEIGHT
 #    l0:SNRh
@@ -90,6 +90,35 @@ ZH_TIME_HEIGHT STRUCT 8
             type   STRING SAVEVOL
             voltype STRING dBZ
 
+ZH_grid STRUCT 5
+   type     STRING GRID
+   datatype STRING RAD4ALP:dBZ
+   wfunc STRING NEAREST_NEIGHBOUR
+   gridConfig STRUCT 9
+      xmin FLOAT 0.
+      xmax FLOAT 100.
+      ymin FLOAT -50.
+      ymax FLOAT 60.
+      zmin FLOAT 0.
+      zmax FLOAT 12000.
+      hres FLOAT 500.
+      vres FLOAT 200.
+      altorig FLOAT 0.
+   products STRUCT 2
+      LATLON STRUCT 4
+         type STRING CROSS_SECTION
+         voltype STRING dBZ
+         coord1 STRUCT 2
+            lat FLOAT 47.18
+            lon FLOAT 9.25
+         coord2 STRUCT 2
+            lat FLOAT 47.61
+            lon FLOAT 9.7
+      SURFACE STRUCT 3
+         type  STRING SURFACE_IMAGE
+         voltype STRING dBZ
+         level INT 25
+
 
 # ==========================================================================================
 #                 secondary moments products
@@ -111,6 +140,22 @@ RhoHV STRUCT 3
         RAD4ALP:Nv
         PROC:SNRh
     MAKE_GLOBAL INT 1
+
+dBm STRUCT 4
+    type STRING PWR
+    datatype STRARR 1
+        RAD4ALP:dBZ
+    MAKE_GLOBAL INT 0
+    products STRUCT 2
+        EL001 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING dBm
+        AZ093 STRUCT 4
+            type  STRING PSEUDORHI_IMAGE
+            angle FLOAT 93.
+            AziTol FLOAT 1.
+            voltype STRING dBm
 
 
 # ==========================================================================================

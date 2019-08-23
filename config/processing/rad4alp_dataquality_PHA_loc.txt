@@ -75,12 +75,10 @@ mflossv FLOAT 1.
 # the coefficient is actually that of S-band but this is the one used operationally for rad4alp radars
 attg FLOAT 0.008
 
-# radar beamwidth
-RadarBeamwidth FLOAT 1.0
-
 # antenna gain [dB]
 # H 45.2 V 45
-AntennaGain FLOAT 45.2
+AntennaGainH FLOAT 45.2
+AntennaGainV FLOAT 45.
 
 # receiver losses from antenna feed to reference point [dB]
 lrxh FLOAT 2.05

@@ -339,6 +339,11 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar_list=None):
             The freezing level height [m]. Default 2000.
         ml_thickness : float. Dataset keyword
             The melting layer thickness in meters. Default 700.
+        beamwidth : float. Dataset keyword
+            the antenna beamwidth [deg]. If None that of the keys
+            radar_beam_width_h or radar_beam_width_v in attribute
+            instrument_parameters of the radar object will be used. If the key
+            or the attribute are not present the beamwidth will be set to None
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -436,12 +441,18 @@ def process_phidp_kdp_Maesaka(procstatus, dscfg, radar_list=None):
 
     # filter out data in an above the melting layer
     mask = np.ma.getmaskarray(phidp['data'])
-    if 'radar_beam_width_h' in radar_aux.instrument_parameters:
-        beamwidth = (
-            radar_aux.instrument_parameters['radar_beam_width_h']['data'][0])
-    else:
-        warn('Unknown radar antenna beamwidth.')
-        beamwidth = None
+
+    beamwidth = dscfg.get('beamwidth', None)
+    if beamwidth is None:
+        if radar.instrument_parameters is not None:
+            if 'radar_beam_width_h' in radar.instrument_parameters:
+                beamwidth = radar.instrument_parameters['radar_beam_width_h'][
+                    'data'][0]
+            elif 'radar_beam_width_v' in radar.instrument_parameters:
+                beamwidth = radar.instrument_parameters['radar_beam_width_v'][
+                    'data'][0]
+    if beamwidth is None:
+        warn('Antenna beam width unknown.')
 
     mask_fzl, _ = pyart.correct.get_mask_fzl(
         radar_aux, fzl=fzl, doc=15, min_temp=0., max_h_iso0=0.,
@@ -495,6 +506,11 @@ def process_phidp_kdp_lp(procstatus, dscfg, radar_list=None):
             The freezing level height [m]. Default 2000.
         ml_thickness : float. Dataset keyword
             The melting layer thickness in meters. Default 700.
+        beamwidth : float. Dataset keyword
+            the antenna beamwidth [deg]. If None that of the keys
+            radar_beam_width_h or radar_beam_width_v in attribute
+            instrument_parameters of the radar object will be used. If the key
+            or the attribute are not present the beamwidth will be set to None
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -589,12 +605,17 @@ def process_phidp_kdp_lp(procstatus, dscfg, radar_list=None):
 
     # filter out data in an above the melting layer
     mask = np.ma.getmaskarray(radar_aux.fields[psidp_field]['data'])
-    if 'radar_beam_width_h' in radar_aux.instrument_parameters:
-        beamwidth = (
-            radar_aux.instrument_parameters['radar_beam_width_h']['data'][0])
-    else:
-        warn('Unknown radar antenna beamwidth.')
-        beamwidth = None
+    beamwidth = dscfg.get('beamwidth', None)
+    if beamwidth is None:
+        if radar.instrument_parameters is not None:
+            if 'radar_beam_width_h' in radar.instrument_parameters:
+                beamwidth = radar.instrument_parameters[
+                    'radar_beam_width_h']['data'][0]
+            elif 'radar_beam_width_v' in radar.instrument_parameters:
+                beamwidth = radar.instrument_parameters[
+                    'radar_beam_width_v']['data'][0]
+    if beamwidth is None:
+        warn('Antenna beam width unknown.')
 
     mask_fzl, _ = pyart.correct.get_mask_fzl(
         radar_aux, fzl=fzl, doc=15, min_temp=0., max_h_iso0=0.,
@@ -814,6 +835,11 @@ def process_phidp_kdp_Vulpiani(procstatus, dscfg, radar_list=None):
         get_phidp : boolean. Datset keyword
             if set the PhiDP computed by integrating the resultant KDP is
             added to the radar field
+        frequency : float. Dataset keyword
+            the radar frequency [Hz]. If None that of the key
+            frequency in attribute instrument_parameters of the radar
+            object will be used. If the key or the attribute are not present
+            it will be assumed that the radar is C band
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -874,21 +900,25 @@ def process_phidp_kdp_Vulpiani(procstatus, dscfg, radar_list=None):
     if 'get_phidp' in dscfg:
         get_phidp = dscfg['get_phidp']
 
-    # get band from radar object metadata
-    band = 'C'
-    if 'frequency' in radar.instrument_parameters:
-        band = pyart.retrieve.get_freq_band(
-            radar.instrument_parameters['frequency']['data'][0])
-        if band is None:
-            if radar.instrument_parameters['frequency']['data'][0] < 2e9:
-                band = 'S'
-            elif radar.instrument_parameters['frequency']['data'][0] > 12e9:
-                band = 'X'
+    # get band
+    freq = dscfg.get('frequency', None)
+    if freq is None:
+        if (radar.instrument_parameters is not None and
+                'frequency' in radar.instrument_parameters):
+            freq = radar.instrument_parameters['frequency']['data'][0]
 
+    band = 'C'
+    if freq is None:
+        warn('Radar frequency unknown. Default C band will be applied')
+    else:
+        band = pyart.retrieve.get_freq_band(freq)
+        if band is None:
+            if freq < 2e9:
+                band = 'S'
+            elif freq > 12e9:
+                band = 'X'
             warn('Radar frequency out of range. Valid bands are S, C or X. ' +
                  band + ' band will be applied')
-    else:
-        warn('Radar frequency unknown. Default '+band+' band will be applied')
 
     kdp_field = 'corrected_specific_differential_phase'
     phidpr_field = 'corrected_differential_phase'
@@ -930,6 +960,11 @@ def process_phidp_kdp_Kalman(procstatus, dscfg, radar_list=None):
         get_phidp : boolean. Datset keyword
             if set the PhiDP computed by integrating the resultant KDP is
             added to the radar field
+        frequency : float. Dataset keyword
+            the radar frequency [Hz]. If None that of the key
+            frequency in attribute instrument_parameters of the radar
+            object will be used. If the key or the attribute are not present
+            it will be assumed that the radar is C band
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -968,21 +1003,25 @@ def process_phidp_kdp_Kalman(procstatus, dscfg, radar_list=None):
     parallel = dscfg.get('parallel', 1)
     get_phidp = dscfg.get('get_phidp', 0)
 
-    # get band from radar object metadata
-    band = 'C'
-    if 'frequency' in radar.instrument_parameters:
-        band = pyart.retrieve.get_freq_band(
-            radar.instrument_parameters['frequency']['data'][0])
-        if band is None:
-            if radar.instrument_parameters['frequency']['data'][0] < 2e9:
-                band = 'S'
-            elif radar.instrument_parameters['frequency']['data'][0] > 12e9:
-                band = 'X'
+    # get band
+    freq = dscfg.get('frequency', None)
+    if freq is None:
+        if (radar.instrument_parameters is not None and
+                'frequency' in radar.instrument_parameters):
+            freq = radar.instrument_parameters['frequency']['data'][0]
 
+    band = 'C'
+    if freq is None:
+        warn('Radar frequency unknown. Default C band will be applied')
+    else:
+        band = pyart.retrieve.get_freq_band(freq)
+        if band is None:
+            if freq < 2e9:
+                band = 'S'
+            elif freq > 12e9:
+                band = 'X'
             warn('Radar frequency out of range. Valid bands are S, C or X. ' +
                  band + ' band will be applied')
-    else:
-        warn('Radar frequency unknown. Default '+band+' band will be applied')
 
     kdp_field = 'corrected_specific_differential_phase'
     phidpr_field = 'corrected_differential_phase'
