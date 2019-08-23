@@ -652,14 +652,15 @@ def plot_fixed_rng(radar, field_name, prdcfg, fname_list, azi_res=None,
 
         if ele_res is None:
             ele_res = np.median(ele_vec[1:]-ele_vec[0:-1])
-            if 'radar_beam_width_h' in radar.instrument_parameters:
-                bwidth = radar.instrument_parameters[
-                    'radar_beam_width_h']['data'][0]
-                ele_res = np.min([bwidth, ele_res])
-            elif 'radar_beam_width_v' in radar.instrument_parameters:
-                bwidth = radar.instrument_parameters[
-                    'radar_beam_width_v']['data'][0]
-                ele_res = np.min([bwidth, ele_res])
+            if radar.instrument_parameters is not None:
+                if 'radar_beam_width_h' in radar.instrument_parameters:
+                    bwidth = radar.instrument_parameters[
+                        'radar_beam_width_h']['data'][0]
+                    ele_res = np.min([bwidth, ele_res])
+                elif 'radar_beam_width_v' in radar.instrument_parameters:
+                    bwidth = radar.instrument_parameters[
+                        'radar_beam_width_v']['data'][0]
+                    ele_res = np.min([bwidth, ele_res])
 
         ele_vec = np.append(ele_vec-ele_res/2., ele_vec[-1]+ele_res/2.)
     else:
@@ -673,14 +674,15 @@ def plot_fixed_rng(radar, field_name, prdcfg, fname_list, azi_res=None,
 
         if azi_res is None:
             azi_res = np.median(azi_vec[1:]-azi_vec[0:-1])
-            if 'radar_beam_width_h' in radar.instrument_parameters:
-                bwidth = radar.instrument_parameters[
-                    'radar_beam_width_h']['data'][0]
-                azi_res = np.min([bwidth, azi_res])
-            elif 'radar_beam_width_v' in radar.instrument_parameters:
-                bwidth = radar.instrument_parameters[
-                    'radar_beam_width_v']['data'][0]
-                azi_res = np.min([bwidth, azi_res])
+            if radar.instrument_parameters is not None:
+                if 'radar_beam_width_h' in radar.instrument_parameters:
+                    bwidth = radar.instrument_parameters[
+                        'radar_beam_width_h']['data'][0]
+                    azi_res = np.min([bwidth, azi_res])
+                elif 'radar_beam_width_v' in radar.instrument_parameters:
+                    bwidth = radar.instrument_parameters[
+                        'radar_beam_width_v']['data'][0]
+                    azi_res = np.min([bwidth, azi_res])
 
         azi_vec = np.append(azi_vec-azi_res/2., azi_vec[-1]+azi_res/2.)
 
@@ -816,14 +818,15 @@ def plot_fixed_rng_span(radar, field_name, prdcfg, fname_list, azi_res=None,
 
         if ele_res is None:
             ele_res = np.median(ele_vec[1:]-ele_vec[0:-1])
-            if 'radar_beam_width_h' in radar.instrument_parameters:
-                bwidth = radar.instrument_parameters[
-                    'radar_beam_width_h']['data'][0]
-                ele_res = np.min([bwidth, ele_res])
-            elif 'radar_beam_width_v' in radar.instrument_parameters:
-                bwidth = radar.instrument_parameters[
-                    'radar_beam_width_v']['data'][0]
-                ele_res = np.min([bwidth, ele_res])
+            if radar.instrument_parameters is not None:
+                if 'radar_beam_width_h' in radar.instrument_parameters:
+                    bwidth = radar.instrument_parameters[
+                        'radar_beam_width_h']['data'][0]
+                    ele_res = np.min([bwidth, ele_res])
+                elif 'radar_beam_width_v' in radar.instrument_parameters:
+                    bwidth = radar.instrument_parameters[
+                        'radar_beam_width_v']['data'][0]
+                    ele_res = np.min([bwidth, ele_res])
 
         ele_vec = np.append(ele_vec-ele_res/2., ele_vec[-1]+ele_res/2.)
     else:
@@ -837,14 +840,15 @@ def plot_fixed_rng_span(radar, field_name, prdcfg, fname_list, azi_res=None,
 
         if azi_res is None:
             azi_res = np.median(azi_vec[1:]-azi_vec[0:-1])
-            if 'radar_beam_width_h' in radar.instrument_parameters:
-                bwidth = radar.instrument_parameters[
-                    'radar_beam_width_h']['data'][0]
-                azi_res = np.min([bwidth, azi_res])
-            elif 'radar_beam_width_v' in radar.instrument_parameters:
-                bwidth = radar.instrument_parameters[
-                    'radar_beam_width_v']['data'][0]
-                azi_res = np.min([bwidth, azi_res])
+            if radar.instrument_parameters is not None:
+                if 'radar_beam_width_h' in radar.instrument_parameters:
+                    bwidth = radar.instrument_parameters[
+                        'radar_beam_width_h']['data'][0]
+                    azi_res = np.min([bwidth, azi_res])
+                elif 'radar_beam_width_v' in radar.instrument_parameters:
+                    bwidth = radar.instrument_parameters[
+                        'radar_beam_width_v']['data'][0]
+                    azi_res = np.min([bwidth, azi_res])
 
         azi_vec = np.append(azi_vec-azi_res/2., azi_vec[-1]+azi_res/2.)
 
@@ -871,7 +875,7 @@ def plot_fixed_rng_span(radar, field_name, prdcfg, fname_list, azi_res=None,
 
 
 def plot_cappi(radar, field_name, altitude, prdcfg, fname_list,
-               save_fig=True):
+               beamwidth=1., beam_spacing=1., save_fig=True):
     """
     plots a Constant Altitude Plan Position Indicator CAPPI
 
@@ -887,6 +891,10 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname_list,
         dictionary containing the product configuration
     fname_list : list of str
         list of names of the files where to store the plot
+    beamwidth : float
+        The radar beamwidth
+    beam_spacing : float
+        the ray angle resolution
     save_fig : bool
         if true save the figure. If false it does not close the plot and
         returns the handle to the figure
@@ -913,9 +921,8 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname_list,
     nx = int((xmax-xmin)*1000./cappi_res)+1
 
     # parameters to determine the gates to use for each grid point
-    beamwidth = 1.
-    beam_spacing = 1.
-    if 'radar_beam_width_h' in radar.instrument_parameters:
+    if (radar.instrument_parameters is not None and
+            'radar_beam_width_h' in radar.instrument_parameters):
         beamwidth = radar.instrument_parameters[
             'radar_beam_width_h']['data'][0]
 

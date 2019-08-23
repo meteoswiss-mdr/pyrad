@@ -168,34 +168,24 @@
 
 <span class="sd">        datatype : list of string. Dataset keyword</span>
 <span class="sd">            The input data types</span>
-<span class="sd">        mflossv : float. Global keyword</span>
-<span class="sd">            The matching filter losses of the vertical channel. Used if input</span>
-<span class="sd">            is vertical reflectivity</span>
-<span class="sd">        radconstv : float. Global keyword</span>
-<span class="sd">            The vertical channel radar constant. Used if input is vertical</span>
-<span class="sd">            reflectivity</span>
-<span class="sd">        lrxv : float. Global keyword</span>
-<span class="sd">            The receiver losses from the antenna feed to the reference point.</span>
-<span class="sd">            [dB] positive value</span>
-<span class="sd">            Used if input is vertical reflectivity</span>
-<span class="sd">        lradomev : float. Global keyword</span>
-<span class="sd">            The 1-way dry radome losses [dB] positive value.</span>
-<span class="sd">            Used if input is vertical reflectivity</span>
-<span class="sd">        mflossh : float. Global keyword</span>
-<span class="sd">            The matching filter losses of the vertical channel. Used if input</span>
-<span class="sd">            is horizontal reflectivity</span>
-<span class="sd">        radconsth : float. Global keyword</span>
-<span class="sd">            The horizontal channel radar constant. Used if input is horizontal</span>
-<span class="sd">            reflectivity</span>
-<span class="sd">        lrxh : float. Global keyword</span>
-<span class="sd">            The receiver losses from the antenna feed to the reference point.</span>
-<span class="sd">            [dB] positive value</span>
-<span class="sd">            Used if input is horizontal reflectivity</span>
-<span class="sd">        lradomeh : float. Global keyword</span>
-<span class="sd">            The 1-way dry radome losses [dB] positive value.</span>
-<span class="sd">            Used if input is horizontal reflectivity</span>
+<span class="sd">        mflossh, mflossv : float. Dataset keyword</span>
+<span class="sd">            The matching filter losses of the horizontal (vertical) channel</span>
+<span class="sd">            [dB]. If None it will be obtained from the attribute</span>
+<span class="sd">            radar_calibration of the radar object. Defaults to 0</span>
+<span class="sd">        radconsth, radconstv : float. Dataset keyword</span>
+<span class="sd">            The horizontal (vertical) channel radar constant. If None it will</span>
+<span class="sd">            be obtained from the attribute radar_calibration of the radar</span>
+<span class="sd">            object</span>
+<span class="sd">        lrxh, lrxv : float. Global keyword</span>
+<span class="sd">            The horizontal (vertical) receiver losses from the antenna feed to</span>
+<span class="sd">            the reference point. [dB] positive value. Default 0</span>
+<span class="sd">        lradomeh, lradomev : float. Global keyword</span>
+<span class="sd">            The 1-way dry radome horizontal (vertical) channel losses.</span>
+<span class="sd">            [dB] positive value. Default 0.</span>
 <span class="sd">        attg : float. Dataset keyword</span>
-<span class="sd">            The gas attenuation</span>
+<span class="sd">            The gas attenuation [dB/km]. If none it will be obtained from the</span>
+<span class="sd">            attribute radar_calibration of the radar object or assigned</span>
+<span class="sd">            according to the radar frequency. Defaults to 0.</span>
 <span class="sd">    radar_list : list of Radar objects</span>
 <span class="sd">        Optional. list of radar objects</span>
 
@@ -238,20 +228,26 @@
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to obtain signal power. Missing field &#39;</span><span class="o">+</span><span class="n">refl_field</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
+    <span class="n">lrx</span> <span class="o">=</span> <span class="mf">0.</span>
+    <span class="n">lradome</span> <span class="o">=</span> <span class="mf">0.</span>
     <span class="k">if</span> <span class="n">refl_field</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_vv&#39;</span><span class="p">):</span>
         <span class="n">pwr_field</span> <span class="o">=</span> <span class="s1">&#39;signal_power_vv&#39;</span>
 
         <span class="n">lmf</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mflossv&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">radconst</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;radconstv&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">lrx</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lrxv&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span>
-        <span class="n">lradome</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lradomev&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;lrxv&#39;</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">:</span>
+            <span class="n">lrx</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;lrxv&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;lradomev&#39;</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">:</span>
+            <span class="n">lradome</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;lradomev&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">pwr_field</span> <span class="o">=</span> <span class="s1">&#39;signal_power_hh&#39;</span>
 
         <span class="n">lmf</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mflossh&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">radconst</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;radconsth&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">lrx</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lrxh&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span>
-        <span class="n">lradome</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lradomeh&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;lrxh&#39;</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">:</span>
+            <span class="n">lrx</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;lrxh&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;lradomeh&#39;</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">:</span>
+            <span class="n">lradome</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;lradomeh&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
 
     <span class="n">attg</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attg&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
@@ -283,54 +279,38 @@
 
 <span class="sd">        datatype : list of string. Dataset keyword</span>
 <span class="sd">            The input data types</span>
-<span class="sd">        antenna_gain : float. Global keyword</span>
-<span class="sd">            The antenna gain [dB]</span>
-<span class="sd">        txpwrv : float. Global keyword</span>
-<span class="sd">            The transmitted power of the vertical channel [dBm]. Used if input</span>
-<span class="sd">            is vertical reflectivity</span>
-<span class="sd">        mflossv : float. Global keyword</span>
-<span class="sd">            The matching filter losses of the vertical channel. Used if input</span>
-<span class="sd">            is vertical reflectivity</span>
-<span class="sd">        radconstv : float. Global keyword</span>
-<span class="sd">            The vertical channel radar constant. Used if input is vertical</span>
-<span class="sd">            reflectivity</span>
-<span class="sd">        lrxv : float. Global keyword</span>
-<span class="sd">            The receiver losses from the antenna feed to the reference point.</span>
-<span class="sd">            [dB] positive value</span>
-<span class="sd">            Used if input is vertical reflectivity</span>
-<span class="sd">        ltxv : float. Global keyword</span>
-<span class="sd">            The transmitter losses from the output of the high power amplifier</span>
-<span class="sd">            to the antenna feed.</span>
-<span class="sd">            [dB] positive value</span>
-<span class="sd">            Used if input is vertical reflectivity</span>
-<span class="sd">        lradomev : float. Global keyword</span>
-<span class="sd">            The 1-way dry radome losses [dB] positive value.</span>
-<span class="sd">            Used if input is vertical reflectivity</span>
-<span class="sd">        txpwrh : float. Global keyword</span>
-<span class="sd">            The transmitted power of the horizontal channel [dBm]. Used if input</span>
-<span class="sd">            is horizontal reflectivity</span>
-<span class="sd">        mflossh : float. Global keyword</span>
-<span class="sd">            The matching filter losses of the vertical channel. Used if input</span>
-<span class="sd">            is horizontal reflectivity</span>
-<span class="sd">        radconsth : float. Global keyword</span>
-<span class="sd">            The horizontal channel radar constant. Used if input is horizontal</span>
-<span class="sd">            reflectivity</span>
-<span class="sd">        lrxh : float. Global keyword</span>
-<span class="sd">            The receiver losses from the antenna feed to the reference point.</span>
-<span class="sd">            [dB] positive value</span>
-<span class="sd">            Used if input is horizontal reflectivity</span>
-<span class="sd">        ltxh : float. Global keyword</span>
-<span class="sd">            The transmitter losses from the output of the high power amplifier</span>
-<span class="sd">            to the antenna feed.</span>
-<span class="sd">            [dB] positive value</span>
-<span class="sd">            Used if input is horizontal reflectivity</span>
-<span class="sd">        lradomeh : float. Global keyword</span>
-<span class="sd">            The 1-way dry radome losses [dB] positive value.</span>
-<span class="sd">            Used if input is horizontal reflectivity</span>
+<span class="sd">        AntennaGainH, AntennaGainV : float. Dataset keyword</span>
+<span class="sd">            The horizontal (vertical) polarization antenna gain [dB]. If None</span>
+<span class="sd">            it will be obtained from the attribute instrument_parameters of</span>
+<span class="sd">            the radar object</span>
+<span class="sd">        txpwrh, txpwrv : float. Dataset keyword</span>
+<span class="sd">            The transmitted power of the horizontal (vertical) channel [dBm].</span>
+<span class="sd">            If None it will be obtained from the attribute radar_calibration</span>
+<span class="sd">            of the radar object</span>
+<span class="sd">        mflossh, mflossv : float. Dataset keyword</span>
+<span class="sd">            The matching filter losses of the horizontal (vertical) channel</span>
+<span class="sd">            [dB]. If None it will be obtained from the attribute</span>
+<span class="sd">            radar_calibration of the radar object. Defaults to 0</span>
+<span class="sd">        radconsth, radconstv : float. Dataset keyword</span>
+<span class="sd">            The horizontal (vertical) channel radar constant. If None it will</span>
+<span class="sd">            be obtained from the attribute radar_calibration of the radar</span>
+<span class="sd">            object</span>
+<span class="sd">        lrxh, lrxv : float. Global keyword</span>
+<span class="sd">            The horizontal (vertical) receiver losses from the antenna feed to</span>
+<span class="sd">            the reference point. [dB] positive value. Default 0</span>
+<span class="sd">        ltxh, ltxv : float. Global keyword</span>
+<span class="sd">            The horizontal (vertical) transmitter losses from the output of the</span>
+<span class="sd">            high power amplifier to the antenna feed. [dB] positive value.</span>
+<span class="sd">            Default 0</span>
+<span class="sd">        lradomeh, lradomev : float. Global keyword</span>
+<span class="sd">            The 1-way dry radome horizontal (vertical) channel losses.</span>
+<span class="sd">            [dB] positive value. Default 0.</span>
 <span class="sd">        attg : float. Dataset keyword</span>
-<span class="sd">            The gas attenuation</span>
-<span class="sd">    radar_list : list of Radar objects</span>
-<span class="sd">        Optional. list of radar objects</span>
+<span class="sd">            The gas attenuation [dB/km]. If none it will be obtained from the</span>
+<span class="sd">            attribute radar_calibration of the radar object or assigned</span>
+<span class="sd">            according to the radar frequency. Defaults to 0.</span>
+<span class="sd">        radar_list : list of Radar objects</span>
+<span class="sd">            Optional. list of radar objects</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -371,26 +351,36 @@
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to obtain RCS. Missing field &#39;</span><span class="o">+</span><span class="n">refl_field</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
+    <span class="n">lrx</span> <span class="o">=</span> <span class="mf">0.</span>
+    <span class="n">lradome</span> <span class="o">=</span> <span class="mf">0.</span>
+    <span class="n">ltx</span> <span class="o">=</span> <span class="mf">0.</span>
     <span class="k">if</span> <span class="n">refl_field</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_vv&#39;</span><span class="p">):</span>
         <span class="n">rcs_field</span> <span class="o">=</span> <span class="s1">&#39;radar_cross_section_vv&#39;</span>
 
         <span class="n">lmf</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mflossv&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">radconst</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;radconstv&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">lrx</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lrxv&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span>
-        <span class="n">ltx</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ltxv&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span>
-        <span class="n">lradome</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lradomev&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span>
+        <span class="n">antenna_gain</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AntennaGainH&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">tx_pwr</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;txpwrv&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;lrxv&#39;</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">:</span>
+            <span class="n">lrx</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;lrxv&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;ltxv&#39;</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">:</span>
+            <span class="n">ltx</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;ltxv&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;lradomev&#39;</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">:</span>
+            <span class="n">lradome</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;lradomev&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">rcs_field</span> <span class="o">=</span> <span class="s1">&#39;radar_cross_section_hh&#39;</span>
 
         <span class="n">lmf</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mflossh&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">radconst</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;radconsth&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">lrx</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lrxh&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span>
-        <span class="n">ltx</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ltxh&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span>
-        <span class="n">lradome</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lradomeh&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span>
+        <span class="n">antenna_gain</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AntennaGainV&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">tx_pwr</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;txpwrh&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;lrxh&#39;</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">:</span>
+            <span class="n">lrx</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;lrxh&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;ltxh&#39;</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">:</span>
+            <span class="n">ltx</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;ltxh&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;lradomeh&#39;</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">:</span>
+            <span class="n">lradome</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;lradomeh&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
 
-    <span class="n">antenna_gain</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AntennaGain&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">attg</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attg&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="n">rcs_dict</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">retrieve</span><span class="o">.</span><span class="n">compute_rcs_from_pr</span><span class="p">(</span>

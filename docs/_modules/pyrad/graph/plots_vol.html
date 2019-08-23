@@ -708,14 +708,15 @@
 
         <span class="k">if</span> <span class="n">ele_res</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">ele_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">ele_vec</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">-</span><span class="n">ele_vec</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-            <span class="k">if</span> <span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
-                <span class="n">bwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
-                    <span class="s1">&#39;radar_beam_width_h&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">ele_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">bwidth</span><span class="p">,</span> <span class="n">ele_res</span><span class="p">])</span>
-            <span class="k">elif</span> <span class="s1">&#39;radar_beam_width_v&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
-                <span class="n">bwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
-                    <span class="s1">&#39;radar_beam_width_v&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">ele_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">bwidth</span><span class="p">,</span> <span class="n">ele_res</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
+                    <span class="n">bwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
+                        <span class="s1">&#39;radar_beam_width_h&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">ele_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">bwidth</span><span class="p">,</span> <span class="n">ele_res</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="s1">&#39;radar_beam_width_v&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
+                    <span class="n">bwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
+                        <span class="s1">&#39;radar_beam_width_v&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">ele_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">bwidth</span><span class="p">,</span> <span class="n">ele_res</span><span class="p">])</span>
 
         <span class="n">ele_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ele_vec</span><span class="o">-</span><span class="n">ele_res</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span> <span class="n">ele_vec</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">ele_res</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -729,14 +730,15 @@
 
         <span class="k">if</span> <span class="n">azi_res</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">azi_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">azi_vec</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">-</span><span class="n">azi_vec</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-            <span class="k">if</span> <span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
-                <span class="n">bwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
-                    <span class="s1">&#39;radar_beam_width_h&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">azi_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">bwidth</span><span class="p">,</span> <span class="n">azi_res</span><span class="p">])</span>
-            <span class="k">elif</span> <span class="s1">&#39;radar_beam_width_v&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
-                <span class="n">bwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
-                    <span class="s1">&#39;radar_beam_width_v&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">azi_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">bwidth</span><span class="p">,</span> <span class="n">azi_res</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
+                    <span class="n">bwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
+                        <span class="s1">&#39;radar_beam_width_h&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">azi_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">bwidth</span><span class="p">,</span> <span class="n">azi_res</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="s1">&#39;radar_beam_width_v&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
+                    <span class="n">bwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
+                        <span class="s1">&#39;radar_beam_width_v&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">azi_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">bwidth</span><span class="p">,</span> <span class="n">azi_res</span><span class="p">])</span>
 
         <span class="n">azi_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">azi_vec</span><span class="o">-</span><span class="n">azi_res</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span> <span class="n">azi_vec</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">azi_res</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
 
@@ -872,14 +874,15 @@
 
         <span class="k">if</span> <span class="n">ele_res</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">ele_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">ele_vec</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">-</span><span class="n">ele_vec</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-            <span class="k">if</span> <span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
-                <span class="n">bwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
-                    <span class="s1">&#39;radar_beam_width_h&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">ele_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">bwidth</span><span class="p">,</span> <span class="n">ele_res</span><span class="p">])</span>
-            <span class="k">elif</span> <span class="s1">&#39;radar_beam_width_v&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
-                <span class="n">bwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
-                    <span class="s1">&#39;radar_beam_width_v&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">ele_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">bwidth</span><span class="p">,</span> <span class="n">ele_res</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
+                    <span class="n">bwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
+                        <span class="s1">&#39;radar_beam_width_h&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">ele_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">bwidth</span><span class="p">,</span> <span class="n">ele_res</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="s1">&#39;radar_beam_width_v&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
+                    <span class="n">bwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
+                        <span class="s1">&#39;radar_beam_width_v&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">ele_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">bwidth</span><span class="p">,</span> <span class="n">ele_res</span><span class="p">])</span>
 
         <span class="n">ele_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ele_vec</span><span class="o">-</span><span class="n">ele_res</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span> <span class="n">ele_vec</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">ele_res</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -893,14 +896,15 @@
 
         <span class="k">if</span> <span class="n">azi_res</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">azi_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">azi_vec</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">-</span><span class="n">azi_vec</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-            <span class="k">if</span> <span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
-                <span class="n">bwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
-                    <span class="s1">&#39;radar_beam_width_h&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">azi_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">bwidth</span><span class="p">,</span> <span class="n">azi_res</span><span class="p">])</span>
-            <span class="k">elif</span> <span class="s1">&#39;radar_beam_width_v&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
-                <span class="n">bwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
-                    <span class="s1">&#39;radar_beam_width_v&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">azi_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">bwidth</span><span class="p">,</span> <span class="n">azi_res</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
+                    <span class="n">bwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
+                        <span class="s1">&#39;radar_beam_width_h&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">azi_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">bwidth</span><span class="p">,</span> <span class="n">azi_res</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="s1">&#39;radar_beam_width_v&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
+                    <span class="n">bwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
+                        <span class="s1">&#39;radar_beam_width_v&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">azi_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">bwidth</span><span class="p">,</span> <span class="n">azi_res</span><span class="p">])</span>
 
         <span class="n">azi_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">azi_vec</span><span class="o">-</span><span class="n">azi_res</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span> <span class="n">azi_vec</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">azi_res</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
 
@@ -927,7 +931,7 @@
 
 
 <div class="viewcode-block" id="plot_cappi"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_cappi">[docs]</a><span class="k">def</span> <span class="nf">plot_cappi</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">altitude</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
-               <span class="n">save_fig</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+               <span class="n">beamwidth</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">beam_spacing</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">save_fig</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    plots a Constant Altitude Plan Position Indicator CAPPI</span>
 
@@ -943,6 +947,10 @@
 <span class="sd">        dictionary containing the product configuration</span>
 <span class="sd">    fname_list : list of str</span>
 <span class="sd">        list of names of the files where to store the plot</span>
+<span class="sd">    beamwidth : float</span>
+<span class="sd">        The radar beamwidth</span>
+<span class="sd">    beam_spacing : float</span>
+<span class="sd">        the ray angle resolution</span>
 <span class="sd">    save_fig : bool</span>
 <span class="sd">        if true save the figure. If false it does not close the plot and</span>
 <span class="sd">        returns the handle to the figure</span>
@@ -969,9 +977,8 @@
     <span class="n">nx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">xmax</span><span class="o">-</span><span class="n">xmin</span><span class="p">)</span><span class="o">*</span><span class="mf">1000.</span><span class="o">/</span><span class="n">cappi_res</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span>
 
     <span class="c1"># parameters to determine the gates to use for each grid point</span>
-    <span class="n">beamwidth</span> <span class="o">=</span> <span class="mf">1.</span>
-    <span class="n">beam_spacing</span> <span class="o">=</span> <span class="mf">1.</span>
-    <span class="k">if</span> <span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>
+            <span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">):</span>
         <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
             <span class="s1">&#39;radar_beam_width_h&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 

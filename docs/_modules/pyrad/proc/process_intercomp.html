@@ -1006,6 +1006,11 @@
 <span class="sd">            when to start the average [s from midnight UTC]. Default 0.</span>
 <span class="sd">        phidpmax: float. Dataset keyword</span>
 <span class="sd">            maximum PhiDP</span>
+<span class="sd">        beamwidth : float. Dataset keyword</span>
+<span class="sd">            the antenna beamwidth [deg]. If None that of the keys</span>
+<span class="sd">            radar_beam_width_h or radar_beam_width_v in attribute</span>
+<span class="sd">            instrument_parameters of the radar object will be used. If the key</span>
+<span class="sd">            or the attribute are not present the beamwidth will be set to None</span>
 <span class="sd">    radar_list : list of Radar objects</span>
 <span class="sd">        Optional. list of radar objects</span>
 
@@ -1086,13 +1091,19 @@
                 <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Missing temperature data&#39;</span><span class="p">)</span>
                 <span class="n">time_avg_flag</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">10000</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
-                    <span class="n">beamwidth</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
-                            <span class="s1">&#39;radar_beam_width_h&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unknown radar antenna beamwidth.&#39;</span><span class="p">)</span>
-                    <span class="n">beamwidth</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;beamwidth&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">beamwidth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> 
+                                <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">):</span>
+                            <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
+                                <span class="s1">&#39;radar_beam_width_h&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="k">elif</span> <span class="p">(</span><span class="s1">&#39;radar_beam_width_v&#39;</span> <span class="ow">in</span>
+                                <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">):</span>
+                            <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
+                                <span class="s1">&#39;radar_beam_width_v&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">beamwidth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Antenna beam width unknown.&#39;</span><span class="p">)</span>
 
                 <span class="n">mask_fzl</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">correct</span><span class="o">.</span><span class="n">get_mask_fzl</span><span class="p">(</span>
                     <span class="n">radar</span><span class="p">,</span> <span class="n">fzl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_temp</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">max_h_iso0</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
@@ -1105,13 +1116,19 @@
                 <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Missing height relative to iso0 data&#39;</span><span class="p">)</span>
                 <span class="n">time_avg_flag</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">10000</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
-                    <span class="n">beamwidth</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
-                            <span class="s1">&#39;radar_beam_width_h&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unknown radar antenna beamwidth.&#39;</span><span class="p">)</span>
-                    <span class="n">beamwidth</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;beamwidth&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">beamwidth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> 
+                                <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">):</span>
+                            <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
+                                <span class="s1">&#39;radar_beam_width_h&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="k">elif</span> <span class="p">(</span><span class="s1">&#39;radar_beam_width_v&#39;</span> <span class="ow">in</span>
+                                <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">):</span>
+                            <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
+                                <span class="s1">&#39;radar_beam_width_v&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">beamwidth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Antenna beam width unknown.&#39;</span><span class="p">)</span>
 
                 <span class="n">mask_fzl</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">correct</span><span class="o">.</span><span class="n">get_mask_fzl</span><span class="p">(</span>
                     <span class="n">radar</span><span class="p">,</span> <span class="n">fzl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_temp</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">max_h_iso0</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>

@@ -481,6 +481,9 @@ def get_data(voltime, datatypesdescr, cfg):
                              "' to radar object"
                              ": (%s)" % str(ee))
 
+    if radar is None:
+        return radar
+
     # if it is specified, get the position from the config file
     if 'RadarPosition' in cfg:
         if 'latitude' in cfg['RadarPosition']:
@@ -494,6 +497,264 @@ def get_data(voltime, datatypesdescr, cfg):
                 cfg['RadarPosition']['altitude'][ind_rad])
         radar.init_gate_longitude_latitude()
         radar.init_gate_altitude()
+
+    # get instrument parameters from the config file
+    if 'frequency' in cfg:
+        if radar.instrument_parameters is None:
+            frequency = pyart.config.get_metadata('frequency')
+            frequency['data'] = np.array(
+                [cfg['frequency'][ind_rad]], dtype=np.float32)
+            radar.instrument_parameters = {'frequency': frequency}
+        elif 'frequency' not in radar.instrument_parameters:
+            frequency = pyart.config.get_metadata('frequency')
+            frequency['data'] = np.array(
+                [cfg['frequency'][ind_rad]], dtype=np.float32)
+            radar.instrument_parameters.update({'frequency': frequency})
+        else:
+            radar.instrument_parameters['frequency']['data'][0] = (
+                cfg['frequency'][ind_rad])
+
+    if 'radar_beam_width_h' in cfg:
+        if radar.instrument_parameters is None:
+            beamwidth = pyart.config.get_metadata('radar_beam_width_h')
+            beamwidth['data'] = np.array(
+                [cfg['radar_beam_width_h'][ind_rad]], dtype=np.float32)
+            radar.instrument_parameters = {'radar_beam_width_h': beamwidth}
+        elif 'radar_beam_width_h' not in radar.instrument_parameters:
+            beamwidth = pyart.config.get_metadata('radar_beam_width_h')
+            beamwidth['data'] = np.array(
+                [cfg['radar_beam_width_h'][ind_rad]], dtype=np.float32)
+            radar.instrument_parameters.update(
+                {'radar_beam_width_h': beamwidth})
+        else:
+            radar.instrument_parameters['radar_beam_width_h']['data'][0] = (
+                cfg['radar_beam_width_h'][ind_rad])
+
+    if 'radar_beam_width_v' in cfg:
+        if radar.instrument_parameters is None:
+            beamwidth = pyart.config.get_metadata('radar_beam_width_v')
+            beamwidth['data'] = np.array(
+                [cfg['radar_beam_width_v'][ind_rad]], dtype=np.float32)
+            radar.instrument_parameters = {'radar_beam_width_v': beamwidth}
+        elif 'radar_beam_width_v' not in radar.instrument_parameters:
+            beamwidth = pyart.config.get_metadata('radar_beam_width_v')
+            beamwidth['data'] = np.array(
+                [cfg['radar_beam_width_v'][ind_rad]], dtype=np.float32)
+            radar.instrument_parameters.update(
+                {'radar_beam_width_v': beamwidth})
+        else:
+            radar.instrument_parameters['radar_beam_width_v']['data'][0] = (
+                cfg['radar_beam_width_v'][ind_rad])
+
+    if 'AntennaGainH' in cfg:
+        if radar.instrument_parameters is None:
+            AntennaGainH = pyart.config.get_metadata('radar_antenna_gain_h')
+            AntennaGainH['data'] = np.array(
+                [cfg['AntennaGainH'][ind_rad]], dtype=np.float32)
+            radar.instrument_parameters = {
+                'radar_antenna_gain_h': AntennaGainH}
+        elif 'radar_antenna_gain_h' not in radar.instrument_parameters:
+            AntennaGainH = pyart.config.get_metadata('radar_antenna_gain_h')
+            AntennaGainH['data'] = np.array(
+                [cfg['AntennaGainH'][ind_rad]], dtype=np.float32)
+            radar.instrument_parameters.update(
+                {'radar_antenna_gain_h': AntennaGainH})
+        else:
+            radar.instrument_parameters['radar_antenna_gain_h']['data'][0] = (
+                cfg['AntennaGainH'][ind_rad])
+
+    if 'AntennaGainV' in cfg:
+        if radar.instrument_parameters is None:
+            AntennaGainV = pyart.config.get_metadata('radar_antenna_gain_v')
+            AntennaGainV['data'] = np.array(
+                [cfg['AntennaGainV'][ind_rad]], dtype=np.float32)
+            radar.instrument_parameters = {
+                'radar_antenna_gain_v': AntennaGainV}
+        elif 'radar_antenna_gain_v' not in radar.instrument_parameters:
+            AntennaGainV = pyart.config.get_metadata('radar_antenna_gain_v')
+            AntennaGainV['data'] = np.array(
+                [cfg['AntennaGainV'][ind_rad]], dtype=np.float32)
+            radar.instrument_parameters.update(
+                {'radar_antenna_gain_v': AntennaGainV})
+        else:
+            radar.instrument_parameters['radar_antenna_gain_v']['data'][0] = (
+                cfg['AntennaGainV'][ind_rad])
+
+    # Assumes uniform pulse width in all radar volume
+    if 'pulse_width' in cfg:
+        if radar.instrument_parameters is None:
+            pulse_width = pyart.config.get_metadata('pulse_width')
+            pulse_width['data'] = cfg['pulse_width'][ind_rad]*np.array(
+                radar.nrays, dtype=np.float32)
+            radar.instrument_parameters = {'pulse_width': pulse_width}
+        elif 'pulse_width' not in radar.instrument_parameters:
+            pulse_width = pyart.config.get_metadata('pulse_width')
+            pulse_width['data'] = cfg['pulse_width'][ind_rad]*np.array(
+                radar.nrays, dtype=np.float32)
+            radar.instrument_parameters.update({'pulse_width': pulse_width})
+        else:
+            radar.instrument_parameters['pulse_width']['data'] = (
+                cfg['pulse_width'][ind_rad] *
+                np.array(radar.nrays, dtype=np.float32))
+
+    # Assumes uniform nyquist velocity in all radar volume
+    if 'nyquist_velocity' in cfg:
+        if radar.instrument_parameters is None:
+            nyquist_velocity = pyart.config.get_metadata('nyquist_velocity')
+            nyquist_velocity['data'] = (
+                cfg['nyquist_velocity'][ind_rad]*np.array(
+                    radar.nrays, dtype=np.float32))
+            radar.instrument_parameters = {
+                'nyquist_velocity': nyquist_velocity}
+        elif 'nyquist_velocity' not in radar.instrument_parameters:
+            nyquist_velocity = pyart.config.get_metadata('nyquist_velocity')
+            nyquist_velocity['data'] = (
+                cfg['nyquist_velocity'][ind_rad]*np.array(
+                    radar.nrays, dtype=np.float32))
+            radar.instrument_parameters.update(
+                {'nyquist_velocity': nyquist_velocity})
+        else:
+            radar.instrument_parameters['nyquist_velocity']['data'] = (
+                cfg['nyquist_velocity'][ind_rad] *
+                np.array(radar.nrays, dtype=np.float32))
+
+    # Get calibration parameters from config file
+    if 'radconsth' in cfg:
+        if radar.radar_calibration is None:
+            radconsth = pyart.config.get_metadata('calibration_constant_hh')
+            radconsth['data'] = np.array(
+                [cfg['radconsth'][ind_rad]], dtype=np.float32)
+            radar.radar_calibration = {'calibration_constant_hh': radconsth}
+        elif 'calibration_constant_hh' not in radar.radar_calibration:
+            radconsth = pyart.config.get_metadata('calibration_constant_hh')
+            radconsth['data'] = np.array(
+                [cfg['radconsth'][ind_rad]], dtype=np.float32)
+            radar.radar_calibration.update(
+                {'calibration_constant_hh': radconsth})
+        else:
+            radar.radar_calibration['calibration_constant_hh']['data'][0] = (
+                cfg['radconsth'][ind_rad])
+
+    if 'radconstv' in cfg:
+        if radar.radar_calibration is None:
+            radconstv = pyart.config.get_metadata('calibration_constant_vv')
+            radconstv['data'] = np.array(
+                [cfg['radconstv'][ind_rad]], dtype=np.float32)
+            radar.radar_calibration = {'calibration_constant_vv': radconstv}
+        elif 'calibration_constant_vv' not in radar.radar_calibration:
+            radconstv = pyart.config.get_metadata('calibration_constant_vv')
+            radconstv['data'] = np.array(
+                [cfg['radconstv'][ind_rad]], dtype=np.float32)
+            radar.radar_calibration.update(
+                {'calibration_constant_vv': radconstv})
+        else:
+            radar.radar_calibration['calibration_constant_vv']['data'][0] = (
+                cfg['radconstv'][ind_rad])
+
+    if 'txpwrh' in cfg:
+        if radar.radar_calibration is None:
+            txpwrh = pyart.config.get_metadata('transmit_power_h')
+            txpwrh['data'] = np.array(
+                [cfg['txpwrh'][ind_rad]], dtype=np.float32)
+            radar.radar_calibration = {'transmit_power_h': txpwrh}
+        elif 'transmit_power_h' not in radar.radar_calibration:
+            txpwrh = pyart.config.get_metadata('transmit_power_h')
+            txpwrh['data'] = np.array(
+                [cfg['txpwrh'][ind_rad]], dtype=np.float32)
+            radar.radar_calibration.update({'transmit_power_h': txpwrh})
+        else:
+            radar.radar_calibration['transmit_power_h']['data'][0] = (
+                cfg['txpwrh'][ind_rad])
+
+    if 'txpwrv' in cfg:
+        if radar.radar_calibration is None:
+            txpwrv = pyart.config.get_metadata('transmit_power_v')
+            txpwrv['data'] = np.array(
+                [cfg['txpwrv'][ind_rad]], dtype=np.float32)
+            radar.radar_calibration = {'transmit_power_v': txpwrv}
+        elif 'transmit_power_v' not in radar.radar_calibration:
+            txpwrv = pyart.config.get_metadata('transmit_power_v')
+            txpwrv['data'] = np.array(
+                [cfg['txpwrv'][ind_rad]], dtype=np.float32)
+            radar.radar_calibration.update({'transmit_power_v': txpwrv})
+        else:
+            radar.radar_calibration['transmit_power_v']['data'][0] = (
+                cfg['txpwrv'][ind_rad])
+
+    if 'attg' in cfg:
+        if radar.radar_calibration is None:
+            attg = pyart.config.get_metadata('path_attenuation')
+            attg['data'] = np.array(
+                [cfg['attg'][ind_rad]], dtype=np.float32)
+            radar.radar_calibration = {'path_attenuation': attg}
+        elif 'path_attenuation' not in radar.radar_calibration:
+            attg = pyart.config.get_metadata('path_attenuation')
+            attg['data'] = np.array(
+                [cfg['attg'][ind_rad]], dtype=np.float32)
+            radar.radar_calibration.update({'path_attenuation': attg})
+        else:
+            radar.radar_calibration['path_attenuation']['data'][0] = (
+                cfg['attg'][ind_rad])
+
+    if 'mflossh' in cfg:
+        if radar.radar_calibration is None:
+            mflossh = pyart.config.get_metadata('matched_filter_loss_h')
+            mflossh['data'] = np.array(
+                [cfg['mflossh'][ind_rad]], dtype=np.float32)
+            radar.radar_calibration = {'matched_filter_loss_h': mflossh}
+        elif 'matched_filter_loss_h' not in radar.radar_calibration:
+            mflossh = pyart.config.get_metadata('matched_filter_loss_h')
+            mflossh['data'] = np.array(
+                [cfg['mflossh'][ind_rad]], dtype=np.float32)
+            radar.radar_calibration.update({'matched_filter_loss_h': mflossh})
+        else:
+            radar.radar_calibration['matched_filter_loss_h']['data'][0] = (
+                cfg['mflossh'][ind_rad])
+
+    if 'mflossv' in cfg:
+        if radar.radar_calibration is None:
+            mflossv = pyart.config.get_metadata('matched_filter_loss_v')
+            mflossv['data'] = np.array(
+                [cfg['mflossv'][ind_rad]], dtype=np.float32)
+            radar.radar_calibration = {'matched_filter_loss_v': mflossv}
+        elif 'matched_filter_loss_v' not in radar.radar_calibration:
+            mflossv = pyart.config.get_metadata('matched_filter_loss_v')
+            mflossv['data'] = np.array(
+                [cfg['mflossv'][ind_rad]], dtype=np.float32)
+            radar.radar_calibration.update({'matched_filter_loss_v': mflossv})
+        else:
+            radar.radar_calibration['matched_filter_loss_v']['data'][0] = (
+                cfg['mflossv'][ind_rad])
+
+    if 'dBADUtodBmh' in cfg:
+        if radar.radar_calibration is None:
+            dBADUtodBmh = pyart.config.get_metadata('dBADU_to_dBm_hh')
+            dBADUtodBmh['data'] = np.array(
+                [cfg['dBADUtodBmh'][ind_rad]], dtype=np.float32)
+            radar.radar_calibration = {'dBADU_to_dBm_hh': dBADUtodBmh}
+        elif 'dBADU_to_dBm_hh' not in radar.radar_calibration:
+            dBADUtodBmh = pyart.config.get_metadata('dBADU_to_dBm_hh')
+            dBADUtodBmh['data'] = np.array(
+                [cfg['dBADUtodBmh'][ind_rad]], dtype=np.float32)
+            radar.radar_calibration.update({'dBADU_to_dBm_hh': dBADUtodBmh})
+        else:
+            radar.radar_calibration['dBADU_to_dBm_hh']['data'][0] = (
+                cfg['dBADUtodBmh'][ind_rad])
+
+    if 'dBADUtodBmv' in cfg:
+        if radar.radar_calibration is None:
+            dBADUtodBmv = pyart.config.get_metadata('dBADU_to_dBm_vv')
+            dBADUtodBmv['data'] = np.array(
+                [cfg['dBADUtodBmv'][ind_rad]], dtype=np.float32)
+            radar.radar_calibration = {'dBADU_to_dBm_vv': dBADUtodBmv}
+        elif 'dBADU_to_dBm_vv' not in radar.radar_calibration:
+            dBADUtodBmv = pyart.config.get_metadata('dBADU_to_dBm_vv')
+            dBADUtodBmv['data'] = np.array(
+                [cfg['dBADUtodBmv'][ind_rad]], dtype=np.float32)
+            radar.radar_calibration.update({'dBADU_to_dBm_vv': dBADUtodBmv})
+        else:
+            radar.radar_calibration['dBADU_to_dBm_vv']['data'][0] = (
+                cfg['dBADUtodBmv'][ind_rad])
 
     return radar
 
@@ -1691,15 +1952,18 @@ def merge_fields_pyrad(basepath, loadname, voltime, datatype_list,
         if termination == '.nc':
             try:
                 radar_aux = pyart.io.read_cfradial(filename[0])
-            except OSError as ee:
+            except (OSError, KeyError) as ee:
                 warn(str(ee))
                 warn('Unable to read file '+filename[0])
+                radar_aux = None
         else:
             try:
                 radar_aux = pyart.aux_io.read_odim_h5(filename[0])
             except OSError as ee:
                 warn(str(ee))
                 warn('Unable to read file '+filename[0])
+                radar_aux = None
+
         if radar_aux is None:
             continue
 
@@ -1775,6 +2039,7 @@ def merge_fields_pyrad_spectra(basepath, loadname, voltime, datatype_list,
             except OSError as ee:
                 warn(str(ee))
                 warn('Unable to read file '+filename[0])
+                radar_aux = None
         # else:
         #     try:
         #         radar_aux = pyart.aux_io.read_odim_h5(filename[0])
@@ -1850,6 +2115,7 @@ def merge_fields_pyradgrid(basepath, loadname, voltime, datatype_list,
         except OSError as ee:
             warn(str(ee))
             warn('Unable to read file '+filename[0])
+            grid_aux = None
 
         if grid_aux is None:
             continue

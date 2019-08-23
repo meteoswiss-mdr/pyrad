@@ -149,16 +149,25 @@
 <span class="sd">                latitude and longitude of grid origin [deg] and altitude of</span>
 <span class="sd">                grid origin [m MSL]</span>
 <span class="sd">                Defaults the latitude, longitude and altitude of the radar</span>
-<span class="sd">        wfunc : str</span>
+<span class="sd">        wfunc : str. Dataset keyword</span>
 <span class="sd">            the weighting function used to combine the radar gates close to a</span>
 <span class="sd">            grid point. Possible values BARNES, CRESSMAN, NEAREST_NEIGHBOUR</span>
 <span class="sd">            Default NEAREST_NEIGHBOUR</span>
-<span class="sd">        roif_func : str</span>
+<span class="sd">        roif_func : str. Dataset keyword</span>
 <span class="sd">            the function used to compute the region of interest.</span>
 <span class="sd">            Possible values: dist_beam, constant</span>
-<span class="sd">        roi : float</span>
-<span class="sd">             the (minimum) radius of the region of interest in m. Default half</span>
-<span class="sd">             the largest resolution</span>
+<span class="sd">        roi : float. Dataset keyword</span>
+<span class="sd">            the (minimum) radius of the region of interest in m. Default half</span>
+<span class="sd">            the largest resolution</span>
+<span class="sd">        beamwidth : float. Dataset keyword</span>
+<span class="sd">            the radar antenna beamwidth [deg]. If None that of the key</span>
+<span class="sd">            radar_beam_width_h in attribute instrument_parameters of the radar</span>
+<span class="sd">            object will be used. If the key or the attribute are not present</span>
+<span class="sd">            a default 1 deg value will be used</span>
+<span class="sd">        beam_spacing : float. Dataset keyword</span>
+<span class="sd">            the beam spacing, i.e. the ray angle resolution [deg]. If None,</span>
+<span class="sd">            that of the attribute ray_angle_res of the radar object will be</span>
+<span class="sd">            used. If the attribute is None a default 1 deg value will be used</span>
 
 <span class="sd">    radar_list : list of Radar objects</span>
 <span class="sd">        Optional. list of radar objects</span>
@@ -246,14 +255,24 @@
 
     <span class="n">min_radius</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;roi&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">vres</span><span class="p">,</span> <span class="n">hres</span><span class="p">])</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
     <span class="c1"># parameters to determine the gates to use for each grid point</span>
-    <span class="n">beamwidth</span> <span class="o">=</span> <span class="mf">1.</span>
-    <span class="n">beam_spacing</span> <span class="o">=</span> <span class="mf">1.</span>
-    <span class="k">if</span> <span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
-        <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
-            <span class="s1">&#39;radar_beam_width_h&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;beamwidth&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">beam_spacing</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;beam_spacing&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">radar</span><span class="o">.</span><span class="n">ray_angle_res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">beam_spacing</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">ray_angle_res</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">beamwidth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>
+                <span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">):</span>
+            <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
+                <span class="s1">&#39;radar_beam_width_h&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unknown radar beamwidth. Default 1 deg will be used&#39;</span><span class="p">)</span>
+            <span class="n">beamwidth</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">beam_spacing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">radar</span><span class="o">.</span><span class="n">ray_angle_res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">beam_spacing</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">ray_angle_res</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unknown beam spacing. Default 1 deg will be used&#39;</span><span class="p">)</span>
+            <span class="n">beam_spacing</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="c1"># cartesian mapping</span>
     <span class="n">grid</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">map</span><span class="o">.</span><span class="n">grid_from_radars</span><span class="p">(</span>

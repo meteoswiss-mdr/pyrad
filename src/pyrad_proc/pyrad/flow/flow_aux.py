@@ -956,34 +956,6 @@ def _create_cfg_dict(cfgfile):
         cfg.update({'RadarName': None})
     if 'RadarRes' not in cfg:
         cfg.update({'RadarRes': None})
-    if 'mflossh' not in cfg:
-        cfg.update({'mflossh': None})
-    if 'mflossv' not in cfg:
-        cfg.update({'mflossv': None})
-    if 'radconsth' not in cfg:
-        cfg.update({'radconsth': None})
-    if 'radconstv' not in cfg:
-        cfg.update({'radconstv': None})
-    if 'lrxh' not in cfg:
-        cfg.update({'lrxh': None})
-    if 'lrxv' not in cfg:
-        cfg.update({'lrxv': None})
-    if 'ltxh' not in cfg:
-        cfg.update({'ltxh': None})
-    if 'ltxv' not in cfg:
-        cfg.update({'ltxv': None})
-    if 'txpwrh' not in cfg:
-        cfg.update({'txpwrh': None})
-    if 'txpwrv' not in cfg:
-        cfg.update({'txpwrv': None})
-    if 'lradomeh' not in cfg:
-        cfg.update({'lradomeh': None})
-    if 'lradomev' not in cfg:
-        cfg.update({'lradomev': None})
-    if 'AntennaGain' not in cfg:
-        cfg.update({'AntennaGain': None})
-    if 'attg' not in cfg:
-        cfg.update({'attg': None})
     if 'metranet_read_lib' not in cfg:
         cfg.update({'metranet_read_lib': 'C'})
     if 'ScanPeriod' not in cfg:
@@ -999,12 +971,47 @@ def _create_cfg_dict(cfgfile):
              'Assumed default value 7h (including analysis)')
         cfg.update({'CosmoForecasted': 7})
 
+    # Instrument parameters not in radar object attributes
+    if 'lradomeh' not in cfg:
+        cfg.update({
+            'lradomeh': 0.*np.ones(cfg['NumRadars'], dtype=np.float32)})
+    if 'lradomev' not in cfg:
+        cfg.update({
+            'lradomev': 0.*np.ones(cfg['NumRadars'], dtype=np.float32)})
+    if 'lrxh' not in cfg:
+        cfg.update({
+            'lrxh': 0.*np.ones(cfg['NumRadars'], dtype=np.float32)})
+    if 'lrxv' not in cfg:
+        cfg.update({
+            'lrxv': 0.*np.ones(cfg['NumRadars'], dtype=np.float32)})
+    if 'ltxh' not in cfg:
+        cfg.update({
+            'ltxh': 0.*np.ones(cfg['NumRadars'], dtype=np.float32)})
+    if 'ltxv' not in cfg:
+        cfg.update({
+            'ltxv': 0.*np.ones(cfg['NumRadars'], dtype=np.float32)})
+
     # Convert the following strings to string arrays
-    strarr_list = ['datapath', 'cosmopath', 'dempath', 'loadbasepath',
-                   'psrpath', 'loadname', 'RadarName', 'RadarRes', 'ScanList',
-                   'imgformat']
+    strarr_list = [
+        'datapath', 'cosmopath', 'dempath', 'loadbasepath', 'psrpath',
+        'loadname', 'RadarName', 'RadarRes', 'ScanList', 'imgformat',
+        'frequency', 'radar_beam_width_h', 'radar_beam_width_v',
+        'pulse_width', 'nyquist_velocity', 'AntennaGainH', 'AntennaGainV',
+        'dBADUtodBmh', 'dBADUtodBmv', 'mflossh', 'mflossv', 'radconsth',
+        'radconstv', 'txpwrh', 'txpwrv', 'attg']
     for param in strarr_list:
-        if isinstance(cfg[param], str):
+        if param in cfg and isinstance(cfg[param], str):
+            cfg[param] = [cfg[param]]
+
+    # Convert the following floats to float arrays
+    fltarr_list = [
+        'frequency', 'radar_beam_width_h', 'radar_beam_width_v',
+        'pulse_width', 'nyquist_velocity', 'AntennaGainH', 'AntennaGainV',
+        'dBADUtodBmh', 'dBADUtodBmv', 'mflossh', 'mflossv', 'radconsth',
+        'radconstv', 'txpwrh', 'txpwrv', 'attg', 'lradomeh', 'lradomev',
+        'lrxh', 'lrxv', 'ltxh', 'ltxv']
+    for param in fltarr_list:
+        if param in cfg and isinstance(cfg[param], float):
             cfg[param] = [cfg[param]]
 
     # if specified in config, convert coordinates to arrays
@@ -1074,8 +1081,45 @@ def _create_datacfg_dict(cfg):
     datacfg.update({'cpi': cfg.get('cpi', 'low_prf')})
     datacfg.update({'ang_tol': cfg.get('ang_tol', 0.5)})
 
+    # Radar position
     if 'RadarPosition' in cfg:
         datacfg.update({'RadarPosition': cfg['RadarPosition']})
+
+    # Instrument parameters
+    if 'frequency' in cfg:
+        datacfg.update({'frequency': cfg['frequency']})
+    if 'radar_beam_width_h' in cfg:
+        datacfg.update({'radar_beam_width_h': cfg['radar_beam_width_h']})
+    if 'radar_beam_width_v' in cfg:
+        datacfg.update({'radar_beam_width_v': cfg['radar_beam_width_v']})
+    if 'pulse_width' in cfg:
+        datacfg.update({'pulse_width': cfg['pulse_width']})
+    if 'nyquist_velocity' in cfg:
+        datacfg.update({'nyquist_velocity': cfg['nyquist_velocity']})
+    if 'AntennaGainH' in cfg:
+        datacfg.update({'AntennaGainH': cfg['AntennaGainH']})
+    if 'AntennaGainV' in cfg:
+        datacfg.update({'AntennaGainV': cfg['AntennaGainV']})
+
+    # Radar calibration parameters
+    if 'dBADUtodBmh' in cfg:
+        datacfg.update({'dBADUtodBmh': cfg['dBADUtodBmh']})
+    if 'dBADUtodBmv' in cfg:
+        datacfg.update({'dBADUtodBmv': cfg['dBADUtodBmv']})
+    if 'mflossh' in cfg:
+        datacfg.update({'mflossh': cfg['mflossh']})
+    if 'mflossv' in cfg:
+        datacfg.update({'mflossv': cfg['mflossv']})
+    if 'radconsth' in cfg:
+        datacfg.update({'radconsth': cfg['radconsth']})
+    if 'radconstv' in cfg:
+        datacfg.update({'radconstv': cfg['radconstv']})
+    if 'txpwrh' in cfg:
+        datacfg.update({'txpwrh': cfg['txpwrh']})
+    if 'txpwrv' in cfg:
+        datacfg.update({'txpwrv': cfg['txpwrv']})
+    if 'attg' in cfg:
+        datacfg.update({'attg': cfg['attg']})
 
     return datacfg
 
@@ -1099,37 +1143,35 @@ def _create_dscfg_dict(cfg, dataset):
 
     """
     dscfg = cfg[dataset]
+
+    # Path related parameters
     dscfg.update({'configpath': cfg['configpath']})
-    dscfg.update({'lastStateFile': cfg['lastStateFile']})
+    dscfg.update({'basepath': cfg['saveimgbasepath']})
+    dscfg.update({'path_convention': cfg['path_convention']})
+    dscfg.update({'procname': cfg['name']})
+    dscfg.update({'dsname': dataset})
     dscfg.update({'solarfluxpath': cfg['solarfluxpath']})
     dscfg.update({'colocgatespath': cfg['colocgatespath']})
     dscfg.update({'excessgatespath': cfg['excessgatespath']})
-    dscfg.update({'cosmopath': cfg['cosmopath']})
     dscfg.update({'dempath': cfg['dempath']})
+    dscfg.update({'cosmopath': cfg['cosmopath']})
     dscfg.update({'CosmoRunFreq': cfg['CosmoRunFreq']})
     dscfg.update({'CosmoForecasted': cfg['CosmoForecasted']})
-    dscfg.update({'path_convention': cfg['path_convention']})
     dscfg.update({'metranet_read_lib': cfg['metranet_read_lib']})
+    dscfg.update({'lastStateFile': cfg['lastStateFile']})
+    dscfg.update({'timeinfo': None})
+
+    # Instrument parameters
     dscfg.update({'RadarName': cfg['RadarName']})
     dscfg.update({'ScanPeriod': cfg['ScanPeriod']})
-    dscfg.update({'mflossh': cfg['mflossh']})
-    dscfg.update({'mflossv': cfg['mflossv']})
-    dscfg.update({'radconsth': cfg['radconsth']})
-    dscfg.update({'radconstv': cfg['radconstv']})
     dscfg.update({'lrxh': cfg['lrxh']})
     dscfg.update({'lrxv': cfg['lrxv']})
     dscfg.update({'ltxh': cfg['ltxh']})
     dscfg.update({'ltxv': cfg['ltxv']})
-    dscfg.update({'txpwrh': cfg['txpwrh']})
-    dscfg.update({'txpwrv': cfg['txpwrv']})
     dscfg.update({'lradomeh': cfg['lradomeh']})
     dscfg.update({'lradomev': cfg['lradomev']})
-    dscfg.update({'AntennaGain': cfg['AntennaGain']})
-    dscfg.update({'attg': cfg['attg']})
-    dscfg.update({'basepath': cfg['saveimgbasepath']})
-    dscfg.update({'procname': cfg['name']})
-    dscfg.update({'dsname': dataset})
-    dscfg.update({'timeinfo': None})
+
+    # PAR and ASR variable
     if 'par_azimuth_antenna' in cfg:
         dscfg.update({'par_azimuth_antenna': cfg['par_azimuth_antenna']})
     if 'par_elevation_antenna' in cfg:

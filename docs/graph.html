@@ -755,7 +755,7 @@ along elevation</p>
 
 <dl class="function">
 <dt id="pyrad.graph.plot_cappi">
-<code class="descclassname">pyrad.graph.</code><code class="descname">plot_cappi</code><span class="sig-paren">(</span><em>radar</em>, <em>field_name</em>, <em>altitude</em>, <em>prdcfg</em>, <em>fname_list</em>, <em>save_fig=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots_vol.html#plot_cappi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_cappi" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyrad.graph.</code><code class="descname">plot_cappi</code><span class="sig-paren">(</span><em>radar</em>, <em>field_name</em>, <em>altitude</em>, <em>prdcfg</em>, <em>fname_list</em>, <em>beamwidth=1.0</em>, <em>beam_spacing=1.0</em>, <em>save_fig=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots_vol.html#plot_cappi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_cappi" title="Permalink to this definition">¶</a></dt>
 <dd><p>plots a Constant Altitude Plan Position Indicator CAPPI</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -776,6 +776,12 @@ along elevation</p>
 </dd>
 <dt><strong>fname_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
 <dd><p class="first last">list of names of the files where to store the plot</p>
+</dd>
+<dt><strong>beamwidth</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The radar beamwidth</p>
+</dd>
+<dt><strong>beam_spacing</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">the ray angle resolution</p>
 </dd>
 <dt><strong>save_fig</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
 <dd><p class="first last">if true save the figure. If false it does not close the plot and

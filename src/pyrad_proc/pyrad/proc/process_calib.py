@@ -1056,6 +1056,32 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
         coeff_band : float. Dataset keyword
             multiplicate coefficient to transform pulse width into receiver
             bandwidth
+        frequency : float. Dataset keyword
+            the radar frequency [Hz]. If None that of the key
+            frequency in attribute instrument_parameters of the radar
+            object will be used. If the key or the attribute are not present
+            frequency dependent parameters will not be computed
+        beamwidth : float. Dataset keyword
+            the antenna beamwidth [deg]. If None that of the keys
+            radar_beam_width_h or radar_beam_width_v in attribute
+            instrument_parameters of the radar object will be used. If the key
+            or the attribute are not present the beamwidth dependent
+            parameters will not be computed
+        pulse_width : float. Dataset keyword
+            the pulse width [s]. If None that of the key
+            pulse_width in attribute instrument_parameters of the radar
+            object will be used. If the key or the attribute are not present
+            the pulse width dependent parameters will not be computed
+        ray_angle_res : float. Dataset keyword
+            the ray angle resolution [deg]. If None that of the key
+            ray_angle_res in attribute instrument_parameters of the radar
+            object will be used. If the key or the attribute are not present
+            the ray angle resolution parameters will not be computed
+        AntennaGainH, AntennaGainV : float. Dataset keyword
+            the horizontal (vertical) polarization antenna gain [dB].
+            If None that of the attribute instrument_parameters of the radar
+            object will be used. If the key or the attribute are not present
+            the ray angle resolution parameters will not be computed
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -1101,37 +1127,50 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
         # initialize dataset
         if dscfg['initialized'] == 0:
             radar_par = dict()
-            if 'frequency' in radar.instrument_parameters:
-                radar_par.update(
-                    {'wavelen': (
-                        3e8 /
-                        radar.instrument_parameters['frequency']['data'][0])})
-            else:
+
+            freq = dscfg.get('frequency', None)
+            if freq is None:
+                if (radar.instrument_parameters is not None and
+                        'frequency' in radar.instrument_parameters):
+                    freq = radar.instrument_parameters['frequency']['data'][0]
+            if freq is None:
                 warn('Radar frequency unknown.')
-            if 'radar_beam_width_h' in radar.instrument_parameters:
-                radar_par.update(
-                    {'beamwidth': (
-                        radar.instrument_parameters[
-                            'radar_beam_width_h']['data'][0])})
-            elif 'radar_beam_width_v' in radar.instrument_parameters:
-                radar_par.update(
-                    {'beamwidth': (
-                        radar.instrument_parameters[
-                            'radar_beam_width_v']['data'][0])})
             else:
+                radar_par.update({'wavelen': 3e8/freq})
+
+            beamwidth = dscfg.get('beamwidth', None)
+            if beamwidth is None:
+                if radar.instrument_parameters is not None:
+                    if 'radar_beam_width_h' in radar.instrument_parameters:
+                        beamwidth = radar.instrument_parameters[
+                            'radar_beam_width_h']['data'][0]
+                    elif 'radar_beam_width_v' in radar.instrument_parameters:
+                        beamwidth = radar.instrument_parameters[
+                            'radar_beam_width_v']['data'][0]
+            if beamwidth is None:
                 warn('Antenna beam width unknown.')
-            if 'pulse_width' in radar.instrument_parameters:
-                radar_par.update(
-                    {'pulse_width': (
-                        radar.instrument_parameters[
-                            'pulse_width']['data'][0])})
             else:
+                radar_par.update({'beamwidth': beamwidth})
+
+            pulse_width = dscfg.get('pulse_width', None)
+            if pulse_width is None:
+                if (radar.instrument_parameters is not None and
+                        'pulse_width' in radar.instrument_parameters):
+                    pulse_width = radar.instrument_parameters['pulse_width'][
+                        'data'][0]
+            if pulse_width is None:
                 warn('Pulse width unknown.')
-            if radar.ray_angle_res is not None:
-                radar_par.update(
-                    {'angle_step': (radar.ray_angle_res['data'][0])})
             else:
+                radar_par.update({'pulse_width': pulse_width})
+
+            ray_angle_res = dscfg.get('ray_angle_res', None)
+            if ray_angle_res is None:
+                if radar.ray_angle_res is not None:
+                    ray_angle_res = radar.ray_angle_res['data'][0]
+            if ray_angle_res is None:
                 warn('Angular resolution unknown.')
+            else:
+                radar_par.update({'angle_step': ray_angle_res})
 
             radar_par.update({'timeinfo': dscfg['timeinfo']})
             dscfg['global_data'] = radar_par
@@ -1180,6 +1219,21 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
         az_width_cross = dscfg.get('az_width_cross', None)
         el_width_cross = dscfg.get('el_width_cross', None)
         nfiles = dscfg.get('ndays', 1)
+        antenna_gain_h = dscfg.get('AntennaGainH', None)
+        antenna_gain_v = dscfg.get('AntennaGainV', None)
+        if antenna_gain_h is None:
+            if (radar.instrument_parameters is not None and
+                    'radar_antenna_gain_h' in radar.instrument_parameters):
+                antenna_gain_h = (
+                    radar.instrument_parameters['radar_antenna_gain_h'][
+                        'data'][0])
+
+        if antenna_gain_v is None:
+            if (radar.instrument_parameters is not None and
+                    'radar_antenna_gain_v' in radar.instrument_parameters):
+                antenna_gain_v = (
+                    radar.instrument_parameters['radar_antenna_gain_v'][
+                        'data'][0])
 
         sun_hits = read_sun_hits_multiple_days(
             dscfg, dscfg['global_data']['timeinfo'], nfiles=nfiles)
@@ -1291,12 +1345,10 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
             # compute observed solar flux
             if (('pulse_width' in dscfg['global_data']) and
                     ('wavelen' in dscfg['global_data']) and
-                    (dscfg['AntennaGain'] is not None)):
+                    (antenna_gain_h is not None)):
                 sf_h = pyart.correct.ptoa_to_sf(
                     ptoa_h, dscfg['global_data']['pulse_width'],
-                    dscfg['global_data']['wavelen'],
-                    dscfg['AntennaGain'],
-                    )
+                    dscfg['global_data']['wavelen'], antenna_gain_h)
             else:
                 warn('Unable to estimate observed solar flux. ' +
                      'Missing radar parameters')
@@ -1334,12 +1386,10 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
             # compute observed solar flux
             if (('pulse_width' in dscfg['global_data']) and
                     ('wavelen' in dscfg['global_data']) and
-                    (dscfg['AntennaGain'] is not None)):
+                    (antenna_gain_v is not None)):
                 sf_v = pyart.correct.ptoa_to_sf(
                     ptoa_v, dscfg['global_data']['pulse_width'],
-                    dscfg['global_data']['wavelen'],
-                    dscfg['AntennaGain'],
-                    )
+                    dscfg['global_data']['wavelen'], antenna_gain_v)
             else:
                 warn('Unable to estimate observed solar flux. ' +
                      'Missing radar parameters')

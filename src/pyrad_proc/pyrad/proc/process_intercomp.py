@@ -950,6 +950,11 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
             when to start the average [s from midnight UTC]. Default 0.
         phidpmax: float. Dataset keyword
             maximum PhiDP
+        beamwidth : float. Dataset keyword
+            the antenna beamwidth [deg]. If None that of the keys
+            radar_beam_width_h or radar_beam_width_v in attribute
+            instrument_parameters of the radar object will be used. If the key
+            or the attribute are not present the beamwidth will be set to None
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -1030,13 +1035,19 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
                 warn('Missing temperature data')
                 time_avg_flag['data'] += 10000
             else:
-                if 'radar_beam_width_h' in radar.instrument_parameters:
-                    beamwidth = (
-                        radar.instrument_parameters[
-                            'radar_beam_width_h']['data'][0])
-                else:
-                    warn('Unknown radar antenna beamwidth.')
-                    beamwidth = None
+                beamwidth = dscfg.get('beamwidth', None)
+                if beamwidth is None:
+                    if radar.instrument_parameters is not None:
+                        if ('radar_beam_width_h' in 
+                                radar.instrument_parameters):
+                            beamwidth = radar.instrument_parameters[
+                                'radar_beam_width_h']['data'][0]
+                        elif ('radar_beam_width_v' in
+                                radar.instrument_parameters):
+                            beamwidth = radar.instrument_parameters[
+                                'radar_beam_width_v']['data'][0]
+                if beamwidth is None:
+                    warn('Antenna beam width unknown.')
 
                 mask_fzl, _ = pyart.correct.get_mask_fzl(
                     radar, fzl=None, doc=None, min_temp=0., max_h_iso0=0.,
@@ -1049,13 +1060,19 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
                 warn('Missing height relative to iso0 data')
                 time_avg_flag['data'] += 10000
             else:
-                if 'radar_beam_width_h' in radar.instrument_parameters:
-                    beamwidth = (
-                        radar.instrument_parameters[
-                            'radar_beam_width_h']['data'][0])
-                else:
-                    warn('Unknown radar antenna beamwidth.')
-                    beamwidth = None
+                beamwidth = dscfg.get('beamwidth', None)
+                if beamwidth is None:
+                    if radar.instrument_parameters is not None:
+                        if ('radar_beam_width_h' in 
+                                radar.instrument_parameters):
+                            beamwidth = radar.instrument_parameters[
+                                'radar_beam_width_h']['data'][0]
+                        elif ('radar_beam_width_v' in
+                                radar.instrument_parameters):
+                            beamwidth = radar.instrument_parameters[
+                                'radar_beam_width_v']['data'][0]
+                if beamwidth is None:
+                    warn('Antenna beam width unknown.')
 
                 mask_fzl, _ = pyart.correct.get_mask_fzl(
                     radar, fzl=None, doc=None, min_temp=0., max_h_iso0=0.,

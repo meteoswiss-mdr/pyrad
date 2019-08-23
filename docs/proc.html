@@ -2555,18 +2555,29 @@ Defaults the latitude, longitude and altitude of the radar</p>
 </dd>
 </dl>
 </dd>
-<dt>wfunc <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dt>wfunc <span class="classifier-delimiter">:</span> <span class="classifier">str. Dataset keyword</span></dt>
 <dd><p class="first last">the weighting function used to combine the radar gates close to a
 grid point. Possible values BARNES, CRESSMAN, NEAREST_NEIGHBOUR
 Default NEAREST_NEIGHBOUR</p>
 </dd>
-<dt>roif_func <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dt>roif_func <span class="classifier-delimiter">:</span> <span class="classifier">str. Dataset keyword</span></dt>
 <dd><p class="first last">the function used to compute the region of interest.
 Possible values: dist_beam, constant</p>
 </dd>
-<dt>roi <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dt>roi <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">the (minimum) radius of the region of interest in m. Default half
 the largest resolution</p>
+</dd>
+<dt>beamwidth <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">the radar antenna beamwidth [deg]. If None that of the key
+radar_beam_width_h in attribute instrument_parameters of the radar
+object will be used. If the key or the attribute are not present
+a default 1 deg value will be used</p>
+</dd>
+<dt>beam_spacing <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">the beam spacing, i.e. the ray angle resolution [deg]. If None,
+that of the attribute ray_angle_res of the radar object will be
+used. If the attribute is None a default 1 deg value will be used</p>
 </dd>
 </dl>
 </dd>
@@ -3551,6 +3562,12 @@ The data is assumed to be clutter free and continous</p>
 <dd><p class="first last">if set the PhiDP computed by integrating the resultant KDP is
 added to the radar field</p>
 </dd>
+<dt>frequency <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">the radar frequency [Hz]. If None that of the key
+frequency in attribute instrument_parameters of the radar
+object will be used. If the key or the attribute are not present
+it will be assumed that the radar is C band</p>
+</dd>
 </dl>
 </dd>
 <dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
@@ -3614,6 +3631,12 @@ retrieves data in rain (i.e. below the melting layer)</p>
 <dt>ml_thickness <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">The melting layer thickness in meters. Default 700.</p>
 </dd>
+<dt>beamwidth <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">the antenna beamwidth [deg]. If None that of the keys
+radar_beam_width_h or radar_beam_width_v in attribute
+instrument_parameters of the radar object will be used. If the key
+or the attribute are not present the beamwidth will be set to None</p>
+</dd>
 </dl>
 </dd>
 <dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
@@ -3674,6 +3697,12 @@ values</p>
 <dd><p class="first last">if set the PhiDP computed by integrating the resultant KDP is
 added to the radar field</p>
 </dd>
+<dt>frequency <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">the radar frequency [Hz]. If None that of the key
+frequency in attribute instrument_parameters of the radar
+object will be used. If the key or the attribute are not present
+it will be assumed that the radar is C band</p>
+</dd>
 </dl>
 </dd>
 <dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
@@ -3721,6 +3750,12 @@ This method only retrieves data in rain (i.e. below the melting layer)</p>
 </dd>
 <dt>ml_thickness <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">The melting layer thickness in meters. Default 700.</p>
+</dd>
+<dt>beamwidth <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">the antenna beamwidth [deg]. If None that of the keys
+radar_beam_width_h or radar_beam_width_v in attribute
+instrument_parameters of the radar object will be used. If the key
+or the attribute are not present the beamwidth will be set to None</p>
 </dd>
 </dl>
 </dd>
@@ -4269,70 +4304,48 @@ it.</p>
 <dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">list of string. Dataset keyword</span></dt>
 <dd><p class="first last">The input data types</p>
 </dd>
-<dt>antenna_gain <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
-<dd><p class="first last">The antenna gain [dB]</p>
+<dt>AntennaGainH, AntennaGainV <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">The horizontal (vertical) polarization antenna gain [dB]. If None
+it will be obtained from the attribute instrument_parameters of
+the radar object</p>
 </dd>
-<dt>txpwrv <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
-<dd><p class="first last">The transmitted power of the vertical channel [dBm]. Used if input
-is vertical reflectivity</p>
+<dt>txpwrh, txpwrv <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">The transmitted power of the horizontal (vertical) channel [dBm].
+If None it will be obtained from the attribute radar_calibration
+of the radar object</p>
 </dd>
-<dt>mflossv <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
-<dd><p class="first last">The matching filter losses of the vertical channel. Used if input
-is vertical reflectivity</p>
+<dt>mflossh, mflossv <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">The matching filter losses of the horizontal (vertical) channel
+[dB]. If None it will be obtained from the attribute
+radar_calibration of the radar object. Defaults to 0</p>
 </dd>
-<dt>radconstv <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
-<dd><p class="first last">The vertical channel radar constant. Used if input is vertical
-reflectivity</p>
+<dt>radconsth, radconstv <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">The horizontal (vertical) channel radar constant. If None it will
+be obtained from the attribute radar_calibration of the radar
+object</p>
 </dd>
-<dt>lrxv <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
-<dd><p class="first last">The receiver losses from the antenna feed to the reference point.
-[dB] positive value
-Used if input is vertical reflectivity</p>
+<dt>lrxh, lrxv <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
+<dd><p class="first last">The horizontal (vertical) receiver losses from the antenna feed to
+the reference point. [dB] positive value. Default 0</p>
 </dd>
-<dt>ltxv <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
-<dd><p class="first last">The transmitter losses from the output of the high power amplifier
-to the antenna feed.
-[dB] positive value
-Used if input is vertical reflectivity</p>
+<dt>ltxh, ltxv <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
+<dd><p class="first last">The horizontal (vertical) transmitter losses from the output of the
+high power amplifier to the antenna feed. [dB] positive value.
+Default 0</p>
 </dd>
-<dt>lradomev <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
-<dd><p class="first last">The 1-way dry radome losses [dB] positive value.
-Used if input is vertical reflectivity</p>
-</dd>
-<dt>txpwrh <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
-<dd><p class="first last">The transmitted power of the horizontal channel [dBm]. Used if input
-is horizontal reflectivity</p>
-</dd>
-<dt>mflossh <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
-<dd><p class="first last">The matching filter losses of the vertical channel. Used if input
-is horizontal reflectivity</p>
-</dd>
-<dt>radconsth <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
-<dd><p class="first last">The horizontal channel radar constant. Used if input is horizontal
-reflectivity</p>
-</dd>
-<dt>lrxh <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
-<dd><p class="first last">The receiver losses from the antenna feed to the reference point.
-[dB] positive value
-Used if input is horizontal reflectivity</p>
-</dd>
-<dt>ltxh <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
-<dd><p class="first last">The transmitter losses from the output of the high power amplifier
-to the antenna feed.
-[dB] positive value
-Used if input is horizontal reflectivity</p>
-</dd>
-<dt>lradomeh <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
-<dd><p class="first last">The 1-way dry radome losses [dB] positive value.
-Used if input is horizontal reflectivity</p>
+<dt>lradomeh, lradomev <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
+<dd><p class="first last">The 1-way dry radome horizontal (vertical) channel losses.
+[dB] positive value. Default 0.</p>
 </dd>
 <dt>attg <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
-<dd><p class="first last">The gas attenuation</p>
+<dd><p class="first last">The gas attenuation [dB/km]. If none it will be obtained from the
+attribute radar_calibration of the radar object or assigned
+according to the radar frequency. Defaults to 0.</p>
+</dd>
+<dt>radar_list <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
 </dd>
 </dl>
-</dd>
-<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
-<dd><p class="first last">Optional. list of radar objects</p>
 </dd>
 </dl>
 </td>
@@ -4701,6 +4714,12 @@ cell a valid phidp segment [m]. Default 1000.</p>
 <dt>dphidp_max <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">maximum phase shift [deg]. Default 16.</p>
 </dd>
+<dt>frequency <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">the radar frequency [Hz]. If None that of the key
+frequency in attribute instrument_parameters of the radar
+object will be used. If the key or the attribute are not present
+the selfconsistency will not be computed</p>
+</dd>
 </dl>
 </dd>
 <dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
@@ -4760,6 +4779,12 @@ the selfconsistency between Zdr, Zh and KDP</p>
 temperature field name is specified or the temperature field is
 not in the radar object. Default 2000.</p>
 </dd>
+<dt>frequency <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">the radar frequency [Hz]. If None that of the key
+frequency in attribute instrument_parameters of the radar
+object will be used. If the key or the attribute are not present
+the selfconsistency will not be computed</p>
+</dd>
 </dl>
 </dd>
 <dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
@@ -4801,42 +4826,28 @@ not in the radar object. Default 2000.</p>
 <dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">list of string. Dataset keyword</span></dt>
 <dd><p class="first last">The input data types</p>
 </dd>
-<dt>mflossv <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
-<dd><p class="first last">The matching filter losses of the vertical channel. Used if input
-is vertical reflectivity</p>
+<dt>mflossh, mflossv <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">The matching filter losses of the horizontal (vertical) channel
+[dB]. If None it will be obtained from the attribute
+radar_calibration of the radar object. Defaults to 0</p>
 </dd>
-<dt>radconstv <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
-<dd><p class="first last">The vertical channel radar constant. Used if input is vertical
-reflectivity</p>
+<dt>radconsth, radconstv <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">The horizontal (vertical) channel radar constant. If None it will
+be obtained from the attribute radar_calibration of the radar
+object</p>
 </dd>
-<dt>lrxv <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
-<dd><p class="first last">The receiver losses from the antenna feed to the reference point.
-[dB] positive value
-Used if input is vertical reflectivity</p>
+<dt>lrxh, lrxv <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
+<dd><p class="first last">The horizontal (vertical) receiver losses from the antenna feed to
+the reference point. [dB] positive value. Default 0</p>
 </dd>
-<dt>lradomev <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
-<dd><p class="first last">The 1-way dry radome losses [dB] positive value.
-Used if input is vertical reflectivity</p>
-</dd>
-<dt>mflossh <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
-<dd><p class="first last">The matching filter losses of the vertical channel. Used if input
-is horizontal reflectivity</p>
-</dd>
-<dt>radconsth <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
-<dd><p class="first last">The horizontal channel radar constant. Used if input is horizontal
-reflectivity</p>
-</dd>
-<dt>lrxh <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
-<dd><p class="first last">The receiver losses from the antenna feed to the reference point.
-[dB] positive value
-Used if input is horizontal reflectivity</p>
-</dd>
-<dt>lradomeh <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
-<dd><p class="first last">The 1-way dry radome losses [dB] positive value.
-Used if input is horizontal reflectivity</p>
+<dt>lradomeh, lradomev <span class="classifier-delimiter">:</span> <span class="classifier">float. Global keyword</span></dt>
+<dd><p class="first last">The 1-way dry radome horizontal (vertical) channel losses.
+[dB] positive value. Default 0.</p>
 </dd>
 <dt>attg <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
-<dd><p class="first last">The gas attenuation</p>
+<dd><p class="first last">The gas attenuation [dB/km]. If none it will be obtained from the
+attribute radar_calibration of the radar object or assigned
+according to the radar frequency. Defaults to 0.</p>
 </dd>
 </dl>
 </dd>
@@ -5508,6 +5519,37 @@ Default None</p>
 <dd><p class="first last">multiplicate coefficient to transform pulse width into receiver
 bandwidth</p>
 </dd>
+<dt>frequency <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">the radar frequency [Hz]. If None that of the key
+frequency in attribute instrument_parameters of the radar
+object will be used. If the key or the attribute are not present
+frequency dependent parameters will not be computed</p>
+</dd>
+<dt>beamwidth <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">the antenna beamwidth [deg]. If None that of the keys
+radar_beam_width_h or radar_beam_width_v in attribute
+instrument_parameters of the radar object will be used. If the key
+or the attribute are not present the beamwidth dependent
+parameters will not be computed</p>
+</dd>
+<dt>pulse_width <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">the pulse width [s]. If None that of the key
+pulse_width in attribute instrument_parameters of the radar
+object will be used. If the key or the attribute are not present
+the pulse width dependent parameters will not be computed</p>
+</dd>
+<dt>ray_angle_res <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">the ray angle resolution [deg]. If None that of the key
+ray_angle_res in attribute instrument_parameters of the radar
+object will be used. If the key or the attribute are not present
+the ray angle resolution parameters will not be computed</p>
+</dd>
+<dt>AntennaGainH, AntennaGainV <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">the horizontal (vertical) polarization antenna gain [dB].
+If None that of the attribute instrument_parameters of the radar
+object will be used. If the key or the attribute are not present
+the ray angle resolution parameters will not be computed</p>
+</dd>
 </dl>
 </dd>
 <dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
@@ -5697,6 +5739,12 @@ averaging</p>
 </dd>
 <dt>phidpmax: float. Dataset keyword</dt>
 <dd><p class="first last">maximum PhiDP</p>
+</dd>
+<dt>beamwidth <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">the antenna beamwidth [deg]. If None that of the keys
+radar_beam_width_h or radar_beam_width_v in attribute
+instrument_parameters of the radar object will be used. If the key
+or the attribute are not present the beamwidth will be set to None</p>
 </dd>
 </dl>
 </dd>

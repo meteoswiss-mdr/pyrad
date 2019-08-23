@@ -395,6 +395,11 @@
 <span class="sd">            The freezing level height [m]. Default 2000.</span>
 <span class="sd">        ml_thickness : float. Dataset keyword</span>
 <span class="sd">            The melting layer thickness in meters. Default 700.</span>
+<span class="sd">        beamwidth : float. Dataset keyword</span>
+<span class="sd">            the antenna beamwidth [deg]. If None that of the keys</span>
+<span class="sd">            radar_beam_width_h or radar_beam_width_v in attribute</span>
+<span class="sd">            instrument_parameters of the radar object will be used. If the key</span>
+<span class="sd">            or the attribute are not present the beamwidth will be set to None</span>
 <span class="sd">    radar_list : list of Radar objects</span>
 <span class="sd">        Optional. list of radar objects</span>
 
@@ -492,12 +497,18 @@
 
     <span class="c1"># filter out data in an above the melting layer</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">phidp</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
-    <span class="k">if</span> <span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
-        <span class="n">beamwidth</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">radar_aux</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span><span class="s1">&#39;radar_beam_width_h&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unknown radar antenna beamwidth.&#39;</span><span class="p">)</span>
-        <span class="n">beamwidth</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;beamwidth&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">beamwidth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
+                <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span><span class="s1">&#39;radar_beam_width_h&#39;</span><span class="p">][</span>
+                    <span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="s1">&#39;radar_beam_width_v&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
+                <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span><span class="s1">&#39;radar_beam_width_v&#39;</span><span class="p">][</span>
+                    <span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">beamwidth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Antenna beam width unknown.&#39;</span><span class="p">)</span>
 
     <span class="n">mask_fzl</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">correct</span><span class="o">.</span><span class="n">get_mask_fzl</span><span class="p">(</span>
         <span class="n">radar_aux</span><span class="p">,</span> <span class="n">fzl</span><span class="o">=</span><span class="n">fzl</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">min_temp</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">max_h_iso0</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
@@ -551,6 +562,11 @@
 <span class="sd">            The freezing level height [m]. Default 2000.</span>
 <span class="sd">        ml_thickness : float. Dataset keyword</span>
 <span class="sd">            The melting layer thickness in meters. Default 700.</span>
+<span class="sd">        beamwidth : float. Dataset keyword</span>
+<span class="sd">            the antenna beamwidth [deg]. If None that of the keys</span>
+<span class="sd">            radar_beam_width_h or radar_beam_width_v in attribute</span>
+<span class="sd">            instrument_parameters of the radar object will be used. If the key</span>
+<span class="sd">            or the attribute are not present the beamwidth will be set to None</span>
 <span class="sd">    radar_list : list of Radar objects</span>
 <span class="sd">        Optional. list of radar objects</span>
 
@@ -645,12 +661,17 @@
 
     <span class="c1"># filter out data in an above the melting layer</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">psidp_field</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
-    <span class="k">if</span> <span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
-        <span class="n">beamwidth</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">radar_aux</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span><span class="s1">&#39;radar_beam_width_h&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unknown radar antenna beamwidth.&#39;</span><span class="p">)</span>
-        <span class="n">beamwidth</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;beamwidth&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">beamwidth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
+                <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
+                    <span class="s1">&#39;radar_beam_width_h&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="s1">&#39;radar_beam_width_v&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
+                <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
+                    <span class="s1">&#39;radar_beam_width_v&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">beamwidth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Antenna beam width unknown.&#39;</span><span class="p">)</span>
 
     <span class="n">mask_fzl</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">correct</span><span class="o">.</span><span class="n">get_mask_fzl</span><span class="p">(</span>
         <span class="n">radar_aux</span><span class="p">,</span> <span class="n">fzl</span><span class="o">=</span><span class="n">fzl</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">min_temp</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">max_h_iso0</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
@@ -870,6 +891,11 @@
 <span class="sd">        get_phidp : boolean. Datset keyword</span>
 <span class="sd">            if set the PhiDP computed by integrating the resultant KDP is</span>
 <span class="sd">            added to the radar field</span>
+<span class="sd">        frequency : float. Dataset keyword</span>
+<span class="sd">            the radar frequency [Hz]. If None that of the key</span>
+<span class="sd">            frequency in attribute instrument_parameters of the radar</span>
+<span class="sd">            object will be used. If the key or the attribute are not present</span>
+<span class="sd">            it will be assumed that the radar is C band</span>
 <span class="sd">    radar_list : list of Radar objects</span>
 <span class="sd">        Optional. list of radar objects</span>
 
@@ -930,21 +956,25 @@
     <span class="k">if</span> <span class="s1">&#39;get_phidp&#39;</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">:</span>
         <span class="n">get_phidp</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;get_phidp&#39;</span><span class="p">]</span>
 
-    <span class="c1"># get band from radar object metadata</span>
-    <span class="n">band</span> <span class="o">=</span> <span class="s1">&#39;C&#39;</span>
-    <span class="k">if</span> <span class="s1">&#39;frequency&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
-        <span class="n">band</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">retrieve</span><span class="o">.</span><span class="n">get_freq_band</span><span class="p">(</span>
-            <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">if</span> <span class="n">band</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">2e9</span><span class="p">:</span>
-                <span class="n">band</span> <span class="o">=</span> <span class="s1">&#39;S&#39;</span>
-            <span class="k">elif</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">12e9</span><span class="p">:</span>
-                <span class="n">band</span> <span class="o">=</span> <span class="s1">&#39;X&#39;</span>
+    <span class="c1"># get band</span>
+    <span class="n">freq</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;frequency&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">freq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>
+                <span class="s1">&#39;frequency&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">):</span>
+            <span class="n">freq</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 
+    <span class="n">band</span> <span class="o">=</span> <span class="s1">&#39;C&#39;</span>
+    <span class="k">if</span> <span class="n">freq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Radar frequency unknown. Default C band will be applied&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">band</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">retrieve</span><span class="o">.</span><span class="n">get_freq_band</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">band</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">freq</span> <span class="o">&lt;</span> <span class="mf">2e9</span><span class="p">:</span>
+                <span class="n">band</span> <span class="o">=</span> <span class="s1">&#39;S&#39;</span>
+            <span class="k">elif</span> <span class="n">freq</span> <span class="o">&gt;</span> <span class="mf">12e9</span><span class="p">:</span>
+                <span class="n">band</span> <span class="o">=</span> <span class="s1">&#39;X&#39;</span>
             <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Radar frequency out of range. Valid bands are S, C or X. &#39;</span> <span class="o">+</span>
                  <span class="n">band</span> <span class="o">+</span> <span class="s1">&#39; band will be applied&#39;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Radar frequency unknown. Default &#39;</span><span class="o">+</span><span class="n">band</span><span class="o">+</span><span class="s1">&#39; band will be applied&#39;</span><span class="p">)</span>
 
     <span class="n">kdp_field</span> <span class="o">=</span> <span class="s1">&#39;corrected_specific_differential_phase&#39;</span>
     <span class="n">phidpr_field</span> <span class="o">=</span> <span class="s1">&#39;corrected_differential_phase&#39;</span>
@@ -986,6 +1016,11 @@
 <span class="sd">        get_phidp : boolean. Datset keyword</span>
 <span class="sd">            if set the PhiDP computed by integrating the resultant KDP is</span>
 <span class="sd">            added to the radar field</span>
+<span class="sd">        frequency : float. Dataset keyword</span>
+<span class="sd">            the radar frequency [Hz]. If None that of the key</span>
+<span class="sd">            frequency in attribute instrument_parameters of the radar</span>
+<span class="sd">            object will be used. If the key or the attribute are not present</span>
+<span class="sd">            it will be assumed that the radar is C band</span>
 <span class="sd">    radar_list : list of Radar objects</span>
 <span class="sd">        Optional. list of radar objects</span>
 
@@ -1024,21 +1059,25 @@
     <span class="n">parallel</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;parallel&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">get_phidp</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;get_phidp&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-    <span class="c1"># get band from radar object metadata</span>
-    <span class="n">band</span> <span class="o">=</span> <span class="s1">&#39;C&#39;</span>
-    <span class="k">if</span> <span class="s1">&#39;frequency&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">:</span>
-        <span class="n">band</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">retrieve</span><span class="o">.</span><span class="n">get_freq_band</span><span class="p">(</span>
-            <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">if</span> <span class="n">band</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">2e9</span><span class="p">:</span>
-                <span class="n">band</span> <span class="o">=</span> <span class="s1">&#39;S&#39;</span>
-            <span class="k">elif</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">12e9</span><span class="p">:</span>
-                <span class="n">band</span> <span class="o">=</span> <span class="s1">&#39;X&#39;</span>
+    <span class="c1"># get band</span>
+    <span class="n">freq</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;frequency&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">freq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>
+                <span class="s1">&#39;frequency&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">):</span>
+            <span class="n">freq</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 
+    <span class="n">band</span> <span class="o">=</span> <span class="s1">&#39;C&#39;</span>
+    <span class="k">if</span> <span class="n">freq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Radar frequency unknown. Default C band will be applied&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">band</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">retrieve</span><span class="o">.</span><span class="n">get_freq_band</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">band</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">freq</span> <span class="o">&lt;</span> <span class="mf">2e9</span><span class="p">:</span>
+                <span class="n">band</span> <span class="o">=</span> <span class="s1">&#39;S&#39;</span>
+            <span class="k">elif</span> <span class="n">freq</span> <span class="o">&gt;</span> <span class="mf">12e9</span><span class="p">:</span>
+                <span class="n">band</span> <span class="o">=</span> <span class="s1">&#39;X&#39;</span>
             <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Radar frequency out of range. Valid bands are S, C or X. &#39;</span> <span class="o">+</span>
                  <span class="n">band</span> <span class="o">+</span> <span class="s1">&#39; band will be applied&#39;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Radar frequency unknown. Default &#39;</span><span class="o">+</span><span class="n">band</span><span class="o">+</span><span class="s1">&#39; band will be applied&#39;</span><span class="p">)</span>
 
     <span class="n">kdp_field</span> <span class="o">=</span> <span class="s1">&#39;corrected_specific_differential_phase&#39;</span>
     <span class="n">phidpr_field</span> <span class="o">=</span> <span class="s1">&#39;corrected_differential_phase&#39;</span>

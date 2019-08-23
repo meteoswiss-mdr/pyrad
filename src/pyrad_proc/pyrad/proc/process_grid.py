@@ -93,16 +93,25 @@ def process_grid(procstatus, dscfg, radar_list=None):
                 latitude and longitude of grid origin [deg] and altitude of
                 grid origin [m MSL]
                 Defaults the latitude, longitude and altitude of the radar
-        wfunc : str
+        wfunc : str. Dataset keyword
             the weighting function used to combine the radar gates close to a
             grid point. Possible values BARNES, CRESSMAN, NEAREST_NEIGHBOUR
             Default NEAREST_NEIGHBOUR
-        roif_func : str
+        roif_func : str. Dataset keyword
             the function used to compute the region of interest.
             Possible values: dist_beam, constant
-        roi : float
-             the (minimum) radius of the region of interest in m. Default half
-             the largest resolution
+        roi : float. Dataset keyword
+            the (minimum) radius of the region of interest in m. Default half
+            the largest resolution
+        beamwidth : float. Dataset keyword
+            the radar antenna beamwidth [deg]. If None that of the key
+            radar_beam_width_h in attribute instrument_parameters of the radar
+            object will be used. If the key or the attribute are not present
+            a default 1 deg value will be used
+        beam_spacing : float. Dataset keyword
+            the beam spacing, i.e. the ray angle resolution [deg]. If None,
+            that of the attribute ray_angle_res of the radar object will be
+            used. If the attribute is None a default 1 deg value will be used
 
     radar_list : list of Radar objects
         Optional. list of radar objects
@@ -190,14 +199,24 @@ def process_grid(procstatus, dscfg, radar_list=None):
 
     min_radius = dscfg.get('roi', np.max([vres, hres])/2.)
     # parameters to determine the gates to use for each grid point
-    beamwidth = 1.
-    beam_spacing = 1.
-    if 'radar_beam_width_h' in radar.instrument_parameters:
-        beamwidth = radar.instrument_parameters[
-            'radar_beam_width_h']['data'][0]
+    beamwidth = dscfg.get('beamwidth', None)
+    beam_spacing = dscfg.get('beam_spacing', None)
 
-    if radar.ray_angle_res is not None:
-        beam_spacing = radar.ray_angle_res['data'][0]
+    if beamwidth is None:
+        if (radar.instrument_parameters is not None and
+                'radar_beam_width_h' in radar.instrument_parameters):
+            beamwidth = radar.instrument_parameters[
+                'radar_beam_width_h']['data'][0]
+        else:
+            warn('Unknown radar beamwidth. Default 1 deg will be used')
+            beamwidth = 1
+
+    if beam_spacing is None:
+        if radar.ray_angle_res is not None:
+            beam_spacing = radar.ray_angle_res['data'][0]
+        else:
+            warn('Unknown beam spacing. Default 1 deg will be used')
+            beam_spacing = 1
 
     # cartesian mapping
     grid = pyart.map.grid_from_radars(
