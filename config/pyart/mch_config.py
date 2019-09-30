@@ -157,6 +157,8 @@ corrected_spectrum_width = 'corrected_spectrum_width'
 unfiltered_spectrum_width_vv = 'unfiltered_spectrum_width_vv'
 spectrum_width_vv = 'spectrum_width_vv'
 
+turbulence = 'turbulence'
+
 # Differential reflectivity fields, ZDR
 differential_reflectivity = 'differential_reflectivity'
 corrected_differential_reflectivity = 'corrected_differential_reflectivity'
@@ -411,6 +413,7 @@ DEFAULT_FIELD_NAMES = {
     'unfiltered_spectrum_width': unfiltered_spectrum_width,
     'spectrum_width_vv': spectrum_width_vv,
     'unfiltered_spectrum_width_vv': unfiltered_spectrum_width_vv,
+    'turbulence': turbulence,
     'differential_reflectivity': differential_reflectivity,
     'corrected_differential_reflectivity': corrected_differential_reflectivity,
     'unfiltered_differential_reflectivity': (
@@ -1128,6 +1131,12 @@ DEFAULT_METADATA = {
         'units': 'm/s',
         'standard_name': 'Doppler_spectrum_width',
         'long_name': 'Unfiltered Doppler spectrum width',
+        'coordinates': 'elevation azimuth range'},
+
+    turbulence: {
+        'units': 'm^2/3 s^-1',
+        'standard_name': 'EDR^1/3',
+        'long_name': 'Cubic Root of Eddy Dissipation Rate',
         'coordinates': 'elevation azimuth range'},
 
     # Dual-polarization fields
@@ -2799,6 +2808,7 @@ DEFAULT_FIELD_COLORMAP = {
     unfiltered_spectrum_width: 'pyart_NWS_SPW',
     spectrum_width_vv: 'pyart_NWS_SPW',
     unfiltered_spectrum_width_vv: 'pyart_NWS_SPW',
+    turbulence: 'pyart_NWS_SPW',
 
     normalized_coherent_power: 'pyart_Carbone17',
 
@@ -2965,6 +2975,7 @@ DEFAULT_FIELD_LIMITS = {
     unfiltered_spectrum_width: spectrum_width_limit,
     spectrum_width_vv: spectrum_width_limit,
     unfiltered_spectrum_width_vv: spectrum_width_limit,
+    turbulence: (0., 0.2),
 
     normalized_coherent_power: (0., 1.),
 

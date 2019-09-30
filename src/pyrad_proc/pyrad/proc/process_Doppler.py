@@ -7,6 +7,7 @@ Functions for processing Doppler related parameters
 .. autosummary::
     :toctree: generated/
 
+    process_turbulence
     process_dealias_fourdd
     process_dealias_region_based
     process_dealias_unwrap_phase
@@ -23,7 +24,155 @@ import numpy as np
 
 import pyart
 
+try:
+    import pytda
+    _PYTDA_AVAILABLE = True
+except ImportError:
+    _PYTDA_AVAILABLE = False
+
 from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
+
+
+def process_turbulence(procstatus, dscfg, radar_list=None):
+    """
+    Computes turbulence from the Doppler spectrum width and reflectivity using
+    the PyTDA package
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : string. Dataset keyword
+            The input data type
+        radius : float. Dataset keyword
+            Search radius for calculating Eddy Dissipation Rate (EDR).
+            Default 2
+        split_cut : Bool. Dataset keyword
+            Set to True for split-cut volumes. Default False
+        max_split_cut : Int. Dataset keyword
+            Total number of tilts that are affected by split cuts. Only
+            relevant if split_cut=True. Default 2
+        xran, yran : float array. Dataset keyword
+            Spatial range in X,Y to consider. Default [-100, 100] for both
+            X and Y
+        beamwidth : Float. Dataset keyword
+            Radar beamwidth. Default None. If None it will be obtained from
+            the radar object metadata. If cannot be obtained defaults to 1
+            deg.
+        compute_gate_pos : Bool. Dataset keyword
+            If True the gate position is going to be computed in PyTDA.
+            Otherwise the position from the radar object is used. Default
+            False
+        verbose : Bool. Dataset keyword
+            True for verbose output. Default False
+
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the output
+    ind_rad : int
+        radar index
+
+    """
+    if not _PYTDA_AVAILABLE:
+        warn('PyTDA package not available. Unable to compute turbulence')
+        return None, None
+
+    if procstatus != 1:
+        return None, None
+
+    width_field = None
+    refl_field = None
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+        if datatype in ('dBuZ', 'dBZ', 'dBZc', 'dBuZv', 'dBZv', 'dBZvc'):
+            refl_field = get_fieldname_pyart(datatype)
+        if datatype in ('W', 'Wv', 'Wu', 'Wvu'):
+            width_field = get_fieldname_pyart(datatype)
+
+    if width_field is None or refl_field is None:
+        warn('Reflectivity and spectrum width fields required'
+             ' to estimate turbulence')
+        return None, None
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if width_field not in radar.fields or refl_field not in radar.fields:
+        warn('Unable to compute turbulence. Missing data')
+        return None, None
+
+    # user defined parameters
+    radius = dscfg.get('radius', 2.)
+    split_cut = dscfg.get('split_cut', False)
+    xran = dscfg.get('xran', [-100., 100.])
+    yran = dscfg.get('yran', [-100., 100.])
+    max_split_cut = dscfg.get('max_split_cut', 2)
+    beamwidth = dscfg.get('beamwidth', None)
+    verbose = dscfg.get('verbose', False)
+    compute_gate_pos = dscfg.get('compute_gate_pos', False)
+
+    if beamwidth is None:
+        if (radar.instrument_parameters is not None and
+                'radar_beam_width_h' in radar.instrument_parameters):
+            beamwidth = radar.instrument_parameters[
+                'radar_beam_width_h']['data'][0]
+        else:
+            warn('Unknown radar beamwidth. Default 1 deg will be used')
+            beamwidth = 1
+
+    rng_res = radar.range['data'][1]-radar.range['data'][0]/1000.
+
+    radar_out = deepcopy(radar)
+    radar_out.fields = dict()
+    radar_out.add_field(refl_field, deepcopy(radar.fields[refl_field]))
+    radar_out.add_field(width_field, deepcopy(radar.fields[width_field]))
+    radar_out.fields[refl_field]['data'][
+        np.ma.getmaskarray(radar_out.fields[refl_field]['data'])] = -32768
+    radar_out.fields[width_field]['data'][
+        np.ma.getmaskarray(radar_out.fields[width_field]['data'])] = -32768
+
+    radar_out.fields[refl_field]['_FillValue'] = -32768
+    radar_out.fields[width_field]['_FillValue'] = -32768
+
+    if radar_out.scan_type == 'ppi':
+        pytda.calc_turb_vol(
+            radar_out, radius=radius, split_cut=split_cut, xran=xran,
+            yran=yran, verbose=verbose, name_dz=refl_field,
+            name_sw=width_field, turb_name='turbulence',
+            max_split_cut=max_split_cut, use_ntda=True, beamwidth=beamwidth,
+            gate_spacing=rng_res, compute_gate_pos=compute_gate_pos)
+    elif radar_out.scan_type == 'rhi':
+        pytda.calc_turb_rhi(
+            radar_out, radius=radius, verbose=verbose, name_dz=refl_field,
+            name_sw=width_field, turb_name='turbulence',
+            use_ntda=True, beamwidth=beamwidth, gate_spacing=rng_res,
+            compute_gate_pos=compute_gate_pos)
+    else:
+        warn('Radar volume of type '+radar_out.scan_type +
+             '. Only volumes of type PPI or RHI are allowed')
+        return None, None
+
+    del radar_out.fields[refl_field]
+    del radar_out.fields[width_field]
+
+    radar_out.fields['turbulence']['data'] = np.ma.masked_values(
+        radar_out.fields['turbulence']['data'], -32768.)
+
+    # prepare for exit
+    new_dataset = {'radar_out': radar_out}
+
+    return new_dataset, ind_rad
 
 
 def process_dealias_fourdd(procstatus, dscfg, radar_list=None):

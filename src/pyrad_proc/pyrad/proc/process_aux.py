@@ -98,6 +98,7 @@ def get_process_func(dataset_type, dsname):
                 'SNR_FILTER': process_filter_snr
                 'TRAJ_TRT' : process_traj_trt
                 'TRAJ_TRT_CONTOUR' : process_traj_trt_contour
+                'TURBULENCE': process_turbulence
                 'VAD': process_vad
                 'VEL_FILTER': process_filter_vel_diff
                 'VIS': process_visibility
@@ -315,6 +316,8 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'RAIN_ACCU':
         func_name = 'process_rainfall_accumulation'
         dsformat = 'TIMEAVG'
+    elif dataset_type == 'TURBULENCE':
+        func_name = 'process_turbulence'
     elif dataset_type == 'DEALIAS_FOURDD':
         func_name = 'process_dealias_fourdd'
     elif dataset_type == 'DEALIAS_REGION':

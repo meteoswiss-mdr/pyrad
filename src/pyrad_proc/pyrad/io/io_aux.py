@@ -1241,6 +1241,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'wind_speed'
     elif datatype == 'WIND_DIRECTION':
         field_name = 'wind_direction'
+    elif datatype == 'EDR':
+        field_name = 'turbulence'
 
     elif datatype == 'Ah':
         field_name = 'specific_attenuation'
