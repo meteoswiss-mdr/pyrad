@@ -154,6 +154,7 @@
 <span class="sd">                &#39;SNR_FILTER&#39;: process_filter_snr</span>
 <span class="sd">                &#39;TRAJ_TRT&#39; : process_traj_trt</span>
 <span class="sd">                &#39;TRAJ_TRT_CONTOUR&#39; : process_traj_trt_contour</span>
+<span class="sd">                &#39;TURBULENCE&#39;: process_turbulence</span>
 <span class="sd">                &#39;VAD&#39;: process_vad</span>
 <span class="sd">                &#39;VEL_FILTER&#39;: process_filter_vel_diff</span>
 <span class="sd">                &#39;VIS&#39;: process_visibility</span>
@@ -371,6 +372,8 @@
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;RAIN_ACCU&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_rainfall_accumulation&#39;</span>
         <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;TIMEAVG&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;TURBULENCE&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_turbulence&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;DEALIAS_FOURDD&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_dealias_fourdd&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;DEALIAS_REGION&#39;</span><span class="p">:</span>

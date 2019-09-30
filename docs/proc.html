@@ -425,22 +425,25 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_dealias_fourdd" title="pyrad.proc.process_dealias_fourdd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_dealias_fourdd</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_turbulence" title="pyrad.proc.process_turbulence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_turbulence</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<td>Computes turbulence from the Doppler spectrum width and reflectivity using the PyTDA package</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_dealias_fourdd" title="pyrad.proc.process_dealias_fourdd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_dealias_fourdd</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
 <td>Dealiases the Doppler velocity field using the 4DD technique from Curtis and Houze, 2001</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_dealias_region_based" title="pyrad.proc.process_dealias_region_based"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_dealias_region_based</span></code></a>(procstatus,&nbsp;dscfg)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_dealias_region_based" title="pyrad.proc.process_dealias_region_based"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_dealias_region_based</span></code></a>(procstatus,&nbsp;dscfg)</td>
 <td>Dealiases the Doppler velocity field using a region based algorithm</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_dealias_unwrap_phase" title="pyrad.proc.process_dealias_unwrap_phase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_dealias_unwrap_phase</span></code></a>(procstatus,&nbsp;dscfg)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_dealias_unwrap_phase" title="pyrad.proc.process_dealias_unwrap_phase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_dealias_unwrap_phase</span></code></a>(procstatus,&nbsp;dscfg)</td>
 <td>Dealiases the Doppler velocity field using multi-dimensional phase unwrapping</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_wind_vel" title="pyrad.proc.process_wind_vel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_wind_vel</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_wind_vel" title="pyrad.proc.process_wind_vel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_wind_vel</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Estimates the horizontal or vertical component of the wind from the radial velocity</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_windshear" title="pyrad.proc.process_windshear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_windshear</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_windshear" title="pyrad.proc.process_windshear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_windshear</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
 <td>Estimates the wind shear from the wind velocity</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_vad" title="pyrad.proc.process_vad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_vad</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_vad" title="pyrad.proc.process_vad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_vad</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Estimates vertical wind profile using the VAD (velocity Azimuth Display) technique</td>
 </tr>
 </tbody>
@@ -620,6 +623,7 @@ the function documentation:</p>
 ‘SNR_FILTER’: process_filter_snr
 ‘TRAJ_TRT’ : process_traj_trt
 ‘TRAJ_TRT_CONTOUR’ : process_traj_trt_contour
+‘TURBULENCE’: process_turbulence
 ‘VAD’: process_vad
 ‘VEL_FILTER’: process_filter_vel_diff
 ‘VIS’: process_visibility
@@ -6386,6 +6390,76 @@ contour</p>
 </dd>
 <dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd><p class="first last">None</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.proc.process_turbulence">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_turbulence</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_Doppler.html#process_turbulence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_turbulence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes turbulence from the Doppler spectrum width and reflectivity using
+the PyTDA package</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first">data set configuration. Accepted Configuration Keywords:</p>
+<dl class="last docutils">
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">string. Dataset keyword</span></dt>
+<dd><p class="first last">The input data type</p>
+</dd>
+<dt>radius <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">Search radius for calculating Eddy Dissipation Rate (EDR).
+Default 2</p>
+</dd>
+<dt>split_cut <span class="classifier-delimiter">:</span> <span class="classifier">Bool. Dataset keyword</span></dt>
+<dd><p class="first last">Set to True for split-cut volumes. Default False</p>
+</dd>
+<dt>max_split_cut <span class="classifier-delimiter">:</span> <span class="classifier">Int. Dataset keyword</span></dt>
+<dd><p class="first last">Total number of tilts that are affected by split cuts. Only
+relevant if split_cut=True. Default 2</p>
+</dd>
+<dt>xran, yran <span class="classifier-delimiter">:</span> <span class="classifier">float array. Dataset keyword</span></dt>
+<dd><p class="first last">Spatial range in X,Y to consider. Default [-100, 100] for both
+X and Y</p>
+</dd>
+<dt>beamwidth <span class="classifier-delimiter">:</span> <span class="classifier">Float. Dataset keyword</span></dt>
+<dd><p class="first last">Radar beamwidth. Default None. If None it will be obtained from
+the radar object metadata. If cannot be obtained defaults to 1
+deg.</p>
+</dd>
+<dt>compute_gate_pos <span class="classifier-delimiter">:</span> <span class="classifier">Bool. Dataset keyword</span></dt>
+<dd><p class="first last">If True the gate position is going to be computed in PyTDA.
+Otherwise the position from the radar object is used. Default
+False</p>
+</dd>
+<dt>verbose <span class="classifier-delimiter">:</span> <span class="classifier">Bool. Dataset keyword</span></dt>
+<dd><p class="first last">True for verbose output. Default False</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the output</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
 </dd>
 </dl>
 </td>

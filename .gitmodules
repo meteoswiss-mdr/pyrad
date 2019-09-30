@@ -2,3 +2,6 @@
 	path = src/pyart
 	url = https://github.com/meteoswiss-mdr/pyart.git
 	branch = master
+[submodule "src/PyTDA"]
+	path = src/PyTDA
+	url = https://github.com/meteoswiss-mdr/PyTDA

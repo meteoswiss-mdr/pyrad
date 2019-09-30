@@ -37,7 +37,7 @@ if [[ "$PYTHON_VERSION" == "3.5" ]]; then
     # There are problems with the geos library so do not install anything that uses it
     conda install -c conda-forge numpy scipy matplotlib netcdf4 h5py pytest pandas dask bokeh memory_profiler
 else
-    conda install -c conda-forge numpy scipy matplotlib netcdf4 h5py pytest basemap cartopy gdal wradlib xmltodict pandas shapely dask bokeh memory_profiler imageio xarray
+    conda install -c conda-forge numpy scipy matplotlib netcdf4 h5py pytest basemap cartopy gdal wradlib xmltodict pandas shapely dask bokeh memory_profiler imageio xarray scikit-learn
 fi
 
 # export global variables
