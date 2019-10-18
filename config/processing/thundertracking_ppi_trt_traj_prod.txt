@@ -1,0 +1,33 @@
+#
+# Product generation configuration
+# TODO: Create a single TRT trajectory volume
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 2
+    l0:loadvol
+    l1:trt_traj_ppi
+
+
+# ==========================================================================================
+#       load data
+# ==========================================================================================
+loadvol STRUCT 3
+    type STRING RAW
+    datatype STRING CFRADIAL:all_fields,savevol,PPI
+    MAKE_GLOBAL INT 1
+
+# ==========================================================================================
+#               TRT cells trajectory processing
+# ==========================================================================================
+trt_traj_ppi STRUCT 4
+    type STRING TRAJ_TRT_CONTOUR
+    datatype STRARR 1
+        PROC:dBZc
+    TimeTol FLOAT 60.
+    products STRUCT 1
+        PPI_dBZc STRUCT 3
+            type STRING PPIMAP_ROI_OVERPLOT
+            voltype STRING dBZc
+            anglenr INT 0

@@ -1,0 +1,331 @@
+#
+# Product generation configuration
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 2
+    loadvol
+    WM1_dBuZ_quant90
+
+
+# ==========================================================================================
+#       load data
+# ==========================================================================================
+loadvol STRUCT 3
+    type STRING RAW
+    datatype STRING CFRADIAL:all_fields,WM1,SAVEVOL
+    MAKE_GLOBAL INT 1
+
+
+
+# ==========================================================================================
+#                 raw data processing
+# ==========================================================================================
+# Nominal 7720
+WM1_postproc STRUCT 3
+    type STRING RAW
+    datatype STRARR 6
+        PROC:dBuZ
+        PROC:ZDRu
+        PROC:RhoHVu
+        PROC:uPhiDPu
+        PROC:Vu
+        PROC:Wu
+    products STRUCT 12
+        IMAGE_dBuZ STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING dBuZ
+        HISTOGRAM_dBuZ STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING dBuZ
+            step FLOAT 0.5
+            write_data INT 1
+        IMAGE_ZDRu STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING ZDRu
+        HISTOGRAM_ZDRu STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING ZDRu
+            step FLOAT 0.1
+            write_data INT 1
+        IMAGE_RhoHVu STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING RhoHVu
+        HISTOGRAM_RhoHVu STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING RhoHVu
+            step FLOAT 0.001
+            write_data INT 1
+        IMAGE_uPhiDPu STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING uPhiDPu
+        HISTOGRAM_uPhiDPu STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING uPhiDPu
+            step FLOAT 1
+            write_data INT 1
+        IMAGE_Vu STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING Vu
+        HISTOGRAM_Vu STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING Vu
+            step FLOAT 1
+            write_data INT 1
+        IMAGE_Wu STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING Wu
+        HISTOGRAM_Wu STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING Wu
+            step FLOAT 0.1
+            write_data INT 1
+
+
+WM1_dBuZ STRUCT 6
+    type STRING TIME_AVG
+    datatype STRARR 1
+        PROC:dBuZ
+    start_average FLOAT 0.
+    period FLOAT 86400.
+    lin_trans INT 1
+    products STRUCT 1
+        IMAGE_dBuZ STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING dBuZ
+
+WM1_dBuZ_max STRUCT 6
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:dBuZ
+    start_average FLOAT 0.
+    period FLOAT 86400.
+    stat STRING max
+    products STRUCT 1
+        IMAGE_dBuZ STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING dBuZ
+
+WM1_dBuZ_median STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:dBuZ
+    start_average FLOAT 0.
+    period FLOAT 86400.
+    stat STRING median
+    products STRUCT 1
+        IMAGE_dBuZ STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING dBuZ
+
+WM1_dBuZ_mode STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:dBuZ
+    start_average FLOAT 0.
+    period FLOAT 86400.
+    stat STRING mode
+    products STRUCT 1
+        IMAGE_dBuZ STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING dBuZ
+
+WM1_dBuZ_quant90 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:dBuZ
+    start_average FLOAT 0.
+    period FLOAT 86400.
+    stat STRING percentile90
+    products STRUCT 1
+        IMAGE_dBuZ STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING dBuZ
+
+WM1_dBuZ_std STRUCT 6
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:dBuZ
+    start_average FLOAT 0.
+    period FLOAT 86400.
+    stat STRING std
+    products STRUCT 1
+        IMAGE_dBuZ STRUCT 4
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING dBuZ
+            vmin FLOAT 0.
+            vmax FLOAT 2.
+
+# Nominal 8050
+WM2 STRUCT 4
+    type STRING FIXED_RNG
+    datatype STRARR 6
+        dBuZ
+        ZDRu
+        RhoHVu
+        uPhiDPu
+        Vu
+        Wu
+    rng FLOAT 8040.
+    products STRUCT 13
+        IMAGE_dBuZ STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING dBuZ
+        HISTOGRAM_dBuZ STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING dBuZ
+            step FLOAT 0.5
+        IMAGE_ZDRu STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING ZDRu
+        HISTOGRAM_ZDRu STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING ZDRu
+            step FLOAT 0.1
+        IMAGE_RhoHVu STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING RhoHVu
+        HISTOGRAM_RhoHVu STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING RhoHVu
+            step FLOAT 0.001
+        IMAGE_uPhiDPu STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING uPhiDPu
+        HISTOGRAM_uPhiDPu STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING uPhiDPu
+            step FLOAT 1
+        IMAGE_Vu STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING Vu
+        HISTOGRAM_Vu STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING Vu
+            step FLOAT 1
+        IMAGE_Wu STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING Wu
+        HISTOGRAM_Wu STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING Wu
+            step FLOAT 0.1
+        SAVEVOL STRUCT 1
+            type STRING SAVEALL
+
+# Nominal 8580
+WM3 STRUCT 4
+    type STRING FIXED_RNG
+    datatype STRARR 6
+        dBuZ
+        ZDRu
+        RhoHVu
+        uPhiDPu
+        Vu
+        Wu
+    rng FLOAT 8600.
+    products STRUCT 13
+        IMAGE_dBuZ STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING dBuZ
+        HISTOGRAM_dBuZ STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING dBuZ
+            step FLOAT 0.5
+        IMAGE_ZDRu STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING ZDRu
+        HISTOGRAM_ZDRu STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING ZDRu
+            step FLOAT 0.1
+        IMAGE_RhoHVu STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING RhoHVu
+        HISTOGRAM_RhoHVu STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING RhoHVu
+            step FLOAT 0.001
+        IMAGE_uPhiDPu STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING uPhiDPu
+        HISTOGRAM_uPhiDPu STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING uPhiDPu
+            step FLOAT 1
+        IMAGE_Vu STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING Vu
+        HISTOGRAM_Vu STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING Vu
+            step FLOAT 1
+        IMAGE_Wu STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING Wu
+        HISTOGRAM_Wu STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING Wu
+            step FLOAT 0.1
+        SAVEVOL STRUCT 1
+            type STRING SAVEALL
+
+
+WM_rng_span STRUCT 5
+    type STRING FIXED_RNG_SPAN
+    datatype STRARR 6
+        dBuZ
+        ZDRu
+        RhoHVu
+        uPhiDPu
+        Vu
+        Wu
+    rmin FLOAT 7000.
+    rmax FLOAT 9000.
+    products STRUCT 13
+        IMAGE_dBuZ STRUCT 2
+            type STRING FIXED_RNG_SPAN_IMAGE
+            voltype STRING dBuZ
+        HISTOGRAM_dBuZ STRUCT 3
+           type STRING HISTOGRAM
+            voltype STRING dBuZ
+            step FLOAT 0.5
+        IMAGE_ZDRu STRUCT 2
+            type STRING FIXED_RNG_SPAN_IMAGE
+            voltype STRING ZDRu
+        HISTOGRAM_ZDRu STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING ZDRu
+            step FLOAT 0.1
+        IMAGE_RhoHVu STRUCT 2
+            type STRING FIXED_RNG_SPAN_IMAGE
+            voltype STRING RhoHVu
+        HISTOGRAM_RhoHVu STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING RhoHVu
+            step FLOAT 0.001
+        IMAGE_uPhiDPu STRUCT 2
+            type STRING FIXED_RNG_SPAN_IMAGE
+            voltype STRING uPhiDPu
+        HISTOGRAM_uPhiDPu STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING uPhiDPu
+            step FLOAT 1
+        IMAGE_Vu STRUCT 2
+            type STRING FIXED_RNG_SPAN_IMAGE
+            voltype STRING Vu
+        HISTOGRAM_Vu STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING Vu
+           step FLOAT 1
+        IMAGE_Wu STRUCT 2
+            type STRING FIXED_RNG_SPAN_IMAGE
+            voltype STRING Wu
+        HISTOGRAM_Wu STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING Wu
+            step FLOAT 0.1
+        SAVEVOL STRUCT 1
+            type STRING SAVEALL
+

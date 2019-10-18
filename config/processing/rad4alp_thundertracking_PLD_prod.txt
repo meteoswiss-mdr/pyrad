@@ -1,0 +1,214 @@
+#
+# Product generation configuration
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 12
+    l0:dBZ
+    l0:ZDR
+    l0:uRhoHV
+    l0:uPhiDP
+    l0:V
+    l0:W
+    l0:TEMP
+    l0:PhiDPc_smooth2w
+    l1:KDPc_leastsquare2w
+    l2:hydroclass
+    l0:rainrate_ZR
+    l3:savevol
+
+
+# ==========================================================================================
+#                 raw data products
+# ==========================================================================================
+dBZ STRUCT 3
+    type STRING RAW
+    datatype STRARR 1
+        RAD4ALP:dBZ
+    products STRUCT 1
+        EL001_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING dBZ
+
+
+ZDR STRUCT 3
+    type STRING RAW
+    datatype STRARR 1
+        RAD4ALP:ZDR
+    products STRUCT 1
+        EL001_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING ZDR
+
+uRhoHV STRUCT 3
+    type STRING RAW
+    datatype STRARR 1
+        RAD4ALP:uRhoHV
+    products STRUCT 1
+        EL001_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING uRhoHV
+
+uPhiDP STRUCT 3
+    type STRING RAW
+    datatype STRARR 1
+        RAD4ALP:uPhiDP
+    products STRUCT 1
+        EL001_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING uPhiDP
+
+V STRUCT 3
+    type STRING RAW
+    datatype STRARR 1
+        RAD4ALP:V
+    products STRUCT 1
+        EL001_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING V
+
+W STRUCT 3
+    type STRING RAW
+    datatype STRARR 1
+        RAD4ALP:W
+    products STRUCT 1
+        EL001_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING W
+
+
+# ==========================================================================================
+#               COSMO data
+# ==========================================================================================
+RAD2COSMO STRUCT 3
+    type STRING COSMO_COORD
+    datatype STRARR 1
+        RAD4ALP:dBZ
+    products STRUCT 1
+        rad2cosmo STRUCT 2
+            type  STRING SAVEVOL
+            voltype STRING cosmo_index
+
+TEMP STRUCT 7
+    type STRING COSMO_LOOKUP
+    datatype STRARR 1
+        RAD4ALP:dBZ
+    cosmo_type STRING TEMP
+    regular_grid INT 1
+    lookup_table INT 0
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        EL001_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING TEMP
+
+
+# ==========================================================================================
+#                 PHIDP processing
+# ==========================================================================================
+PhiDPc_smooth2w STRUCT 12
+    type STRING PHIDP_SMOOTH_2W
+    datatype STRARR 2
+        RAD4ALP:uPhiDP
+        RAD4ALP:dBZ
+    rmin FLOAT 1000.
+    rmax FLOAT 50000.
+    rcell FLOAT 1000.
+    Zmin FLOAT 20.
+    Zmax FLOAT 40.
+    rwinds FLOAT 2000.
+    rwindl FLOAT 6000.
+    Zthr FLOAT 40.
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        EL001 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING PhiDPc
+
+
+# ==========================================================================================
+#                 KDP processing
+# ==========================================================================================
+KDPc_leastsquare2w STRUCT 7
+    type STRING KDP_LEASTSQUARE_2W
+    datatype STRARR 2
+        PROC:PhiDPc
+        RAD4ALP:dBZ
+    rwinds FLOAT 2000.
+    rwindl FLOAT 6000.
+    Zthr FLOAT 40.
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        EL001 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING KDPc
+
+
+# ==========================================================================================
+#                 hydrometeor classification products
+# ==========================================================================================
+hydroclass STRUCT 7
+    type STRING HYDROCLASS
+    datatype STRARR 5
+        RAD4ALP:dBZ
+        RAD4ALP:ZDR
+        RAD4ALP:uRhoHV
+        PROC:KDPc
+        PROC:TEMP
+    HYDRO_METHOD STRING SEMISUPERVISED
+    RADARCENTROIDS STRING D
+    vectorize INT 1
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        EL001_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING hydro
+
+
+# ==========================================================================================
+#               rainfall rate
+# ==========================================================================================
+rainrate_ZR STRUCT 5
+    type STRING RAINRATE
+    datatype STRARR 1
+        RAD4ALP:dBZ
+    RR_METHOD STRING Z
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        EL001_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING RR
+
+# ==========================================================================================
+#               savevol
+# ==========================================================================================
+savevol STRUCT 3
+    type STRING NCVOL
+    datatype STRARR 1
+        RAD4ALP:dBZ
+    products STRUCT 1
+      SAVEALL STRUCT 2
+         type  STRING SAVEALL
+         datatypes STRARR 10
+            TEMP
+            dBZ
+            ZDR
+            uRhoHV
+            KDPc
+            PhiDPc
+            V
+            W
+            hydro
+            RR

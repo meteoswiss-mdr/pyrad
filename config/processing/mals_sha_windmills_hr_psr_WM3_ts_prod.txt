@@ -1,0 +1,42 @@
+#
+# Product generation configuration
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 2
+    l0:WM3_sdBZ
+    l1:WM3_Pmax_TS
+
+# ============================================================================
+#                 retrieved spectral data
+# ============================================================================
+WM3_sdBZ STRUCT 3
+    type STRING SPECTRAL_REFLECTIVITY
+    datatype STRING PSRSPECTRA:ShhADU
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        AZ341_7_EL003_5 STRUCT 4
+            type  STRING RANGE_DOPPLER
+            azi FLOAT 341.25
+            ele FLOAT 3.
+            voltype STRING sdBZ
+
+
+# ==========================================================================================
+#       Time series of max
+# ==========================================================================================
+WM3_Pmax_TS STRUCT 10
+    type STRING SPECTRA_POINT
+    datatype STRING PROC:sdBZ
+    latlon INT 0
+    rng FLOAT 8600.
+    azi FLOAT 341.25
+    ele FLOAT 3.
+    AziTol FLOAT 1.
+    EleTol FLOAT 1.
+    RngTol FLOAT 30.
+    products STRUCT 1
+        sdBZ STRUCT 2
+            type  STRING TIME_DOPPLER
+            voltype STRING sdBZ

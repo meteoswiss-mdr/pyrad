@@ -1,0 +1,1069 @@
+#
+# Product generation configuration
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 65
+    l0:loadvol
+    l1:RCS    
+    l2:WM2_dBZ_max
+    l2:WM2_dBZ_mean
+    l2:WM2_dBZ_cov
+    l2:WM2_dBZ_mode
+    l2:WM2_dBZ_quant10
+    l2:WM2_dBZ_quant25
+    l2:WM2_dBZ_quant50
+    l2:WM2_dBZ_quant75
+    l2:WM2_dBZ_quant90
+    l2:WM2_ZDR_max
+    l2:WM2_ZDR_mean
+    l2:WM2_ZDR_std
+    l2:WM2_ZDR_mode
+    l2:WM2_ZDR_quant10
+    l2:WM2_ZDR_quant25
+    l2:WM2_ZDR_quant50
+    l2:WM2_ZDR_quant75
+    l2:WM2_ZDR_quant90
+    l2:WM2_RhoHV_max
+    l2:WM2_RhoHV_mean
+    l2:WM2_RhoHV_std
+    l2:WM2_RhoHV_mode
+    l2:WM2_RhoHV_quant10
+    l2:WM2_RhoHV_quant25
+    l2:WM2_RhoHV_quant50
+    l2:WM2_RhoHV_quant75
+    l2:WM2_RhoHV_quant90
+    l2:WM2_PhiDP_max
+    l2:WM2_PhiDP_mean
+    l2:WM2_PhiDP_std
+    l2:WM2_PhiDP_mode
+    l2:WM2_PhiDP_quant10
+    l2:WM2_PhiDP_quant25
+    l2:WM2_PhiDP_quant50
+    l2:WM2_PhiDP_quant75
+    l2:WM2_PhiDP_quant90
+    l2:WM2_V_max
+    l2:WM2_V_mean
+    l2:WM2_V_std
+    l2:WM2_V_mode
+    l2:WM2_V_quant10
+    l2:WM2_V_quant25
+    l2:WM2_V_quant50
+    l2:WM2_V_quant75
+    l2:WM2_V_quant90
+    l2:WM2_W_max
+    l2:WM2_W_mean
+    l2:WM2_W_std
+    l2:WM2_W_mode
+    l2:WM2_W_quant10
+    l2:WM2_W_quant25
+    l2:WM2_W_quant50
+    l2:WM2_W_quant75
+    l2:WM2_W_quant90
+    l2:WM2_rcs_h_max
+    l2:WM2_rcs_h_mean
+    l2:WM2_rcs_h_cov
+    l2:WM2_rcs_h_mode
+    l2:WM2_rcs_h_quant10
+    l2:WM2_rcs_h_quant25
+    l2:WM2_rcs_h_quant50
+    l2:WM2_rcs_h_quant75
+    l2:WM2_rcs_h_quant90
+
+
+# ==========================================================================================
+#       load data
+# ==========================================================================================
+loadvol STRUCT 3
+    type STRING RAW
+    datatype STRING CFRADIAL:all_fields,WM2,SAVEVOL
+    MAKE_GLOBAL INT 1
+
+
+# ==========================================================================================
+#       RCS
+# ==========================================================================================
+RCS STRUCT 3
+    type STRING RCS
+    datatype STRING PROC:dBZ
+    MAKE_GLOBAL INT 1
+
+
+# ==========================================================================================
+#                 Temporal statistics
+# ==========================================================================================
+WM2_dBZ_max STRUCT 6
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:dBZ
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING max
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING dBZ
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING dBZ
+
+WM2_dBZ_mean STRUCT 7
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:dBZ
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING mean
+    lin_trans INT 1
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING dBZ
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING dBZ
+
+WM2_dBZ_cov STRUCT 7
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:dBZ
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING cov
+    lin_trans INT 1
+    products STRUCT 2
+        IMAGE STRUCT 4
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING dBZ
+            vmin FLOAT 0.
+            vmax FLOAT 3.
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING dBZ
+
+WM2_dBZ_mode STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:dBZ
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING mode
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING dBZ
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING dBZ
+
+WM2_dBZ_quant10 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:dBZ
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile10
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING dBZ
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING dBZ
+
+WM2_dBZ_quant25 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:dBZ
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile25
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING dBZ
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING dBZ
+
+WM2_dBZ_quant50 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:dBZ
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile50
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING dBZ
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING dBZ
+
+WM2_dBZ_quant75 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:dBZ
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile75
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING dBZ
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING dBZ
+
+WM2_dBZ_quant90 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:dBZ
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile90
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING dBZ
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING dBZ
+
+
+
+WM2_ZDR_max STRUCT 6
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:ZDR
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING max
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING ZDR
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING ZDR
+
+WM2_ZDR_mean STRUCT 6
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:ZDR
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING mean
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING ZDR
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING ZDR
+
+WM2_ZDR_std STRUCT 6
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:ZDR
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING std
+    products STRUCT 2
+        IMAGE STRUCT 4
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING ZDR
+            vmin FLOAT 0.
+            vmax FLOAT 10.
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING ZDR
+
+WM2_ZDR_mode STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:ZDR
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING mode
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING ZDR
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING ZDR
+
+WM2_ZDR_quant10 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:ZDR
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile10
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING ZDR
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING ZDR
+
+WM2_ZDR_quant25 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:ZDR
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile25
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING ZDR
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING ZDR
+
+WM2_ZDR_quant50 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:ZDR
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile50
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING ZDR
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING ZDR
+
+WM2_ZDR_quant75 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:ZDR
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile75
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING ZDR
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING ZDR
+
+WM2_ZDR_quant90 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:ZDR
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile90
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING ZDR
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING ZDR
+
+
+
+WM2_RhoHV_max STRUCT 6
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:RhoHV
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING max
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING RhoHV
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING RhoHV
+
+WM2_RhoHV_mean STRUCT 6
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:RhoHV
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING mean
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING RhoHV
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING RhoHV
+
+WM2_RhoHV_std STRUCT 6
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:RhoHV
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING std
+    products STRUCT 2
+        IMAGE STRUCT 4
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING RhoHV
+            vmin FLOAT 0.
+            vmax FLOAT 1.
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING RhoHV
+
+WM2_RhoHV_mode STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:RhoHV
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING mode
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING RhoHV
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING RhoHV
+
+WM2_RhoHV_quant10 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:RhoHV
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile10
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING RhoHV
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING RhoHV
+
+WM2_RhoHV_quant25 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:RhoHV
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile25
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING RhoHV
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING RhoHV
+
+WM2_RhoHV_quant50 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:RhoHV
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile50
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING RhoHV
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING RhoHV
+
+WM2_RhoHV_quant75 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:RhoHV
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile75
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING RhoHV
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING RhoHV
+
+WM2_RhoHV_quant90 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:RhoHV
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile90
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING RhoHV
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING RhoHV
+
+
+
+WM2_PhiDP_max STRUCT 6
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:PhiDP
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING max
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING PhiDP
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING PhiDP
+
+WM2_PhiDP_mean STRUCT 6
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:PhiDP
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING mean
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING PhiDP
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING PhiDP
+
+WM2_PhiDP_std STRUCT 6
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:PhiDP
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING std
+    products STRUCT 2
+        IMAGE STRUCT 4
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING PhiDP
+            vmin FLOAT 0.
+            vmax FLOAT 10.
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING PhiDP
+
+WM2_PhiDP_mode STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:PhiDP
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING mode
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING PhiDP
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING PhiDP
+
+WM2_PhiDP_quant10 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:PhiDP
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile10
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING PhiDP
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING PhiDP
+
+WM2_PhiDP_quant25 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:PhiDP
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile25
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING PhiDP
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING PhiDP
+
+WM2_PhiDP_quant50 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:PhiDP
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile50
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING PhiDP
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING PhiDP
+
+WM2_PhiDP_quant75 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:PhiDP
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile75
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING PhiDP
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING PhiDP
+
+WM2_PhiDP_quant90 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:PhiDP
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile90
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING PhiDP
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING PhiDP
+
+
+
+WM2_V_max STRUCT 6
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:V
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING max
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING V
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING V
+
+WM2_V_mean STRUCT 6
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:V
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING mean
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING V
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING V
+
+WM2_V_std STRUCT 6
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:V
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING std
+    products STRUCT 2
+        IMAGE STRUCT 4
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING V
+            vmin FLOAT 0.
+            vmax FLOAT 10.
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING V
+
+WM2_V_mode STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:V
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING mode
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING V
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING V
+
+WM2_V_quant10 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:V
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile10
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING V
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING V
+
+WM2_V_quant25 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:V
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile25
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING V
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING V
+
+WM2_V_quant50 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:V
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile50
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING V
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING V
+
+WM2_V_quant75 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:V
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile75
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING V
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING V
+
+WM2_V_quant90 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:V
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile90
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING V
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING V
+
+
+
+WM2_W_max STRUCT 6
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:W
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING max
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING W
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING W
+
+WM2_W_mean STRUCT 6
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:W
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING mean
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING W
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING W
+
+WM2_W_std STRUCT 6
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:W
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING std
+    products STRUCT 2
+        IMAGE STRUCT 4
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING W
+            vmin FLOAT 0.
+            vmax FLOAT 3.
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING W
+
+WM2_W_mode STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:W
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING mode
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING W
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING W
+
+WM2_W_quant10 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:W
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile10
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING W
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING W
+
+WM2_W_quant25 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:W
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile25
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING W
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING W
+
+WM2_W_quant50 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:W
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile50
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING W
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING W
+
+WM2_W_quant75 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:W
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile75
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING W
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING W
+
+WM2_W_quant90 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:W
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile90
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING W
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING W
+
+
+
+WM2_rcs_h_max STRUCT 6
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:rcs_h
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING max
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING rcs_h
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING rcs_h
+
+WM2_rcs_h_mean STRUCT 7
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:rcs_h
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING mean
+    lin_trans INT 1
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING rcs_h
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING rcs_h
+
+WM2_rcs_h_cov STRUCT 7
+    type STRING TIME_STATS
+    datatype STRARR 1
+        PROC:rcs_h
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING cov
+    lin_trans INT 1
+    products STRUCT 2
+        IMAGE STRUCT 4
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING rcs_h
+            vmin FLOAT 0.
+            vmax FLOAT 3.
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING rcs_h
+
+WM2_rcs_h_mode STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:rcs_h
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING mode
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING rcs_h
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING rcs_h
+
+WM2_rcs_h_quant10 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:rcs_h
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile10
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING rcs_h
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING rcs_h
+
+WM2_rcs_h_quant25 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:rcs_h
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile25
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING rcs_h
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING rcs_h
+
+WM2_rcs_h_quant50 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:rcs_h
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile50
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING rcs_h
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING rcs_h
+
+WM2_rcs_h_quant75 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:rcs_h
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile75
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING rcs_h
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING rcs_h
+
+WM2_rcs_h_quant90 STRUCT 6
+    type STRING TIME_STATS2
+    datatype STRARR 1
+        PROC:rcs_h
+    start_average FLOAT 0.
+    period FLOAT -1
+    stat STRING percentile90
+    products STRUCT 2
+        IMAGE STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING rcs_h
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING rcs_h

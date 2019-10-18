@@ -72,6 +72,7 @@ except ImportError:
 
 PROFILE_LEVEL = 0
 
+
 def profiler(level=1):
     """
     Function to be used as decorator for memory debugging. The function will
@@ -936,6 +937,8 @@ def _create_cfg_dict(cfgfile):
         cfg.update({'cosmopath': None})
     if 'psrpath' not in cfg:
         cfg.update({'psrpath': None})
+    if 'iqpath' not in cfg:
+        cfg.update({'iqpath': None})
     if 'colocgatespath' not in cfg:
         cfg.update({'colocgatespath': None})
     if 'excessgatespath' not in cfg:
@@ -994,8 +997,8 @@ def _create_cfg_dict(cfgfile):
     # Convert the following strings to string arrays
     strarr_list = [
         'datapath', 'cosmopath', 'dempath', 'loadbasepath', 'psrpath',
-        'loadname', 'RadarName', 'RadarRes', 'ScanList', 'imgformat',
-        'frequency', 'radar_beam_width_h', 'radar_beam_width_v',
+        'iqpath', 'loadname', 'RadarName', 'RadarRes', 'ScanList',
+        'imgformat', 'frequency', 'radar_beam_width_h', 'radar_beam_width_v',
         'pulse_width', 'nyquist_velocity', 'AntennaGainH', 'AntennaGainV',
         'dBADUtodBmh', 'dBADUtodBmv', 'mflossh', 'mflossv', 'radconsth',
         'radconstv', 'txpwrh', 'txpwrv', 'attg']
@@ -1043,6 +1046,7 @@ def _create_datacfg_dict(cfg):
 
     datacfg = dict({'datapath': cfg['datapath']})
     datacfg.update({'psrpath': cfg['psrpath']})
+    datacfg.update({'iqpath': cfg['iqpath']})
     datacfg.update({'ScanList': cfg['ScanList']})
     datacfg.update({'TimeTol': cfg['TimeTol']})
     datacfg.update({'NumRadars': cfg['NumRadars']})
@@ -1308,10 +1312,10 @@ def _get_datatype_list(cfg, radarnr='RADAR001'):
                  product_save) = (
                      get_datatype_fields(datatype))
                 if datagroup != 'PROC' and radarnr_descr == radarnr:
-                    if ((dataset_save is None) and (product_save is None)):
+                    if dataset_save is None and product_save is None:
                         datatypesdescr.add(
                             radarnr_descr+":"+datagroup+":"+datatype_aux)
-                    elif ((dataset_save is not None) and (product_save is None)):
+                    elif dataset_save is not None and product_save is None:
                         datatypesdescr.add(
                             radarnr_descr+":"+datagroup+":"+datatype_aux+"," +
                             dataset_save)
@@ -1383,7 +1387,7 @@ def _get_masterfile_list(datatypesdescr, starttimes, endtimes, datacfg,
         radarnr, datagroup, _, _, _ = get_datatype_fields(datatypedescr)
         if (datagroup not in (
                 'COSMO', 'RAD4ALPCOSMO', 'DEM', 'RAD4ALPDEM', 'RAD4ALPHYDRO',
-                'RAD4ALPDOPPLER', 'PSR', 'PSRSPECTRA')):
+                'RAD4ALPDOPPLER', 'RAD4ALPIQ', 'PSR', 'PSRSPECTRA')):
             masterdatatypedescr = datatypedescr
             if scan_list is not None:
                 masterscan = scan_list[int(radarnr[5:8])-1][0]
@@ -1400,7 +1404,7 @@ def _get_masterfile_list(datatypesdescr, starttimes, endtimes, datacfg,
                 break
             elif (datagroup in (
                     'RAD4ALPCOSMO', 'RAD4ALPDEM', 'RAD4ALPHYDRO',
-                    'RAD4ALPDOPPLER',)):
+                    'RAD4ALPDOPPLER', 'RAD4ALPIQ')):
                 masterdatatypedescr = radarnr+':RAD4ALP:dBZ'
                 if scan_list is not None:
                     masterscan = scan_list[int(radarnr[5:8])-1][0]

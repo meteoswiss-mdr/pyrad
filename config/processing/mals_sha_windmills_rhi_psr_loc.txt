@@ -1,0 +1,110 @@
+# Configuration for MALS sphere calibration at the airport Payerne
+
+# Radar Name
+RadarName STRING DX50
+
+# Names of the radar scans in the specified sector
+# (note: must have a trailing '/')
+# masterscan: first scan of a volume
+ScanList STRARR 81
+   MALS_SHA_335_0_up_nopsr.ele/
+   MALS_SHA_335_2_dw_nopsr.ele/
+   MALS_SHA_335_4_up_nopsr.ele/
+   MALS_SHA_335_6_dw_nopsr.ele/
+   MALS_SHA_335_8_up_nopsr.ele/
+   MALS_SHA_336_0_dw_nopsr.ele/
+   MALS_SHA_336_2_up_nopsr.ele/
+   MALS_SHA_336_4_dw_nopsr.ele/
+   MALS_SHA_336_6_up_nopsr.ele/
+   MALS_SHA_336_7_dw_nopsr.ele/
+   MALS_SHA_336_8_up_nopsr.ele/
+   MALS_SHA_336_9_dw_nopsr.ele/
+   MALS_SHA_337_0_up_nopsr.ele/
+   MALS_SHA_337_1_dw_nopsr.ele/
+   MALS_SHA_337_2_up_nopsr.ele/
+   MALS_SHA_337_3_dw_nopsr.ele/
+   MALS_SHA_337_4_up_nopsr.ele/
+   MALS_SHA_337_5_dw_nopsr.ele/
+   MALS_SHA_337_6_up_nopsr.ele/
+   MALS_SHA_337_7_dw_nopsr.ele/
+   MALS_SHA_337_8_up_nopsr.ele/
+   MALS_SHA_337_9_dw_nopsr.ele/
+   MALS_SHA_338_0_up_nopsr.ele/
+   MALS_SHA_338_1_dw_nopsr.ele/
+   MALS_SHA_338_2_up_nopsr.ele/
+   MALS_SHA_338_3_dw_nopsr.ele/
+   MALS_SHA_338_4_up_nopsr.ele/
+   MALS_SHA_338_5_dw_nopsr.ele/
+   MALS_SHA_338_6_up_nopsr.ele/
+   MALS_SHA_338_7_dw_nopsr.ele/
+   MALS_SHA_338_8_up_nopsr.ele/
+   MALS_SHA_338_9_dw_nopsr.ele/
+   MALS_SHA_339_0_up_nopsr.ele/
+   MALS_SHA_339_1_dw_nopsr.ele/
+   MALS_SHA_339_2_up_nopsr.ele/
+   MALS_SHA_339_3_dw_nopsr.ele/
+   MALS_SHA_339_4_up_nopsr.ele/
+   MALS_SHA_339_5_dw_nopsr.ele/
+   MALS_SHA_339_6_up_nopsr.ele/
+   MALS_SHA_339_7_dw_nopsr.ele/
+   MALS_SHA_339_8_up_nopsr.ele/
+   MALS_SHA_339_9_dw_nopsr.ele/
+   MALS_SHA_340_0_up_nopsr.ele/
+   MALS_SHA_340_1_dw_nopsr.ele/
+   MALS_SHA_340_2_up_nopsr.ele/
+   MALS_SHA_340_3_dw_nopsr.ele/
+   MALS_SHA_340_4_up_nopsr.ele/
+   MALS_SHA_340_5_dw_nopsr.ele/
+   MALS_SHA_340_6_up_nopsr.ele/
+   MALS_SHA_340_7_dw_nopsr.ele/
+   MALS_SHA_340_8_up_nopsr.ele/
+   MALS_SHA_340_9_dw_nopsr.ele/
+   MALS_SHA_341_0_up_nopsr.ele/
+   MALS_SHA_341_1_dw_nopsr.ele/
+   MALS_SHA_341_2_up_nopsr.ele/
+   MALS_SHA_341_3_dw_nopsr.ele/
+   MALS_SHA_341_4_up_nopsr.ele/
+   MALS_SHA_341_5_dw_nopsr.ele/
+   MALS_SHA_341_6_up_nopsr.ele/
+   MALS_SHA_341_7_dw_nopsr.ele/
+   MALS_SHA_341_8_up_nopsr.ele/
+   MALS_SHA_341_9_dw_nopsr.ele/
+   MALS_SHA_342_0_up_nopsr.ele/
+   MALS_SHA_342_1_dw_nopsr.ele/
+   MALS_SHA_342_2_up_nopsr.ele/
+   MALS_SHA_342_3_dw_nopsr.ele/
+   MALS_SHA_342_4_up_nopsr.ele/
+   MALS_SHA_342_5_dw_nopsr.ele/
+   MALS_SHA_342_6_up_nopsr.ele/
+   MALS_SHA_342_7_dw_nopsr.ele/
+   MALS_SHA_342_8_up_nopsr.ele/
+   MALS_SHA_342_9_dw_nopsr.ele/
+   MALS_SHA_343_0_up_nopsr.ele/
+   MALS_SHA_343_2_dw_nopsr.ele/
+   MALS_SHA_343_4_up_nopsr.ele/
+   MALS_SHA_343_6_dw_nopsr.ele/
+   MALS_SHA_343_8_up_nopsr.ele/
+   MALS_SHA_344_0_dw_nopsr.ele/
+   MALS_SHA_344_2_up_nopsr.ele/
+   MALS_SHA_344_4_dw_nopsr.ele/
+   MALS_SHA_344_6_up_nopsr.ele/
+   
+rmin FLOAT 7000.
+rmax FLOAT 9000.
+cpi STRING high_prf
+
+
+# Repetition time of the scans [min]
+ScanPeriod INT 45
+
+# Image config
+ppiImageConfig STRUCT 7
+   xsize      FLOAT   10.      # image size [inches] (default dots per inch (dpi):72)
+   ysize      FLOAT   8.      # image size [inches] (default dots per inch (dpi):72)
+   xmin       FLOAT -5.0   # Min distance on horizontal axis [km]
+   xmax       FLOAT  0.0   # Max distance on horizontal axis [km]
+   ymin       FLOAT   0.0   # Min distance on vertical axis [km]
+   ymax       FLOAT  10.0   # Max distance on vertical axis [km]
+   rngRing    FLOAT  1.0   # distance between range rings (0 no range ring) [km]
+
+

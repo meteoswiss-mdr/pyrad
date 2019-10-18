@@ -1,6 +1,6 @@
 """
-pyrad.prod.process_grid_products
-================================
+pyrad.prod.process_spectra_products
+===================================
 
 Functions for obtaining Pyrad products from spectra datasets
 
@@ -39,12 +39,13 @@ def generate_spectra_products(dataset, prdcfg):
     """
     generates spectra products. Accepted product types:
         'AMPLITUDE_PHASE_ANGLE_DOPPLER': Makes an angle Doppler plot of
-            complex spectra. The plot can be along azimuth or along range.
-            It is plotted separately the module and the phase of the signal.
+            complex spectra or IQ data. The plot can be along azimuth or along
+            range. It is plotted separately the module and the phase of the
+            signal.
             User defined parameters:
                 along_azi : bool
                     If true the plot is performed along azimuth, otherwise
-                    along range. Default true
+                    along elevation. Default true
                 ang : float
                     The fixed angle (deg). Default 0.
                 rng : float
@@ -54,12 +55,12 @@ def generate_spectra_products(dataset, prdcfg):
                 rng_tol : float
                     The fixed range tolerance (m). Default 50.
                 xaxis_info : str
-                    The xaxis type. Can be 'Doppler_velocity' or
-                    'Doppler frequency'
+                    The xaxis type. Can be 'Doppler_velocity',
+                    'Doppler_frequency' or 'pulse_number'
                 ampli_vmin, ampli_vmax, phase_vmin, phase_vmax : float or None
                     Minimum and maximum of the color scale for the module and
                     phase
-        'AMPLITUDE_PHASE_DOPPLER': Plots a complex Doppler spectrum
+        'AMPLITUDE_PHASE_DOPPLER': Plots a complex Doppler spectrum or IQ data
             making two separate plots for the module and phase of the signal
             User defined parameters:
                 azi, ele, rng : float
@@ -72,14 +73,14 @@ def generate_spectra_products(dataset, prdcfg):
                     index of the ray and range to plot. Alternative to
                     defining its antenna coordinates
                 xaxis_info : str
-                    The xaxis type. Can be 'Doppler_velocity' or
-                    'Doppler frequency'
+                    The xaxis type. Can be 'Doppler_velocity',
+                    'Doppler_frequency' or 'pulse_number'
                 ampli_vmin, ampli_vmax, phase_vmin, phase_vmax : float or None
                     Minimum and maximum of the color scale for the module and
                     phase
-        'AMPLITUDE_PHASE_RANGE_DOPPLER': Plots a complex spectra range-Doppler
-            making two separate plots for the module and phase of the signal
-            User defined parameters:
+        'AMPLITUDE_PHASE_RANGE_DOPPLER': Plots a complex spectra or IQ data
+            range-Doppler making two separate plots for the module and phase
+            of the signal User defined parameters:
                 azi, ele : float
                     azimuth and elevation (deg) of the ray to plot
                 azi_to, ele_tol : float
@@ -89,13 +90,14 @@ def generate_spectra_products(dataset, prdcfg):
                     index of the ray to plot. Alternative to
                     defining its antenna coordinates
                 xaxis_info : str
-                    The xaxis type. Can be 'Doppler_velocity' or
-                    'Doppler frequency'
+                    The xaxis type. Can be 'Doppler_velocity',
+                    'Doppler_frequency' or 'pulse_number'
                 ampli_vmin, ampli_vmax, phase_vmin, phase_vmax : float or None
                     Minimum and maximum of the color scale for the module and
                     phase
-        'AMPLITUDE_PHASE_TIME_DOPPLER': Plots a complex spectra time-Doppler
-            making two separate plots for the module and phase of the signal
+        'AMPLITUDE_PHASE_TIME_DOPPLER': Plots a complex spectra or IQ data
+            time-Doppler making two separate plots for the module and phase of
+            the signal
             User defined parameters:
                 xaxis_info : str
                     The xaxis type. Can be 'Doppler_velocity' or
@@ -111,7 +113,7 @@ def generate_spectra_products(dataset, prdcfg):
             User defined parameters:
                 along_azi : bool
                     If true the plot is performed along azimuth, otherwise
-                    along range. Default true
+                    along elevation. Default true
                 ang : float
                     The fixed angle (deg). Default 0.
                 rng : float
@@ -121,17 +123,17 @@ def generate_spectra_products(dataset, prdcfg):
                 rng_tol : float
                     The fixed range tolerance (m). Default 50.
                 xaxis_info : str
-                    The xaxis type. Can be 'Doppler_velocity' or
-                    'Doppler frequency'
+                    The xaxis type. Can be 'Doppler_velocity',
+                    'Doppler_frequency' or 'pulse_number'
                 vmin, vmax : float or None
                     Minimum and maximum of the color scale
         'COMPLEX_ANGLE_DOPPLER': Makes an angle Doppler plot of complex
-            spectra. The plot can be along azimuth or along range. The real
-            and imaginary parts are plotted separately
+            spectra or IQ data. The plot can be along azimuth or along range.
+            The real and imaginary parts are plotted separately
             User defined parameters:
                 along_azi : bool
                     If true the plot is performed along azimuth, otherwise
-                    along range. Default true
+                    along elevation. Default true
                 ang : float
                     The fixed angle (deg). Default 0.
                 rng : float
@@ -141,12 +143,12 @@ def generate_spectra_products(dataset, prdcfg):
                 rng_tol : float
                     The fixed range tolerance (m). Default 50.
                 xaxis_info : str
-                    The xaxis type. Can be 'Doppler_velocity' or
-                    'Doppler frequency'
+                    The xaxis type. Can be 'Doppler_velocity',
+                    'Doppler_frequency' or 'pulse_number'
                 vmin, vmax : float or None
                     Minimum and maximum of the color scale
-        'COMPLEX_DOPPLER': Plots a complex Doppler spectrum making two
-            separate plots for the real and imaginary parts
+        'COMPLEX_DOPPLER': Plots a complex Doppler spectrum or IQ data making
+            two separate plots for the real and imaginary parts
             User defined parameters:
                 azi, ele, rng : float
                     azimuth and elevation (deg) and range (m) of the ray to
@@ -158,12 +160,13 @@ def generate_spectra_products(dataset, prdcfg):
                     index of the ray and range to plot. Alternative to
                     defining its antenna coordinates
                 xaxis_info : str
-                    The xaxis type. Can be 'Doppler_velocity' or
-                    'Doppler frequency'
+                    The xaxis type. Can be 'Doppler_velocity',
+                    'Doppler_frequency' or 'pulse_number'
                 vmin, vmax : float or None
                     Minimum and maximum of the color scale
-        'COMPLEX_RANGE_DOPPLER': Plots the complex spectra range-Doppler
-            making two separate plots for the real and imaginary parts
+        'COMPLEX_RANGE_DOPPLER': Plots the complex spectra or IQ data
+            range-Doppler making two separate plots for the real and imaginary
+            parts
             User defined parameters:
                 azi, ele : float
                     azimuth and elevation (deg) of the ray to plot
@@ -174,12 +177,13 @@ def generate_spectra_products(dataset, prdcfg):
                     index of the ray to plot. Alternative to
                     defining its antenna coordinates
                 xaxis_info : str
-                    The xaxis type. Can be 'Doppler_velocity' or
-                    'Doppler frequency'
+                    The xaxis type. Can be 'Doppler_velocity',
+                    'Doppler_frequency' or 'pulse_number'
                 vmin, vmax : float or None
                     Minimum and maximum of the color scale
-        'COMPLEX_TIME_DOPPLER': Plots the complex spectra time-Doppler
-            making two separate plots for the real and imaginary parts
+        'COMPLEX_TIME_DOPPLER': Plots the complex spectra or IQ data
+            time-Doppler making two separate plots for the real and imaginary
+            parts
             User defined parameters:
                 xaxis_info : str
                     The xaxis type. Can be 'Doppler_velocity' or
@@ -189,7 +193,7 @@ def generate_spectra_products(dataset, prdcfg):
                 plot_type : str
                     Can be 'final' or 'temporal'. If final the data is only
                     plotted at the end of the processing
-        'DOPPLER': Plots a Doppler spectrum variable
+        'DOPPLER': Plots a Doppler spectrum variable or IQ data variable
             User defined parameters:
                 azi, ele, rng : float
                     azimuth and elevation (deg) and range (m) of the ray to
@@ -201,11 +205,11 @@ def generate_spectra_products(dataset, prdcfg):
                     index of the ray and range to plot. Alternative to
                     defining its antenna coordinates
                 xaxis_info : str
-                    The xaxis type. Can be 'Doppler_velocity' or
-                    'Doppler frequency'
+                    The xaxis type. Can be 'Doppler_velocity',
+                    'Doppler_frequency' or 'pulse_number'
                 vmin, vmax : float or None
                     Minimum and maximum of the color scale
-        'RANGE_DOPPLER': Makes a range-Doppler plot of spectral data
+        'RANGE_DOPPLER': Makes a range-Doppler plot of spectral or IQ data
             User defined parameters:
                 azi, ele : float
                     azimuth and elevation (deg) of the ray to plot
@@ -216,12 +220,12 @@ def generate_spectra_products(dataset, prdcfg):
                     index of the ray to plot. Alternative to
                     defining its antenna coordinates
                 xaxis_info : str
-                    The xaxis type. Can be 'Doppler_velocity' or
-                    'Doppler frequency'
+                    The xaxis type. Can be 'Doppler_velocity',
+                    'Doppler_frequency' or 'pulse_number'
                 vmin, vmax : float or None
                     Minimum and maximum of the color scale
-        'SAVEALL': Saves radar spectra volume data including all or a list of
-            userdefined fields in a netcdf file
+        'SAVEALL': Saves radar spectra or IQ volume data including all or a
+            list of userdefined fields in a netcdf file
             User defined parameters:
                 datatypes: list of str or None
                     The list of data types to save. If it is None, all fields
@@ -229,18 +233,18 @@ def generate_spectra_products(dataset, prdcfg):
                 physical: Bool
                     If True the data will be saved in physical units (floats).
                     Otherwise it will be quantized and saved as binary
-        'SAVEVOL': Saves one field of a radar spectra volume data in a netcdf
-            file
+        'SAVEVOL': Saves one field of a radar spectra or IQ volume data in a
+            netcdf file
             User defined parameters:
                 physical: Bool
                     If True the data will be saved in physical units (floats).
                     Otherwise it will be quantized and saved as binary
-        'TIME_DOPPLER': Makes a time-Doppler plot of spectral data at a point
-            of interest.
+        'TIME_DOPPLER': Makes a time-Doppler plot of spectral or IQ data at a
+            point of interest.
             User defined parameters:
                 xaxis_info : str
-                    The xaxis type. Can be 'Doppler_velocity' or
-                    'Doppler frequency'
+                    The xaxis type. Can be 'Doppler_velocity',
+                    'Doppler_frequency' or 'pulse_number'
                 vmin, vmax : float or None
                     Minimum and maximum of the color scale
                 plot_type : str
@@ -396,9 +400,9 @@ def generate_spectra_products(dataset, prdcfg):
                 fname_list, xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
         else:
             plot_angle_Doppler(
-                dataset['radar_out'], field_name, ang, ind_rays, ind_rng, prdcfg,
-                fname_list, xaxis_info=xaxis_info, along_azi=along_azi,
-                vmin=vmin, vmax=vmax)
+                dataset['radar_out'], field_name, ang, ind_rays, ind_rng,
+                prdcfg, fname_list, xaxis_info=xaxis_info,
+                along_azi=along_azi, vmin=vmin, vmax=vmax)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -659,9 +663,9 @@ def generate_spectra_products(dataset, prdcfg):
                 fname_list, xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
         else:
             plot_complex_angle_Doppler(
-                dataset['radar_out'], field_name, ang, ind_rays, ind_rng, prdcfg,
-                fname_list, xaxis_info=xaxis_info, along_azi=along_azi,
-                vmin=vmin, vmax=vmax)
+                dataset['radar_out'], field_name, ang, ind_rays, ind_rng,
+                prdcfg, fname_list, xaxis_info=xaxis_info,
+                along_azi=along_azi, vmin=vmin, vmax=vmax)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -1000,10 +1004,11 @@ def generate_spectra_products(dataset, prdcfg):
                 phase_vmax=phase_vmax)
         else:
             plot_amp_phase_angle_Doppler(
-                dataset['radar_out'], field_name, ang, ind_rays, ind_rng, prdcfg,
-                fname_list, xaxis_info=xaxis_info, along_azi=along_azi,
-                ampli_vmin=ampli_vmin, ampli_vmax=ampli_vmax,
-                phase_vmin=phase_vmin, phase_vmax=phase_vmax)
+                dataset['radar_out'], field_name, ang, ind_rays, ind_rng,
+                prdcfg, fname_list, xaxis_info=xaxis_info,
+                along_azi=along_azi, ampli_vmin=ampli_vmin,
+                ampli_vmax=ampli_vmax, phase_vmin=phase_vmin,
+                phase_vmax=phase_vmax)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -1127,7 +1132,6 @@ def generate_spectra_products(dataset, prdcfg):
             field_names = []
             for datatype in datatypes:
                 field_names.append(get_fieldname_pyart(datatype))
-
 
         if field_names is not None:
             radar_aux = deepcopy(dataset['radar_out'])

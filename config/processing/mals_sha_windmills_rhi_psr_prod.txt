@@ -1,0 +1,292 @@
+#
+# Product generation configuration
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 6
+    l0:filter_0Doppler
+    l1:PolVariables
+    l2:WM1
+    l2:WM2
+    l2:WM3
+    l2:WM_rng_span
+
+
+# ==========================================================================================
+#                 spectral filtering
+# ==========================================================================================
+filter_0Doppler STRUCT 4
+    type STRING FILTER_0DOPPLER
+    datatype STRARR 2
+        PSRSPECTRA:ShhADU
+        PSRSPECTRA:SvvADU
+    filter_width FLOAT 1.
+    MAKE_GLOBAL INT 1
+    products STRUCT 2
+        RAY25_ShhADU STRUCT 3
+            type  STRING COMPLEX_RANGE_DOPPLER
+            ind_ray INT 25
+            voltype STRING ShhADU
+        RAY25_SvvADU STRUCT 3
+            type  STRING COMPLEX_RANGE_DOPPLER
+            ind_ray INT 25
+            voltype STRING SvvADU
+
+
+# ==========================================================================================
+#                 polarimetric variables
+# ==========================================================================================
+PolVariables STRUCT 6
+    type STRING POL_VARIABLES
+    datatype STRARR 2
+        PROC:ShhADU
+        PROC:SvvADU
+    variables STRARR 6
+        dBZ
+        ZDR
+        PhiDP
+        RhoHV
+        V
+        W
+    MAKE_GLOBAL INT 1
+    SUBSTITUTE_OBJECT INT 1
+    products STRUCT 1
+        SAVEALL STRUCT 1
+            type  STRING SAVEALL
+
+
+# ==========================================================================================
+#                 raw data processing
+# ==========================================================================================
+# Nominal 7720
+WM1 STRUCT 4
+    type STRING FIXED_RNG
+    datatype STRARR 6
+        PROC:dBZ
+        PROC:ZDR
+        PROC:RhoHV
+        PROC:PhiDP
+        PROC:V
+        PROC:W
+    rng FLOAT 7740.
+    products STRUCT 13
+        IMAGE_dBZ STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING dBZ
+        HISTOGRAM_dBZ STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING dBZ
+            step FLOAT 0.5
+        IMAGE_ZDR STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING ZDR
+        HISTOGRAM_ZDR STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING ZDR
+            step FLOAT 0.1
+        IMAGE_RhoHV STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING RhoHV
+        HISTOGRAM_RhoHV STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING RhoHV
+            step FLOAT 0.001
+        IMAGE_PhiDP STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING PhiDP
+        HISTOGRAM_PhiDP STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING PhiDP
+            step FLOAT 1
+        IMAGE_V STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING V
+        HISTOGRAM_V STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING V
+            step FLOAT 1
+        IMAGE_W STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING W
+        HISTOGRAM_W STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING W
+            step FLOAT 0.1
+        SAVEVOL STRUCT 1
+            type STRING SAVEALL
+
+# Nominal 8050
+WM2 STRUCT 4
+    type STRING FIXED_RNG
+    datatype STRARR 6
+        PROC:dBZ
+        PROC:ZDR
+        PROC:RhoHV
+        PROC:PhiDP
+        PROC:V
+        PROC:W
+    rng FLOAT 8040.
+    products STRUCT 13
+        IMAGE_dBZ STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING dBZ
+        HISTOGRAM_dBZ STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING dBZ
+            step FLOAT 0.5
+        IMAGE_ZDR STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING ZDR
+        HISTOGRAM_ZDR STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING ZDR
+            step FLOAT 0.1
+        IMAGE_RhoHV STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING RhoHV
+        HISTOGRAM_RhoHV STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING RhoHV
+            step FLOAT 0.001
+        IMAGE_PhiDP STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING PhiDP
+        HISTOGRAM_PhiDP STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING PhiDP
+            step FLOAT 1
+        IMAGE_V STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING V
+        HISTOGRAM_V STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING V
+            step FLOAT 1
+        IMAGE_W STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING W
+        HISTOGRAM_W STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING W
+            step FLOAT 0.1
+        SAVEVOL STRUCT 1
+            type STRING SAVEALL
+
+# Nominal 8580
+WM3 STRUCT 4
+    type STRING FIXED_RNG
+    datatype STRARR 6
+        PROC:dBZ
+        PROC:ZDR
+        PROC:RhoHV
+        PROC:PhiDP
+        PROC:V
+        PROC:W
+    rng FLOAT 8600.
+    products STRUCT 13
+        IMAGE_dBZ STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING dBZ
+        HISTOGRAM_dBZ STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING dBZ
+            step FLOAT 0.5
+        IMAGE_ZDR STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING ZDR
+        HISTOGRAM_ZDR STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING ZDR
+            step FLOAT 0.1
+        IMAGE_RhoHV STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING RhoHV
+        HISTOGRAM_RhoHV STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING RhoHV
+            step FLOAT 0.001
+        IMAGE_PhiDP STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING PhiDP
+        HISTOGRAM_PhiDP STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING PhiDP
+            step FLOAT 1
+        IMAGE_V STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING V
+        HISTOGRAM_V STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING V
+            step FLOAT 1
+        IMAGE_W STRUCT 2
+            type STRING FIXED_RNG_IMAGE
+            voltype STRING W
+        HISTOGRAM_W STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING W
+            step FLOAT 0.1
+        SAVEVOL STRUCT 1
+            type STRING SAVEALL
+
+
+WM_rng_span STRUCT 5
+    type STRING FIXED_RNG_SPAN
+    datatype STRARR 6
+        PROC:dBZ
+        PROC:ZDR
+        PROC:RhoHV
+        PROC:PhiDP
+        PROC:V
+        PROC:W
+    rmin FLOAT 7000.
+    rmax FLOAT 9000.
+    products STRUCT 13
+        IMAGE_dBZ STRUCT 2
+            type STRING FIXED_RNG_SPAN_IMAGE
+            voltype STRING dBZ
+        HISTOGRAM_dBZ STRUCT 3
+           type STRING HISTOGRAM
+            voltype STRING dBZ
+            step FLOAT 0.5
+        IMAGE_ZDR STRUCT 2
+            type STRING FIXED_RNG_SPAN_IMAGE
+            voltype STRING ZDR
+        HISTOGRAM_ZDR STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING ZDR
+            step FLOAT 0.1
+        IMAGE_RhoHV STRUCT 2
+            type STRING FIXED_RNG_SPAN_IMAGE
+            voltype STRING RhoHV
+        HISTOGRAM_RhoHV STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING RhoHV
+            step FLOAT 0.001
+        IMAGE_PhiDP STRUCT 2
+            type STRING FIXED_RNG_SPAN_IMAGE
+            voltype STRING PhiDP
+        HISTOGRAM_PhiDP STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING PhiDP
+            step FLOAT 1
+        IMAGE_V STRUCT 2
+            type STRING FIXED_RNG_SPAN_IMAGE
+            voltype STRING V
+        HISTOGRAM_V STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING V
+           step FLOAT 1
+        IMAGE_W STRUCT 2
+            type STRING FIXED_RNG_SPAN_IMAGE
+            voltype STRING W
+        HISTOGRAM_W STRUCT 3
+            type STRING HISTOGRAM
+            voltype STRING W
+            step FLOAT 0.1
+        SAVEVOL STRUCT 1
+            type STRING SAVEALL
+
+
+

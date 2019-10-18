@@ -1,0 +1,77 @@
+#
+# Product generation configuration
+# TODO: Create a single TRT trajectory volume
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 2
+    l0:loadvol
+    l1:trt_traj_ls
+
+
+# ==========================================================================================
+#       load data
+# ==========================================================================================
+loadvol STRUCT 3
+    type STRING RAW
+    datatype STRING CFRADIAL:all_fields,savevol_ls,RHI
+    MAKE_GLOBAL INT 1
+
+# ==========================================================================================
+#               TRT cells trajectory processing
+# ==========================================================================================
+trt_traj_ls STRUCT 4
+    type STRING TRAJ_TRT
+    datatype STRARR 3
+        PROC:KDPc
+        PROC:hydro
+        PROC:RR
+    TimeTol FLOAT 300.
+    products STRUCT 7
+        HISTOGRAM_KDPc STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING KDPc
+            step FLOAT 0.05
+            write_data FLOAT 1
+        PROFILE_KDPc STRUCT 7
+            type STRING PROFILE_STATS
+            voltype STRING KDPc
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            vmin FLOAT -1.
+            vmax FLOAT 2.
+        HISTOGRAM_hydro STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING hydro
+            step FLOAT 1.
+            write_data FLOAT 1
+        PROFILE_hydro STRUCT 8
+            type STRING PROFILE_STATS
+            voltype STRING hydro
+            quantity STRING mode
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            vmin FLOAT 0.
+            vmax FLOAT 9.
+        HISTOGRAM_RR STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING RR
+            step FLOAT 0.1
+            write_data FLOAT 1
+        PROFILE_RR STRUCT 7
+            type STRING PROFILE_STATS
+            voltype STRING RR
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            vmin FLOAT 0.
+            vmax FLOAT 100.
+        SAVEVOL STRUCT 2
+            type  STRING SAVEALL
+            datatypes STRARR 3
+                KDPc
+                hydro
+                RR

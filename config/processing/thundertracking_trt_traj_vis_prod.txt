@@ -1,0 +1,166 @@
+#
+# Product generation configuration
+# TODO: Create a single TRT trajectory volume
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 5
+    l0:loadvol
+    l0:loadvis
+    l1:visibilityFilter
+    l2:trt_traj_vis_filt
+    l2:trt_traj_vis
+
+
+# ==========================================================================================
+#       load data
+# ==========================================================================================
+loadvol STRUCT 3
+    type STRING RAW
+    datatype STRING CFRADIAL:all_fields,savevol_ls,RHI
+    MAKE_GLOBAL INT 1
+
+loadvis STRUCT 3
+    type STRING RAW
+    datatype STRING CFRADIAL:VIS,VIS,SAVEVOL_RHI
+    MAKE_GLOBAL INT 1
+
+# ==========================================================================================
+#       Filter by visibility
+# ==========================================================================================
+visibilityFilter STRUCT 4
+    type STRING VIS_FILTER
+    datatype STRARR 7
+        PROC:VIS
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:RhoHVc
+        PROC:KDPc
+        PROC:hydro
+        PROC:RR
+    VISmin FLOAT 99.
+    MAKE_GLOBAL INT 1
+
+# ==========================================================================================
+#               TRT cells trajectory processing
+# ==========================================================================================
+trt_traj_vis_filt STRUCT 4
+    type STRING TRAJ_TRT
+    datatype STRARR 6
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:RhoHVc
+        PROC:KDPc
+        PROC:hydroc
+        PROC:RRc
+    TimeTol FLOAT 2.
+    products STRUCT 13
+        HISTOGRAM_dBZc STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING dBZc
+            step FLOAT 0.5
+            write_data FLOAT 1
+        PROFILE_dBZc STRUCT 7
+            type STRING PROFILE_STATS
+            voltype STRING dBZc
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            vmin FLOAT -10.
+            vmax FLOAT 50.
+        HISTOGRAM_ZDRc STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING ZDRc
+            step FLOAT 0.1
+            write_data FLOAT 1
+        PROFILE_ZDRc STRUCT 7
+            type STRING PROFILE_STATS
+            voltype STRING ZDRc
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            vmin FLOAT -1.
+            vmax FLOAT 3.
+        HISTOGRAM_RhoHVc STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING RhoHVc
+            step FLOAT 0.001
+            write_data FLOAT 1
+        PROFILE_RhoHVc STRUCT 8
+            type STRING PROFILE_STATS
+            voltype STRING RhoHVc
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            quantiles FLTARR 3
+                65.
+                80.
+                95.
+            vmin FLOAT 0.95
+            vmax FLOAT 1.01
+        HISTOGRAM_KDPc STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING KDPc
+            step FLOAT 0.05
+            write_data FLOAT 1
+        PROFILE_KDPc STRUCT 7
+            type STRING PROFILE_STATS
+            voltype STRING KDPc
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            vmin FLOAT -1.
+            vmax FLOAT 2.
+        HISTOGRAM_hydroc STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING hydroc
+            step FLOAT 1.
+            write_data FLOAT 1
+        PROFILE_hydroc STRUCT 8
+            type STRING PROFILE_STATS
+            voltype STRING hydroc
+            quantity STRING mode
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            vmin FLOAT 0.
+            vmax FLOAT 9.
+        HISTOGRAM_RRc STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING RRc
+            step FLOAT 0.1
+            write_data FLOAT 1
+        PROFILE_RRc STRUCT 7
+            type STRING PROFILE_STATS
+            voltype STRING RRc
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            vmin FLOAT 0.
+            vmax FLOAT 100.
+        SAVEVOL STRUCT 2
+            type  STRING SAVEALL
+            datatypes STRARR 6
+                dBZc
+                ZDRc
+                RhoHVc
+                KDPc
+                hydroc
+                RRc
+
+trt_traj_vis STRUCT 4
+    type STRING TRAJ_TRT
+    datatype STRARR 1
+        PROC:VIS
+    TimeTol FLOAT 2.
+    products STRUCT 1
+        PROFILE STRUCT 7
+            type STRING PROFILE_STATS
+            voltype STRING VIS
+            quantity STRING mean
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            vmin FLOAT 0.
+            vmax FLOAT 100.

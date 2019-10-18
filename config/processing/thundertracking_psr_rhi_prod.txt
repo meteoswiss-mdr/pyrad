@@ -1,0 +1,441 @@
+#
+# Product generation configuration for thunderstorm tracking
+#
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+# Modified 29-03-2019: KDP from Rainbow not used anymore.
+#                      Added Ahc to the list of saved datatypes
+
+dataSetList STRARR 2
+    l0:ShhADU
+    l0:sPhhdBm_netcdf
+#    l1:poi_rng3800_azi183_ele13
+
+#    l0:filter_0Doppler
+#    l1:filter_spectra_noise_h
+#    l1:filter_spectra_noise_v
+#    l3:sRhoHV_filter
+#    l2:sRhoHV
+#    l4:sdBZ
+#    l4:sdBZv
+#    l4:sPhiDP
+#    l5:dBZ
+#    l5:PhiDP
+#    l5:V
+#    l5:W
+#    l5:ZDR
+#    l5:RhoHV
+#    l6:RhoHV2
+
+
+# ==========================================================================================
+#                 raw data processing
+# ==========================================================================================
+Nh STRUCT 3
+   type     STRING RAW
+   datatype STRING PSR:Nh
+   products STRUCT 1
+      AZ0 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 0
+         voltype STRING Nh
+
+NdBmh STRUCT 3
+   type     STRING RAW
+   datatype STRING PSR:NdBmh
+   products STRUCT 1
+      AZ0 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 0
+         voltype STRING NdBmh
+
+TXh STRUCT 3
+   type     STRING RAW
+   datatype STRING PSR:TXh
+   products STRUCT 1
+      AZ0 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 0
+         voltype STRING TXh
+
+
+NADUh STRUCT 3
+    type     STRING RAW_SPECTRA
+    datatype STRING PSRSPECTRA:NADUh
+    products STRUCT 1
+        RAY25_RNG50 STRUCT 4
+            type  STRING DOPPLER
+            ind_ray INT 25
+            ind_rng INT 50
+            voltype STRING NADUh
+        RAY25 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 25
+            voltype STRING NADUh
+
+ShhADU STRUCT 3
+    type     STRING RAW_SPECTRA
+    datatype STRING PSRSPECTRA:ShhADU
+    products STRUCT 2
+        RNG5000_AZI183 STRUCT 5
+            type STRING AMPLITUDE_PHASE_ANGLE_DOPPLER
+            along_azi INT 0
+            rng FLOAT 5000.
+            ang FLOAT 183.
+            voltype STRING ShhADU
+        RNG5000_AZI183_COMPLEX STRUCT 5
+            type STRING COMPLEX_ANGLE_DOPPLER
+            along_azi INT 0
+            rng FLOAT 5000.
+            ang FLOAT 183.
+            voltype STRING ShhADU
+        RAY25_RNG50_AMPLI_PHASE STRUCT 6
+            type  STRING AMPLITUDE_PHASE_DOPPLER
+            phase_vmin FLOAT -180.
+            phase_vmax FLOAT 180.
+            ind_ray INT 25
+            ind_rng INT 50
+            voltype STRING ShhADU
+        RAY25_RNG50 STRUCT 6
+            type  STRING COMPLEX_DOPPLER
+            vmin FLOAT -10.
+            vmax FLOAT 10.
+            ind_ray INT 25
+            ind_rng INT 50
+            voltype STRING ShhADU
+        RAY25_AMPLI_PHASE STRUCT 7
+            type  STRING AMPLITUDE_PHASE_RANGE_DOPPLER
+            ind_ray INT 25
+            ampli_vmin FLOAT 0.
+            ampli_vmax FLOAT 10.
+            phase_vmin FLOAT -180.
+            phase_vmax FLOAT 180.
+            voltype STRING ShhADU
+        RAY0_AMPLI_PHASE STRUCT 7
+            type  STRING AMPLITUDE_PHASE_RANGE_DOPPLER
+            ind_ray INT 0
+            ampli_vmin FLOAT 0.
+            ampli_vmax FLOAT 10.
+            phase_vmin FLOAT -180.
+            phase_vmax FLOAT 180.
+            voltype STRING ShhADU
+        RAY25 STRUCT 5
+            type  STRING COMPLEX_RANGE_DOPPLER
+            ind_ray INT 0
+            vmin FLOAT -10.
+            vmax FLOAT 10.
+            voltype STRING ShhADU
+
+
+# ==========================================================================================
+#                 spectral filtering
+# ==========================================================================================
+filter_0Doppler STRUCT 5
+    type STRING FILTER_0DOPPLER
+    datatype STRARR 2
+        PSRSPECTRA:ShhADU
+        PSRSPECTRA:SvvADU
+    filter_width FLOAT 1.
+    MAKE_GLOBAL INT 1
+    products STRUCT 2
+        RAY25_ShhADU STRUCT 3
+            type  STRING COMPLEX_RANGE_DOPPLER
+            ind_ray INT 25
+            voltype STRING ShhADU
+        RAY25_SvvADU STRUCT 3
+            type  STRING COMPLEX_RANGE_DOPPLER
+            ind_ray INT 25
+            voltype STRING SvvADU
+
+
+filter_spectra_noise_h STRUCT 5
+    type STRING FILTER_SPECTRA_NOISE
+    datatype STRARR 2
+        PSRSPECTRA:NADUh
+        PROC:ShhADU
+    clipping_level FLOAT 10.
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        RAY25_ShhADU STRUCT 3
+            type  STRING COMPLEX_RANGE_DOPPLER
+            ind_ray INT 25
+            voltype STRING ShhADU
+
+
+filter_spectra_noise_v STRUCT 5
+    type STRING FILTER_SPECTRA_NOISE
+    datatype STRARR 2
+        PSRSPECTRA:NADUv
+        PROC:SvvADU
+    clipping_level FLOAT 10.
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        RAY25_SvvADU STRUCT 3
+            type  STRING COMPLEX_RANGE_DOPPLER
+            ind_ray INT 25
+            voltype STRING SvvADU
+
+sRhoHV_filter STRUCT 5
+    type STRING SRHOHV_FILTER
+    datatype STRARR 4
+        PROC:sRhoHV
+        PROC:sRhoHV
+        PROC:ShhADU
+        PROC:SvvADU
+    sRhoHV_threshold FLOAT 1.
+    MAKE_GLOBAL INT 1
+    products STRUCT 3
+        RAY25_ShhADU STRUCT 3
+            type  STRING COMPLEX_RANGE_DOPPLER
+            ind_ray INT 25
+            voltype STRING ShhADU
+        RAY25_SvvADU STRUCT 3
+            type  STRING COMPLEX_RANGE_DOPPLER
+            ind_ray INT 25
+            voltype STRING SvvADU
+        RAY25_sRhoHV STRUCT 3
+            type  STRING AMPLITUDE_PHASE_RANGE_DOPPLER
+            ind_ray INT 25
+            voltype STRING sRhoHV
+
+
+# ==========================================================================================
+#                 retrieved spectral data
+# ==========================================================================================
+sRhoHV STRUCT 4
+    type STRING sRhoHV
+    datatype STRARR 2
+        PROC:ShhADU
+        PROC:SvvADU
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        RAY25 STRUCT 3
+            type  STRING AMPLITUDE_PHASE_RANGE_DOPPLER
+            ind_ray INT 25
+            voltype STRING sRhoHV
+
+sPhhdBm STRUCT 5
+    type STRING SPECTRAL_POWER
+    datatype STRING PSRSPECTRA:ShhADU
+    units STRING dBm
+    MAKE_GLOBAL INT 1
+    products STRUCT 3
+        RAY25 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 25
+            voltype STRING sPhhdBm
+        RAY25_RNG50 STRUCT 4
+            type  STRING DOPPLER
+            ind_ray INT 25
+            ind_rng INT 50
+            voltype STRING sPhhdBm
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING sPhhdBm
+
+sPhhdBm_netcdf STRUCT 3
+    type STRING RAW_SPECTRA
+    datatype STRING NETCDFSPECTRA:sPhhdBm,sPhhdBm,SAVEVOL
+    products STRUCT 1
+        RNG5000_AZI183 STRUCT 5
+            type STRING ANGLE_DOPPLER
+            along_azi INT 0
+            rng FLOAT 5000.
+            ang FLOAT 183.
+            voltype STRING sPhhdBm
+        RAY25 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 25
+            voltype STRING sPhhdBm
+        RAY25_RNG50 STRUCT 4
+            type  STRING DOPPLER
+            ind_ray INT 25
+            ind_rng INT 50
+            voltype STRING sPhhdBm
+
+sPhhADU STRUCT 4
+    type STRING SPECTRAL_POWER
+    datatype STRING PSRSPECTRA:ShhADU
+    units STRING ADU
+    products STRUCT 2
+        RAY25 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 25
+            voltype STRING sPhhADU
+        RAY25_RNG50 STRUCT 4
+            type  STRING DOPPLER
+            ind_ray INT 25
+            ind_rng INT 50
+            voltype STRING sPhhADU
+
+
+sPhasehh STRUCT 4
+    type STRING SPECTRAL_PHASE
+    datatype STRING PSRSPECTRA:ShhADU
+    units STRING dBm
+    products STRUCT 1
+        RAY25 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 25
+            voltype STRING sPhasehh
+
+sdBZ STRUCT 4
+    type STRING SPECTRAL_REFLECTIVITY
+    datatype STRING PROC:ShhADU
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        RAY25 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 25
+            voltype STRING sdBZ
+
+sdBZv STRUCT 4
+    type STRING SPECTRAL_REFLECTIVITY
+    datatype STRING PROC:SvvADU
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        RAY25 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 25
+            voltype STRING sdBZv
+
+sZDR STRUCT 3
+    type STRING sZDR
+    datatype STRARR 2
+        PSRSPECTRA:ShhADU
+        PSRSPECTRA:SvvADU
+    products STRUCT 1
+        RAY25 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 25
+            voltype STRING sZDR
+
+sPhiDP STRUCT 4
+    type STRING sPhiDP
+    datatype STRARR 2
+        PSRSPECTRA:ShhADU
+        PSRSPECTRA:SvvADU
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        RAY25 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 25
+            voltype STRING sPhiDP
+
+# ==========================================================================================
+#                 POI
+# ==========================================================================================
+poi_rng3800_azi183_ele13 STRUCT 7
+    type STRING SPECTRA_POINT
+    datatype STRARR 2
+        PROC:sPhhdBm
+        PSRSPECTRA:ShhADU
+    latlon INT 0
+    azi FLOAT 183.9
+    ele FLOAT 12.7
+    rng FLOAT 3800.
+    products STRUCT 3
+        sPhhdBm STRUCT 2
+            type  STRING TIME_DOPPLER
+            voltype STRING sPhhdBm
+        ShhADU STRUCT 2
+            type  STRING COMPLEX_TIME_DOPPLER
+            voltype STRING ShhADU
+        ShhADU_AMPLI_PHASE STRUCT 2
+            type  STRING AMPLITUDE_PHASE_TIME_DOPPLER
+            voltype STRING ShhADU
+
+# ==========================================================================================
+#                 polarimetric variables
+# ==========================================================================================
+PolVariables STRUCT 6
+    type STRING POL_VARIABLES
+    datatype STRARR 2
+        PSRSPECTRA:ShhADU
+        PSRSPECTRA:SvvADU
+    variables STRARR 6
+        dBZ
+        ZDR
+        PhiDP
+        RhoHV
+        V
+        W
+    MAKE_GLOBAL INT 1
+    SUBSTITUTE_OBJECT INT 1
+    products STRUCT 1
+        AZ0 STRUCT 3
+            type  STRING RHI_IMAGE
+            anglenr INT 0
+            voltype STRING dBZ
+
+dBZ STRUCT 3
+    type STRING REFLECTIVITY
+    datatype STRING PROC:sdBZ
+    products STRUCT 1
+        AZ0 STRUCT 3
+            type  STRING RHI_IMAGE
+            anglenr INT 0
+            voltype STRING dBZ
+
+PhiDP STRUCT 3
+    type STRING PhiDP
+    datatype STRARR 2
+        PROC:sdBZ
+        PROC:sPhiDP
+    products STRUCT 1
+        AZ0 STRUCT 3
+            type  STRING RHI_IMAGE
+            anglenr INT 0
+            voltype STRING PhiDP
+
+V STRUCT 3
+    type STRING DOPPLER_VELOCITY
+    datatype STRING PROC:sdBZ
+    products STRUCT 1
+        AZ0 STRUCT 3
+            type  STRING RHI_IMAGE
+            anglenr INT 0
+            voltype STRING V
+
+W STRUCT 3
+    type STRING DOPPLER_WIDTH
+    datatype STRING PROC:sdBZ
+    products STRUCT 1
+        AZ0 STRUCT 3
+            type  STRING RHI_IMAGE
+            anglenr INT 0
+            voltype STRING W
+
+ZDR STRUCT 3
+    type STRING ZDR
+    datatype STRARR 2
+        PROC:sdBZ
+        PROC:sdBZv
+    products STRUCT 1
+        AZ0 STRUCT 3
+            type  STRING RHI_IMAGE
+            anglenr INT 0
+            voltype STRING ZDR
+
+
+RhoHV STRUCT 5
+    type STRING RhoHV
+    datatype STRARR 2
+        PROC:ShhADU
+        PROC:SvvADU
+    MAKE_GLOBAL INT 1
+    SUBSTITUTE_OBJECT INT 1
+    products STRUCT 1
+        AZ0 STRUCT 3
+            type  STRING RHI_IMAGE
+            anglenr INT 0
+            voltype STRING RhoHV
+
+RhoHV2 STRUCT 3
+    type STRING RAW
+    datatype STRING PROC:RhoHV
+    products STRUCT 1
+        AZ0 STRUCT 3
+            type  STRING RHI_IMAGE
+            anglenr INT 0
+            voltype STRING RhoHV

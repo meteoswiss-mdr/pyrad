@@ -1,0 +1,493 @@
+#
+# Product generation configuration
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 7
+    l0:sPhhADUu
+    l0:sPvvADUu
+    l0:sRhoHVu
+    l1:PolVariables
+    l1:spectra_avg
+    l2:sRhoHV_filter
+    l3:PolVariables_avg
+
+
+# ==========================================================================================
+#               Raw data
+# ==========================================================================================
+NADUh STRUCT 3
+    type     STRING RAW_SPECTRA
+    datatype STRING PSRSPECTRA:NADUh
+    products STRUCT 1
+        RAY0 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 0
+            voltype STRING NADUh
+
+NADUv STRUCT 3
+    type     STRING RAW_SPECTRA
+    datatype STRING PSRSPECTRA:NADUv
+    products STRUCT 1
+        RAY0 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 0
+            voltype STRING NADUv
+
+# ==========================================================================================
+#               Spectral parameters
+# ==========================================================================================
+sPhhADUu STRUCT 5
+    type STRING SPECTRAL_POWER
+    datatype STRING PSRSPECTRA:ShhADUu
+    units STRING ADU
+    MAKE_GLOBAL INT 1
+    products STRUCT 2
+        RAY0 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 0
+            voltype STRING sPhhADUu
+        RAY0_RNG50 STRUCT 4
+            type  STRING DOPPLER
+            ind_ray INT 0
+            ind_rng INT 50
+            voltype STRING sPhhADUu
+
+sPvvADUu STRUCT 5
+    type STRING SPECTRAL_POWER
+    datatype STRING PSRSPECTRA:SvvADUu
+    units STRING ADU
+    MAKE_GLOBAL INT 1
+    products STRUCT 2
+        RAY0 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 0
+            voltype STRING sPvvADUu
+        RAY0_RNG50 STRUCT 4
+            type  STRING DOPPLER
+            ind_ray INT 0
+            ind_rng INT 50
+            voltype STRING sPvvADUu
+
+sRhoHVu STRUCT 4
+    type STRING sRhoHV
+    datatype STRARR 2
+        PSRSPECTRA:ShhADUu
+        PSRSPECTRA:SvvADUu
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        RAY0 STRUCT 3
+            type  STRING AMPLITUDE_PHASE_RANGE_DOPPLER
+            ind_ray INT 0
+            voltype STRING sRhoHVu
+
+sdBZ STRUCT 4
+    type STRING SPECTRAL_REFLECTIVITY
+    datatype STRING PSRSPECTRA:ShhADU
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        RAY0 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 0
+            voltype STRING sdBZ
+
+sdBZv STRUCT 4
+    type STRING SPECTRAL_REFLECTIVITY
+    datatype STRING PSRSPECTRA:SvvADU
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        RAY0 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 0
+            voltype STRING sdBZv
+
+sZDR STRUCT 4
+    type STRING sZDR
+    datatype STRARR 2
+        PSRSPECTRA:ShhADU
+        PSRSPECTRA:SvvADU
+    MAKE_GLOBAL INT 0
+    products STRUCT 1
+        RAY0 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 0
+            voltype STRING sZDR
+
+sPhiDP STRUCT 4
+    type STRING sPhiDP
+    datatype STRARR 2
+        PSRSPECTRA:ShhADU
+        PSRSPECTRA:SvvADU
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        RAY0 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 0
+            voltype STRING sPhiDP
+
+sPhiDP_from_sRhoHV STRUCT 4
+    type STRING sPhiDP
+    datatype STRARR 1
+        PROC:sRhoHV
+    MAKE_GLOBAL INT 0
+    products STRUCT 1
+        RAY0 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 0
+            voltype STRING sPhiDP
+
+
+# ==========================================================================================
+#                 polarimetric variables
+# ==========================================================================================
+PolVariables STRUCT 6
+    type STRING POL_VARIABLES
+    datatype STRARR 3
+        PROC:sRhoHVu
+        PROC:sPhhADUu
+        PROC:sPvvADUu
+    variables STRARR 6
+        dBuZ
+        ZDRu
+        uPhiDPu
+        RhoHVu
+        Vu
+        Wu
+    MAKE_GLOBAL INT 0
+    SUBSTITUTE_OBJECT INT 0
+    products STRUCT 6
+        BSCOPE_dBuZ STRUCT 3
+            type  STRING BSCOPE_IMAGE
+            anglenr INT 0
+            voltype STRING dBuZ
+        BSCOPE_ZDRu STRUCT 3
+            type  STRING BSCOPE_IMAGE
+            anglenr INT 0
+            voltype STRING ZDRu
+        BSCOPE_uPhiDPu STRUCT 3
+            type  STRING BSCOPE_IMAGE
+            anglenr INT 0
+            voltype STRING uPhiDPu
+        BSCOPE_RhoHVu STRUCT 3
+            type  STRING BSCOPE_IMAGE
+            anglenr INT 0
+            voltype STRING RhoHVu
+        BSCOPE_Vu STRUCT 3
+            type  STRING BSCOPE_IMAGE
+            anglenr INT 0
+            voltype STRING Vu
+        BSCOPE_Wu STRUCT 3
+            type  STRING BSCOPE_IMAGE
+            anglenr INT 0
+            voltype STRING Wu
+
+
+dBZ STRUCT 3
+    type STRING REFLECTIVITY
+    datatype STRING PROC:sdBZ
+    products STRUCT 1
+        BSCOPE STRUCT 3
+            type STRING BSCOPE_IMAGE
+            voltype STRING dBZ
+            anglenr INT 0
+
+ZDR STRUCT 3
+    type STRING ZDR
+    datatype STRARR 2
+        PROC:sdBZ
+        PROC:sdBZv
+    products STRUCT 1
+        BSCOPE STRUCT 3
+            type STRING BSCOPE_IMAGE
+            voltype STRING ZDR
+            anglenr INT 0
+
+RhoHV STRUCT 3
+    type STRING RhoHV
+    datatype STRARR 3
+        PROC:sRhoHV
+        PROC:sPhhADU
+        PROC:sPvvADU
+    products STRUCT 1
+        BSCOPE STRUCT 3
+            type STRING BSCOPE_IMAGE
+            voltype STRING RhoHV
+            anglenr INT 0
+
+PhiDP STRUCT 3
+    type STRING PhiDP
+    datatype STRARR 2
+        PROC:sdBZ
+        PROC:sPhiDP
+    products STRUCT 1
+        BSCOPE STRUCT 3
+            type STRING BSCOPE_IMAGE
+            voltype STRING PhiDP
+            anglenr INT 0
+
+V_avg STRUCT 3
+    type STRING DOPPLER_VELOCITY
+    datatype STRING PROC:sdBZ
+    products STRUCT 1
+        BSCOPE STRUCT 3
+            type STRING BSCOPE_IMAGE
+            voltype STRING V
+            anglenr INT 0
+
+W_avg STRUCT 3
+    type STRING DOPPLER_WIDTH
+    datatype STRING PROC:sdBZ
+    products STRUCT 1
+        BSCOPE STRUCT 3
+            type STRING BSCOPE_IMAGE
+            voltype STRING W
+            anglenr INT 0
+
+
+# ==========================================================================================
+#               Spectra averaging
+# ==========================================================================================
+spectra_avg STRUCT 5
+    type STRING SPECTRA_ANGULAR_AVERAGE
+    datatype STRARR 3
+        PROC:sPhhADUu
+        PROC:sPvvADUu
+        PROC:sRhoHVu
+    MAKE_GLOBAL INT 1
+    SUBSTITUTE_OBJECT INT 1
+    products STRUCT 6
+        RAY0_sPhhADUu STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 0
+            voltype STRING sPhhADUu
+        RAY0_RNG50_sPhhADUu STRUCT 4
+            type  STRING DOPPLER
+            ind_ray INT 0
+            ind_rng INT 50
+            voltype STRING sPhhADUu
+        RAY0_sPvvADUu STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 0
+            voltype STRING sPvvADUu
+        RAY0_RNG50_sPvvADUu STRUCT 4
+            type  STRING DOPPLER
+            ind_ray INT 0
+            ind_rng INT 50
+            voltype STRING sPvvADUu
+        RAY0_sRhoHVu STRUCT 3
+            type  STRING AMPLITUDE_PHASE_RANGE_DOPPLER
+            ind_ray INT 0
+            voltype STRING sRhoHVu
+        RAY0_RNG50_sRhoHVu STRUCT 4
+            type  STRING AMPLITUDE_PHASE_DOPPLER
+            ind_ray INT 0
+            ind_rng INT 50
+            voltype STRING sRhoHVu
+
+
+# ==========================================================================================
+#               Noise filtering
+# ==========================================================================================
+filter_spectra_noise_h STRUCT 5
+    type STRING FILTER_SPECTRA_NOISE
+    datatype STRARR 4
+        PROC:ShhADU
+        PROC:NADUh
+        PROC:sPhhADU
+        PROC:ShhADU
+    clipping_level FLOAT 10.
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        RAY0_sPhhADU STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 0
+            voltype STRING sPhhADU
+
+filter_spectra_noise_v STRUCT 5
+    type STRING FILTER_SPECTRA_NOISE
+    datatype STRARR 4
+        PROC:SvvADU
+        PROC:NADUv
+        PROC:sPvvADU
+        PROC:SvvADU
+    clipping_level FLOAT 3.
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        RAY0_sPvvADU STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 0
+            voltype STRING sPvvADU
+
+
+# ==========================================================================================
+#               sRhoHV filtering
+# ==========================================================================================
+sRhoHV_filter STRUCT 5
+    type STRING SRHOHV_FILTER
+    datatype STRARR 4
+        PROC:sRhoHVu
+        PROC:sPhhADUu
+        PROC:sPvvADUu
+        PROC:sRhoHVu
+    sRhoHV_threshold FLOAT 0.9
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        RAY0_sPhhADU STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 0
+            voltype STRING sPhhADU
+
+
+# ==========================================================================================
+#               Averaged spectral parameters
+# ==========================================================================================
+sdBZ_avg STRUCT 4
+    type STRING SPECTRAL_REFLECTIVITY
+    datatype STRING PROC:sPhhADU
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        RAY0 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 0
+            voltype STRING sdBZ
+
+sdBZv_avg STRUCT 4
+    type STRING SPECTRAL_REFLECTIVITY
+    datatype STRING PROC:sPvvADU
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        RAY0 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 0
+            voltype STRING sdBZv
+
+sZDR_avg STRUCT 4
+    type STRING sZDR
+    datatype STRARR 2
+        PROC:sPhhADU
+        PROC:sPvvADU
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        RAY0 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 0
+            voltype STRING sZDR
+
+sPhiDP_avg STRUCT 4
+    type STRING sPhiDP
+    datatype STRARR 1
+        PROC:sRhoHV
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        RAY0 STRUCT 3
+            type  STRING RANGE_DOPPLER
+            ind_ray INT 0
+            voltype STRING sPhiDP
+
+
+# ==========================================================================================
+#                 averaged polarimetric variables
+# ==========================================================================================
+PolVariables_avg STRUCT 6
+    type STRING POL_VARIABLES
+    datatype STRARR 3
+        PROC:sRhoHV
+        PROC:sPhhADU
+        PROC:sPvvADU
+    variables STRARR 6
+        dBZ
+        ZDR
+        uPhiDP
+        RhoHV
+        V
+        W
+    MAKE_GLOBAL INT 0
+    SUBSTITUTE_OBJECT INT 0
+    products STRUCT 6
+        BSCOPE_dBuZ STRUCT 3
+            type  STRING BSCOPE_IMAGE
+            anglenr INT 0
+            voltype STRING dBZ
+        BSCOPE_ZDRu STRUCT 3
+            type  STRING BSCOPE_IMAGE
+            anglenr INT 0
+            voltype STRING ZDR
+        BSCOPE_uPhiDPu STRUCT 3
+            type  STRING BSCOPE_IMAGE
+            anglenr INT 0
+            voltype STRING uPhiDP
+        BSCOPE_RhoHVu STRUCT 3
+            type  STRING BSCOPE_IMAGE
+            anglenr INT 0
+            voltype STRING RhoHV
+        BSCOPE_Vu STRUCT 3
+            type  STRING BSCOPE_IMAGE
+            anglenr INT 0
+            voltype STRING V
+        BSCOPE_Wu STRUCT 3
+            type  STRING BSCOPE_IMAGE
+            anglenr INT 0
+            voltype STRING W
+
+dBZ_avg STRUCT 3
+    type STRING REFLECTIVITY
+    datatype STRING PROC:sdBZ
+    products STRUCT 1
+        BSCOPE STRUCT 3
+            type STRING BSCOPE_IMAGE
+            voltype STRING dBZ
+            anglenr INT 0
+
+ZDR_avg STRUCT 3
+    type STRING ZDR
+    datatype STRARR 2
+        PROC:sdBZ
+        PROC:sdBZv
+    products STRUCT 1
+        BSCOPE STRUCT 3
+            type STRING BSCOPE_IMAGE
+            voltype STRING ZDR
+            anglenr INT 0
+
+RhoHV_avg STRUCT 3
+    type STRING RhoHV
+    datatype STRARR 3
+        PROC:sRhoHV
+        PROC:sPhhADU
+        PROC:sPvvADU
+    products STRUCT 1
+        BSCOPE STRUCT 3
+            type STRING BSCOPE_IMAGE
+            voltype STRING RhoHV
+            anglenr INT 0
+
+PhiDP_avg STRUCT 3
+    type STRING PhiDP
+    datatype STRARR 2
+        PROC:sdBZ
+        PROC:sPhiDP
+    products STRUCT 1
+        BSCOPE STRUCT 3
+            type STRING BSCOPE_IMAGE
+            voltype STRING PhiDP
+            anglenr INT 0
+
+V_avg STRUCT 3
+    type STRING DOPPLER_VELOCITY
+    datatype STRING PROC:sdBZ
+    products STRUCT 1
+        BSCOPE STRUCT 3
+            type STRING BSCOPE_IMAGE
+            voltype STRING V
+            anglenr INT 0
+
+W_avg STRUCT 3
+    type STRING DOPPLER_WIDTH
+    datatype STRING PROC:sdBZ
+    products STRUCT 1
+        BSCOPE STRUCT 3
+            type STRING BSCOPE_IMAGE
+            voltype STRING W
+            anglenr INT 0
+

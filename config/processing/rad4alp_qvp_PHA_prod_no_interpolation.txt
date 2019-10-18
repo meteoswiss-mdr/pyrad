@@ -1,0 +1,505 @@
+#
+# Product generation configuration
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 24
+    QVP_dBZc
+    QVP_ZDRc
+    QVP_RhoHVc
+    QVP_KDPc
+    QVP_PhiDPc
+    QVP_TEMP
+    SVP_dBZc
+    SVP_ZDRc
+    SVP_RhoHVc
+    SVP_KDPc
+    SVP_PhiDPc
+    SVP_TEMP
+    EVP_dBZc
+    EVP_ZDRc
+    EVP_RhoHVc
+    EVP_KDPc
+    EVP_PhiDPc
+    EVP_TEMP
+    TH_dBZc
+    TH_ZDRc
+    TH_RhoHVc
+    TH_KDPc
+    TH_PhiDPc
+    TH_TEMP
+
+
+# ==========================================================================================
+#               QVP
+# ==========================================================================================
+QVP_dBZc STRUCT 6
+    type STRING QVP
+    datatype STRARR 1
+       CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
+    anglenr INT 11
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING dBZc
+
+QVP_ZDRc STRUCT 6
+    type STRING QVP
+    datatype STRARR 1
+       CFRADIAL:ZDRc,Att_ZPhi,SAVEVOL_ZDRc
+    anglenr INT 11
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING ZDRc
+
+QVP_RhoHVc STRUCT 6
+    type STRING QVP
+    datatype STRARR 1
+       CFRADIAL:RhoHVc,echoFilter,SAVEVOL_RhoHVc
+    anglenr INT 11
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING RhoHVc
+
+QVP_KDPc STRUCT 6
+    type STRING QVP
+    datatype STRARR 1
+       CFRADIAL:KDPc,KDPc_Vulpiani,SAVEVOL_KDPc
+    anglenr INT 11
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING KDPc
+
+QVP_PhiDPc STRUCT 6
+    type STRING QVP
+    datatype STRARR 1
+       CFRADIAL:PhiDPc,PhiDPc_smooth2w,SAVEVOL_PhiDPc
+    anglenr INT 11
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING PhiDPc
+
+QVP_TEMP STRUCT 6
+    type STRING QVP
+    datatype STRARR 1
+       CFRADIAL:TEMP,TEMP,SAVEVOL_TEMP
+    anglenr INT 11
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING TEMP
+
+
+# ==========================================================================================
+#               rQVP
+# ==========================================================================================
+#rQVP_dBZc STRUCT 5
+#    type STRING rQVP
+#    datatype STRARR 1
+#       CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
+#    interp_kind STRING nearest
+#    hres FLOAT 2.
+#    products STRUCT 1
+#        TIME_HEIGHT STRUCT 4
+#            qvp_type STRING final
+#            type STRING TIME_RANGE
+#            anglenr INT 0
+#            voltype STRING dBZc
+#
+#rQVP_ZDRc STRUCT 5
+#    type STRING rQVP
+#    datatype STRARR 1
+#       CFRADIAL:ZDRc,Att_ZPhi,SAVEVOL_ZDRc
+#    interp_kind STRING nearest
+#    hres FLOAT 2.
+#    products STRUCT 1
+#        TIME_HEIGHT STRUCT 4
+#            qvp_type STRING final
+#            type STRING TIME_RANGE
+#            anglenr INT 0
+#            voltype STRING ZDRc
+#
+#rQVP_RhoHVc STRUCT 5
+#    type STRING rQVP
+#    datatype STRARR 1
+#       CFRADIAL:RhoHVc,echoFilter,SAVEVOL_RhoHVc
+#    interp_kind STRING nearest
+#    hres FLOAT 2.
+#    products STRUCT 1
+#        TIME_HEIGHT STRUCT 4
+#            qvp_type STRING final
+#            type STRING TIME_RANGE
+#            anglenr INT 0
+#            voltype STRING RhoHVc
+#
+#rQVP_KDPc STRUCT 5
+#    type STRING rQVP
+#    datatype STRARR 1
+#       CFRADIAL:KDPc,KDPc_Vulpiani,SAVEVOL_KDPc
+#    interp_kind STRING nearest
+#    hres FLOAT 2.
+#    products STRUCT 1
+#        TIME_HEIGHT STRUCT 4
+#            qvp_type STRING final
+#            type STRING TIME_RANGE
+#            anglenr INT 0
+#            voltype STRING KDPc
+#
+#rQVP_PhiDPc STRUCT 5
+#    type STRING rQVP
+#    datatype STRARR 1
+#       CFRADIAL:PhiDPc,PhiDPc_smooth2w,SAVEVOL_PhiDPc
+#    interp_kind STRING nearest
+#    hres FLOAT 2.
+#    products STRUCT 1
+#        TIME_HEIGHT STRUCT 4
+#            qvp_type STRING final
+#            type STRING TIME_RANGE
+#            anglenr INT 0
+#            voltype STRING PhiDPc
+#
+#rQVP_TEMP STRUCT 5
+#    type STRING rQVP
+#    datatype STRARR 1
+#       CFRADIAL:TEMP,TEMP,SAVEVOL_TEMP
+#    interp_kind STRING nearest
+#    hres FLOAT 2.
+#    products STRUCT 1
+#        TIME_HEIGHT STRUCT 4
+#            qvp_type STRING final
+#            type STRING TIME_RANGE
+#            anglenr INT 0
+#            voltype STRING TEMP
+#
+#
+# ==========================================================================================
+#               SVP
+# ==========================================================================================
+# Centered at Säntis
+SVP_dBZc STRUCT 9
+    type STRING SVP
+    datatype STRING CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
+    anglenr INT 1
+    lon FLOAT 9.343
+    lat FLOAT 47.249
+    latlon_tol FLOAT 0.005
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING dBZc
+
+SVP_ZDRc STRUCT 9
+    type STRING SVP
+    datatype STRARR 1
+       CFRADIAL:ZDRc,Att_ZPhi,SAVEVOL_ZDRc
+    anglenr INT 1
+    lon FLOAT 9.343
+    lat FLOAT 47.249
+    latlon_tol FLOAT 0.005
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING ZDRc
+
+SVP_RhoHVc STRUCT 9
+    type STRING SVP
+    datatype STRARR 1
+       CFRADIAL:RhoHVc,echoFilter,SAVEVOL_RhoHVc
+    anglenr INT 1
+    lon FLOAT 9.343
+    lat FLOAT 47.249
+    latlon_tol FLOAT 0.005
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING RhoHVc
+
+SVP_KDPc STRUCT 9
+    type STRING SVP
+    datatype STRARR 1
+       CFRADIAL:KDPc,KDPc_Vulpiani,SAVEVOL_KDPc
+    anglenr INT 1
+    lon FLOAT 9.343
+    lat FLOAT 47.249
+    latlon_tol FLOAT 0.005
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING KDPc
+
+SVP_PhiDPc STRUCT 9
+    type STRING SVP
+    datatype STRARR 1
+       CFRADIAL:PhiDPc,PhiDPc_smooth2w,SAVEVOL_PhiDPc
+    anglenr INT 1
+    lon FLOAT 9.343
+    lat FLOAT 47.249
+    latlon_tol FLOAT 0.005
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING PhiDPc
+
+SVP_TEMP STRUCT 9
+    type STRING SVP
+    datatype STRARR 1
+       CFRADIAL:TEMP,TEMP,SAVEVOL_TEMP
+    anglenr INT 1
+    lon FLOAT 9.343
+    lat FLOAT 47.249
+    latlon_tol FLOAT 0.005
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING TEMP
+
+# ==========================================================================================
+#               EVP
+# ==========================================================================================
+# Centered at Säntis
+EVP_dBZc STRUCT 8
+    type STRING EVP
+    datatype STRING CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
+    lon FLOAT 9.343
+    lat FLOAT 47.249
+    latlon_tol FLOAT 0.005
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING dBZc
+
+EVP_ZDRc STRUCT 8
+    type STRING EVP
+    datatype STRARR 1
+       CFRADIAL:ZDRc,Att_ZPhi,SAVEVOL_ZDRc
+    lon FLOAT 9.343
+    lat FLOAT 47.249
+    latlon_tol FLOAT 0.005
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING ZDRc
+
+EVP_RhoHVc STRUCT 8
+    type STRING EVP
+    datatype STRARR 1
+       CFRADIAL:RhoHVc,echoFilter,SAVEVOL_RhoHVc
+    lon FLOAT 9.343
+    lat FLOAT 47.249
+    latlon_tol FLOAT 0.005
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING RhoHVc
+
+EVP_KDPc STRUCT 8
+    type STRING EVP
+    datatype STRARR 1
+       CFRADIAL:KDPc,KDPc_Vulpiani,SAVEVOL_KDPc
+    lon FLOAT 9.343
+    lat FLOAT 47.249
+    latlon_tol FLOAT 0.005
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING KDPc
+
+EVP_PhiDPc STRUCT 8
+    type STRING EVP
+    datatype STRARR 1
+       CFRADIAL:PhiDPc,PhiDPc_smooth2w,SAVEVOL_PhiDPc
+    lon FLOAT 9.343
+    lat FLOAT 47.249
+    latlon_tol FLOAT 0.005
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING PhiDPc
+
+EVP_TEMP STRUCT 8
+    type STRING EVP
+    datatype STRARR 1
+       CFRADIAL:TEMP,TEMP,SAVEVOL_TEMP
+    lon FLOAT 9.343
+    lat FLOAT 47.249
+    latlon_tol FLOAT 0.005
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING TEMP
+
+# ==========================================================================================
+#               Time-height at particular location
+# ==========================================================================================
+# Centered at Säntis
+TH_dBZc STRUCT 8
+    type STRING TIME_HEIGHT
+    datatype STRING CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
+    lon FLOAT 9.343
+    lat FLOAT 47.249
+    latlon_tol FLOAT 0.005
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING dBZc
+
+TH_ZDRc STRUCT 8
+    type STRING TIME_HEIGHT
+    datatype STRARR 1
+       CFRADIAL:ZDRc,Att_ZPhi,SAVEVOL_ZDRc
+    lon FLOAT 9.343
+    lat FLOAT 47.249
+    latlon_tol FLOAT 0.005
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING ZDRc
+
+TH_RhoHVc STRUCT 8
+    type STRING TIME_HEIGHT
+    datatype STRARR 1
+       CFRADIAL:RhoHVc,echoFilter,SAVEVOL_RhoHVc
+    lon FLOAT 9.343
+    lat FLOAT 47.249
+    latlon_tol FLOAT 0.005
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING RhoHVc
+
+TH_KDPc STRUCT 8
+    type STRING TIME_HEIGHT
+    datatype STRARR 1
+       CFRADIAL:KDPc,KDPc_Vulpiani,SAVEVOL_KDPc
+    lon FLOAT 9.343
+    lat FLOAT 47.249
+    latlon_tol FLOAT 0.005
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING KDPc
+
+TH_PhiDPc STRUCT 8
+    type STRING TIME_HEIGHT
+    datatype STRARR 1
+       CFRADIAL:PhiDPc,PhiDPc_smooth2w,SAVEVOL_PhiDPc
+    lon FLOAT 9.343
+    lat FLOAT 47.249
+    latlon_tol FLOAT 0.005
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING PhiDPc
+
+TH_TEMP STRUCT 8
+    type STRING TIME_HEIGHT
+    datatype STRARR 1
+       CFRADIAL:TEMP,TEMP,SAVEVOL_TEMP
+    lon FLOAT 9.343
+    lat FLOAT 47.249
+    latlon_tol FLOAT 0.005
+    interp_kind STRING none
+    hres FLOAT 250.
+    products STRUCT 1
+        TIME_HEIGHT STRUCT 4
+            qvp_type STRING final
+            type STRING TIME_RANGE
+            anglenr INT 0
+            voltype STRING TEMP

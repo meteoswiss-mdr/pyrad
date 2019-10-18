@@ -1,0 +1,141 @@
+#
+# Product generation configuration
+# TODO: Create a single TRT trajectory volume
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 2
+    l0:loadvol
+    l1:trt_traj
+
+
+# ==========================================================================================
+#       load data
+# ==========================================================================================
+loadvol STRUCT 3
+    type STRING RAW
+    datatype STRING CFRADIAL:all_fields,savevol,SAVEALL
+    MAKE_GLOBAL INT 1
+
+# ==========================================================================================
+#               TRT cells trajectory processing
+# ==========================================================================================
+trt_traj STRUCT 4
+    type STRING TRAJ_TRT
+    datatype STRARR 7
+        PROC:TEMP
+        PROC:dBZ
+        PROC:ZDR
+        PROC:uRhoHV
+        PROC:KDPc
+        PROC:hydro
+        PROC:RR
+    TimeTol FLOAT 2.
+    products STRUCT 15
+        HISTOGRAM_TEMP STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING TEMP
+            step FLOAT 1.
+            write_data FLOAT 1
+        PROFILE_TEMP STRUCT 7
+            type STRING PROFILE_STATS
+            voltype STRING TEMP
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            vmin FLOAT -50.
+            vmax FLOAT 20.
+        HISTOGRAM_dBZ STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING dBZ
+            step FLOAT 0.5
+            write_data FLOAT 1
+        PROFILE_dBZ STRUCT 7
+            type STRING PROFILE_STATS
+            voltype STRING dBZ
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            vmin FLOAT -10.
+            vmax FLOAT 50.
+        HISTOGRAM_ZDR STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING ZDR
+            step FLOAT 0.1
+            write_data FLOAT 1
+        PROFILE_ZDR STRUCT 7
+            type STRING PROFILE_STATS
+            voltype STRING ZDR
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            vmin FLOAT -1.
+            vmax FLOAT 3.
+        HISTOGRAM_uRhoHV STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING uRhoHV
+            step FLOAT 0.001
+            write_data FLOAT 1
+        PROFILE_uRhoHV STRUCT 8
+            type STRING PROFILE_STATS
+            voltype STRING uRhoHV
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            quantiles FLTARR 3
+                65.
+                80.
+                95.
+            vmin FLOAT 0.95
+            vmax FLOAT 1.01
+        HISTOGRAM_KDPc STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING KDPc
+            step FLOAT 0.05
+            write_data FLOAT 1
+        PROFILE_KDPc STRUCT 7
+            type STRING PROFILE_STATS
+            voltype STRING KDPc
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            vmin FLOAT -1.
+            vmax FLOAT 2.
+        HISTOGRAM_hydro STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING hydro
+            step FLOAT 1.
+            write_data FLOAT 1
+        PROFILE_hydro STRUCT 8
+            type STRING PROFILE_STATS
+            voltype STRING hydro
+            quantity STRING mode
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            vmin FLOAT 0.
+            vmax FLOAT 9.
+        HISTOGRAM_RR STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING RR
+            step FLOAT 0.1
+            write_data FLOAT 1
+        PROFILE_RR STRUCT 7
+            type STRING PROFILE_STATS
+            voltype STRING RR
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            vmin FLOAT 0.
+            vmax FLOAT 100.
+        SAVEVOL STRUCT 2
+            type  STRING SAVEALL
+            datatypes STRARR 7
+                TEMP
+                dBZ
+                ZDR
+                uRhoHV
+                KDPc
+                hydro
+                RR

@@ -4,8 +4,9 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 1
-    savevol_raw
+dataSetList STRARR 2
+    V
+    W
 
 #    l0:TEMP
 #    l0:SNRh
@@ -23,6 +24,65 @@ dataSetList STRARR 1
 # ==========================================================================================
 #                 raw data products
 # ==========================================================================================
+dBZ STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:dBZ
+    products STRUCT 1
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING dBZ
+
+ZDR STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:ZDR
+    products STRUCT 1
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING ZDR
+
+uRhoHV STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:uRhoHV
+    products STRUCT 1
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING uRhoHV
+
+uPhiDP STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:uPhiDP
+    products STRUCT 1
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING uPhiDP
+
+V STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:V
+    products STRUCT 1
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING V
+
+W STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:W
+    products STRUCT 1
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING W
+
+
+
+
+
+
 savevol_raw STRUCT 3
     type STRING RAW
     datatype STRARR 2

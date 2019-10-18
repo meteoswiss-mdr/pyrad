@@ -1,0 +1,118 @@
+#
+# Product generation configuration
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 7
+    l0:loadvol
+    l1:WM2_dBuZ_Pmax_TS
+    l1:WM2_ZDRu_Pmax_TS
+    l1:WM2_RhoHVu_Pmax_TS
+    l1:WM2_uPhiDPu_Pmax_TS
+    l1:WM2_Vu_Pmax_TS
+    l1:WM2_Wu_Pmax_TS
+
+
+# ==========================================================================================
+#       load data
+# ==========================================================================================
+loadvol STRUCT 3
+    type STRING RAW
+    datatype STRING CFRADIAL:all_fields,WM2,SAVEVOL
+    MAKE_GLOBAL INT 1
+
+
+
+# ==========================================================================================
+#       Time series of max
+# ==========================================================================================
+WM2_dBuZ_Pmax_TS STRUCT 10
+    type STRING POINT_MEASUREMENT
+    datatype STRING PROC:dBuZ
+    latlon INT 0
+    rng FLOAT 8040.
+    azi FLOAT 342.9
+    ele FLOAT 3.25
+    AziTol FLOAT 1.
+    EleTol FLOAT 1.
+    RngTol FLOAT 30.
+    products STRUCT 1
+        TS STRUCT 2
+            type STRING PLOT_AND_WRITE_POINT
+            set_time_info INT 0
+
+WM2_ZDRu_Pmax_TS STRUCT 10
+    type STRING POINT_MEASUREMENT
+    datatype STRING PROC:ZDRu
+    latlon INT 0
+    rng FLOAT 8040.
+    azi FLOAT 342.9
+    ele FLOAT 3.25
+    AziTol FLOAT 1.
+    EleTol FLOAT 1.
+    RngTol FLOAT 30.
+    products STRUCT 1
+        TS STRUCT 2
+            type STRING PLOT_AND_WRITE_POINT
+            set_time_info INT 0
+
+WM2_RhoHVu_Pmax_TS STRUCT 10
+    type STRING POINT_MEASUREMENT
+    datatype STRING PROC:RhoHVu
+    latlon INT 0
+    rng FLOAT 8040.
+    azi FLOAT 342.9
+    ele FLOAT 3.25
+    AziTol FLOAT 1.
+    EleTol FLOAT 1.
+    RngTol FLOAT 30.
+    products STRUCT 1
+        TS STRUCT 2
+            type STRING PLOT_AND_WRITE_POINT
+            set_time_info INT 0
+
+WM2_uPhiDPu_Pmax_TS STRUCT 10
+    type STRING POINT_MEASUREMENT
+    datatype STRING PROC:uPhiDPu
+    latlon INT 0
+    rng FLOAT 8040.
+    azi FLOAT 342.9
+    ele FLOAT 3.25
+    AziTol FLOAT 1.
+    EleTol FLOAT 1.
+    RngTol FLOAT 30.
+    products STRUCT 1
+        TS STRUCT 2
+            type STRING PLOT_AND_WRITE_POINT
+            set_time_info INT 0
+
+WM2_Vu_Pmax_TS STRUCT 10
+    type STRING POINT_MEASUREMENT
+    datatype STRING PROC:Vu
+    latlon INT 0
+    rng FLOAT 8040.
+    azi FLOAT 342.9
+    ele FLOAT 3.25
+    AziTol FLOAT 1.
+    EleTol FLOAT 1.
+    RngTol FLOAT 30.
+    products STRUCT 1
+        TS STRUCT 2
+            type STRING PLOT_AND_WRITE_POINT
+            set_time_info INT 0
+
+WM2_Wu_Pmax_TS STRUCT 10
+    type STRING POINT_MEASUREMENT
+    datatype STRING PROC:Wu
+    latlon INT 0
+    rng FLOAT 8040.
+    azi FLOAT 342.9
+    ele FLOAT 3.25
+    AziTol FLOAT 1.
+    EleTol FLOAT 1.
+    RngTol FLOAT 30.
+    products STRUCT 1
+        TS STRUCT 2
+            type STRING PLOT_AND_WRITE_POINT
+            set_time_info INT 0

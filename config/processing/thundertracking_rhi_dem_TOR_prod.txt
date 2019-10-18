@@ -1,0 +1,48 @@
+#
+# Product generation configuration for thunderstorm tracking
+#
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+# Modified 29-03-2019: KDP from Rainbow not used anymore.
+#                      Added Ahc to the list of saved datatypes
+
+dataSetList STRARR 2
+    l0:MINVISEL
+    l1:VIS
+
+
+# ==========================================================================================
+#               DEM data
+# ==========================================================================================
+MINVISEL STRUCT 7
+    type STRING DEM
+    datatype STRARR 1
+        CFRADIAL:all_fields,savevol_ls,RHI
+    keep_in_memory INT 1
+    regular_grid INT 0
+    demfile STRING DX50_TOR_minvisel.rst
+    dem_field STRING minvisel
+    MAKE_GLOBAL INT 1
+
+VIS STRUCT 5
+    type STRING VIS
+    datatype STRARR 1
+        PROC:minvisel
+    offset FLOAT 1.
+    MAKE_GLOBAL INT 1
+    products STRUCT 4
+        AZ0 STRUCT 3
+            type  STRING RHI_IMAGE
+            anglenr INT 0
+            voltype STRING VIS
+        AZ1 STRUCT 3
+            type  STRING RHI_IMAGE
+            anglenr INT 1
+            voltype STRING VIS
+        AZ2 STRUCT 3
+            type  STRING RHI_IMAGE
+            anglenr INT 2
+            voltype STRING VIS
+        SAVEVOL_RHI STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING VIS

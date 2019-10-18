@@ -15,7 +15,21 @@
    :special-members:
    :inherited-members:
    :show-inheritance:
+.. automodule:: pyart.retrieve.iq
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
 .. automodule:: pyart.retrieve.kdp_proc
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
+.. automodule:: pyart.retrieve.ml
    :members:
    :undoc-members:
    :private-members:
@@ -30,13 +44,6 @@
    :inherited-members:
    :show-inheritance:
 .. automodule:: pyart.retrieve.qvp
-   :members:
-   :undoc-members:
-   :private-members:
-   :special-members:
-   :inherited-members:
-   :show-inheritance:
-.. automodule:: pyart.retrieve.ml
    :members:
    :undoc-members:
    :private-members:

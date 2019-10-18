@@ -1,0 +1,40 @@
+#
+# Product generation configuration for thunderstorm tracking
+#
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 2
+    l0:MINVISEL
+    l1:VIS
+
+
+# ==========================================================================================
+#               DEM data
+# ==========================================================================================
+MINVISEL STRUCT 8
+    type STRING DEM
+    datatype STRARR 1
+        dBZ
+    keep_in_memory INT 1
+    regular_grid INT 0
+    demfile STRING DX50_LOC_minvisel.rst
+    dem_field STRING minvisel
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+      PPI STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING minvisel
+
+
+VIS STRUCT 5
+    type STRING VIS
+    datatype STRARR 1
+        minvisel
+    offset FLOAT 1.
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+      PPI STRUCT 3
+         type  STRING PPI_IMAGE
+         anglenr INT 0
+         voltype STRING VIS

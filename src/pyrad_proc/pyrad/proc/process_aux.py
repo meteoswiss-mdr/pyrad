@@ -60,7 +60,9 @@ def get_process_func(dataset_type, dsname):
                 'DEALIAS_REGION': process_dealias_region_based
                 'DEALIAS_UNWRAP': process_dealias_unwrap_phase
                 'DOPPLER_VELOCITY': process_Doppler_velocity
+                'DOPPLER_VELOCITY_IQ': process_Doppler_velocity_iq
                 'DOPPLER_WIDTH': process_Doppler_width
+                'DOPPLER_WIDTH_IQ': process_Doppler_width_iq
                 'ECHO_FILTER': process_echo_filter
                 'FIXED_RNG': process_fixed_rng
                 'FIXED_RNG_SPAN': process_fixed_rng_span
@@ -71,23 +73,28 @@ def get_process_func(dataset_type, dsname):
                 'KDP_LEASTSQUARE_2W': process_kdp_leastsquare_double_window
                 'L': process_l
                 'NCVOL': process_save_radar
+                'NOISE_POWER': process_noise_power
                 'OUTLIER_FILTER': process_outlier_filter
                 'PhiDP': process_differential_phase
                 'PHIDP0_CORRECTION': process_correct_phidp0
                 'PHIDP0_ESTIMATE': process_estimate_phidp0
+                'PhiDP_IQ': process_differential_phase_iq
                 'PHIDP_KDP_KALMAN': process_phidp_kdp_Kalman
                 'PHIDP_KDP_LP': process_phidp_kdp_lp
                 'PHIDP_KDP_VULPIANI': process_phidp_kdp_Vulpiani
                 'PHIDP_SMOOTH_1W': process_smooth_phidp_single_window
                 'PHIDP_SMOOTH_2W': process_smooth_phidp_double_window
                 'POL_VARIABLES': process_pol_variables
+                'POL_VARIABLES_IQ': process_pol_variables_iq
                 'PWR': process_signal_power
                 'RAINRATE': process_rainrate
                 'RAW': process_raw
                 'REFLECTIVITY': process_reflectivity
+                'REFLECTIVITY_IQ': process_reflectivity_iq
                 'RCS': process_rcs
                 'RCS_PR': process_rcs_pr
                 'RhoHV': process_rhohv
+                'RhoHV_IQ': process_rhohv_iq
                 'RHOHV_CORRECTION': process_correct_noise_rhohv
                 'RHOHV_RAIN': process_rhohv_rain
                 'ROI': process_roi
@@ -107,14 +114,19 @@ def get_process_func(dataset_type, dsname):
                 'WIND_VEL': process_wind_vel
                 'WINDSHEAR': process_windshear
                 'ZDR': process_differential_reflectivity
+                'ZDR_IQ': process_differential_reflectivity_iq
                 'ZDR_PREC': process_zdr_precip
                 'ZDR_SNOW': process_zdr_snow
             'SPECTRA' format output:
+                'FFT': process_fft
                 'FILTER_0DOPPLER': process_filter_0Doppler
                 'FILTER_SPECTRA_NOISE': process_filter_spectra_noise
+                'IFFT': process_ifft
+                'RAW_IQ': process_raw_iq
                 'RAW_SPECTRA': process_raw_spectra
                 'SPECTRA_ANGULAR_AVERAGE': process_spectra_ang_avg
                 'SPECTRA_POINT': process_spectra_point
+                'SPECTRAL_NOISE': process_spectral_noise
                 'SPECTRAL_PHASE': process_spectral_phase
                 'SPECTRAL_POWER': process_spectral_power
                 'SPECTRAL_REFLECTIVITY': process_spectral_reflectivity
@@ -201,8 +213,14 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'SPECTRA_POINT':
         func_name = 'process_spectra_point'
         dsformat = 'SPECTRA'
+    elif dataset_type == 'IFFT':
+        func_name = 'process_ifft'
+        dsformat = 'SPECTRA'
     elif dataset_type == 'SPECTRAL_POWER':
         func_name = 'process_spectral_power'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'SPECTRAL_NOISE':
+        func_name = 'process_spectral_noise'
         dsformat = 'SPECTRA'
     elif dataset_type == 'SPECTRAL_PHASE':
         func_name = 'process_spectral_phase'
@@ -230,6 +248,12 @@ def get_process_func(dataset_type, dsname):
         dsformat = 'SPECTRA'
     elif dataset_type == 'SPECTRA_ANGULAR_AVERAGE':
         func_name = 'process_spectra_ang_avg'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'FFT':
+        func_name = 'process_fft'
+        dsformat = 'SPECTRA'
+    elif dataset_type == 'RAW_IQ':
+        func_name = 'process_raw_iq'
         dsformat = 'SPECTRA'
     elif dataset_type == 'QVP':
         func_name = 'process_qvp'
@@ -345,6 +369,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_zdr_snow'
     elif dataset_type == 'POL_VARIABLES':
         func_name = 'process_pol_variables'
+    elif dataset_type == 'NOISE_POWER':
+        func_name = 'process_noise_power'
     elif dataset_type == 'REFLECTIVITY':
         func_name = 'process_reflectivity'
     elif dataset_type == 'ZDR':
@@ -357,6 +383,20 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_Doppler_velocity'
     elif dataset_type == 'DOPPLER_WIDTH':
         func_name = 'process_Doppler_width'
+    elif dataset_type == 'POL_VARIABLES_IQ':
+        func_name = 'process_pol_variables_iq'
+    elif dataset_type == 'REFLECTIVITY_IQ':
+        func_name = 'process_reflectivity_iq'
+    elif dataset_type == 'ZDR_IQ':
+        func_name = 'process_differential_reflectivity_iq'
+    elif dataset_type == 'PhiDP_IQ':
+        func_name = 'process_differential_phase_iq'
+    elif dataset_type == 'RhoHV_IQ':
+        func_name = 'process_rhohv_iq'
+    elif dataset_type == 'DOPPLER_VELOCITY_IQ':
+        func_name = 'process_Doppler_velocity_iq'
+    elif dataset_type == 'DOPPLER_WIDTH_IQ':
+        func_name = 'process_Doppler_width_iq'
     elif dataset_type == 'SELFCONSISTENCY_KDP_PHIDP':
         func_name = 'process_selfconsistency_kdp_phidp'
     elif dataset_type == 'SELFCONSISTENCY_BIAS':

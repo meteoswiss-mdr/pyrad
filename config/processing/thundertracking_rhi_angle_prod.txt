@@ -1,0 +1,51 @@
+#
+# Product generation configuration for thunderstorm tracking
+#
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 1
+    rhi_angle
+
+
+# ==========================================================================================
+#                 raw data processing
+# ==========================================================================================
+rhi_angle STRUCT 3
+    type STRING RAW
+    datatype STRING dBZ
+    products STRUCT 1
+        FIXED_ANGLE STRUCT 2
+            type  STRING SAVE_FIXED_ANGLE
+            voltype STRING dBZ
+
+
+KDP_test STRUCT 3
+   type     STRING RAW
+   datatype STRING KDP
+   products STRUCT 1
+      AZ1_BSCOPE STRUCT 3
+        type STRING BSCOPE_IMAGE
+        anglenr INT 0
+        voltype STRING KDP
+      AZ1_HISTOGRAM STRUCT 5
+         type  STRING RHI_IMAGE
+         plot_type STRING HISTOGRAM
+         step FLOAT 0.1
+         anglenr INT 0
+         voltype STRING KDP
+
+
+dBZ_test STRUCT 3
+   type     STRING RAW
+   datatype STRING dBZ
+   products STRUCT 1
+      AZ1_BSCOPE STRUCT 3
+        type STRING BSCOPE_IMAGE
+        anglenr INT 0
+        voltype STRING dBZ
+      AZ1_HISTOGRAM STRUCT 5
+         type  STRING RHI_IMAGE
+         plot_type STRING HISTOGRAM
+         step FLOAT 0.1
+         anglenr INT 0
+         voltype STRING KDP

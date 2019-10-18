@@ -1,0 +1,66 @@
+#
+# Product generation configuration
+# TODO: Create a single TRT trajectory volume
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 3
+    l0:loadvol
+    l1:rainrate_ZR
+    l1:trt_traj_tt
+
+
+# ==========================================================================================
+#       load data
+# ==========================================================================================
+loadvol STRUCT 3
+    type STRING RAW
+    datatype STRING CFRADIAL:all_fields,savevol_ls,RHI
+    MAKE_GLOBAL INT 1
+
+# ==========================================================================================
+#               rainfall rate
+# ==========================================================================================
+rainrate_ZR STRUCT 5
+    type STRING RAINRATE
+    datatype STRARR 1
+        PROC:dBZc
+    RR_METHOD STRING Z
+    MAKE_GLOBAL INT 1
+    products STRUCT 3
+      AZ0 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 0
+         voltype STRING RR
+      AZ1 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 1
+         voltype STRING RR
+      AZ2 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 2
+         voltype STRING RR
+
+# ==========================================================================================
+#               TRT cells trajectory processing
+# ==========================================================================================
+trt_traj_tt STRUCT 4
+    type STRING TRAJ_TRT
+    datatype STRARR 1
+        PROC:RR
+    TimeTol FLOAT 2.
+    products STRUCT 2
+        HISTOGRAM_RR_ZR STRUCT 4
+            type STRING HISTOGRAM
+            voltype STRING RR
+            step FLOAT 0.1
+            write_data FLOAT 1
+        PROFILE_RR_ZR STRUCT 7
+            type STRING PROFILE_STATS
+            voltype STRING RR
+            heightMin FLOAT 0.
+            heightMax FLOAT 15000.
+            heightResolution FLOAT 250.
+            vmin FLOAT 0.
+            vmax FLOAT 100.

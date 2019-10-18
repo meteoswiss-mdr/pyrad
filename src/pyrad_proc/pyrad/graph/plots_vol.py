@@ -137,7 +137,8 @@ def plot_ray(radar, field_name, ind_ray, prdcfg, fname_list, titl=None,
 
 
 def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
-             titl=None, step=None, quantiles=None, save_fig=True):
+             titl=None, vmin=None, vmax=None, step=None, quantiles=None,
+             save_fig=True):
     """
     plots a PPI
 
@@ -157,6 +158,9 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
         type of plot (PPI, QUANTILES or HISTOGRAM)
     titl : str
         Plot title
+    vmin, vmax : float
+        The minimum and maximum value. If None the scale is going to be
+        obtained from the Py-ART config file.
     step : float
         step for histogram plotting
     quantiles : float array
@@ -175,7 +179,11 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
     if plot_type == 'PPI':
         dpi = prdcfg['ppiImageConfig'].get('dpi', 72)
 
-        norm, ticks, ticklabs = get_norm(field_name)
+        norm = None
+        ticks = None
+        ticklabs = None
+        if vmin is not None and vmax is not None:
+            norm, ticks, ticklabs = get_norm(field_name)
 
         xsize = prdcfg['ppiImageConfig']['xsize']
         ysize = prdcfg['ppiImageConfig']['ysize']
@@ -186,7 +194,7 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
         display = pyart.graph.RadarDisplay(radar)
         display.plot_ppi(
             field_name, title=titl, sweep=ind_el, norm=norm, ticks=ticks,
-            ticklabs=ticklabs, fig=fig, ax=ax)
+            vmin=vmin, vmax=vmax, ticklabs=ticklabs, fig=fig, ax=ax)
 
         display.set_limits(
             ylim=[prdcfg['ppiImageConfig']['ymin'],
@@ -560,7 +568,8 @@ def plot_time_range(radar, field_name, ind_sweep, prdcfg, fname_list):
     rng_aux = np.append(rng_aux-rng_res/2., rng_aux[-1]+rng_res/2.)
 
     time_res = np.mean(radar_aux.time['data'][1:]-radar_aux.time['data'][0:-1])
-    time_aux = np.append(radar_aux.time['data'], radar_aux.time['data'][-1]+time_res)
+    time_aux = np.append(
+        radar_aux.time['data'], radar_aux.time['data'][-1]+time_res)
     return _plot_time_range(
         time_aux, rng_aux, field, field_name, fname_list, titl=titl,
         figsize=[xsize, ysize], dpi=dpi)
@@ -860,8 +869,8 @@ def plot_fixed_rng_span(radar, field_name, prdcfg, fname_list, azi_res=None,
 
     fname_rng_list = []
     for fname in fname_list:
-        print(fname.split('.'))
-        fname_rng_list.append(fname.rsplit('.', 1)[0]+'_RNG.'+fname.rsplit('.', 1)[1])
+        fname_rng_list.append(
+            fname.rsplit('.', 1)[0]+'_RNG.'+fname.rsplit('.', 1)[1])
 
     _plot_time_range(
         azi_vec, ele_vec, rng_2D, 'radar_range', fname_rng_list, titl=titl,
@@ -1210,8 +1219,6 @@ def plot_rhi_contour(radar, field_name, ind_az, prdcfg, fname_list,
         ax.contour(R, z, data, contour_values, colors='k',
                    linewidths=linewidths)
 
-
-
     if save_fig:
         for fname in fname_list:
             fig.savefig(fname, dpi=dpi)
@@ -1518,9 +1525,9 @@ def plot_rhi_profile(data_list, hvec, fname_list, labelx='Value',
 
 
 def plot_along_coord(xval_list, yval_list, fname_list, labelx='coord',
-                     labely='Value', labels=None, title='Plot along coordinate',
-                     colors=None, linestyles=None, ymin=None, ymax=None,
-                     dpi=72):
+                     labely='Value', labels=None,
+                     title='Plot along coordinate', colors=None,
+                     linestyles=None, ymin=None, ymax=None, dpi=72):
     """
     plots data along a certain radar coordinate
 

@@ -201,6 +201,10 @@ def generate_vol_products(dataset, prdcfg):
                     If the plot type is 'QUANTILES', the list of quantiles to
                     compute. If None a default list of quantiles will be
                     computed
+                vmin, vmax: float or None
+                    The minimum and maximum values of the color scale. If None
+                    the scale is going to be set according to the Py-ART
+                    config file
         'PPI_MAP': Plots a PPI image over a map. The map resolution and the
             type of maps used are defined in the variables 'mapres' and 'maps'
             in 'ppiMapImageConfig' in the loc config file.
@@ -545,10 +549,13 @@ def generate_vol_products(dataset, prdcfg):
         step = prdcfg.get('step', None)
         quantiles = prdcfg.get('quantiles', None)
         plot_type = prdcfg.get('plot_type', 'PPI')
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
 
         fname_list = plot_ppi(
             dataset['radar_out'], field_name, ind_el, prdcfg, fname_list,
-            plot_type=plot_type, step=step, quantiles=quantiles)
+            plot_type=plot_type, vmin=vmin, vmax=vmax, step=step,
+            quantiles=quantiles)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -752,7 +759,8 @@ def generate_vol_products(dataset, prdcfg):
 
         try:
             xsect = pyart.util.cross_section_rhi(
-                dataset['radar_out'], [prdcfg['angle']], el_tol=prdcfg['EleTol'])
+                dataset['radar_out'], [prdcfg['angle']],
+                el_tol=prdcfg['EleTol'])
 
             savedir = get_save_dir(
                 prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -915,7 +923,8 @@ def generate_vol_products(dataset, prdcfg):
 
         try:
             xsect = pyart.util.cross_section_ppi(
-                dataset['radar_out'], [prdcfg['angle']], az_tol=prdcfg['AziTol'])
+                dataset['radar_out'], [prdcfg['angle']],
+                az_tol=prdcfg['AziTol'])
 
             savedir = get_save_dir(
                 prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -984,12 +993,14 @@ def generate_vol_products(dataset, prdcfg):
             fname_list[i] = savedir+fname
 
         titl = (
-            pyart.graph.common.generate_title(dataset['radar_out'], field_name, ind_az) +
-            ' - ' +
-            pyart.graph.common.generate_field_name(dataset['radar_out'], contour_name))
+            pyart.graph.common.generate_title(dataset['radar_out'],
+                                              field_name, ind_az)+' - ' +
+            pyart.graph.common.generate_field_name(dataset['radar_out'],
+                                                   contour_name))
 
-        fig, ax = plot_rhi(dataset['radar_out'], field_name, ind_az, prdcfg, fname_list,
-                           titl=titl, save_fig=False)
+        fig, ax = plot_rhi(
+            dataset['radar_out'], field_name, ind_az, prdcfg, fname_list,
+            titl=titl, save_fig=False)
 
         fname_list = plot_rhi_contour(
             dataset['radar_out'], contour_name, ind_az, prdcfg, fname_list,
@@ -1020,7 +1031,8 @@ def generate_vol_products(dataset, prdcfg):
 
         try:
             xsect = pyart.util.cross_section_ppi(
-                dataset['radar_out'], [prdcfg['angle']], az_tol=prdcfg['AziTol'])
+                dataset['radar_out'], [prdcfg['angle']],
+                az_tol=prdcfg['AziTol'])
 
             savedir = get_save_dir(
                 prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -1202,7 +1214,8 @@ def generate_vol_products(dataset, prdcfg):
             maxheight = hmax_user
         nlevels = int((maxheight-minheight)/heightResolution)
 
-        h_vec = minheight+np.arange(nlevels)*heightResolution+heightResolution/2.
+        h_vec = (
+            minheight+np.arange(nlevels)*heightResolution+heightResolution/2.)
         vals, val_valid = compute_profile_stats(
             field['data'], new_dataset.gate_altitude['data'], h_vec,
             heightResolution, quantity=quantity, quantiles=quantiles/100.,
@@ -1229,11 +1242,13 @@ def generate_vol_products(dataset, prdcfg):
             colors = ['b', 'k', 'k']
             linestyles = ['-', '--', '--']
 
-        labelx = get_colobar_label(dataset['radar_out'].fields[field_name], field_name)
+        labelx = get_colobar_label(
+            dataset['radar_out'].fields[field_name], field_name)
         titl = (
             pyart.graph.common.generate_radar_time_begin(
                 dataset['radar_out']).isoformat() + 'Z' + '\n' +
-            get_field_name(dataset['radar_out'].fields[field_name], field_name))
+            get_field_name(dataset['radar_out'].fields[field_name],
+                           field_name))
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -1334,7 +1349,8 @@ def generate_vol_products(dataset, prdcfg):
             maxheight = hmax_user
         nlevels = int((maxheight-minheight)/heightResolution)
 
-        h_vec = minheight+np.arange(nlevels)*heightResolution+heightResolution/2.
+        h_vec = (
+            minheight+np.arange(nlevels)*heightResolution+heightResolution/2.)
         vals, val_valid = compute_profile_stats(
             field, dataset['radar_out'].gate_altitude['data'], h_vec,
             heightResolution, quantity=quantity, quantiles=quantiles/100.,
@@ -1361,11 +1377,13 @@ def generate_vol_products(dataset, prdcfg):
             colors = ['b', 'k', 'k']
             linestyles = ['-', '--', '--']
 
-        labelx = get_colobar_label(dataset['radar_out'].fields[field_name], field_name)
+        labelx = get_colobar_label(
+            dataset['radar_out'].fields[field_name], field_name)
         titl = (
             pyart.graph.common.generate_radar_time_begin(
                 dataset['radar_out']).isoformat() + 'Z' + '\n' +
-            get_field_name(dataset['radar_out'].fields[field_name], field_name))
+            get_field_name(dataset['radar_out'].fields[field_name],
+                           field_name))
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -1885,7 +1903,6 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname_list
 
-
     if prdcfg['type'] == 'PLOT_ALONG_COORD':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
@@ -2231,7 +2248,8 @@ def generate_vol_products(dataset, prdcfg):
             if threshold is not None:
                 ind = np.where(np.logical_and(
                     ~mask,
-                    dataset['radar_out'].fields[field_name]['data'][i, :] >= threshold))[0]
+                    dataset['radar_out'].fields[field_name]['data'][i, :] >=
+                    threshold))[0]
             else:
                 ind = np.where(~mask)[0]
             if len(ind) > nvalid_min:
@@ -2278,7 +2296,8 @@ def generate_vol_products(dataset, prdcfg):
             field_coverage_sector = field_coverage[ind_ele]
             azi_sector = dataset['radar_out'].azimuth['data'][ind_ele]
             nazi = int((np.max(dataset['radar_out'].azimuth['data']) -
-                        np.min(dataset['radar_out'].azimuth['data']))/azi_res+1)
+                        np.min(dataset['radar_out'].azimuth['data'])) /
+                       azi_res+1)
 
             xmeanval = np.arange(nazi)*azi_res+np.min(
                 dataset['radar_out'].azimuth['data'])

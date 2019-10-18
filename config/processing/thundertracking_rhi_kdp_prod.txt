@@ -1,0 +1,180 @@
+#
+# Product generation configuration for thunderstorm tracking
+#
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 9
+    l0:loadvol
+    l1:echoID
+    l2:echoFilter
+    l4:echoFilter_Ah
+    l3:Att_ZPhi
+    l1:KDPc_leastsquare2w
+    l4:hydroclass_ls
+    l5:rainrate_ls
+    l6:savevol_ls
+
+
+# ==========================================================================================
+#       load data
+# ==========================================================================================
+loadvol STRUCT 3
+    type STRING RAW
+    datatype STRING CFRADIAL:all_fields,savevol,RHI
+    MAKE_GLOBAL INT 1
+
+
+# ==========================================================================================
+#                 echo identification
+# ==========================================================================================
+echoID STRUCT 3
+    type STRING SAN
+    datatype STRARR 4
+        dBZ
+        ZDR
+        uPhiDP
+        RhoHV
+    MAKE_GLOBAL INT 1
+
+# ==========================================================================================
+#                 clutter and noise suppression
+# ==========================================================================================
+# echo type 3 : precip, 2 : clutter, 1 : noise
+echoFilter STRUCT 4
+    type STRING ECHO_FILTER
+    datatype STRARR 3
+        PROC:echoID
+        dBZ
+        ZDR
+    echo_type INT 3
+    MAKE_GLOBAL INT 1
+
+echoFilter_Ah STRUCT 4
+    type STRING ECHO_FILTER
+    datatype STRARR 2
+        PROC:echoID
+        PROC:Ah
+    echo_type INT 3
+    MAKE_GLOBAL INT 1
+
+# ==========================================================================================
+#                 Attenuation
+# ==========================================================================================
+Att_ZPhi STRUCT 5
+    type STRING ATTENUATION
+    datatype STRARR 4
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:PhiDPc
+        PROC:TEMP
+    ATT_METHOD STRING ZPhi
+    fzl FLOAT 2000.
+    MAKE_GLOBAL INT 1
+
+
+# ==========================================================================================
+#                 KDP processing
+# ==========================================================================================
+KDPc_leastsquare2w STRUCT 8
+    type STRING KDP_LEASTSQUARE_2W
+    datatype STRARR 2
+        PROC:PhiDPc
+        PROC:dBZc
+    rwinds FLOAT 1000.
+    rwindl FLOAT 3000.
+    Zthr FLOAT 40.
+    vectorize INT 1
+    MAKE_GLOBAL INT 1
+    products STRUCT 3
+      AZ0 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 0
+         voltype STRING KDPc
+      AZ1 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 1
+         voltype STRING KDPc
+      AZ2 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 2
+         voltype STRING KDPc
+
+
+# ==========================================================================================
+#                 hydrometeor classification products
+# ==========================================================================================
+hydroclass_ls STRUCT 7
+    type STRING HYDROCLASS
+    datatype STRARR 5
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:RhoHVc
+        PROC:KDPc
+        PROC:TEMP
+    HYDRO_METHOD STRING SEMISUPERVISED
+    RADARCENTROIDS STRING DX50
+    vectorize INT 1
+    MAKE_GLOBAL INT 1
+    products STRUCT 3
+      AZ0 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 0
+         voltype STRING hydro
+      AZ1 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 1
+         voltype STRING hydro
+      AZ2 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 2
+         voltype STRING hydro
+
+
+# ==========================================================================================
+#               rainfall rate
+# ==========================================================================================
+rainrate_ls STRUCT 5
+    type STRING RAINRATE
+    datatype STRARR 3
+        PROC:dBZc
+        PROC:Ahc
+        PROC:hydro
+    RR_METHOD STRING hydro
+    MAKE_GLOBAL INT 1
+    products STRUCT 3
+      AZ0 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 0
+         voltype STRING RR
+      AZ1 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 1
+         voltype STRING RR
+      AZ2 STRUCT 3
+         type  STRING RHI_IMAGE
+         anglenr INT 2
+         voltype STRING RR
+
+
+# ==========================================================================================
+#               savevol
+# ==========================================================================================
+savevol_ls STRUCT 3
+    type STRING NCVOL
+    datatype STRARR 1
+        PROC:dBZc
+    products STRUCT 1
+      RHI STRUCT 2
+         type  STRING SAVEALL
+         datatypes STRARR 11
+            TEMP
+            dBZc
+            ZDRc
+            RhoHVc
+            KDPc
+            PhiDPc
+            Vc
+            Wc
+            hydro
+            RR
+            Ahc
