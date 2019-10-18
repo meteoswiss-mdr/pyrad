@@ -99,6 +99,15 @@ spectral_power_vv_dBADU = 'spectral_power_vv_dBADU'
 spectral_power_hh_dBm = 'spectral_power_hh_dBm'
 spectral_power_vv_dBm = 'spectral_power_vv_dBm'
 
+spectral_noise_power_hh_dBZ = 'spectral_noise_power_hh_dBZ'
+spectral_noise_power_vv_dBZ = 'spectral_noise_power_vv_dBZ'
+spectral_noise_power_hh_dBm = 'spectral_noise_power_hh_dBm'
+spectral_noise_power_vv_dBm = 'spectral_noise_power_vv_dBm'
+spectral_noise_power_hh_dBADU = 'spectral_noise_power_hh_dBADU'
+spectral_noise_power_vv_dBADU = 'spectral_noise_power_vv_dBADU'
+spectral_noise_power_hh_ADU = 'spectral_noise_power_hh_ADU'
+spectral_noise_power_vv_ADU = 'spectral_noise_power_vv_ADU'
+
 spectral_phase_hh = 'spectral_phase_hh'
 spectral_phase_vv = 'spectral_phase_vv'
 
@@ -132,6 +141,18 @@ unfiltered_spectral_differential_phase = (
     'unfiltered_spectral_differential_phase')
 unfiltered_spectral_copolar_correlation_coefficient = (
     'unfiltered_spectral_copolar_correlation_coefficient')
+
+#IQ data
+IQ_hh_ADU = 'IQ_hh_ADU'
+IQ_vv_ADU = 'IQ_vv_ADU'
+IQ_noise_power_hh_dBZ = 'IQ_noise_power_hh_dBZ'
+IQ_noise_power_vv_dBZ = 'IQ_noise_power_vv_dBZ'
+IQ_noise_power_hh_dBm = 'IQ_noise_power_hh_dBm'
+IQ_noise_power_vv_dBm = 'IQ_noise_power_vv_dBm'
+IQ_noise_power_hh_dBADU = 'IQ_noise_power_hh_dBADU'
+IQ_noise_power_vv_dBADU = 'IQ_noise_power_vv_dBADU'
+IQ_noise_power_hh_ADU = 'IQ_noise_power_hh_ADU'
+IQ_noise_power_vv_ADU = 'IQ_noise_power_vv_ADU'
 
 # Mean Doppler velocity fields, VEL
 velocity = 'velocity'
@@ -473,6 +494,14 @@ DEFAULT_FIELD_NAMES = {
     'spectral_power_vv_dBADU': spectral_power_vv_dBADU,
     'spectral_power_hh_dBm': spectral_power_hh_dBm,
     'spectral_power_vv_dBm': spectral_power_vv_dBm,
+    'spectral_noise_power_hh_dBZ': spectral_noise_power_hh_dBZ,
+    'spectral_noise_power_vv_dBZ': spectral_noise_power_vv_dBZ,
+    'spectral_noise_power_hh_dBm': spectral_noise_power_hh_dBm,
+    'spectral_noise_power_vv_dBm': spectral_noise_power_vv_dBm,
+    'spectral_noise_power_hh_dBADU': spectral_noise_power_hh_dBADU,
+    'spectral_noise_power_vv_dBADU': spectral_noise_power_vv_dBADU,
+    'spectral_noise_power_hh_ADU': spectral_noise_power_hh_ADU,
+    'spectral_noise_power_vv_ADU': spectral_noise_power_vv_ADU,
     'spectral_phase_hh': spectral_phase_hh,
     'spectral_phase_vv': spectral_phase_vv,
     'spectral_reflectivity_hh': spectral_reflectivity_hh,
@@ -499,6 +528,16 @@ DEFAULT_FIELD_NAMES = {
         unfiltered_spectral_differential_phase),
     'unfiltered_spectral_copolar_correlation_coefficient': (
         unfiltered_spectral_copolar_correlation_coefficient),
+    'IQ_hh_ADU': IQ_hh_ADU,
+    'IQ_vv_ADU': IQ_vv_ADU,
+    'IQ_noise_power_hh_dBZ': IQ_noise_power_hh_dBZ,
+    'IQ_noise_power_vv_dBZ': IQ_noise_power_vv_dBZ,
+    'IQ_noise_power_hh_dBm': IQ_noise_power_hh_dBm,
+    'IQ_noise_power_vv_dBm': IQ_noise_power_vv_dBm,
+    'IQ_noise_power_hh_dBADU': IQ_noise_power_hh_dBADU,
+    'IQ_noise_power_vv_dBADU': IQ_noise_power_vv_dBADU,
+    'IQ_noise_power_hh_ADU': IQ_noise_power_hh_ADU,
+    'IQ_noise_power_vv_ADU': IQ_noise_power_vv_ADU,
     'rain_rate': rain_rate,
     'bird_density': bird_density,
     'sun_hit_h': sun_hit_h,
@@ -604,6 +643,12 @@ DEFAULT_METADATA = {
         'long_name': 'elevation_angle_from_horizontal_plane',
         'axis': 'radial_elevation_coordinate',
         'comment': 'Elevation of antenna relative to the horizontal plane'},
+
+    'number_of_pulses': {
+        'units': '-',
+        'standard_name': 'number_of_pulses',
+        'long_name': 'number of pulses per ray',
+        'axis': 'radial_pulses_coordinate'},
 
     'scan_rate': {
         'units': 'degrees_per_second',
@@ -1433,6 +1478,54 @@ DEFAULT_METADATA = {
         'long_name': 'spectral power vertical',
         'coordinates': 'elevation azimuth range'},
 
+    spectral_noise_power_hh_dBZ: {
+        'units': 'dBZ',
+        'standard_name': 'spectral_noise_power_hh_dBZ',
+        'long_name': 'spectral noise power horizontal',
+        'coordinates': 'elevation azimuth range'},
+
+    spectral_noise_power_vv_dBZ: {
+        'units': 'dBZ',
+        'standard_name': 'spectral_noise_power_vv_dBZ',
+        'long_name': 'spectral noise power vertical',
+        'coordinates': 'elevation azimuth range'},
+
+    spectral_noise_power_hh_dBm: {
+        'units': 'dBm',
+        'standard_name': 'spectral_noise_power_hh_dBm',
+        'long_name': 'spectral noise power horizontal',
+        'coordinates': 'elevation azimuth range'},
+
+    spectral_noise_power_vv_dBm: {
+        'units': 'dBm',
+        'standard_name': 'spectral_noise_power_hh_dBm',
+        'long_name': 'spectral noise power vertical',
+        'coordinates': 'elevation azimuth range'},
+
+    spectral_noise_power_hh_dBADU: {
+        'units': 'dBADU',
+        'standard_name': 'spectral_noise_power_hh_dBADU',
+        'long_name': 'spectral noise power horizontal',
+        'coordinates': 'elevation azimuth range'},
+
+    spectral_noise_power_vv_dBADU: {
+        'units': 'dBADU',
+        'standard_name': 'spectral_noise_power_hh_dBADU',
+        'long_name': 'spectral noise power vertical',
+        'coordinates': 'elevation azimuth range'},
+
+    spectral_noise_power_hh_ADU: {
+        'units': 'ADU',
+        'standard_name': 'spectral_noise_power_hh_ADU',
+        'long_name': 'spectral noise power horizontal',
+        'coordinates': 'elevation azimuth range'},
+
+    spectral_noise_power_vv_ADU: {
+        'units': 'ADU',
+        'standard_name': 'spectral_noise_power_hh_ADU',
+        'long_name': 'spectral noise power vertical',
+        'coordinates': 'elevation azimuth range'},
+
     spectral_phase_hh: {
         'units': 'deg',
         'standard_name': 'spectral_phase_hh',
@@ -1563,6 +1656,57 @@ DEFAULT_METADATA = {
         'units': '-',
         'standard_name': 'unfiltered_spectral_copolar_correlation_coefficient',
         'long_name': 'Unfiltered Spectral copolar correlation coefficient (RHOHV)',
+        'coordinates': 'elevation azimuth range'},
+
+    IQ_hh_ADU: {
+        'units': 'ADU',
+        'standard_name': 'IQ_hh_ADU',
+        'long_name': 'IQ signal horizontal',
+        'coordinates': 'elevation azimuth range'},
+    IQ_vv_ADU: {
+        'units': 'ADU',
+        'standard_name': 'IQ_vv_ADU',
+        'long_name': 'IQ signal vertical',
+        'coordinates': 'elevation azimuth range'},
+    IQ_noise_power_hh_dBZ: {
+        'units': 'dBZ',
+        'standard_name': 'IQ_noise_power_hh_dBZ',
+        'long_name': 'IQ noise power horizontal',
+        'coordinates': 'elevation azimuth range'},
+    IQ_noise_power_vv_dBZ: {
+        'units': 'dBZ',
+        'standard_name': 'IQ_noise_power_vv_dBZ',
+        'long_name': 'IQ noise power vertical',
+        'coordinates': 'elevation azimuth range'},
+    IQ_noise_power_hh_dBm: {
+        'units': 'dBm',
+        'standard_name': 'IQ_noise_power_hh_dBm',
+        'long_name': 'IQ noise power horizontal',
+        'coordinates': 'elevation azimuth range'},
+    IQ_noise_power_vv_dBm: {
+        'units': 'dBm',
+        'standard_name': 'IQ_noise_power_vv_dBm',
+        'long_name': 'IQ noise power vertical',
+        'coordinates': 'elevation azimuth range'},
+    IQ_noise_power_hh_dBADU: {
+        'units': 'dBADU',
+        'standard_name': 'IQ_noise_power_hh_dBADU',
+        'long_name': 'IQ noise power horizontal',
+        'coordinates': 'elevation azimuth range'},
+    IQ_noise_power_vv_dBADU: {
+        'units': 'dBADU',
+        'standard_name': 'IQ_noise_power_vv_dBADU',
+        'long_name': 'IQ noise power vertical',
+        'coordinates': 'elevation azimuth range'},
+    IQ_noise_power_hh_ADU: {
+        'units': 'ADU',
+        'standard_name': 'IQ_noise_power_hh_ADU',
+        'long_name': 'IQ noise power horizontal',
+        'coordinates': 'elevation azimuth range'},
+    IQ_noise_power_vv_ADU: {
+        'units': 'ADU',
+        'standard_name': 'IQ_noise_power_vv_ADU',
+        'long_name': 'IQ noise power vertical',
         'coordinates': 'elevation azimuth range'},
 
     rain_rate: {

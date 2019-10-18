@@ -52,7 +52,7 @@ def plot_range_Doppler(spectra, field_name, ray, prdcfg, fname_list,
     Parameters
     ----------
     spectra : radar spectra object
-        object containing the spectra to plot
+        object containing the spectra or the IQ data to plot
     field_name : str
         name of the field to plot
     ray : int
@@ -62,7 +62,8 @@ def plot_range_Doppler(spectra, field_name, ray, prdcfg, fname_list,
     fname_list : list of str
         list of names of the files where to store the plot
     xaxis_info : str
-        Type of x-axis. Can be 'Doppler_velocity' or 'Doppler_frequency'
+        Type of x-axis. Can be 'Doppler_velocity', 'Doppler_frequency' or
+        'pulse_number'
     titl : str or None
         The plot title
     clabel : str or None
@@ -86,6 +87,10 @@ def plot_range_Doppler(spectra, field_name, ray, prdcfg, fname_list,
     elif xaxis_info == 'Doppler_frequency':
         xaxis = spectra.Doppler_frequency['data'][ray, :].compressed()
         xlabel = 'Doppler frequency (Hz)'
+    else:
+        xaxis = np.arange(spectra.npulses['data'][ray])
+        xlabel = 'Pulse number'
+
     xres = np.abs(xaxis[1]-xaxis[0])
 
     yaxis = spectra.range['data']/1000.
@@ -166,7 +171,7 @@ def plot_angle_Doppler(spectra, field_name, ang, ind_rays, ind_rng, prdcfg,
     Parameters
     ----------
     spectra : radar spectra object
-        object containing the spectra to plot
+        object containing the spectra or the IQ data to plot
     field_name : str
         name of the field to plot
     ang : float
@@ -180,7 +185,8 @@ def plot_angle_Doppler(spectra, field_name, ang, ind_rays, ind_rng, prdcfg,
     fname_list : list of str
         list of names of the files where to store the plot
     xaxis_info : str
-        Type of x-axis. Can be 'Doppler_velocity' or 'Doppler_frequency'
+        Type of x-axis. Can be 'Doppler_velocity', 'Doppler_frequency' or
+        'pulse_number'
     yaxis_pos : str
         the position that the y point represents in the y-axis bin. Can be
         'start', end' or 'centre'
@@ -210,6 +216,12 @@ def plot_angle_Doppler(spectra, field_name, ang, ind_rays, ind_rng, prdcfg,
     elif xaxis_info == 'Doppler_frequency':
         xaxis = spectra.Doppler_frequency['data'][ind_rays, :]
         xlabel = 'Doppler frequency (Hz)'
+    else:
+        xaxis = np.ma.masked_all((ind_rays.size, spectra.npulses_max))
+        for ray, ind_ray in enumerate(ind_rays):
+            npuls = spectra.npulses['data'][ind_ray]
+            xaxis[ray, 0:npuls] = np.arange(npuls)
+        xlabel = 'Pulse number'
     ylabel = 'Angle (deg)'
 
     if along_azi:
@@ -292,7 +304,7 @@ def plot_time_Doppler(spectra, field_name, prdcfg, fname_list,
     Parameters
     ----------
     spectra : radar spectra object
-        object containing the spectra to plot
+        object containing the spectra or the IQ data to plot
     field_name : str
         name of the field to plot
     prdcfg : dict
@@ -300,7 +312,8 @@ def plot_time_Doppler(spectra, field_name, prdcfg, fname_list,
     fname_list : list of str
         list of names of the files where to store the plot
     xaxis_info : str
-        Type of x-axis. Can be 'Doppler_velocity' or 'Doppler_frequency'
+        Type of x-axis. Can be 'Doppler_velocity', 'Doppler_frequency' or
+        'pulse_number'
     yaxis_pos : str
         the position that the y point represents in the y-axis bin. Can be
         'start', end' or 'centre'
@@ -327,6 +340,11 @@ def plot_time_Doppler(spectra, field_name, prdcfg, fname_list,
     elif xaxis_info == 'Doppler_frequency':
         xaxis = spectra.Doppler_frequency['data']
         xlabel = 'Doppler frequency (Hz)'
+    else:
+        xaxis = np.ma.masked_all((spectra.nrays, spectra.npulses_max))
+        for ray, npuls in enumerate(spectra.npulses['data']):
+            xaxis[ray, 0:npuls] = np.arange(npuls)
+        xlabel = 'Pulse number'
     ylabel = 'time (s from start time)'
 
     xaxis_lim, yaxis_lim, xaxis_size = _create_irregular_grid(
@@ -402,7 +420,7 @@ def plot_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
     Parameters
     ----------
     spectra : radar spectra object
-        object containing the spectra to plot
+        object containing the spectra or the IQ data to plot
     field_name : str
         name of the field to plot
     ray, rng : int
@@ -412,7 +430,8 @@ def plot_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
     fname_list : list of str
         list of names of the files where to store the plot
     xaxis_info : str
-        Type of x-axis. Can be 'Doppler_velocity' or 'Doppler_frequency'
+        Type of x-axis. Can be 'Doppler_velocity', 'Doppler_frequency' or
+        'pulse_number'
     ylabel : str or None
         The label of the y-axis
     titl : str or None
@@ -436,6 +455,9 @@ def plot_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
     elif xaxis_info == 'Doppler_frequency':
         xaxis = spectra.Doppler_frequency['data'][ray, :].compressed()
         xlabel = 'Doppler frequency (Hz)'
+    else:
+        xaxis = np.arange(spectra.npulses['data'][ray])
+        xlabel = 'Pulse number'
 
     field = spectra.fields[field_name]['data'][ray, rng, 0:xaxis.size]
 
@@ -488,7 +510,7 @@ def plot_complex_range_Doppler(spectra, field_name, ray, prdcfg, fname_list,
     Parameters
     ----------
     spectra : radar spectra object
-        object containing the spectra to plot
+        object containing the spectra or the IQ data to plot
     field_name : str
         name of the field to plot
     ray : int
@@ -498,7 +520,8 @@ def plot_complex_range_Doppler(spectra, field_name, ray, prdcfg, fname_list,
     fname_list : list of str
         list of names of the files where to store the plot
     xaxis_info : str
-        Type of x-axis. Can be 'Doppler_velocity' or 'Doppler_frequency'
+        Type of x-axis. Can be 'Doppler_velocity', 'Doppler_frequency' or
+        'pulse_number'
     titl : str or None
         The plot title
     clabel : str or None
@@ -522,6 +545,10 @@ def plot_complex_range_Doppler(spectra, field_name, ray, prdcfg, fname_list,
     elif xaxis_info == 'Doppler_frequency':
         xaxis = spectra.Doppler_frequency['data'][ray, :].compressed()
         xlabel = 'Doppler frequency (Hz)'
+    else:
+        xaxis = np.arange(spectra.npulses['data'][ray])
+        xlabel = 'Pulse number'
+
     xres = np.abs(xaxis[1]-xaxis[0])
 
     yaxis = spectra.range['data']/1000.
@@ -618,7 +645,7 @@ def plot_complex_angle_Doppler(spectra, field_name, ang, ind_rays, ind_rng,
     Parameters
     ----------
     spectra : radar spectra object
-        object containing the spectra to plot
+        object containing the spectra or the IQ data to plot
     field_name : str
         name of the field to plot
     ang : float
@@ -632,7 +659,8 @@ def plot_complex_angle_Doppler(spectra, field_name, ang, ind_rays, ind_rng,
     fname_list : list of str
         list of names of the files where to store the plot
     xaxis_info : str
-        Type of x-axis. Can be 'Doppler_velocity' or 'Doppler_frequency'
+        Type of x-axis. Can be 'Doppler_velocity', 'Doppler_frequency' or
+        'pulse_number'
     yaxis_pos : str
         the position that the y point represents in the y-axis bin. Can be
         'start', end' or 'centre'
@@ -662,6 +690,12 @@ def plot_complex_angle_Doppler(spectra, field_name, ang, ind_rays, ind_rng,
     elif xaxis_info == 'Doppler_frequency':
         xaxis = spectra.Doppler_frequency['data'][ind_rays, :]
         xlabel = 'Doppler frequency (Hz)'
+    else:
+        xaxis = np.ma.masked_all((ind_rays.size, spectra.npulses_max))
+        for ray, ind_ray in enumerate(ind_rays):
+            npuls = spectra.npulses['data'][ind_ray]
+            xaxis[ray, 0:npuls] = np.arange(npuls)
+        xlabel = 'Pulse number'
     ylabel = 'Angle (deg)'
 
     if along_azi:
@@ -761,7 +795,7 @@ def plot_complex_time_Doppler(spectra, field_name, prdcfg, fname_list,
     Parameters
     ----------
     spectra : radar spectra object
-        object containing the spectra to plot
+        object containing the spectra or the IQ data to plot
     field_name : str
         name of the field to plot
     prdcfg : dict
@@ -769,7 +803,8 @@ def plot_complex_time_Doppler(spectra, field_name, prdcfg, fname_list,
     fname_list : list of str
         list of names of the files where to store the plot
     xaxis_info : str
-        Type of x-axis. Can be 'Doppler_velocity' or 'Doppler_frequency'
+        Type of x-axis. Can be 'Doppler_velocity', 'Doppler_frequency' or
+        'pulse_number'
     yaxis_pos : str
         the position that the y point represents in the y-axis bin. Can be
         'start', end' or 'centre'
@@ -796,6 +831,11 @@ def plot_complex_time_Doppler(spectra, field_name, prdcfg, fname_list,
     elif xaxis_info == 'Doppler_frequency':
         xaxis = spectra.Doppler_frequency['data']
         xlabel = 'Doppler frequency (Hz)'
+    else:
+        xaxis = np.ma.masked_all((spectra.nrays, spectra.npulses_max))
+        for ray, npuls in enumerate(spectra.npulses['data']):
+            xaxis[ray, 0:npuls] = np.arange(npuls)
+        xlabel = 'Pulse number'
     ylabel = 'time (s from start time)'
 
     xaxis_lim, yaxis_lim, xaxis_size = _create_irregular_grid(
@@ -888,7 +928,7 @@ def plot_amp_phase_range_Doppler(spectra, field_name, ray, prdcfg, fname_list,
     Parameters
     ----------
     spectra : radar spectra object
-        object containing the spectra to plot
+        object containing the spectra or the IQ data to plot
     field_name : str
         name of the field to plot
     ray : int
@@ -898,7 +938,8 @@ def plot_amp_phase_range_Doppler(spectra, field_name, ray, prdcfg, fname_list,
     fname_list : list of str
         list of names of the files where to store the plot
     xaxis_info : str
-        Type of x-axis. Can be 'Doppler_velocity' or 'Doppler_frequency'
+        Type of x-axis. Can be 'Doppler_velocity', 'Doppler_frequency' or
+        'pulse_number'
     titl : str or None
         The plot title
     ampli_vmin, ampli_vmax, phase_vmin, phase_vmax : float or None
@@ -920,6 +961,9 @@ def plot_amp_phase_range_Doppler(spectra, field_name, ray, prdcfg, fname_list,
     elif xaxis_info == 'Doppler_frequency':
         xaxis = spectra.Doppler_frequency['data'][ray, :].compressed()
         xlabel = 'Doppler frequency (Hz)'
+    else:
+        xaxis = np.arange(spectra.npulses['data'][ray])
+        xlabel = 'Pulse number'
     xres = np.abs(xaxis[1]-xaxis[0])
 
     yaxis = spectra.range['data']/1000.
@@ -1030,7 +1074,7 @@ def plot_amp_phase_angle_Doppler(spectra, field_name, ang, ind_rays, ind_rng,
     Parameters
     ----------
     spectra : radar spectra object
-        object containing the spectra to plot
+        object containing the spectra or the IQ data to plot
     field_name : str
         name of the field to plot
     ang : float
@@ -1044,7 +1088,8 @@ def plot_amp_phase_angle_Doppler(spectra, field_name, ang, ind_rays, ind_rng,
     fname_list : list of str
         list of names of the files where to store the plot
     xaxis_info : str
-        Type of x-axis. Can be 'Doppler_velocity' or 'Doppler_frequency'
+        Type of x-axis. Can be 'Doppler_velocity', 'Doppler_frequency' or
+        'pulse_number'
     yaxis_pos : str
         the position that the y point represents in the y-axis bin. Can be
         'start', end' or 'centre'
@@ -1072,6 +1117,12 @@ def plot_amp_phase_angle_Doppler(spectra, field_name, ang, ind_rays, ind_rng,
     elif xaxis_info == 'Doppler_frequency':
         xaxis = spectra.Doppler_frequency['data'][ind_rays, :]
         xlabel = 'Doppler frequency (Hz)'
+    else:
+        xaxis = np.ma.masked_all((ind_rays.size, spectra.npulses_max))
+        for ray, ind_ray in enumerate(ind_rays):
+            npuls = spectra.npulses['data'][ind_ray]
+            xaxis[ray, 0:npuls] = np.arange(npuls)
+        xlabel = 'Pulse number'
     ylabel = 'Angle (deg)'
 
     if along_azi:
@@ -1185,7 +1236,7 @@ def plot_amp_phase_time_Doppler(spectra, field_name, prdcfg, fname_list,
     Parameters
     ----------
     spectra : radar spectra object
-        object containing the spectra to plot
+        object containing the spectra or the IQ data to plot
     field_name : str
         name of the field to plot
     prdcfg : dict
@@ -1193,7 +1244,8 @@ def plot_amp_phase_time_Doppler(spectra, field_name, prdcfg, fname_list,
     fname_list : list of str
         list of names of the files where to store the plot
     xaxis_info : str
-        Type of x-axis. Can be 'Doppler_velocity' or 'Doppler_frequency'
+        Type of x-axis. Can be 'Doppler_velocity', 'Doppler_frequency' or
+        'pulse_number'
     yaxis_pos : str
         the position that the y point represents in the y-axis bin. Can be
         'start', end' or 'centre'
@@ -1218,6 +1270,11 @@ def plot_amp_phase_time_Doppler(spectra, field_name, prdcfg, fname_list,
     elif xaxis_info == 'Doppler_frequency':
         xaxis = spectra.Doppler_frequency['data']
         xlabel = 'Doppler frequency (Hz)'
+    else:
+        xaxis = np.ma.masked_all((spectra.nrays, spectra.npulses_max))
+        for ray, npuls in enumerate(spectra.npulses['data']):
+            xaxis[ray, 0:npuls] = np.arange(npuls)
+        xlabel = 'Pulse number'
     ylabel = 'time (s from start time)'
 
     xaxis_lim, yaxis_lim, xaxis_size = _create_irregular_grid(
@@ -1322,7 +1379,7 @@ def plot_complex_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
     Parameters
     ----------
     spectra : radar spectra object
-        object containing the spectra to plot
+        object containing the spectra or the IQ data to plot
     field_name : str
         name of the field to plot
     ray, rng : int
@@ -1332,7 +1389,8 @@ def plot_complex_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
     fname_list : list of str
         list of names of the files where to store the plot
     xaxis_info : str
-        Type of x-axis. Can be 'Doppler_velocity' or 'Doppler_frequency'
+        Type of x-axis. Can be 'Doppler_velocity', 'Doppler_frequency' or
+        'pulse_number'
     ylabel : str or None
         The label of the y-axis
     titl : str or None
@@ -1356,6 +1414,9 @@ def plot_complex_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
     elif xaxis_info == 'Doppler_frequency':
         xaxis = spectra.Doppler_frequency['data'][ray, :].compressed()
         xlabel = 'Doppler frequency (Hz)'
+    else:
+        xaxis = np.arange(spectra.npulses['data'][ray])
+        xlabel = 'Pulse number'
 
     field = spectra.fields[field_name]['data'][ray, rng, 0:xaxis.size]
 
@@ -1427,7 +1488,7 @@ def plot_amp_phase_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
     Parameters
     ----------
     spectra : radar spectra object
-        object containing the spectra to plot
+        object containing the spectra or the IQ data to plot
     field_name : str
         name of the field to plot
     ray, rng : int
@@ -1437,7 +1498,8 @@ def plot_amp_phase_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
     fname_list : list of str
         list of names of the files where to store the plot
     xaxis_info : str
-        Type of x-axis. Can be 'Doppler_velocity' or 'Doppler_frequency'
+        Type of x-axis. Can be 'Doppler_velocity', 'Doppler_frequency' or
+        'pulse_number'
     titl : str or None
         The plot title
     ampli_vmin, ampli_vmax, phase_vmin, phase_vmax : float or None
@@ -1459,6 +1521,9 @@ def plot_amp_phase_Doppler(spectra, field_name, ray, rng, prdcfg, fname_list,
     elif xaxis_info == 'Doppler_frequency':
         xaxis = spectra.Doppler_frequency['data'][ray, :].compressed()
         xlabel = 'Doppler frequency (Hz)'
+    else:
+        xaxis = np.arange(spectra.npulses['data'][ray])
+        xlabel = 'Pulse number'
 
     field = spectra.fields[field_name]['data'][ray, rng, 0:xaxis.size]
 
@@ -1604,7 +1669,7 @@ def _adapt_data_to_irregular_grid(data, xaxis_size, nxbin_lim, nybin_lim):
     nbinsy = data.shape[0]
 
     # adapt Z data
-    zpoints = np.ma.masked_all((nxbin_lim-1, nybin_lim-1))
+    zpoints = np.ma.masked_all((nxbin_lim-1, nybin_lim-1), dtype=data.dtype)
     for i in range(nbinsy-1):
         zpoints[0:xaxis_size[i]-1, 2*i] = data[i, 0:xaxis_size[i]-1]
         zpoints[0:xaxis_size[i]-1, 2*i+1] = data[i, 0:xaxis_size[i]-1]

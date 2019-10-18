@@ -116,7 +116,9 @@
 <span class="sd">                &#39;DEALIAS_REGION&#39;: process_dealias_region_based</span>
 <span class="sd">                &#39;DEALIAS_UNWRAP&#39;: process_dealias_unwrap_phase</span>
 <span class="sd">                &#39;DOPPLER_VELOCITY&#39;: process_Doppler_velocity</span>
+<span class="sd">                &#39;DOPPLER_VELOCITY_IQ&#39;: process_Doppler_velocity_iq</span>
 <span class="sd">                &#39;DOPPLER_WIDTH&#39;: process_Doppler_width</span>
+<span class="sd">                &#39;DOPPLER_WIDTH_IQ&#39;: process_Doppler_width_iq</span>
 <span class="sd">                &#39;ECHO_FILTER&#39;: process_echo_filter</span>
 <span class="sd">                &#39;FIXED_RNG&#39;: process_fixed_rng</span>
 <span class="sd">                &#39;FIXED_RNG_SPAN&#39;: process_fixed_rng_span</span>
@@ -127,23 +129,28 @@
 <span class="sd">                &#39;KDP_LEASTSQUARE_2W&#39;: process_kdp_leastsquare_double_window</span>
 <span class="sd">                &#39;L&#39;: process_l</span>
 <span class="sd">                &#39;NCVOL&#39;: process_save_radar</span>
+<span class="sd">                &#39;NOISE_POWER&#39;: process_noise_power</span>
 <span class="sd">                &#39;OUTLIER_FILTER&#39;: process_outlier_filter</span>
 <span class="sd">                &#39;PhiDP&#39;: process_differential_phase</span>
 <span class="sd">                &#39;PHIDP0_CORRECTION&#39;: process_correct_phidp0</span>
 <span class="sd">                &#39;PHIDP0_ESTIMATE&#39;: process_estimate_phidp0</span>
+<span class="sd">                &#39;PhiDP_IQ&#39;: process_differential_phase_iq</span>
 <span class="sd">                &#39;PHIDP_KDP_KALMAN&#39;: process_phidp_kdp_Kalman</span>
 <span class="sd">                &#39;PHIDP_KDP_LP&#39;: process_phidp_kdp_lp</span>
 <span class="sd">                &#39;PHIDP_KDP_VULPIANI&#39;: process_phidp_kdp_Vulpiani</span>
 <span class="sd">                &#39;PHIDP_SMOOTH_1W&#39;: process_smooth_phidp_single_window</span>
 <span class="sd">                &#39;PHIDP_SMOOTH_2W&#39;: process_smooth_phidp_double_window</span>
 <span class="sd">                &#39;POL_VARIABLES&#39;: process_pol_variables</span>
+<span class="sd">                &#39;POL_VARIABLES_IQ&#39;: process_pol_variables_iq</span>
 <span class="sd">                &#39;PWR&#39;: process_signal_power</span>
 <span class="sd">                &#39;RAINRATE&#39;: process_rainrate</span>
 <span class="sd">                &#39;RAW&#39;: process_raw</span>
 <span class="sd">                &#39;REFLECTIVITY&#39;: process_reflectivity</span>
+<span class="sd">                &#39;REFLECTIVITY_IQ&#39;: process_reflectivity_iq</span>
 <span class="sd">                &#39;RCS&#39;: process_rcs</span>
 <span class="sd">                &#39;RCS_PR&#39;: process_rcs_pr</span>
 <span class="sd">                &#39;RhoHV&#39;: process_rhohv</span>
+<span class="sd">                &#39;RhoHV_IQ&#39;: process_rhohv_iq</span>
 <span class="sd">                &#39;RHOHV_CORRECTION&#39;: process_correct_noise_rhohv</span>
 <span class="sd">                &#39;RHOHV_RAIN&#39;: process_rhohv_rain</span>
 <span class="sd">                &#39;ROI&#39;: process_roi</span>
@@ -163,14 +170,19 @@
 <span class="sd">                &#39;WIND_VEL&#39;: process_wind_vel</span>
 <span class="sd">                &#39;WINDSHEAR&#39;: process_windshear</span>
 <span class="sd">                &#39;ZDR&#39;: process_differential_reflectivity</span>
+<span class="sd">                &#39;ZDR_IQ&#39;: process_differential_reflectivity_iq</span>
 <span class="sd">                &#39;ZDR_PREC&#39;: process_zdr_precip</span>
 <span class="sd">                &#39;ZDR_SNOW&#39;: process_zdr_snow</span>
 <span class="sd">            &#39;SPECTRA&#39; format output:</span>
+<span class="sd">                &#39;FFT&#39;: process_fft</span>
 <span class="sd">                &#39;FILTER_0DOPPLER&#39;: process_filter_0Doppler</span>
 <span class="sd">                &#39;FILTER_SPECTRA_NOISE&#39;: process_filter_spectra_noise</span>
+<span class="sd">                &#39;IFFT&#39;: process_ifft</span>
+<span class="sd">                &#39;RAW_IQ&#39;: process_raw_iq</span>
 <span class="sd">                &#39;RAW_SPECTRA&#39;: process_raw_spectra</span>
 <span class="sd">                &#39;SPECTRA_ANGULAR_AVERAGE&#39;: process_spectra_ang_avg</span>
 <span class="sd">                &#39;SPECTRA_POINT&#39;: process_spectra_point</span>
+<span class="sd">                &#39;SPECTRAL_NOISE&#39;: process_spectral_noise</span>
 <span class="sd">                &#39;SPECTRAL_PHASE&#39;: process_spectral_phase</span>
 <span class="sd">                &#39;SPECTRAL_POWER&#39;: process_spectral_power</span>
 <span class="sd">                &#39;SPECTRAL_REFLECTIVITY&#39;: process_spectral_reflectivity</span>
@@ -257,8 +269,14 @@
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;SPECTRA_POINT&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_spectra_point&#39;</span>
         <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;IFFT&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_ifft&#39;</span>
+        <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;SPECTRAL_POWER&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_spectral_power&#39;</span>
+        <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;SPECTRAL_NOISE&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_spectral_noise&#39;</span>
         <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;SPECTRAL_PHASE&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_spectral_phase&#39;</span>
@@ -286,6 +304,12 @@
         <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;SPECTRA_ANGULAR_AVERAGE&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_spectra_ang_avg&#39;</span>
+        <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;FFT&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_fft&#39;</span>
+        <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;RAW_IQ&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_raw_iq&#39;</span>
         <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;SPECTRA&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;QVP&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_qvp&#39;</span>
@@ -401,6 +425,8 @@
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_zdr_snow&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;POL_VARIABLES&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_pol_variables&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;NOISE_POWER&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_noise_power&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;REFLECTIVITY&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_reflectivity&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;ZDR&#39;</span><span class="p">:</span>
@@ -413,6 +439,20 @@
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_Doppler_velocity&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;DOPPLER_WIDTH&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_Doppler_width&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;POL_VARIABLES_IQ&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_pol_variables_iq&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;REFLECTIVITY_IQ&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_reflectivity_iq&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;ZDR_IQ&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_differential_reflectivity_iq&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;PhiDP_IQ&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_differential_phase_iq&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;RhoHV_IQ&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_rhohv_iq&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;DOPPLER_VELOCITY_IQ&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_Doppler_velocity_iq&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;DOPPLER_WIDTH_IQ&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_Doppler_width_iq&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;SELFCONSISTENCY_KDP_PHIDP&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_selfconsistency_kdp_phidp&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;SELFCONSISTENCY_BIAS&#39;</span><span class="p">:</span>

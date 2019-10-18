@@ -46,18 +46,37 @@ Spectral data functions
     process_filter_srhohv
     process_spectra_ang_avg
     process_spectral_power
+    process_spectral_noise
     process_spectral_phase
     process_spectral_reflectivity
     process_spectral_differential_reflectivity
     process_spectral_differential_phase
     process_spectral_rhohv
     process_pol_variables
+    process_noise_power
     process_reflectivity
     process_differential_reflectivity
     process_differential_phase
     process_rhohv
     process_Doppler_velocity
     process_Doppler_width
+    process_ifft
+
+IQ data functions
+=======================
+
+.. autosummary::
+    :toctree: generated/
+
+    process_raw_iq
+    process_pol_variables_iq
+    process_reflectivity_iq
+    process_differential_reflectivity_iq
+    process_differential_phase_iq
+    process_rhohv_iq
+    process_Doppler_velocity_iq
+    process_Doppler_width_iq
+    process_fft
 
 Echo classification and filtering
 =================================
@@ -221,12 +240,19 @@ from .process_spectra import process_spectral_differential_reflectivity
 from .process_spectra import process_spectral_differential_phase
 from .process_spectra import process_spectral_rhohv, process_filter_0Doppler
 from .process_spectra import process_filter_spectra_noise
-from .process_spectra import process_filter_srhohv
+from .process_spectra import process_filter_srhohv, process_ifft
 from .process_spectra import process_pol_variables, process_reflectivity
 from .process_spectra import process_differential_reflectivity
 from .process_spectra import process_differential_phase
 from .process_spectra import process_rhohv, process_Doppler_velocity
 from .process_spectra import process_Doppler_width, process_spectra_ang_avg
+from .process_spectra import process_spectral_noise, process_noise_power
+
+from .process_iq import process_raw_iq, process_reflectivity_iq
+from .process_iq import process_differential_reflectivity_iq
+from .process_iq import process_rhohv_iq, process_differential_phase_iq
+from .process_iq import process_Doppler_velocity_iq, process_Doppler_width_iq
+from .process_iq import process_pol_variables_iq, process_fft
 
 from .process_timeseries import process_point_measurement, process_qvp
 from .process_timeseries import process_rqvp, process_evp, process_svp

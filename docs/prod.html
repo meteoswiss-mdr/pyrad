@@ -764,14 +764,15 @@ status of the processing</p>
 <dt>generates spectra products. Accepted product types:</dt>
 <dd><dl class="first last docutils">
 <dt>‘AMPLITUDE_PHASE_ANGLE_DOPPLER’: Makes an angle Doppler plot of</dt>
-<dd><p class="first">complex spectra. The plot can be along azimuth or along range.
-It is plotted separately the module and the phase of the signal.
+<dd><p class="first">complex spectra or IQ data. The plot can be along azimuth or along
+range. It is plotted separately the module and the phase of the
+signal.
 User defined parameters:</p>
 <blockquote class="last">
 <div><dl class="docutils">
 <dt>along_azi <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
 <dd>If true the plot is performed along azimuth, otherwise
-along range. Default true</dd>
+along elevation. Default true</dd>
 <dt>ang <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
 <dd>The fixed angle (deg). Default 0.</dd>
 <dt>rng <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
@@ -781,15 +782,15 @@ along range. Default true</dd>
 <dt>rng_tol <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
 <dd>The fixed range tolerance (m). Default 50.</dd>
 <dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>The xaxis type. Can be ‘Doppler_velocity’ or
-‘Doppler frequency’</dd>
+<dd>The xaxis type. Can be ‘Doppler_velocity’,
+‘Doppler_frequency’ or ‘pulse_number’</dd>
 <dt>ampli_vmin, ampli_vmax, phase_vmin, phase_vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
 <dd>Minimum and maximum of the color scale for the module and
 phase</dd>
 </dl>
 </div></blockquote>
 </dd>
-<dt>‘AMPLITUDE_PHASE_DOPPLER’: Plots a complex Doppler spectrum</dt>
+<dt>‘AMPLITUDE_PHASE_DOPPLER’: Plots a complex Doppler spectrum or IQ data</dt>
 <dd><p class="first">making two separate plots for the module and phase of the signal
 User defined parameters:</p>
 <blockquote class="last">
@@ -804,17 +805,17 @@ respect to nominal position to plot. Default 1, 1, 50.</dd>
 <dd>index of the ray and range to plot. Alternative to
 defining its antenna coordinates</dd>
 <dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>The xaxis type. Can be ‘Doppler_velocity’ or
-‘Doppler frequency’</dd>
+<dd>The xaxis type. Can be ‘Doppler_velocity’,
+‘Doppler_frequency’ or ‘pulse_number’</dd>
 <dt>ampli_vmin, ampli_vmax, phase_vmin, phase_vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
 <dd>Minimum and maximum of the color scale for the module and
 phase</dd>
 </dl>
 </div></blockquote>
 </dd>
-<dt>‘AMPLITUDE_PHASE_RANGE_DOPPLER’: Plots a complex spectra range-Doppler</dt>
-<dd><p class="first">making two separate plots for the module and phase of the signal
-User defined parameters:</p>
+<dt>‘AMPLITUDE_PHASE_RANGE_DOPPLER’: Plots a complex spectra or IQ data</dt>
+<dd><p class="first">range-Doppler making two separate plots for the module and phase
+of the signal User defined parameters:</p>
 <blockquote class="last">
 <div><dl class="docutils">
 <dt>azi, ele <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
@@ -826,16 +827,17 @@ position to plot. Default 1, 1.</dd>
 <dd>index of the ray to plot. Alternative to
 defining its antenna coordinates</dd>
 <dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>The xaxis type. Can be ‘Doppler_velocity’ or
-‘Doppler frequency’</dd>
+<dd>The xaxis type. Can be ‘Doppler_velocity’,
+‘Doppler_frequency’ or ‘pulse_number’</dd>
 <dt>ampli_vmin, ampli_vmax, phase_vmin, phase_vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
 <dd>Minimum and maximum of the color scale for the module and
 phase</dd>
 </dl>
 </div></blockquote>
 </dd>
-<dt>‘AMPLITUDE_PHASE_TIME_DOPPLER’: Plots a complex spectra time-Doppler</dt>
-<dd><p class="first">making two separate plots for the module and phase of the signal
+<dt>‘AMPLITUDE_PHASE_TIME_DOPPLER’: Plots a complex spectra or IQ data</dt>
+<dd><p class="first">time-Doppler making two separate plots for the module and phase of
+the signal
 User defined parameters:</p>
 <blockquote class="last">
 <div><dl class="docutils">
@@ -858,7 +860,7 @@ User defined parameters:</p>
 <div><dl class="docutils">
 <dt>along_azi <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
 <dd>If true the plot is performed along azimuth, otherwise
-along range. Default true</dd>
+along elevation. Default true</dd>
 <dt>ang <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
 <dd>The fixed angle (deg). Default 0.</dd>
 <dt>rng <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
@@ -868,22 +870,22 @@ along range. Default true</dd>
 <dt>rng_tol <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
 <dd>The fixed range tolerance (m). Default 50.</dd>
 <dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>The xaxis type. Can be ‘Doppler_velocity’ or
-‘Doppler frequency’</dd>
+<dd>The xaxis type. Can be ‘Doppler_velocity’,
+‘Doppler_frequency’ or ‘pulse_number’</dd>
 <dt>vmin, vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
 <dd>Minimum and maximum of the color scale</dd>
 </dl>
 </div></blockquote>
 </dd>
 <dt>‘COMPLEX_ANGLE_DOPPLER’: Makes an angle Doppler plot of complex</dt>
-<dd><p class="first">spectra. The plot can be along azimuth or along range. The real
-and imaginary parts are plotted separately
+<dd><p class="first">spectra or IQ data. The plot can be along azimuth or along range.
+The real and imaginary parts are plotted separately
 User defined parameters:</p>
 <blockquote class="last">
 <div><dl class="docutils">
 <dt>along_azi <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
 <dd>If true the plot is performed along azimuth, otherwise
-along range. Default true</dd>
+along elevation. Default true</dd>
 <dt>ang <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
 <dd>The fixed angle (deg). Default 0.</dd>
 <dt>rng <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
@@ -893,15 +895,15 @@ along range. Default true</dd>
 <dt>rng_tol <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
 <dd>The fixed range tolerance (m). Default 50.</dd>
 <dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>The xaxis type. Can be ‘Doppler_velocity’ or
-‘Doppler frequency’</dd>
+<dd>The xaxis type. Can be ‘Doppler_velocity’,
+‘Doppler_frequency’ or ‘pulse_number’</dd>
 <dt>vmin, vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
 <dd>Minimum and maximum of the color scale</dd>
 </dl>
 </div></blockquote>
 </dd>
-<dt>‘COMPLEX_DOPPLER’: Plots a complex Doppler spectrum making two</dt>
-<dd><p class="first">separate plots for the real and imaginary parts
+<dt>‘COMPLEX_DOPPLER’: Plots a complex Doppler spectrum or IQ data making</dt>
+<dd><p class="first">two separate plots for the real and imaginary parts
 User defined parameters:</p>
 <blockquote class="last">
 <div><dl class="docutils">
@@ -915,15 +917,16 @@ respect to nominal position to plot. Default 1, 1, 50.</dd>
 <dd>index of the ray and range to plot. Alternative to
 defining its antenna coordinates</dd>
 <dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>The xaxis type. Can be ‘Doppler_velocity’ or
-‘Doppler frequency’</dd>
+<dd>The xaxis type. Can be ‘Doppler_velocity’,
+‘Doppler_frequency’ or ‘pulse_number’</dd>
 <dt>vmin, vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
 <dd>Minimum and maximum of the color scale</dd>
 </dl>
 </div></blockquote>
 </dd>
-<dt>‘COMPLEX_RANGE_DOPPLER’: Plots the complex spectra range-Doppler</dt>
-<dd><p class="first">making two separate plots for the real and imaginary parts
+<dt>‘COMPLEX_RANGE_DOPPLER’: Plots the complex spectra or IQ data</dt>
+<dd><p class="first">range-Doppler making two separate plots for the real and imaginary
+parts
 User defined parameters:</p>
 <blockquote class="last">
 <div><dl class="docutils">
@@ -936,15 +939,16 @@ position to plot. Default 1, 1.</dd>
 <dd>index of the ray to plot. Alternative to
 defining its antenna coordinates</dd>
 <dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>The xaxis type. Can be ‘Doppler_velocity’ or
-‘Doppler frequency’</dd>
+<dd>The xaxis type. Can be ‘Doppler_velocity’,
+‘Doppler_frequency’ or ‘pulse_number’</dd>
 <dt>vmin, vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
 <dd>Minimum and maximum of the color scale</dd>
 </dl>
 </div></blockquote>
 </dd>
-<dt>‘COMPLEX_TIME_DOPPLER’: Plots the complex spectra time-Doppler</dt>
-<dd><p class="first">making two separate plots for the real and imaginary parts
+<dt>‘COMPLEX_TIME_DOPPLER’: Plots the complex spectra or IQ data</dt>
+<dd><p class="first">time-Doppler making two separate plots for the real and imaginary
+parts
 User defined parameters:</p>
 <blockquote class="last">
 <div><dl class="docutils">
@@ -959,7 +963,7 @@ plotted at the end of the processing</dd>
 </dl>
 </div></blockquote>
 </dd>
-<dt>‘DOPPLER’: Plots a Doppler spectrum variable</dt>
+<dt>‘DOPPLER’: Plots a Doppler spectrum variable or IQ data variable</dt>
 <dd><dl class="first last docutils">
 <dt>User defined parameters:</dt>
 <dd><dl class="first last docutils">
@@ -973,15 +977,15 @@ respect to nominal position to plot. Default 1, 1, 50.</dd>
 <dd>index of the ray and range to plot. Alternative to
 defining its antenna coordinates</dd>
 <dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>The xaxis type. Can be ‘Doppler_velocity’ or
-‘Doppler frequency’</dd>
+<dd>The xaxis type. Can be ‘Doppler_velocity’,
+‘Doppler_frequency’ or ‘pulse_number’</dd>
 <dt>vmin, vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
 <dd>Minimum and maximum of the color scale</dd>
 </dl>
 </dd>
 </dl>
 </dd>
-<dt>‘RANGE_DOPPLER’: Makes a range-Doppler plot of spectral data</dt>
+<dt>‘RANGE_DOPPLER’: Makes a range-Doppler plot of spectral or IQ data</dt>
 <dd><dl class="first last docutils">
 <dt>User defined parameters:</dt>
 <dd><dl class="first last docutils">
@@ -994,16 +998,16 @@ position to plot. Default 1, 1.</dd>
 <dd>index of the ray to plot. Alternative to
 defining its antenna coordinates</dd>
 <dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>The xaxis type. Can be ‘Doppler_velocity’ or
-‘Doppler frequency’</dd>
+<dd>The xaxis type. Can be ‘Doppler_velocity’,
+‘Doppler_frequency’ or ‘pulse_number’</dd>
 <dt>vmin, vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
 <dd>Minimum and maximum of the color scale</dd>
 </dl>
 </dd>
 </dl>
 </dd>
-<dt>‘SAVEALL’: Saves radar spectra volume data including all or a list of</dt>
-<dd><p class="first">userdefined fields in a netcdf file
+<dt>‘SAVEALL’: Saves radar spectra or IQ volume data including all or a</dt>
+<dd><p class="first">list of userdefined fields in a netcdf file
 User defined parameters:</p>
 <blockquote class="last">
 <div><dl class="docutils">
@@ -1016,8 +1020,8 @@ Otherwise it will be quantized and saved as binary</dd>
 </dl>
 </div></blockquote>
 </dd>
-<dt>‘SAVEVOL’: Saves one field of a radar spectra volume data in a netcdf</dt>
-<dd><p class="first">file
+<dt>‘SAVEVOL’: Saves one field of a radar spectra or IQ volume data in a</dt>
+<dd><p class="first">netcdf file
 User defined parameters:</p>
 <blockquote class="last">
 <div><dl class="docutils">
@@ -1027,14 +1031,14 @@ Otherwise it will be quantized and saved as binary</dd>
 </dl>
 </div></blockquote>
 </dd>
-<dt>‘TIME_DOPPLER’: Makes a time-Doppler plot of spectral data at a point</dt>
-<dd><p class="first">of interest.
+<dt>‘TIME_DOPPLER’: Makes a time-Doppler plot of spectral or IQ data at a</dt>
+<dd><p class="first">point of interest.
 User defined parameters:</p>
 <blockquote class="last">
 <div><dl class="docutils">
 <dt>xaxis_info <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>The xaxis type. Can be ‘Doppler_velocity’ or
-‘Doppler frequency’</dd>
+<dd>The xaxis type. Can be ‘Doppler_velocity’,
+‘Doppler_frequency’ or ‘pulse_number’</dd>
 <dt>vmin, vmax <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
 <dd>Minimum and maximum of the color scale</dd>
 <dt>plot_type <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
@@ -1629,6 +1633,10 @@ config file</dd>
 <dd>If the plot type is ‘QUANTILES’, the list of quantiles to
 compute. If None a default list of quantiles will be
 computed</dd>
+<dt>vmin, vmax: float or None</dt>
+<dd>The minimum and maximum values of the color scale. If None
+the scale is going to be set according to the Py-ART
+config file</dd>
 </dl>
 </div></blockquote>
 </dd>

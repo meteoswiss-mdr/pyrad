@@ -13,11 +13,12 @@ Functions for reading radar data files
     merge_scans_psr_spectra
     merge_scans_dem
     merge_scans_rad4alp
-	merge_scans_odim
+    merge_scans_odim
     merge_scans_cosmo
     merge_scans_cosmo_rad4alp
     merge_scans_dem_rad4alp
     merge_scans_other_rad4alp
+    merge_scans_iq_rad4alp
     merge_fields_rainbow
     merge_fields_psr
     merge_fields_psr_spectra
@@ -152,6 +153,8 @@ def get_data(voltime, datatypesdescr, cfg):
             'NETCDFSPECTRA': Format analogous to CFRadial and used to store
                 Doppler spectral
 
+            'RAD4ALPIQ': Format used to store rad4alp IQ data
+
         'RAINBOW', 'RAD4ALP', 'ODIM' and 'MXPOL' are primary data file sources
         and they cannot be mixed for the same radar. It is also the case for
         their complementary data files, i.e. 'COSMO' and 'RAD4ALPCOSMO', etc.
@@ -187,6 +190,7 @@ def get_data(voltime, datatypesdescr, cfg):
     datatype_rad4alpgrid = list()
     datatype_rad4alpgif = list()
     datatype_rad4alpbin = list()
+    datatype_rad4alpIQ = list()
     datatype_mxpol = list()
     datatype_pyradgrid = list()
     dataset_pyradgrid = list()
@@ -235,6 +239,8 @@ def get_data(voltime, datatypesdescr, cfg):
             datatype_rad4alpgif.append(datatype)
         elif datagroup == 'RAD4ALPBIN':
             datatype_rad4alpbin.append(datatype)
+        elif datagroup == 'RAD4ALPIQ':
+            datatype_rad4alpIQ.append(datatype)
         elif datagroup == 'PYRADGRID':
             datatype_pyradgrid.append(datatype)
             dataset_pyradgrid.append(dataset)
@@ -265,6 +271,7 @@ def get_data(voltime, datatypesdescr, cfg):
     ndatatypes_rad4alpgrid = len(datatype_rad4alpgrid)
     ndatatypes_rad4alpgif = len(datatype_rad4alpgif)
     ndatatypes_rad4alpbin = len(datatype_rad4alpbin)
+    ndatatypes_rad4alpIQ = len(datatype_rad4alpIQ)
     ndatatypes_pyradgrid = len(datatype_pyradgrid)
     ndatatypes_psr = len(datatype_psr)
     ndatatypes_psrspectra = len(datatype_psrspectra)
@@ -290,8 +297,9 @@ def get_data(voltime, datatypesdescr, cfg):
             radar_name = None
             radar_res = None
         radar = merge_scans_odim(
-            cfg['datapath'][ind_rad], cfg['ScanList'][ind_rad], radar_name, radar_res,
-            voltime, datatype_odim, dataset_odim, cfg, ind_rad=ind_rad)
+            cfg['datapath'][ind_rad], cfg['ScanList'][ind_rad], radar_name,
+            radar_res, voltime, datatype_odim, dataset_odim, cfg,
+            ind_rad=ind_rad)
 
     elif ndatatypes_mxpol > 0:
         radar = merge_scans_mxpol(
@@ -307,6 +315,13 @@ def get_data(voltime, datatypesdescr, cfg):
             cfg['datapath'][ind_rad], cfg['psrpath'][ind_rad],
             cfg['ScanList'][ind_rad], voltime, cfg['ScanPeriod'],
             datatype_psrspectra, cfg, radarnr=radarnr)
+
+    elif ndatatypes_rad4alpIQ > 0:
+        radar = merge_scans_iq_rad4alp(
+            cfg['datapath'][ind_rad], cfg['iqpath'][ind_rad],
+            cfg['ScanList'][ind_rad], cfg['RadarName'][ind_rad],
+            cfg['RadarRes'][ind_rad], voltime, datatype_rad4alpIQ, cfg,
+            ind_rad=ind_rad)
 
     # add other radar object files
     if ndatatypes_cfradial > 0:
@@ -1047,7 +1062,7 @@ def merge_scans_rad4alp(basepath, scan_list, radar_name, radar_res, voltime,
             basepath, voltime, radar_name=radar_name, radar_res=radar_res,
             scan=scan, path_convention=cfg['path_convention'])
 
-        filename = glob.glob(datapath+basename+timeinfo+'*.'+scan+ '*')
+        filename = glob.glob(datapath+basename+timeinfo+'*.'+scan+'*')
         if not filename:
             warn('No file found in '+datapath+basename+timeinfo+'*.'+scan)
         else:
@@ -1123,7 +1138,9 @@ def merge_scans_odim(basepath, scan_list, radar_name, radar_res, voltime,
             basename = 'P'+radar_res+radar_name+dayinfo
             datapath = basepath+dayinfo+'/'+basename+'/'
     elif cfg['path_convention'] == 'ODIM':
-        fpath_strf = dataset_list[0][dataset_list[0].find("D")+2:dataset_list[0].find("F")-2]
+        fpath_strf = (
+            dataset_list[0][
+                dataset_list[0].find("D")+2:dataset_list[0].find("F")-2])
         fdate_strf = dataset_list[0][dataset_list[0].find("F")+2:-1]
         datapath = (basepath+voltime.strftime(fpath_strf)+'/')
         filenames = glob.glob(datapath+'*'+scan_list[0]+'*')
@@ -1140,7 +1157,8 @@ def merge_scans_odim(basepath, scan_list, radar_name, radar_res, voltime,
         if not filename:
             basename = 'P'+radar_res+radar_name+dayinfo
             datapath = basepath+'P'+radar_res+radar_name+'/'
-            filename = glob.glob(datapath+basename+timeinfo+'*'+scan_list[0] + '*')
+            filename = glob.glob(
+                datapath+basename+timeinfo+'*'+scan_list[0]+'*')
     if not filename:
         warn('No file found in '+datapath[0]+basename+timeinfo+'*.h*')
     else:
@@ -1492,8 +1510,8 @@ def merge_scans_other_rad4alp(voltime, datatype, cfg, ind_rad=0):
         filename_prod = glob.glob(
             datapath_prod+basename_prod+timeinfo+'*.'+str(800+int(scan))+'*')
         if not filename_prod:
-            warn('No file found in '+datapath_prod+basename_prod+timeinfo+'*.' +
-                 str(800+int(scan)))
+            warn('No file found in '+datapath_prod+basename_prod+timeinfo +
+                 '*.'+str(800+int(scan)))
             return None
 
         filename_prod = filename_prod[0]
@@ -1538,6 +1556,153 @@ def merge_scans_other_rad4alp(voltime, datatype, cfg, ind_rad=0):
         # add product data
         radar_aux.fields = dict()
         radar_aux.add_field(prod_field, prod_dict)
+
+        if radar is None:
+            radar = radar_aux
+        else:
+            radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
+
+    if radar is None:
+        return radar
+
+    return pyart.util.cut_radar(
+        radar, radar.fields.keys(), rng_min=cfg['rmin'], rng_max=cfg['rmax'],
+        ele_min=cfg['elmin'], ele_max=cfg['elmax'], azi_min=cfg['azmin'],
+        azi_max=cfg['azmax'])
+
+
+def merge_scans_iq_rad4alp(basepath, basepath_iq, scan_list, radar_name,
+                           radar_res, voltime, datatype_list, cfg,
+                           ang_tol=0.1, ang_step=0.01, ind_rad=0):
+    """
+    merge rad4alp IQ scans
+
+    Parameters
+    ----------
+    basepath : str
+        base path of rad4alp radar data
+    basepath_iq : str
+        base path of rad4alp IQ data
+    scan_list : list
+        list of scans (001 to 020)
+    radar_name : str
+        radar_name (A, D, L, ...)
+    radar_res : str
+        radar resolution (H or L)
+    voltime: datetime object
+        reference time of the scan
+    datatype_list : list
+        lists of data types to get
+    cfg : dict
+        configuration dictionary
+    ang_tol : float
+        Tolerance between nominal elevation and actual elevation
+    ang_step : float
+        The elevation angular step used when checking valid ray files
+    ind_rad : int
+        radar index
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+    if (radar_name is None) or (radar_res is None):
+        raise ValueError(
+            'ERROR: Radar Name and Resolution not specified in config file.' +
+            ' Unable to load rad4alp data')
+
+    timeinfo = voltime.strftime('%H%M')
+    dayinfo = voltime.strftime('%y%j')
+
+    ele_vec = [
+        -0.2, 0.4, 1.0, 1.6, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 11.0,
+        13.0, 16.0, 20.0, 25.0, 30.0, 35.0, 40.0]
+    prfs = [
+        600., 700., 600., 900., 800., 900., 1000., 900., 1000., 1200., 1200.,
+        1200., 1500., 1500., 1500., 1500., 1500., 1500., 1500., 1500.]
+
+    field_names = []
+    for datatype in datatype_list:
+        field_names.append(get_fieldname_pyart(datatype))
+
+    # read status
+    root = read_status(voltime, cfg, ind_rad=ind_rad)
+
+    radconst_h = None
+    radconst_v = None
+    if 'radconsth' in cfg:
+        radconst_h = cfg['radconsth'][ind_rad]
+    if 'radconstv' in cfg:
+        radconst_v = cfg['radconstv'][ind_rad]
+
+    mfloss_h = None
+    mfloss_v = None
+    if 'mflossh' in cfg:
+        mfloss_h = cfg['mflossh'][ind_rad]
+    if 'mflossv' in cfg:
+        mfloss_v = cfg['mflossv'][ind_rad]
+
+    radar = None
+    for scan in scan_list:
+        datapath, basename = get_rad4alp_dir(
+            basepath, voltime, radar_name=radar_name, radar_res=radar_res,
+            scan=scan, path_convention=cfg['path_convention'])
+
+        filename = glob.glob(datapath+basename+timeinfo+'*.'+scan+'*')
+        if not filename:
+            warn('No file found in '+datapath+basename+timeinfo+'*.'+scan)
+            continue
+
+        ele = ele_vec[int(scan)-1]
+        datapath_iq = basepath_iq+dayinfo+'/IQ'+radar_name+dayinfo+'/'
+
+        filenames_iq = []
+        for i in np.arange(-ang_tol, ang_tol+ang_step, ang_step):
+            ele_str = '{:04d}'.format(int(100.*(ele+i)))
+            filenames_iq.extend(
+                glob.glob(datapath_iq+'IQ20'+dayinfo+timeinfo+'*-E'+ele_str +
+                          '*.dat'))
+        if not filenames_iq:
+            warn('No files found in '+datapath_iq+'IQ20'+dayinfo+timeinfo +
+                 '_*.dat')
+            continue
+
+        # get metadata from status file
+        sweep_number = int(scan)-1
+        noise_h = None
+        noise_v = None
+        rconst_h = None
+        rconst_v = None
+        for sweep in root.findall('sweep'):
+            sweep_number_file = (
+                int(sweep.attrib['name'].split('.')[1])-1)
+            if sweep_number_file == sweep_number:
+                noise_h = float((sweep.find(
+                    "./RADAR/STAT/CALIB/noisepower_frontend_h_inuse")).attrib[
+                        'value'])
+                rconst_h = float(
+                    (sweep.find("./RADAR/STAT/CALIB/rconst_h")).attrib[
+                        'value'])
+                noise_v = float((sweep.find(
+                    "./RADAR/STAT/CALIB/noisepower_frontend_v_inuse")).attrib[
+                        'value'])
+                rconst_v = float(
+                    (sweep.find("./RADAR/STAT/CALIB/rconst_v")).attrib[
+                        'value'])
+
+        radar_aux = pyart.aux_io.read_iq(
+            filename[0], filenames_iq, field_names=field_names,
+            prf=prfs[int(scan)-1], noise_h=noise_h, noise_v=noise_h,
+            rconst_h=rconst_h, rconst_v=rconst_v, radconst_h=radconst_h,
+            radconst_v=radconst_v, mfloss_h=mfloss_h, mfloss_v=mfloss_v,
+            ang_tol=cfg['ang_tol'], rng_min=cfg['rmin'], rng_max=cfg['rmax'],
+            ele_min=cfg['elmin'], ele_max=cfg['elmax'], azi_min=cfg['azmin'],
+            azi_max=cfg['azmax'])
+
+        if radar_aux is None:
+            continue
 
         if radar is None:
             radar = radar_aux
@@ -1681,9 +1846,9 @@ def merge_fields_psr_spectra(basepath, basepath_psr, scan_name, voltime,
 
     datapath_psr = basepath_psr+scan_name+voltime.strftime('%Y-%m-%d')+'/'
     for datatype in datatype_list:
-        if datatype in ('ShhADUu', 'NADUh'):
+        if datatype in ('ShhADUu', 'sNADUh'):
             filestr = datapath_psr+fdatetime+'_*_*.ufh.psr.rd'
-        elif datatype in ('SvvADUu', 'NADUv'):
+        elif datatype in ('SvvADUu', 'sNADUv'):
             filestr = datapath_psr+fdatetime+'_*_*.ufv.psr.rd'
         else:
             warn('Unknown data type '+datatype)
@@ -2320,7 +2485,8 @@ def get_data_rad4alp(filename, datatype_list, scan_name, cfg, ind_rad=0):
     else:
         try:
             radar = pyart.aux_io.read_metranet(
-                filename, field_names=metranet_field_names)
+                filename, field_names=metranet_field_names,
+                reader=cfg['metranet_read_lib'])
         except ValueError as ee:
             warn("Unable to read file '"+filename+": (%s)" % str(ee))
             return None

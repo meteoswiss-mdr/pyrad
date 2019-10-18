@@ -69,11 +69,12 @@
 <span class="sd">    merge_scans_psr_spectra</span>
 <span class="sd">    merge_scans_dem</span>
 <span class="sd">    merge_scans_rad4alp</span>
-<span class="sd">	merge_scans_odim</span>
+<span class="sd">    merge_scans_odim</span>
 <span class="sd">    merge_scans_cosmo</span>
 <span class="sd">    merge_scans_cosmo_rad4alp</span>
 <span class="sd">    merge_scans_dem_rad4alp</span>
 <span class="sd">    merge_scans_other_rad4alp</span>
+<span class="sd">    merge_scans_iq_rad4alp</span>
 <span class="sd">    merge_fields_rainbow</span>
 <span class="sd">    merge_fields_psr</span>
 <span class="sd">    merge_fields_psr_spectra</span>
@@ -208,6 +209,8 @@
 <span class="sd">            &#39;NETCDFSPECTRA&#39;: Format analogous to CFRadial and used to store</span>
 <span class="sd">                Doppler spectral</span>
 
+<span class="sd">            &#39;RAD4ALPIQ&#39;: Format used to store rad4alp IQ data</span>
+
 <span class="sd">        &#39;RAINBOW&#39;, &#39;RAD4ALP&#39;, &#39;ODIM&#39; and &#39;MXPOL&#39; are primary data file sources</span>
 <span class="sd">        and they cannot be mixed for the same radar. It is also the case for</span>
 <span class="sd">        their complementary data files, i.e. &#39;COSMO&#39; and &#39;RAD4ALPCOSMO&#39;, etc.</span>
@@ -243,6 +246,7 @@
     <span class="n">datatype_rad4alpgrid</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">datatype_rad4alpgif</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">datatype_rad4alpbin</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">datatype_rad4alpIQ</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">datatype_mxpol</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">datatype_pyradgrid</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">dataset_pyradgrid</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -291,6 +295,8 @@
             <span class="n">datatype_rad4alpgif</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;RAD4ALPBIN&#39;</span><span class="p">:</span>
             <span class="n">datatype_rad4alpbin</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;RAD4ALPIQ&#39;</span><span class="p">:</span>
+            <span class="n">datatype_rad4alpIQ</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;PYRADGRID&#39;</span><span class="p">:</span>
             <span class="n">datatype_pyradgrid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
             <span class="n">dataset_pyradgrid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
@@ -321,6 +327,7 @@
     <span class="n">ndatatypes_rad4alpgrid</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_rad4alpgrid</span><span class="p">)</span>
     <span class="n">ndatatypes_rad4alpgif</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_rad4alpgif</span><span class="p">)</span>
     <span class="n">ndatatypes_rad4alpbin</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_rad4alpbin</span><span class="p">)</span>
+    <span class="n">ndatatypes_rad4alpIQ</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_rad4alpIQ</span><span class="p">)</span>
     <span class="n">ndatatypes_pyradgrid</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_pyradgrid</span><span class="p">)</span>
     <span class="n">ndatatypes_psr</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_psr</span><span class="p">)</span>
     <span class="n">ndatatypes_psrspectra</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_psrspectra</span><span class="p">)</span>
@@ -346,8 +353,9 @@
             <span class="n">radar_name</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">radar_res</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">radar</span> <span class="o">=</span> <span class="n">merge_scans_odim</span><span class="p">(</span>
-            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanList&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">radar_name</span><span class="p">,</span> <span class="n">radar_res</span><span class="p">,</span>
-            <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_odim</span><span class="p">,</span> <span class="n">dataset_odim</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanList&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">radar_name</span><span class="p">,</span>
+            <span class="n">radar_res</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_odim</span><span class="p">,</span> <span class="n">dataset_odim</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span>
+            <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
 
     <span class="k">elif</span> <span class="n">ndatatypes_mxpol</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">radar</span> <span class="o">=</span> <span class="n">merge_scans_mxpol</span><span class="p">(</span>
@@ -363,6 +371,13 @@
             <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;psrpath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span>
             <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanList&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanPeriod&#39;</span><span class="p">],</span>
             <span class="n">datatype_psrspectra</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">radarnr</span><span class="o">=</span><span class="n">radarnr</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">ndatatypes_rad4alpIQ</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">radar</span> <span class="o">=</span> <span class="n">merge_scans_iq_rad4alp</span><span class="p">(</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;iqpath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanList&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarName&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarRes&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_rad4alpIQ</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span>
+            <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
 
     <span class="c1"># add other radar object files</span>
     <span class="k">if</span> <span class="n">ndatatypes_cfradial</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -1103,7 +1118,7 @@
             <span class="n">basepath</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">radar_name</span><span class="o">=</span><span class="n">radar_name</span><span class="p">,</span> <span class="n">radar_res</span><span class="o">=</span><span class="n">radar_res</span><span class="p">,</span>
             <span class="n">scan</span><span class="o">=</span><span class="n">scan</span><span class="p">,</span> <span class="n">path_convention</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;path_convention&#39;</span><span class="p">])</span>
 
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="n">scan</span><span class="o">+</span> <span class="s1">&#39;*&#39;</span><span class="p">)</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="n">scan</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="n">scan</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1179,7 +1194,9 @@
             <span class="n">basename</span> <span class="o">=</span> <span class="s1">&#39;P&#39;</span><span class="o">+</span><span class="n">radar_res</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="n">dayinfo</span>
             <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
     <span class="k">elif</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;path_convention&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ODIM&#39;</span><span class="p">:</span>
-        <span class="n">fpath_strf</span> <span class="o">=</span> <span class="n">dataset_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">dataset_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;D&quot;</span><span class="p">)</span><span class="o">+</span><span class="mi">2</span><span class="p">:</span><span class="n">dataset_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">)</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">fpath_strf</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">dataset_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span>
+                <span class="n">dataset_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;D&quot;</span><span class="p">)</span><span class="o">+</span><span class="mi">2</span><span class="p">:</span><span class="n">dataset_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">)</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
         <span class="n">fdate_strf</span> <span class="o">=</span> <span class="n">dataset_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">dataset_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">)</span><span class="o">+</span><span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">datapath</span> <span class="o">=</span> <span class="p">(</span><span class="n">basepath</span><span class="o">+</span><span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">fpath_strf</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
         <span class="n">filenames</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="o">+</span><span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
@@ -1196,7 +1213,8 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
             <span class="n">basename</span> <span class="o">=</span> <span class="s1">&#39;P&#39;</span><span class="o">+</span><span class="n">radar_res</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="n">dayinfo</span>
             <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="s1">&#39;P&#39;</span><span class="o">+</span><span class="n">radar_res</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
-            <span class="n">filename</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="o">+</span><span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;*&#39;</span><span class="p">)</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span>
+                <span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="o">+</span><span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.h*&#39;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -1548,8 +1566,8 @@
         <span class="n">filename_prod</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span>
             <span class="n">datapath_prod</span><span class="o">+</span><span class="n">basename_prod</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="mi">800</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="n">scan</span><span class="p">))</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">filename_prod</span><span class="p">:</span>
-            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath_prod</span><span class="o">+</span><span class="n">basename_prod</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span> <span class="o">+</span>
-                 <span class="nb">str</span><span class="p">(</span><span class="mi">800</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="n">scan</span><span class="p">)))</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath_prod</span><span class="o">+</span><span class="n">basename_prod</span><span class="o">+</span><span class="n">timeinfo</span> <span class="o">+</span>
+                 <span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="mi">800</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="n">scan</span><span class="p">)))</span>
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="n">filename_prod</span> <span class="o">=</span> <span class="n">filename_prod</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -1594,6 +1612,153 @@
         <span class="c1"># add product data</span>
         <span class="n">radar_aux</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="n">radar_aux</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">prod_field</span><span class="p">,</span> <span class="n">prod_dict</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">radar</span>
+
+    <span class="k">return</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cut_radar</span><span class="p">(</span>
+        <span class="n">radar</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">],</span>
+        <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span>
+        <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">])</span>
+
+
+<span class="k">def</span> <span class="nf">merge_scans_iq_rad4alp</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">basepath_iq</span><span class="p">,</span> <span class="n">scan_list</span><span class="p">,</span> <span class="n">radar_name</span><span class="p">,</span>
+                           <span class="n">radar_res</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span>
+                           <span class="n">ang_tol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">ang_step</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    merge rad4alp IQ scans</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    basepath : str</span>
+<span class="sd">        base path of rad4alp radar data</span>
+<span class="sd">    basepath_iq : str</span>
+<span class="sd">        base path of rad4alp IQ data</span>
+<span class="sd">    scan_list : list</span>
+<span class="sd">        list of scans (001 to 020)</span>
+<span class="sd">    radar_name : str</span>
+<span class="sd">        radar_name (A, D, L, ...)</span>
+<span class="sd">    radar_res : str</span>
+<span class="sd">        radar resolution (H or L)</span>
+<span class="sd">    voltime: datetime object</span>
+<span class="sd">        reference time of the scan</span>
+<span class="sd">    datatype_list : list</span>
+<span class="sd">        lists of data types to get</span>
+<span class="sd">    cfg : dict</span>
+<span class="sd">        configuration dictionary</span>
+<span class="sd">    ang_tol : float</span>
+<span class="sd">        Tolerance between nominal elevation and actual elevation</span>
+<span class="sd">    ang_step : float</span>
+<span class="sd">        The elevation angular step used when checking valid ray files</span>
+<span class="sd">    ind_rad : int</span>
+<span class="sd">        radar index</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    radar : Radar</span>
+<span class="sd">        radar object</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">radar_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">radar_res</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s1">&#39;ERROR: Radar Name and Resolution not specified in config file.&#39;</span> <span class="o">+</span>
+            <span class="s1">&#39; Unable to load rad4alp data&#39;</span><span class="p">)</span>
+
+    <span class="n">timeinfo</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%H%M&#39;</span><span class="p">)</span>
+    <span class="n">dayinfo</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%y%j&#39;</span><span class="p">)</span>
+
+    <span class="n">ele_vec</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.6</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">,</span> <span class="mf">5.5</span><span class="p">,</span> <span class="mf">6.5</span><span class="p">,</span> <span class="mf">7.5</span><span class="p">,</span> <span class="mf">8.5</span><span class="p">,</span> <span class="mf">9.5</span><span class="p">,</span> <span class="mf">11.0</span><span class="p">,</span>
+        <span class="mf">13.0</span><span class="p">,</span> <span class="mf">16.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">25.0</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">,</span> <span class="mf">35.0</span><span class="p">,</span> <span class="mf">40.0</span><span class="p">]</span>
+    <span class="n">prfs</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="mf">600.</span><span class="p">,</span> <span class="mf">700.</span><span class="p">,</span> <span class="mf">600.</span><span class="p">,</span> <span class="mf">900.</span><span class="p">,</span> <span class="mf">800.</span><span class="p">,</span> <span class="mf">900.</span><span class="p">,</span> <span class="mf">1000.</span><span class="p">,</span> <span class="mf">900.</span><span class="p">,</span> <span class="mf">1000.</span><span class="p">,</span> <span class="mf">1200.</span><span class="p">,</span> <span class="mf">1200.</span><span class="p">,</span>
+        <span class="mf">1200.</span><span class="p">,</span> <span class="mf">1500.</span><span class="p">,</span> <span class="mf">1500.</span><span class="p">,</span> <span class="mf">1500.</span><span class="p">,</span> <span class="mf">1500.</span><span class="p">,</span> <span class="mf">1500.</span><span class="p">,</span> <span class="mf">1500.</span><span class="p">,</span> <span class="mf">1500.</span><span class="p">,</span> <span class="mf">1500.</span><span class="p">]</span>
+
+    <span class="n">field_names</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="n">datatype_list</span><span class="p">:</span>
+        <span class="n">field_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">))</span>
+
+    <span class="c1"># read status</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">read_status</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
+
+    <span class="n">radconst_h</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">radconst_v</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s1">&#39;radconsth&#39;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">:</span>
+        <span class="n">radconst_h</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;radconsth&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s1">&#39;radconstv&#39;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">:</span>
+        <span class="n">radconst_v</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;radconstv&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
+
+    <span class="n">mfloss_h</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">mfloss_v</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s1">&#39;mflossh&#39;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">:</span>
+        <span class="n">mfloss_h</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;mflossh&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s1">&#39;mflossv&#39;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">:</span>
+        <span class="n">mfloss_v</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;mflossv&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
+
+    <span class="n">radar</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">scan</span> <span class="ow">in</span> <span class="n">scan_list</span><span class="p">:</span>
+        <span class="n">datapath</span><span class="p">,</span> <span class="n">basename</span> <span class="o">=</span> <span class="n">get_rad4alp_dir</span><span class="p">(</span>
+            <span class="n">basepath</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">radar_name</span><span class="o">=</span><span class="n">radar_name</span><span class="p">,</span> <span class="n">radar_res</span><span class="o">=</span><span class="n">radar_res</span><span class="p">,</span>
+            <span class="n">scan</span><span class="o">=</span><span class="n">scan</span><span class="p">,</span> <span class="n">path_convention</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;path_convention&#39;</span><span class="p">])</span>
+
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="n">scan</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="n">scan</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="n">ele</span> <span class="o">=</span> <span class="n">ele_vec</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">scan</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">datapath_iq</span> <span class="o">=</span> <span class="n">basepath_iq</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;/IQ&#39;</span><span class="o">+</span><span class="n">radar_name</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+
+        <span class="n">filenames_iq</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">ang_tol</span><span class="p">,</span> <span class="n">ang_tol</span><span class="o">+</span><span class="n">ang_step</span><span class="p">,</span> <span class="n">ang_step</span><span class="p">):</span>
+            <span class="n">ele_str</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{:04d}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="mf">100.</span><span class="o">*</span><span class="p">(</span><span class="n">ele</span><span class="o">+</span><span class="n">i</span><span class="p">)))</span>
+            <span class="n">filenames_iq</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath_iq</span><span class="o">+</span><span class="s1">&#39;IQ20&#39;</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*-E&#39;</span><span class="o">+</span><span class="n">ele_str</span> <span class="o">+</span>
+                          <span class="s1">&#39;*.dat&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filenames_iq</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No files found in &#39;</span><span class="o">+</span><span class="n">datapath_iq</span><span class="o">+</span><span class="s1">&#39;IQ20&#39;</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="n">timeinfo</span> <span class="o">+</span>
+                 <span class="s1">&#39;_*.dat&#39;</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># get metadata from status file</span>
+        <span class="n">sweep_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">scan</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+        <span class="n">noise_h</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">noise_v</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">rconst_h</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">rconst_v</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">sweep</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;sweep&#39;</span><span class="p">):</span>
+            <span class="n">sweep_number_file</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">sweep</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sweep_number_file</span> <span class="o">==</span> <span class="n">sweep_number</span><span class="p">:</span>
+                <span class="n">noise_h</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="n">sweep</span><span class="o">.</span><span class="n">find</span><span class="p">(</span>
+                    <span class="s2">&quot;./RADAR/STAT/CALIB/noisepower_frontend_h_inuse&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span>
+                        <span class="s1">&#39;value&#39;</span><span class="p">])</span>
+                <span class="n">rconst_h</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">sweep</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;./RADAR/STAT/CALIB/rconst_h&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span>
+                        <span class="s1">&#39;value&#39;</span><span class="p">])</span>
+                <span class="n">noise_v</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="n">sweep</span><span class="o">.</span><span class="n">find</span><span class="p">(</span>
+                    <span class="s2">&quot;./RADAR/STAT/CALIB/noisepower_frontend_v_inuse&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span>
+                        <span class="s1">&#39;value&#39;</span><span class="p">])</span>
+                <span class="n">rconst_v</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">sweep</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;./RADAR/STAT/CALIB/rconst_v&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span>
+                        <span class="s1">&#39;value&#39;</span><span class="p">])</span>
+
+        <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_iq</span><span class="p">(</span>
+            <span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">filenames_iq</span><span class="p">,</span> <span class="n">field_names</span><span class="o">=</span><span class="n">field_names</span><span class="p">,</span>
+            <span class="n">prf</span><span class="o">=</span><span class="n">prfs</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">scan</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">noise_h</span><span class="o">=</span><span class="n">noise_h</span><span class="p">,</span> <span class="n">noise_v</span><span class="o">=</span><span class="n">noise_h</span><span class="p">,</span>
+            <span class="n">rconst_h</span><span class="o">=</span><span class="n">rconst_h</span><span class="p">,</span> <span class="n">rconst_v</span><span class="o">=</span><span class="n">rconst_v</span><span class="p">,</span> <span class="n">radconst_h</span><span class="o">=</span><span class="n">radconst_h</span><span class="p">,</span>
+            <span class="n">radconst_v</span><span class="o">=</span><span class="n">radconst_v</span><span class="p">,</span> <span class="n">mfloss_h</span><span class="o">=</span><span class="n">mfloss_h</span><span class="p">,</span> <span class="n">mfloss_v</span><span class="o">=</span><span class="n">mfloss_v</span><span class="p">,</span>
+            <span class="n">ang_tol</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ang_tol&#39;</span><span class="p">],</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">],</span>
+            <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span>
+            <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">radar_aux</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
 
         <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
@@ -1737,9 +1902,9 @@
 
     <span class="n">datapath_psr</span> <span class="o">=</span> <span class="n">basepath_psr</span><span class="o">+</span><span class="n">scan_name</span><span class="o">+</span><span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
     <span class="k">for</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="n">datatype_list</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;ShhADUu&#39;</span><span class="p">,</span> <span class="s1">&#39;NADUh&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;ShhADUu&#39;</span><span class="p">,</span> <span class="s1">&#39;sNADUh&#39;</span><span class="p">):</span>
             <span class="n">filestr</span> <span class="o">=</span> <span class="n">datapath_psr</span><span class="o">+</span><span class="n">fdatetime</span><span class="o">+</span><span class="s1">&#39;_*_*.ufh.psr.rd&#39;</span>
-        <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;SvvADUu&#39;</span><span class="p">,</span> <span class="s1">&#39;NADUv&#39;</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;SvvADUu&#39;</span><span class="p">,</span> <span class="s1">&#39;sNADUv&#39;</span><span class="p">):</span>
             <span class="n">filestr</span> <span class="o">=</span> <span class="n">datapath_psr</span><span class="o">+</span><span class="n">fdatetime</span><span class="o">+</span><span class="s1">&#39;_*_*.ufv.psr.rd&#39;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unknown data type &#39;</span><span class="o">+</span><span class="n">datatype</span><span class="p">)</span>
@@ -2376,7 +2541,8 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">aux_io</span><span class="o">.</span><span class="n">read_metranet</span><span class="p">(</span>
-                <span class="n">filename</span><span class="p">,</span> <span class="n">field_names</span><span class="o">=</span><span class="n">metranet_field_names</span><span class="p">)</span>
+                <span class="n">filename</span><span class="p">,</span> <span class="n">field_names</span><span class="o">=</span><span class="n">metranet_field_names</span><span class="p">,</span>
+                <span class="n">reader</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;metranet_read_lib&#39;</span><span class="p">])</span>
         <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">ee</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Unable to read file &#39;&quot;</span><span class="o">+</span><span class="n">filename</span><span class="o">+</span><span class="s2">&quot;: (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
             <span class="k">return</span> <span class="kc">None</span>

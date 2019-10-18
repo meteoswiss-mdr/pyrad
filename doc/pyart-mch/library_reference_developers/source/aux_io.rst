@@ -106,6 +106,13 @@
    :special-members:
    :inherited-members:
    :show-inheritance:
+.. automodule:: pyart.aux_io.rad4alp_iq_reader
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
 .. automodule:: pyart.aux_io.radx
    :members:
    :undoc-members:

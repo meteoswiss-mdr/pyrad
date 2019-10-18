@@ -108,7 +108,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    spectra : radar spectra object</span>
-<span class="sd">        object containing the spectra to plot</span>
+<span class="sd">        object containing the spectra or the IQ data to plot</span>
 <span class="sd">    field_name : str</span>
 <span class="sd">        name of the field to plot</span>
 <span class="sd">    ray : int</span>
@@ -118,7 +118,8 @@
 <span class="sd">    fname_list : list of str</span>
 <span class="sd">        list of names of the files where to store the plot</span>
 <span class="sd">    xaxis_info : str</span>
-<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39; or &#39;Doppler_frequency&#39;</span>
+<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39;, &#39;Doppler_frequency&#39; or</span>
+<span class="sd">        &#39;pulse_number&#39;</span>
 <span class="sd">    titl : str or None</span>
 <span class="sd">        The plot title</span>
 <span class="sd">    clabel : str or None</span>
@@ -142,6 +143,10 @@
     <span class="k">elif</span> <span class="n">xaxis_info</span> <span class="o">==</span> <span class="s1">&#39;Doppler_frequency&#39;</span><span class="p">:</span>
         <span class="n">xaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ray</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">compressed</span><span class="p">()</span>
         <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Doppler frequency (Hz)&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xaxis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">npulses</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ray</span><span class="p">])</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Pulse number&#39;</span>
+
     <span class="n">xres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">xaxis</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">xaxis</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="n">yaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">/</span><span class="mf">1000.</span>
@@ -222,7 +227,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    spectra : radar spectra object</span>
-<span class="sd">        object containing the spectra to plot</span>
+<span class="sd">        object containing the spectra or the IQ data to plot</span>
 <span class="sd">    field_name : str</span>
 <span class="sd">        name of the field to plot</span>
 <span class="sd">    ang : float</span>
@@ -236,7 +241,8 @@
 <span class="sd">    fname_list : list of str</span>
 <span class="sd">        list of names of the files where to store the plot</span>
 <span class="sd">    xaxis_info : str</span>
-<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39; or &#39;Doppler_frequency&#39;</span>
+<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39;, &#39;Doppler_frequency&#39; or</span>
+<span class="sd">        &#39;pulse_number&#39;</span>
 <span class="sd">    yaxis_pos : str</span>
 <span class="sd">        the position that the y point represents in the y-axis bin. Can be</span>
 <span class="sd">        &#39;start&#39;, end&#39; or &#39;centre&#39;</span>
@@ -266,6 +272,12 @@
     <span class="k">elif</span> <span class="n">xaxis_info</span> <span class="o">==</span> <span class="s1">&#39;Doppler_frequency&#39;</span><span class="p">:</span>
         <span class="n">xaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">,</span> <span class="p">:]</span>
         <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Doppler frequency (Hz)&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xaxis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">((</span><span class="n">ind_rays</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">ray</span><span class="p">,</span> <span class="n">ind_ray</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ind_rays</span><span class="p">):</span>
+            <span class="n">npuls</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">npulses</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">]</span>
+            <span class="n">xaxis</span><span class="p">[</span><span class="n">ray</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">npuls</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">npuls</span><span class="p">)</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Pulse number&#39;</span>
     <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;Angle (deg)&#39;</span>
 
     <span class="k">if</span> <span class="n">along_azi</span><span class="p">:</span>
@@ -348,7 +360,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    spectra : radar spectra object</span>
-<span class="sd">        object containing the spectra to plot</span>
+<span class="sd">        object containing the spectra or the IQ data to plot</span>
 <span class="sd">    field_name : str</span>
 <span class="sd">        name of the field to plot</span>
 <span class="sd">    prdcfg : dict</span>
@@ -356,7 +368,8 @@
 <span class="sd">    fname_list : list of str</span>
 <span class="sd">        list of names of the files where to store the plot</span>
 <span class="sd">    xaxis_info : str</span>
-<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39; or &#39;Doppler_frequency&#39;</span>
+<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39;, &#39;Doppler_frequency&#39; or</span>
+<span class="sd">        &#39;pulse_number&#39;</span>
 <span class="sd">    yaxis_pos : str</span>
 <span class="sd">        the position that the y point represents in the y-axis bin. Can be</span>
 <span class="sd">        &#39;start&#39;, end&#39; or &#39;centre&#39;</span>
@@ -383,6 +396,11 @@
     <span class="k">elif</span> <span class="n">xaxis_info</span> <span class="o">==</span> <span class="s1">&#39;Doppler_frequency&#39;</span><span class="p">:</span>
         <span class="n">xaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
         <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Doppler frequency (Hz)&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xaxis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">((</span><span class="n">spectra</span><span class="o">.</span><span class="n">nrays</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">ray</span><span class="p">,</span> <span class="n">npuls</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">npulses</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]):</span>
+            <span class="n">xaxis</span><span class="p">[</span><span class="n">ray</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">npuls</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">npuls</span><span class="p">)</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Pulse number&#39;</span>
     <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;time (s from start time)&#39;</span>
 
     <span class="n">xaxis_lim</span><span class="p">,</span> <span class="n">yaxis_lim</span><span class="p">,</span> <span class="n">xaxis_size</span> <span class="o">=</span> <span class="n">_create_irregular_grid</span><span class="p">(</span>
@@ -458,7 +476,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    spectra : radar spectra object</span>
-<span class="sd">        object containing the spectra to plot</span>
+<span class="sd">        object containing the spectra or the IQ data to plot</span>
 <span class="sd">    field_name : str</span>
 <span class="sd">        name of the field to plot</span>
 <span class="sd">    ray, rng : int</span>
@@ -468,7 +486,8 @@
 <span class="sd">    fname_list : list of str</span>
 <span class="sd">        list of names of the files where to store the plot</span>
 <span class="sd">    xaxis_info : str</span>
-<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39; or &#39;Doppler_frequency&#39;</span>
+<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39;, &#39;Doppler_frequency&#39; or</span>
+<span class="sd">        &#39;pulse_number&#39;</span>
 <span class="sd">    ylabel : str or None</span>
 <span class="sd">        The label of the y-axis</span>
 <span class="sd">    titl : str or None</span>
@@ -492,6 +511,9 @@
     <span class="k">elif</span> <span class="n">xaxis_info</span> <span class="o">==</span> <span class="s1">&#39;Doppler_frequency&#39;</span><span class="p">:</span>
         <span class="n">xaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ray</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">compressed</span><span class="p">()</span>
         <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Doppler frequency (Hz)&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xaxis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">npulses</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ray</span><span class="p">])</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Pulse number&#39;</span>
 
     <span class="n">field</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ray</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">xaxis</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
 
@@ -544,7 +566,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    spectra : radar spectra object</span>
-<span class="sd">        object containing the spectra to plot</span>
+<span class="sd">        object containing the spectra or the IQ data to plot</span>
 <span class="sd">    field_name : str</span>
 <span class="sd">        name of the field to plot</span>
 <span class="sd">    ray : int</span>
@@ -554,7 +576,8 @@
 <span class="sd">    fname_list : list of str</span>
 <span class="sd">        list of names of the files where to store the plot</span>
 <span class="sd">    xaxis_info : str</span>
-<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39; or &#39;Doppler_frequency&#39;</span>
+<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39;, &#39;Doppler_frequency&#39; or</span>
+<span class="sd">        &#39;pulse_number&#39;</span>
 <span class="sd">    titl : str or None</span>
 <span class="sd">        The plot title</span>
 <span class="sd">    clabel : str or None</span>
@@ -578,6 +601,10 @@
     <span class="k">elif</span> <span class="n">xaxis_info</span> <span class="o">==</span> <span class="s1">&#39;Doppler_frequency&#39;</span><span class="p">:</span>
         <span class="n">xaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ray</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">compressed</span><span class="p">()</span>
         <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Doppler frequency (Hz)&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xaxis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">npulses</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ray</span><span class="p">])</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Pulse number&#39;</span>
+
     <span class="n">xres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">xaxis</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">xaxis</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="n">yaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">/</span><span class="mf">1000.</span>
@@ -674,7 +701,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    spectra : radar spectra object</span>
-<span class="sd">        object containing the spectra to plot</span>
+<span class="sd">        object containing the spectra or the IQ data to plot</span>
 <span class="sd">    field_name : str</span>
 <span class="sd">        name of the field to plot</span>
 <span class="sd">    ang : float</span>
@@ -688,7 +715,8 @@
 <span class="sd">    fname_list : list of str</span>
 <span class="sd">        list of names of the files where to store the plot</span>
 <span class="sd">    xaxis_info : str</span>
-<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39; or &#39;Doppler_frequency&#39;</span>
+<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39;, &#39;Doppler_frequency&#39; or</span>
+<span class="sd">        &#39;pulse_number&#39;</span>
 <span class="sd">    yaxis_pos : str</span>
 <span class="sd">        the position that the y point represents in the y-axis bin. Can be</span>
 <span class="sd">        &#39;start&#39;, end&#39; or &#39;centre&#39;</span>
@@ -718,6 +746,12 @@
     <span class="k">elif</span> <span class="n">xaxis_info</span> <span class="o">==</span> <span class="s1">&#39;Doppler_frequency&#39;</span><span class="p">:</span>
         <span class="n">xaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">,</span> <span class="p">:]</span>
         <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Doppler frequency (Hz)&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xaxis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">((</span><span class="n">ind_rays</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">ray</span><span class="p">,</span> <span class="n">ind_ray</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ind_rays</span><span class="p">):</span>
+            <span class="n">npuls</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">npulses</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">]</span>
+            <span class="n">xaxis</span><span class="p">[</span><span class="n">ray</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">npuls</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">npuls</span><span class="p">)</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Pulse number&#39;</span>
     <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;Angle (deg)&#39;</span>
 
     <span class="k">if</span> <span class="n">along_azi</span><span class="p">:</span>
@@ -817,7 +851,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    spectra : radar spectra object</span>
-<span class="sd">        object containing the spectra to plot</span>
+<span class="sd">        object containing the spectra or the IQ data to plot</span>
 <span class="sd">    field_name : str</span>
 <span class="sd">        name of the field to plot</span>
 <span class="sd">    prdcfg : dict</span>
@@ -825,7 +859,8 @@
 <span class="sd">    fname_list : list of str</span>
 <span class="sd">        list of names of the files where to store the plot</span>
 <span class="sd">    xaxis_info : str</span>
-<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39; or &#39;Doppler_frequency&#39;</span>
+<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39;, &#39;Doppler_frequency&#39; or</span>
+<span class="sd">        &#39;pulse_number&#39;</span>
 <span class="sd">    yaxis_pos : str</span>
 <span class="sd">        the position that the y point represents in the y-axis bin. Can be</span>
 <span class="sd">        &#39;start&#39;, end&#39; or &#39;centre&#39;</span>
@@ -852,6 +887,11 @@
     <span class="k">elif</span> <span class="n">xaxis_info</span> <span class="o">==</span> <span class="s1">&#39;Doppler_frequency&#39;</span><span class="p">:</span>
         <span class="n">xaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
         <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Doppler frequency (Hz)&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xaxis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">((</span><span class="n">spectra</span><span class="o">.</span><span class="n">nrays</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">ray</span><span class="p">,</span> <span class="n">npuls</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">npulses</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]):</span>
+            <span class="n">xaxis</span><span class="p">[</span><span class="n">ray</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">npuls</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">npuls</span><span class="p">)</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Pulse number&#39;</span>
     <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;time (s from start time)&#39;</span>
 
     <span class="n">xaxis_lim</span><span class="p">,</span> <span class="n">yaxis_lim</span><span class="p">,</span> <span class="n">xaxis_size</span> <span class="o">=</span> <span class="n">_create_irregular_grid</span><span class="p">(</span>
@@ -944,7 +984,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    spectra : radar spectra object</span>
-<span class="sd">        object containing the spectra to plot</span>
+<span class="sd">        object containing the spectra or the IQ data to plot</span>
 <span class="sd">    field_name : str</span>
 <span class="sd">        name of the field to plot</span>
 <span class="sd">    ray : int</span>
@@ -954,7 +994,8 @@
 <span class="sd">    fname_list : list of str</span>
 <span class="sd">        list of names of the files where to store the plot</span>
 <span class="sd">    xaxis_info : str</span>
-<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39; or &#39;Doppler_frequency&#39;</span>
+<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39;, &#39;Doppler_frequency&#39; or</span>
+<span class="sd">        &#39;pulse_number&#39;</span>
 <span class="sd">    titl : str or None</span>
 <span class="sd">        The plot title</span>
 <span class="sd">    ampli_vmin, ampli_vmax, phase_vmin, phase_vmax : float or None</span>
@@ -976,6 +1017,9 @@
     <span class="k">elif</span> <span class="n">xaxis_info</span> <span class="o">==</span> <span class="s1">&#39;Doppler_frequency&#39;</span><span class="p">:</span>
         <span class="n">xaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ray</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">compressed</span><span class="p">()</span>
         <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Doppler frequency (Hz)&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xaxis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">npulses</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ray</span><span class="p">])</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Pulse number&#39;</span>
     <span class="n">xres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">xaxis</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">xaxis</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="n">yaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">/</span><span class="mf">1000.</span>
@@ -1086,7 +1130,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    spectra : radar spectra object</span>
-<span class="sd">        object containing the spectra to plot</span>
+<span class="sd">        object containing the spectra or the IQ data to plot</span>
 <span class="sd">    field_name : str</span>
 <span class="sd">        name of the field to plot</span>
 <span class="sd">    ang : float</span>
@@ -1100,7 +1144,8 @@
 <span class="sd">    fname_list : list of str</span>
 <span class="sd">        list of names of the files where to store the plot</span>
 <span class="sd">    xaxis_info : str</span>
-<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39; or &#39;Doppler_frequency&#39;</span>
+<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39;, &#39;Doppler_frequency&#39; or</span>
+<span class="sd">        &#39;pulse_number&#39;</span>
 <span class="sd">    yaxis_pos : str</span>
 <span class="sd">        the position that the y point represents in the y-axis bin. Can be</span>
 <span class="sd">        &#39;start&#39;, end&#39; or &#39;centre&#39;</span>
@@ -1128,6 +1173,12 @@
     <span class="k">elif</span> <span class="n">xaxis_info</span> <span class="o">==</span> <span class="s1">&#39;Doppler_frequency&#39;</span><span class="p">:</span>
         <span class="n">xaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_rays</span><span class="p">,</span> <span class="p">:]</span>
         <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Doppler frequency (Hz)&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xaxis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">((</span><span class="n">ind_rays</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">ray</span><span class="p">,</span> <span class="n">ind_ray</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ind_rays</span><span class="p">):</span>
+            <span class="n">npuls</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">npulses</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">]</span>
+            <span class="n">xaxis</span><span class="p">[</span><span class="n">ray</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">npuls</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">npuls</span><span class="p">)</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Pulse number&#39;</span>
     <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;Angle (deg)&#39;</span>
 
     <span class="k">if</span> <span class="n">along_azi</span><span class="p">:</span>
@@ -1241,7 +1292,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    spectra : radar spectra object</span>
-<span class="sd">        object containing the spectra to plot</span>
+<span class="sd">        object containing the spectra or the IQ data to plot</span>
 <span class="sd">    field_name : str</span>
 <span class="sd">        name of the field to plot</span>
 <span class="sd">    prdcfg : dict</span>
@@ -1249,7 +1300,8 @@
 <span class="sd">    fname_list : list of str</span>
 <span class="sd">        list of names of the files where to store the plot</span>
 <span class="sd">    xaxis_info : str</span>
-<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39; or &#39;Doppler_frequency&#39;</span>
+<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39;, &#39;Doppler_frequency&#39; or</span>
+<span class="sd">        &#39;pulse_number&#39;</span>
 <span class="sd">    yaxis_pos : str</span>
 <span class="sd">        the position that the y point represents in the y-axis bin. Can be</span>
 <span class="sd">        &#39;start&#39;, end&#39; or &#39;centre&#39;</span>
@@ -1274,6 +1326,11 @@
     <span class="k">elif</span> <span class="n">xaxis_info</span> <span class="o">==</span> <span class="s1">&#39;Doppler_frequency&#39;</span><span class="p">:</span>
         <span class="n">xaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
         <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Doppler frequency (Hz)&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xaxis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">((</span><span class="n">spectra</span><span class="o">.</span><span class="n">nrays</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">ray</span><span class="p">,</span> <span class="n">npuls</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">npulses</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]):</span>
+            <span class="n">xaxis</span><span class="p">[</span><span class="n">ray</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">npuls</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">npuls</span><span class="p">)</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Pulse number&#39;</span>
     <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;time (s from start time)&#39;</span>
 
     <span class="n">xaxis_lim</span><span class="p">,</span> <span class="n">yaxis_lim</span><span class="p">,</span> <span class="n">xaxis_size</span> <span class="o">=</span> <span class="n">_create_irregular_grid</span><span class="p">(</span>
@@ -1378,7 +1435,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    spectra : radar spectra object</span>
-<span class="sd">        object containing the spectra to plot</span>
+<span class="sd">        object containing the spectra or the IQ data to plot</span>
 <span class="sd">    field_name : str</span>
 <span class="sd">        name of the field to plot</span>
 <span class="sd">    ray, rng : int</span>
@@ -1388,7 +1445,8 @@
 <span class="sd">    fname_list : list of str</span>
 <span class="sd">        list of names of the files where to store the plot</span>
 <span class="sd">    xaxis_info : str</span>
-<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39; or &#39;Doppler_frequency&#39;</span>
+<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39;, &#39;Doppler_frequency&#39; or</span>
+<span class="sd">        &#39;pulse_number&#39;</span>
 <span class="sd">    ylabel : str or None</span>
 <span class="sd">        The label of the y-axis</span>
 <span class="sd">    titl : str or None</span>
@@ -1412,6 +1470,9 @@
     <span class="k">elif</span> <span class="n">xaxis_info</span> <span class="o">==</span> <span class="s1">&#39;Doppler_frequency&#39;</span><span class="p">:</span>
         <span class="n">xaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ray</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">compressed</span><span class="p">()</span>
         <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Doppler frequency (Hz)&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xaxis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">npulses</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ray</span><span class="p">])</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Pulse number&#39;</span>
 
     <span class="n">field</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ray</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">xaxis</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
 
@@ -1483,7 +1544,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    spectra : radar spectra object</span>
-<span class="sd">        object containing the spectra to plot</span>
+<span class="sd">        object containing the spectra or the IQ data to plot</span>
 <span class="sd">    field_name : str</span>
 <span class="sd">        name of the field to plot</span>
 <span class="sd">    ray, rng : int</span>
@@ -1493,7 +1554,8 @@
 <span class="sd">    fname_list : list of str</span>
 <span class="sd">        list of names of the files where to store the plot</span>
 <span class="sd">    xaxis_info : str</span>
-<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39; or &#39;Doppler_frequency&#39;</span>
+<span class="sd">        Type of x-axis. Can be &#39;Doppler_velocity&#39;, &#39;Doppler_frequency&#39; or</span>
+<span class="sd">        &#39;pulse_number&#39;</span>
 <span class="sd">    titl : str or None</span>
 <span class="sd">        The plot title</span>
 <span class="sd">    ampli_vmin, ampli_vmax, phase_vmin, phase_vmax : float or None</span>
@@ -1515,6 +1577,9 @@
     <span class="k">elif</span> <span class="n">xaxis_info</span> <span class="o">==</span> <span class="s1">&#39;Doppler_frequency&#39;</span><span class="p">:</span>
         <span class="n">xaxis</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Doppler_frequency</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ray</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">compressed</span><span class="p">()</span>
         <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Doppler frequency (Hz)&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xaxis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">npulses</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ray</span><span class="p">])</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Pulse number&#39;</span>
 
     <span class="n">field</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ray</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">xaxis</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
 
@@ -1660,7 +1725,7 @@
     <span class="n">nbinsy</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="c1"># adapt Z data</span>
-    <span class="n">zpoints</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">((</span><span class="n">nxbin_lim</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">nybin_lim</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">zpoints</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">((</span><span class="n">nxbin_lim</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">nybin_lim</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nbinsy</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
         <span class="n">zpoints</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">xaxis_size</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">xaxis_size</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">zpoints</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">xaxis_size</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">xaxis_size</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>

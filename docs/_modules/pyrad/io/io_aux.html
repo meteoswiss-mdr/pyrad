@@ -137,22 +137,22 @@
 
     <span class="c1"># rainfall accumulation products</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;AZC01&#39;</span><span class="p">:</span>
-        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span> <span class="c1"># Rain rate accumulation with local bias corrected</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span>  <span class="c1"># Rain rate accu with local bias corrected</span>
         <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.801&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;AZC03&#39;</span><span class="p">:</span>
-        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span> <span class="c1"># Rain rate accumulation with local bias corrected</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span>  <span class="c1"># Rain rate accu with local bias corrected</span>
         <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.803&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;AZC06&#39;</span><span class="p">:</span>
-        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span> <span class="c1"># Rain rate accumulation with local bias corrected</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;AZC&#39;</span>  <span class="c1"># Rain rate accu with local bias corrected</span>
         <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.806&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;aZC01&#39;</span><span class="p">:</span>
-        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;aZC&#39;</span> <span class="c1"># Rain rate accumulation with local bias not corrected</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;aZC&#39;</span>  <span class="c1"># Rain rate accu with local bias not corrected</span>
         <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.801&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;aZC03&#39;</span><span class="p">:</span>
-        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;aZC&#39;</span> <span class="c1"># Rain rate accumulation with local bias not corrected</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;aZC&#39;</span>  <span class="c1"># Rain rate accu with local bias not corrected</span>
         <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.803&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;aZC06&#39;</span><span class="p">:</span>
-        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;aZC&#39;</span> <span class="c1"># Rain rate accumulation with local bias not corrected</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;aZC&#39;</span>  <span class="c1"># Rain rate accu with local bias not corrected</span>
         <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.806&#39;</span>
 
     <span class="c1"># CPC</span>
@@ -260,34 +260,34 @@
         <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.accu_0720_INCA_360&#39;</span>
 
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dACC&#39;</span><span class="p">:</span>
-        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;ACC&#39;</span> <span class="c1"># Daily precip accumulation using NowPal with CPC</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;ACC&#39;</span>  <span class="c1"># Daily precip accumulation using NowPal with CPC</span>
         <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.1440&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dACCH&#39;</span><span class="p">:</span>
-        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;ACC&#39;</span> <span class="c1"># reprocessed after 8 days</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;ACC&#39;</span>  <span class="c1"># reprocessed after 8 days</span>
         <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.1440&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dARC&#39;</span><span class="p">:</span>
-        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;ARC&#39;</span> <span class="c1"># Daily precip accumulation using NowPal with RZC</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;ARC&#39;</span>  <span class="c1"># Daily precip accumulation using NowPal with RZC</span>
         <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.1440&#39;</span>
 
     <span class="c1"># rainfall rate products</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;RZC&#39;</span><span class="p">:</span>
         <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;RZC&#39;</span>  <span class="c1"># rain rate local bias corrected</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;R1F&#39;</span><span class="p">:</span>
-        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;R1F&#39;</span> <span class="c1"># RZC including best foreign radars</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;R1F&#39;</span>  <span class="c1"># RZC including best foreign radars</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;rZC&#39;</span><span class="p">:</span>
-        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;rZC&#39;</span> <span class="c1"># local bias not corrected</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;rZC&#39;</span>  <span class="c1"># local bias not corrected</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;RZF&#39;</span><span class="p">:</span>
-        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;RZF&#39;</span> <span class="c1"># RZC including foreign radars</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;RZF&#39;</span>  <span class="c1"># RZC including foreign radars</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dRZC&#39;</span><span class="p">:</span>
         <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;RZC&#39;</span>  <span class="c1"># Daily maximum rain rate</span>
 
     <span class="c1"># hail products</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;BZC&#39;</span><span class="p">,</span> <span class="s1">&#39;dBZC&#39;</span><span class="p">):</span>
-        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;BZC&#39;</span> <span class="c1"># POH</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;BZC&#39;</span>  <span class="c1"># POH</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;MZC&#39;</span><span class="p">,</span> <span class="s1">&#39;dMZC&#39;</span><span class="p">):</span>
-        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;MZC&#39;</span> <span class="c1"># Maximum expected severe hail size</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;MZC&#39;</span>  <span class="c1"># Maximum expected severe hail size</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;GZC&#39;</span><span class="p">:</span>
-        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;GZC&#39;</span> <span class="c1"># Hail probability derived from reflectivity</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;GZC&#39;</span>  <span class="c1"># Hail probability derived from reflectivity</span>
         <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.803&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dGZC&#39;</span><span class="p">:</span>
         <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;GZC&#39;</span>
@@ -295,16 +295,16 @@
 
     <span class="c1"># max echo</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;CZC&#39;</span><span class="p">,</span> <span class="s1">&#39;dCZC&#39;</span><span class="p">):</span>
-        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;CZC&#39;</span> <span class="c1"># max echo</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;CZC&#39;</span>  <span class="c1"># max echo</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;HZC&#39;</span><span class="p">:</span>
-        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;HZC&#39;</span> <span class="c1"># Max echo height</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;HZC&#39;</span>  <span class="c1"># Max echo height</span>
 
     <span class="c1"># echo tops</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;EZC15&#39;</span><span class="p">,</span> <span class="s1">&#39;dEZC15&#39;</span><span class="p">):</span>
-        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;EZC&#39;</span> <span class="c1"># echo top</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;EZC&#39;</span>  <span class="c1"># echo top</span>
         <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.815&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;EZC20&#39;</span><span class="p">:</span>
-        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;EZC&#39;</span> <span class="c1"># echo top</span>
+        <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;EZC&#39;</span>  <span class="c1"># echo top</span>
         <span class="n">termination</span> <span class="o">=</span> <span class="s1">&#39;.820&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;EZC45&#39;</span><span class="p">,</span> <span class="s1">&#39;dEZC45&#39;</span><span class="p">):</span>
         <span class="n">acronym</span> <span class="o">=</span> <span class="s1">&#39;EZC&#39;</span>
@@ -1180,6 +1180,22 @@
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_power_vv_dBm&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPvvdBmu&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_power_vv_dBm&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNh&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_hh_dBZ&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNv&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_vv_dBZ&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNdBADUh&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_hh_dBADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNdBADUv&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_vv_dBADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNdBmh&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_hh_dBm&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNdBmv&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_vv_dBm&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNADUh&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_hh_ADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNADUv&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_vv_ADU&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhasehh&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_phase_hh&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhasehhu&#39;</span><span class="p">:</span>
@@ -1209,6 +1225,28 @@
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_copolar_correlation_coefficient&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sRhoHVu&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_copolar_correlation_coefficient&#39;</span>
+
+    <span class="c1"># IQ data</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQhhADU&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_hh_ADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQvvADU&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_vv_ADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNh&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_hh_dBZ&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNv&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_vv_dBZ&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNdBADUh&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_hh_dBADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNdBADUv&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_vv_dBADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNdBmh&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_hh_dBm&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNdBmv&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_vv_dBm&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNADUh&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_hh_ADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNADUv&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_vv_ADU&#39;</span>
 
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBm_sun_hit&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;sun_hit_power_h&#39;</span>
@@ -1535,9 +1573,9 @@
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CZC&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;maximum_echo&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dCZC&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;maximum_echo&#39;</span> <span class="c1"># Daily max echo</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;maximum_echo&#39;</span>  <span class="c1"># Daily max echo</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;HZC&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;maximum_echo_height&#39;</span> <span class="c1"># Max echo height</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;maximum_echo_height&#39;</span>  <span class="c1"># Max echo height</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;EZC15&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;echo_top_15dBz&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;EZC20&#39;</span><span class="p">:</span>
@@ -1547,7 +1585,7 @@
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;EZC50&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;echo_top_50dBz&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dEZC15&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;echo_top_15dBZ&#39;</span> <span class="c1"># Daily echo top</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;echo_top_15dBZ&#39;</span>  <span class="c1"># Daily echo top</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dEZC20&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;echo_top_20dBz&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dEZC45&#39;</span><span class="p">:</span>
@@ -1840,7 +1878,7 @@
                     <span class="n">sub2</span> <span class="o">=</span> <span class="n">starttime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%m&#39;</span><span class="p">)</span>
                     <span class="n">sub3</span> <span class="o">=</span> <span class="n">starttime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
                     <span class="n">datapath</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">sub1</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">sub2</span> <span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">sub3</span> <span class="o">+</span>
+                        <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">sub1</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">sub2</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">sub3</span> <span class="o">+</span>
                         <span class="s1">&#39;/&#39;</span><span class="p">)</span>
                     <span class="n">basename</span> <span class="o">=</span> <span class="p">(</span>
                         <span class="s1">&#39;MXPol-polar-&#39;</span><span class="o">+</span><span class="n">starttime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;-*-&#39;</span> <span class="o">+</span>
@@ -1988,7 +2026,7 @@
     <span class="k">if</span> <span class="n">path_convention</span> <span class="o">==</span> <span class="s1">&#39;LTE&#39;</span><span class="p">:</span>
         <span class="n">yy</span> <span class="o">=</span> <span class="n">dayinfo</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">dy</span> <span class="o">=</span> <span class="n">dayinfo</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
-        <span class="n">subf</span> <span class="o">=</span> <span class="n">acronym</span><span class="o">+</span><span class="n">yy</span><span class="o">+</span><span class="s1">&#39;hdf&#39;</span><span class="o">+</span> <span class="n">dy</span>
+        <span class="n">subf</span> <span class="o">=</span> <span class="n">acronym</span><span class="o">+</span><span class="n">yy</span><span class="o">+</span><span class="s1">&#39;hdf&#39;</span><span class="o">+</span><span class="n">dy</span>
         <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">subf</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
     <span class="k">elif</span> <span class="n">path_convention</span> <span class="o">==</span> <span class="s1">&#39;MCH&#39;</span><span class="p">:</span>
         <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">dirbase</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
@@ -2123,7 +2161,8 @@
 <span class="sd">    radarnr : str</span>
 <span class="sd">        radar number, i.e. RADAR1, RADAR2, ...</span>
 <span class="sd">    datagroup : str</span>
-<span class="sd">        data type group, i.e. RAINBOW, RAD4ALP, ODIM, CFRADIAL, COSMO, MXPOL ...</span>
+<span class="sd">        data type group, i.e. RAINBOW, RAD4ALP, ODIM, CFRADIAL, COSMO,</span>
+<span class="sd">        MXPOL ...</span>
 <span class="sd">    datatype : str</span>
 <span class="sd">        data type, i.e. dBZ, ZDR, ISO0, ...</span>
 <span class="sd">    dataset : str</span>
@@ -2185,12 +2224,12 @@
             <span class="n">product</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;ODIM&#39;</span><span class="p">:</span>
             <span class="n">descrfields2</span> <span class="o">=</span> <span class="n">descrfields</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-            <span class="c1">#warn(&quot; descrfields2:  &#39;%s&#39;&quot; % descrfields2[1])</span>
+            <span class="c1"># warn(&quot; descrfields2:  &#39;%s&#39;&quot; % descrfields2[1])</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">descrfields2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="n">datatype</span> <span class="o">=</span> <span class="n">descrfields2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="n">dataset</span> <span class="o">=</span> <span class="n">descrfields2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
                 <span class="n">product</span> <span class="o">=</span> <span class="kc">None</span>
-                <span class="c1">#warn(&quot; dataset:  &#39;%s&#39;&quot; % dataset)</span>
+                <span class="c1"># warn(&quot; dataset:  &#39;%s&#39;&quot; % dataset)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">datatype</span> <span class="o">=</span> <span class="n">descrfields</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
                 <span class="n">dataset</span> <span class="o">=</span> <span class="kc">None</span>
@@ -2199,7 +2238,7 @@
             <span class="n">datatype</span> <span class="o">=</span> <span class="n">descrfields</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">dataset</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">product</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="c1">#warn(&quot; dataset:  &#39;%s&#39;&quot; % dataset)</span>
+    <span class="c1"># warn(&quot; dataset:  &#39;%s&#39;&quot; % dataset)</span>
     <span class="k">return</span> <span class="n">radarnr</span><span class="p">,</span> <span class="n">datagroup</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">product</span></div>
 
 
@@ -2310,8 +2349,6 @@
 
     <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;WARNING: Unable to get COSMO &#39;</span><span class="o">+</span><span class="n">datatype</span><span class="o">+</span><span class="s1">&#39; information&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="kc">None</span>
-
-
 
 
 <div class="viewcode-block" id="find_raw_cosmo_file"><a class="viewcode-back" href="../../../io.html#pyrad.io.find_raw_cosmo_file">[docs]</a><span class="k">def</span> <span class="nf">find_raw_cosmo_file</span><span class="p">(</span><span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>

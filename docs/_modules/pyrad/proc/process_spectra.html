@@ -64,18 +64,21 @@
 <span class="sd">    :toctree: generated/</span>
 
 <span class="sd">    process_raw_spectra</span>
+<span class="sd">    process_ifft</span>
 <span class="sd">    process_spectra_point</span>
 <span class="sd">    process_filter_0Doppler</span>
 <span class="sd">    process_filter_srhohv</span>
 <span class="sd">    process_filter_spectra_noise</span>
 <span class="sd">    process_spectra_ang_avg</span>
 <span class="sd">    process_spectral_power</span>
+<span class="sd">    process_spectral_noise</span>
 <span class="sd">    process_spectral_phase</span>
 <span class="sd">    process_spectral_reflectivity</span>
 <span class="sd">    process_spectral_differential_reflectivity</span>
 <span class="sd">    process_spectral_differential_phase</span>
 <span class="sd">    process_spectral_rhohv</span>
 <span class="sd">    process_pol_variables</span>
+<span class="sd">    process_noise_power</span>
 <span class="sd">    process_reflectivity</span>
 <span class="sd">    process_differential_reflectivity</span>
 <span class="sd">    process_differential_phase</span>
@@ -133,9 +136,92 @@
     <span class="k">return</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="n">ind_rad</span></div>
 
 
+<div class="viewcode-block" id="process_ifft"><a class="viewcode-back" href="../../../proc.html#pyrad.proc.process_ifft">[docs]</a><span class="k">def</span> <span class="nf">process_ifft</span><span class="p">(</span><span class="n">procstatus</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">radar_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the Doppler spectrum width from the spectral reflectivity</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    procstatus : int</span>
+<span class="sd">        Processing status: 0 initializing, 1 processing volume,</span>
+<span class="sd">        2 post-processing</span>
+<span class="sd">    dscfg : dictionary of dictionaries</span>
+<span class="sd">        data set configuration. Accepted configuration keywords::</span>
+
+<span class="sd">        datatype : list of string. Dataset keyword</span>
+<span class="sd">            The input data types</span>
+<span class="sd">    radar_list : list of spectra objects</span>
+<span class="sd">        Optional. list of spectra objects</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    new_dataset : dict</span>
+<span class="sd">        dictionary containing the output</span>
+<span class="sd">    ind_rad : int</span>
+<span class="sd">        radar index</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">procstatus</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="n">radarnr</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_datatype_fields</span><span class="p">(</span><span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;datatype&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">ind_rad</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">radarnr</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">8</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">radar_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">radar_list</span><span class="p">[</span><span class="n">ind_rad</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;ERROR: No valid radar&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_list</span><span class="p">[</span><span class="n">ind_rad</span><span class="p">]</span>
+
+    <span class="n">wind_params</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;window&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;None&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">wind_params</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">window</span> <span class="o">=</span> <span class="n">wind_params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">window</span> <span class="o">==</span> <span class="s1">&#39;None&#39;</span><span class="p">:</span>
+            <span class="n">window</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">window</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">window</span> <span class="o">=</span> <span class="n">wind_params</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">window</span><span class="p">)):</span>
+            <span class="n">window</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">window</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">window</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
+
+    <span class="n">fields_in_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">fields_out_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">datatypedescr</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;datatype&#39;</span><span class="p">]:</span>
+        <span class="n">radarnr</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_datatype_fields</span><span class="p">(</span><span class="n">datatypedescr</span><span class="p">)</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="n">field_name</span><span class="o">+</span><span class="s1">&#39; not in radar&#39;</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;unfiltered_complex_spectra_hh_ADU&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;complex_spectra_hh_ADU&#39;</span><span class="p">):</span>
+            <span class="n">fields_out_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;IQ_hh_ADU&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;unfiltered_complex_spectra_vv_ADU&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;complex_spectra_vv_ADU&#39;</span><span class="p">):</span>
+            <span class="n">fields_out_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;IQ_vv_ADU&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">field_name</span> <span class="o">==</span> <span class="s1">&#39;spectral_noise_power_hh_ADU&#39;</span><span class="p">:</span>
+            <span class="n">fields_out_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;IQ_noise_power_hh_ADU&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">field_name</span> <span class="o">==</span> <span class="s1">&#39;spectral_noise_power_vv_ADU&#39;</span><span class="p">:</span>
+            <span class="n">fields_out_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;IQ_noise_power_vv_ADU&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="n">field_name</span><span class="o">+</span><span class="s1">&#39; can not be inverse Fourier transformed&#39;</span><span class="p">)</span>
+        <span class="n">fields_in_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+
+    <span class="n">radar_out</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">retrieve</span><span class="o">.</span><span class="n">compute_iq</span><span class="p">(</span>
+        <span class="n">radar</span><span class="p">,</span> <span class="n">fields_in_list</span><span class="p">,</span> <span class="n">fields_out_list</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">)</span>
+
+    <span class="c1"># prepare for exit</span>
+    <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">radar_out</span><span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="n">ind_rad</span></div>
+
+
 <div class="viewcode-block" id="process_spectra_point"><a class="viewcode-back" href="../../../proc.html#pyrad.proc.process_spectra_point">[docs]</a><span class="k">def</span> <span class="nf">process_spectra_point</span><span class="p">(</span><span class="n">procstatus</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">radar_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Obtains the spectra data at a point location.</span>
+<span class="sd">    Obtains the spectra or IQ data at a point location.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -150,18 +236,18 @@
 <span class="sd">        latlon : boolean. Dataset keyword</span>
 <span class="sd">            if True position is obtained from latitude, longitude information,</span>
 <span class="sd">            otherwise position is obtained from antenna coordinates</span>
-<span class="sd">            (range, azimuth, elevation).</span>
+<span class="sd">            (range, azimuth, elevation). Default False</span>
 <span class="sd">        truealt : boolean. Dataset keyword</span>
 <span class="sd">            if True the user input altitude is used to determine the point of</span>
 <span class="sd">            interest.</span>
 <span class="sd">            if False use the altitude at a given radar elevation ele over the</span>
-<span class="sd">            point of interest.</span>
+<span class="sd">            point of interest. Default True</span>
 <span class="sd">        lon : float. Dataset keyword</span>
 <span class="sd">            the longitude [deg]. Use when latlon is True.</span>
 <span class="sd">        lat : float. Dataset keyword</span>
 <span class="sd">            the latitude [deg]. Use when latlon is True.</span>
 <span class="sd">        alt : float. Dataset keyword</span>
-<span class="sd">            altitude [m MSL]. Use when latlon is True.</span>
+<span class="sd">            altitude [m MSL]. Use when latlon is True. Default 0.</span>
 <span class="sd">        ele : float. Dataset keyword</span>
 <span class="sd">            radar elevation [deg]. Use when latlon is False or when latlon is</span>
 <span class="sd">            True and truealt is False</span>
@@ -170,11 +256,14 @@
 <span class="sd">        rng : float. Dataset keyword</span>
 <span class="sd">            range from radar [m]. Use when latlon is False</span>
 <span class="sd">        AziTol : float. Dataset keyword</span>
-<span class="sd">            azimuthal tolerance to determine which radar azimuth to use [deg]</span>
+<span class="sd">            azimuthal tolerance to determine which radar azimuth to use [deg].</span>
+<span class="sd">            Default 0.5</span>
 <span class="sd">        EleTol : float. Dataset keyword</span>
-<span class="sd">            elevation tolerance to determine which radar elevation to use [deg]</span>
+<span class="sd">            elevation tolerance to determine which radar elevation to use</span>
+<span class="sd">            [deg]. Default 0.5</span>
 <span class="sd">        RngTol : float. Dataset keyword</span>
-<span class="sd">            range tolerance to determine which radar bin to use [m]</span>
+<span class="sd">            range tolerance to determine which radar bin to use [m]. Default</span>
+<span class="sd">            50.</span>
 
 <span class="sd">    radar_list : list of Radar objects</span>
 <span class="sd">          Optional. list of radar objects</span>
@@ -328,6 +417,7 @@
         <span class="n">psr_poi</span><span class="o">.</span><span class="n">elevation</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
         <span class="n">psr_poi</span><span class="o">.</span><span class="n">nrays</span> <span class="o">=</span> <span class="mi">0</span>
 
+        <span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_velocity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_velocity</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
         <span class="k">if</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_frequency</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -359,9 +449,10 @@
         <span class="n">alt</span><span class="p">,</span> <span class="p">(</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">nrays</span><span class="p">,</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">ngates</span><span class="p">))</span>
 
     <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="n">field_names</span><span class="p">:</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="n">psr</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">psr</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Field &#39;</span><span class="o">+</span><span class="n">field_name</span><span class="o">+</span><span class="s1">&#39; not in psr object&#39;</span><span class="p">)</span>
-            <span class="n">poi_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">))</span>
+            <span class="n">poi_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">poi_data</span> <span class="o">=</span> <span class="n">psr</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">,</span> <span class="n">ind_rng</span><span class="p">,</span> <span class="p">:]</span>
             <span class="n">poi_data</span> <span class="o">=</span> <span class="n">poi_data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">)</span>
@@ -375,18 +466,21 @@
                 <span class="n">psr_poi</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                     <span class="n">psr_poi</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">poi_data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span> <span class="o">&lt;</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">:</span>
-                <span class="n">poi_data_aux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">))</span>
+                <span class="n">poi_data_aux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">(</span>
+                    <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
                 <span class="n">poi_data_aux</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">]</span> <span class="o">=</span> <span class="n">poi_data</span>
                 <span class="n">psr_poi</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                     <span class="n">psr_poi</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">poi_data_aux</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">poi_data_aux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">(</span>
-                    <span class="p">(</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">nrays</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">))</span>
+                    <span class="p">(</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">nrays</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">psr</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
                 <span class="n">poi_data_aux</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">nrays</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">:</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses_max</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="n">psr_poi</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
                 <span class="n">poi_data_aux</span><span class="p">[</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">nrays</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">poi_data</span>
                 <span class="n">psr_poi</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">poi_data_aux</span>
 
+    <span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+        <span class="n">psr_poi</span><span class="o">.</span><span class="n">npulses</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">psr</span><span class="o">.</span><span class="n">npulses</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray</span><span class="p">])</span>
     <span class="k">if</span> <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_velocity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_velocity</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">psr_poi</span><span class="o">.</span><span class="n">Doppler_velocity</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
@@ -656,7 +750,7 @@
                 <span class="ow">not</span> <span class="n">signal_found</span><span class="p">):</span>
             <span class="n">signal_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
             <span class="n">signal_found</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;NADUh&#39;</span><span class="p">,</span> <span class="s1">&#39;NADUv&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">noise_found</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;sNADUh&#39;</span><span class="p">,</span> <span class="s1">&#39;sNADUv&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">noise_found</span><span class="p">:</span>
             <span class="n">noise_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
             <span class="n">noise_found</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
@@ -845,7 +939,7 @@
         <span class="n">radarnr</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_datatype_fields</span><span class="p">(</span><span class="n">datatypedescr</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;ShhADU&#39;</span><span class="p">,</span> <span class="s1">&#39;SvvADU&#39;</span><span class="p">,</span> <span class="s1">&#39;ShhADUu&#39;</span><span class="p">,</span> <span class="s1">&#39;SvvADUu&#39;</span><span class="p">):</span>
             <span class="n">signal_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;NADUh&#39;</span><span class="p">,</span> <span class="s1">&#39;NADUv&#39;</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;sNADUh&#39;</span><span class="p">,</span> <span class="s1">&#39;sNADUv&#39;</span><span class="p">):</span>
             <span class="n">noise_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
 
     <span class="n">ind_rad</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">radarnr</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">8</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span>
@@ -867,6 +961,77 @@
         <span class="n">psr</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span> <span class="n">subtract_noise</span><span class="o">=</span><span class="n">subtract_noise</span><span class="p">,</span>
         <span class="n">smooth_window</span><span class="o">=</span><span class="n">smooth_window</span><span class="p">,</span> <span class="n">signal_field</span><span class="o">=</span><span class="n">signal_field</span><span class="p">,</span>
         <span class="n">noise_field</span><span class="o">=</span><span class="n">noise_field</span><span class="p">)</span>
+
+    <span class="c1"># prepare for exit</span>
+    <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">psr</span><span class="p">)}</span>
+    <span class="n">new_dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">new_dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">s_pwr</span><span class="p">[</span><span class="s1">&#39;standard_name&#39;</span><span class="p">],</span> <span class="n">s_pwr</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="n">ind_rad</span></div>
+
+
+<div class="viewcode-block" id="process_spectral_noise"><a class="viewcode-back" href="../../../proc.html#pyrad.proc.process_spectral_noise">[docs]</a><span class="k">def</span> <span class="nf">process_spectral_noise</span><span class="p">(</span><span class="n">procstatus</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">radar_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the spectral noise</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    procstatus : int</span>
+<span class="sd">        Processing status: 0 initializing, 1 processing volume,</span>
+<span class="sd">        2 post-processing</span>
+<span class="sd">    dscfg : dictionary of dictionaries</span>
+<span class="sd">        data set configuration. Accepted configuration keywords::</span>
+
+<span class="sd">        datatype : list of string. Dataset keyword</span>
+<span class="sd">            The input data types</span>
+<span class="sd">        units : str</span>
+<span class="sd">            The units of the returned signal. Can be &#39;ADU&#39;, &#39;dBADU&#39; or &#39;dBm&#39;</span>
+<span class="sd">        navg : int</span>
+<span class="sd">            Number of spectra averaged</span>
+<span class="sd">        rmin : int</span>
+<span class="sd">            Range from which the data is used to estimate the noise</span>
+<span class="sd">        nnoise_min : int</span>
+<span class="sd">            Minimum number of samples to consider the estimated noise power</span>
+<span class="sd">            valid</span>
+<span class="sd">    radar_list : list of spectra objects</span>
+<span class="sd">        Optional. list of spectra objects</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    new_dataset : dict</span>
+<span class="sd">        dictionary containing the output</span>
+<span class="sd">    ind_rad : int</span>
+<span class="sd">        radar index</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">procstatus</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="k">for</span> <span class="n">datatypedescr</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;datatype&#39;</span><span class="p">]:</span>
+        <span class="n">radarnr</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_datatype_fields</span><span class="p">(</span><span class="n">datatypedescr</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;ShhADU&#39;</span><span class="p">,</span> <span class="s1">&#39;SvvADU&#39;</span><span class="p">,</span> <span class="s1">&#39;ShhADUu&#39;</span><span class="p">,</span> <span class="s1">&#39;SvvADUu&#39;</span><span class="p">):</span>
+            <span class="n">signal_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+
+    <span class="n">ind_rad</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">radarnr</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">8</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">radar_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">radar_list</span><span class="p">[</span><span class="n">ind_rad</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;ERROR: No valid radar&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="n">psr</span> <span class="o">=</span> <span class="n">radar_list</span><span class="p">[</span><span class="n">ind_rad</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">signal_field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">psr</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to obtain spectral noise power. Missing field &#39;</span> <span class="o">+</span>
+             <span class="n">signal_field</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="n">units</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="s1">&#39;ADU&#39;</span><span class="p">)</span>
+    <span class="n">navg</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;navg&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">rmin</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rmin&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span>
+    <span class="n">nnoise_min</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nnoise_min&#39;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+
+    <span class="n">s_pwr</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">retrieve</span><span class="o">.</span><span class="n">compute_spectral_noise</span><span class="p">(</span>
+        <span class="n">psr</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span> <span class="n">navg</span><span class="o">=</span><span class="n">navg</span><span class="p">,</span> <span class="n">rmin</span><span class="o">=</span><span class="n">rmin</span><span class="p">,</span> <span class="n">nnoise_min</span><span class="o">=</span><span class="n">nnoise_min</span><span class="p">,</span>
+        <span class="n">signal_field</span><span class="o">=</span><span class="n">signal_field</span><span class="p">)</span>
 
     <span class="c1"># prepare for exit</span>
     <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">psr</span><span class="p">)}</span>
@@ -973,7 +1138,7 @@
         <span class="n">radarnr</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_datatype_fields</span><span class="p">(</span><span class="n">datatypedescr</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;ShhADU&#39;</span><span class="p">,</span> <span class="s1">&#39;SvvADU&#39;</span><span class="p">,</span> <span class="s1">&#39;ShhADUu&#39;</span><span class="p">,</span> <span class="s1">&#39;SvvADUu&#39;</span><span class="p">):</span>
             <span class="n">signal_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;NADUh&#39;</span><span class="p">,</span> <span class="s1">&#39;NADUv&#39;</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;sNADUh&#39;</span><span class="p">,</span> <span class="s1">&#39;sNADUv&#39;</span><span class="p">):</span>
             <span class="n">noise_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;sPhhADU&#39;</span><span class="p">,</span> <span class="s1">&#39;sPvvADU&#39;</span><span class="p">,</span> <span class="s1">&#39;sPhhADUu&#39;</span><span class="p">,</span> <span class="s1">&#39;sPvvADUu&#39;</span><span class="p">):</span>
             <span class="n">pwr_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
@@ -1018,7 +1183,8 @@
     <span class="k">return</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="n">ind_rad</span></div>
 
 
-<div class="viewcode-block" id="process_spectral_differential_reflectivity"><a class="viewcode-back" href="../../../proc.html#pyrad.proc.process_spectral_differential_reflectivity">[docs]</a><span class="k">def</span> <span class="nf">process_spectral_differential_reflectivity</span><span class="p">(</span><span class="n">procstatus</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">radar_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="process_spectral_differential_reflectivity"><a class="viewcode-back" href="../../../proc.html#pyrad.proc.process_spectral_differential_reflectivity">[docs]</a><span class="k">def</span> <span class="nf">process_spectral_differential_reflectivity</span><span class="p">(</span><span class="n">procstatus</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span>
+                                               <span class="n">radar_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes spectral differential reflectivity</span>
 
@@ -1064,9 +1230,9 @@
             <span class="n">signal_h_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;SvvADU&#39;</span><span class="p">,</span> <span class="s1">&#39;SvvADUu&#39;</span><span class="p">):</span>
             <span class="n">signal_v_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;NADUh&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNADUh&#39;</span><span class="p">:</span>
             <span class="n">noise_h_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;NADUv&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNADUv&#39;</span><span class="p">:</span>
             <span class="n">noise_v_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;sPhhADU&#39;</span><span class="p">,</span> <span class="s1">&#39;sPhhADUu&#39;</span><span class="p">):</span>
             <span class="n">pwr_h_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
@@ -1224,9 +1390,9 @@
             <span class="n">signal_h_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;SvvADU&#39;</span><span class="p">,</span> <span class="s1">&#39;SvvADUu&#39;</span><span class="p">):</span>
             <span class="n">signal_v_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;NADUh&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNADUh&#39;</span><span class="p">:</span>
             <span class="n">noise_h_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;NADUv&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNADUv&#39;</span><span class="p">:</span>
             <span class="n">noise_v_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
 
     <span class="n">ind_rad</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">radarnr</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">8</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span>
@@ -1303,9 +1469,9 @@
             <span class="n">signal_h_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;SvvADU&#39;</span><span class="p">,</span> <span class="s1">&#39;SvvADUu&#39;</span><span class="p">):</span>
             <span class="n">signal_v_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;NADUh&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNADUh&#39;</span><span class="p">:</span>
             <span class="n">noise_h_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;NADUv&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNADUv&#39;</span><span class="p">:</span>
             <span class="n">noise_v_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;sPhhADU&#39;</span><span class="p">,</span> <span class="s1">&#39;sPhhADUu&#39;</span><span class="p">):</span>
             <span class="n">pwr_h_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
@@ -1353,6 +1519,76 @@
 
     <span class="c1"># prepare for exit</span>
     <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">radar</span><span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="n">ind_rad</span></div>
+
+
+<div class="viewcode-block" id="process_noise_power"><a class="viewcode-back" href="../../../proc.html#pyrad.proc.process_noise_power">[docs]</a><span class="k">def</span> <span class="nf">process_noise_power</span><span class="p">(</span><span class="n">procstatus</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">radar_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the noise power from the spectra</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    procstatus : int</span>
+<span class="sd">        Processing status: 0 initializing, 1 processing volume,</span>
+<span class="sd">        2 post-processing</span>
+<span class="sd">    dscfg : dictionary of dictionaries</span>
+<span class="sd">        data set configuration. Accepted configuration keywords::</span>
+
+<span class="sd">        datatype : list of string. Dataset keyword</span>
+<span class="sd">            The input data types</span>
+<span class="sd">        units : str</span>
+<span class="sd">            The units of the returned signal. Can be &#39;ADU&#39;, &#39;dBADU&#39; or &#39;dBm&#39;</span>
+<span class="sd">        navg : int</span>
+<span class="sd">            Number of spectra averaged</span>
+<span class="sd">        rmin : int</span>
+<span class="sd">            Range from which the data is used to estimate the noise</span>
+<span class="sd">        nnoise_min : int</span>
+<span class="sd">            Minimum number of samples to consider the estimated noise power</span>
+<span class="sd">            valid</span>
+<span class="sd">    radar_list : list of spectra objects</span>
+<span class="sd">        Optional. list of spectra objects</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    new_dataset : dict</span>
+<span class="sd">        dictionary containing the output</span>
+<span class="sd">    ind_rad : int</span>
+<span class="sd">        radar index</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">procstatus</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="k">for</span> <span class="n">datatypedescr</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;datatype&#39;</span><span class="p">]:</span>
+        <span class="n">radarnr</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_datatype_fields</span><span class="p">(</span><span class="n">datatypedescr</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;ShhADU&#39;</span><span class="p">,</span> <span class="s1">&#39;SvvADU&#39;</span><span class="p">,</span> <span class="s1">&#39;ShhADUu&#39;</span><span class="p">,</span> <span class="s1">&#39;SvvADUu&#39;</span><span class="p">):</span>
+            <span class="n">signal_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+
+    <span class="n">ind_rad</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">radarnr</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">8</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">radar_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">radar_list</span><span class="p">[</span><span class="n">ind_rad</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;ERROR: No valid radar&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="n">psr</span> <span class="o">=</span> <span class="n">radar_list</span><span class="p">[</span><span class="n">ind_rad</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">signal_field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">psr</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to obtain spectral noise power. Missing field &#39;</span> <span class="o">+</span>
+             <span class="n">signal_field</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="n">units</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="s1">&#39;ADU&#39;</span><span class="p">)</span>
+    <span class="n">navg</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;navg&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">rmin</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rmin&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span>
+    <span class="n">nnoise_min</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nnoise_min&#39;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+
+    <span class="n">noise</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">retrieve</span><span class="o">.</span><span class="n">compute_noise_power</span><span class="p">(</span>
+        <span class="n">psr</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span> <span class="n">navg</span><span class="o">=</span><span class="n">navg</span><span class="p">,</span> <span class="n">rmin</span><span class="o">=</span><span class="n">rmin</span><span class="p">,</span> <span class="n">nnoise_min</span><span class="o">=</span><span class="n">nnoise_min</span><span class="p">,</span>
+        <span class="n">signal_field</span><span class="o">=</span><span class="n">signal_field</span><span class="p">)</span>
+
+    <span class="c1"># prepare for exit</span>
+    <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_from_spectra</span><span class="p">(</span><span class="n">psr</span><span class="p">)}</span>
+    <span class="n">new_dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">noise</span><span class="p">[</span><span class="s1">&#39;standard_name&#39;</span><span class="p">],</span> <span class="n">noise</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="n">ind_rad</span></div>
 
@@ -1474,7 +1710,6 @@
     <span class="k">if</span> <span class="s1">&#39;unfiltered&#39;</span> <span class="ow">in</span> <span class="n">sdBZ_field</span><span class="p">:</span>
         <span class="n">zdr_field</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_&#39;</span><span class="o">+</span><span class="n">zdr_field</span>
 
-
     <span class="c1"># prepare for exit</span>
     <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_from_spectra</span><span class="p">(</span><span class="n">psr</span><span class="p">)}</span>
     <span class="n">new_dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">zdr_field</span><span class="p">,</span> <span class="n">zdr</span><span class="p">)</span>
@@ -1586,9 +1821,9 @@
             <span class="n">signal_h_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;SvvADU&#39;</span><span class="p">,</span> <span class="s1">&#39;SvvADUu&#39;</span><span class="p">):</span>
             <span class="n">signal_v_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;NADUh&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNADUh&#39;</span><span class="p">:</span>
             <span class="n">noise_h_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;NADUv&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNADUv&#39;</span><span class="p">:</span>
             <span class="n">noise_v_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;sPhhADU&#39;</span><span class="p">,</span> <span class="s1">&#39;sPhhADUu&#39;</span><span class="p">):</span>
             <span class="n">pwr_h_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
@@ -1633,8 +1868,6 @@
         <span class="n">pwr_v_field</span><span class="o">=</span><span class="n">pwr_v_field</span><span class="p">,</span> <span class="n">signal_h_field</span><span class="o">=</span><span class="n">signal_h_field</span><span class="p">,</span>
         <span class="n">signal_v_field</span><span class="o">=</span><span class="n">signal_v_field</span><span class="p">,</span> <span class="n">noise_h_field</span><span class="o">=</span><span class="n">noise_h_field</span><span class="p">,</span>
         <span class="n">noise_v_field</span><span class="o">=</span><span class="n">noise_v_field</span><span class="p">)</span>
-
-
 
     <span class="c1"># prepare for exit</span>
     <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_from_spectra</span><span class="p">(</span><span class="n">psr</span><span class="p">)}</span>

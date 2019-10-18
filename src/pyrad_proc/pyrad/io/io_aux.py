@@ -81,22 +81,22 @@ def get_rad4alp_prod_fname(datatype):
 
     # rainfall accumulation products
     elif datatype == 'AZC01':
-        acronym = 'AZC' # Rain rate accumulation with local bias corrected
+        acronym = 'AZC'  # Rain rate accu with local bias corrected
         termination = '.801'
     elif datatype == 'AZC03':
-        acronym = 'AZC' # Rain rate accumulation with local bias corrected
+        acronym = 'AZC'  # Rain rate accu with local bias corrected
         termination = '.803'
     elif datatype == 'AZC06':
-        acronym = 'AZC' # Rain rate accumulation with local bias corrected
+        acronym = 'AZC'  # Rain rate accu with local bias corrected
         termination = '.806'
     elif datatype == 'aZC01':
-        acronym = 'aZC' # Rain rate accumulation with local bias not corrected
+        acronym = 'aZC'  # Rain rate accu with local bias not corrected
         termination = '.801'
     elif datatype == 'aZC03':
-        acronym = 'aZC' # Rain rate accumulation with local bias not corrected
+        acronym = 'aZC'  # Rain rate accu with local bias not corrected
         termination = '.803'
     elif datatype == 'aZC06':
-        acronym = 'aZC' # Rain rate accumulation with local bias not corrected
+        acronym = 'aZC'  # Rain rate accu with local bias not corrected
         termination = '.806'
 
     # CPC
@@ -204,34 +204,34 @@ def get_rad4alp_prod_fname(datatype):
         termination = '.accu_0720_INCA_360'
 
     elif datatype == 'dACC':
-        acronym = 'ACC' # Daily precip accumulation using NowPal with CPC
+        acronym = 'ACC'  # Daily precip accumulation using NowPal with CPC
         termination = '.1440'
     elif datatype == 'dACCH':
-        acronym = 'ACC' # reprocessed after 8 days
+        acronym = 'ACC'  # reprocessed after 8 days
         termination = '.1440'
     elif datatype == 'dARC':
-        acronym = 'ARC' # Daily precip accumulation using NowPal with RZC
+        acronym = 'ARC'  # Daily precip accumulation using NowPal with RZC
         termination = '.1440'
 
     # rainfall rate products
     elif datatype == 'RZC':
         acronym = 'RZC'  # rain rate local bias corrected
     elif datatype == 'R1F':
-        acronym = 'R1F' # RZC including best foreign radars
+        acronym = 'R1F'  # RZC including best foreign radars
     elif datatype == 'rZC':
-        acronym = 'rZC' # local bias not corrected
+        acronym = 'rZC'  # local bias not corrected
     elif datatype == 'RZF':
-        acronym = 'RZF' # RZC including foreign radars
+        acronym = 'RZF'  # RZC including foreign radars
     elif datatype == 'dRZC':
         acronym = 'RZC'  # Daily maximum rain rate
 
     # hail products
     elif datatype in ('BZC', 'dBZC'):
-        acronym = 'BZC' # POH
+        acronym = 'BZC'  # POH
     elif datatype in ('MZC', 'dMZC'):
-        acronym = 'MZC' # Maximum expected severe hail size
+        acronym = 'MZC'  # Maximum expected severe hail size
     elif datatype == 'GZC':
-        acronym = 'GZC' # Hail probability derived from reflectivity
+        acronym = 'GZC'  # Hail probability derived from reflectivity
         termination = '.803'
     elif datatype == 'dGZC':
         acronym = 'GZC'
@@ -239,16 +239,16 @@ def get_rad4alp_prod_fname(datatype):
 
     # max echo
     elif datatype in ('CZC', 'dCZC'):
-        acronym = 'CZC' # max echo
+        acronym = 'CZC'  # max echo
     elif datatype == 'HZC':
-        acronym = 'HZC' # Max echo height
+        acronym = 'HZC'  # Max echo height
 
     # echo tops
     elif datatype in ('EZC15', 'dEZC15'):
-        acronym = 'EZC' # echo top
+        acronym = 'EZC'  # echo top
         termination = '.815'
     elif datatype == 'EZC20':
-        acronym = 'EZC' # echo top
+        acronym = 'EZC'  # echo top
         termination = '.820'
     elif datatype in ('EZC45', 'dEZC45'):
         acronym = 'EZC'
@@ -1124,6 +1124,22 @@ def get_fieldname_pyart(datatype):
         field_name = 'spectral_power_vv_dBm'
     elif datatype == 'sPvvdBmu':
         field_name = 'unfiltered_spectral_power_vv_dBm'
+    elif datatype == 'sNh':
+        field_name = 'spectral_noise_power_hh_dBZ'
+    elif datatype == 'sNv':
+        field_name = 'spectral_noise_power_vv_dBZ'
+    elif datatype == 'sNdBADUh':
+        field_name = 'spectral_noise_power_hh_dBADU'
+    elif datatype == 'sNdBADUv':
+        field_name = 'spectral_noise_power_vv_dBADU'
+    elif datatype == 'sNdBmh':
+        field_name = 'spectral_noise_power_hh_dBm'
+    elif datatype == 'sNdBmv':
+        field_name = 'spectral_noise_power_vv_dBm'
+    elif datatype == 'sNADUh':
+        field_name = 'spectral_noise_power_hh_ADU'
+    elif datatype == 'sNADUv':
+        field_name = 'spectral_noise_power_vv_ADU'
     elif datatype == 'sPhasehh':
         field_name = 'spectral_phase_hh'
     elif datatype == 'sPhasehhu':
@@ -1153,6 +1169,28 @@ def get_fieldname_pyart(datatype):
         field_name = 'spectral_copolar_correlation_coefficient'
     elif datatype == 'sRhoHVu':
         field_name = 'unfiltered_spectral_copolar_correlation_coefficient'
+
+    # IQ data
+    elif datatype == 'IQhhADU':
+        field_name = 'IQ_hh_ADU'
+    elif datatype == 'IQvvADU':
+        field_name = 'IQ_vv_ADU'
+    elif datatype == 'IQNh':
+        field_name = 'IQ_noise_power_hh_dBZ'
+    elif datatype == 'IQNv':
+        field_name = 'IQ_noise_power_vv_dBZ'
+    elif datatype == 'IQNdBADUh':
+        field_name = 'IQ_noise_power_hh_dBADU'
+    elif datatype == 'IQNdBADUv':
+        field_name = 'IQ_noise_power_vv_dBADU'
+    elif datatype == 'IQNdBmh':
+        field_name = 'IQ_noise_power_hh_dBm'
+    elif datatype == 'IQNdBmv':
+        field_name = 'IQ_noise_power_vv_dBm'
+    elif datatype == 'IQNADUh':
+        field_name = 'IQ_noise_power_hh_ADU'
+    elif datatype == 'IQNADUv':
+        field_name = 'IQ_noise_power_vv_ADU'
 
     elif datatype == 'dBm_sun_hit':
         field_name = 'sun_hit_power_h'
@@ -1479,9 +1517,9 @@ def get_fieldname_pyart(datatype):
     elif datatype == 'CZC':
         field_name = 'maximum_echo'
     elif datatype == 'dCZC':
-        field_name = 'maximum_echo' # Daily max echo
+        field_name = 'maximum_echo'  # Daily max echo
     elif datatype == 'HZC':
-        field_name = 'maximum_echo_height' # Max echo height
+        field_name = 'maximum_echo_height'  # Max echo height
     elif datatype == 'EZC15':
         field_name = 'echo_top_15dBz'
     elif datatype == 'EZC20':
@@ -1491,7 +1529,7 @@ def get_fieldname_pyart(datatype):
     elif datatype == 'EZC50':
         field_name = 'echo_top_50dBz'
     elif datatype == 'dEZC15':
-        field_name = 'echo_top_15dBZ' # Daily echo top
+        field_name = 'echo_top_15dBZ'  # Daily echo top
     elif datatype == 'dEZC20':
         field_name = 'echo_top_20dBz'
     elif datatype == 'dEZC45':
@@ -1784,7 +1822,7 @@ def get_file_list(datadescriptor, starttimes, endtimes, cfg, scan=None):
                     sub2 = starttime.strftime('%m')
                     sub3 = starttime.strftime('%d')
                     datapath = (
-                        cfg['datapath'][ind_rad]+'/'+sub1+'/'+sub2 +'/'+sub3 +
+                        cfg['datapath'][ind_rad]+'/'+sub1+'/'+sub2+'/'+sub3 +
                         '/')
                     basename = (
                         'MXPol-polar-'+starttime.strftime('%Y%m%d')+'-*-' +
@@ -1932,7 +1970,7 @@ def get_rad4alp_grid_dir(basepath, voltime, datatype, acronym,
     if path_convention == 'LTE':
         yy = dayinfo[0:2]
         dy = dayinfo[2:]
-        subf = acronym+yy+'hdf'+ dy
+        subf = acronym+yy+'hdf'+dy
         datapath = basepath+subf+'/'
     elif path_convention == 'MCH':
         datapath = basepath+dayinfo+'/'+dirbase+dayinfo+'/'
@@ -2067,7 +2105,8 @@ def get_datatype_fields(datadescriptor):
     radarnr : str
         radar number, i.e. RADAR1, RADAR2, ...
     datagroup : str
-        data type group, i.e. RAINBOW, RAD4ALP, ODIM, CFRADIAL, COSMO, MXPOL ...
+        data type group, i.e. RAINBOW, RAD4ALP, ODIM, CFRADIAL, COSMO,
+        MXPOL ...
     datatype : str
         data type, i.e. dBZ, ZDR, ISO0, ...
     dataset : str
@@ -2129,12 +2168,12 @@ def get_datatype_fields(datadescriptor):
             product = None
         elif datagroup == 'ODIM':
             descrfields2 = descrfields[1].split(',')
-            #warn(" descrfields2:  '%s'" % descrfields2[1])
+            # warn(" descrfields2:  '%s'" % descrfields2[1])
             if len(descrfields2) == 2:
                 datatype = descrfields2[0]
                 dataset = descrfields2[1]
                 product = None
-                #warn(" dataset:  '%s'" % dataset)
+                # warn(" dataset:  '%s'" % dataset)
             else:
                 datatype = descrfields[1]
                 dataset = None
@@ -2143,7 +2182,7 @@ def get_datatype_fields(datadescriptor):
             datatype = descrfields[1]
             dataset = None
             product = None
-    #warn(" dataset:  '%s'" % dataset)
+    # warn(" dataset:  '%s'" % dataset)
     return radarnr, datagroup, datatype, dataset, product
 
 
@@ -2254,8 +2293,6 @@ def find_cosmo_file(voltime, datatype, cfg, scanid, ind_rad=0):
 
     warn('WARNING: Unable to get COSMO '+datatype+' information')
     return None
-
-
 
 
 def find_raw_cosmo_file(voltime, datatype, cfg, ind_rad=0):

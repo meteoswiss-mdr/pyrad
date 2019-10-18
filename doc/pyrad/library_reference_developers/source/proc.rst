@@ -57,6 +57,13 @@
    :special-members:
    :inherited-members:
    :show-inheritance:
+.. automodule:: pyrad.proc.process_iq
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
 .. automodule:: pyrad.proc.process_monitoring
    :members:
    :undoc-members:
