@@ -42,8 +42,7 @@ import pyart
 
 class pyrad_MXPOL(pyart.core.Radar):
     def __init__(self, filename, field_names=None, max_range=np.Inf,
-                 min_range=10000):
-
+                 min_range=10000, pyrad_names = True):
         # find information based on filename
         all_files = [filename]
         fname_basename = os.path.basename(filename)
@@ -60,7 +59,7 @@ class pyrad_MXPOL(pyart.core.Radar):
 
         if field_names is None:
             field_names = ['Zh', 'Zdr', 'Kdp', 'Phidp', 'Rhohv', 'ZhCorr',
-                           'ZdrCorr', 'RVel', 'Sw', 'SNRh', 'SNRv', 'Psidp']
+                           'ZdrCorr', 'RVel', 'Rvel', 'Sw', 'SNRh', 'SNRv', 'Psidp']
 
         # convert fieldname if necessary
         varnames = []
@@ -131,7 +130,7 @@ class pyrad_MXPOL(pyart.core.Radar):
 
             for j, v in enumerate(varnames):
                 if v in data.keys():
-                    if fields[v]['data'].size == 0:
+                    if not(len(fields[v]['data'])):
                         fields[v]['data'] = data[v]
                     else:
                         fields[v]['data'] = row_stack(
@@ -142,8 +141,12 @@ class pyrad_MXPOL(pyart.core.Radar):
         # mask NaNs
 
         for v in varnames:
-            fields[v]['data'] = np.ma.masked_equal(
-                fields[v]['data'], -99900.0)
+            if not len(fields[v]['data']):
+                # Remove variable
+                fields.pop(v)
+            else:
+                fields[v]['data'] = np.ma.masked_equal(
+                    fields[v]['data'], -99900.0)
 
         [a, N_ranges] = fields[varnames[0]]['data'].shape
 
@@ -170,12 +173,13 @@ class pyrad_MXPOL(pyart.core.Radar):
 
         time_units = 'seconds since ' + str(date)
         time_data = {'data': data['time'], 'units': time_units}
-
+        
         # change keys to match pyART metranet keys
-        fields_copy = deepcopy(fields)
-        for keys in fields_copy:
-            newkey = fields[keys]['standard_name']
-            fields[newkey] = fields.pop(keys)
+        if pyrad_names:
+            fields_copy = deepcopy(fields)
+            for keys in fields_copy:
+                newkey = fields[keys]['standard_name']
+                fields[newkey] = fields.pop(keys)
 
         # Create PyART instance
         pyart.core.Radar.__init__(
@@ -1006,21 +1010,21 @@ def convert_polvar_name(convention, polvar):
     """
     # Generate dictionary for the conversion
     metranet_list = [
-        'ZH', 'ZV', 'ZDR', 'PHI', 'VEL', 'WID', 'RHO', 'CLUT', 'MPH',
+        'ZH', 'ZV', 'ZDR', 'PHI', 'VEL', 'VEL', 'WID', 'RHO', 'CLUT', 'MPH',
         'STA1', 'STA2', 'WBN', 'ZHC', 'ZDRC', 'ZDRP', 'Kdpc', 'Rhohvc']
     MCH_list = [
-        'Z', 'ZV', 'ZDR', 'PHIDP', 'V', 'W', 'RHO', 'CLUT', 'MPH', 'STA1',
+        'Z', 'ZV', 'ZDR', 'PHIDP', 'V', 'V', 'W', 'RHO', 'CLUT', 'MPH', 'STA1',
         'STA2', 'WBN', 'Zhc', 'Zdrc', 'Hydrometeor_type_from_Besic1', 'Kdpc', 'RHOC']
     # ZhCorr and ZdrCorr have been changed to Zhc and Zdrc!
     LTE_list = [
-        'Zh', 'Zv', 'Zdr', 'Phidp', 'RVel', 'Sw', 'Rhohv', 'Clut', 'mph',
+        'Zh', 'Zv', 'Zdr', 'Phidp', 'RVel','Rvel', 'Sw', 'Rhohv', 'Clut', 'mph',
         'sta1', 'sta2', 'wbn', 'Zhc', 'Zdrc', 'Hydroclass', 'Kdpc', 'Rhohvc']
     IDL_list = [
-        'Zh', 'Zv', 'Zdr', 'Phidp_raw', 'V', 'W', 'uRhohv', 'CLUT', 'MPH', 'STA1',
+        'Zh', 'Zv', 'Zdr', 'Phidp_raw', 'V', 'V', 'W', 'uRhohv', 'CLUT', 'MPH', 'STA1',
         'STA2', 'WBN', 'Zhc', 'Zdrc', 'TYPECLUS2', 'Kdpc', 'Rhohvc']
     pyrad_list = [
         'reflectivity', 'reflectivity_vv', 'differential_reflectivity',
-        'differential_phase', 'velocity', 'spectrum_width',
+        'differential_phase', 'velocity', 'velocity', 'spectrum_width',
         'uncorrected_cross_correlation_ratio', 'radar_echo_id', 'MPH',
         'STA1', 'STA2', 'WBN', 'corrected_reflectivity',
         'corrected_differential_reflectivity', 'radar_echo_classification',
