@@ -13,6 +13,14 @@ RadarName STRING A
 # rad4alp radar range resolution L:Low H:High
 RadarRes STRING	L
 
+# Limit coverage
+rmax FLOAT 100000.
+#rmin FLOAT 1000.
+#azimin
+#azimax
+#elemin
+#elemax
+
 # Names of the radar scans in the specified sector
 ScanList STRARR 20
 	  001  # masterscan: first scan of a volume
@@ -83,6 +91,31 @@ ppiMapImageConfig STRUCT 12
        lakes_europe
        rivers
        rivers_europe
+
+gridMapImageConfig STRUCT 4
+    dpi        INT    72     # dots per inch (72 web quality, 300 print quality)
+    xsize      FLOAT  10.   # image size [inches] (default dots per inch (dpi):72)
+    ysize      FLOAT  8.   # image size [inches] (default dots per inch (dpi):72)
+    maps STRARR 1      # maps to overplot
+       countries
+#       provinces
+#       urban_areas
+#       roads
+#       railroads
+#       coastlines
+#       lakes
+#       lakes_europe
+#       rivers
+#       rivers_europe
+#   rngRing    FLOAT  20.0   # distance between range rings (0 no range ring) [km]
+#   lonmin     FLOAT  8. # Min longitude [deg]
+#   lonmax     FLOAT  10. # Max longitude [deg]
+#   lonstep    FLOAT 0.5
+#   latmin     FLOAT 47. # Min latitude [deg]
+#   latmax     FLOAT 48. # Max latitude [deg]
+#   latstep    FLOAT 0.5
+#   mapres     STRING 10m  # map resolution (10m, 50m, 110m)
+
 
 rhiImageConfig STRUCT 6
    xsize      FLOAT   10.   # image size [inches]

@@ -30,7 +30,7 @@ Zh STRUCT 3
     type STRING RAW
     datatype STRARR 1
         RAD4ALP:dBZ
-    products STRUCT 2
+    products STRUCT 1
         EL001_0 STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 2
@@ -39,6 +39,37 @@ Zh STRUCT 3
             type  STRING PPI_MAP
             anglenr INT 2
             voltype STRING dBZ
+
+
+ZH_grid STRUCT 5
+    type     STRING GRID
+    datatype STRING RAD4ALP:dBZ
+    wfunc STRING NEAREST_NEIGHBOUR
+    gridConfig STRUCT 9
+        xmin FLOAT -50.
+        xmax FLOAT 50.
+        ymin FLOAT -50.
+        ymax FLOAT 50.
+        zmin FLOAT 0.
+        zmax FLOAT 12000.
+        hres FLOAT 1000.
+        vres FLOAT 500.
+        altorig FLOAT 0.
+    products STRUCT 2
+        SURFACE STRUCT 3
+            type  STRING SURFACE_IMAGE
+            voltype STRING dBZ
+            level INT 3
+        LATLON STRUCT 4
+            type STRING CROSS_SECTION
+            voltype STRING dBZ
+            coord1 STRUCT 2
+                lat FLOAT 47.18
+                lon FLOAT 9.25
+            coord2 STRUCT 2
+                lat FLOAT 47.61
+                lon FLOAT 9.7
+
 
 uPhiDP STRUCT 3
     type STRING RAW
@@ -89,6 +120,16 @@ W STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 2
             voltype STRING W
+
+hydro STRUCT 3
+    type STRING RAW
+    datatype STRARR 1
+        RAD4ALPHYDRO:hydro
+    products STRUCT 1
+        EL001_0 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 2
+            voltype STRING hydro
 
 
 ## ==========================================================================================
