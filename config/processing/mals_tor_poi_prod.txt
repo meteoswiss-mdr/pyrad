@@ -1,0 +1,112 @@
+#
+# Product generation configuration
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 8
+    dBZ
+    ZDR
+    RhoHV
+    uPhiDP
+    PhiDP
+    KDP
+    V
+    W
+
+
+# ==========================================================================================
+#               Raw data
+# ==========================================================================================
+dBZ STRUCT 3
+    type STRING RAW
+    datatype STRING dBZ
+    products STRUCT 1
+        BSCOPE STRUCT 5
+            type STRING BSCOPE_IMAGE
+            voltype STRING dBZ
+            ray_dim STRING time
+            xaxis_rng INT 0
+            anglenr INT 0
+
+ZDR STRUCT 3
+    type STRING RAW
+    datatype STRING ZDR
+    products STRUCT 1
+        BSCOPE STRUCT 5
+            type STRING BSCOPE_IMAGE
+            voltype STRING ZDR
+            ray_dim STRING time
+            xaxis_rng INT 0
+            anglenr INT 0
+
+RhoHV STRUCT 3
+    type STRING RAW
+    datatype STRING RhoHV
+    products STRUCT 1
+        BSCOPE STRUCT 5
+            type STRING BSCOPE_IMAGE
+            voltype STRING RhoHV
+            ray_dim STRING time
+            xaxis_rng INT 0
+            anglenr INT 0
+
+uPhiDP STRUCT 3
+    type STRING RAW
+    datatype STRING uPhiDP
+    products STRUCT 1
+        BSCOPE STRUCT 5
+            type STRING BSCOPE_IMAGE
+            voltype STRING uPhiDP
+            ray_dim STRING time
+            xaxis_rng INT 0
+            anglenr INT 0
+
+PhiDP STRUCT 3
+    type STRING RAW
+    datatype STRING PhiDP
+    products STRUCT 1
+        BSCOPE STRUCT 5
+            type STRING BSCOPE_IMAGE
+            voltype STRING PhiDP
+            ray_dim STRING time
+            xaxis_rng INT 0
+            anglenr INT 0
+
+KDP STRUCT 3
+    type STRING RAW
+    datatype STRING KDP
+    products STRUCT 1
+        BSCOPE STRUCT 5
+            type STRING BSCOPE_IMAGE
+            voltype STRING KDP
+            ray_dim STRING time
+            xaxis_rng INT 0
+            anglenr INT 0
+
+V STRUCT 3
+    type STRING RAW
+    datatype STRING V
+    products STRUCT 1
+        BSCOPE STRUCT 5
+            type STRING BSCOPE_IMAGE
+            voltype STRING V
+            ray_dime STRING time
+            xaxis_rng INT 0
+            anglenr INT 0
+
+W STRUCT 3
+    type STRING RAW
+    datatype STRING W
+    products STRUCT 1
+        BSCOPE STRUCT 5
+            type STRING BSCOPE_IMAGE
+            voltype STRING W
+            ray_dime STRING time
+            xaxis_rng INT 0
+            anglenr INT 0
+
+
+
+
+

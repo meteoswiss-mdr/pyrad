@@ -29,6 +29,7 @@ Functions to plot radar volume data
 from warnings import warn
 
 import numpy as np
+from netCDF4 import num2date
 
 try:
     import cartopy
@@ -435,7 +436,8 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
     return fname_list
 
 
-def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
+def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list,
+                ray_dim='ang', xaxis_rng=True):
     """
     plots a B-Scope (angle-range representation)
 
@@ -451,6 +453,11 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
         dictionary containing the product configuration
     fname_list : list of str
         list of names of the files where to store the plot
+    ray_dim : str
+        the ray dimension. Can be 'ang' or 'time'
+    xaxis : bool
+        if true the range will be in the x-axis. Otherwise it will be in the
+        y-axis.
 
     Returns
     -------
@@ -461,26 +468,32 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
     norm, ticks, ticklabs = get_norm(field_name)
 
     radar_aux = radar.extract_sweeps([ind_sweep])
-    if radar_aux.scan_type == 'ppi':
-        ang = np.sort(radar_aux.azimuth['data'])
-        ind_ang = np.argsort(radar_aux.azimuth['data'])
-        ang_min = np.min(radar_aux.azimuth['data'])
-        ang_max = np.max(radar_aux.azimuth['data'])
-        field = radar_aux.fields[field_name]['data'][ind_ang, :]
-        labely = 'azimuth angle (degrees)'
-    elif radar_aux.scan_type == 'rhi':
-        ang = np.sort(radar_aux.elevation['data'])
-        ind_ang = np.argsort(radar_aux.elevation['data'])
-        ang_min = np.min(radar_aux.elevation['data'])
-        ang_max = np.max(radar_aux.elevation['data'])
-        field = radar_aux.fields[field_name]['data'][ind_ang, :]
-        labely = 'elevation angle (degrees)'
+    if ray_dim == 'ang':
+        if radar_aux.scan_type == 'ppi':
+            ray = np.sort(radar_aux.azimuth['data'])
+            ind_ray = np.argsort(radar_aux.azimuth['data'])
+            field = radar_aux.fields[field_name]['data'][ind_ray, :]
+            ray_label = 'azimuth angle (degrees)'
+        elif radar_aux.scan_type == 'rhi':
+            ray = np.sort(radar_aux.elevation['data'])
+            ind_ray = np.argsort(radar_aux.elevation['data'])
+            field = radar_aux.fields[field_name]['data'][ind_ray, :]
+            ray_label = 'elevation angle (degrees)'
+        else:
+            field = radar_aux.fields[field_name]['data']
+            ray = np.array(range(radar_aux.nrays))
+            ray_label = 'ray number'
     else:
-        field = radar_aux.fields[field_name]['data']
-        ang = np.array(range(radar_aux.nrays))
-        ang_min = 0
-        ang_max = radar_aux.nrays-1
-        labely = 'ray number'
+        ray = np.sort(radar_aux.time['data'])
+        start_time = ray[0]
+        ray -= start_time
+        ind_ray = np.argsort(radar_aux.time['data'])
+        field = radar_aux.fields[field_name]['data'][ind_ray, :]
+        sweep_start_time = num2date(
+            start_time, radar_aux.time['units'], radar_aux.time['calendar'])
+        ray_label = (
+            'time [s from ' +
+            sweep_start_time.strftime('%Y-%m-%d %H:%M:%S')+' UTC]')
 
     # display data
     titl = pyart.graph.common.generate_title(radar_aux, field_name, 0)
@@ -493,8 +506,8 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
                      dpi=dpi)
     ax = fig.add_subplot(111)
     if radar_aux.ngates == 1:
-        ax.plot(ang, field, 'bx', figure=fig)
-        ax.set_xlabel(labely)
+        ax.plot(ray, field, 'bx', figure=fig)
+        ax.set_xlabel(ray_label)
         ax.set_ylabel(label)
         ax.set_title(titl)
     else:
@@ -504,14 +517,26 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list):
         if norm is None:  # if norm is set do not override with vmin/vmax
             vmin, vmax = pyart.config.get_field_limits(field_name)
 
-        rmin = radar_aux.range['data'][0]/1000.
-        rmax = radar_aux.range['data'][-1]/1000.
-        cax = ax.imshow(
-            field, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax, norm=norm,
-            extent=(rmin, rmax, ang_min, ang_max), aspect='auto',
-            interpolation='none')
-        ax.set_xlabel('Range (km)')
-        ax.set_ylabel(labely)
+        rng_aux = radar_aux.range['data']/1000.
+        rng_res = rng_aux[1]-rng_aux[0]
+        rng_aux = np.append(rng_aux-rng_res/2., rng_aux[-1]+rng_res/2.)
+        rng_label = 'Range (km)'
+
+        ray_res = np.ma.median(ray[1:]-ray[:-1])
+        ray_aux = np.append(ray-ray_res/2, ray[-1]+ray_res/2)
+
+        if xaxis_rng:
+            cax = ax.pcolormesh(
+                rng_aux, ray_aux, field, cmap=cmap, vmin=vmin, vmax=vmax,
+                norm=norm)
+            ax.set_xlabel(rng_label)
+            ax.set_ylabel(ray_label)
+        else:
+            cax = ax.pcolormesh(
+                ray_aux, rng_aux, np.ma.transpose(field), cmap=cmap,
+                vmin=vmin, vmax=vmax, norm=norm)
+            ax.set_xlabel(ray_label)
+            ax.set_ylabel(rng_label)
         ax.set_title(titl)
 
         cb = fig.colorbar(cax)
@@ -1669,12 +1694,12 @@ def _plot_time_range(rad_time, rad_range, rad_data, field_name, fname_list,
 
     Parameters
     ----------
-    rad_time : Radar object
-        object containing the radar data to plot
-    rad_range : str
-        name of the radar field to plot
-    rad_data : int
-        sweep index to plot
+    rad_time : 1D array
+        array containing the x dimension (typically time)
+    rad_range : 1D array
+        array containing the y dimension (typically range)
+    rad_data : 2D array
+        array containing the data to plot
     field_name : str or None
         field name. Used to define plot characteristics
     fname_list : list of str
