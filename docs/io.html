@@ -1398,7 +1398,8 @@ using a precomputed look up table of the nearest neighbour</p>
 <dd><p class="first">list of radar field types to read.
 Format : [radarnr]:[datagroup]:[datatype],[dataset],[product]
 ‘dataset’ is only specified for data groups ‘ODIM’,
-‘CFRADIAL’ ‘ODIMPYRAD’ ‘PYRADGRID’ and ‘NETCDFSPECTRA’.
+‘CFRADIAL’, ‘CFRADIAL2’, ‘CF1’, ‘ODIMPYRAD’ ‘PYRADGRID’ and
+‘NETCDFSPECTRA’.
 ‘product’ is only specified for data groups ‘CFRADIAL’, ‘ODIMPYRAD’,
 ‘PYRADGRID’ and ‘NETCDFSPECTRA’
 The data group specifies the type file from which data is extracted.
@@ -1430,6 +1431,18 @@ in pyrad/io/io_aux.py</p>
 <dd><p class="first last">dealiased Doppler velocity</p>
 </dd>
 <dt>‘ODIM’: Generic ODIM file format. For such types ‘dataset’</dt>
+<dd><p class="first last">specifies the directory and file name date convention.
+Example: ODIM:dBZ,D{%Y-%m-%d}-F{%Y%m%d%H%M%S}. To find out
+which datatype to use to match a particular ODIM field name
+check the function ‘get_datatype_odim’ in pyrad/io/io_aux.py</p>
+</dd>
+<dt>‘CFRADIAL2’: CFRADIAL2 file format. For such types ‘dataset’</dt>
+<dd><p class="first last">specifies the directory and file name date convention.
+Example: ODIM:dBZ,D{%Y-%m-%d}-F{%Y%m%d%H%M%S}. To find out
+which datatype to use to match a particular ODIM field name
+check the function ‘get_datatype_odim’ in pyrad/io/io_aux.py</p>
+</dd>
+<dt>‘CF1’: CF1 file format. For such types ‘dataset’</dt>
 <dd><p class="first last">specifies the directory and file name date convention.
 Example: ODIM:dBZ,D{%Y-%m-%d}-F{%Y%m%d%H%M%S}. To find out
 which datatype to use to match a particular ODIM field name
@@ -1473,11 +1486,11 @@ Example: ODIMPYRAD:RR,RZC,SAVEVOL</p>
 </dl>
 <p>‘RAD4ALPIQ’: Format used to store rad4alp IQ data</p>
 </div></blockquote>
-<p class="last">‘RAINBOW’, ‘RAD4ALP’, ‘ODIM’ and ‘MXPOL’ are primary data file sources
-and they cannot be mixed for the same radar. It is also the case for
-their complementary data files, i.e. ‘COSMO’ and ‘RAD4ALPCOSMO’, etc.
-‘CFRADIAL’ and ‘ODIMPYRAD’ are secondary data file sources and they
-can be combined with any other datagroup type.
+<p class="last">‘RAINBOW’, ‘RAD4ALP’, ‘ODIM’ ‘CFRADIAL2’, ‘CF1’ and ‘MXPOL’ are
+primary data file sources and they cannot be mixed for the same radar.
+It is also the case for their complementary data files, i.e. ‘COSMO’
+and ‘RAD4ALPCOSMO’, etc. ‘CFRADIAL’ and ‘ODIMPYRAD’ are secondary data
+file sources and they can be combined with any other datagroup type.
 For a list of accepted datatypes and how they map to the Py-ART name
 convention check function ‘get_field_name_pyart’ in pyrad/io/io_aux.py</p>
 </dd>

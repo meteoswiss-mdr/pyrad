@@ -351,6 +351,22 @@ bird_reflectivity = 'bird_reflectivity'
 height = 'height'
 interpolated_profile = 'interpolated_profile'
 
+# wind lidar variables
+radial_wind_speed = 'radial_wind_speed'
+radial_wind_speed_ci = 'radial_wind_speed_ci'
+radial_wind_speed_status = 'radial_wind_speed_status'
+
+doppler_spectrum_width = 'doppler_spectrum_width'
+doppler_spectrum_mean_error = 'doppler_spectrum_mean_error'
+
+atmospherical_structures_type = 'atmospherical_structures_type'
+relative_beta = 'relative_beta'
+absolute_beta = 'absolute_beta'
+
+cnr = 'cnr'
+
+
+
 # End of Simple Configuration section
 
 ##############################################################################
@@ -613,6 +629,15 @@ DEFAULT_FIELD_NAMES = {
     'occurrence': occurrence,
     'frequency_of_occurrence': frequency_of_occurrence,
     'interpolated_profile': interpolated_profile,
+    'radial_wind_speed': radial_wind_speed,
+    'radial_wind_speed_ci': radial_wind_speed_ci,
+    'radial_wind_speed_status': radial_wind_speed_status,
+    'doppler_spectrum_width': doppler_spectrum_width,
+    'doppler_spectrum_mean_error': doppler_spectrum_mean_error,
+    'atmospherical_structures_type': atmospherical_structures_type,
+    'relative_beta': relative_beta,
+    'absolute_beta': absolute_beta,
+    'cnr': cnr
 }
 
 
@@ -2204,6 +2229,39 @@ DEFAULT_METADATA = {
         'standard_name':  'interpolated_profile',
         'units': 'unknown'},
 
+    # wind lidar variables
+    atmospherical_structures_type: {
+        'units': '-',
+        'standard_name': 'atmospherical_structures_type',
+        'long_name': (
+            'Atmospherical structures detected out of the planetary boundary'
+            ' layer.'),
+        # ND: No data, RL: residual layer, ML: mixed layer,
+        # UC: unclassified cloud, IC: ice cloud, WC: water cloud,
+        # UA: unclassified aerosol, SA: spherical aerosol,
+        # AA: aspherical aerosol
+        'labels': ['ND', 'RL', 'ML', 'UC', 'IC', 'WC', 'UA', 'SA', 'AA'],
+        'ticks': [0, 20, 30, 142, 300, 400, 1475, 3000, 4000],
+        'boundaries': [-15, 15, 25, 35, 250, 350, 450, 2500, 3500, 4500],
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 1,
+        'add_offset': 0,
+        '_FillValue': -999,
+        '_Write_as_dtype': 'uint8'},
+
+    radial_wind_speed_status: {
+        'units': 'flag',
+        'standard_name': 'radial_wind_speed_status',
+        'long_name': 'radial_wind_speed_status',
+        'labels': ['Rejected', 'Accepted'],
+        'ticks': [0, 1],
+        'boundaries': [-0.5, 0.5, 1.5],
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 1,
+        'add_offset': 0,
+        '_FillValue': 0,
+        '_Write_as_dtype': 'uint8'},
+
     # Grid metadata
 
     'grid_time': {
@@ -3041,6 +3099,18 @@ DEFAULT_FIELD_COLORMAP = {
     height: 'pyart_SCook18',
     interpolated_profile: 'pyart_SCook18',
 
+    radial_wind_speed: 'pyart_BuDRd18',
+    #radial_wind_speed_ci:
+    #radial_wind_speed_status:
+
+    doppler_spectrum_width: 'pyart_NWS_SPW',
+    # doppler_spectrum_mean_error:
+
+    atmospherical_structures_type: 'pyart_LangRainbow12',
+    relative_beta: 'pyart_NWSRef',
+    absolute_beta: 'pyart_NWSRef',
+    cnr: 'pyart_Carbone17',
+
     # Additional reflectivity like fields
     'CZ': 'pyart_NWSRef',
     'DZ': 'pyart_NWSRef',
@@ -3226,4 +3296,17 @@ DEFAULT_FIELD_LIMITS = {
     'DBZ_K': (-10., 65.),
     'reflectivity_horizontal': (-10., 65.),
     'corr_reflectivity': (-10., 65.),
+    
+    
+    # radial_wind_speed: 'pyart_BuDRd18',
+    #radial_wind_speed_ci:
+    #radial_wind_speed_status:
+
+    # doppler_spectrum_width: 'pyart_NWS_SPW',
+    # doppler_spectrum_mean_error:
+
+    # atmospherical_structures_type: 'pyart_LangRainbow12',
+    #relative_beta: (0., 4e-6),
+    #absolute_beta: (0., 4e-6),
+    # cnr: 'pyart_Carbone17',
 }

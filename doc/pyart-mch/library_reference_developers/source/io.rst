@@ -22,6 +22,13 @@
    :special-members:
    :inherited-members:
    :show-inheritance:
+.. automodule:: pyart.io.cfradial2
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
 .. automodule:: pyart.io.chl
    :members:
    :undoc-members:

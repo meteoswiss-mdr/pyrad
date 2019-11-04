@@ -8,6 +8,13 @@
    :special-members:
    :inherited-members:
    :show-inheritance:
+.. automodule:: pyart.aux_io.cf1
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
 .. automodule:: pyart.aux_io.d3r_gcpex_nc
    :members:
    :undoc-members:

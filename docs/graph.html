@@ -723,7 +723,7 @@ along elevation</p>
 
 <dl class="function">
 <dt id="pyrad.graph.plot_bscope">
-<code class="descclassname">pyrad.graph.</code><code class="descname">plot_bscope</code><span class="sig-paren">(</span><em>radar</em>, <em>field_name</em>, <em>ind_sweep</em>, <em>prdcfg</em>, <em>fname_list</em>, <em>ray_dim='ang'</em>, <em>xaxis_rng=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots_vol.html#plot_bscope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_bscope" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyrad.graph.</code><code class="descname">plot_bscope</code><span class="sig-paren">(</span><em>radar</em>, <em>field_name</em>, <em>ind_sweep</em>, <em>prdcfg</em>, <em>fname_list</em>, <em>vmin=None</em>, <em>vmax=None</em>, <em>ray_dim='ang'</em>, <em>xaxis_rng=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots_vol.html#plot_bscope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_bscope" title="Permalink to this definition">¶</a></dt>
 <dd><p>plots a B-Scope (angle-range representation)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -745,6 +745,8 @@ along elevation</p>
 <dt><strong>fname_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
 <dd><p class="first last">list of names of the files where to store the plot</p>
 </dd>
+<dt><strong>vmin, vmax</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Min and max values of the colorbar</span></dt>
+<dd></dd>
 <dt><strong>ray_dim</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
 <dd><p class="first last">the ray dimension. Can be ‘ang’ or ‘time’</p>
 </dd>

@@ -139,6 +139,10 @@
 <span class="sd">                xaxis_rng : bool</span>
 <span class="sd">                    if True the range will be in the x-axis. Otherwise it will</span>
 <span class="sd">                    be in the y-axis. Default True</span>
+<span class="sd">                vmin, vmax: float or None</span>
+<span class="sd">                    The minimum and maximum values of the color scale. If None</span>
+<span class="sd">                    the scale is going to be set according to the Py-ART</span>
+<span class="sd">                    config file</span>
 <span class="sd">        &#39;CAPPI_IMAGE&#39;: Creates a CAPPI image</span>
 <span class="sd">            User defined parameters:</span>
 <span class="sd">                altitude: flt</span>
@@ -2091,6 +2095,8 @@
 
         <span class="n">ray_dim</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ray_dim&#39;</span><span class="p">,</span> <span class="s1">&#39;ang&#39;</span><span class="p">)</span>
         <span class="n">xaxis_rng</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;xaxis_rng&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">vmin</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vmin&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">vmax</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vmax&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
         <span class="n">ang_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fixed_angle</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
         <span class="n">ang</span> <span class="o">=</span> <span class="n">ang_vec</span><span class="p">[</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;anglenr&#39;</span><span class="p">]]</span>
@@ -2113,7 +2119,7 @@
         <span class="k">if</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">rays_per_sweep</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ang</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">plot_bscope</span><span class="p">(</span>
                 <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_ang</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
-                <span class="n">ray_dim</span><span class="o">=</span><span class="n">ray_dim</span><span class="p">,</span> <span class="n">xaxis_rng</span><span class="o">=</span><span class="n">xaxis_rng</span><span class="p">)</span>
+                <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">ray_dim</span><span class="o">=</span><span class="n">ray_dim</span><span class="p">,</span> <span class="n">xaxis_rng</span><span class="o">=</span><span class="n">xaxis_rng</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">plot_ray</span><span class="p">(</span>
                 <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extract_sweeps</span><span class="p">([</span><span class="n">ind_ang</span><span class="p">]),</span> <span class="n">field_name</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>

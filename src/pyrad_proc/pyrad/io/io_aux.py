@@ -1612,6 +1612,135 @@ def get_fieldname_pyart(datatype):
         field_name = 'number_of_samples_velocity_all'
     elif datatype == 'n_dbz_all':
         field_name = 'number_of_samples_reflectivity_all'
+
+    # wind lidar names
+    elif datatype == 'wind_vel_rad':
+        field_name = 'radial_wind_speed'
+    elif datatype == 'wind_vel_rad_ci':
+        field_name = 'radial_wind_speed_ci'
+    elif datatype == 'wind_vel_rad_status':
+        field_name = 'radial_wind_speed_status'
+    elif datatype == 'WD':
+        field_name = 'doppler_spectrum_width'
+    elif datatype == 'WD_err':
+        field_name = 'doppler_spectrum_mean_error'
+    elif datatype == 'atmos_type':
+        field_name = 'atmospherical_structures_type'
+    elif datatype == 'beta_rel':
+        field_name = 'relative_beta'
+    elif datatype == 'beta_abs':
+        field_name = 'absolute_beta'
+    elif datatype == 'CNR':
+        field_name = 'cnr'
+
+    # cloud radar names
+    elif datatype == 'SNR':
+        field_name = 'SNR'
+    elif datatype == 'VEL':
+        field_name = 'VEL'
+    elif datatype == 'RMS':  # Peak width (m/s)
+        field_name = 'RMS'
+    elif datatype == 'LDR':
+        field_name = 'LDR'
+    elif datatype == 'NPK':  # Number of peaks
+        field_name = 'NPK'
+
+    elif datatype == 'SNRg':
+        field_name = 'SNRg'
+    elif datatype == 'VELg':
+        field_name = 'VELg'
+    elif datatype == 'RMSg':
+        field_name = 'RMSg'
+    elif datatype == 'LDRg':
+        field_name = 'LDRg'
+    elif datatype == 'NPKg':
+        field_name = 'NPKg'
+
+    elif datatype == 'SNRplank':
+        field_name = 'SNRplank'
+    elif datatype == 'VELplank':
+        field_name = 'VELplank'
+    elif datatype == 'RMSplank':
+        field_name = 'RMSplank'
+    elif datatype == 'LDRplank':
+        field_name = 'LDRplank'
+    elif datatype == 'NPKplank':
+        field_name = 'NPKplank'
+
+    elif datatype == 'SNRrain':
+        field_name = 'SNRrain'
+    elif datatype == 'VELrain':
+        field_name = 'VELrain'
+    elif datatype == 'RMSrain':
+        field_name = 'RMSrain'
+    elif datatype == 'LDRrain':
+        field_name = 'LDRrain'
+    elif datatype == 'NPKrain':
+        field_name = 'NPKrain'
+
+    elif datatype == 'SNRcl':
+        field_name = 'SNRcl'
+    elif datatype == 'VELcl':
+        field_name = 'VELcl'
+    elif datatype == 'RMScl':
+        field_name = 'RMScl'
+    elif datatype == 'LDRcl':
+        field_name = 'LDRcl'
+    elif datatype == 'NPKcl':
+        field_name = 'NPKcl'
+
+    elif datatype == 'SNRice':
+        field_name = 'SNRice'
+    elif datatype == 'VELice':
+        field_name = 'VELice'
+    elif datatype == 'RMSice':
+        field_name = 'RMSice'
+    elif datatype == 'LDRice':
+        field_name = 'LDRice'
+    elif datatype == 'NPKice':
+        field_name = 'NPKice'
+
+    elif datatype == 'RHO':  # Co-cross channel correlation
+        field_name = 'RHO'
+    elif datatype == 'DPS':  # differential phase
+        field_name = 'DPS'
+    elif datatype == 'RHOwav':  # peak weighted
+        field_name = 'RHOwav'
+    elif datatype == 'DPSwav':
+        field_name = 'DPSwav'
+
+    elif datatype == 'HSDco':  # co-channel HSdiv noise level
+        field_name = 'HSDco'
+    elif datatype == 'HSDcx':
+        field_name = 'HSDcx'
+
+    elif datatype == 'Ze':  # equivalent reflectivity factor of hydrometeors
+        field_name = 'Ze'
+    elif datatype == 'Zg':  # equivalent reflectivity factor of all targets
+        field_name = 'Zg'
+    elif datatype == 'Z':
+        # radar reflectivity factor of hydrometeors (Mie-corrected)
+        field_name = 'Z'
+
+    elif datatype == 'RRcr':
+        field_name = 'RR'
+    elif datatype == 'LWCcr':
+        field_name = 'LWC'
+    elif datatype == 'TEMPcr':
+        field_name = 'TEMP'
+
+    elif datatype == 'ISDRco':  # In spectrum dynamic range
+        field_name = 'ISDRco'
+    elif datatype == 'ISDRcx':
+        field_name = 'ISDRcx'
+
+    elif datatype == 'SNRCorFaCo':
+        # Factor to correct Co-channel SNR based on RX calibration measurement
+        # by noise source
+        field_name = 'SNRCorFaCo'
+    elif datatype == 'SNRCorFaCo':
+        field_name = 'SNRCorFaCo'
+
     else:
         raise ValueError('ERROR: Unknown data type '+datatype)
 
@@ -1736,7 +1865,7 @@ def get_file_list(datadescriptor, starttimes, endtimes, cfg, scan=None):
                 for filename in dayfilelist:
                     t_filelist.append(filename)
 
-            elif datagroup == 'ODIM':
+            elif datagroup in ('ODIM', 'CFRADIAL2', 'CF1'):
                 if scan is None:
                     warn('Unknown scan name')
                     return None
@@ -1766,7 +1895,7 @@ def get_file_list(datadescriptor, starttimes, endtimes, cfg, scan=None):
                         starttime+datetime.timedelta(days=i)).strftime(
                             fpath_strf)
                     datapath = (cfg['datapath'][ind_rad] + daydir+'/')
-                    dayfilelist = glob.glob(datapath+'*'+scan+'*.h*')
+                    dayfilelist = glob.glob(datapath+'*'+scan+'*')
                 else:
                     dayinfo = (starttime+datetime.timedelta(days=i)).strftime(
                         '%y%j')
@@ -2142,7 +2271,7 @@ def get_datatype_fields(datadescriptor):
                 datatype = descrfields[2]
                 dataset = None
                 product = None
-            elif datagroup == 'ODIM':
+            elif datagroup in ('ODIM', 'CFRADIAL2', 'CF1'):
                 descrfields2 = descrfields[2].split(',')
                 datatype = descrfields2[0]
                 product = None
@@ -2166,7 +2295,7 @@ def get_datatype_fields(datadescriptor):
             datatype = descrfields[1]
             dataset = None
             product = None
-        elif datagroup == 'ODIM':
+        elif datagroup in ('ODIM', 'CFRADIAL2', 'CF1'):
             descrfields2 = descrfields[1].split(',')
             # warn(" descrfields2:  '%s'" % descrfields2[1])
             if len(descrfields2) == 2:
@@ -2524,7 +2653,7 @@ def _get_datetime(fname, datagroup, ftime_format=None):
         else:
             fdatetime = datetime.datetime.strptime(
                 datestr, '%y%j')+datetime.timedelta(days=1)
-    elif datagroup == 'ODIM':
+    elif datagroup in ('ODIM', 'CFRADIAL2', 'CF1'):
         if ftime_format is None:
             # we assume is rad4alp format
             datetimestr = bfile[3:12]

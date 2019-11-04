@@ -493,7 +493,7 @@
 
 
 <div class="viewcode-block" id="plot_bscope"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_bscope">[docs]</a><span class="k">def</span> <span class="nf">plot_bscope</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_sweep</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
-                <span class="n">ray_dim</span><span class="o">=</span><span class="s1">&#39;ang&#39;</span><span class="p">,</span> <span class="n">xaxis_rng</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+                <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ray_dim</span><span class="o">=</span><span class="s1">&#39;ang&#39;</span><span class="p">,</span> <span class="n">xaxis_rng</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    plots a B-Scope (angle-range representation)</span>
 
@@ -509,6 +509,7 @@
 <span class="sd">        dictionary containing the product configuration</span>
 <span class="sd">    fname_list : list of str</span>
 <span class="sd">        list of names of the files where to store the plot</span>
+<span class="sd">    vmin, vmax : Min and max values of the colorbar</span>
 <span class="sd">    ray_dim : str</span>
 <span class="sd">        the ray dimension. Can be &#39;ang&#39; or &#39;time&#39;</span>
 <span class="sd">    xaxis : bool</span>
@@ -521,7 +522,14 @@
 <span class="sd">        list of names of the created plots</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">norm</span><span class="p">,</span> <span class="n">ticks</span><span class="p">,</span> <span class="n">ticklabs</span> <span class="o">=</span> <span class="n">get_norm</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">ticks</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">ticklabs</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">vmin</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">norm</span><span class="p">,</span> <span class="n">ticks</span><span class="p">,</span> <span class="n">ticklabs</span> <span class="o">=</span> <span class="n">get_norm</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">norm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># if norm is set do not override with vmin/vmax</span>
+            <span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_field_limits</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
 
     <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">extract_sweeps</span><span class="p">([</span><span class="n">ind_sweep</span><span class="p">])</span>
     <span class="k">if</span> <span class="n">ray_dim</span> <span class="o">==</span> <span class="s1">&#39;ang&#39;</span><span class="p">:</span>
@@ -568,10 +576,6 @@
         <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">titl</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">cmap</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_field_colormap</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
-
-        <span class="n">vmin</span> <span class="o">=</span> <span class="n">vmax</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">norm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># if norm is set do not override with vmin/vmax</span>
-            <span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_field_limits</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
 
         <span class="n">rng_aux</span> <span class="o">=</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">/</span><span class="mf">1000.</span>
         <span class="n">rng_res</span> <span class="o">=</span> <span class="n">rng_aux</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">rng_aux</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
