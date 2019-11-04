@@ -78,6 +78,11 @@ def generate_vol_products(dataset, prdcfg):
             User defined parameters:
                 anglenr : int
                     The elevation angle number to use
+                ray_dim : str
+                    the ray dimension. Can be 'ang' or 'time'. Default 'ang'
+                xaxis_rng : bool
+                    if True the range will be in the x-axis. Otherwise it will
+                    be in the y-axis. Default True
         'CAPPI_IMAGE': Creates a CAPPI image
             User defined parameters:
                 altitude: flt
@@ -2028,6 +2033,9 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfg['type'])
             return None
 
+        ray_dim = prdcfg.get('ray_dim', 'ang')
+        xaxis_rng = prdcfg.get('xaxis_rng', True)
+
         ang_vec = np.sort(dataset['radar_out'].fixed_angle['data'])
         ang = ang_vec[prdcfg['anglenr']]
         ind_ang = np.where(
@@ -2048,7 +2056,8 @@ def generate_vol_products(dataset, prdcfg):
 
         if dataset['radar_out'].rays_per_sweep['data'][ind_ang] > 1:
             plot_bscope(
-                dataset['radar_out'], field_name, ind_ang, prdcfg, fname_list)
+                dataset['radar_out'], field_name, ind_ang, prdcfg, fname_list,
+                ray_dim=ray_dim, xaxis_rng=xaxis_rng)
         else:
             plot_ray(
                 dataset['radar_out'].extract_sweeps([ind_ang]), field_name, 0,
