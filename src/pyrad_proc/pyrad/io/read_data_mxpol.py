@@ -42,7 +42,7 @@ import pyart
 
 class pyrad_MXPOL(pyart.core.Radar):
     def __init__(self, filename, field_names=None, max_range=np.Inf,
-                 min_range=10000, pyrad_names = True):
+                 min_range=10000, pyrad_names=True)
         # find information based on filename
         all_files = [filename]
         fname_basename = os.path.basename(filename)
@@ -1017,7 +1017,7 @@ def convert_polvar_name(convention, polvar):
         'STA2', 'WBN', 'Zhc', 'Zdrc', 'Hydrometeor_type_from_Besic1', 'Kdpc', 'RHOC']
     # ZhCorr and ZdrCorr have been changed to Zhc and Zdrc!
     LTE_list = [
-        'Zh', 'Zv', 'Zdr', 'Phidp', 'RVel','Rvel', 'Sw', 'Rhohv', 'Clut', 'mph',
+        'Zh', 'Zv', 'Zdr', 'Phidp', 'RVel', 'Rvel', 'Sw', 'Rhohv', 'Clut', 'mph',
         'sta1', 'sta2', 'wbn', 'Zhc', 'Zdrc', 'Hydroclass', 'Kdpc', 'Rhohvc']
     IDL_list = [
         'Zh', 'Zv', 'Zdr', 'Phidp_raw', 'V', 'V', 'W', 'uRhohv', 'CLUT', 'MPH', 'STA1',
