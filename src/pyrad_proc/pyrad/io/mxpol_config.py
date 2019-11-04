@@ -103,7 +103,9 @@ MY_POLARNAMES = {
             -1., 5., 0.1],
     'Kdp': ['specific_differential_phase', 'Specific differential phase',
             'deg/km', -2., 7., 0.1],
-    'Phidp': ['uncorrected_differential_phase', 'Differential phase', 'deg',
+    'Phidp': ['corrected_differential_phase', 'Differential phase', 'deg',
+              0., 150., 1.],
+    'Psidp': ['uncorrected_differential_phase', 'Total differential phase', 'deg',
               0., 150., 1.],
     'Rhohv': ['uncorrected_cross_correlation_ratio',
               'Copolar correlation coefficient', '-', 0.57, 1., 0.05],
@@ -113,10 +115,14 @@ MY_POLARNAMES = {
                 'Attenuation corrected differential reflectivity', 'dB', 0.,
                 3., 0.1],
     'RVel': ['velocity', 'Mean doppler velocity', 'm/s', -15., 15., 0.5],
+    'Rvel': ['velocity', 'Mean doppler velocity', 'm/s', -15., 15., 0.5],
     'Sw': ['spectrum_width', 'Spectral Width', 'm2/s2', 0., 3., 0.1],
     'Zv': ['reflectivity_vv', 'Vertical reflectivity', 'dBZ', 0., 45., 1.],
     'Clut': ['clutter', 'Output clutter algorithm', '-', 0., 100., 10.],
     'corrected_Z': ['corrected_reflectivity', 'Clutter filtered reflectivity',
-                    'dBZ', 0., 55., 1.]
-
+                    'dBZ', 0., 55., 1.],
+    'SNRh': ['signal_noise_ratio_h', 'Signal to noise ratio at hor. pol',
+                    '-', 0., 50., 0.5],
+    'SNRv': ['signal_noise_ratio_v', 'Signal to noise ratio at vert. pol',
+                    '-', 0., 50., 0.5]
     }
