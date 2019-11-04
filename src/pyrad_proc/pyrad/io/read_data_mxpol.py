@@ -42,7 +42,7 @@ import pyart
 
 class pyrad_MXPOL(pyart.core.Radar):
     def __init__(self, filename, field_names=None, max_range=np.Inf,
-                 min_range=10000, pyrad_names=True)
+                 min_range=10000, pyrad_names=True):
         # find information based on filename
         all_files = [filename]
         fname_basename = os.path.basename(filename)
