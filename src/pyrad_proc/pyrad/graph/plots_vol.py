@@ -437,7 +437,7 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
 
 
 def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list,
-                ray_dim='ang', xaxis_rng=True):
+                vmin=None, vmax=None, ray_dim='ang', xaxis_rng=True):
     """
     plots a B-Scope (angle-range representation)
 
@@ -453,6 +453,7 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list,
         dictionary containing the product configuration
     fname_list : list of str
         list of names of the files where to store the plot
+    vmin, vmax : Min and max values of the colorbar
     ray_dim : str
         the ray dimension. Can be 'ang' or 'time'
     xaxis : bool
@@ -465,7 +466,14 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list,
         list of names of the created plots
 
     """
-    norm, ticks, ticklabs = get_norm(field_name)
+    norm = None
+    ticks = None
+    ticklabs = None
+    if vmin is None or vmax is None:
+        norm, ticks, ticklabs = get_norm(field_name)
+
+        if norm is None:  # if norm is set do not override with vmin/vmax
+            vmin, vmax = pyart.config.get_field_limits(field_name)
 
     radar_aux = radar.extract_sweeps([ind_sweep])
     if ray_dim == 'ang':
@@ -512,10 +520,6 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list,
         ax.set_title(titl)
     else:
         cmap = pyart.config.get_field_colormap(field_name)
-
-        vmin = vmax = None
-        if norm is None:  # if norm is set do not override with vmin/vmax
-            vmin, vmax = pyart.config.get_field_limits(field_name)
 
         rng_aux = radar_aux.range['data']/1000.
         rng_res = rng_aux[1]-rng_aux[0]

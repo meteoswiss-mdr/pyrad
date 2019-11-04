@@ -83,6 +83,10 @@ def generate_vol_products(dataset, prdcfg):
                 xaxis_rng : bool
                     if True the range will be in the x-axis. Otherwise it will
                     be in the y-axis. Default True
+                vmin, vmax: float or None
+                    The minimum and maximum values of the color scale. If None
+                    the scale is going to be set according to the Py-ART
+                    config file
         'CAPPI_IMAGE': Creates a CAPPI image
             User defined parameters:
                 altitude: flt
@@ -2035,6 +2039,8 @@ def generate_vol_products(dataset, prdcfg):
 
         ray_dim = prdcfg.get('ray_dim', 'ang')
         xaxis_rng = prdcfg.get('xaxis_rng', True)
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
 
         ang_vec = np.sort(dataset['radar_out'].fixed_angle['data'])
         ang = ang_vec[prdcfg['anglenr']]
@@ -2057,7 +2063,7 @@ def generate_vol_products(dataset, prdcfg):
         if dataset['radar_out'].rays_per_sweep['data'][ind_ang] > 1:
             plot_bscope(
                 dataset['radar_out'], field_name, ind_ang, prdcfg, fname_list,
-                ray_dim=ray_dim, xaxis_rng=xaxis_rng)
+                vmin=vmin, vmax=vmax, ray_dim=ray_dim, xaxis_rng=xaxis_rng)
         else:
             plot_ray(
                 dataset['radar_out'].extract_sweeps([ind_ang]), field_name, 0,
