@@ -1645,6 +1645,17 @@ def get_fieldname_pyart(datatype):
     elif datatype == 'NPK':  # Number of peaks
         field_name = 'NPK'
 
+    elif datatype == 'SNRgc':
+        field_name = 'SNRgc'
+    elif datatype == 'VELgc':
+        field_name = 'VELgc'
+    elif datatype == 'RMSgc':  # Peak width (m/s)
+        field_name = 'RMSgc'
+    elif datatype == 'LDRgc':
+        field_name = 'LDRgc'
+    elif datatype == 'NPKgc':  # Number of peaks
+        field_name = 'NPKgc'
+        
     elif datatype == 'SNRg':
         field_name = 'SNRg'
     elif datatype == 'VELg':
@@ -1704,10 +1715,14 @@ def get_fieldname_pyart(datatype):
         field_name = 'RHO'
     elif datatype == 'DPS':  # differential phase
         field_name = 'DPS'
+    elif datatype == 'LDRnormal':  # differential phase
+        field_name = 'LDRnormal'
     elif datatype == 'RHOwav':  # peak weighted
         field_name = 'RHOwav'
     elif datatype == 'DPSwav':
         field_name = 'DPSwav'
+    elif datatype == 'SKWg':
+        field_name = 'SKWg'
 
     elif datatype == 'HSDco':  # co-channel HSdiv noise level
         field_name = 'HSDco'
@@ -1734,6 +1749,9 @@ def get_fieldname_pyart(datatype):
     elif datatype == 'ISDRcx':
         field_name = 'ISDRcx'
 
+    elif datatype == 'SNRcx':
+        field_name = 'SNRcx'
+        
     elif datatype == 'SNRCorFaCo':
         # Factor to correct Co-channel SNR based on RX calibration measurement
         # by noise source

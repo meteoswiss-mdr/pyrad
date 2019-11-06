@@ -1701,6 +1701,17 @@
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;NPK&#39;</span><span class="p">:</span>  <span class="c1"># Number of peaks</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;NPK&#39;</span>
 
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;SNRgc&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;SNRgc&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;VELgc&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;VELgc&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;RMSgc&#39;</span><span class="p">:</span>  <span class="c1"># Peak width (m/s)</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;RMSgc&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;LDRgc&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;LDRgc&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;NPKgc&#39;</span><span class="p">:</span>  <span class="c1"># Number of peaks</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;NPKgc&#39;</span>
+        
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;SNRg&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;SNRg&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;VELg&#39;</span><span class="p">:</span>
@@ -1760,10 +1771,14 @@
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;RHO&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;DPS&#39;</span><span class="p">:</span>  <span class="c1"># differential phase</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;DPS&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;LDRnormal&#39;</span><span class="p">:</span>  <span class="c1"># differential phase</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;LDRnormal&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;RHOwav&#39;</span><span class="p">:</span>  <span class="c1"># peak weighted</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;RHOwav&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;DPSwav&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;DPSwav&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;SKWg&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;SKWg&#39;</span>
 
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;HSDco&#39;</span><span class="p">:</span>  <span class="c1"># co-channel HSdiv noise level</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;HSDco&#39;</span>
@@ -1790,6 +1805,9 @@
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ISDRcx&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;ISDRcx&#39;</span>
 
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;SNRcx&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;SNRcx&#39;</span>
+        
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;SNRCorFaCo&#39;</span><span class="p">:</span>
         <span class="c1"># Factor to correct Co-channel SNR based on RX calibration measurement</span>
         <span class="c1"># by noise source</span>

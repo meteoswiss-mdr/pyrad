@@ -4,7 +4,7 @@
 
 # Name of this configuration:
 # Will be used in product generation save path
-name STRING gva_wind_lidar
+name STRING gva_cloud_radar_mmclx
 
 # ---------------------------------------------------------
 #  Raw data pathes
@@ -13,7 +13,7 @@ name STRING gva_wind_lidar
 # Base path of the raw data.
 # Note: Must have a trailing '/'
 # ('<datapath>/<scanname>/<YYYY-MM-DD>/<YYYYMMDDHHMMSS00datatype>.<ext>')
-datapath STRING /store/msrad/radar/GENEVA/wind_lidar/
+datapath STRING /store/msrad/radar/GENEVA/cloud_radar/
 path_convention STRING ODIM
 
 psrpath STRING /store/msrad/radar/DX50/psr/
@@ -23,7 +23,7 @@ cosmopath STRING /store/msrad/cosmo/
 
 # Loading of saved datasets
 loadbasepath STRING /store/msrad/radar/pyrad_products/
-loadname STRING gva_wind_lidar
+loadname STRING gva_cloud_radar_mmclx
 
 # ------------------------------------------------
 #  Auxiliary data pathes
@@ -46,7 +46,7 @@ imgformat       STRING png
 configpath STRING $HOME/pyrad/config/
 
 # Configuration of the radar location and approach direction
-locationConfigFile STRING $HOME/pyrad/config/processing/gva_wind_lidar_loc.txt
+locationConfigFile STRING $HOME/pyrad/config/processing/gva_cloud_radar_mmclx_loc.txt
 
 # Configuration of the product generation
-productConfigFile STRING $HOME/pyrad/config/processing/gva_wind_lidar_prod.txt
+productConfigFile STRING $HOME/pyrad/config/processing/gva_cloud_radar_mmclx_prod.txt
