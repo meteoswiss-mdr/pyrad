@@ -4,16 +4,16 @@
 # Names of the radar scans in the specified sector
 # NOTE: Must have a trailing '/'
 ScanList STRARR 1
-      nc  # masterscan: first scan of a volume
+      ppi_97_100m  # masterscan: first scan of a volume
 
 # Image config
 ppiImageConfig STRUCT 6
    xsize      FLOAT  10.      # image size [inches] (default dots per inch (dpi):72)
    ysize      FLOAT   8.      # image size [inches] (default dots per inch (dpi):72)
-   xmin       FLOAT -50.0   # Min distance on horizontal axis [km]
-   xmax       FLOAT  50.0   # Max distance on horizontal axis [km]
-   ymin       FLOAT -50.0   # Min distance on vertical axis [km]
-   ymax       FLOAT  50.0   # Max distance on vertical axis [km]
+   xmin       FLOAT  0.0   # Min distance on horizontal axis [km]
+   xmax       FLOAT  15.0   # Max distance on horizontal axis [km]
+   ymin       FLOAT -5.0   # Min distance on vertical axis [km]
+   ymax       FLOAT  5.0   # Max distance on vertical axis [km]
 
 # Image config
 sunhitsImageConfig STRUCT 8

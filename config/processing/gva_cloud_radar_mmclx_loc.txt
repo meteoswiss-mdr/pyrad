@@ -4,7 +4,7 @@
 # Names of the radar scans in the specified sector
 # NOTE: Must have a trailing '/'
 ScanList STRARR 1
-      nc  # masterscan: first scan of a volume
+      mmclx  # masterscan: first scan of a volume
 
 # Image config
 ppiImageConfig STRUCT 6

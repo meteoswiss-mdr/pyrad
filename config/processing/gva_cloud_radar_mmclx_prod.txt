@@ -4,20 +4,32 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 7
+dataSetList STRARR 8
+    Z
     Ze
     Zg
-    SNRgc
-    VELgc
-    RMSgc
-    NPKgc
-    LDRgc
+    SNR
+    VEL
+    RMS
+    NPK
+    LDR
 
 
 
 # ==========================================================================================
 #               Raw data
 # ==========================================================================================
+Z STRUCT 3
+    type STRING RAW
+    datatype STRING CF1:Z,D{}-F{%Y%m%d_%H%M}
+    products STRUCT 1
+        BSCOPE STRUCT 5
+            type STRING BSCOPE_IMAGE
+            voltype STRING Z
+            ray_dim STRING time
+            xaxis_rng INT 0
+            anglenr INT 0
+
 Ze STRUCT 3
     type STRING RAW
     datatype STRING CF1:Ze,D{}-F{%Y%m%d_%H%M}
@@ -40,62 +52,94 @@ Zg STRUCT 3
             xaxis_rng INT 0
             anglenr INT 0
 
-SNRgc STRUCT 3
+SNR STRUCT 3
     type STRING RAW
-    datatype STRING CF1:SNRgc,D{}-F{%Y%m%d_%H%M}
+    datatype STRING CF1:SNR,D{}-F{%Y%m%d_%H%M}
     products STRUCT 1
         BSCOPE STRUCT 5
             type STRING BSCOPE_IMAGE
-            voltype STRING SNRgc
+            voltype STRING SNR
             ray_dim STRING time
             xaxis_rng INT 0
             anglenr INT 0
 
-VELgc STRUCT 3
+VEL STRUCT 3
     type STRING RAW
-    datatype STRING CF1:VELgc,D{}-F{%Y%m%d_%H%M}
+    datatype STRING CF1:VEL,D{}-F{%Y%m%d_%H%M}
     products STRUCT 1
         BSCOPE STRUCT 5
             type STRING BSCOPE_IMAGE
-            voltype STRING VELgc
+            voltype STRING VEL
             ray_dim STRING time
             xaxis_rng INT 0
             anglenr INT 0
-
-RMSgc STRUCT 3
+            
+RMS STRUCT 3
     type STRING RAW
-    datatype STRING CF1:RMSgc,D{}-F{%Y%m%d_%H%M}
+    datatype STRING CF1:RMS,D{}-F{%Y%m%d_%H%M}
     products STRUCT 1
         BSCOPE STRUCT 7
             type STRING BSCOPE_IMAGE
-            voltype STRING RMSgc
+            voltype STRING RMS
             ray_dim STRING time
             xaxis_rng INT 0
             anglenr INT 0
             vmin FLOAT 0
             vmax FLOAT 2
-
-NPKgc STRUCT 3
+            
+NPK STRUCT 3
     type STRING RAW
-    datatype STRING CF1:NPKgc,D{}-F{%Y%m%d_%H%M}
+    datatype STRING CF1:NPK,D{}-F{%Y%m%d_%H%M}
     products STRUCT 1
         BSCOPE STRUCT 7
             type STRING BSCOPE_IMAGE
-            voltype STRING NPKgc
+            voltype STRING NPK
             ray_dim STRING time
             xaxis_rng INT 0
             anglenr INT 0
             vmin FLOAT 0
             vmax FLOAT 3
-
-LDRgc STRUCT 3
+            
+LDR STRUCT 3
     type STRING RAW
-    datatype STRING CF1:LDRgc,D{}-F{%Y%m%d_%H%M}
+    datatype STRING CF1:LDR,D{}-F{%Y%m%d_%H%M}
     products STRUCT 1
         BSCOPE STRUCT 5
             type STRING BSCOPE_IMAGE
-            voltype STRING LDRgc
+            voltype STRING LDR
+            ray_dim STRING time
+            xaxis_rng INT 0
+            anglenr INT 0
+            
+TEMP STRUCT 3
+    type STRING RAW
+    datatype STRING CF1:TEMPcr,D{}-F{%Y%m%d_%H%M}
+    products STRUCT 1
+        BSCOPE STRUCT 5
+            type STRING BSCOPE_IMAGE
+            voltype STRING TEMPcr
             ray_dim STRING time
             xaxis_rng INT 0
             anglenr INT 0
 
+RR STRUCT 3
+    type STRING RAW
+    datatype STRING CF1:RRcr,D{}-F{%Y%m%d_%H%M}
+    products STRUCT 1
+        BSCOPE STRUCT 5
+            type STRING BSCOPE_IMAGE
+            voltype STRING RRcr
+            ray_dim STRING time
+            xaxis_rng INT 0
+            anglenr INT 0
+
+LWC STRUCT 3
+    type STRING RAW
+    datatype STRING CF1:LWCcr,D{}-F{%Y%m%d_%H%M}
+    products STRUCT 1
+        BSCOPE STRUCT 5
+            type STRING BSCOPE_IMAGE
+            voltype STRING LWCcr
+            ray_dim STRING time
+            xaxis_rng INT 0
+            anglenr INT 0
