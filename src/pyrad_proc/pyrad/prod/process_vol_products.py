@@ -530,6 +530,10 @@ def generate_vol_products(dataset, prdcfg):
     if 'dssavename' in prdcfg:
         dssavedir = prdcfg['dssavename']
 
+    prdsavedir = prdcfg['prdname']
+    if 'prdsavedir' in prdcfg:
+        prdsavedir = prdcfg['prdsavedir']
+
     if prdcfg['type'] == 'PPI_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
@@ -545,7 +549,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
             'ppi', prdcfg['dstype'], prdcfg['voltype'],
@@ -586,7 +590,7 @@ def generate_vol_products(dataset, prdcfg):
 
             savedir = get_save_dir(
                 prdcfg['basepath'], prdcfg['procname'], dssavedir,
-                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+                prdsavedir, timeinfo=prdcfg['timeinfo'])
 
             fname_list = make_filename(
                 'ppi', prdcfg['dstype'], prdcfg['voltype'],
@@ -636,7 +640,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
             'ppi_map', prdcfg['dstype'], prdcfg['voltype'],
@@ -679,7 +683,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
             'ppi', prdcfg['dstype'],
@@ -725,7 +729,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
             'ppi_map', prdcfg['dstype'], prdcfg['voltype'],
@@ -773,7 +777,7 @@ def generate_vol_products(dataset, prdcfg):
 
             savedir = get_save_dir(
                 prdcfg['basepath'], prdcfg['procname'], dssavedir,
-                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+                prdsavedir, timeinfo=prdcfg['timeinfo'])
 
             fname_list = make_filename(
                 'ppi', prdcfg['dstype'],
@@ -824,7 +828,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
             'ppi', prdcfg['dstype'], prdcfg['voltype'],
@@ -860,7 +864,7 @@ def generate_vol_products(dataset, prdcfg):
 
             savedir = get_save_dir(
                 prdcfg['basepath'], prdcfg['procname'], dssavedir,
-                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+                prdsavedir, timeinfo=prdcfg['timeinfo'])
 
             fname_list = make_filename(
                 'ppi', prdcfg['dstype'], prdcfg['voltype'],
@@ -900,7 +904,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
             'rhi', prdcfg['dstype'], prdcfg['voltype'],
@@ -937,7 +941,7 @@ def generate_vol_products(dataset, prdcfg):
 
             savedir = get_save_dir(
                 prdcfg['basepath'], prdcfg['procname'], dssavedir,
-                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+                prdsavedir, timeinfo=prdcfg['timeinfo'])
 
             fname_list = make_filename(
                 'rhi', prdcfg['dstype'], prdcfg['voltype'],
@@ -990,7 +994,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
             'rhi', prdcfg['dstype'],
@@ -1045,7 +1049,7 @@ def generate_vol_products(dataset, prdcfg):
 
             savedir = get_save_dir(
                 prdcfg['basepath'], prdcfg['procname'], dssavedir,
-                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+                prdsavedir, timeinfo=prdcfg['timeinfo'])
 
             fname_list = make_filename(
                 'rhi', prdcfg['dstype'],
@@ -1097,7 +1101,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
             'rhi', prdcfg['dstype'], prdcfg['voltype'],
@@ -1133,7 +1137,7 @@ def generate_vol_products(dataset, prdcfg):
 
             savedir = get_save_dir(
                 prdcfg['basepath'], prdcfg['procname'], dssavedir,
-                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+                prdsavedir, timeinfo=prdcfg['timeinfo'])
 
             fname_list = make_filename(
                 'rhi', prdcfg['dstype'], prdcfg['voltype'],
@@ -1261,7 +1265,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         prdcfginfo = 'az'+'{:.1f}'.format(az)+'hres'+str(int(heightResolution))
         fname_list = make_filename(
@@ -1396,7 +1400,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         prdcfginfo = 'hres'+str(int(heightResolution))
         fname_list = make_filename(
@@ -1572,7 +1576,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         prdcfginfo = 'hres'+str(int(heightResolution))
         fname_list = make_filename(
@@ -1610,7 +1614,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         prdcfginfo = 'hres'+str(int(heightResolution))
         fname_list = make_filename(
@@ -1648,7 +1652,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         prdcfginfo = 'hres'+str(int(heightResolution))
         fname_list = make_filename(
@@ -1684,7 +1688,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         prdcfginfo = 'hres'+str(int(heightResolution))
         fname_list = make_filename(
@@ -1722,7 +1726,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         prdcfginfo = 'hres'+str(int(heightResolution))
         fname_list = make_filename(
@@ -1783,7 +1787,7 @@ def generate_vol_products(dataset, prdcfg):
 
             savedir = get_save_dir(
                 prdcfg['basepath'], prdcfg['procname'], dssavedir,
-                prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+                prdsavedir, timeinfo=prdcfg['timeinfo'])
 
             fname_list = make_filename(
                 'ppi', prdcfg['dstype'], prdcfg['voltype'],
@@ -1817,7 +1821,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
             'cappi', prdcfg['dstype'], prdcfg['voltype'],
@@ -1853,7 +1857,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
             'fixed_rng', prdcfg['dstype'], prdcfg['voltype'],
@@ -1891,7 +1895,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
             stat, prdcfg['dstype'], prdcfg['voltype'],
@@ -2010,7 +2014,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
             prdcfg['mode'], prdcfg['dstype'], prdcfg['voltype'],
@@ -2049,7 +2053,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
             'b-scope', prdcfg['dstype'], prdcfg['voltype'],
@@ -2088,7 +2092,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
             'time-range', prdcfg['dstype'], prdcfg['voltype'],
@@ -2119,7 +2123,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
             'histogram', prdcfg['dstype'], prdcfg['voltype'],
@@ -2192,7 +2196,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
             'quantiles', prdcfg['dstype'], prdcfg['voltype'],
@@ -2332,7 +2336,7 @@ def generate_vol_products(dataset, prdcfg):
         # plot field coverage
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
             'coverage', prdcfg['dstype'], prdcfg['voltype'],
@@ -2499,7 +2503,7 @@ def generate_vol_products(dataset, prdcfg):
         # plot CDF
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
             'cdf', prdcfg['dstype'], prdcfg['voltype'],
@@ -2562,7 +2566,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         fname = make_filename(
             'savevol', prdcfg['dstype'], prdcfg['voltype'], [file_type],
@@ -2594,7 +2598,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+            prdsavedir, timeinfo=prdcfg['timeinfo'])
 
         fname = make_filename(
             'savevol', prdcfg['dstype'], 'all_fields', [file_type],
@@ -2669,7 +2673,7 @@ def generate_vol_products(dataset, prdcfg):
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdname'], timeinfo=None)
+            prdsavedir, timeinfo=None)
 
         fname = make_filename(
             'ts', prdcfg['dstype'], 'fixed_angle', ['csv'],

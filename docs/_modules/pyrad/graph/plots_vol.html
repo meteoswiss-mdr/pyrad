@@ -239,8 +239,10 @@
         <span class="n">norm</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">ticks</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">ticklabs</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">vmin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">vmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">vmin</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">norm</span><span class="p">,</span> <span class="n">ticks</span><span class="p">,</span> <span class="n">ticklabs</span> <span class="o">=</span> <span class="n">get_norm</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+            <span class="n">vmin</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">vmax</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="n">xsize</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;ppiImageConfig&#39;</span><span class="p">][</span><span class="s1">&#39;xsize&#39;</span><span class="p">]</span>
         <span class="n">ysize</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;ppiImageConfig&#39;</span><span class="p">][</span><span class="s1">&#39;ysize&#39;</span><span class="p">]</span>

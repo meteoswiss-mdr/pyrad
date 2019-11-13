@@ -8,7 +8,7 @@
 umask 0002
 
 # Config
-cosmobaseraw='/store/msrad/cosmo/cosmo1/TEMP/raw1/'
+cosmobaseraw='/store/msrad/cosmo/TEMP/raw/'
 cosmopathcscs='/store/s83/owm/COSMO-1/ORDERS/MDR/'
 
 #module load idl

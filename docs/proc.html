@@ -112,6 +112,9 @@
 <tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_azimuthal_average" title="pyrad.proc.process_azimuthal_average"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_azimuthal_average</span></code></a>(procstatus,&nbsp;dscfg)</td>
 <td>Averages radar data in azimuth obtaining and RHI as a result</td>
 </tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_radar_resampling" title="pyrad.proc.process_radar_resampling"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_radar_resampling</span></code></a>(procstatus,&nbsp;dscfg)</td>
+<td>Resamples the radar data to mimic another radar with different geometry and antenna pattern</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -660,6 +663,7 @@ the function documentation:</p>
 ‘POL_VARIABLES’: process_pol_variables
 ‘POL_VARIABLES_IQ’: process_pol_variables_iq
 ‘PWR’: process_signal_power
+‘RADAR_RESAMPLING’: process_radar_resampling
 ‘RAINRATE’: process_rainrate
 ‘RAW’: process_raw
 ‘REFLECTIVITY’: process_reflectivity
@@ -4415,6 +4419,113 @@ eliminated from the data points before the interpolation</p>
 <dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
 <dd><p class="first last">dictionary containing the QVP and a keyboard stating whether the
 processing has finished or not.</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.proc.process_radar_resampling">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_radar_resampling</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_aux.html#process_radar_resampling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_radar_resampling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resamples the radar data to mimic another radar with different geometry
+and antenna pattern</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><dl class="first last docutils">
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">list of string. Dataset keyword</span></dt>
+<dd><p class="first last">The input data types</p>
+</dd>
+<dt>antennaType <span class="classifier-delimiter">:</span> <span class="classifier">str. Dataset keyword</span></dt>
+<dd><p class="first last">Type of antenna of the radar we want to get the view from. Can
+be AZIMUTH, ELEVATION, LOWBEAM, HIGHBEAM</p>
+</dd>
+<dt>par_azimuth_antenna <span class="classifier-delimiter">:</span> <span class="classifier">dict. Global ekyword</span></dt>
+<dd><p class="first last">Dictionary containing the parameters of the PAR azimuth antenna,
+i.e. name of the file with the antenna elevation pattern and fixed
+antenna angle</p>
+</dd>
+<dt>par_elevation_antenna <span class="classifier-delimiter">:</span> <span class="classifier">dict. Global keyword</span></dt>
+<dd><p class="first last">Dictionary containing the parameters of the PAR elevation antenna,
+i.e. name of the file with the antenna azimuth pattern and fixed
+antenna angle</p>
+</dd>
+<dt>asr_lowbeam_antenna <span class="classifier-delimiter">:</span> <span class="classifier">dict. Global keyword</span></dt>
+<dd><p class="first last">Dictionary containing the parameters of the ASR low beam antenna,
+i.e. name of the file with the antenna elevation pattern and fixed
+antenna angle</p>
+</dd>
+<dt>asr_highbeam_antenna <span class="classifier-delimiter">:</span> <span class="classifier">dict. Global keyword</span></dt>
+<dd><p class="first last">Dictionary containing the parameters of the ASR high beam antenna,
+i.e. name of the file with the antenna elevation pattern and fixed
+antenna angle</p>
+</dd>
+<dt>target_radar_pos <span class="classifier-delimiter">:</span> <span class="classifier">dict. Global keyword</span></dt>
+<dd><p class="first last">Dictionary containing the latitude, longitude and altitude of
+the radar we want to get the view from. If not specifying it will
+assume the radar is collocated</p>
+</dd>
+<dt>change_antenna_pattern <span class="classifier-delimiter">:</span> <span class="classifier">Bool. Dataset keyword</span></dt>
+<dd><p class="first last">If true the target radar has a different antenna pattern than the
+observations radar</p>
+</dd>
+<dt>rhi_resolution <span class="classifier-delimiter">:</span> <span class="classifier">Bool. Dataset keyword</span></dt>
+<dd><p class="first last">Resolution of the synthetic RHI used to compute the data as viewed
+from the synthetic radar [deg]. Default 0.5</p>
+</dd>
+<dt>max_altitude <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">Max altitude of the data to use when computing the view from the
+synthetic radar [m MSL]. Default 12000.</p>
+</dd>
+<dt>latlon_tol <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">The tolerance in latitude and longitude to determine which synthetic
+radar gates are co-located with real radar gates [deg]. Default 0.04</p>
+</dd>
+<dt>alt_tol <span class="classifier-delimiter">:</span> <span class="classifier">float. Datset keyword</span></dt>
+<dd><p class="first last">The tolerance in altitude to determine which synthetic
+radar gates are co-located with real radar gates [m]. Default 1000.</p>
+</dd>
+<dt>pattern_thres <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">The minimum of the sum of the weights given to each value in order
+to consider the weighted quantile valid. It is related to the number
+of valid data points</p>
+</dd>
+<dt>data_is_log <span class="classifier-delimiter">:</span> <span class="classifier">dict. Dataset keyword</span></dt>
+<dd><p class="first last">Dictionary specifying for each field if it is in log (True) or
+linear units (False). Default False</p>
+</dd>
+<dt>use_nans <span class="classifier-delimiter">:</span> <span class="classifier">dict. Dataset keyword</span></dt>
+<dd><p class="first last">Dictionary specyfing whether the nans have to be used in the
+computation of the statistics for each field. Default False</p>
+</dd>
+<dt>nan_value <span class="classifier-delimiter">:</span> <span class="classifier">dict. Dataset keyword</span></dt>
+<dd><p class="first last">Dictionary with the value to use to substitute the NaN values when
+computing the statistics of each field. Default 0</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Trajectory object</span></dt>
+<dd><p class="first last">dictionary containing the new radar</p>
 </dd>
 <dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd><p class="first last">radar index</p>

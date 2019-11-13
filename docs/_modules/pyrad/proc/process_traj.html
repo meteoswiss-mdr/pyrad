@@ -75,7 +75,7 @@
 <span class="sd">    _get_gates</span>
 <span class="sd">    _get_gates_trt</span>
 <span class="sd">    _get_gates_antenna_pattern</span>
-<span class="sd">    _get_closests_bin</span>
+<span class="sd">    _get_closest_bin</span>
 <span class="sd">    _sample_out_of_sector</span>
 <span class="sd">    TargetRadar</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -1325,7 +1325,7 @@
 
         <span class="c1"># Select radar object, find closest azimuth and elevation ray</span>
         <span class="p">(</span><span class="n">radar_sel</span><span class="p">,</span> <span class="n">ray_sel</span><span class="p">,</span> <span class="n">rr_ind</span><span class="p">,</span> <span class="n">el_vec_rnd</span><span class="p">,</span> <span class="n">az_vec_rnd</span><span class="p">)</span> <span class="o">=</span> \
-            <span class="n">_get_closests_bin</span><span class="p">(</span><span class="n">az</span><span class="p">,</span> <span class="n">el</span><span class="p">,</span> <span class="n">rr</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">radar</span><span class="p">,</span> <span class="n">tadict</span><span class="p">)</span>
+            <span class="n">_get_closest_bin</span><span class="p">(</span><span class="n">az</span><span class="p">,</span> <span class="n">el</span><span class="p">,</span> <span class="n">rr</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">radar</span><span class="p">,</span> <span class="n">tadict</span><span class="p">)</span>
 
         <span class="c1"># Check if traj sample is within scan sector</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">_sample_out_of_sector</span><span class="p">(</span><span class="n">az</span><span class="p">,</span> <span class="n">el</span><span class="p">,</span> <span class="n">rr</span><span class="p">,</span> <span class="n">radar_sel</span><span class="p">,</span> <span class="n">ray_sel</span><span class="p">,</span>
@@ -1545,7 +1545,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Find closest azimuth and elevation ray</span>
     <span class="p">(</span><span class="n">radar_sel</span><span class="p">,</span> <span class="n">ray_sel</span><span class="p">,</span> <span class="n">rr_ind</span><span class="p">,</span> <span class="n">el_vec_rnd</span><span class="p">,</span> <span class="n">az_vec_rnd</span><span class="p">)</span> <span class="o">=</span> \
-        <span class="n">_get_closests_bin</span><span class="p">(</span><span class="n">az</span><span class="p">,</span> <span class="n">el</span><span class="p">,</span> <span class="n">rr</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">radar</span><span class="p">,</span> <span class="n">trajdict</span><span class="p">)</span>
+        <span class="n">_get_closest_bin</span><span class="p">(</span><span class="n">az</span><span class="p">,</span> <span class="n">el</span><span class="p">,</span> <span class="n">rr</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">radar</span><span class="p">,</span> <span class="n">trajdict</span><span class="p">)</span>
 
     <span class="c1"># Check if traj sample is within scan sector</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">_sample_out_of_sector</span><span class="p">(</span><span class="n">az</span><span class="p">,</span> <span class="n">el</span><span class="p">,</span> <span class="n">rr</span><span class="p">,</span> <span class="n">radar_sel</span><span class="p">,</span> <span class="n">ray_sel</span><span class="p">,</span>
@@ -1745,8 +1745,7 @@
     <span class="n">r_elevation</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">scan_angles</span><span class="p">}</span>
     <span class="n">r_sweep_number</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]}</span>
     <span class="n">r_fields</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;colocated_gates&#39;</span><span class="p">:</span> <span class="n">get_metadata</span><span class="p">(</span><span class="s1">&#39;colocated_gates&#39;</span><span class="p">)}</span>
-    <span class="n">r_fields</span><span class="p">[</span><span class="s1">&#39;colocated_gates&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n_rays</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-                                                     <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">r_fields</span><span class="p">[</span><span class="s1">&#39;colocated_gates&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n_rays</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
 
     <span class="n">r_radar</span> <span class="o">=</span> <span class="n">Radar</span><span class="p">(</span><span class="n">r_time</span><span class="p">,</span> <span class="n">r_range</span><span class="p">,</span> <span class="n">r_fields</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;rhi&#39;</span><span class="p">,</span>
                     <span class="n">target_radar</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span> <span class="n">target_radar</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span>
@@ -1756,7 +1755,7 @@
 
     <span class="c1"># flag regions with colocated usable data in r_radar</span>
     <span class="n">r_ind_invalid</span> <span class="o">=</span> <span class="n">r_radar</span><span class="o">.</span><span class="n">gate_altitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">max_altitude</span>
-    <span class="n">r_radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;colocated_gates&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">r_ind_invalid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">r_radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;colocated_gates&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">r_ind_invalid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="c1"># flag regions with colocated usable data in radar_sel</span>
     <span class="n">gate_coloc_radar_sel</span> <span class="o">=</span> <span class="n">intersection</span><span class="p">(</span>
@@ -1770,13 +1769,12 @@
 
     <span class="p">(</span><span class="n">colgates</span><span class="p">,</span> <span class="n">r_radar_colg</span><span class="p">)</span> <span class="o">=</span> <span class="n">colocated_gates</span><span class="p">(</span>
         <span class="n">r_radar</span><span class="p">,</span> <span class="n">radar_sel</span><span class="p">,</span> <span class="n">h_tol</span><span class="o">=</span><span class="n">alt_tol</span><span class="p">,</span> <span class="n">latlon_tol</span><span class="o">=</span><span class="n">latlon_tol</span><span class="p">)</span>
-
-    <span class="n">w_ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">r_radar_colg</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">w_ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">r_radar_colg</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">return</span> <span class="n">colgates</span><span class="p">[</span><span class="s1">&#39;rad2_ray_ind&#39;</span><span class="p">],</span> <span class="n">colgates</span><span class="p">[</span><span class="s1">&#39;rad2_rng_ind&#39;</span><span class="p">],</span> <span class="n">w_ind</span>
 
 
-<span class="k">def</span> <span class="nf">_get_closests_bin</span><span class="p">(</span><span class="n">az</span><span class="p">,</span> <span class="n">el</span><span class="p">,</span> <span class="n">rr</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">radar</span><span class="p">,</span> <span class="n">tdict</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_get_closest_bin</span><span class="p">(</span><span class="n">az</span><span class="p">,</span> <span class="n">el</span><span class="p">,</span> <span class="n">rr</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">radar</span><span class="p">,</span> <span class="n">tdict</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get the radar bin closest to a certain trajectory position</span>
 

@@ -542,19 +542,19 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.TimeSeries.add_dataseries" title="pyrad.io.TimeSeries.add_dataseries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_dataseries</span></code></a>(label,&nbsp;unit_name,&nbsp;unit[,&nbsp;…])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.TimeSeries.add_dataseries" title="pyrad.io.TimeSeries.add_dataseries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_dataseries</span></code></a>(self,&nbsp;label,&nbsp;unit_name,&nbsp;unit)</td>
 <td>Add a new data series to the timeseries object.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.TimeSeries.add_timesample" title="pyrad.io.TimeSeries.add_timesample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_timesample</span></code></a>(dt,&nbsp;values)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.TimeSeries.add_timesample" title="pyrad.io.TimeSeries.add_timesample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_timesample</span></code></a>(self,&nbsp;dt,&nbsp;values)</td>
 <td>Add a new sample to the time series.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.TimeSeries.plot" title="pyrad.io.TimeSeries.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a>(fname[,&nbsp;ymin,&nbsp;ymax])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.TimeSeries.plot" title="pyrad.io.TimeSeries.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a>(self,&nbsp;fname[,&nbsp;ymin,&nbsp;ymax])</td>
 <td>Make a figure of a time series</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.TimeSeries.plot_hist" title="pyrad.io.TimeSeries.plot_hist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_hist</span></code></a>(fname[,&nbsp;step])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.TimeSeries.plot_hist" title="pyrad.io.TimeSeries.plot_hist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_hist</span></code></a>(self,&nbsp;fname[,&nbsp;step])</td>
 <td>Make histograms of time series</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.TimeSeries.write" title="pyrad.io.TimeSeries.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>(fname)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.TimeSeries.write" title="pyrad.io.TimeSeries.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>(self,&nbsp;fname)</td>
 <td>Write time series output</td>
 </tr>
 </tbody>
@@ -567,7 +567,7 @@
 
 <dl class="attribute">
 <dt id="pyrad.io.TimeSeries.__delattr__">
-<code class="descname">__delattr__</code><span class="sig-paren">(</span><em>$self</em>, <em>name</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__delattr__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__delattr__</code><span class="sig-paren">(</span><em>self</em>, <em>name</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__delattr__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implement delattr(self, name).</p>
 </dd></dl>
 
@@ -578,49 +578,49 @@
 
 <dl class="method">
 <dt id="pyrad.io.TimeSeries.__dir__">
-<code class="descname">__dir__</code><span class="sig-paren">(</span><em>$self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__dir__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__dir__</code><span class="sig-paren">(</span><em>self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__dir__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Default dir() implementation.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyrad.io.TimeSeries.__eq__">
-<code class="descname">__eq__</code><span class="sig-paren">(</span><em>$self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__eq__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__eq__</code><span class="sig-paren">(</span><em>self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__eq__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return self==value.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrad.io.TimeSeries.__format__">
-<code class="descname">__format__</code><span class="sig-paren">(</span><em>$self</em>, <em>format_spec</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__format__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__format__</code><span class="sig-paren">(</span><em>self</em>, <em>format_spec</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__format__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Default object formatter.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyrad.io.TimeSeries.__ge__">
-<code class="descname">__ge__</code><span class="sig-paren">(</span><em>$self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__ge__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__ge__</code><span class="sig-paren">(</span><em>self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__ge__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return self&gt;=value.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyrad.io.TimeSeries.__getattribute__">
-<code class="descname">__getattribute__</code><span class="sig-paren">(</span><em>$self</em>, <em>name</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__getattribute__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__getattribute__</code><span class="sig-paren">(</span><em>self</em>, <em>name</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__getattribute__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return getattr(self, name).</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyrad.io.TimeSeries.__gt__">
-<code class="descname">__gt__</code><span class="sig-paren">(</span><em>$self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__gt__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__gt__</code><span class="sig-paren">(</span><em>self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__gt__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return self&gt;value.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyrad.io.TimeSeries.__hash__">
-<code class="descname">__hash__</code><span class="sig-paren">(</span><em>$self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__hash__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__hash__</code><span class="sig-paren">(</span><em>self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__hash__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return hash(self).</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrad.io.TimeSeries.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>desc</em>, <em>timevec=None</em>, <em>timeformat=None</em>, <em>maxlength=None</em>, <em>datatype=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/timeseries.html#TimeSeries.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.TimeSeries.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>self</em>, <em>desc</em>, <em>timevec=None</em>, <em>timeformat=None</em>, <em>maxlength=None</em>, <em>datatype=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/timeseries.html#TimeSeries.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.TimeSeries.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initalize the object.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -654,13 +654,13 @@ overridden to extend subclasses.</p>
 
 <dl class="attribute">
 <dt id="pyrad.io.TimeSeries.__le__">
-<code class="descname">__le__</code><span class="sig-paren">(</span><em>$self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__le__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__le__</code><span class="sig-paren">(</span><em>self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__le__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return self&lt;=value.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyrad.io.TimeSeries.__lt__">
-<code class="descname">__lt__</code><span class="sig-paren">(</span><em>$self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__lt__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__lt__</code><span class="sig-paren">(</span><em>self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__lt__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return self&lt;value.</p>
 </dd></dl>
 
@@ -671,49 +671,49 @@ overridden to extend subclasses.</p>
 
 <dl class="attribute">
 <dt id="pyrad.io.TimeSeries.__ne__">
-<code class="descname">__ne__</code><span class="sig-paren">(</span><em>$self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__ne__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__ne__</code><span class="sig-paren">(</span><em>self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__ne__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return self!=value.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrad.io.TimeSeries.__new__">
-<code class="descname">__new__</code><span class="sig-paren">(</span><em>$type</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__new__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__new__</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__new__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create and return a new object.  See help(type) for accurate signature.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrad.io.TimeSeries.__reduce__">
-<code class="descname">__reduce__</code><span class="sig-paren">(</span><em>$self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__reduce__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__reduce__</code><span class="sig-paren">(</span><em>self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__reduce__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper for pickle.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrad.io.TimeSeries.__reduce_ex__">
-<code class="descname">__reduce_ex__</code><span class="sig-paren">(</span><em>$self</em>, <em>protocol</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__reduce_ex__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__reduce_ex__</code><span class="sig-paren">(</span><em>self</em>, <em>protocol</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__reduce_ex__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper for pickle.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyrad.io.TimeSeries.__repr__">
-<code class="descname">__repr__</code><span class="sig-paren">(</span><em>$self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__repr__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__repr__</code><span class="sig-paren">(</span><em>self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__repr__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return repr(self).</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyrad.io.TimeSeries.__setattr__">
-<code class="descname">__setattr__</code><span class="sig-paren">(</span><em>$self</em>, <em>name</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__setattr__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__setattr__</code><span class="sig-paren">(</span><em>self</em>, <em>name</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__setattr__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implement setattr(self, name, value).</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrad.io.TimeSeries.__sizeof__">
-<code class="descname">__sizeof__</code><span class="sig-paren">(</span><em>$self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__sizeof__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__sizeof__</code><span class="sig-paren">(</span><em>self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__sizeof__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Size of object in memory, in bytes.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyrad.io.TimeSeries.__str__">
-<code class="descname">__str__</code><span class="sig-paren">(</span><em>$self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__str__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__str__</code><span class="sig-paren">(</span><em>self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.TimeSeries.__str__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return str(self).</p>
 </dd></dl>
 
@@ -735,7 +735,7 @@ overrides the normal algorithm (and the outcome is cached).</p>
 
 <dl class="method">
 <dt id="pyrad.io.TimeSeries.add_dataseries">
-<code class="descname">add_dataseries</code><span class="sig-paren">(</span><em>label</em>, <em>unit_name</em>, <em>unit</em>, <em>dataseries=None</em>, <em>plot=True</em>, <em>color=None</em>, <em>linestyle=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/timeseries.html#TimeSeries.add_dataseries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.TimeSeries.add_dataseries" title="Permalink to this definition">¶</a></dt>
+<code class="descname">add_dataseries</code><span class="sig-paren">(</span><em>self</em>, <em>label</em>, <em>unit_name</em>, <em>unit</em>, <em>dataseries=None</em>, <em>plot=True</em>, <em>color=None</em>, <em>linestyle=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/timeseries.html#TimeSeries.add_dataseries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.TimeSeries.add_dataseries" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a new data series to the timeseries object.
 The length of the data vector must be the same as the
 length of the time vector.</p>
@@ -743,25 +743,25 @@ length of the time vector.</p>
 
 <dl class="method">
 <dt id="pyrad.io.TimeSeries.add_timesample">
-<code class="descname">add_timesample</code><span class="sig-paren">(</span><em>dt</em>, <em>values</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/timeseries.html#TimeSeries.add_timesample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.TimeSeries.add_timesample" title="Permalink to this definition">¶</a></dt>
+<code class="descname">add_timesample</code><span class="sig-paren">(</span><em>self</em>, <em>dt</em>, <em>values</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/timeseries.html#TimeSeries.add_timesample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.TimeSeries.add_timesample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a new sample to the time series.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrad.io.TimeSeries.plot">
-<code class="descname">plot</code><span class="sig-paren">(</span><em>fname</em>, <em>ymin=None</em>, <em>ymax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/timeseries.html#TimeSeries.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.TimeSeries.plot" title="Permalink to this definition">¶</a></dt>
+<code class="descname">plot</code><span class="sig-paren">(</span><em>self</em>, <em>fname</em>, <em>ymin=None</em>, <em>ymax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/timeseries.html#TimeSeries.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.TimeSeries.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a figure of a time series</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrad.io.TimeSeries.plot_hist">
-<code class="descname">plot_hist</code><span class="sig-paren">(</span><em>fname</em>, <em>step=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/timeseries.html#TimeSeries.plot_hist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.TimeSeries.plot_hist" title="Permalink to this definition">¶</a></dt>
+<code class="descname">plot_hist</code><span class="sig-paren">(</span><em>self</em>, <em>fname</em>, <em>step=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/timeseries.html#TimeSeries.plot_hist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.TimeSeries.plot_hist" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make histograms of time series</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrad.io.TimeSeries.write">
-<code class="descname">write</code><span class="sig-paren">(</span><em>fname</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/timeseries.html#TimeSeries.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.TimeSeries.write" title="Permalink to this definition">¶</a></dt>
+<code class="descname">write</code><span class="sig-paren">(</span><em>self</em>, <em>fname</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/timeseries.html#TimeSeries.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.TimeSeries.write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write time series output</p>
 </dd></dl>
 
@@ -841,19 +841,19 @@ considered.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.Trajectory.add_radar" title="pyrad.io.Trajectory.add_radar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_radar</span></code></a>(radar)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.Trajectory.add_radar" title="pyrad.io.Trajectory.add_radar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_radar</span></code></a>(self,&nbsp;radar)</td>
 <td>Add the coordinates (WGS84 longitude, latitude and non WGS84 altitude) of a radar to the radar_list.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.Trajectory.calculate_velocities" title="pyrad.io.Trajectory.calculate_velocities"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_velocities</span></code></a>(radar)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.Trajectory.calculate_velocities" title="pyrad.io.Trajectory.calculate_velocities"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_velocities</span></code></a>(self,&nbsp;radar)</td>
 <td>Calculate velocities.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.Trajectory.get_end_time" title="pyrad.io.Trajectory.get_end_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_end_time</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.Trajectory.get_end_time" title="pyrad.io.Trajectory.get_end_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_end_time</span></code></a>(self)</td>
 <td>Get time of last trajectory sample.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.Trajectory.get_samples_in_period" title="pyrad.io.Trajectory.get_samples_in_period"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_samples_in_period</span></code></a>([start,&nbsp;end])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.io.Trajectory.get_samples_in_period" title="pyrad.io.Trajectory.get_samples_in_period"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_samples_in_period</span></code></a>(self[,&nbsp;start,&nbsp;end])</td>
 <td>”</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.Trajectory.get_start_time" title="pyrad.io.Trajectory.get_start_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_start_time</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.io.Trajectory.get_start_time" title="pyrad.io.Trajectory.get_start_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_start_time</span></code></a>(self)</td>
 <td>Get time of first trajectory sample.</td>
 </tr>
 </tbody>
@@ -866,7 +866,7 @@ considered.</p>
 
 <dl class="attribute">
 <dt id="pyrad.io.Trajectory.__delattr__">
-<code class="descname">__delattr__</code><span class="sig-paren">(</span><em>$self</em>, <em>name</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__delattr__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__delattr__</code><span class="sig-paren">(</span><em>self</em>, <em>name</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__delattr__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implement delattr(self, name).</p>
 </dd></dl>
 
@@ -877,49 +877,49 @@ considered.</p>
 
 <dl class="method">
 <dt id="pyrad.io.Trajectory.__dir__">
-<code class="descname">__dir__</code><span class="sig-paren">(</span><em>$self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__dir__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__dir__</code><span class="sig-paren">(</span><em>self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__dir__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Default dir() implementation.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyrad.io.Trajectory.__eq__">
-<code class="descname">__eq__</code><span class="sig-paren">(</span><em>$self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__eq__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__eq__</code><span class="sig-paren">(</span><em>self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__eq__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return self==value.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrad.io.Trajectory.__format__">
-<code class="descname">__format__</code><span class="sig-paren">(</span><em>$self</em>, <em>format_spec</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__format__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__format__</code><span class="sig-paren">(</span><em>self</em>, <em>format_spec</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__format__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Default object formatter.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyrad.io.Trajectory.__ge__">
-<code class="descname">__ge__</code><span class="sig-paren">(</span><em>$self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__ge__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__ge__</code><span class="sig-paren">(</span><em>self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__ge__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return self&gt;=value.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyrad.io.Trajectory.__getattribute__">
-<code class="descname">__getattribute__</code><span class="sig-paren">(</span><em>$self</em>, <em>name</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__getattribute__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__getattribute__</code><span class="sig-paren">(</span><em>self</em>, <em>name</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__getattribute__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return getattr(self, name).</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyrad.io.Trajectory.__gt__">
-<code class="descname">__gt__</code><span class="sig-paren">(</span><em>$self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__gt__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__gt__</code><span class="sig-paren">(</span><em>self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__gt__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return self&gt;value.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyrad.io.Trajectory.__hash__">
-<code class="descname">__hash__</code><span class="sig-paren">(</span><em>$self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__hash__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__hash__</code><span class="sig-paren">(</span><em>self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__hash__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return hash(self).</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrad.io.Trajectory.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>filename</em>, <em>starttime=None</em>, <em>endtime=None</em>, <em>trajtype='plane'</em>, <em>flashnr=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>self</em>, <em>filename</em>, <em>starttime=None</em>, <em>endtime=None</em>, <em>trajtype='plane'</em>, <em>flashnr=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initalize the object.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -961,13 +961,13 @@ overridden to extend subclasses.</p>
 
 <dl class="attribute">
 <dt id="pyrad.io.Trajectory.__le__">
-<code class="descname">__le__</code><span class="sig-paren">(</span><em>$self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__le__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__le__</code><span class="sig-paren">(</span><em>self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__le__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return self&lt;=value.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyrad.io.Trajectory.__lt__">
-<code class="descname">__lt__</code><span class="sig-paren">(</span><em>$self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__lt__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__lt__</code><span class="sig-paren">(</span><em>self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__lt__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return self&lt;value.</p>
 </dd></dl>
 
@@ -978,49 +978,49 @@ overridden to extend subclasses.</p>
 
 <dl class="attribute">
 <dt id="pyrad.io.Trajectory.__ne__">
-<code class="descname">__ne__</code><span class="sig-paren">(</span><em>$self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__ne__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__ne__</code><span class="sig-paren">(</span><em>self</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__ne__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return self!=value.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrad.io.Trajectory.__new__">
-<code class="descname">__new__</code><span class="sig-paren">(</span><em>$type</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__new__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__new__</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__new__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create and return a new object.  See help(type) for accurate signature.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrad.io.Trajectory.__reduce__">
-<code class="descname">__reduce__</code><span class="sig-paren">(</span><em>$self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__reduce__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__reduce__</code><span class="sig-paren">(</span><em>self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__reduce__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper for pickle.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrad.io.Trajectory.__reduce_ex__">
-<code class="descname">__reduce_ex__</code><span class="sig-paren">(</span><em>$self</em>, <em>protocol</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__reduce_ex__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__reduce_ex__</code><span class="sig-paren">(</span><em>self</em>, <em>protocol</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__reduce_ex__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper for pickle.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyrad.io.Trajectory.__repr__">
-<code class="descname">__repr__</code><span class="sig-paren">(</span><em>$self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__repr__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__repr__</code><span class="sig-paren">(</span><em>self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__repr__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return repr(self).</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyrad.io.Trajectory.__setattr__">
-<code class="descname">__setattr__</code><span class="sig-paren">(</span><em>$self</em>, <em>name</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__setattr__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__setattr__</code><span class="sig-paren">(</span><em>self</em>, <em>name</em>, <em>value</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__setattr__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implement setattr(self, name, value).</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrad.io.Trajectory.__sizeof__">
-<code class="descname">__sizeof__</code><span class="sig-paren">(</span><em>$self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__sizeof__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__sizeof__</code><span class="sig-paren">(</span><em>self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__sizeof__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Size of object in memory, in bytes.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyrad.io.Trajectory.__str__">
-<code class="descname">__str__</code><span class="sig-paren">(</span><em>$self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__str__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__str__</code><span class="sig-paren">(</span><em>self</em>, <em>/</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrad.io.Trajectory.__str__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return str(self).</p>
 </dd></dl>
 
@@ -1042,25 +1042,25 @@ overrides the normal algorithm (and the outcome is cached).</p>
 
 <dl class="method">
 <dt id="pyrad.io.Trajectory._convert_traj_to_swissgrid">
-<code class="descname">_convert_traj_to_swissgrid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory._convert_traj_to_swissgrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory._convert_traj_to_swissgrid" title="Permalink to this definition">¶</a></dt>
+<code class="descname">_convert_traj_to_swissgrid</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory._convert_traj_to_swissgrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory._convert_traj_to_swissgrid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert trajectory samples from WGS84 to Swiss CH1903 coordinates</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrad.io.Trajectory._get_total_seconds">
-<code class="descname">_get_total_seconds</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory._get_total_seconds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory._get_total_seconds" title="Permalink to this definition">¶</a></dt>
+<code class="descname">_get_total_seconds</code><span class="sig-paren">(</span><em>self</em>, <em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory._get_total_seconds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory._get_total_seconds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return total seconds of timedelta object</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrad.io.Trajectory._read_traj">
-<code class="descname">_read_traj</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory._read_traj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory._read_traj" title="Permalink to this definition">¶</a></dt>
+<code class="descname">_read_traj</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory._read_traj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory._read_traj" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read trajectory from file</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrad.io.Trajectory._read_traj_lightning">
-<code class="descname">_read_traj_lightning</code><span class="sig-paren">(</span><em>flashnr=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory._read_traj_lightning"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory._read_traj_lightning" title="Permalink to this definition">¶</a></dt>
+<code class="descname">_read_traj_lightning</code><span class="sig-paren">(</span><em>self</em>, <em>flashnr=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory._read_traj_lightning"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory._read_traj_lightning" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read trajectory from lightning file</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1079,13 +1079,13 @@ overrides the normal algorithm (and the outcome is cached).</p>
 
 <dl class="method">
 <dt id="pyrad.io.Trajectory._read_traj_trt">
-<code class="descname">_read_traj_trt</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory._read_traj_trt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory._read_traj_trt" title="Permalink to this definition">¶</a></dt>
+<code class="descname">_read_traj_trt</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory._read_traj_trt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory._read_traj_trt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read trajectory from TRT file</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrad.io.Trajectory.add_radar">
-<code class="descname">add_radar</code><span class="sig-paren">(</span><em>radar</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory.add_radar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory.add_radar" title="Permalink to this definition">¶</a></dt>
+<code class="descname">add_radar</code><span class="sig-paren">(</span><em>self</em>, <em>radar</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory.add_radar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory.add_radar" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add the coordinates (WGS84 longitude, latitude and non WGS84 altitude)
 of a radar to the radar_list.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1105,19 +1105,19 @@ of a radar to the radar_list.</p>
 
 <dl class="method">
 <dt id="pyrad.io.Trajectory.calculate_velocities">
-<code class="descname">calculate_velocities</code><span class="sig-paren">(</span><em>radar</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory.calculate_velocities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory.calculate_velocities" title="Permalink to this definition">¶</a></dt>
+<code class="descname">calculate_velocities</code><span class="sig-paren">(</span><em>self</em>, <em>radar</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory.calculate_velocities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory.calculate_velocities" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate velocities.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrad.io.Trajectory.get_end_time">
-<code class="descname">get_end_time</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory.get_end_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory.get_end_time" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_end_time</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory.get_end_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory.get_end_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get time of last trajectory sample.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrad.io.Trajectory.get_samples_in_period">
-<code class="descname">get_samples_in_period</code><span class="sig-paren">(</span><em>start=None</em>, <em>end=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory.get_samples_in_period"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory.get_samples_in_period" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_samples_in_period</code><span class="sig-paren">(</span><em>self</em>, <em>start=None</em>, <em>end=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory.get_samples_in_period"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory.get_samples_in_period" title="Permalink to this definition">¶</a></dt>
 <dd><p>”
 Get indices of samples of the trajectory within given time
 period.</p>
@@ -1125,7 +1125,7 @@ period.</p>
 
 <dl class="method">
 <dt id="pyrad.io.Trajectory.get_start_time">
-<code class="descname">get_start_time</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory.get_start_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory.get_start_time" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_start_time</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/io/trajectory.html#Trajectory.get_start_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.io.Trajectory.get_start_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get time of first trajectory sample.</p>
 </dd></dl>
 
@@ -2281,9 +2281,9 @@ used by Py-ART</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>rad1_time, rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,</strong></dt>
+<dt>rad1_time, rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,</dt>
 <dd></dd>
-<dt><strong>rad1_val, rad2_time, rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi,</strong></dt>
+<dt>rad1_val, rad2_time, rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi,</dt>
 <dd></dd>
 <dt><strong>rad2_rng, rad2_val</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tupple</span></dt>
 <dd><p class="first last">A tupple with the data read. None otherwise</p>
@@ -2311,7 +2311,7 @@ used by Py-ART</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,</strong></dt>
+<dt>rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,</dt>
 <dd></dd>
 <dt><strong>rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi, rad2_rng</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tupple</span></dt>
 <dd><p class="first last">A tupple with the data read. None otherwise</p>
@@ -2429,7 +2429,7 @@ text file</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>date, preciptype, lwc, rr, zh, zv, zdr, ldr, ah, av, adiff, kdp, deltaco,</strong></dt>
+<dt>date, preciptype, lwc, rr, zh, zv, zdr, ldr, ah, av, adiff, kdp, deltaco,</dt>
 <dd></dd>
 <dt><strong>rhohv</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tupple</span></dt>
 <dd><p class="first last">The read values</p>
@@ -2458,7 +2458,7 @@ a given percentile of frequency of occurrence</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,</strong></dt>
+<dt>rad1_ray_ind, rad1_rng_ind, rad1_ele, rad1_azi, rad1_rng,</dt>
 <dd></dd>
 <dt><strong>rad2_ray_ind, rad2_rng_ind, rad2_ele, rad2_azi, rad2_rng</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tupple</span></dt>
 <dd><p class="first last">A tupple with the data read. None otherwise</p>
@@ -2638,9 +2638,9 @@ median</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>date_vec, np_vec, meanbias_vec, medianbias_vec, quant25bias_vec,</strong></dt>
+<dt>date_vec, np_vec, meanbias_vec, medianbias_vec, quant25bias_vec,</dt>
 <dd></dd>
-<dt><strong>quant75bias_vec, modebias_vec, corr_vec, slope_vec, intercep_vec,</strong></dt>
+<dt>quant75bias_vec, modebias_vec, corr_vec, slope_vec, intercep_vec,</dt>
 <dd></dd>
 <dt><strong>intercep_slope1_vec</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tupple</span></dt>
 <dd><p class="first last">The read data. None otherwise</p>
@@ -2746,7 +2746,7 @@ Polarimetric values at flash position</div></blockquote>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>flashnr, time_data, time_in_flash, lat, lon, alt, dBm,</strong></dt>
+<dt>flashnr, time_data, time_in_flash, lat, lon, alt, dBm,</dt>
 <dd></dd>
 <dt><strong>pol_vals_dict</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tupple</span></dt>
 <dd><p class="first last">A tupple containing the read values. None otherwise</p>
@@ -2785,7 +2785,7 @@ Max value in a 3x3x3 polar box
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>time_flash, flashnr, dBm, val_at_flash, val_mean, val_min, val_max,</strong></dt>
+<dt>time_flash, flashnr, dBm, val_at_flash, val_mean, val_min, val_max,</dt>
 <dd></dd>
 <dt><strong>nval</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tupple</span></dt>
 <dd><p class="first last">A tupple containing the read values. None otherwise</p>
@@ -2830,7 +2830,7 @@ incl: ellipse inclination (angle with respect to the North, +90° is</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>stroke_time, lon, lat, intens, ns, mode, intra, ax, ki2, ecc, incl,</strong></dt>
+<dt>stroke_time, lon, lat, intens, ns, mode, intra, ax, ki2, ecc, incl,</dt>
 <dd></dd>
 <dt><strong>sind</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tupple</span></dt>
 <dd><p class="first last">A tupple containing the read values. None otherwise</p>
@@ -2858,7 +2858,7 @@ incl: ellipse inclination (angle with respect to the North, +90° is</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>dt_ml, ml_top_avg, ml_top_std, thick_avg, thick_std, nrays_valid,</strong></dt>
+<dt>dt_ml, ml_top_avg, ml_top_std, thick_avg, thick_std, nrays_valid,</dt>
 <dd></dd>
 <dt><strong>nrays_total</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tupple</span></dt>
 <dd><p class="first last">The read data. None otherwise</p>
@@ -3271,7 +3271,7 @@ station,time,value</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>date, ray, nrng, rad_el, rad_az, sun_el, sun_az, ph, ph_std, nph, nvalh,</strong></dt>
+<dt>date, ray, nrng, rad_el, rad_az, sun_el, sun_az, ph, ph_std, nph, nvalh,</dt>
 <dd></dd>
 <dt><strong>pv, pv_std, npv, nvalv, zdr, zdr_std, nzdr, nvalzdr</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tupple</span></dt>
 <dd><p class="first last">Each parameter is an array containing a time series of information on
@@ -3306,7 +3306,7 @@ a variable</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>date, ray, nrng, rad_el, rad_az, sun_el, sun_az, ph, ph_std, nph, nvalh,</strong></dt>
+<dt>date, ray, nrng, rad_el, rad_az, sun_el, sun_az, ph, ph_std, nph, nvalh,</dt>
 <dd></dd>
 <dt><strong>pv, pv_std, npv, nvalv, zdr, zdr_std, nzdr, nvalzdr</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tupple</span></dt>
 <dd><p class="first last">Each parameter is an array containing a time series of information on
@@ -3335,15 +3335,15 @@ a variable</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>first_hit_time, last_hit_time, nhits_h, el_width_h, az_width_h, el_bias_h,</strong></dt>
+<dt>first_hit_time, last_hit_time, nhits_h, el_width_h, az_width_h, el_bias_h,</dt>
 <dd></dd>
-<dt><strong>az_bias_h, dBm_sun_est, std_dBm_sun_est, sf_h,</strong></dt>
+<dt>az_bias_h, dBm_sun_est, std_dBm_sun_est, sf_h,</dt>
 <dd></dd>
-<dt><strong>nhits_v, el_width_v, az_width_v, el_bias_v, az_bias_v, dBmv_sun_est,</strong></dt>
+<dt>nhits_v, el_width_v, az_width_v, el_bias_v, az_bias_v, dBmv_sun_est,</dt>
 <dd></dd>
-<dt><strong>std_dBmv_sun_est, sf_v,</strong></dt>
+<dt>std_dBmv_sun_est, sf_v,</dt>
 <dd></dd>
-<dt><strong>nhits_zdr, zdr_sun_est, std_zdr_sun_est,</strong></dt>
+<dt>nhits_zdr, zdr_sun_est, std_zdr_sun_est,</dt>
 <dd></dd>
 <dt><strong>sf_ref, ref_time</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tupple</span></dt>
 <dd><p class="first last">Each parameter is an array containing a time series of information on
@@ -3372,9 +3372,9 @@ a variable</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>A tupple containing the read values. None otherwise. The read values are</strong></dt>
+<dt>A tupple containing the read values. None otherwise. The read values are</dt>
 <dd></dd>
-<dt><strong>id, max_rank, nscans_Xband, time_start, time_end</strong></dt>
+<dt>id, max_rank, nscans_Xband, time_start, time_end</dt>
 <dd></dd>
 </dl>
 </td>
@@ -3436,7 +3436,7 @@ flash_dens</div></blockquote>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>A tupple containing the read values. None otherwise</strong></dt>
+<dt>A tupple containing the read values. None otherwise</dt>
 <dd></dd>
 </dl>
 </td>
@@ -3499,7 +3499,7 @@ Dvel_y [km/h]</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>A tupple containing the read values. None otherwise</strong></dt>
+<dt>A tupple containing the read values. None otherwise</dt>
 <dd></dd>
 </dl>
 </td>
@@ -3524,11 +3524,11 @@ Dvel_y [km/h]</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>A tupple containing the read values. None otherwise. The read values are</strong></dt>
+<dt>A tupple containing the read values. None otherwise. The read values are</dt>
 <dd></dd>
-<dt><strong>trt_time, id, rank, nscans, azi, rng, lat, lon, ell_l, ell_s, ell_or,</strong></dt>
+<dt>trt_time, id, rank, nscans, azi, rng, lat, lon, ell_l, ell_s, ell_or,</dt>
 <dd></dd>
-<dt><strong>vel_x, vel_y, det</strong></dt>
+<dt>vel_x, vel_y, det</dt>
 <dd></dd>
 </dl>
 </td>
@@ -3553,11 +3553,11 @@ Dvel_y [km/h]</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>A tupple containing the read values. None otherwise. The read values are</strong></dt>
+<dt>A tupple containing the read values. None otherwise. The read values are</dt>
 <dd></dd>
-<dt><strong>trt_time, id, rank, scan_time, azi, rng, lat, lon, ell_l, ell_s, ell_or,</strong></dt>
+<dt>trt_time, id, rank, scan_time, azi, rng, lat, lon, ell_l, ell_s, ell_or,</dt>
 <dd></dd>
-<dt><strong>vel_x, vel_y, det</strong></dt>
+<dt>vel_x, vel_y, det</dt>
 <dd></dd>
 </dl>
 </td>
@@ -3582,11 +3582,11 @@ Dvel_y [km/h]</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>A tupple containing the read values. None otherwise. The read values are</strong></dt>
+<dt>A tupple containing the read values. None otherwise. The read values are</dt>
 <dd></dd>
-<dt><strong>trt_time, id, rank, nscans, azi, rng, lat, lon, ell_l, ell_s, ell_or,</strong></dt>
+<dt>trt_time, id, rank, nscans, azi, rng, lat, lon, ell_l, ell_s, ell_or,</dt>
 <dd></dd>
-<dt><strong>vel_x, vel_y, det</strong></dt>
+<dt>vel_x, vel_y, det</dt>
 <dd></dd>
 </dl>
 </td>
@@ -3611,11 +3611,11 @@ Dvel_y [km/h]</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>A tupple containing the read values. None otherwise. The read values are</strong></dt>
+<dt>A tupple containing the read values. None otherwise. The read values are</dt>
 <dd></dd>
-<dt><strong>trt_time, id, rank, scan_time, azi, rng, lat, lon, ell_l, ell_s, ell_or,</strong></dt>
+<dt>trt_time, id, rank, scan_time, azi, rng, lat, lon, ell_l, ell_s, ell_or,</dt>
 <dd></dd>
-<dt><strong>vel_x, vel_y, det</strong></dt>
+<dt>vel_x, vel_y, det</dt>
 <dd></dd>
 </dl>
 </td>
@@ -3648,7 +3648,7 @@ max rank</div></blockquote>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>A tupple containing the read values. None otherwise</strong></dt>
+<dt>A tupple containing the read values. None otherwise</dt>
 <dd></dd>
 </dl>
 </td>
@@ -3710,7 +3710,7 @@ Dvel_y [km/h]</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>A tupple containing the read values. None otherwise</strong></dt>
+<dt>A tupple containing the read values. None otherwise</dt>
 <dd></dd>
 </dl>
 </td>
@@ -3768,7 +3768,7 @@ Dvel_y [km/h]</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>A tupple containing the read values. None otherwise</strong></dt>
+<dt>A tupple containing the read values. None otherwise</dt>
 <dd></dd>
 </dl>
 </td>

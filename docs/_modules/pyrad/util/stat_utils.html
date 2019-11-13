@@ -71,10 +71,42 @@
 
 
 <div class="viewcode-block" id="quantiles_weighted"><a class="viewcode-back" href="../../../util.html#pyrad.util.quantiles_weighted">[docs]</a><span class="k">def</span> <span class="nf">quantiles_weighted</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">weight_vector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">]),</span>
-                       <span class="n">weight_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_is_log</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                       <span class="n">weight_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_is_log</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                       <span class="n">nvalid_min</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Given a set of values and weights, compute the weighted</span>
-<span class="sd">    quantile(s).</span>
+<span class="sd">    Given a set of values and weights, compute the weighted quantile(s) and</span>
+<span class="sd">    average.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    values : array of floats</span>
+<span class="sd">        Array containing the values. Can be 2-dimensional</span>
+<span class="sd">    weight_vector : array of floats or None</span>
+<span class="sd">        array containing the weights to apply. If None it will be an array</span>
+<span class="sd">        of ones (uniform weight). If values is a 2D array it will be repeated</span>
+<span class="sd">        for the second dimension</span>
+<span class="sd">    quantiles : array of floats</span>
+<span class="sd">        The quantiles to be computed</span>
+<span class="sd">    weight_threshold : float or None</span>
+<span class="sd">        If weight_threshold is set quantiles will be computed only if the</span>
+<span class="sd">        total weight (sum of the weights of valid data) exceeds this threshold</span>
+<span class="sd">    data_is_log : Bool</span>
+<span class="sd">        If true the values will be considered to be in logarithmic scale and</span>
+<span class="sd">        transformed into linear scale before computing the quantiles and</span>
+<span class="sd">        average</span>
+<span class="sd">    nvalid_min : int</span>
+<span class="sd">        Minimum number of valid points to consider the computation valid</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    avg : float</span>
+<span class="sd">        the weighted average</span>
+<span class="sd">    quants : array of floats</span>
+<span class="sd">        an array containing the weighted quantiles in the same order as the</span>
+<span class="sd">        quantiles vector</span>
+<span class="sd">    nvalid : int</span>
+<span class="sd">        Number of valid points in the computation of the statistics</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="n">weight_vector</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -96,7 +128,7 @@
     <span class="c1"># there must be more than 3 valid values</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
     <span class="n">nvalid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">mask</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">nvalid</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">nvalid</span> <span class="o">&lt;</span> <span class="n">nvalid_min</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">quantiles</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="c1"># mask weights in non-valid data</span>

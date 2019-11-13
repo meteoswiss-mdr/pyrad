@@ -176,7 +176,7 @@
 <td>Projects radar data to a regular vertical grid</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.quantiles_weighted" title="pyrad.util.quantiles_weighted"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quantiles_weighted</span></code></a>(values[,&nbsp;weight_vector,&nbsp;…])</td>
-<td>Given a set of values and weights, compute the weighted quantile(s).</td>
+<td>Given a set of values and weights, compute the weighted quantile(s) and average.</td>
 </tr>
 </tbody>
 </table>
@@ -1255,9 +1255,56 @@ None.</p>
 
 <dl class="function">
 <dt id="pyrad.util.quantiles_weighted">
-<code class="descclassname">pyrad.util.</code><code class="descname">quantiles_weighted</code><span class="sig-paren">(</span><em>values</em>, <em>weight_vector=None</em>, <em>quantiles=array([0.5])</em>, <em>weight_threshold=None</em>, <em>data_is_log=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/stat_utils.html#quantiles_weighted"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.quantiles_weighted" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a set of values and weights, compute the weighted
-quantile(s).</p>
+<code class="descclassname">pyrad.util.</code><code class="descname">quantiles_weighted</code><span class="sig-paren">(</span><em>values</em>, <em>weight_vector=None</em>, <em>quantiles=array([0.5])</em>, <em>weight_threshold=None</em>, <em>data_is_log=False</em>, <em>nvalid_min=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/stat_utils.html#quantiles_weighted"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.quantiles_weighted" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a set of values and weights, compute the weighted quantile(s) and
+average.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>values</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of floats</span></dt>
+<dd><p class="first last">Array containing the values. Can be 2-dimensional</p>
+</dd>
+<dt><strong>weight_vector</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of floats or None</span></dt>
+<dd><p class="first last">array containing the weights to apply. If None it will be an array
+of ones (uniform weight). If values is a 2D array it will be repeated
+for the second dimension</p>
+</dd>
+<dt><strong>quantiles</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of floats</span></dt>
+<dd><p class="first last">The quantiles to be computed</p>
+</dd>
+<dt><strong>weight_threshold</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
+<dd><p class="first last">If weight_threshold is set quantiles will be computed only if the
+total weight (sum of the weights of valid data) exceeds this threshold</p>
+</dd>
+<dt><strong>data_is_log</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Bool</span></dt>
+<dd><p class="first last">If true the values will be considered to be in logarithmic scale and
+transformed into linear scale before computing the quantiles and
+average</p>
+</dd>
+<dt><strong>nvalid_min</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Minimum number of valid points to consider the computation valid</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>avg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">the weighted average</p>
+</dd>
+<dt><strong>quants</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of floats</span></dt>
+<dd><p class="first last">an array containing the weighted quantiles in the same order as the
+quantiles vector</p>
+</dd>
+<dt><strong>nvalid</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Number of valid points in the computation of the statistics</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">

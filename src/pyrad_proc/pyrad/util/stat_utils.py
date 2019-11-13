@@ -15,10 +15,42 @@ import numpy as np
 
 
 def quantiles_weighted(values, weight_vector=None, quantiles=np.array([0.5]),
-                       weight_threshold=None, data_is_log=False):
+                       weight_threshold=None, data_is_log=False,
+                       nvalid_min=3):
     """
-    Given a set of values and weights, compute the weighted
-    quantile(s).
+    Given a set of values and weights, compute the weighted quantile(s) and
+    average.
+
+    Parameters
+    ----------
+    values : array of floats
+        Array containing the values. Can be 2-dimensional
+    weight_vector : array of floats or None
+        array containing the weights to apply. If None it will be an array
+        of ones (uniform weight). If values is a 2D array it will be repeated
+        for the second dimension
+    quantiles : array of floats
+        The quantiles to be computed
+    weight_threshold : float or None
+        If weight_threshold is set quantiles will be computed only if the
+        total weight (sum of the weights of valid data) exceeds this threshold
+    data_is_log : Bool
+        If true the values will be considered to be in logarithmic scale and
+        transformed into linear scale before computing the quantiles and
+        average
+    nvalid_min : int
+        Minimum number of valid points to consider the computation valid
+
+    Returns
+    -------
+    avg : float
+        the weighted average
+    quants : array of floats
+        an array containing the weighted quantiles in the same order as the
+        quantiles vector
+    nvalid : int
+        Number of valid points in the computation of the statistics
+
     """
 
     if weight_vector is not None:
@@ -40,7 +72,7 @@ def quantiles_weighted(values, weight_vector=None, quantiles=np.array([0.5]),
     # there must be more than 3 valid values
     mask = np.ma.getmaskarray(values)
     nvalid = np.count_nonzero(np.logical_not(mask))
-    if nvalid < 3:
+    if nvalid < nvalid_min:
         return (None, np.array([None] * quantiles.size), None)
 
     # mask weights in non-valid data

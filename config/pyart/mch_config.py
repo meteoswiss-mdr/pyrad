@@ -365,6 +365,45 @@ absolute_beta = 'absolute_beta'
 
 cnr = 'cnr'
 
+avg_reflectivity = 'avg_reflectivity'
+npoints_reflectivity = 'npoints_reflectivity'
+quant05_reflectivity = 'quant05_reflectivity'
+quant10_reflectivity = 'quant10_reflectivity'
+quant20_reflectivity = 'quant20_reflectivity'
+quant50_reflectivity = 'quant50_reflectivity'
+quant80_reflectivity = 'quant80_reflectivity'
+quant90_reflectivity = 'quant90_reflectivity'
+quant95_reflectivity = 'quant95_reflectivity'
+
+avg_radar_estimated_rain_rate = 'avg_radar_estimated_rain_rate'
+npoints_radar_estimated_rain_rate = 'npoints_radar_estimated_rain_rate'
+quant05_radar_estimated_rain_rate = 'quant05_radar_estimated_rain_rate'
+quant10_radar_estimated_rain_rate = 'quant10_radar_estimated_rain_rate'
+quant20_radar_estimated_rain_rate = 'quant20_radar_estimated_rain_rate'
+quant50_radar_estimated_rain_rate = 'quant50_radar_estimated_rain_rate'
+quant80_radar_estimated_rain_rate = 'quant80_radar_estimated_rain_rate'
+quant90_radar_estimated_rain_rate = 'quant90_radar_estimated_rain_rate'
+quant95_radar_estimated_rain_rate = 'quant95_radar_estimated_rain_rate'
+
+avg_velocity = 'avg_velocity'
+npoints_velocity = 'npoints_velocity'
+quant05_velocity = 'quant05_velocity'
+quant10_velocity = 'quant10_velocity'
+quant20_velocity = 'quant20_velocity'
+quant50_velocity = 'quant50_velocity'
+quant80_velocity = 'quant80_velocity'
+quant90_velocity = 'quant90_velocity'
+quant95_velocity = 'quant95_velocity'
+
+avg_corrected_velocity = 'avg_corrected_velocity'
+npoints_corrected_velocity = 'npoints_corrected_velocity'
+quant05_corrected_velocity = 'quant05_corrected_velocity'
+quant10_corrected_velocity = 'quant10_corrected_velocity'
+quant20_corrected_velocity = 'quant20_corrected_velocity'
+quant50_corrected_velocity = 'quant50_corrected_velocity'
+quant80_corrected_velocity = 'quant80_corrected_velocity'
+quant90_corrected_velocity = 'quant90_corrected_velocity'
+quant95_corrected_velocity = 'quant95_corrected_velocity'
 
 
 # End of Simple Configuration section
@@ -637,7 +676,43 @@ DEFAULT_FIELD_NAMES = {
     'atmospherical_structures_type': atmospherical_structures_type,
     'relative_beta': relative_beta,
     'absolute_beta': absolute_beta,
-    'cnr': cnr
+    'cnr': cnr,
+    'avg_reflectivity': avg_reflectivity,
+    'npoints_reflectivity': npoints_reflectivity,
+    'quant05_reflectivity': quant05_reflectivity,
+    'quant10_reflectivity': quant10_reflectivity,
+    'quant20_reflectivity': quant20_reflectivity,
+    'quant50_reflectivity': quant50_reflectivity,
+    'quant80_reflectivity': quant80_reflectivity,
+    'quant90_reflectivity': quant90_reflectivity,
+    'quant95_reflectivity': quant95_reflectivity,
+    'avg_radar_estimated_rain_rate': avg_radar_estimated_rain_rate,
+    'npoints_radar_estimated_rain_rate': npoints_radar_estimated_rain_rate,
+    'quant05_radar_estimated_rain_rate': quant05_radar_estimated_rain_rate,
+    'quant10_radar_estimated_rain_rate': quant10_radar_estimated_rain_rate,
+    'quant20_radar_estimated_rain_rate': quant20_radar_estimated_rain_rate,
+    'quant50_radar_estimated_rain_rate': quant50_radar_estimated_rain_rate,
+    'quant80_radar_estimated_rain_rate': quant80_radar_estimated_rain_rate,
+    'quant90_radar_estimated_rain_rate': quant90_radar_estimated_rain_rate,
+    'quant95_radar_estimated_rain_rate': quant95_radar_estimated_rain_rate,
+    'avg_velocity': avg_velocity,
+    'npoints_velocity': npoints_velocity,
+    'quant05_velocity': quant05_velocity,
+    'quant10_velocity': quant10_velocity,
+    'quant20_velocity': quant20_velocity,
+    'quant50_velocity': quant50_velocity,
+    'quant80_velocity': quant80_velocity,
+    'quant90_velocity': quant90_velocity,
+    'quant95_velocity': quant95_velocity,
+    'avg_corrected_velocity': avg_corrected_velocity,
+    'npoints_corrected_velocity': npoints_corrected_velocity,
+    'quant05_corrected_velocity': quant05_corrected_velocity,
+    'quant10_corrected_velocity': quant10_corrected_velocity,
+    'quant20_corrected_velocity': quant20_corrected_velocity,
+    'quant50_corrected_velocity': quant50_corrected_velocity,
+    'quant80_corrected_velocity': quant80_corrected_velocity,
+    'quant90_corrected_velocity': quant90_corrected_velocity,
+    'quant95_corrected_velocity': quant95_corrected_velocity
 }
 
 
@@ -1001,6 +1076,78 @@ DEFAULT_METADATA = {
         'add_offset': -32.,
         '_Write_as_dtype': 'uint8'},
 
+    avg_reflectivity: {
+        'units': 'dBZ',
+        'standard_name': 'horizontal_reflectivity',
+        'long_name': 'Horizontal Reflectivity',
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 0.5,
+        'add_offset': -32.,
+        '_Write_as_dtype': 'uint8'},
+
+    quant05_reflectivity: {
+        'units': 'dBZ',
+        'standard_name': 'horizontal_reflectivity',
+        'long_name': 'Horizontal Reflectivity',
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 0.5,
+        'add_offset': -32.,
+        '_Write_as_dtype': 'uint8'},
+
+    quant10_reflectivity: {
+        'units': 'dBZ',
+        'standard_name': 'horizontal_reflectivity',
+        'long_name': 'Horizontal Reflectivity',
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 0.5,
+        'add_offset': -32.,
+        '_Write_as_dtype': 'uint8'},
+
+    quant20_reflectivity: {
+        'units': 'dBZ',
+        'standard_name': 'horizontal_reflectivity',
+        'long_name': 'Horizontal Reflectivity',
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 0.5,
+        'add_offset': -32.,
+        '_Write_as_dtype': 'uint8'},
+
+    quant50_reflectivity: {
+        'units': 'dBZ',
+        'standard_name': 'horizontal_reflectivity',
+        'long_name': 'Horizontal Reflectivity',
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 0.5,
+        'add_offset': -32.,
+        '_Write_as_dtype': 'uint8'},
+
+    quant80_reflectivity: {
+        'units': 'dBZ',
+        'standard_name': 'horizontal_reflectivity',
+        'long_name': 'Horizontal Reflectivity',
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 0.5,
+        'add_offset': -32.,
+        '_Write_as_dtype': 'uint8'},
+
+    quant90_reflectivity: {
+        'units': 'dBZ',
+        'standard_name': 'horizontal_reflectivity',
+        'long_name': 'Horizontal Reflectivity',
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 0.5,
+        'add_offset': -32.,
+        '_Write_as_dtype': 'uint8'},
+
+    quant95_reflectivity: {
+        'units': 'dBZ',
+        'standard_name': 'horizontal_reflectivity',
+        'long_name': 'Horizontal Reflectivity',
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 0.5,
+        'add_offset': -32.,
+        '_Write_as_dtype': 'uint8'},
+
     bird_reflectivity: {
         'units': 'dBZ',
         'standard_name': 'bird_reflectivity',
@@ -1152,6 +1299,102 @@ DEFAULT_METADATA = {
         'units': 'm/s',
         'standard_name': 'mean_Doppler_velocity',
         'long_name': 'Unfiltered mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    avg_velocity: {
+        'units': 'm/s',
+        'standard_name': 'mean_Doppler_velocity',
+        'long_name': 'Mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    quant05_velocity: {
+        'units': 'm/s',
+        'standard_name': 'mean_Doppler_velocity',
+        'long_name': 'Mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    quant10_velocity: {
+        'units': 'm/s',
+        'standard_name': 'mean_Doppler_velocity',
+        'long_name': 'Mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    quant20_velocity: {
+        'units': 'm/s',
+        'standard_name': 'mean_Doppler_velocity',
+        'long_name': 'Mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    quant50_velocity: {
+        'units': 'm/s',
+        'standard_name': 'mean_Doppler_velocity',
+        'long_name': 'Mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    quant80_velocity: {
+        'units': 'm/s',
+        'standard_name': 'mean_Doppler_velocity',
+        'long_name': 'Mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    quant90_velocity: {
+        'units': 'm/s',
+        'standard_name': 'mean_Doppler_velocity',
+        'long_name': 'Mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    quant95_velocity: {
+        'units': 'm/s',
+        'standard_name': 'mean_Doppler_velocity',
+        'long_name': 'Mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    avg_corrected_velocity: {
+        'units': 'm/s',
+        'standard_name': 'mean_Doppler_velocity',
+        'long_name': 'Mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    quant05_corrected_velocity: {
+        'units': 'm/s',
+        'standard_name': 'mean_Doppler_velocity',
+        'long_name': 'Mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    quant10_corrected_velocity: {
+        'units': 'm/s',
+        'standard_name': 'mean_Doppler_velocity',
+        'long_name': 'Mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    quant20_corrected_velocity: {
+        'units': 'm/s',
+        'standard_name': 'mean_Doppler_velocity',
+        'long_name': 'Mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    quant50_corrected_velocity: {
+        'units': 'm/s',
+        'standard_name': 'mean_Doppler_velocity',
+        'long_name': 'Mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    quant80_corrected_velocity: {
+        'units': 'm/s',
+        'standard_name': 'mean_Doppler_velocity',
+        'long_name': 'Mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    quant90_corrected_velocity: {
+        'units': 'm/s',
+        'standard_name': 'mean_Doppler_velocity',
+        'long_name': 'Mean Doppler velocity',
+        'coordinates': 'elevation azimuth range'},
+
+    quant95_corrected_velocity: {
+        'units': 'm/s',
+        'standard_name': 'mean_Doppler_velocity',
+        'long_name': 'Mean Doppler velocity',
         'coordinates': 'elevation azimuth range'},
 
     dealiased_velocity: {
@@ -1761,6 +2004,102 @@ DEFAULT_METADATA = {
     corrected_radar_estimated_rain_rate: {
         'units': 'mm/h',
         'standard_name': 'corrected_radar_estimated_rain_rate',
+        'long_name': 'Radar estimated rain rate',
+        'labels': ['0.', '0.4', '0.63', '1.', '1.6', '2.5', '4.0', '6.3',
+                   '10.', '16.', '25.', '40.', '63.', '100.', '160.', '250.'],
+        'ticks': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
+                  40., 63., 100., 160., 250.],
+        'boundaries': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
+                       40., 63., 100., 160., 250., 500.],
+        'coordinates': 'elevation azimuth range'},
+
+    avg_radar_estimated_rain_rate: {
+        'units': 'mm/h',
+        'standard_name': 'radar_estimated_rain_rate',
+        'long_name': 'Radar estimated rain rate',
+        'labels': ['0.', '0.4', '0.63', '1.', '1.6', '2.5', '4.0', '6.3',
+                   '10.', '16.', '25.', '40.', '63.', '100.', '160.', '250.'],
+        'ticks': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
+                  40., 63., 100., 160., 250.],
+        'boundaries': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
+                       40., 63., 100., 160., 250., 500.],
+        'coordinates': 'elevation azimuth range'},
+
+    quant05_radar_estimated_rain_rate: {
+        'units': 'mm/h',
+        'standard_name': 'radar_estimated_rain_rate',
+        'long_name': 'Radar estimated rain rate',
+        'labels': ['0.', '0.4', '0.63', '1.', '1.6', '2.5', '4.0', '6.3',
+                   '10.', '16.', '25.', '40.', '63.', '100.', '160.', '250.'],
+        'ticks': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
+                  40., 63., 100., 160., 250.],
+        'boundaries': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
+                       40., 63., 100., 160., 250., 500.],
+        'coordinates': 'elevation azimuth range'},
+
+    quant10_radar_estimated_rain_rate: {
+        'units': 'mm/h',
+        'standard_name': 'radar_estimated_rain_rate',
+        'long_name': 'Radar estimated rain rate',
+        'labels': ['0.', '0.4', '0.63', '1.', '1.6', '2.5', '4.0', '6.3',
+                   '10.', '16.', '25.', '40.', '63.', '100.', '160.', '250.'],
+        'ticks': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
+                  40., 63., 100., 160., 250.],
+        'boundaries': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
+                       40., 63., 100., 160., 250., 500.],
+        'coordinates': 'elevation azimuth range'},
+
+    quant20_radar_estimated_rain_rate: {
+        'units': 'mm/h',
+        'standard_name': 'radar_estimated_rain_rate',
+        'long_name': 'Radar estimated rain rate',
+        'labels': ['0.', '0.4', '0.63', '1.', '1.6', '2.5', '4.0', '6.3',
+                   '10.', '16.', '25.', '40.', '63.', '100.', '160.', '250.'],
+        'ticks': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
+                  40., 63., 100., 160., 250.],
+        'boundaries': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
+                       40., 63., 100., 160., 250., 500.],
+        'coordinates': 'elevation azimuth range'},
+
+    quant50_radar_estimated_rain_rate: {
+        'units': 'mm/h',
+        'standard_name': 'radar_estimated_rain_rate',
+        'long_name': 'Radar estimated rain rate',
+        'labels': ['0.', '0.4', '0.63', '1.', '1.6', '2.5', '4.0', '6.3',
+                   '10.', '16.', '25.', '40.', '63.', '100.', '160.', '250.'],
+        'ticks': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
+                  40., 63., 100., 160., 250.],
+        'boundaries': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
+                       40., 63., 100., 160., 250., 500.],
+        'coordinates': 'elevation azimuth range'},
+
+    quant80_radar_estimated_rain_rate: {
+        'units': 'mm/h',
+        'standard_name': 'radar_estimated_rain_rate',
+        'long_name': 'Radar estimated rain rate',
+        'labels': ['0.', '0.4', '0.63', '1.', '1.6', '2.5', '4.0', '6.3',
+                   '10.', '16.', '25.', '40.', '63.', '100.', '160.', '250.'],
+        'ticks': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
+                  40., 63., 100., 160., 250.],
+        'boundaries': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
+                       40., 63., 100., 160., 250., 500.],
+        'coordinates': 'elevation azimuth range'},
+
+    quant90_radar_estimated_rain_rate: {
+        'units': 'mm/h',
+        'standard_name': 'radar_estimated_rain_rate',
+        'long_name': 'Radar estimated rain rate',
+        'labels': ['0.', '0.4', '0.63', '1.', '1.6', '2.5', '4.0', '6.3',
+                   '10.', '16.', '25.', '40.', '63.', '100.', '160.', '250.'],
+        'ticks': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
+                  40., 63., 100., 160., 250.],
+        'boundaries': [0., 0.4, 0.63, 1., 1.6, 2.5, 4.0, 6.3, 10., 16., 25.,
+                       40., 63., 100., 160., 250., 500.],
+        'coordinates': 'elevation azimuth range'},
+
+    quant95_radar_estimated_rain_rate: {
+        'units': 'mm/h',
+        'standard_name': 'radar_estimated_rain_rate',
         'long_name': 'Radar estimated rain rate',
         'labels': ['0.', '0.4', '0.63', '1.', '1.6', '2.5', '4.0', '6.3',
                    '10.', '16.', '25.', '40.', '63.', '100.', '160.', '250.'],
@@ -2963,6 +3302,14 @@ DEFAULT_FIELD_COLORMAP = {
     spectral_reflectivity_vv: 'pyart_NWSRef',
     unfiltered_spectral_reflectivity_hh: 'pyart_NWSRef',
     unfiltered_spectral_reflectivity_vv: 'pyart_NWSRef',
+    avg_reflectivity: 'pyart_NWSRef',
+    quant05_reflectivity: 'pyart_NWSRef',
+    quant10_reflectivity: 'pyart_NWSRef',
+    quant20_reflectivity: 'pyart_NWSRef',
+    quant50_reflectivity: 'pyart_NWSRef',
+    quant80_reflectivity: 'pyart_NWSRef',
+    quant90_reflectivity: 'pyart_NWSRef',
+    quant95_reflectivity: 'pyart_NWSRef',
 
     signal_to_noise_ratio: 'pyart_Carbone17',
     signal_to_noise_ratio_hh: 'pyart_Carbone17',
@@ -3004,6 +3351,22 @@ DEFAULT_FIELD_COLORMAP = {
     velocity_difference: 'pyart_BuDRd18',
     wind_speed: 'pyart_NWSRef',
     wind_direction: 'pyart_Wild25',
+    avg_velocity: 'pyart_BuDRd18',
+    quant05_velocity: 'pyart_BuDRd18',
+    quant10_velocity: 'pyart_BuDRd18',
+    quant20_velocity: 'pyart_BuDRd18',
+    quant50_velocity: 'pyart_BuDRd18',
+    quant80_velocity: 'pyart_BuDRd18',
+    quant90_velocity: 'pyart_BuDRd18',
+    quant95_velocity: 'pyart_BuDRd18',
+    avg_corrected_velocity: 'pyart_BuDRd18',
+    quant05_corrected_velocity: 'pyart_BuDRd18',
+    quant10_corrected_velocity: 'pyart_BuDRd18',
+    quant20_corrected_velocity: 'pyart_BuDRd18',
+    quant50_corrected_velocity: 'pyart_BuDRd18',
+    quant80_corrected_velocity: 'pyart_BuDRd18',
+    quant90_corrected_velocity: 'pyart_BuDRd18',
+    quant95_corrected_velocity: 'pyart_BuDRd18',
 
     spectrum_width: 'pyart_NWS_SPW',
     corrected_spectrum_width: 'pyart_NWS_SPW',
@@ -3059,6 +3422,14 @@ DEFAULT_FIELD_COLORMAP = {
     rain_rate: 'pyart_RRate11',
     radar_estimated_rain_rate: 'pyart_RRate11',
     corrected_radar_estimated_rain_rate: 'pyart_RRate11',
+    avg_radar_estimated_rain_rate: 'pyart_RRate11',
+    quant05_radar_estimated_rain_rate: 'pyart_RRate11',
+    quant10_radar_estimated_rain_rate: 'pyart_RRate11',
+    quant20_radar_estimated_rain_rate: 'pyart_RRate11',
+    quant50_radar_estimated_rain_rate: 'pyart_RRate11',
+    quant80_radar_estimated_rain_rate: 'pyart_RRate11',
+    quant90_radar_estimated_rain_rate: 'pyart_RRate11',
+    quant95_radar_estimated_rain_rate: 'pyart_RRate11',
     rainfall_accumulation: 'pyart_RRate11',
 
     sun_hit_h: 'pyart_LangRainbow12',
@@ -3131,6 +3502,14 @@ DEFAULT_FIELD_COLORMAP = {
 DEFAULT_FIELD_LIMITS = {
     # field name : limits
     reflectivity: (-30., 75.),
+    avg_reflectivity: (-30., 75.),
+    quant05_reflectivity: (-30., 75.),
+    quant10_reflectivity: (-30., 75.),
+    quant20_reflectivity: (-30., 75.),
+    quant50_reflectivity: (-30., 75.),
+    quant80_reflectivity: (-30., 75.),
+    quant90_reflectivity: (-30., 75.),
+    quant95_reflectivity: (-30., 75.),
     bird_reflectivity: (-30., 75.),
     corrected_reflectivity: (-30., 75.),
     total_power: (-30., 75.),
@@ -3167,6 +3546,22 @@ DEFAULT_FIELD_LIMITS = {
     sun_est_differential_reflectivity: (-2., 2.),
 
     velocity: velocity_limit,
+    avg_velocity: velocity_limit,
+    quant05_velocity: velocity_limit,
+    quant10_velocity: velocity_limit,
+    quant20_velocity: velocity_limit,
+    quant50_velocity: velocity_limit,
+    quant80_velocity: velocity_limit,
+    quant90_velocity: velocity_limit,
+    quant95_velocity: velocity_limit,
+    avg_corrected_velocity: velocity_limit,
+    quant05_corrected_velocity: velocity_limit,
+    quant10_corrected_velocity: velocity_limit,
+    quant20_corrected_velocity: velocity_limit,
+    quant50_corrected_velocity: velocity_limit,
+    quant80_corrected_velocity: velocity_limit,
+    quant90_corrected_velocity: velocity_limit,
+    quant95_corrected_velocity: velocity_limit,
     corrected_velocity: velocity_limit,
     unfiltered_velocity: velocity_limit,
     velocity_vv: velocity_limit,
@@ -3296,8 +3691,8 @@ DEFAULT_FIELD_LIMITS = {
     'DBZ_K': (-10., 65.),
     'reflectivity_horizontal': (-10., 65.),
     'corr_reflectivity': (-10., 65.),
-    
-    
+
+
     # radial_wind_speed: 'pyart_BuDRd18',
     #radial_wind_speed_ci:
     #radial_wind_speed_status:

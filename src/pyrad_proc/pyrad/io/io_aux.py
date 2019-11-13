@@ -1655,7 +1655,7 @@ def get_fieldname_pyart(datatype):
         field_name = 'LDRgc'
     elif datatype == 'NPKgc':  # Number of peaks
         field_name = 'NPKgc'
-        
+
     elif datatype == 'SNRg':
         field_name = 'SNRg'
     elif datatype == 'VELg':
@@ -1751,13 +1751,90 @@ def get_fieldname_pyart(datatype):
 
     elif datatype == 'SNRcx':
         field_name = 'SNRcx'
-        
+
     elif datatype == 'SNRCorFaCo':
         # Factor to correct Co-channel SNR based on RX calibration measurement
         # by noise source
         field_name = 'SNRCorFaCo'
     elif datatype == 'SNRCorFaCo':
         field_name = 'SNRCorFaCo'
+
+    # quantiles and averages
+    elif datatype == 'avgdBZ':
+        field_name = 'avg_reflectivity'
+    elif datatype == 'NdBZ':
+        field_name = 'npoints_reflectivity'
+    elif datatype == 'quant05dBZ':
+        field_name = 'quant05_reflectivity'
+    elif datatype == 'quant10dBZ':
+        field_name = 'quant10_reflectivity'
+    elif datatype == 'quant20dBZ':
+        field_name = 'quant20_reflectivity'
+    elif datatype == 'quant50dBZ':
+        field_name = 'quant50_reflectivity'
+    elif datatype == 'quant80dBZ':
+        field_name = 'quant80_reflectivity'
+    elif datatype == 'quant90dBZ':
+        field_name = 'quant90_reflectivity'
+    elif datatype == 'quant95dBZ':
+        field_name = 'quant95_reflectivity'
+
+    elif datatype == 'avgRR':
+        field_name = 'avg_radar_estimated_rain_rate'
+    elif datatype == 'NRR':
+        field_name = 'npoints_radar_estimated_rain_rate'
+    elif datatype == 'quant05RR':
+        field_name = 'quant05_radar_estimated_rain_rate'
+    elif datatype == 'quant10RR':
+        field_name = 'quant10_radar_estimated_rain_rate'
+    elif datatype == 'quant20RR':
+        field_name = 'quant20_radar_estimated_rain_rate'
+    elif datatype == 'quant50RR':
+        field_name = 'quant50_radar_estimated_rain_rate'
+    elif datatype == 'quant80RR':
+        field_name = 'quant80_radar_estimated_rain_rate'
+    elif datatype == 'quant90RR':
+        field_name = 'quant90_radar_estimated_rain_rate'
+    elif datatype == 'quant95RR':
+        field_name = 'quant95_radar_estimated_rain_rate'
+
+    elif datatype == 'avgV':
+        field_name = 'avg_velocity'
+    elif datatype == 'NV':
+        field_name = 'npoints_velocity'
+    elif datatype == 'quant05V':
+        field_name = 'quant05_velocity'
+    elif datatype == 'quant10V':
+        field_name = 'quant10_velocity'
+    elif datatype == 'quant20V':
+        field_name = 'quant20_velocity'
+    elif datatype == 'quant50V':
+        field_name = 'quant50_velocity'
+    elif datatype == 'quant80V':
+        field_name = 'quant80_velocity'
+    elif datatype == 'quant90V':
+        field_name = 'quant90_velocity'
+    elif datatype == 'quant95V':
+        field_name = 'quant95_velocity'
+
+    elif datatype == 'avgVc':
+        field_name = 'avg_corrected_velocity'
+    elif datatype == 'NVc':
+        field_name = 'npoints_corrected_velocity'
+    elif datatype == 'quant05Vc':
+        field_name = 'quant05_corrected_velocity'
+    elif datatype == 'quant10Vc':
+        field_name = 'quant10_corrected_velocity'
+    elif datatype == 'quant20Vc':
+        field_name = 'quant20_corrected_velocity'
+    elif datatype == 'quant50Vc':
+        field_name = 'quant50_corrected_velocity'
+    elif datatype == 'quant80Vc':
+        field_name = 'quant80_corrected_velocity'
+    elif datatype == 'quant90Vc':
+        field_name = 'quant90_corrected_velocity'
+    elif datatype == 'quant95Vc':
+        field_name = 'quant95_corrected_velocity'
 
     else:
         raise ValueError('ERROR: Unknown data type '+datatype)
