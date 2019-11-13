@@ -16,20 +16,30 @@ determined points or regions of interest.
     process_fixed_rng_span
     process_roi
     process_azimuthal_average
+    process_radar_resampling
+    _get_values_antenna_pattern
+    _create_target_radar
 
 """
 
 from copy import deepcopy
 from warnings import warn
 import numpy as np
+from scipy.spatial import cKDTree
 
-import pyart
+from pyart.util import cut_radar, cross_section_rhi
+from pyart.config import get_metadata
+from pyart.core import Radar
 
 from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 from ..io.read_data_sensor import read_trt_traj_data
+from ..io.read_data_other import read_antenna_pattern
+from ..io.read_data_cosmo import _put_radar_in_swiss_coord
 from ..util.radar_utils import belongs_roi_indices, get_target_elevations
 from ..util.radar_utils import find_neighbour_gates, compute_directional_stats
 from ..util.radar_utils import get_fixed_rng_data
+from ..util.stat_utils import quantiles_weighted
+from ..proc.process_traj import _get_gates_antenna_pattern
 
 
 def get_process_func(dataset_type, dsname):
@@ -87,6 +97,7 @@ def get_process_func(dataset_type, dsname):
                 'POL_VARIABLES': process_pol_variables
                 'POL_VARIABLES_IQ': process_pol_variables_iq
                 'PWR': process_signal_power
+                'RADAR_RESAMPLING': process_radar_resampling
                 'RAINRATE': process_rainrate
                 'RAW': process_raw
                 'REFLECTIVITY': process_reflectivity
@@ -199,6 +210,8 @@ def get_process_func(dataset_type, dsname):
         func_name = process_raw
     elif dataset_type == 'AZI_AVG':
         func_name = process_azimuthal_average
+    elif dataset_type == 'RADAR_RESAMPLING':
+        func_name = 'process_radar_resampling'
     elif dataset_type == 'CCOR':
         func_name = 'process_ccor'
     elif dataset_type == 'GRID':
@@ -696,7 +709,7 @@ def process_fixed_rng_span(procstatus, dscfg, radar_list=None):
     azi_min = dscfg.get('azi_min', None)
     azi_max = dscfg.get('azi_max', None)
 
-    radar_aux = pyart.util.cut_radar(
+    radar_aux = cut_radar(
         radar, field_names, rng_min=rmin, rng_max=rmax, ele_min=ele_min,
         ele_max=ele_max, azi_min=azi_min, azi_max=azi_max)
 
@@ -967,7 +980,7 @@ def process_azimuthal_average(procstatus, dscfg, radar_list=None):
     # transform radar into ppi over the required elevation
     if radar_aux.scan_type == 'rhi':
         target_elevations, el_tol = get_target_elevations(radar_aux)
-        radar_ppi = pyart.util.cross_section_rhi(
+        radar_ppi = cross_section_rhi(
             radar_aux, target_elevations, el_tol=el_tol)
     elif radar_aux.scan_type == 'ppi':
         radar_ppi = radar_aux
@@ -1000,7 +1013,7 @@ def process_azimuthal_average(procstatus, dscfg, radar_list=None):
     fields_dict = dict()
     for field_name in field_names:
         fields_dict.update(
-            {field_name: pyart.config.get_metadata(field_name)})
+            {field_name: get_metadata(field_name)})
         fields_dict[field_name]['data'] = np.ma.masked_all(
             (radar_ppi.nsweeps, radar_ppi.ngates))
 
@@ -1038,3 +1051,622 @@ def process_azimuthal_average(procstatus, dscfg, radar_list=None):
     new_dataset = {'radar_out': radar_rhi}
 
     return new_dataset, ind_rad
+
+
+def process_radar_resampling(procstatus, dscfg, radar_list=None):
+    """
+    Resamples the radar data to mimic another radar with different geometry
+    and antenna pattern
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        datatype : list of string. Dataset keyword
+            The input data types
+        antennaType : str. Dataset keyword
+            Type of antenna of the radar we want to get the view from. Can
+            be AZIMUTH, ELEVATION, LOWBEAM, HIGHBEAM
+        par_azimuth_antenna : dict. Global ekyword
+            Dictionary containing the parameters of the PAR azimuth antenna,
+            i.e. name of the file with the antenna elevation pattern and fixed
+            antenna angle
+        par_elevation_antenna : dict. Global keyword
+            Dictionary containing the parameters of the PAR elevation antenna,
+            i.e. name of the file with the antenna azimuth pattern and fixed
+            antenna angle
+        asr_lowbeam_antenna : dict. Global keyword
+            Dictionary containing the parameters of the ASR low beam antenna,
+            i.e. name of the file with the antenna elevation pattern and fixed
+            antenna angle
+        asr_highbeam_antenna : dict. Global keyword
+            Dictionary containing the parameters of the ASR high beam antenna,
+            i.e. name of the file with the antenna elevation pattern and fixed
+            antenna angle
+        target_radar_pos : dict. Global keyword
+            Dictionary containing the latitude, longitude and altitude of
+            the radar we want to get the view from. If not specifying it will
+            assume the radar is collocated
+        change_antenna_pattern : Bool. Dataset keyword
+            If true the target radar has a different antenna pattern than the
+            observations radar
+        rhi_resolution : Bool. Dataset keyword
+            Resolution of the synthetic RHI used to compute the data as viewed
+            from the synthetic radar [deg]. Default 0.5
+        max_altitude : float. Dataset keyword
+            Max altitude of the data to use when computing the view from the
+            synthetic radar [m MSL]. Default 12000.
+        latlon_tol : float. Dataset keyword
+            The tolerance in latitude and longitude to determine which synthetic
+            radar gates are co-located with real radar gates [deg]. Default 0.04
+        alt_tol : float. Datset keyword
+            The tolerance in altitude to determine which synthetic
+            radar gates are co-located with real radar gates [m]. Default 1000.
+        pattern_thres : float. Dataset keyword
+            The minimum of the sum of the weights given to each value in order
+            to consider the weighted quantile valid. It is related to the number
+            of valid data points
+        data_is_log : dict. Dataset keyword
+            Dictionary specifying for each field if it is in log (True) or
+            linear units (False). Default False
+        use_nans : dict. Dataset keyword
+            Dictionary specyfing whether the nans have to be used in the
+            computation of the statistics for each field. Default False
+        nan_value : dict. Dataset keyword
+            Dictionary with the value to use to substitute the NaN values when
+            computing the statistics of each field. Default 0
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : Trajectory object
+        dictionary containing the new radar
+    ind_rad : int
+        radar index
+    """
+
+    if procstatus != 1:
+        return None, None
+
+    # Process
+    field_names = []
+    datatypes = []
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+        field_names.append(get_fieldname_pyart(datatype))
+        datatypes.append(datatype)
+
+    ind_rad = int(radarnr[5:8])-1
+    if ((radar_list is None) or (radar_list[ind_rad] is None)):
+        warn('ERROR: No valid radar found')
+        return None, None
+    radar = deepcopy(radar_list[ind_rad])
+
+    if not dscfg['initialized']:
+        if 'antennaType' not in dscfg:
+            raise Exception("ERROR: Undefined 'antennaType' for dataset '%s'"
+                            % dscfg['dsname'])
+        if 'configpath' not in dscfg:
+            raise Exception("ERROR: Undefined 'configpath' for dataset '%s'"
+                            % dscfg['dsname'])
+        if 'target_radar_pos' not in dscfg:
+            radar_antenna_atsameplace = True
+            warn('No target radar position specified. ' +
+                 'The radars are assumed co-located')
+        else:
+            radar_antenna_atsameplace = False
+
+        if dscfg['antennaType'] == 'AZIMUTH':
+            is_azimuth_antenna = True
+            info = 'parAzAnt'
+            if 'par_azimuth_antenna' not in dscfg:
+                raise Exception("ERROR: Undefined 'par_azimuth_antenna' for"
+                                " dataset '%s'" % dscfg['dsname'])
+
+            patternfile = dscfg['configpath'] + 'antenna/' \
+                + dscfg['par_azimuth_antenna']['elPatternFile']
+            fixed_angle_val = dscfg['par_azimuth_antenna']['fixed_angle']
+
+        elif dscfg['antennaType'] == 'ELEVATION':
+            is_azimuth_antenna = False
+            info = 'parElAnt'
+            if 'par_elevation_antenna' not in dscfg:
+                raise Exception("ERROR: Undefined 'par_elevation_antenna' for"
+                                " dataset '%s'" % dscfg['dsname'])
+
+            patternfile = dscfg['configpath'] + 'antenna/' \
+                + dscfg['par_elevation_antenna']['azPatternFile']
+            fixed_angle_val = dscfg['par_elevation_antenna']['fixed_angle']
+
+        elif dscfg['antennaType'] == 'LOWBEAM':
+            is_azimuth_antenna = True
+            info = 'asrLowBeamAnt'
+            if 'asr_lowbeam_antenna' not in dscfg:
+                raise Exception("ERROR: Undefined 'asr_lowbeam_antenna' for"
+                                " dataset '%s'" % dscfg['dsname'])
+
+            patternfile = dscfg['configpath'] + 'antenna/' \
+                + dscfg['asr_lowbeam_antenna']['elPatternFile']
+            fixed_angle_val = dscfg['asr_lowbeam_antenna']['fixed_angle']
+
+        elif dscfg['antennaType'] == 'HIGHBEAM':
+            is_azimuth_antenna = True
+            info = 'asrHighBeamAnt'
+            if 'asr_highbeam_antenna' not in dscfg:
+                raise Exception("ERROR: Undefined 'asr_highbeam_antenna' for"
+                                " dataset '%s'" % dscfg['dsname'])
+
+            patternfile = dscfg['configpath'] + 'antenna/' \
+                + dscfg['asr_highbeam_antenna']['elPatternFile']
+            patternfile_low = dscfg['configpath'] + 'antenna/' \
+                + dscfg['asr_lowbeam_antenna']['elPatternFile']
+            fixed_angle_val = dscfg['asr_highbeam_antenna']['fixed_angle']
+        else:
+            raise Exception("ERROR: Unexpected antenna type '%s' for dataset"
+                            " '%s'" % (dscfg['antennaType'], dscfg['dsname']))
+
+        if isinstance(fixed_angle_val, float):
+            fixed_angle_val = [fixed_angle_val]
+
+        change_antenna_pattern = dscfg.get('change_antenna_pattern', True)
+
+        # Read dataset config parameters:
+        weight_threshold = dscfg.get('pattern_thres', 0.)
+
+        # Config parameters for processing when the weather radar and the
+        # antenna are not at the same place:
+        rhi_resolution = dscfg.get('rhi_resolution', 0.5)  # [deg]
+        max_altitude = dscfg.get('max_altitude', 12000.) # [m]
+        latlon_tol = dscfg.get('latlon_tol', 0.04)  # [deg]
+        alt_tol = dscfg.get('alt_tol', 1000.)  # [m]
+        quants = np.array(dscfg.get(
+            'quants', [0.05, 0.1, 0.2, 0.5, 0.8, 0.9, 0.95]))
+
+        target_radar = _create_target_radar(
+            radar, dscfg, fixed_angle_val, info, field_names,
+            change_antenna_pattern=change_antenna_pattern,
+            quantiles=100*quants)
+
+        # Get antenna pattern and make weight vector
+        try:
+            if info == 'asrHighBeamAnt':
+                antpattern = read_antenna_pattern(
+                    patternfile, linear=True, twoway=False)
+                antpattern_low = read_antenna_pattern(
+                    patternfile_low, linear=True, twoway=False)
+                antpattern['attenuation'] *= antpattern_low['attenuation']
+            else:
+                antpattern = read_antenna_pattern(patternfile, linear=True,
+                                                  twoway=True)
+        except:
+            raise
+
+        pattern_angles = antpattern['angle'] + fixed_angle_val[0]
+        if not is_azimuth_antenna:
+            pattern_angles[pattern_angles < 0] += 360.
+        pattern_angles[pattern_angles >= 360.] -= 360.
+
+        if radar_antenna_atsameplace:
+            if is_azimuth_antenna:
+                scan_angles = np.sort(np.unique(
+                    radar.elevation['data'].round(decimals=1)))
+            else:
+                scan_angles = np.sort(np.unique(
+                    radar.azimuth['data'].round(decimals=1)))
+        else:
+            scan_angles = np.arange(0, 90, rhi_resolution, dtype=float)
+
+        weightvec = np.empty(scan_angles.size, dtype=float)
+        for kk in range(scan_angles.size):
+            ind = np.argmin(np.abs(pattern_angles - scan_angles[kk]))
+            weightvec[kk] = antpattern['attenuation'][ind]
+
+        data_is_log = dict()
+        use_nans = dict()
+        nan_value = dict()
+        for datatype, field_name in zip(datatypes, field_names):
+            data_is_log.update({field_name: False})
+            if 'data_is_log' in dscfg:
+                if datatype in dscfg['data_is_log']:
+                    data_is_log[field_name] = (
+                        dscfg['data_is_log'][datatype] != 0)
+                else:
+                    warn('Units type for data type '+datatype +
+                         ' not specified. Assumed linear')
+
+            use_nans.update({field_name: False})
+            if 'use_nans' in dscfg:
+                if datatype in dscfg['use_nans']:
+                    use_nans[field_name] = (
+                        dscfg['use_nans'][datatype] != 0)
+                else:
+                    warn('Use of nans not specified for data type '+datatype +
+                         ' not specified. Assumed not used')
+
+            nan_value.update({field_name: 0.})
+            if 'nan_value' in dscfg:
+                if datatype in dscfg['nan_value']:
+                    nan_value[field_name] = dscfg['nan_value'][datatype]
+                else:
+                    warn('NaN value not specified for data type '+datatype +
+                         ' not specified. Assumed 0')
+
+        # Persistent data structure
+        trdict = dict({
+            'target_radar': target_radar,
+            'is_azimuth_antenna': is_azimuth_antenna,
+            'info': info,
+            'scan_angles': scan_angles,
+            'radar_antenna_atsameplace': radar_antenna_atsameplace,
+            'weightvec': weightvec,
+            'quantiles': quants,
+            'use_nans': use_nans,
+            'nan_value': nan_value,
+            'weight_threshold': weight_threshold,
+            'max_altitude': max_altitude,
+            'latlon_tol': latlon_tol,
+            'alt_tol': alt_tol,
+            'data_is_log': data_is_log,
+            'change_antenna_pattern': change_antenna_pattern})
+
+        dscfg['global_data'] = trdict
+        dscfg['initialized'] = True
+        # end init
+    else:
+        # init already done
+        trdict = dscfg['global_data']
+
+        # update time of target radar
+        trdict['target_radar'].time = deepcopy(radar.time)
+        time_data = np.sort(trdict['target_radar'].time['data'])
+        time_res = time_data[1]-time_data[0]
+        trdict['target_radar'].time['data'] = np.arange(
+            trdict['target_radar'].nrays)*time_res
+
+        # reset field values
+        for field_name in trdict['target_radar'].fields.keys():
+            if 'npoints' in field_name:
+                trdict['target_radar'].fields[field_name]['data'] = np.ma.zeros(
+                    (trdict['target_radar'].nrays, trdict['target_radar'].ngates),
+                    dtype=np.int32)
+                continue
+            trdict['target_radar'].fields[field_name]['data'] = np.ma.masked_all(
+                (trdict['target_radar'].nrays, trdict['target_radar'].ngates))
+
+    target_radar = _get_values_antenna_pattern(radar, trdict, field_names)
+
+    if target_radar is None:
+        return None, None
+
+    new_dataset = {'radar_out': target_radar}
+
+    return new_dataset, ind_rad
+
+
+def _get_values_antenna_pattern(radar, tadict, field_names):
+    """
+    Get the values of a synthetic radar
+
+    Parameters
+    ----------
+    radar : radar object
+        The radar volume with the data
+    tadict : dict
+        A dictionary containing parameters useful for radar re-sampling
+    field_names : list of str
+        list of names of the radar field
+
+    Returns
+    -------
+    target_radar : radar object
+        The synthetic radar
+
+    """
+    is_azimuth_antenna = tadict['is_azimuth_antenna']
+    scan_angles = tadict['scan_angles']
+    radar_antenna_atsameplace = tadict['radar_antenna_atsameplace']
+    nan_value = tadict['nan_value']
+    use_nans = tadict['use_nans']
+    weight_threshold = tadict['weight_threshold']
+    target_radar = tadict['target_radar']
+    max_altitude = tadict['max_altitude']
+    latlon_tol = tadict['latlon_tol']
+    alt_tol = tadict['alt_tol']
+    data_is_log = tadict['data_is_log']
+    change_antenna_pattern = tadict['change_antenna_pattern']
+
+    # find closest radar gate to target
+    x_radar, y_radar, z_radar = _put_radar_in_swiss_coord(radar)
+    x_target, y_target, z_target = _put_radar_in_swiss_coord(target_radar)
+
+    tree = cKDTree(
+        np.transpose(
+            (x_radar.flatten(), y_radar.flatten(), z_radar.flatten())),
+        compact_nodes=False, balanced_tree=False)
+    _, ind_vec = tree.query(np.transpose(
+        (x_target.flatten(), y_target.flatten(), z_target.flatten())), k=1)
+
+    if not change_antenna_pattern:
+        for field_name in field_names:
+            if field_name not in radar.fields:
+                warn('Field '+field_name+' not in observations radar object')
+                continue
+
+            values = radar.fields[field_name]['data'].flatten()
+            target_radar.fields[field_name]['data'][:] = values[ind_vec].reshape(
+                target_radar.nrays, target_radar.ngates)
+
+        return target_radar
+
+    # Find closest azimuth and elevation ray to target radar
+    ind_rngs = (ind_vec/radar.ngates).astype(int)
+    ind_rays = (ind_vec%radar.ngates).astype(int)
+
+    nsamples = target_radar.nrays*target_radar.ngates
+    for sample, (ind_ray, ind_rng) in enumerate(zip(ind_rngs, ind_rays)):
+        if radar_antenna_atsameplace:
+            # ==============================================================
+            # Radar and scanning antenna are at the SAME place
+            # ==============================================================
+
+            # ==============================================================
+            # Get sample at bin
+            if is_azimuth_antenna:
+                angles = radar.azimuth['data']
+                angles_scan = radar.elevation['data']
+                ray_angle = radar.azimuth['data'][ind_ray]
+            else:
+                angles = radar.elevation['data']
+                angles_scan = radar.azimuth['data']
+                ray_angle = radar.elevation['data'][ind_ray]
+
+            d_angle = np.abs(angles - ray_angle)
+            ray_inds = np.where(d_angle < 0.09)[0]
+            angles_sortind = np.argsort(angles_scan[ray_inds])
+
+            ray_inds = ray_inds[angles_sortind]
+            angles_sorted = angles_scan[ray_inds]
+
+            # Set default values
+            if ((scan_angles.size != angles_sorted.size) or
+                    (np.max(np.abs(scan_angles - angles_sorted)) > 0.1)):
+                warn("Scan angle mismatch!")
+                continue
+
+            w_vec = tadict['weightvec']
+            for field_name in field_names:
+                if field_name not in radar.fields:
+                    warn("Datatype '%s' not available in radar data" %
+                         field_name)
+                    continue
+                values = radar.fields[field_name]['data'][ray_inds, ind_rng]
+                if use_nans[field_name]:
+                    values_ma = np.ma.getmaskarray(values)
+                    values[values_ma] = nan_value[field_name]
+
+                try:
+                    (avg, qvals, nvals_valid) = quantiles_weighted(
+                        values,
+                        weight_vector=deepcopy(w_vec),
+                        quantiles=tadict['quantiles'],
+                        weight_threshold=weight_threshold,
+                        data_is_log=data_is_log[field_name])
+                except Exception as ee:
+                    warn(str(ee))
+                    continue
+
+                if avg is None:
+                    continue
+
+                # average field
+                target_radar.fields['avg_'+field_name]['data'][
+                    np.unravel_index(
+                        sample, (target_radar.nrays, target_radar.ngates))] = avg
+
+                # npoints field
+                target_radar.fields['npoints_'+field_name]['data'][
+                    np.unravel_index(
+                        sample, (target_radar.nrays, target_radar.ngates))] = nvals_valid
+
+                # quantile fields
+                for quant, val in zip(tadict['quantiles'], qvals):
+                    if val is None:
+                        continue
+                    target_radar.fields['quant'+'{:02d}'.format(int(100*quant))+'_'+field_name]['data'][
+                        np.unravel_index(
+                            sample, (target_radar.nrays, target_radar.ngates))] = val
+        else:
+            # ================================================================
+            # Radar and scanning antenna are NOT at the same place
+            # ================================================================
+            ray_inds, rng_inds, w_inds = _get_gates_antenna_pattern(
+                radar, target_radar, radar.azimuth['data'][ind_ray],
+                radar.range['data'][ind_rng],
+                radar.time['data'][ind_ray], scan_angles, alt_tol=alt_tol,
+                latlon_tol=latlon_tol, max_altitude=max_altitude)
+
+            w_vec = tadict['weightvec'][w_inds]
+            for field_name in field_names:
+                if field_name not in radar.fields:
+                    warn("Datatype '%s' not available in radar data" %
+                         field_name)
+                    continue
+                values = radar.fields[field_name]['data'][ray_inds, rng_inds]
+                if use_nans[field_name]:
+                    values_ma = np.ma.getmaskarray(values)
+                    values[values_ma] = nan_value[field_name]
+
+                try:
+                    (avg, qvals, nvals_valid) = quantiles_weighted(
+                        values,
+                        weight_vector=deepcopy(w_vec),
+                        quantiles=tadict['quantiles'],
+                        weight_threshold=weight_threshold,
+                        data_is_log=data_is_log[field_name])
+                except Exception as ee:
+                    warn(str(ee))
+                    continue
+
+                if avg is None:
+                    continue
+
+                # average field
+                target_radar.fields['avg_'+field_name]['data'][
+                    np.unravel_index(
+                        sample, (target_radar.nrays, target_radar.ngates))] = avg
+
+                # npoints field
+                target_radar.fields['npoints_'+field_name]['data'][
+                    np.unravel_index(
+                        sample, (target_radar.nrays, target_radar.ngates))] = nvals_valid
+
+                # quantile fields
+                for quant, val in zip(tadict['quantiles'], qvals):
+                    if val is None:
+                        continue
+                    target_radar.fields['quant'+'{:02d}'.format(int(100*quant))+'_'+field_name]['data'][
+                        np.unravel_index(
+                            sample, (target_radar.nrays, target_radar.ngates))] = val
+
+    return target_radar
+
+
+def _create_target_radar(radar, dscfg, fixed_angle_val, info, field_names,
+                         change_antenna_pattern=False, quantiles=[50]):
+    """
+    Creates the target radar
+
+    Parameters
+    ----------
+    radar : radar object
+        the radar object containing the observed data
+    dscfg : dict
+        dict with the configuration
+    fixed_angle_val : array of floats
+        array containing the fixed angles
+    info : str
+        String with info on the type of antenna
+    field_names : list of str
+        the list of field names that the target radar will contain
+    change_antenna_pattern : bool
+        Whether the antenna pattern of the target radar is different from the
+        observations radar
+    quantiles : list of floats
+        the quantiles to be computed if the target radar has a different
+        antenna pattern
+
+    Returns
+    -------
+    target_radar : radar object
+        The target radar
+
+    """
+    # Parameters to create the new radar
+    moving_angle_min = dscfg.get('moving_angle_min', 0.)
+    moving_angle_max = dscfg.get('moving_angle_max', 359.)
+    ray_res = dscfg.get('ray_res', 1.)
+    rng_min = dscfg.get('rng_min', 0.)
+    rng_max = dscfg.get('rng_max', 100000.)
+    rng_res = dscfg.get('rng_res', 100.)
+
+    # metadata needed
+    _time = get_metadata('time')
+    _range = get_metadata('range')
+    sweep_number = get_metadata('sweep_number')
+    sweep_mode = get_metadata('sweep_mode')
+    fixed_angle = get_metadata('fixed_angle')
+    sweep_start_ray_index = get_metadata('sweep_start_ray_index')
+    sweep_end_ray_index = get_metadata('sweep_end_ray_index')
+    azimuth = get_metadata('azimuth')
+    elevation = get_metadata('elevation')
+    metadata = dict()
+
+    latitude = radar.latitude
+    longitude = radar.longitude
+    altitude = radar.altitude
+    if 'target_radar_pos' in dscfg:
+        latitude['data'] = np.array(
+            [dscfg['target_radar_pos']['latitude']], dtype=np.float)
+        longitude['data'] = np.array(
+            [dscfg['target_radar_pos']['longitude']], dtype=np.float)
+        altitude['data'] = np.array(
+            [dscfg['target_radar_pos']['altitude']], dtype=np.float)
+
+    _range['data'] = np.arange(rng_min, rng_max+rng_res, rng_res)
+    ngates = _range['data'].size
+
+    fixed_angle['data'] = np.array(fixed_angle_val)
+    nsweeps = fixed_angle['data'].size
+    if info in ('parElAnt', 'asrLowBeamAnt', 'asrHighBeamAnt'):
+        scan_type = 'ppi'
+        sweep_mode['data'] = np.array(nsweeps*['azimuth_surveillance'])
+    else:
+        scan_type = 'rhi'
+        sweep_mode['data'] = np.array(nsweeps*['elevation_surveillance'])
+
+    moving_angle = np.arange(
+        moving_angle_min, moving_angle_max+ray_res, ray_res)
+
+    nrays = moving_angle.size*nsweeps
+    sweep_start_ray_index['data'] = np.empty((nsweeps), dtype=np.int32)
+    sweep_end_ray_index['data'] = np.empty((nsweeps), dtype=np.int32)
+    sweep_number['data'] = np.arange(nsweeps)
+    for sweep in range(nsweeps):
+        sweep_start_ray_index['data'][sweep] = sweep*nrays
+        sweep_end_ray_index['data'][sweep] = (sweep+1)*(nrays-1)
+
+    elevation['data'] = np.empty((nrays), dtype=float)
+    azimuth['data'] = np.empty((nrays), dtype=float)
+    if scan_type == 'ppi':
+        for sweep, (start_ray, end_ray) in enumerate(zip(
+                sweep_start_ray_index['data'],
+                sweep_end_ray_index['data'])):
+            azimuth['data'][start_ray:end_ray+1] = moving_angle
+            elevation['data'][start_ray:end_ray+1] = (
+                fixed_angle['data'][sweep])
+    else:
+        for sweep, (start_ray, end_ray) in enumerate(zip(
+                sweep_start_ray_index['data'],
+                sweep_end_ray_index['data'])):
+            elevation['data'][start_ray:end_ray+1] = moving_angle
+            azimuth['data'][start_ray:end_ray+1] = fixed_angle['data'][sweep]
+
+    _time = deepcopy(radar.time)
+    time_data = np.sort(_time['data'])
+    time_res = time_data[1]-time_data[0]
+    _time['data'] = np.arange(nrays)*time_res
+
+    fields = dict()
+    for field_name in field_names:
+        if not change_antenna_pattern:
+            fields.update({field_name: get_metadata(field_name)})
+            fields[field_name]['data'] = np.ma.masked_all((nrays, ngates))
+            continue
+
+        # average field
+        field_name_aux = 'avg_'+field_name
+        fields.update({field_name_aux: get_metadata(field_name_aux)})
+        fields[field_name_aux]['data'] = np.ma.masked_all((nrays, ngates))
+
+        # npoints field
+        field_name_aux = 'npoints_'+field_name
+        fields.update({field_name_aux: get_metadata(field_name_aux)})
+        fields[field_name_aux]['data'] = np.ma.zeros(
+            (nrays, ngates), dtype=np.int32)
+
+        # quantile fields
+        for quant in quantiles:
+            field_name_aux = (
+                'quant'+'{:02d}'.format(int(quant))+'_'+field_name)
+            fields.update({field_name_aux: get_metadata(field_name_aux)})
+            fields[field_name_aux]['data'] = np.ma.masked_all((nrays, ngates))
+
+    target_radar = Radar(
+        _time, _range, fields, metadata, scan_type, latitude, longitude,
+        altitude, sweep_number, sweep_mode, fixed_angle,
+        sweep_start_ray_index, sweep_end_ray_index, azimuth, elevation)
+
+    return target_radar

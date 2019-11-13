@@ -19,7 +19,7 @@ the product generation functions.
     _get_gates
     _get_gates_trt
     _get_gates_antenna_pattern
-    _get_closests_bin
+    _get_closest_bin
     _sample_out_of_sector
     TargetRadar
 """
@@ -1269,7 +1269,7 @@ def _get_ts_values_antenna_pattern(radar, trajectory, tadict, traj_ind,
 
         # Select radar object, find closest azimuth and elevation ray
         (radar_sel, ray_sel, rr_ind, el_vec_rnd, az_vec_rnd) = \
-            _get_closests_bin(az, el, rr, tt, radar, tadict)
+            _get_closest_bin(az, el, rr, tt, radar, tadict)
 
         # Check if traj sample is within scan sector
         if (_sample_out_of_sector(az, el, rr, radar_sel, ray_sel,
@@ -1489,7 +1489,7 @@ def _get_gates(radar, az, el, rr, tt, trajdict, ang_tol=1.2):
     """
     # Find closest azimuth and elevation ray
     (radar_sel, ray_sel, rr_ind, el_vec_rnd, az_vec_rnd) = \
-        _get_closests_bin(az, el, rr, tt, radar, trajdict)
+        _get_closest_bin(az, el, rr, tt, radar, trajdict)
 
     # Check if traj sample is within scan sector
     if (_sample_out_of_sector(az, el, rr, radar_sel, ray_sel,
@@ -1689,8 +1689,7 @@ def _get_gates_antenna_pattern(radar_sel, target_radar, az, rr, tt,
     r_elevation = {'data': scan_angles}
     r_sweep_number = {'data': [0]}
     r_fields = {'colocated_gates': get_metadata('colocated_gates')}
-    r_fields['colocated_gates']['data'] = np.ma.ones((n_rays, 1),
-                                                     dtype=int)
+    r_fields['colocated_gates']['data'] = 2*np.ma.ones((n_rays, 1), dtype=int)
 
     r_radar = Radar(r_time, r_range, r_fields, None, 'rhi',
                     target_radar.latitude, target_radar.longitude,
@@ -1700,7 +1699,7 @@ def _get_gates_antenna_pattern(radar_sel, target_radar, az, rr, tt,
 
     # flag regions with colocated usable data in r_radar
     r_ind_invalid = r_radar.gate_altitude['data'] > max_altitude
-    r_radar.fields['colocated_gates']['data'][r_ind_invalid] = 0
+    r_radar.fields['colocated_gates']['data'][r_ind_invalid] = 1
 
     # flag regions with colocated usable data in radar_sel
     gate_coloc_radar_sel = intersection(
@@ -1714,13 +1713,12 @@ def _get_gates_antenna_pattern(radar_sel, target_radar, az, rr, tt,
 
     (colgates, r_radar_colg) = colocated_gates(
         r_radar, radar_sel, h_tol=alt_tol, latlon_tol=latlon_tol)
-
-    w_ind = np.where(r_radar_colg['data'] != 0)[0]
+    w_ind = np.where(r_radar_colg['data'] > 1)[0]
 
     return colgates['rad2_ray_ind'], colgates['rad2_rng_ind'], w_ind
 
 
-def _get_closests_bin(az, el, rr, tt, radar, tdict):
+def _get_closest_bin(az, el, rr, tt, radar, tdict):
     """
     Get the radar bin closest to a certain trajectory position
 

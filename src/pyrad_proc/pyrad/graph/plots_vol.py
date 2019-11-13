@@ -183,8 +183,10 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
         norm = None
         ticks = None
         ticklabs = None
-        if vmin is not None and vmax is not None:
+        if vmin is None or vmax is None:
             norm, ticks, ticklabs = get_norm(field_name)
+            vmin = None
+            vmax = None
 
         xsize = prdcfg['ppiImageConfig']['xsize']
         ysize = prdcfg['ppiImageConfig']['ysize']
