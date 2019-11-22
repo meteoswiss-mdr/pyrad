@@ -9,6 +9,7 @@ Functions for obtaining Pyrad products from the datasets
 
     generate_occurrence_products
     generate_cosmo_coord_products
+    generate_cosmo_to_radar_products
     generate_sun_hits_products
     generate_qvp_products
     generate_ml_products
@@ -17,6 +18,7 @@ Functions for obtaining Pyrad products from the datasets
 
 from copy import deepcopy
 from warnings import warn
+import os
 
 import numpy as np
 
@@ -150,6 +152,21 @@ def generate_cosmo_coord_products(dataset, prdcfg):
     generates COSMO coordinates products. Accepted product types:
         'SAVEVOL': Save an object containing the index of the COSMO model grid
             that corresponds to each radar gate in a C/F radial file.
+            User defined parameters:
+                file_type: str
+                    The type of file used to save the data. Can be 'nc' or
+                    'h5'. Default 'nc'
+                physical: Bool
+                    If True the data will be saved in physical units (floats).
+                    Otherwise it will be quantized and saved as binary
+                compression: str
+                    For ODIM file formats, the type of compression. Can be any
+                    of the allowed compression types for hdf5 files. Default
+                    gzip
+                compression_opts: any
+                    The compression options allowed by the hdf5. Depends on
+                    the type of compression. Default 6 (The gzip compression
+                    level).
 
     Parameters
     ----------
@@ -177,6 +194,11 @@ def generate_cosmo_coord_products(dataset, prdcfg):
                 prdcfg['type'])
             return None
 
+        file_type = prdcfg.get('file_type', 'nc')
+        physical = prdcfg.get('physical', True)
+        compression = prdcfg.get('compression', 'gzip')
+        compression_opts = prdcfg.get('compression_opts', 6)
+
         new_dataset = deepcopy(radar_obj)
         new_dataset.fields = dict()
         new_dataset.add_field(field_name, radar_obj.fields[field_name])
@@ -184,13 +206,120 @@ def generate_cosmo_coord_products(dataset, prdcfg):
         savedir = prdcfg['cosmopath'][ind_rad]+'rad2cosmo1/'
         fname = 'rad2cosmo_'+prdcfg['voltype']+'_'+prdcfg['procname']+'.nc'
 
-        pyart.io.cfradial.write_cfradial(savedir+fname, new_dataset)
+        if file_type == 'nc':
+            pyart.io.cfradial.write_cfradial(
+                savedir+fname, new_dataset, physical=physical)
+        elif file_type == 'h5':
+            pyart.aux_io.write_odim_h5(
+                savedir+fname, new_dataset, physical=physical,
+                compression=compression, compression_opts=compression_opts)
+        else:
+            warn('Data could not be saved. ' +
+                 'Unknown saving file type '+file_type)
+            return None
+
         print('saved file: '+savedir+fname)
 
         return fname
 
     warn(' Unsupported product type: ' + prdcfg['type'])
     return None
+
+
+def generate_cosmo_to_radar_products(dataset, prdcfg):
+    """
+    generates COSMO data in radar coordinates products. Accepted product
+    types:
+        'SAVEVOL': Save an object containing the COSMO data in radar
+            coordinatesin a C/F radial or ODIM file.
+                User defined parameters:
+                file_type: str
+                    The type of file used to save the data. Can be 'nc' or
+                    'h5'. Default 'nc'
+                physical: Bool
+                    If True the data will be saved in physical units (floats).
+                    Otherwise it will be quantized and saved as binary
+                compression: str
+                    For ODIM file formats, the type of compression. Can be any
+                    of the allowed compression types for hdf5 files. Default
+                    gzip
+                compression_opts: any
+                    The compression options allowed by the hdf5. Depends on
+                    the type of compression. Default 6 (The gzip compression
+                    level).
+        All the products of the 'VOL' dataset group
+
+    Parameters
+    ----------
+    dataset : tuple
+        radar object containing the COSMO coordinates
+
+    prdcfg : dictionary of dictionaries
+        product configuration dictionary of dictionaries
+
+    Returns
+    -------
+    filename : str
+        the name of the file created. None otherwise
+
+    """
+    time_index = prdcfg.get('cosmo_time_index', 0)
+    if time_index > len(dataset)-1:
+        warn(
+            'COSMO time index larger than available. Skipping product ' +
+            prdcfg['type'])
+        return None
+
+    radar_dataset = dataset[time_index]
+    if prdcfg['type'] == 'SAVEVOL':
+        radar_obj = radar_dataset['radar_out']
+        ind_rad = radar_dataset['ind_rad']
+
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in radar_obj.fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        file_type = prdcfg.get('file_type', 'nc')
+        physical = prdcfg.get('physical', True)
+        compression = prdcfg.get('compression', 'gzip')
+        compression_opts = prdcfg.get('compression_opts', 6)
+
+        new_dataset = deepcopy(radar_obj)
+        new_dataset.fields = dict()
+        new_dataset.add_field(field_name, radar_obj.fields[field_name])
+
+        savedir = (
+            prdcfg['cosmopath'][ind_rad]+prdcfg['voltype']+'/radar/' +
+            prdcfg['timeinfo'].strftime('%Y-%m-%d')+'/'+prdcfg['procname']+'/')
+        fname = (
+            prdcfg['voltype']+'_RUN' +
+            prdcfg['timeinfo'].strftime('%Y%m%d%H%M%S')+'_' +
+            radar_dataset['dtcosmo'].strftime('%Y%m%d%H%M%S')+'.nc')
+
+        if not os.path.isdir(savedir):
+            os.makedirs(savedir)
+
+        if file_type == 'nc':
+            pyart.io.cfradial.write_cfradial(
+                savedir+fname, new_dataset, physical=physical)
+        elif file_type == 'h5':
+            pyart.aux_io.write_odim_h5(
+                savedir+fname, new_dataset, physical=physical,
+                compression=compression, compression_opts=compression_opts)
+        else:
+            warn('Data could not be saved. ' +
+                 'Unknown saving file type '+file_type)
+            return None
+
+        print('saved file: '+savedir+fname)
+
+        return fname
+
+    return generate_vol_products(radar_dataset, prdcfg)
 
 
 def generate_sun_hits_products(dataset, prdcfg):

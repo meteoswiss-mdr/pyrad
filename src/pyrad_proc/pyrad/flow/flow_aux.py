@@ -1386,8 +1386,9 @@ def _get_masterfile_list(datatypesdescr, starttimes, endtimes, datacfg,
     for datatypedescr in datatypesdescr:
         radarnr, datagroup, _, _, _ = get_datatype_fields(datatypedescr)
         if (datagroup not in (
-                'COSMO', 'RAD4ALPCOSMO', 'DEM', 'RAD4ALPDEM', 'RAD4ALPHYDRO',
-                'RAD4ALPDOPPLER', 'RAD4ALPIQ', 'PSR', 'PSRSPECTRA')):
+                'COSMO', 'RAD4ALPCOSMO', 'CFRADIALCOSMO', 'DEM', 'RAD4ALPDEM',
+                'RAD4ALPHYDRO', 'RAD4ALPDOPPLER', 'RAD4ALPIQ', 'PSR',
+                'PSRSPECTRA')):
             masterdatatypedescr = datatypedescr
             if scan_list is not None:
                 masterscan = scan_list[int(radarnr[5:8])-1][0]
@@ -1409,6 +1410,11 @@ def _get_masterfile_list(datatypesdescr, starttimes, endtimes, datacfg,
                 if scan_list is not None:
                     masterscan = scan_list[int(radarnr[5:8])-1][0]
                 break
+
+    if masterdatatypedescr is None:
+        warn('No data type can be used as master.'
+             ' Add a dBZ data type to the config file')
+        return [], None, None
 
     masterfilelist = get_file_list(
         masterdatatypedescr, starttimes, endtimes, datacfg,

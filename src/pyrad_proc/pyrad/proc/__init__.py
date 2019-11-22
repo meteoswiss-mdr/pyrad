@@ -214,6 +214,7 @@ COSMO data
     process_hzt
     process_hzt_lookup_table
     process_hzt_coord
+    process_cosmo_to_radar
 
 
 DEM data
@@ -311,6 +312,7 @@ from .process_Doppler import process_vad, process_turbulence
 from .process_cosmo import process_cosmo, process_cosmo_lookup_table
 from .process_cosmo import process_cosmo_coord, process_hzt
 from .process_cosmo import process_hzt_lookup_table, process_hzt_coord
+from .process_cosmo import process_cosmo_to_radar
 
 from .process_dem import process_dem, process_visibility
 

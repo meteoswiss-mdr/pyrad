@@ -32,6 +32,7 @@ Auxiliary functions for reading/writing files
     find_cosmo_file
     find_hzt_file
     find_rad4alpcosmo_file
+    find_pyradcosmo_file
     _get_datetime
     find_date_in_file_name
 
@@ -1240,6 +1241,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'first_gate_differential_phase'
     elif datatype == 'KDP':
         field_name = 'specific_differential_phase'
+    elif datatype == 'uKDP':
+        field_name = 'uncorrected_specific_differential_phase'
     elif datatype == 'KDPc':
         field_name = 'corrected_specific_differential_phase'
 
@@ -2067,6 +2070,28 @@ def get_file_list(datadescriptor, starttimes, endtimes, cfg, scan=None):
                         datapath+'MXPol-polar-'+dayinfo+'-*-'+scan+'.nc')
                 for filename in dayfilelist:
                     t_filelist.append(filename)
+            elif datagroup == 'COSMORAW':
+                daydir = (starttime+datetime.timedelta(days=i)).strftime(
+                    '%Y-%m-%d')
+                dayinfo = (starttime+datetime.timedelta(days=i)).strftime(
+                    '%Y%m%d')
+
+                # check that base directory exists
+                datapath = cfg['cosmopath'][ind_rad]+datatype+'/raw/'
+                if not os.path.isdir(datapath):
+                    datapath = cfg['cosmopath'][ind_rad]+datatype+'/raw1/'
+                    if not os.path.isdir(datapath):
+                        warn("WARNING: Unknown datapath '%s'" % datapath)
+                        continue
+                if cfg['path_convention'] == 'MCH':
+                    datapath = datapath+daydir+'/'
+
+                if not os.path.isdir(datapath):
+                    warn("WARNING: Unknown datapath '%s'" % datapath)
+                    continue
+                dayfilelist = glob.glob(datapath+'*'+dayinfo+'*.nc')
+                for filename in dayfilelist:
+                    t_filelist.append(filename)
 
         for filename in t_filelist:
             filenamestr = str(filename)
@@ -2362,6 +2387,11 @@ def get_datatype_fields(datadescriptor):
                 datatype = descrfields2[0]
                 dataset = descrfields2[1]
                 product = descrfields2[2]
+            elif datagroup == 'CFRADIALCOSMO':
+                descrfields2 = descrfields[2].split(',')
+                datatype = descrfields2[0]
+                dataset = descrfields2[1]
+                product = None
             elif datagroup == 'MXPOL':
                 datatype = descrfields[2]
                 dataset = None
@@ -2386,6 +2416,11 @@ def get_datatype_fields(datadescriptor):
             datatype = descrfields2[0]
             dataset = descrfields2[1]
             product = descrfields2[2]
+        elif datagroup == 'CFRADIALCOSMO':
+            descrfields2 = descrfields[1].split(',')
+            datatype = descrfields2[0]
+            dataset = descrfields2[1]
+            product = None
         elif datagroup == 'MXPOL':
             datatype = descrfields[1]
             dataset = None
@@ -2506,6 +2541,62 @@ def find_cosmo_file(voltime, datatype, cfg, scanid, ind_rad=0):
 
         search_name = (
             datapath+datatype+'_RUN'+runtimestr+'_DX50'+fdatetime+'.*')
+        print('Looking for file: '+search_name)
+        fname = glob.glob(search_name)
+        if fname:
+            found = True
+            break
+
+    if found:
+        return fname[0]
+
+    warn('WARNING: Unable to get COSMO '+datatype+' information')
+    return None
+
+
+def find_pyradcosmo_file(basepath, voltime, datatype, cfg, dataset):
+    """
+    Search a COSMO file in CFRadial or ODIM format
+
+    Parameters
+    ----------
+    basepath : str
+        base path to the COSMO file
+    voltime : datetime object
+        volume scan time
+    datatype : str
+        type of COSMO data to look for
+    cfg : dictionary of dictionaries
+        configuration info to figure out where the data is
+    dataset : str
+        name of the folder where the data is stored
+
+    Returns
+    -------
+    fname : str
+        Name of COSMO file if it exists. None otherwise
+
+    """
+    # hour rounded date-time
+    fdatetime = voltime.strftime('%Y%m%d%H')+'0000'
+
+    # initial run time to look for
+    hvol = int(voltime.strftime('%H'))
+    runhour0 = int(hvol/cfg['CosmoRunFreq'])*cfg['CosmoRunFreq']
+    runtime0 = voltime.replace(hour=runhour0, minute=0, second=0)
+
+    # look for cosmo file
+    found = False
+    nruns_to_check = int((cfg['CosmoForecasted']-1)/cfg['CosmoRunFreq'])
+    for i in range(nruns_to_check):
+        runtime = runtime0-datetime.timedelta(hours=i * cfg['CosmoRunFreq'])
+        runtimestr = runtime.strftime('%Y%m%d%H')+'0000'
+
+        daydir = runtime.strftime('%Y-%m-%d')
+        datapath = basepath+datatype+'/radar/'+daydir+'/'+dataset+'/'
+
+        search_name = (
+            datapath+datatype+'_RUN'+runtimestr+'_'+fdatetime+'.*')
         print('Looking for file: '+search_name)
         fname = glob.glob(search_name)
         if fname:
@@ -2759,6 +2850,9 @@ def _get_datetime(fname, datagroup, ftime_format=None):
     elif datagroup == 'MXPOL':
         datetimestr = re.findall(r"([0-9]{8}-[0-9]{6})", bfile)[0]
         fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d-%H%M%S')
+    elif datagroup == 'COSMORAW':
+        datetimestr = bfile[-13:-3]
+        fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d%H')
     else:
         warn('unknown data group')
         return None

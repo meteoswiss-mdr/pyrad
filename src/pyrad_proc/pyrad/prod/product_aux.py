@@ -15,6 +15,7 @@ from .process_product import generate_cosmo_coord_products
 from .process_product import generate_occurrence_products
 from .process_product import generate_qvp_products
 from .process_product import generate_ml_products
+from .process_product import generate_cosmo_to_radar_products
 
 from .process_vol_products import generate_vol_products
 from .process_grid_products import generate_grid_products
@@ -42,6 +43,7 @@ def get_prodgen_func(dsformat, dsname, dstype):
             'VOL': generate_vol_products
             'COLOCATED_GATES': generate_colocated_gates_products
             'COSMO_COORD': generate_cosmo_coord_products
+            'COSMO2RADAR': generate_cosmo_to_radar_products
             'GRID': generate_grid_products
             'SPECTRA': generate_spectra_products
             'GRID_TIMEAVG': generate_grid_time_avg_products
@@ -91,6 +93,8 @@ def get_prodgen_func(dsformat, dsname, dstype):
         func = generate_colocated_gates_products
     elif dsformat == 'COSMO_COORD':
         func = generate_cosmo_coord_products
+    elif dsformat == 'COSMO2RADAR':
+        func = generate_cosmo_to_radar_products
     elif dsformat == 'QVP':
         func = generate_qvp_products
     elif dsformat == 'ML':
