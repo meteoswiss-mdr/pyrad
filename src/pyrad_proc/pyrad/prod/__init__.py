@@ -23,6 +23,7 @@ Product generation
 
     generate_occurrence_products
     generate_cosmo_coord_products
+    generate_cosmo_to_radar_products
     generate_sun_hits_products
     generate_intercomp_products
     generate_colocated_gates_products
@@ -46,6 +47,7 @@ from .process_product import generate_cosmo_coord_products
 from .process_product import generate_qvp_products
 from .process_product import generate_occurrence_products
 from .process_product import generate_ml_products
+from .process_product import generate_cosmo_to_radar_products
 
 from .process_vol_products import generate_vol_products
 from .process_grid_products import generate_grid_products

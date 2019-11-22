@@ -150,6 +150,8 @@ def get_process_func(dataset_type, dsname):
             'COSMO_COORD' format output:
                 'COSMO_COORD': process_cosmo_coord
                 'HZT_COORD': process_hzt_coord
+            'COSMO2RADAR' format output:
+                'COSMO2RADAR': process_cosmo_to_radar
             'GRID' format output:
                 'RAW_GRID': process_raw_grid
                 'GRID': process_grid
@@ -424,6 +426,9 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'HZT_COORD':
         func_name = 'process_hzt_coord'
         dsformat = 'COSMO_COORD'
+    elif dataset_type == 'COSMO2RADAR':
+        func_name = 'process_cosmo_to_radar'
+        dsformat = 'COSMO2RADAR'
     elif dataset_type == 'HZT':
         func_name = 'process_hzt'
     elif dataset_type == 'HZT_LOOKUP':

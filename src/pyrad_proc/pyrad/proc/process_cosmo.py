@@ -11,6 +11,7 @@ Functions to manage COSMO data
     process_hzt
     process_cosmo_lookup_table
     process_hzt_lookup_table
+    process_cosmo_to_radar
     process_cosmo_coord
     process_hzt_coord
 
@@ -685,6 +686,147 @@ def process_hzt_lookup_table(procstatus, dscfg, radar_list=None):
         return None, None
 
     return new_dataset, ind_rad
+
+
+# @profile
+def process_cosmo_to_radar(procstatus, dscfg, radar_list=None):
+    """
+    Gets COSMO data and put it in radar coordinates using look up tables
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : string. Dataset keyword
+            arbitrary data type
+        cosmo_type : str. Dataset keyword
+            name of the COSMO field to process. Default TEMP
+        cosmo_variables : list of strings. Dataset keyword
+            Py-art name of the COSMO fields. Default temperature
+        cosmo_time_index_min, cosmo_time_index_max : int
+            minimum and maximum indices of the COSMO data to retrieve. If a
+            value is provided only data corresponding to the time indices
+            within the interval will be used. If None all data will be used.
+            Default None
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the output
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, _, _, _ = get_datatype_fields(datatypedescr)
+        break
+
+    ind_rad = int(radarnr[5:8])-1
+
+    cosmo_type = dscfg.get('cosmo_type', 'TEMP')
+    if cosmo_type == 'TEMP':
+        field_names = ['temperature']
+        if 'cosmo_variables' in dscfg:
+            field_names = []
+            for var in dscfg['cosmo_variables']:
+                field_names.append(get_fieldname_pyart(var))
+        zmin = None
+    elif cosmo_type == 'WIND':
+        field_names = ['wind_speed', 'wind_direction', 'vertical_wind_shear']
+        if 'cosmo_variables' in dscfg:
+            field_names = []
+            for var in dscfg['cosmo_variables']:
+                field_names.append(get_fieldname_pyart(var))
+        zmin = None
+    else:
+        warn('Unknown COSMO data type '+cosmo_type)
+        return None, None
+
+    time_index_min = dscfg.get('cosmo_time_index_min', None)
+    time_index_max = dscfg.get('cosmo_time_index_max', None)
+
+    fname = find_raw_cosmo_file(dscfg['timeinfo'], cosmo_type, dscfg,
+                                ind_rad=ind_rad)
+
+    if fname is None:
+        return None, None
+
+    model = os.path.basename(fname)[0:7]
+    if model not in ('cosmo-1', 'cosmo-2', 'cosmo-7'):
+        warn('Unknown NWP model '+model)
+        return None, None
+
+    if dscfg['initialized'] == 0:
+        savedir = dscfg['cosmopath'][ind_rad]+'rad2cosmo/'
+        fname_ind = 'rad2cosmo_cosmo_index_'+dscfg['procname']+'.nc'
+        fname_ind2 = glob.glob(savedir+fname_ind)
+        if not fname_ind2:
+            warn('File '+savedir+fname_ind+' not found')
+            return None, None
+        cosmo_radar = pyart.io.read_cfradial(fname_ind2[0])
+
+        dscfg['global_data'] = {
+            'cosmo_radar': cosmo_radar}
+        dscfg['initialized'] = 1
+
+    cosmo_data = read_cosmo_data(
+        fname, field_names=field_names, celsius=True)
+    if cosmo_data is None:
+        warn('COSMO data not found')
+        return None, None
+
+    dtcosmo = num2date(
+        cosmo_data['time']['data'][:], cosmo_data['time']['units'])
+
+    if time_index_min is None:
+        time_index_min = 0
+    if time_index_max is None:
+        time_index_max = len(dtcosmo)-1
+
+    if time_index_max > len(dtcosmo)-1:
+        warn('cosmo_time_index_max larger than number of COSMO forecasts'
+             'cosmo forecasts '+len(dtcosmo))
+        time_index_max = len(dtcosmo)-1
+
+    cosmo_radars = []
+    for time_index, dtc in enumerate(dtcosmo):
+        if time_index < time_index_min:
+            continue
+        if time_index > time_index_max:
+            break
+
+        cosmo_fields = get_cosmo_fields(
+            cosmo_data,
+            dscfg['global_data']['cosmo_radar'].fields['cosmo_index'],
+            time_index=time_index,
+            field_names=field_names)
+        if cosmo_fields is None:
+            warn('Unable to obtain COSMO fields')
+            return None, None
+
+        radar_out = deepcopy(dscfg['global_data']['cosmo_radar'])
+        radar_out.fields = dict()
+        radar_out.time['units'] = dtc.strftime('seconds since %Y-%m-%dT%H:%M:%SZ')
+
+        for field in cosmo_fields:
+            for field_name in field:
+                radar_out.add_field(field_name, field[field_name])
+
+        cosmo_radars.append({
+            'ind_rad': ind_rad,
+            'radar_out': radar_out,
+            'dtcosmo': dtc})
+
+    return cosmo_radars, ind_rad
 
 
 def process_cosmo_coord(procstatus, dscfg, radar_list=None):

@@ -206,6 +206,8 @@
 <span class="sd">            &#39;COSMO_COORD&#39; format output:</span>
 <span class="sd">                &#39;COSMO_COORD&#39;: process_cosmo_coord</span>
 <span class="sd">                &#39;HZT_COORD&#39;: process_hzt_coord</span>
+<span class="sd">            &#39;COSMO2RADAR&#39; format output:</span>
+<span class="sd">                &#39;COSMO2RADAR&#39;: process_cosmo_to_radar</span>
 <span class="sd">            &#39;GRID&#39; format output:</span>
 <span class="sd">                &#39;RAW_GRID&#39;: process_raw_grid</span>
 <span class="sd">                &#39;GRID&#39;: process_grid</span>
@@ -480,6 +482,9 @@
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;HZT_COORD&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_hzt_coord&#39;</span>
         <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;COSMO_COORD&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;COSMO2RADAR&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_cosmo_to_radar&#39;</span>
+        <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;COSMO2RADAR&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;HZT&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_hzt&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;HZT_LOOKUP&#39;</span><span class="p">:</span>

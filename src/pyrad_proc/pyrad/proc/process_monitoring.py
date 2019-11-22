@@ -1012,6 +1012,11 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
         step : float. Dataset keyword
             The width of the histogram bin. Default is None. In that case the
             default step in function get_histogram_bins is used
+        max_rays : int. Dataset keyword
+            The maximum number of rays per sweep used when computing the
+            histogram. If set above 0 the number of rays per sweep will be
+            checked and if above max_rays the last rays of the sweep will be
+            removed
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -1043,6 +1048,7 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
             return None, None
 
         step = dscfg.get('step', None)
+        max_rays = dscfg.get('max_rays', 0)
 
         bin_edges = get_histogram_bins(field_name, step=step)
         nbins = len(bin_edges)-1
@@ -1050,14 +1056,62 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
         bin_centers = bin_edges[:-1]+step/2.
 
         radar_aux = deepcopy(radar)
-        radar_aux.fields = dict()
-        radar_aux.range['data'] = bin_centers
-        radar_aux.ngates = nbins
+        if max_rays > 0:
+            # remove excess of rays
+            ind_above_max = np.where(
+                radar.rays_per_sweep['data'] > max_rays)[0]
+            if ind_above_max.size > 0:
+                radar_aux.rays_per_sweep['data'][ind_above_max] = max_rays
+                for ind in ind_above_max:
+                    excess_rays = radar.rays_per_sweep['data'][ind]-max_rays
+                    radar_aux.sweep_end_ray_index['data'][ind:] -= (
+                        excess_rays)
+                    if ind < radar.nsweeps-1:
+                        radar_aux.sweep_start_ray_index['data'][ind+1:] = (
+                            radar_aux.sweep_end_ray_index['data'][ind:-1]+1)
+
+                radar_aux.nrays = np.sum(radar_aux.rays_per_sweep['data'])
+                radar_aux.fields[field_name]['data'] = np.ma.masked_all(
+                    (radar_aux.nrays, radar_aux.ngates),
+                    dtype=radar.fields[field_name]['data'].dtype)
+                radar_aux.azimuth['data'] = np.empty(
+                    radar_aux.nrays, dtype=radar.azimuth['data'].dtype)
+                radar_aux.elevation['data'] = np.empty(
+                    radar_aux.nrays, dtype=radar.elevation['data'].dtype)
+                radar_aux.time['data'] = np.empty(
+                    radar_aux.nrays, dtype=radar.time['data'].dtype)
+
+                for sweep in range(radar.nsweeps):
+                    ind_start_old = radar.sweep_start_ray_index['data'][sweep]
+                    nrays_sweep = radar_aux.rays_per_sweep['data'][sweep]
+                    ind_start_new = radar_aux.sweep_start_ray_index['data'][
+                        sweep]
+                    ind_end_new = radar_aux.sweep_end_ray_index['data'][sweep]
+
+                    radar_aux.fields[field_name]['data'][
+                        ind_start_new:ind_end_new+1, :] = (
+                            radar.fields[field_name]['data'][
+                                ind_start_old:ind_start_old+nrays_sweep, :])
+                    radar_aux.azimuth['data'][ind_start_new:ind_end_new+1] = (
+                        radar.azimuth['data'][
+                            ind_start_old:ind_start_old+nrays_sweep])
+                    radar_aux.elevation['data'][
+                        ind_start_new:ind_end_new+1] = (
+                            radar.elevation['data'][
+                                ind_start_old:ind_start_old+nrays_sweep])
+                    radar_aux.time['data'][ind_start_new:ind_end_new+1] = (
+                        radar.time['data'][
+                            ind_start_old:ind_start_old+nrays_sweep])
+
+        radar_hist = deepcopy(radar_aux)
+        radar_hist.fields = dict()
+        radar_hist.range['data'] = bin_centers
+        radar_hist.ngates = nbins
 
         field_dict = pyart.config.get_metadata(field_name)
-        field_dict['data'] = np.ma.zeros((radar.nrays, nbins), dtype=int)
+        field_dict['data'] = np.ma.zeros((radar_aux.nrays, nbins), dtype=int)
 
-        field = deepcopy(radar.fields[field_name]['data'])
+        field = deepcopy(radar_aux.fields[field_name]['data'])
 
         # put gates with values off limits to limit
         mask = np.ma.getmaskarray(field)
@@ -1067,21 +1121,21 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
         ind = np.where(np.logical_and(mask == False, field > bin_centers[-1]))
         field[ind] = bin_centers[-1]
 
-        for ray in range(radar.nrays):
+        for ray in range(radar_aux.nrays):
             field_dict['data'][ray, :], bin_edges = np.histogram(
                 field[ray, :].compressed(), bins=bin_edges)
 
-        radar_aux.add_field(field_name, field_dict)
-        start_time = pyart.graph.common.generate_radar_time_begin(radar_aux)
+        radar_hist.add_field(field_name, field_dict)
+        start_time = pyart.graph.common.generate_radar_time_begin(radar_hist)
 
         # keep histogram in Memory or add to existing histogram
         if dscfg['initialized'] == 0:
-            dscfg['global_data'] = {'hist_obj': radar_aux,
+            dscfg['global_data'] = {'hist_obj': radar_hist,
                                     'timeinfo': start_time}
             dscfg['initialized'] = 1
         else:
             field_interp = interpol_field(
-                dscfg['global_data']['hist_obj'], radar_aux, field_name,
+                dscfg['global_data']['hist_obj'], radar_hist, field_name,
                 fill_value=0)
             dscfg['global_data']['hist_obj'].fields[field_name]['data'] += (
                 field_interp['data'].filled(fill_value=0)).astype('int64')
@@ -1089,7 +1143,7 @@ def process_monitoring(procstatus, dscfg, radar_list=None):
         #    dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
 
         dataset = dict()
-        dataset.update({'hist_obj': radar_aux})
+        dataset.update({'hist_obj': radar_hist})
         dataset.update({'hist_type': 'instant'})
         dataset.update({'timeinfo': start_time})
 

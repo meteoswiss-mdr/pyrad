@@ -67,6 +67,7 @@
 <span class="sd">    process_hzt</span>
 <span class="sd">    process_cosmo_lookup_table</span>
 <span class="sd">    process_hzt_lookup_table</span>
+<span class="sd">    process_cosmo_to_radar</span>
 <span class="sd">    process_cosmo_coord</span>
 <span class="sd">    process_hzt_coord</span>
 
@@ -741,6 +742,147 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
     <span class="k">return</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="n">ind_rad</span></div>
+
+
+<span class="c1"># @profile</span>
+<div class="viewcode-block" id="process_cosmo_to_radar"><a class="viewcode-back" href="../../../proc.html#pyrad.proc.process_cosmo_to_radar">[docs]</a><span class="k">def</span> <span class="nf">process_cosmo_to_radar</span><span class="p">(</span><span class="n">procstatus</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">radar_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gets COSMO data and put it in radar coordinates using look up tables</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    procstatus : int</span>
+<span class="sd">        Processing status: 0 initializing, 1 processing volume,</span>
+<span class="sd">        2 post-processing</span>
+<span class="sd">    dscfg : dictionary of dictionaries</span>
+<span class="sd">        data set configuration. Accepted Configuration Keywords::</span>
+
+<span class="sd">        datatype : string. Dataset keyword</span>
+<span class="sd">            arbitrary data type</span>
+<span class="sd">        cosmo_type : str. Dataset keyword</span>
+<span class="sd">            name of the COSMO field to process. Default TEMP</span>
+<span class="sd">        cosmo_variables : list of strings. Dataset keyword</span>
+<span class="sd">            Py-art name of the COSMO fields. Default temperature</span>
+<span class="sd">        cosmo_time_index_min, cosmo_time_index_max : int</span>
+<span class="sd">            minimum and maximum indices of the COSMO data to retrieve. If a</span>
+<span class="sd">            value is provided only data corresponding to the time indices</span>
+<span class="sd">            within the interval will be used. If None all data will be used.</span>
+<span class="sd">            Default None</span>
+<span class="sd">    radar_list : list of Radar objects</span>
+<span class="sd">        Optional. list of radar objects</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    new_dataset : dict</span>
+<span class="sd">        dictionary containing the output</span>
+<span class="sd">    ind_rad : int</span>
+<span class="sd">        radar index</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">procstatus</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="k">for</span> <span class="n">datatypedescr</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;datatype&#39;</span><span class="p">]:</span>
+        <span class="n">radarnr</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_datatype_fields</span><span class="p">(</span><span class="n">datatypedescr</span><span class="p">)</span>
+        <span class="k">break</span>
+
+    <span class="n">ind_rad</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">radarnr</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">8</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span>
+
+    <span class="n">cosmo_type</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cosmo_type&#39;</span><span class="p">,</span> <span class="s1">&#39;TEMP&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cosmo_type</span> <span class="o">==</span> <span class="s1">&#39;TEMP&#39;</span><span class="p">:</span>
+        <span class="n">field_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;cosmo_variables&#39;</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">:</span>
+            <span class="n">field_names</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;cosmo_variables&#39;</span><span class="p">]:</span>
+                <span class="n">field_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">var</span><span class="p">))</span>
+        <span class="n">zmin</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">elif</span> <span class="n">cosmo_type</span> <span class="o">==</span> <span class="s1">&#39;WIND&#39;</span><span class="p">:</span>
+        <span class="n">field_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;wind_speed&#39;</span><span class="p">,</span> <span class="s1">&#39;wind_direction&#39;</span><span class="p">,</span> <span class="s1">&#39;vertical_wind_shear&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;cosmo_variables&#39;</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">:</span>
+            <span class="n">field_names</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;cosmo_variables&#39;</span><span class="p">]:</span>
+                <span class="n">field_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">var</span><span class="p">))</span>
+        <span class="n">zmin</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unknown COSMO data type &#39;</span><span class="o">+</span><span class="n">cosmo_type</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="n">time_index_min</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cosmo_time_index_min&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">time_index_max</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cosmo_time_index_max&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">find_raw_cosmo_file</span><span class="p">(</span><span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">cosmo_type</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span>
+                                <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">fname</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">fname</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">model</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;cosmo-1&#39;</span><span class="p">,</span> <span class="s1">&#39;cosmo-2&#39;</span><span class="p">,</span> <span class="s1">&#39;cosmo-7&#39;</span><span class="p">):</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unknown NWP model &#39;</span><span class="o">+</span><span class="n">model</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;initialized&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">savedir</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;cosmopath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;rad2cosmo/&#39;</span>
+        <span class="n">fname_ind</span> <span class="o">=</span> <span class="s1">&#39;rad2cosmo_cosmo_index_&#39;</span><span class="o">+</span><span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;procname&#39;</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;.nc&#39;</span>
+        <span class="n">fname_ind2</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">savedir</span><span class="o">+</span><span class="n">fname_ind</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fname_ind2</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;File &#39;</span><span class="o">+</span><span class="n">savedir</span><span class="o">+</span><span class="n">fname_ind</span><span class="o">+</span><span class="s1">&#39; not found&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="n">cosmo_radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read_cfradial</span><span class="p">(</span><span class="n">fname_ind2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;cosmo_radar&#39;</span><span class="p">:</span> <span class="n">cosmo_radar</span><span class="p">}</span>
+        <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;initialized&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">cosmo_data</span> <span class="o">=</span> <span class="n">read_cosmo_data</span><span class="p">(</span>
+        <span class="n">fname</span><span class="p">,</span> <span class="n">field_names</span><span class="o">=</span><span class="n">field_names</span><span class="p">,</span> <span class="n">celsius</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cosmo_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;COSMO data not found&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="n">dtcosmo</span> <span class="o">=</span> <span class="n">num2date</span><span class="p">(</span>
+        <span class="n">cosmo_data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][:],</span> <span class="n">cosmo_data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">][</span><span class="s1">&#39;units&#39;</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">time_index_min</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">time_index_min</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">time_index_max</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">time_index_max</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dtcosmo</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">time_index_max</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">dtcosmo</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;cosmo_time_index_max larger than number of COSMO forecasts&#39;</span>
+             <span class="s1">&#39;cosmo forecasts &#39;</span><span class="o">+</span><span class="nb">len</span><span class="p">(</span><span class="n">dtcosmo</span><span class="p">))</span>
+        <span class="n">time_index_max</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dtcosmo</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+
+    <span class="n">cosmo_radars</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">time_index</span><span class="p">,</span> <span class="n">dtc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dtcosmo</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">time_index</span> <span class="o">&lt;</span> <span class="n">time_index_min</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">time_index</span> <span class="o">&gt;</span> <span class="n">time_index_max</span><span class="p">:</span>
+            <span class="k">break</span>
+
+        <span class="n">cosmo_fields</span> <span class="o">=</span> <span class="n">get_cosmo_fields</span><span class="p">(</span>
+            <span class="n">cosmo_data</span><span class="p">,</span>
+            <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;cosmo_radar&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;cosmo_index&#39;</span><span class="p">],</span>
+            <span class="n">time_index</span><span class="o">=</span><span class="n">time_index</span><span class="p">,</span>
+            <span class="n">field_names</span><span class="o">=</span><span class="n">field_names</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cosmo_fields</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to obtain COSMO fields&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="n">radar_out</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;cosmo_radar&#39;</span><span class="p">])</span>
+        <span class="n">radar_out</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">radar_out</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dtc</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;seconds since %Y-%m-</span><span class="si">%d</span><span class="s1">T%H:%M:%SZ&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">cosmo_fields</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="n">field</span><span class="p">:</span>
+                <span class="n">radar_out</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">field</span><span class="p">[</span><span class="n">field_name</span><span class="p">])</span>
+
+        <span class="n">cosmo_radars</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s1">&#39;ind_rad&#39;</span><span class="p">:</span> <span class="n">ind_rad</span><span class="p">,</span>
+            <span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">radar_out</span><span class="p">,</span>
+            <span class="s1">&#39;dtcosmo&#39;</span><span class="p">:</span> <span class="n">dtc</span><span class="p">})</span>
+
+    <span class="k">return</span> <span class="n">cosmo_radars</span><span class="p">,</span> <span class="n">ind_rad</span></div>
 
 
 <div class="viewcode-block" id="process_cosmo_coord"><a class="viewcode-back" href="../../../proc.html#pyrad.proc.process_cosmo_coord">[docs]</a><span class="k">def</span> <span class="nf">process_cosmo_coord</span><span class="p">(</span><span class="n">procstatus</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">radar_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>

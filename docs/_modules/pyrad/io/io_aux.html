@@ -88,6 +88,7 @@
 <span class="sd">    find_cosmo_file</span>
 <span class="sd">    find_hzt_file</span>
 <span class="sd">    find_rad4alpcosmo_file</span>
+<span class="sd">    find_pyradcosmo_file</span>
 <span class="sd">    _get_datetime</span>
 <span class="sd">    find_date_in_file_name</span>
 
@@ -1296,6 +1297,8 @@
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;first_gate_differential_phase&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;KDP&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;specific_differential_phase&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;uKDP&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;uncorrected_specific_differential_phase&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;KDPc&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_specific_differential_phase&#39;</span>
 
@@ -2123,6 +2126,28 @@
                         <span class="n">datapath</span><span class="o">+</span><span class="s1">&#39;MXPol-polar-&#39;</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;-*-&#39;</span><span class="o">+</span><span class="n">scan</span><span class="o">+</span><span class="s1">&#39;.nc&#39;</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">dayfilelist</span><span class="p">:</span>
                     <span class="n">t_filelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;COSMORAW&#39;</span><span class="p">:</span>
+                <span class="n">daydir</span> <span class="o">=</span> <span class="p">(</span><span class="n">starttime</span><span class="o">+</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">i</span><span class="p">))</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+                    <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">dayinfo</span> <span class="o">=</span> <span class="p">(</span><span class="n">starttime</span><span class="o">+</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">i</span><span class="p">))</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+                    <span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
+
+                <span class="c1"># check that base directory exists</span>
+                <span class="n">datapath</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;cosmopath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span><span class="o">+</span><span class="n">datatype</span><span class="o">+</span><span class="s1">&#39;/raw/&#39;</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">datapath</span><span class="p">):</span>
+                    <span class="n">datapath</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;cosmopath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span><span class="o">+</span><span class="n">datatype</span><span class="o">+</span><span class="s1">&#39;/raw1/&#39;</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">datapath</span><span class="p">):</span>
+                        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;WARNING: Unknown datapath &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">datapath</span><span class="p">)</span>
+                        <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;path_convention&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;MCH&#39;</span><span class="p">:</span>
+                    <span class="n">datapath</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">+</span><span class="n">daydir</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">datapath</span><span class="p">):</span>
+                    <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;WARNING: Unknown datapath &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">datapath</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="n">dayfilelist</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;*.nc&#39;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">dayfilelist</span><span class="p">:</span>
+                    <span class="n">t_filelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">t_filelist</span><span class="p">:</span>
             <span class="n">filenamestr</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
@@ -2418,6 +2443,11 @@
                 <span class="n">datatype</span> <span class="o">=</span> <span class="n">descrfields2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="n">dataset</span> <span class="o">=</span> <span class="n">descrfields2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
                 <span class="n">product</span> <span class="o">=</span> <span class="n">descrfields2</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;CFRADIALCOSMO&#39;</span><span class="p">:</span>
+                <span class="n">descrfields2</span> <span class="o">=</span> <span class="n">descrfields</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+                <span class="n">datatype</span> <span class="o">=</span> <span class="n">descrfields2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">dataset</span> <span class="o">=</span> <span class="n">descrfields2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">product</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;MXPOL&#39;</span><span class="p">:</span>
                 <span class="n">datatype</span> <span class="o">=</span> <span class="n">descrfields</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
                 <span class="n">dataset</span> <span class="o">=</span> <span class="kc">None</span>
@@ -2442,6 +2472,11 @@
             <span class="n">datatype</span> <span class="o">=</span> <span class="n">descrfields2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">dataset</span> <span class="o">=</span> <span class="n">descrfields2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">product</span> <span class="o">=</span> <span class="n">descrfields2</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;CFRADIALCOSMO&#39;</span><span class="p">:</span>
+            <span class="n">descrfields2</span> <span class="o">=</span> <span class="n">descrfields</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+            <span class="n">datatype</span> <span class="o">=</span> <span class="n">descrfields2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">dataset</span> <span class="o">=</span> <span class="n">descrfields2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">product</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;MXPOL&#39;</span><span class="p">:</span>
             <span class="n">datatype</span> <span class="o">=</span> <span class="n">descrfields</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">dataset</span> <span class="o">=</span> <span class="kc">None</span>
@@ -2562,6 +2597,62 @@
 
         <span class="n">search_name</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">datapath</span><span class="o">+</span><span class="n">datatype</span><span class="o">+</span><span class="s1">&#39;_RUN&#39;</span><span class="o">+</span><span class="n">runtimestr</span><span class="o">+</span><span class="s1">&#39;_DX50&#39;</span><span class="o">+</span><span class="n">fdatetime</span><span class="o">+</span><span class="s1">&#39;.*&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Looking for file: &#39;</span><span class="o">+</span><span class="n">search_name</span><span class="p">)</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">search_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fname</span><span class="p">:</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">break</span>
+
+    <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">fname</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;WARNING: Unable to get COSMO &#39;</span><span class="o">+</span><span class="n">datatype</span><span class="o">+</span><span class="s1">&#39; information&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span> <span class="nf">find_pyradcosmo_file</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Search a COSMO file in CFRadial or ODIM format</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    basepath : str</span>
+<span class="sd">        base path to the COSMO file</span>
+<span class="sd">    voltime : datetime object</span>
+<span class="sd">        volume scan time</span>
+<span class="sd">    datatype : str</span>
+<span class="sd">        type of COSMO data to look for</span>
+<span class="sd">    cfg : dictionary of dictionaries</span>
+<span class="sd">        configuration info to figure out where the data is</span>
+<span class="sd">    dataset : str</span>
+<span class="sd">        name of the folder where the data is stored</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fname : str</span>
+<span class="sd">        Name of COSMO file if it exists. None otherwise</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># hour rounded date-time</span>
+    <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;0000&#39;</span>
+
+    <span class="c1"># initial run time to look for</span>
+    <span class="n">hvol</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%H&#39;</span><span class="p">))</span>
+    <span class="n">runhour0</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hvol</span><span class="o">/</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;CosmoRunFreq&#39;</span><span class="p">])</span><span class="o">*</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;CosmoRunFreq&#39;</span><span class="p">]</span>
+    <span class="n">runtime0</span> <span class="o">=</span> <span class="n">voltime</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">hour</span><span class="o">=</span><span class="n">runhour0</span><span class="p">,</span> <span class="n">minute</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">second</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># look for cosmo file</span>
+    <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">nruns_to_check</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;CosmoForecasted&#39;</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;CosmoRunFreq&#39;</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nruns_to_check</span><span class="p">):</span>
+        <span class="n">runtime</span> <span class="o">=</span> <span class="n">runtime0</span><span class="o">-</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">i</span> <span class="o">*</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;CosmoRunFreq&#39;</span><span class="p">])</span>
+        <span class="n">runtimestr</span> <span class="o">=</span> <span class="n">runtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;0000&#39;</span>
+
+        <span class="n">daydir</span> <span class="o">=</span> <span class="n">runtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">basepath</span><span class="o">+</span><span class="n">datatype</span><span class="o">+</span><span class="s1">&#39;/radar/&#39;</span><span class="o">+</span><span class="n">daydir</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">dataset</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+
+        <span class="n">search_name</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">datapath</span><span class="o">+</span><span class="n">datatype</span><span class="o">+</span><span class="s1">&#39;_RUN&#39;</span><span class="o">+</span><span class="n">runtimestr</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">fdatetime</span><span class="o">+</span><span class="s1">&#39;.*&#39;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Looking for file: &#39;</span><span class="o">+</span><span class="n">search_name</span><span class="p">)</span>
         <span class="n">fname</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">search_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">fname</span><span class="p">:</span>
@@ -2815,6 +2906,9 @@
     <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;MXPOL&#39;</span><span class="p">:</span>
         <span class="n">datetimestr</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;([0-9]</span><span class="si">{8}</span><span class="s2">-[0-9]</span><span class="si">{6}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">bfile</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">datetimestr</span><span class="p">,</span> <span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">-%H%M%S&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;COSMORAW&#39;</span><span class="p">:</span>
+        <span class="n">datetimestr</span> <span class="o">=</span> <span class="n">bfile</span><span class="p">[</span><span class="o">-</span><span class="mi">13</span><span class="p">:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">datetimestr</span><span class="p">,</span> <span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;unknown data group&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>

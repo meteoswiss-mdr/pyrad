@@ -26,6 +26,7 @@ Functions for reading radar data files
     merge_fields_psr_spectra
     merge_fields_rad4alp_grid
     merge_fields_pyrad
+    merge_fields_pyradcosmo
     merge_fields_pyradgrid
     merge_fields_pyrad_spectra
     merge_fields_dem
@@ -78,6 +79,7 @@ from .io_aux import get_datatype_metranet, get_fieldname_pyart, get_file_list
 from .io_aux import get_datatype_odim, find_date_in_file_name
 from .io_aux import get_datatype_fields, get_datetime, map_hydro, map_Doppler
 from .io_aux import find_cosmo_file, find_rad4alpcosmo_file
+from .io_aux import find_pyradcosmo_file
 from .io_aux import get_rad4alp_prod_fname, get_rad4alp_grid_dir
 from .io_aux import get_rad4alp_dir
 
@@ -145,6 +147,8 @@ def get_data(voltime, datatypesdescr, cfg):
                 is stored and 'product' specifies the directroy where the
                 product is stored.
                 Example: CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
+            'CFRADIALCOSMO': COSMO data in radar coordinates in a CFRadial
+            file format.
             'ODIMPYRAD': ODIM file format with the naming convention and
                 directory structure in which Pyrad saves the data.  For such
                 datatypes 'dataset' specifies the directory where the dataset
@@ -202,6 +206,8 @@ def get_data(voltime, datatypesdescr, cfg):
     product_odimpyrad = list()
     datatype_cosmo = list()
     datatype_rad4alpcosmo = list()
+    datatype_cfradialcosmo = list()
+    dataset_cfradialcosmo = list()
     datatype_dem = list()
     datatype_rad4alpdem = list()
     datatype_rad4alphydro = list()
@@ -248,6 +254,9 @@ def get_data(voltime, datatypesdescr, cfg):
             datatype_cosmo.append(datatype)
         elif datagroup == 'RAD4ALPCOSMO':
             datatype_rad4alpcosmo.append(datatype)
+        elif datagroup == 'CFRADIALCOSMO':
+            datatype_cfradialcosmo.append(datatype)
+            dataset_cfradialcosmo.append(dataset)
         elif datagroup == 'DEM':
             datatype_dem.append(datatype)
         elif datagroup == 'RAD4ALPDEM':
@@ -290,6 +299,7 @@ def get_data(voltime, datatypesdescr, cfg):
     ndatatypes_odimpyrad = len(datatype_odimpyrad)
     ndatatypes_cosmo = len(datatype_cosmo)
     ndatatypes_rad4alpcosmo = len(datatype_rad4alpcosmo)
+    ndatatypes_cfradialcosmo = len(datatype_cfradialcosmo)
     ndatatypes_dem = len(datatype_dem)
     ndatatypes_rad4alpdem = len(datatype_rad4alpdem)
     ndatatypes_rad4alphydro = len(datatype_rad4alphydro)
@@ -391,6 +401,15 @@ def get_data(voltime, datatypesdescr, cfg):
             rng_min=cfg['rmin'], rng_max=cfg['rmax'], ele_min=cfg['elmin'],
             ele_max=cfg['elmax'], azi_min=cfg['azmin'], azi_max=cfg['azmax'],
             termination='.h*')
+        radar = add_field(radar, radar_aux)
+
+    if ndatatypes_cfradialcosmo > 0:
+        radar_aux = merge_fields_pyradcosmo(
+            cfg['cosmopath'][ind_rad], voltime,
+            datatype_cfradialcosmo, dataset_cfradialcosmo, cfg,
+            rng_min=cfg['rmin'], rng_max=cfg['rmax'], ele_min=cfg['elmin'],
+            ele_max=cfg['elmax'], azi_min=cfg['azmin'], azi_max=cfg['azmax'],
+            termination='.nc')
         radar = add_field(radar, radar_aux)
 
     # add rainbow ray data from psr files
@@ -2433,6 +2452,83 @@ def merge_fields_pyrad(basepath, loadname, voltime, datatype_list,
             except OSError as ee:
                 warn(str(ee))
                 warn('Unable to read file '+filename[0])
+                radar_aux = None
+
+        if radar_aux is None:
+            continue
+
+        if radar is None:
+            radar = radar_aux
+            continue
+
+        radar = add_field(radar, radar_aux)
+
+    if radar is None:
+        return radar
+
+    return pyart.util.cut_radar(
+        radar, radar.fields.keys(), rng_min=rng_min, rng_max=rng_max,
+        ele_min=ele_min, ele_max=ele_max, azi_min=azi_min, azi_max=azi_max)
+
+
+def merge_fields_pyradcosmo(basepath, voltime, datatype_list, dataset_list,
+                            cfg, rng_min=None, rng_max=None, azi_min=None,
+                            azi_max=None, ele_min=None, ele_max=None,
+                            termination='.nc'):
+    """
+    merge fields from Pyrad-generated files into a single radar object.
+    Accepted file types are CFRadial and ODIM.
+
+    Parameters
+    ----------
+    basepath : str
+        name of the base path where to find the data
+    voltime : datetime object
+        reference time of the scan
+    datatype_list : list
+        list of data types to get
+    dataset_list : list
+        list of datasets that produced the data type to get.
+        Used to get path.
+    cfg : dictionary of dictionaries
+        configuration info
+    rng_min, rng_max : float
+        The range limits [m]. If None the entire coverage of the radar is
+        going to be used
+    ele_min, ele_max, azi_min, azi_max : float or None
+        The limits of the grid [deg]. If None the limits will be the limits
+        of the radar volume
+    termination : str
+        file termination type. Can be '.nc' or '.h*'
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+    fdatetime = voltime.strftime('%Y%m%d%H%M%S')
+
+    radar = None
+    for i, (datatype, dataset) in enumerate(zip(datatype_list, dataset_list)):
+        filename = find_pyradcosmo_file(
+            basepath, voltime, datatype, cfg, dataset)
+        if filename is None:
+            continue
+
+        if termination == '.nc':
+            try:
+                radar_aux = pyart.io.read_cfradial(filename)
+            except (OSError, KeyError) as ee:
+                warn(str(ee))
+                warn('Unable to read file '+filename)
+                radar_aux = None
+        else:
+            try:
+                radar_aux = pyart.aux_io.read_odim_h5(filename)
+            except OSError as ee:
+                warn(str(ee))
+                warn('Unable to read file '+filename)
                 radar_aux = None
 
         if radar_aux is None:

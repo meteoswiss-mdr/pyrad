@@ -584,6 +584,9 @@
 <tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_hzt_coord" title="pyrad.proc.process_hzt_coord"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_hzt_coord</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
 <td>Gets the HZT indices corresponding to each HZT coordinates</td>
 </tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_cosmo_to_radar" title="pyrad.proc.process_cosmo_to_radar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_cosmo_to_radar</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<td>Gets COSMO data and put it in radar coordinates using look up tables</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -719,6 +722,9 @@ the function documentation:</p>
 <dt>‘COSMO_COORD’ format output:</dt>
 <dd><p class="first last">‘COSMO_COORD’: process_cosmo_coord
 ‘HZT_COORD’: process_hzt_coord</p>
+</dd>
+<dt>‘COSMO2RADAR’ format output:</dt>
+<dd><p class="first last">‘COSMO2RADAR’: process_cosmo_to_radar</p>
 </dd>
 <dt>‘GRID’ format output:</dt>
 <dd><p class="first last">‘RAW_GRID’: process_raw_grid
@@ -1692,6 +1698,59 @@ memory to the current radar grid</p>
 </dd>
 <dt>cosmo_variables <span class="classifier-delimiter">:</span> <span class="classifier">list of strings. Dataset keyword</span></dt>
 <dd><p class="first last">Py-art name of the COSMO fields. Default temperature</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the output</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.proc.process_cosmo_to_radar">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_cosmo_to_radar</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_cosmo.html#process_cosmo_to_radar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_cosmo_to_radar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets COSMO data and put it in radar coordinates using look up tables</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first">data set configuration. Accepted Configuration Keywords:</p>
+<dl class="last docutils">
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">string. Dataset keyword</span></dt>
+<dd><p class="first last">arbitrary data type</p>
+</dd>
+<dt>cosmo_type <span class="classifier-delimiter">:</span> <span class="classifier">str. Dataset keyword</span></dt>
+<dd><p class="first last">name of the COSMO field to process. Default TEMP</p>
+</dd>
+<dt>cosmo_variables <span class="classifier-delimiter">:</span> <span class="classifier">list of strings. Dataset keyword</span></dt>
+<dd><p class="first last">Py-art name of the COSMO fields. Default temperature</p>
+</dd>
+<dt>cosmo_time_index_min, cosmo_time_index_max <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">minimum and maximum indices of the COSMO data to retrieve. If a
+value is provided only data corresponding to the time indices
+within the interval will be used. If None all data will be used.
+Default None</p>
 </dd>
 </dl>
 </dd>
@@ -3679,6 +3738,12 @@ have been processed</p>
 <dt>step <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">The width of the histogram bin. Default is None. In that case the
 default step in function get_histogram_bins is used</p>
+</dd>
+<dt>max_rays <span class="classifier-delimiter">:</span> <span class="classifier">int. Dataset keyword</span></dt>
+<dd><p class="first last">The maximum number of rays per sweep used when computing the
+histogram. If set above 0 the number of rays per sweep will be
+checked and if above max_rays the last rays of the sweep will be
+removed</p>
 </dd>
 </dl>
 </dd>
