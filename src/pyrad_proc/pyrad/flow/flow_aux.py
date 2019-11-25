@@ -514,7 +514,9 @@ def _wait_for_files(nowtime, datacfg, datatype_list, last_processed=None):
     """
     endtime_loop = deepcopy(nowtime)
 
-    nscans = len(datacfg['ScanList'][0])
+    nscans = 1
+    if datacfg['ScanList'][0] is not None:
+       nscans = len(datacfg['ScanList'][0])
 
     scan_min = datacfg['ScanPeriod'] * 2.  # [min]
 
