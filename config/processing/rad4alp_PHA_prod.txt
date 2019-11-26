@@ -4,9 +4,8 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 2
-    V
-    W
+dataSetList STRARR 1
+    CLT
 
 #    l0:TEMP
 #    l0:SNRh
@@ -32,6 +31,15 @@ dBZ STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 0
             voltype STRING dBZ
+
+dBZv STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:dBZv
+    products STRUCT 1
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING dBZv
 
 ZDR STRUCT 3
     type STRING RAW
@@ -78,10 +86,50 @@ W STRUCT 3
             anglenr INT 0
             voltype STRING W
 
+ST1 STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:ST1
+    products STRUCT 1
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING ST1
 
+ST2 STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:ST2
+    products STRUCT 1
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING ST2
 
+WBN STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:WBN
+    products STRUCT 1
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING WBN
 
+MPH STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:MPH
+    products STRUCT 1
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING MPH
 
+CLT STRUCT 3
+    type STRING RAW
+    datatype STRING RAD4ALP:CLT
+    products STRUCT 1
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING CLT
 
 savevol_raw STRUCT 3
     type STRING RAW

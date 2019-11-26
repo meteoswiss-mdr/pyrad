@@ -580,6 +580,18 @@ def get_datatype_metranet(datatype):
     elif datatype == 'CLT':
         datatype_metranet = 'CLT'
         field_name = 'clutter_exit_code'
+    elif datatype == 'ST1':
+        datatype_metranet = 'ST1'
+        field_name = 'stat_test_lag1'
+    elif datatype == 'ST2':
+        datatype_metranet = 'ST2'
+        field_name = 'stat_test_lag2'
+    elif datatype == 'WBN':
+        datatype_metranet = 'WBN'
+        field_name = 'wide_band_noise'
+    elif datatype == 'MPH':
+        datatype_metranet = 'MPH'
+        field_name = 'mean_phase'
     else:
         raise ValueError(
             'ERROR: Metranet fields do not contain datatype '+datatype)
@@ -1076,6 +1088,18 @@ def get_fieldname_pyart(datatype):
         field_name = 'noiseADU_hh'
     elif datatype == 'NADUv':
         field_name = 'noiseADU_vv'
+    elif datatype == 'WBN':
+        field_name = 'wide_band_noise'
+    elif datatype == 'WBNc':
+        field_name = 'corrected_wide_band_noise'
+    elif datatype == 'ST1':
+        field_name = 'stat_test_lag1'
+    elif datatype == 'ST1c':
+        field_name = 'corrected_stat_test_lag1'
+    elif datatype == 'ST2':
+        field_name = 'stat_test_lag2'
+    elif datatype == 'ST2c':
+        field_name = 'corrected_stat_test_lag2'
 
     elif datatype == 'TXh':
         field_name = 'transmitted_signal_power_h'
@@ -1091,107 +1115,6 @@ def get_fieldname_pyart(datatype):
         field_name = 'clutter_correction_ratio_hh'
     elif datatype == 'CCORv':
         field_name = 'clutter_correction_ratio_vv'
-
-    # spectral data
-    elif datatype == 'ShhADU':
-        field_name = 'complex_spectra_hh_ADU'
-    elif datatype == 'ShhADUu':
-        field_name = 'unfiltered_complex_spectra_hh_ADU'
-    elif datatype == 'SvvADU':
-        field_name = 'complex_spectra_vv_ADU'
-    elif datatype == 'SvvADUu':
-        field_name = 'unfiltered_complex_spectra_vv_ADU'
-    elif datatype == 'sPhhADU':
-        field_name = 'spectral_power_hh_ADU'
-    elif datatype == 'sPhhADUu':
-        field_name = 'unfiltered_spectral_power_hh_ADU'
-    elif datatype == 'sPvvADU':
-        field_name = 'spectral_power_vv_ADU'
-    elif datatype == 'sPvvADUu':
-        field_name = 'unfiltered_spectral_power_vv_ADU'
-    elif datatype == 'sPhhdBADU':
-        field_name = 'spectral_power_hh_dBADU'
-    elif datatype == 'sPhhdBADUu':
-        field_name = 'unfiltered_spectral_power_hh_dBADU'
-    elif datatype == 'sPvvdBADU':
-        field_name = 'spectral_power_vv_dBADU'
-    elif datatype == 'sPvvdBADUu':
-        field_name = 'unfiltered_spectral_power_vv_dBADU'
-    elif datatype == 'sPhhdBm':
-        field_name = 'spectral_power_hh_dBm'
-    elif datatype == 'sPhhdBmu':
-        field_name = 'unfiltered_spectral_power_hh_dBm'
-    elif datatype == 'sPvvdBm':
-        field_name = 'spectral_power_vv_dBm'
-    elif datatype == 'sPvvdBmu':
-        field_name = 'unfiltered_spectral_power_vv_dBm'
-    elif datatype == 'sNh':
-        field_name = 'spectral_noise_power_hh_dBZ'
-    elif datatype == 'sNv':
-        field_name = 'spectral_noise_power_vv_dBZ'
-    elif datatype == 'sNdBADUh':
-        field_name = 'spectral_noise_power_hh_dBADU'
-    elif datatype == 'sNdBADUv':
-        field_name = 'spectral_noise_power_vv_dBADU'
-    elif datatype == 'sNdBmh':
-        field_name = 'spectral_noise_power_hh_dBm'
-    elif datatype == 'sNdBmv':
-        field_name = 'spectral_noise_power_vv_dBm'
-    elif datatype == 'sNADUh':
-        field_name = 'spectral_noise_power_hh_ADU'
-    elif datatype == 'sNADUv':
-        field_name = 'spectral_noise_power_vv_ADU'
-    elif datatype == 'sPhasehh':
-        field_name = 'spectral_phase_hh'
-    elif datatype == 'sPhasehhu':
-        field_name = 'unfiltered_spectral_phase_hh'
-    elif datatype == 'sPhasevv':
-        field_name = 'spectral_phase_vv'
-    elif datatype == 'sPhasevvu':
-        field_name = 'unfiltered_spectral_phase_vv'
-
-    elif datatype == 'sdBZ':
-        field_name = 'spectral_reflectivity_hh'
-    elif datatype == 'sdBuZ':
-        field_name = 'unfiltered_spectral_reflectivity_hh'
-    elif datatype == 'sdBZv':
-        field_name = 'spectral_reflectivity_vv'
-    elif datatype == 'sdBuZv':
-        field_name = 'unfiltered_spectral_reflectivity_vv'
-    elif datatype == 'sZDR':
-        field_name = 'spectral_differential_reflectivity'
-    elif datatype == 'sZDRu':
-        field_name = 'unfiltered_spectral_differential_reflectivity'
-    elif datatype == 'sPhiDP':
-        field_name = 'spectral_differential_phase'
-    elif datatype == 'sPhiDPu':
-        field_name = 'unfiltered_spectral_differential_phase'
-    elif datatype == 'sRhoHV':
-        field_name = 'spectral_copolar_correlation_coefficient'
-    elif datatype == 'sRhoHVu':
-        field_name = 'unfiltered_spectral_copolar_correlation_coefficient'
-
-    # IQ data
-    elif datatype == 'IQhhADU':
-        field_name = 'IQ_hh_ADU'
-    elif datatype == 'IQvvADU':
-        field_name = 'IQ_vv_ADU'
-    elif datatype == 'IQNh':
-        field_name = 'IQ_noise_power_hh_dBZ'
-    elif datatype == 'IQNv':
-        field_name = 'IQ_noise_power_vv_dBZ'
-    elif datatype == 'IQNdBADUh':
-        field_name = 'IQ_noise_power_hh_dBADU'
-    elif datatype == 'IQNdBADUv':
-        field_name = 'IQ_noise_power_vv_dBADU'
-    elif datatype == 'IQNdBmh':
-        field_name = 'IQ_noise_power_hh_dBm'
-    elif datatype == 'IQNdBmv':
-        field_name = 'IQ_noise_power_vv_dBm'
-    elif datatype == 'IQNADUh':
-        field_name = 'IQ_noise_power_hh_ADU'
-    elif datatype == 'IQNADUv':
-        field_name = 'IQ_noise_power_vv_ADU'
 
     elif datatype == 'dBm_sun_hit':
         field_name = 'sun_hit_power_h'
@@ -1245,6 +1168,10 @@ def get_fieldname_pyart(datatype):
         field_name = 'uncorrected_specific_differential_phase'
     elif datatype == 'KDPc':
         field_name = 'corrected_specific_differential_phase'
+    elif datatype == 'MPH':
+        field_name = 'mean_phase'
+    elif datatype == 'MPHc':
+        field_name = 'corrected_mean_phase'
 
     elif datatype == 'V':
         field_name = 'velocity'
@@ -1378,7 +1305,111 @@ def get_fieldname_pyart(datatype):
         field_name = 'sum'
     elif datatype == 'sum2':
         field_name = 'sum_squared'
+    elif datatype == 'diff':
+        field_name = 'fields_difference'
 
+    # spectral data
+    elif datatype == 'ShhADU':
+        field_name = 'complex_spectra_hh_ADU'
+    elif datatype == 'ShhADUu':
+        field_name = 'unfiltered_complex_spectra_hh_ADU'
+    elif datatype == 'SvvADU':
+        field_name = 'complex_spectra_vv_ADU'
+    elif datatype == 'SvvADUu':
+        field_name = 'unfiltered_complex_spectra_vv_ADU'
+    elif datatype == 'sPhhADU':
+        field_name = 'spectral_power_hh_ADU'
+    elif datatype == 'sPhhADUu':
+        field_name = 'unfiltered_spectral_power_hh_ADU'
+    elif datatype == 'sPvvADU':
+        field_name = 'spectral_power_vv_ADU'
+    elif datatype == 'sPvvADUu':
+        field_name = 'unfiltered_spectral_power_vv_ADU'
+    elif datatype == 'sPhhdBADU':
+        field_name = 'spectral_power_hh_dBADU'
+    elif datatype == 'sPhhdBADUu':
+        field_name = 'unfiltered_spectral_power_hh_dBADU'
+    elif datatype == 'sPvvdBADU':
+        field_name = 'spectral_power_vv_dBADU'
+    elif datatype == 'sPvvdBADUu':
+        field_name = 'unfiltered_spectral_power_vv_dBADU'
+    elif datatype == 'sPhhdBm':
+        field_name = 'spectral_power_hh_dBm'
+    elif datatype == 'sPhhdBmu':
+        field_name = 'unfiltered_spectral_power_hh_dBm'
+    elif datatype == 'sPvvdBm':
+        field_name = 'spectral_power_vv_dBm'
+    elif datatype == 'sPvvdBmu':
+        field_name = 'unfiltered_spectral_power_vv_dBm'
+    elif datatype == 'sNh':
+        field_name = 'spectral_noise_power_hh_dBZ'
+    elif datatype == 'sNv':
+        field_name = 'spectral_noise_power_vv_dBZ'
+    elif datatype == 'sNdBADUh':
+        field_name = 'spectral_noise_power_hh_dBADU'
+    elif datatype == 'sNdBADUv':
+        field_name = 'spectral_noise_power_vv_dBADU'
+    elif datatype == 'sNdBmh':
+        field_name = 'spectral_noise_power_hh_dBm'
+    elif datatype == 'sNdBmv':
+        field_name = 'spectral_noise_power_vv_dBm'
+    elif datatype == 'sNADUh':
+        field_name = 'spectral_noise_power_hh_ADU'
+    elif datatype == 'sNADUv':
+        field_name = 'spectral_noise_power_vv_ADU'
+    elif datatype == 'sPhasehh':
+        field_name = 'spectral_phase_hh'
+    elif datatype == 'sPhasehhu':
+        field_name = 'unfiltered_spectral_phase_hh'
+    elif datatype == 'sPhasevv':
+        field_name = 'spectral_phase_vv'
+    elif datatype == 'sPhasevvu':
+        field_name = 'unfiltered_spectral_phase_vv'
+
+    elif datatype == 'sdBZ':
+        field_name = 'spectral_reflectivity_hh'
+    elif datatype == 'sdBuZ':
+        field_name = 'unfiltered_spectral_reflectivity_hh'
+    elif datatype == 'sdBZv':
+        field_name = 'spectral_reflectivity_vv'
+    elif datatype == 'sdBuZv':
+        field_name = 'unfiltered_spectral_reflectivity_vv'
+    elif datatype == 'sZDR':
+        field_name = 'spectral_differential_reflectivity'
+    elif datatype == 'sZDRu':
+        field_name = 'unfiltered_spectral_differential_reflectivity'
+    elif datatype == 'sPhiDP':
+        field_name = 'spectral_differential_phase'
+    elif datatype == 'sPhiDPu':
+        field_name = 'unfiltered_spectral_differential_phase'
+    elif datatype == 'sRhoHV':
+        field_name = 'spectral_copolar_correlation_coefficient'
+    elif datatype == 'sRhoHVu':
+        field_name = 'unfiltered_spectral_copolar_correlation_coefficient'
+
+    # IQ data
+    elif datatype == 'IQhhADU':
+        field_name = 'IQ_hh_ADU'
+    elif datatype == 'IQvvADU':
+        field_name = 'IQ_vv_ADU'
+    elif datatype == 'IQNh':
+        field_name = 'IQ_noise_power_hh_dBZ'
+    elif datatype == 'IQNv':
+        field_name = 'IQ_noise_power_vv_dBZ'
+    elif datatype == 'IQNdBADUh':
+        field_name = 'IQ_noise_power_hh_dBADU'
+    elif datatype == 'IQNdBADUv':
+        field_name = 'IQ_noise_power_vv_dBADU'
+    elif datatype == 'IQNdBmh':
+        field_name = 'IQ_noise_power_hh_dBm'
+    elif datatype == 'IQNdBmv':
+        field_name = 'IQ_noise_power_vv_dBm'
+    elif datatype == 'IQNADUh':
+        field_name = 'IQ_noise_power_hh_ADU'
+    elif datatype == 'IQNADUv':
+        field_name = 'IQ_noise_power_vv_ADU'
+
+    # rad4alp cartesian products
     elif datatype == 'POH':
         field_name = 'probability_of_hail'
     elif datatype == 'VIL':

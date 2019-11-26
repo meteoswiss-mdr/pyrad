@@ -38,7 +38,7 @@ from ..util.radar_utils import compute_quantiles_from_hist
 def generate_monitoring_products(dataset, prdcfg):
     """
     generates a monitoring product. With the parameter 'hist_type' the user
-    may define is the product is computed for each radar volume ('instant') or
+    may define if the product is computed for each radar volume ('instant') or
     at the end of the processing period ('cumulative'). Default is
     'cumulative'.
     Accepted product types:

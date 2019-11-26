@@ -83,6 +83,12 @@ noisedBADU_vv = 'noisedBADU_vv'
 noiseADU_hh = 'noiseADU_hh'
 noiseADU_vv = 'noiseADU_vv'
 
+stat_test_lag1 = 'stat_test_lag1'
+stat_test_lag2 = 'stat_test_lag2'
+wide_band_noise = 'wide_band_noise'
+
+fields_difference = 'fields_difference'
+
 transmitted_signal_power_h = 'transmitted_signal_power_h'
 transmitted_signal_power_v = 'transmitted_signal_power_v'
 
@@ -214,6 +220,7 @@ unfiltered_signal_quality_index_vv = 'unfiltered_signal_quality_index_vv'
 
 
 # Differential phase shift, PhiDP
+mean_phase = 'mean_phase'
 differential_phase = 'differential_phase'
 unfolded_differential_phase = 'unfolded_differential_phase'
 corrected_differential_phase = 'corrected_differential_phase'
@@ -506,6 +513,11 @@ DEFAULT_FIELD_NAMES = {
     'logarithmic_cross_correlation_ratio': logarithmic_cross_correlation_ratio,
     'cross_correlation_ratio_in_rain': cross_correlation_ratio_in_rain,
     'normalized_coherent_power': normalized_coherent_power,
+    'wide_band_noise': wide_band_noise,
+    'fields_difference': fields_difference,
+    'stat_test_lag1': stat_test_lag1,
+    'stat_test_lag2': stat_test_lag2,
+    'mean_phase': mean_phase,
     'differential_phase': differential_phase,
     'unfolded_differential_phase': unfolded_differential_phase,
     'corrected_differential_phase': corrected_differential_phase,
@@ -1281,6 +1293,36 @@ DEFAULT_METADATA = {
         'standard_name': 'sun_est_differential_reflectivity',
         'long_name': 'estimated sun differential reflectivity',
         'coordinates': 'elevation azimuth'},
+
+    stat_test_lag1: {
+        'units': 'dB',
+        'standard_name': 'stat_test_lag1',
+        'long_name': 'Statistical test one lag fluctuation',
+        'coordinates': 'elevation azimuth range'},
+
+    stat_test_lag2: {
+        'units': 'dB',
+        'standard_name': 'stat_test_lag2',
+        'long_name': 'Statistical test two lag fluctuation',
+        'coordinates': 'elevation azimuth range'},
+
+    wide_band_noise: {
+        'units': 'dB',
+        'standard_name': 'wide_band_noise',
+        'long_name': 'Wide band noise',
+        'coordinates': 'elevation azimuth range'},
+
+    fields_difference:{
+        'units': '-',
+        'standard_name': 'fields_difference',
+        'long_name': 'Fields difference',
+        'coordinates': 'elevation azimuth range'},
+
+    mean_phase: {
+        'units': 'deg',
+        'standard_name': 'mean_phase',
+        'long_name': 'Mean phase',
+        'coordinates': 'elevation azimuth range'},
 
     # Velocity fields
     velocity: {
@@ -2265,9 +2307,9 @@ DEFAULT_METADATA = {
         'units': '-',
         'standard_name': 'clutter_exit_code',
         'long_name': 'Clutter Exit Code',
-        #  'labels': ['NOISE', 'PREC', 'CLT'],
-        #  'ticks': [1, 50, 150],
-        #  'boundaries': [0.5, 1.5, 99.5, 200.],
+        'labels': ['NOISE', 'PREC', 'CLT'],
+        'ticks': [1, 50, 150],
+        'boundaries': [0.5, 1.5, 99.5, 200.],
         'coordinates': 'elevation azimuth range'},
 
     melting_layer: {
@@ -3323,6 +3365,10 @@ DEFAULT_FIELD_COLORMAP = {
 
     noisedBZ_hh: 'pyart_NWSRef',
     noisedBZ_vv: 'pyart_NWSRef',
+    stat_test_lag1: 'pyart_NWSRef',
+    stat_test_lag2: 'pyart_NWSRef',
+    wide_band_noise: 'pyart_NWSRef',
+    fields_difference: 'pyart_BuDRd18',
 
     sun_hit_power_h: 'pyart_NWSRef',
     sun_hit_power_v: 'pyart_NWSRef',
@@ -3395,6 +3441,7 @@ DEFAULT_FIELD_COLORMAP = {
     spectral_copolar_correlation_coefficient: 'pyart_RefDiff',
     unfiltered_spectral_copolar_correlation_coefficient: 'pyart_RefDiff',
 
+    mean_phase: 'pyart_Wild25',
     differential_phase: 'pyart_Wild25',
     unfolded_differential_phase: 'pyart_Wild25',
     corrected_differential_phase: 'pyart_Wild25',
@@ -3529,6 +3576,9 @@ DEFAULT_FIELD_LIMITS = {
     bird_density: (0., 400.),
     radar_cross_section_hh: (-50., 55.),
     radar_cross_section_vv: (-50., 55.),
+    stat_test_lag1: (0., 10.),
+    stat_test_lag2: (0., 10.),
+    wide_band_noise: (0., 25.),
     # spectral_reflectivity_hh: (-60., 45.),
     # spectral_reflectivity_vv: (-60., 45.),
     # unfiltered_spectral_reflectivity_hh: (-60., 45.),
@@ -3606,6 +3656,7 @@ DEFAULT_FIELD_LIMITS = {
     # spectral_copolar_correlation_coefficient: (0.7, 1),
     # unfiltered_spectral_copolar_correlation_coefficient: (0.7, 1),
 
+    mean_phase: (-180., 180.),
     differential_phase: (-180., 180.),
     unfolded_differential_phase: (-180., 180.),
     corrected_differential_phase: (-180., 180.),

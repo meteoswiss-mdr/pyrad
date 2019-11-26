@@ -74,6 +74,7 @@ def get_process_func(dataset_type, dsname):
                 'DOPPLER_WIDTH': process_Doppler_width
                 'DOPPLER_WIDTH_IQ': process_Doppler_width_iq
                 'ECHO_FILTER': process_echo_filter
+                'FIELDS_DIFF': process_fields_diff
                 'FIXED_RNG': process_fixed_rng
                 'FIXED_RNG_SPAN': process_fixed_rng_span
                 'HYDROCLASS': process_hydroclass
@@ -82,6 +83,7 @@ def get_process_func(dataset_type, dsname):
                 'KDP_LEASTSQUARE_1W': process_kdp_leastsquare_single_window
                 'KDP_LEASTSQUARE_2W': process_kdp_leastsquare_double_window
                 'L': process_l
+                'MEAN_PHASE_IQ': process_mean_phase_iq
                 'NCVOL': process_save_radar
                 'NOISE_POWER': process_noise_power
                 'OUTLIER_FILTER': process_outlier_filter
@@ -114,6 +116,8 @@ def get_process_func(dataset_type, dsname):
                 'SELFCONSISTENCY_KDP_PHIDP': process_selfconsistency_kdp_phidp
                 'SNR': process_snr
                 'SNR_FILTER': process_filter_snr
+                'ST1_IQ': process_st1_iq
+                'ST2_IQ': process_st2_iq
                 'TRAJ_TRT' : process_traj_trt
                 'TRAJ_TRT_CONTOUR' : process_traj_trt_contour
                 'TURBULENCE': process_turbulence
@@ -122,6 +126,7 @@ def get_process_func(dataset_type, dsname):
                 'VIS': process_visibility
                 'VIS_FILTER': process_filter_visibility
                 'VOL_REFL': process_vol_refl
+                'WBN': process_wbn_iq
                 'WIND_VEL': process_wind_vel
                 'WINDSHEAR': process_windshear
                 'ZDR': process_differential_reflectivity
@@ -160,6 +165,7 @@ def get_process_func(dataset_type, dsname):
                 'GRID_TIME_STATS2': process_grid_time_stats2
             'INTERCOMP' format output:
                 'INTERCOMP': process_intercomp
+                'INTERCOMP_FIELDS': process_intercomp_fields
                 'INTERCOMP_TIME_AVG': process_intercomp_time_avg
             'ML' format output:
                 'ML_DETECTION': process_melting_layer
@@ -412,6 +418,14 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_Doppler_velocity_iq'
     elif dataset_type == 'DOPPLER_WIDTH_IQ':
         func_name = 'process_Doppler_width_iq'
+    elif dataset_type == 'MEAN_PHASE_IQ':
+        func_name = 'process_mean_phase_iq'
+    elif dataset_type == 'ST1_IQ':
+        func_name = 'process_st1_iq'
+    elif dataset_type == 'ST2_IQ':
+        func_name = 'process_st2_iq'
+    elif dataset_type == 'WBN_IQ':
+        func_name = 'process_wbn_iq'
     elif dataset_type == 'SELFCONSISTENCY_KDP_PHIDP':
         func_name = 'process_selfconsistency_kdp_phidp'
     elif dataset_type == 'SELFCONSISTENCY_BIAS':
@@ -462,9 +476,14 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'INTERCOMP':
         func_name = 'process_intercomp'
         dsformat = 'INTERCOMP'
+    elif dataset_type == 'INTERCOMP_FIELDS':
+        func_name = 'process_intercomp_fields'
+        dsformat = 'INTERCOMP'
     elif dataset_type == 'INTERCOMP_TIME_AVG':
         func_name = 'process_intercomp_time_avg'
         dsformat = 'INTERCOMP'
+    elif dataset_type == 'FIELDS_DIFF':
+        func_name = 'process_fields_diff'
     elif dataset_type == 'MONITORING':
         func_name = 'process_monitoring'
         dsformat = 'MONITORING'

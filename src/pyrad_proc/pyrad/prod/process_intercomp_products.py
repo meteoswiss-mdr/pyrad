@@ -65,6 +65,10 @@ def generate_intercomp_products(dataset, prdcfg):
                 'step': float
                     The quantization step of the data. If none it will be
                     computed using the Py-ART config file. Default None
+                'scatter_type': str
+                    Type of scatter plot. Can be a plot for each radar volume
+                    ('instant') or at the end of the processing period
+                    ('cumulative'). Default is 'cumulative'
         'WRITE_INTERCOMP': Writes the instantaneously intercompared data
             (gate positions, values, etc.) in a csv file.
         'WRITE_INTERCOMP_TIME_AVG': Writes the time-averaged intercompared
@@ -132,8 +136,13 @@ def generate_intercomp_products(dataset, prdcfg):
         return fname
 
     if prdcfg['type'] == 'PLOT_SCATTER_INTERCOMP':
-        if not dataset['final']:
+        scatter_type = prdcfg.get('scatter_type', 'cumulative')
+        if scatter_type == 'cumulative' and not dataset['final']:
             return None
+
+        timeformat = '%Y%m%d'
+        if scatter_type == 'instant':
+            timeformat = '%Y%m%d%H%M%S'
 
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         savedir = get_save_dir(
@@ -143,7 +152,7 @@ def generate_intercomp_products(dataset, prdcfg):
         fname_list = make_filename(
             'scatter', prdcfg['dstype'], prdcfg['voltype'],
             prdcfg['imgformat'], timeinfo=dataset['timeinfo'],
-            timeformat='%Y%m%d')
+            timeformat=timeformat)
 
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname

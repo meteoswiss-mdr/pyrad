@@ -72,7 +72,11 @@ IQ data functions
     process_raw_iq
     process_pol_variables_iq
     process_reflectivity_iq
+    process_st1_iq
+    process_st2_iq
+    process_wbn_iq
     process_differential_reflectivity_iq
+    process_mean_phase_iq
     process_differential_phase_iq
     process_rhohv_iq
     process_Doppler_velocity_iq
@@ -143,6 +147,8 @@ Monitoring, calibration and noise correction
     process_colocated_gates
     process_intercomp
     process_intercomp_time_avg
+    process_fields_diff
+    process_intercomp_fields
 
 Retrievals
 ==========
@@ -256,6 +262,8 @@ from .process_iq import process_differential_reflectivity_iq
 from .process_iq import process_rhohv_iq, process_differential_phase_iq
 from .process_iq import process_Doppler_velocity_iq, process_Doppler_width_iq
 from .process_iq import process_pol_variables_iq, process_fft
+from .process_iq import process_mean_phase_iq, process_st1_iq, process_st2_iq
+from .process_iq import process_wbn_iq
 
 from .process_timeseries import process_point_measurement, process_qvp
 from .process_timeseries import process_rqvp, process_evp, process_svp
@@ -291,6 +299,7 @@ from .process_intercomp import process_time_avg, process_weighted_time_avg
 from .process_intercomp import process_time_avg_flag, process_time_stats
 from .process_intercomp import process_colocated_gates, process_time_stats2
 from .process_intercomp import process_intercomp, process_intercomp_time_avg
+from .process_intercomp import process_fields_diff, process_intercomp_fields
 
 from .process_monitoring import process_zdr_snow, process_zdr_precip
 from .process_monitoring import process_estimate_phidp0, process_rhohv_rain

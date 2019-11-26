@@ -5,27 +5,27 @@ pyrad.flow.flow_aux
 Auxiliary functions to control the Pyrad data processing flow
 
 .. autosummary::
-:toctree: generated/
-
-_initialize_listener
-_user_input_listener
-_get_times_and_traj
-_initialize_datasets
-_process_datasets
-_postprocess_datasets
-_wait_for_files
-_get_radars_data
-_generate_dataset
-_generate_prod
-_create_cfg_dict
-_create_datacfg_dict
-_create_dscfg_dict
-_create_prdcfg_dict
-_get_datatype_list
-_get_datasets_list
-_get_masterfile_list
-_add_dataset
-_warning_format
+    :toctree: generated/
+    
+    _initialize_listener
+    _user_input_listener
+    _get_times_and_traj
+    _initialize_datasets
+    _process_datasets
+    _postprocess_datasets
+    _wait_for_files
+    _get_radars_data
+    _generate_dataset
+    _generate_prod
+    _create_cfg_dict
+    _create_datacfg_dict
+    _create_dscfg_dict
+    _create_prdcfg_dict
+    _get_datatype_list
+    _get_datasets_list
+    _get_masterfile_list
+    _add_dataset
+    _warning_format
 
 """
 from __future__ import print_function
@@ -514,7 +514,9 @@ def _wait_for_files(nowtime, datacfg, datatype_list, last_processed=None):
     """
     endtime_loop = deepcopy(nowtime)
 
-    nscans = len(datacfg['ScanList'][0])
+    nscans = 1
+    if datacfg['ScanList'] is not None:
+        nscans = len(datacfg['ScanList'][0])
 
     scan_min = datacfg['ScanPeriod'] * 2.  # [min]
 

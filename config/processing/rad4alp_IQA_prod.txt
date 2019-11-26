@@ -5,7 +5,19 @@
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
 dataSetList STRARR 1
-    IQhhADU
+    uPhiDP_offset_corrected
+
+#    dBZ
+#    dBZv
+#    ZDR
+#    RhoHV
+#    uPhiDP
+#    V
+#    W
+#    MPH
+#    ST1
+#    ST2
+#    WBN
 
 
 # ============================================================================
@@ -147,11 +159,29 @@ dBZ STRUCT 4
         RAD4ALPIQ:IQhhADU
         RAD4ALPIQ:IQNADUh
     subtract_noise INT 1
-    products STRUCT 1
+    products STRUCT 2
         ELN00_2 STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 0
             voltype STRING dBZ
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING dBZ
+
+dBZv STRUCT 4
+    type STRING REFLECTIVITY_IQ
+    datatype STRARR 2
+        RAD4ALPIQ:IQvvADU
+        RAD4ALPIQ:IQNADUv
+    subtract_noise INT 1
+    products STRUCT 2
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING dBZv
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING dBZv
 
 ZDR STRUCT 5
     type STRING ZDR_IQ
@@ -162,10 +192,13 @@ ZDR STRUCT 5
         RAD4ALPIQ:IQNADUv
     lag INT 0
     subtract_noise INT 1
-    products STRUCT 1
+    products STRUCT 2
         ELN00_2 STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 0
+            voltype STRING ZDR
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
             voltype STRING ZDR
 
 RhoHV STRUCT 5
@@ -177,10 +210,13 @@ RhoHV STRUCT 5
         RAD4ALPIQ:IQNADUv
     lag INT 0
     subtract_noise INT 0
-    products STRUCT 1
+    products STRUCT 2
         ELN00_2 STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 0
+            voltype STRING RhoHV
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
             voltype STRING RhoHV
 
 uPhiDP STRUCT 3
@@ -188,33 +224,110 @@ uPhiDP STRUCT 3
     datatype STRARR 2
         RAD4ALPIQ:IQhhADU
         RAD4ALPIQ:IQvvADU
-    products STRUCT 1
+    products STRUCT 2
         ELN00_2 STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 0
+            voltype STRING uPhiDP
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING uPhiDP
+
+uPhiDP_offset_corrected STRUCT 4
+    type STRING PhiDP_IQ
+    datatype STRARR 2
+        RAD4ALPIQ:IQhhADU
+        RAD4ALPIQ:IQvvADU
+    phase_offset FLOAT -120.
+    products STRUCT 2
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING uPhiDP
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
             voltype STRING uPhiDP
 
 V STRUCT 3
     type STRING DOPPLER_VELOCITY_IQ
     datatype STRARR 1
         RAD4ALPIQ:IQhhADU
-    products STRUCT 1
+    products STRUCT 2
         ELN00_2 STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 0
             voltype STRING V
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING V
 
 W STRUCT 5
     type STRING DOPPLER_WIDTH_IQ
-    datatype STRARR 1
+    datatype STRARR 2
         RAD4ALPIQ:IQhhADU
-    lag INT 1
+        RAD4ALPIQ:IQNADUh
+    lag INT 0
     subtract_noise INT 1
-    products STRUCT 1
+    products STRUCT 2
         ELN00_2 STRUCT 3
             type  STRING PPI_IMAGE
             anglenr INT 0
             voltype STRING W
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING W
+
+MPH STRUCT 3
+    type STRING MEAN_PHASE_IQ
+    datatype STRARR 1
+        RAD4ALPIQ:IQhhADU
+    products STRUCT 2
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING MPH
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING MPH
+
+ST1 STRUCT 3
+    type STRING ST1_IQ
+    datatype STRARR 1
+        RAD4ALPIQ:IQhhADU
+    products STRUCT 2
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING ST1
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING ST1
+
+ST2 STRUCT 3
+    type STRING ST2_IQ
+    datatype STRARR 1
+        RAD4ALPIQ:IQhhADU
+    products STRUCT 2
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING ST2
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING ST2
+
+WBN STRUCT 3
+    type STRING WBN_IQ
+    datatype STRARR 1
+        RAD4ALPIQ:IQhhADU
+    products STRUCT 2
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING WBN
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING WBN
 
 
 # ============================================================================
