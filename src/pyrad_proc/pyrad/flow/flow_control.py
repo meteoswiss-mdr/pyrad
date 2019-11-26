@@ -796,7 +796,6 @@ def main_cosmo_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
             vol_processed = True
 
             # remove variables from memory
-            del radar_list
             del cfg
             del datacfg
             del dscfg
