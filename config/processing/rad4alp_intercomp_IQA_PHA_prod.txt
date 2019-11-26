@@ -7,7 +7,7 @@
 dataSetList STRARR 3
     l0:echoID
     l1:echoFilter
-    l2:IQA_PHA_no_noise_uPhiDP_offset_corrected_scatter
+    l2:IQA_PHA_no_noise_W_lag1_scatter
 
 
 
@@ -135,6 +135,19 @@ IQA_PHA_W_diff STRUCT 3
 	type STRING FIELDS_DIFF
 	datatype STRARR 2
 		RADAR001:CFRADIAL:W,W,SAVEVOL
+        RADAR002:RAD4ALP:W
+    products STRUCT 1
+        ELN00_2 STRUCT 5
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING diff
+            vmin FLOAT -1.
+            vmax FLOAT 1.
+
+IQA_PHA_W_lag1_diff STRUCT 3
+	type STRING FIELDS_DIFF
+	datatype STRARR 2
+		RADAR001:CFRADIAL:W,W_lag1,SAVEVOL
         RADAR002:RAD4ALP:W
     products STRUCT 1
         ELN00_2 STRUCT 5
@@ -295,6 +308,18 @@ IQA_PHA_W_scatter STRUCT 3
             step FLOAT 0.1
             scatter_type STRING instant
 
+IQA_PHA_W_lag1_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:W,W_lag1,SAVEVOL
+        RADAR002:RAD4ALP:W
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING W
+            step FLOAT 0.1
+            scatter_type STRING instant
+
 IQA_PHA_MPH_scatter STRUCT 3
 	type STRING INTERCOMP_FIELDS
 	datatype STRARR 2
@@ -445,7 +470,7 @@ IQA_PHA_no_noise_uPhiDP_scatter STRUCT 3
             voltype STRING uPhiDP
             step FLOAT 1
             scatter_type STRING instant
-            
+
 IQA_PHA_no_noise_uPhiDP_offset_corrected_scatter STRUCT 3
 	type STRING INTERCOMP_FIELDS
 	datatype STRARR 2
@@ -474,6 +499,18 @@ IQA_PHA_no_noise_W_scatter STRUCT 3
 	type STRING INTERCOMP_FIELDS
 	datatype STRARR 2
 		RADAR001:CFRADIAL:W,W,SAVEVOL
+        RADAR002:PROC:Wc
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING W
+            step FLOAT 0.1
+            scatter_type STRING instant
+
+IQA_PHA_no_noise_W_lag1_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:W,W_lag1,SAVEVOL
         RADAR002:PROC:Wc
     products STRUCT 1
         IQA_PHA STRUCT 4

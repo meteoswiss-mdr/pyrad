@@ -5,7 +5,7 @@
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
 dataSetList STRARR 1
-    uPhiDP_offset_corrected
+    W_lag1
 
 #    dBZ
 #    dBZv
@@ -267,6 +267,22 @@ W STRUCT 5
         RAD4ALPIQ:IQhhADU
         RAD4ALPIQ:IQNADUh
     lag INT 0
+    subtract_noise INT 1
+    products STRUCT 2
+        ELN00_2 STRUCT 3
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING W
+        SAVEVOL STRUCT 2
+            type STRING SAVEVOL
+            voltype STRING W
+
+W_lag1 STRUCT 5
+    type STRING DOPPLER_WIDTH_IQ
+    datatype STRARR 2
+        RAD4ALPIQ:IQhhADU
+        RAD4ALPIQ:IQNADUh
+    lag INT 1
     subtract_noise INT 1
     products STRUCT 2
         ELN00_2 STRUCT 3
