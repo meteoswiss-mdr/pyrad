@@ -10,7 +10,11 @@ Functions to processes IQ data.
     process_raw_iq
     process_pol_variables_iq
     process_reflectivity_iq
+    process_st1_iq
+    process_st2_iq
+    process_wbn_iq
     process_differential_reflectivity_iq
+    process_mean_phase_iq
     process_differential_phase_iq
     process_rhohv_iq
     process_Doppler_velocity_iq
@@ -90,6 +94,8 @@ def process_pol_variables_iq(procstatus, dscfg, radar_list=None):
             negative_away or negative_towards
         variables : list of str
             list of variables to compute. Default dBZ
+        phase_offset : float. Dataset keyword
+            The system differential phase offset to remove
     radar_list : list of spectra objects
         Optional. list of spectra objects
 
@@ -129,6 +135,7 @@ def process_pol_variables_iq(procstatus, dscfg, radar_list=None):
     lag = dscfg.get('lag', None)
     direction = dscfg.get('direction', 'negative_away')
     variables = dscfg.get('variables', ['dBZ'])
+    phase_offset = dscfg.get('phase_offset', 0.)
 
     fields_list = []
     for variable in variables:
@@ -136,9 +143,9 @@ def process_pol_variables_iq(procstatus, dscfg, radar_list=None):
 
     radar = pyart.retrieve.compute_pol_variables_iq(
         radar, fields_list, subtract_noise=subtract_noise, lag=lag,
-        direction=direction, signal_h_field=signal_h_field,
-        signal_v_field=signal_v_field, noise_h_field=noise_h_field,
-        noise_v_field=noise_v_field)
+        direction=direction, phase_offset=phase_offset,
+        signal_h_field=signal_h_field, signal_v_field=signal_v_field,
+        noise_h_field=noise_h_field, noise_v_field=noise_v_field)
 
     # prepare for exit
     new_dataset = {'radar_out': radar}
@@ -209,11 +216,181 @@ def process_reflectivity_iq(procstatus, dscfg, radar_list=None):
 
     reflectivity_field = 'reflectivity'
     if signal_field in ('IQ_vv_ADU',):
-        reflectivity_field += 'vv'
+        reflectivity_field += '_vv'
 
     # prepare for exit
     new_dataset = {'radar_out': pyart.util.radar_from_spectra(radar)}
     new_dataset['radar_out'].add_field(reflectivity_field, dBZ)
+
+    return new_dataset, ind_rad
+
+
+def process_st1_iq(procstatus, dscfg, radar_list=None):
+    """
+    Computes the statistical test one lag fluctuation from the horizontal or
+    vertical IQ data
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted configuration keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+    radar_list : list of spectra objects
+        Optional. list of spectra objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the output
+    ind_rad : int
+        radar index
+
+    """
+
+    if procstatus != 1:
+        return None, None
+
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
+    signal_field = get_fieldname_pyart(datatype)
+
+    ind_rad = int(radarnr[5:8])-1
+    if (radar_list is None) or (radar_list[ind_rad] is None):
+        warn('ERROR: No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if signal_field not in radar.fields:
+        warn('Unable to obtain ST1. Missing fields')
+        return None, None
+
+    st1 = pyart.retrieve.compute_st1_iq(
+        radar, signal_field=signal_field)
+
+    st1_field = 'stat_test_lag1'
+    if signal_field == 'IQ_vv_ADU':
+        st1_field += '_vv'
+
+    # prepare for exit
+    new_dataset = {'radar_out': pyart.util.radar_from_spectra(radar)}
+    new_dataset['radar_out'].add_field(st1_field, st1)
+
+    return new_dataset, ind_rad
+
+
+def process_st2_iq(procstatus, dscfg, radar_list=None):
+    """
+    Computes the statistical test two lag fluctuation from the horizontal or
+    vertical IQ data
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted configuration keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+    radar_list : list of spectra objects
+        Optional. list of spectra objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the output
+    ind_rad : int
+        radar index
+
+    """
+
+    if procstatus != 1:
+        return None, None
+
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
+    signal_field = get_fieldname_pyart(datatype)
+
+    ind_rad = int(radarnr[5:8])-1
+    if (radar_list is None) or (radar_list[ind_rad] is None):
+        warn('ERROR: No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if signal_field not in radar.fields:
+        warn('Unable to obtain ST2. Missing fields')
+        return None, None
+
+    st2 = pyart.retrieve.compute_st2_iq(
+        radar, signal_field=signal_field)
+
+    st2_field = 'stat_test_lag2'
+    if signal_field == 'IQ_vv_ADU':
+        st2_field += '_vv'
+
+    # prepare for exit
+    new_dataset = {'radar_out': pyart.util.radar_from_spectra(radar)}
+    new_dataset['radar_out'].add_field(st2_field, st2)
+
+    return new_dataset, ind_rad
+
+
+def process_wbn_iq(procstatus, dscfg, radar_list=None):
+    """
+    Computes the wide band noise from the horizontal or vertical IQ data
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted configuration keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+    radar_list : list of spectra objects
+        Optional. list of spectra objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the output
+    ind_rad : int
+        radar index
+
+    """
+
+    if procstatus != 1:
+        return None, None
+
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
+    signal_field = get_fieldname_pyart(datatype)
+
+    ind_rad = int(radarnr[5:8])-1
+    if (radar_list is None) or (radar_list[ind_rad] is None):
+        warn('ERROR: No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if signal_field not in radar.fields:
+        warn('Unable to obtain WBN. Missing fields')
+        return None, None
+
+    wbn = pyart.retrieve.compute_wbn_iq(
+        radar, signal_field=signal_field)
+
+    wbn_field = 'wide_band_noise'
+    if signal_field == 'IQ_vv_ADU':
+        wbn_field += '_vv'
+
+    # prepare for exit
+    new_dataset = {'radar_out': pyart.util.radar_from_spectra(radar)}
+    new_dataset['radar_out'].add_field(wbn_field, wbn)
 
     return new_dataset, ind_rad
 
@@ -283,14 +460,69 @@ def process_differential_reflectivity_iq(procstatus, dscfg, radar_list=None):
     lag = dscfg.get('lag', 0)
 
     zdr = pyart.retrieve.compute_differential_reflectivity_iq(
-        radar, compute_power=compute_power, lag=lag,
-        subtract_noise=subtract_noise, signal_h_field=signal_h_field,
-        signal_v_field=signal_v_field, noise_h_field=noise_h_field,
-        noise_v_field=noise_v_field)
+        radar, subtract_noise=subtract_noise, lag=lag,
+        signal_h_field=signal_h_field, signal_v_field=signal_v_field,
+        noise_h_field=noise_h_field, noise_v_field=noise_v_field)
 
     # prepare for exit
     new_dataset = {'radar_out': pyart.util.radar_from_spectra(radar)}
     new_dataset['radar_out'].add_field('differential_reflectivity', zdr)
+
+    return new_dataset, ind_rad
+
+
+def process_mean_phase_iq(procstatus, dscfg, radar_list=None):
+    """
+    Computes the mean phase from the horizontal or vertical IQ data
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted configuration keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+    radar_list : list of spectra objects
+        Optional. list of spectra objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the output
+    ind_rad : int
+        radar index
+
+    """
+
+    if procstatus != 1:
+        return None, None
+
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
+    signal_field = get_fieldname_pyart(datatype)
+
+    ind_rad = int(radarnr[5:8])-1
+    if (radar_list is None) or (radar_list[ind_rad] is None):
+        warn('ERROR: No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if signal_field not in radar.fields:
+        warn('Unable to obtain MPH. Missing fields')
+        return None, None
+
+    mph = pyart.retrieve.compute_mean_phase_iq(
+        radar, signal_field=signal_field)
+
+    mean_phase_field = 'mean_phase'
+    if signal_field == 'IQ_vv_ADU':
+        mean_phase_field += '_vv'
+
+    # prepare for exit
+    new_dataset = {'radar_out': pyart.util.radar_from_spectra(radar)}
+    new_dataset['radar_out'].add_field(mean_phase_field, mph)
 
     return new_dataset, ind_rad
 
@@ -309,6 +541,8 @@ def process_differential_phase_iq(procstatus, dscfg, radar_list=None):
 
         datatype : list of string. Dataset keyword
             The input data types
+        phase_offset : float. Dataset keyword
+            The system differential phase offset to remove
     radar_list : list of spectra objects
         Optional. list of spectra objects
 
@@ -341,11 +575,14 @@ def process_differential_phase_iq(procstatus, dscfg, radar_list=None):
 
     if (signal_h_field not in radar.fields or
             signal_v_field not in radar.fields):
-        warn('Unable to obtain RhoHV. Missing fields')
+        warn('Unable to obtain PhiDP. Missing fields')
         return None, None
 
+    phase_offset = dscfg.get('phase_offset', 0.)
+
     uphidp = pyart.retrieve.compute_differential_phase_iq(
-        radar, signal_h_field=signal_h_field, signal_v_field=signal_v_field,)
+        radar, phase_offset=phase_offset, signal_h_field=signal_h_field,
+        signal_v_field=signal_v_field)
 
     # prepare for exit
     new_dataset = {'radar_out': pyart.util.radar_from_spectra(radar)}

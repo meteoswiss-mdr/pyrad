@@ -490,6 +490,10 @@ User defined parameters:</p>
 <dt>‘step’: float</dt>
 <dd>The quantization step of the data. If none it will be
 computed using the Py-ART config file. Default None</dd>
+<dt>‘scatter_type’: str</dt>
+<dd>Type of scatter plot. Can be a plot for each radar volume
+(‘instant’) or at the end of the processing period
+(‘cumulative’). Default is ‘cumulative’</dd>
 </dl>
 </div></blockquote>
 </dd>
@@ -579,7 +583,7 @@ status of the processing</p>
 <dt id="pyrad.prod.generate_monitoring_products">
 <code class="descclassname">pyrad.prod.</code><code class="descname">generate_monitoring_products</code><span class="sig-paren">(</span><em>dataset</em>, <em>prdcfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/prod/process_monitoring_products.html#generate_monitoring_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.prod.generate_monitoring_products" title="Permalink to this definition">¶</a></dt>
 <dd><p>generates a monitoring product. With the parameter ‘hist_type’ the user
-may define is the product is computed for each radar volume (‘instant’) or
+may define if the product is computed for each radar volume (‘instant’) or
 at the end of the processing period (‘cumulative’). Default is
 ‘cumulative’.
 Accepted product types:</p>

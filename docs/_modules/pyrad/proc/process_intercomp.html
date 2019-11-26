@@ -71,6 +71,8 @@
 <span class="sd">    process_colocated_gates</span>
 <span class="sd">    process_intercomp</span>
 <span class="sd">    process_intercomp_time_avg</span>
+<span class="sd">    process_fields_diff</span>
+<span class="sd">    process_intercomp_fields</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -1094,12 +1096,12 @@
                 <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;beamwidth&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">beamwidth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> 
+                        <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span>
                                 <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">):</span>
                             <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
                                 <span class="s1">&#39;radar_beam_width_h&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
                         <span class="k">elif</span> <span class="p">(</span><span class="s1">&#39;radar_beam_width_v&#39;</span> <span class="ow">in</span>
-                                <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">):</span>
+                              <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">):</span>
                             <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
                                 <span class="s1">&#39;radar_beam_width_v&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">beamwidth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1119,12 +1121,12 @@
                 <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;beamwidth&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">beamwidth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span> 
+                        <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;radar_beam_width_h&#39;</span> <span class="ow">in</span>
                                 <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">):</span>
                             <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
                                 <span class="s1">&#39;radar_beam_width_h&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
                         <span class="k">elif</span> <span class="p">(</span><span class="s1">&#39;radar_beam_width_v&#39;</span> <span class="ow">in</span>
-                                <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">):</span>
+                              <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">):</span>
                             <span class="n">beamwidth</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span>
                                 <span class="s1">&#39;radar_beam_width_v&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">beamwidth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -2138,6 +2140,166 @@
                        <span class="s1">&#39;final&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
 
         <span class="k">return</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="process_fields_diff"><a class="viewcode-back" href="../../../proc.html#pyrad.proc.process_fields_diff">[docs]</a><span class="k">def</span> <span class="nf">process_fields_diff</span><span class="p">(</span><span class="n">procstatus</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">radar_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the field difference between RADAR001 and radar002,</span>
+<span class="sd">    i.e. RADAR001-RADAR002. Assumes both radars have the same geometry</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    procstatus : int</span>
+<span class="sd">        Processing status: 0 initializing, 1 processing volume,</span>
+<span class="sd">        2 post-processing</span>
+<span class="sd">    dscfg : dictionary of dictionaries</span>
+<span class="sd">        data set configuration. Accepted Configuration Keywords::</span>
+
+<span class="sd">        datatype : list of string. Dataset keyword</span>
+<span class="sd">            The input data types</span>
+<span class="sd">    radar_list : list of Radar objects</span>
+<span class="sd">        Optional. list of radar objects</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    new_dataset : dict</span>
+<span class="sd">        dictionary containing a radar object containing the field differences</span>
+<span class="sd">    ind_rad : int</span>
+<span class="sd">        radar index</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">procstatus</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="c1"># check how many radars are there</span>
+    <span class="n">radarnr_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">ind_radar_list</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">datatypedescr</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;datatype&#39;</span><span class="p">]:</span>
+        <span class="n">radarnr</span> <span class="o">=</span> <span class="n">datatypedescr</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">radarnr_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">radarnr</span><span class="p">:</span> <span class="p">[]})</span>
+        <span class="n">ind_radar_list</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">radarnr</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">8</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">ind_radar_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">ind_radar_list</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">radarnr_dict</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">radar_list</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Intercomparison requires data from two different radars&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="c1"># create the list of data types for each radar</span>
+    <span class="n">radarnr</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_datatype_fields</span><span class="p">(</span><span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;datatype&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">field_name_1</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+
+    <span class="n">radarnr</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_datatype_fields</span><span class="p">(</span><span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;datatype&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">field_name_2</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+
+    <span class="n">radar1</span> <span class="o">=</span> <span class="n">radar_list</span><span class="p">[</span><span class="n">ind_radar_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="n">radar2</span> <span class="o">=</span> <span class="n">radar_list</span><span class="p">[</span><span class="n">ind_radar_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+
+    <span class="k">if</span> <span class="n">radar1</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">radar2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to inter-compare radars. Missing radar&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="p">((</span><span class="n">field_name_1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">radar1</span><span class="o">.</span><span class="n">fields</span><span class="p">)</span> <span class="ow">or</span>
+            <span class="p">(</span><span class="n">field_name_2</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">radar2</span><span class="o">.</span><span class="n">fields</span><span class="p">)):</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to compare fields &#39;</span><span class="o">+</span><span class="n">field_name_1</span><span class="o">+</span><span class="s1">&#39;and &#39;</span><span class="o">+</span><span class="n">field_name_2</span> <span class="o">+</span>
+             <span class="s1">&#39;. Field missing in one of the radars&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="n">rad_diff</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">radar1</span><span class="p">)</span>
+    <span class="n">rad_diff</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">field_diff</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="s1">&#39;fields_difference&#39;</span><span class="p">)</span>
+    <span class="n">field_diff</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">radar1</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name_1</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">-</span>
+        <span class="n">radar2</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name_2</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+    <span class="n">rad_diff</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="s1">&#39;fields_difference&#39;</span><span class="p">,</span> <span class="n">field_diff</span><span class="p">)</span>
+
+    <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">rad_diff</span><span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="process_intercomp_fields"><a class="viewcode-back" href="../../../proc.html#pyrad.proc.process_intercomp_fields">[docs]</a><span class="k">def</span> <span class="nf">process_intercomp_fields</span><span class="p">(</span><span class="n">procstatus</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">radar_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    intercomparison between two radars</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    procstatus : int</span>
+<span class="sd">        Processing status: 0 initializing, 1 processing volume,</span>
+<span class="sd">        2 post-processing</span>
+<span class="sd">    dscfg : dictionary of dictionaries</span>
+<span class="sd">        data set configuration. Accepted Configuration Keywords::</span>
+
+<span class="sd">        datatype : list of string. Dataset keyword</span>
+<span class="sd">            The input data types</span>
+<span class="sd">    radar_list : list of Radar objects</span>
+<span class="sd">        Optional. list of radar objects</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    new_dataset : dict</span>
+<span class="sd">        dictionary containing a dictionary with intercomparison data</span>
+<span class="sd">    ind_rad : int</span>
+<span class="sd">        radar index</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">procstatus</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="c1"># check how many radars are there</span>
+    <span class="n">radarnr_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">ind_radar_list</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">datatypedescr</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;datatype&#39;</span><span class="p">]:</span>
+        <span class="n">radarnr</span> <span class="o">=</span> <span class="n">datatypedescr</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">radarnr_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">radarnr</span><span class="p">:</span> <span class="p">[]})</span>
+        <span class="n">ind_radar_list</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">radarnr</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">8</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">ind_radar_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">ind_radar_list</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">radarnr_dict</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">radar_list</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Intercomparison requires data from two different radars&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="c1"># create the list of data types for each radar</span>
+    <span class="n">radarnr</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_datatype_fields</span><span class="p">(</span><span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;datatype&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">field_name_1</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+
+    <span class="n">radarnr</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_datatype_fields</span><span class="p">(</span><span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;datatype&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">field_name_2</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+
+    <span class="n">radar1</span> <span class="o">=</span> <span class="n">radar_list</span><span class="p">[</span><span class="n">ind_radar_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="n">radar2</span> <span class="o">=</span> <span class="n">radar_list</span><span class="p">[</span><span class="n">ind_radar_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+
+    <span class="k">if</span> <span class="n">radar1</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">radar2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to inter-compare radars. Missing radar&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="p">((</span><span class="n">field_name_1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">radar1</span><span class="o">.</span><span class="n">fields</span><span class="p">)</span> <span class="ow">or</span>
+            <span class="p">(</span><span class="n">field_name_2</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">radar2</span><span class="o">.</span><span class="n">fields</span><span class="p">)):</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to compare fields &#39;</span><span class="o">+</span><span class="n">field_name_1</span><span class="o">+</span><span class="s1">&#39; and &#39;</span><span class="o">+</span><span class="n">field_name_2</span> <span class="o">+</span>
+             <span class="s1">&#39;. Field missing in one of the radars&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="n">data1</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">radar1</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name_1</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+    <span class="n">data2</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">radar2</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name_2</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+
+    <span class="n">mask1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">data1</span><span class="p">)</span>
+    <span class="n">mask2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">data2</span><span class="p">)</span>
+
+    <span class="n">data1</span><span class="p">[</span><span class="n">mask2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked</span>
+    <span class="n">data2</span><span class="p">[</span><span class="n">mask1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked</span>
+
+    <span class="n">intercomp_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;rad1_name&#39;</span><span class="p">:</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;RadarName&#39;</span><span class="p">][</span><span class="n">ind_radar_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+        <span class="s1">&#39;rad1_val&#39;</span><span class="p">:</span> <span class="n">data1</span><span class="o">.</span><span class="n">compressed</span><span class="p">(),</span>
+        <span class="s1">&#39;rad2_name&#39;</span><span class="p">:</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;RadarName&#39;</span><span class="p">][</span><span class="n">ind_radar_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+        <span class="s1">&#39;rad2_val&#39;</span><span class="p">:</span> <span class="n">data2</span><span class="o">.</span><span class="n">compressed</span><span class="p">()}</span>
+
+    <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;intercomp_dict&#39;</span><span class="p">:</span> <span class="n">intercomp_dict</span><span class="p">,</span>
+                   <span class="s1">&#39;timeinfo&#39;</span><span class="p">:</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span>
+                   <span class="s1">&#39;final&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="kc">None</span></div>
 </pre></div>
 
           </div>

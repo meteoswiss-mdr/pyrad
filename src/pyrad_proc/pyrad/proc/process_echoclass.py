@@ -286,8 +286,8 @@ def process_echo_filter(procstatus, dscfg, radar_list=None):
 
         datatype : list of string. Dataset keyword
             The input data types
-        echo_type : int
-            The type of echo to keep: 1 noise, 2 clutter, 3 precipitation.
+        echo_type : int or list of ints
+            The type of echoes to keep: 1 noise, 2 clutter, 3 precipitation.
             Default 3
     radar_list : list of Radar objects
         Optional. list of radar objects
@@ -321,7 +321,8 @@ def process_echo_filter(procstatus, dscfg, radar_list=None):
         return None, None
 
     echo_type = dscfg.get('echo_type', 3)
-    mask = radar.fields[echoid_field]['data'] != echo_type
+    mask = np.ma.isin(
+        radar.fields[echoid_field]['data'], echo_type, invert=True)
 
     new_dataset = {'radar_out': deepcopy(radar)}
     new_dataset['radar_out'].fields = dict()

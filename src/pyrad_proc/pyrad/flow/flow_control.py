@@ -596,10 +596,6 @@ def main_cosmo(cfgfile, starttime=None, endtime=None, trajfile="", infostr=""):
         dscfg, traj = _process_datasets(
             dataset_levels, cfg, dscfg, None, master_voltime, traj=traj,
             infostr=infostr)
-        
-        # Update last state -jgr-
-        try: 
-           write_last_state(master_voltime, cfg['lastStateFile'])
 
         gc.collect()
 

@@ -636,6 +636,18 @@
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CLT&#39;</span><span class="p">:</span>
         <span class="n">datatype_metranet</span> <span class="o">=</span> <span class="s1">&#39;CLT&#39;</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;clutter_exit_code&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ST1&#39;</span><span class="p">:</span>
+        <span class="n">datatype_metranet</span> <span class="o">=</span> <span class="s1">&#39;ST1&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;stat_test_lag1&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ST2&#39;</span><span class="p">:</span>
+        <span class="n">datatype_metranet</span> <span class="o">=</span> <span class="s1">&#39;ST2&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;stat_test_lag2&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;WBN&#39;</span><span class="p">:</span>
+        <span class="n">datatype_metranet</span> <span class="o">=</span> <span class="s1">&#39;WBN&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;wide_band_noise&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;MPH&#39;</span><span class="p">:</span>
+        <span class="n">datatype_metranet</span> <span class="o">=</span> <span class="s1">&#39;MPH&#39;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;mean_phase&#39;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
             <span class="s1">&#39;ERROR: Metranet fields do not contain datatype &#39;</span><span class="o">+</span><span class="n">datatype</span><span class="p">)</span>
@@ -1132,6 +1144,18 @@
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;noiseADU_hh&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;NADUv&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;noiseADU_vv&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;WBN&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;wide_band_noise&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;WBNc&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_wide_band_noise&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ST1&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;stat_test_lag1&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ST1c&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_stat_test_lag1&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ST2&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;stat_test_lag2&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ST2c&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_stat_test_lag2&#39;</span>
 
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;TXh&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;transmitted_signal_power_h&#39;</span>
@@ -1147,107 +1171,6 @@
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;clutter_correction_ratio_hh&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CCORv&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;clutter_correction_ratio_vv&#39;</span>
-
-    <span class="c1"># spectral data</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ShhADU&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;complex_spectra_hh_ADU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ShhADUu&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_complex_spectra_hh_ADU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;SvvADU&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;complex_spectra_vv_ADU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;SvvADUu&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_complex_spectra_vv_ADU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhhADU&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_power_hh_ADU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhhADUu&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_power_hh_ADU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPvvADU&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_power_vv_ADU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPvvADUu&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_power_vv_ADU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhhdBADU&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_power_hh_dBADU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhhdBADUu&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_power_hh_dBADU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPvvdBADU&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_power_vv_dBADU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPvvdBADUu&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_power_vv_dBADU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhhdBm&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_power_hh_dBm&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhhdBmu&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_power_hh_dBm&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPvvdBm&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_power_vv_dBm&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPvvdBmu&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_power_vv_dBm&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNh&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_hh_dBZ&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNv&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_vv_dBZ&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNdBADUh&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_hh_dBADU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNdBADUv&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_vv_dBADU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNdBmh&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_hh_dBm&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNdBmv&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_vv_dBm&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNADUh&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_hh_ADU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNADUv&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_vv_ADU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhasehh&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_phase_hh&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhasehhu&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_phase_hh&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhasevv&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_phase_vv&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhasevvu&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_phase_vv&#39;</span>
-
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sdBZ&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_reflectivity_hh&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sdBuZ&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_reflectivity_hh&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sdBZv&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_reflectivity_vv&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sdBuZv&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_reflectivity_vv&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sZDR&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_differential_reflectivity&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sZDRu&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_differential_reflectivity&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhiDP&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_differential_phase&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhiDPu&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_differential_phase&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sRhoHV&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_copolar_correlation_coefficient&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sRhoHVu&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_copolar_correlation_coefficient&#39;</span>
-
-    <span class="c1"># IQ data</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQhhADU&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_hh_ADU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQvvADU&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_vv_ADU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNh&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_hh_dBZ&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNv&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_vv_dBZ&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNdBADUh&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_hh_dBADU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNdBADUv&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_vv_dBADU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNdBmh&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_hh_dBm&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNdBmv&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_vv_dBm&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNADUh&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_hh_ADU&#39;</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNADUv&#39;</span><span class="p">:</span>
-        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_vv_ADU&#39;</span>
 
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;dBm_sun_hit&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;sun_hit_power_h&#39;</span>
@@ -1301,6 +1224,10 @@
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;uncorrected_specific_differential_phase&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;KDPc&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_specific_differential_phase&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;MPH&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;mean_phase&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;MPHc&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_mean_phase&#39;</span>
 
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;V&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;velocity&#39;</span>
@@ -1434,7 +1361,111 @@
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;sum&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sum2&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;sum_squared&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;diff&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;fields_difference&#39;</span>
 
+    <span class="c1"># spectral data</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ShhADU&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;complex_spectra_hh_ADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ShhADUu&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_complex_spectra_hh_ADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;SvvADU&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;complex_spectra_vv_ADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;SvvADUu&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_complex_spectra_vv_ADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhhADU&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_power_hh_ADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhhADUu&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_power_hh_ADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPvvADU&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_power_vv_ADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPvvADUu&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_power_vv_ADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhhdBADU&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_power_hh_dBADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhhdBADUu&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_power_hh_dBADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPvvdBADU&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_power_vv_dBADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPvvdBADUu&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_power_vv_dBADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhhdBm&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_power_hh_dBm&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhhdBmu&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_power_hh_dBm&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPvvdBm&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_power_vv_dBm&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPvvdBmu&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_power_vv_dBm&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNh&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_hh_dBZ&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNv&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_vv_dBZ&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNdBADUh&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_hh_dBADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNdBADUv&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_vv_dBADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNdBmh&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_hh_dBm&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNdBmv&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_vv_dBm&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNADUh&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_hh_ADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sNADUv&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_noise_power_vv_ADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhasehh&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_phase_hh&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhasehhu&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_phase_hh&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhasevv&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_phase_vv&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhasevvu&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_phase_vv&#39;</span>
+
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sdBZ&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_reflectivity_hh&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sdBuZ&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_reflectivity_hh&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sdBZv&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_reflectivity_vv&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sdBuZv&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_reflectivity_vv&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sZDR&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_differential_reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sZDRu&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_differential_reflectivity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhiDP&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_differential_phase&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sPhiDPu&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_differential_phase&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sRhoHV&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;spectral_copolar_correlation_coefficient&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;sRhoHVu&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;unfiltered_spectral_copolar_correlation_coefficient&#39;</span>
+
+    <span class="c1"># IQ data</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQhhADU&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_hh_ADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQvvADU&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_vv_ADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNh&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_hh_dBZ&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNv&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_vv_dBZ&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNdBADUh&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_hh_dBADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNdBADUv&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_vv_dBADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNdBmh&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_hh_dBm&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNdBmv&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_vv_dBm&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNADUh&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_hh_ADU&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IQNADUv&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IQ_noise_power_vv_ADU&#39;</span>
+
+    <span class="c1"># rad4alp cartesian products</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;POH&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;probability_of_hail&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;VIL&#39;</span><span class="p">:</span>

@@ -238,8 +238,20 @@
 <tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_reflectivity_iq" title="pyrad.proc.process_reflectivity_iq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_reflectivity_iq</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
 <td>Computes reflectivity from the IQ data</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_differential_reflectivity_iq" title="pyrad.proc.process_differential_reflectivity_iq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_differential_reflectivity_iq</span></code></a>(…[,&nbsp;…])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_st1_iq" title="pyrad.proc.process_st1_iq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_st1_iq</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<td>Computes the statistical test one lag fluctuation from the horizontal or vertical IQ data</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_st2_iq" title="pyrad.proc.process_st2_iq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_st2_iq</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<td>Computes the statistical test two lag fluctuation from the horizontal or vertical IQ data</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_wbn_iq" title="pyrad.proc.process_wbn_iq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_wbn_iq</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<td>Computes the wide band noise from the horizontal or vertical IQ data</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_differential_reflectivity_iq" title="pyrad.proc.process_differential_reflectivity_iq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_differential_reflectivity_iq</span></code></a>(…[,&nbsp;…])</td>
 <td>Computes differential reflectivity from the horizontal and vertical IQ data</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_mean_phase_iq" title="pyrad.proc.process_mean_phase_iq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_mean_phase_iq</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<td>Computes the mean phase from the horizontal or vertical IQ data</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_differential_phase_iq" title="pyrad.proc.process_differential_phase_iq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_differential_phase_iq</span></code></a>(procstatus,&nbsp;dscfg)</td>
 <td>Computes the differential phase from the horizontal and vertical IQ data</td>
@@ -420,6 +432,12 @@
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_intercomp_time_avg" title="pyrad.proc.process_intercomp_time_avg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_intercomp_time_avg</span></code></a>(procstatus,&nbsp;dscfg)</td>
 <td>intercomparison between the average reflectivity of two radars</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_fields_diff" title="pyrad.proc.process_fields_diff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_fields_diff</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<td>Computes the field difference between RADAR001 and radar002, i.e.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_intercomp_fields" title="pyrad.proc.process_intercomp_fields"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_intercomp_fields</span></code></a>(procstatus,&nbsp;dscfg)</td>
+<td>intercomparison between two radars</td>
 </tr>
 </tbody>
 </table>
@@ -643,6 +661,7 @@ the function documentation:</p>
 ‘DOPPLER_WIDTH’: process_Doppler_width
 ‘DOPPLER_WIDTH_IQ’: process_Doppler_width_iq
 ‘ECHO_FILTER’: process_echo_filter
+‘FIELDS_DIFF’: process_fields_diff
 ‘FIXED_RNG’: process_fixed_rng
 ‘FIXED_RNG_SPAN’: process_fixed_rng_span
 ‘HYDROCLASS’: process_hydroclass
@@ -651,6 +670,7 @@ the function documentation:</p>
 ‘KDP_LEASTSQUARE_1W’: process_kdp_leastsquare_single_window
 ‘KDP_LEASTSQUARE_2W’: process_kdp_leastsquare_double_window
 ‘L’: process_l
+‘MEAN_PHASE_IQ’: process_mean_phase_iq
 ‘NCVOL’: process_save_radar
 ‘NOISE_POWER’: process_noise_power
 ‘OUTLIER_FILTER’: process_outlier_filter
@@ -683,6 +703,8 @@ the function documentation:</p>
 ‘SELFCONSISTENCY_KDP_PHIDP’: process_selfconsistency_kdp_phidp
 ‘SNR’: process_snr
 ‘SNR_FILTER’: process_filter_snr
+‘ST1_IQ’: process_st1_iq
+‘ST2_IQ’: process_st2_iq
 ‘TRAJ_TRT’ : process_traj_trt
 ‘TRAJ_TRT_CONTOUR’ : process_traj_trt_contour
 ‘TURBULENCE’: process_turbulence
@@ -691,6 +713,7 @@ the function documentation:</p>
 ‘VIS’: process_visibility
 ‘VIS_FILTER’: process_filter_visibility
 ‘VOL_REFL’: process_vol_refl
+‘WBN’: process_wbn_iq
 ‘WIND_VEL’: process_wind_vel
 ‘WINDSHEAR’: process_windshear
 ‘ZDR’: process_differential_reflectivity
@@ -736,6 +759,7 @@ the function documentation:</p>
 </dd>
 <dt>‘INTERCOMP’ format output:</dt>
 <dd><p class="first last">‘INTERCOMP’: process_intercomp
+‘INTERCOMP_FIELDS’: process_intercomp_fields
 ‘INTERCOMP_TIME_AVG’: process_intercomp_time_avg</p>
 </dd>
 <dt>‘ML’ format output:</dt>
@@ -2056,6 +2080,9 @@ the spectral reflectivity</p>
 <dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">list of string. Dataset keyword</span></dt>
 <dd><p class="first last">The input data types</p>
 </dd>
+<dt>phase_offset <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">The system differential phase offset to remove</p>
+</dd>
 </dl>
 </dd>
 <dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of spectra objects</span></dt>
@@ -2188,8 +2215,8 @@ keyword echo_type</p>
 <dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">list of string. Dataset keyword</span></dt>
 <dd><p class="first last">The input data types</p>
 </dd>
-<dt>echo_type <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd><p class="first last">The type of echo to keep: 1 noise, 2 clutter, 3 precipitation.
+<dt>echo_type <span class="classifier-delimiter">:</span> <span class="classifier">int or list of ints</span></dt>
+<dd><p class="first last">The type of echoes to keep: 1 noise, 2 clutter, 3 precipitation.
 Default 3</p>
 </dd>
 </dl>
@@ -2426,6 +2453,48 @@ scipy.signal.windows.get_window. It can also be [‘None’].</p>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
 <dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
 <dd><p class="first last">dictionary containing the output</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.proc.process_fields_diff">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_fields_diff</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_intercomp.html#process_fields_diff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_fields_diff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the field difference between RADAR001 and radar002,
+i.e. RADAR001-RADAR002. Assumes both radars have the same geometry</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first">data set configuration. Accepted Configuration Keywords:</p>
+<dl class="last docutils">
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">list of string. Dataset keyword</span></dt>
+<dd><p class="first last">The input data types</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing a radar object containing the field differences</p>
 </dd>
 <dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd><p class="first last">radar index</p>
@@ -3463,6 +3532,47 @@ have been processed</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="pyrad.proc.process_intercomp_fields">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_intercomp_fields</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_intercomp.html#process_intercomp_fields"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_intercomp_fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>intercomparison between two radars</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first">data set configuration. Accepted Configuration Keywords:</p>
+<dl class="last docutils">
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">list of string. Dataset keyword</span></dt>
+<dd><p class="first last">The input data types</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing a dictionary with intercomparison data</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="pyrad.proc.process_intercomp_time_avg">
 <code class="descclassname">pyrad.proc.</code><code class="descname">process_intercomp_time_avg</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_intercomp.html#process_intercomp_time_avg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_intercomp_time_avg" title="Permalink to this definition">¶</a></dt>
 <dd><p>intercomparison between the average reflectivity of two radars</p>
@@ -3657,6 +3767,47 @@ have been processed</p>
 </dd>
 <dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
 <dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the output</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.proc.process_mean_phase_iq">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_mean_phase_iq</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_iq.html#process_mean_phase_iq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_mean_phase_iq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the mean phase from the horizontal or vertical IQ data</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first">data set configuration. Accepted configuration keywords:</p>
+<dl class="last docutils">
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">list of string. Dataset keyword</span></dt>
+<dd><p class="first last">The input data types</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of spectra objects</span></dt>
+<dd><p class="first last">Optional. list of spectra objects</p>
 </dd>
 </dl>
 </td>
@@ -4396,6 +4547,9 @@ negative_away or negative_towards</p>
 </dd>
 <dt>variables <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
 <dd><p class="first last">list of variables to compute. Default dBZ</p>
+</dd>
+<dt>phase_offset <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">The system differential phase offset to remove</p>
 </dd>
 </dl>
 </dd>
@@ -6241,6 +6395,90 @@ will be applied</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="pyrad.proc.process_st1_iq">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_st1_iq</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_iq.html#process_st1_iq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_st1_iq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the statistical test one lag fluctuation from the horizontal or
+vertical IQ data</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first">data set configuration. Accepted configuration keywords:</p>
+<dl class="last docutils">
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">list of string. Dataset keyword</span></dt>
+<dd><p class="first last">The input data types</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of spectra objects</span></dt>
+<dd><p class="first last">Optional. list of spectra objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the output</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.proc.process_st2_iq">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_st2_iq</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_iq.html#process_st2_iq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_st2_iq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the statistical test two lag fluctuation from the horizontal or
+vertical IQ data</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first">data set configuration. Accepted configuration keywords:</p>
+<dl class="last docutils">
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">list of string. Dataset keyword</span></dt>
+<dd><p class="first last">The input data types</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of spectra objects</span></dt>
+<dd><p class="first last">Optional. list of spectra objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the output</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="pyrad.proc.process_sun_hits">
 <code class="descclassname">pyrad.proc.</code><code class="descname">process_sun_hits</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_calib.html#process_sun_hits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_sun_hits" title="Permalink to this definition">¶</a></dt>
 <dd><p>monitoring of the radar using sun hits</p>
@@ -7381,6 +7619,47 @@ offset is set to 0 while above is set to 100.</p>
 </dd>
 <dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
 <dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the output</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.proc.process_wbn_iq">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_wbn_iq</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_iq.html#process_wbn_iq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_wbn_iq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the wide band noise from the horizontal or vertical IQ data</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first">data set configuration. Accepted configuration keywords:</p>
+<dl class="last docutils">
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">list of string. Dataset keyword</span></dt>
+<dd><p class="first last">The input data types</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of spectra objects</span></dt>
+<dd><p class="first last">Optional. list of spectra objects</p>
 </dd>
 </dl>
 </td>

@@ -1,0 +1,531 @@
+#
+# Product generation configuration
+#
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 3
+    l0:echoID
+    l1:echoFilter
+    l2:IQA_PHA_no_noise_uPhiDP_offset_corrected_scatter
+
+
+
+#    l0:echoID
+#    l1:echoFilter
+#    l2:IQA_PHA_no_noise_dBZ_scatter
+#    l2:IQA_PHA_no_noise_dBZv_scatter
+#    l2:IQA_PHA_no_noise_ZDR_scatter
+#    l2:IQA_PHA_no_noise_RhoHV_scatter
+#    l2:IQA_PHA_no_noise_uPhiDP_scatter
+#    l2:IQA_PHA_no_noise_V_scatter
+#    l2:IQA_PHA_no_noise_W_scatter
+#    l2:IQA_PHA_no_noise_MPH_scatter
+#    l2:IQA_PHA_no_noise_ST1_scatter
+#    l2:IQA_PHA_no_noise_ST2_scatter
+#    l2:IQA_PHA_no_noise_WBN_scatter
+#
+#    IQA_PHA_dBZv_diff
+#    IQA_PHA_ZDR_diff
+#    IQA_PHA_RhoHV_diff
+#    IQA_PHA_uPhiDP_diff
+#    IQA_PHA_V_diff
+#    IQA_PHA_W_diff
+#    IQA_PHA_MPH_diff
+#    IQA_PHA_ST1_diff
+#    IQA_PHA_ST2_diff
+#    IQA_PHA_WBN_diff
+
+
+# ==========================================================================================
+#                 Fields differences
+# ==========================================================================================
+IQA_PHA_dBZ_diff STRUCT 3
+	type STRING FIELDS_DIFF
+	datatype STRARR 2
+		RADAR001:CFRADIAL:dBZ,dBZ,SAVEVOL
+        RADAR002:RAD4ALP:dBZ
+    products STRUCT 1
+        ELN00_2 STRUCT 5
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING diff
+            vmin FLOAT -2.
+            vmax FLOAT 2.
+
+IQA_PHA_dBZv_diff STRUCT 3
+	type STRING FIELDS_DIFF
+	datatype STRARR 2
+		RADAR001:CFRADIAL:dBZv,dBZv,SAVEVOL
+        RADAR002:RAD4ALP:dBZv
+    products STRUCT 1
+        ELN00_2 STRUCT 5
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING diff
+            vmin FLOAT -2.
+            vmax FLOAT 2.
+
+IQA_PHA_ZDR_diff STRUCT 3
+	type STRING FIELDS_DIFF
+	datatype STRARR 2
+		RADAR001:CFRADIAL:ZDR,ZDR,SAVEVOL
+        RADAR002:RAD4ALP:ZDR
+    products STRUCT 1
+        ELN00_2 STRUCT 5
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING diff
+            vmin FLOAT -2.
+            vmax FLOAT 2.
+
+IQA_PHA_RhoHV_diff STRUCT 3
+	type STRING FIELDS_DIFF
+	datatype STRARR 2
+		RADAR001:CFRADIAL:RhoHV,RhoHV,SAVEVOL
+        RADAR002:RAD4ALP:uRhoHV
+    products STRUCT 1
+        ELN00_2 STRUCT 5
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING diff
+            vmin FLOAT -0.1
+            vmax FLOAT 0.1
+
+IQA_PHA_uPhiDP_diff STRUCT 3
+	type STRING FIELDS_DIFF
+	datatype STRARR 2
+		RADAR001:CFRADIAL:uPhiDP,uPhiDP,SAVEVOL
+        RADAR002:RAD4ALP:uPhiDP
+    products STRUCT 1
+        ELN00_2 STRUCT 5
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING diff
+            vmin FLOAT -180.
+            vmax FLOAT 180.
+
+IQA_PHA_uPhiDP_offset_corrected_diff STRUCT 3
+	type STRING FIELDS_DIFF
+	datatype STRARR 2
+		RADAR001:CFRADIAL:uPhiDP,uPhiDP_offset_corrected,SAVEVOL
+        RADAR002:RAD4ALP:uPhiDP
+    products STRUCT 1
+        ELN00_2 STRUCT 5
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING diff
+            vmin FLOAT -180.
+            vmax FLOAT 180.
+
+IQA_PHA_V_diff STRUCT 3
+	type STRING FIELDS_DIFF
+	datatype STRARR 2
+		RADAR001:CFRADIAL:V,V,SAVEVOL
+        RADAR002:RAD4ALP:V
+    products STRUCT 1
+        ELN00_2 STRUCT 5
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING diff
+            vmin FLOAT -1.
+            vmax FLOAT 1.
+
+IQA_PHA_W_diff STRUCT 3
+	type STRING FIELDS_DIFF
+	datatype STRARR 2
+		RADAR001:CFRADIAL:W,W,SAVEVOL
+        RADAR002:RAD4ALP:W
+    products STRUCT 1
+        ELN00_2 STRUCT 5
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING diff
+            vmin FLOAT -1.
+            vmax FLOAT 1.
+
+IQA_PHA_MPH_diff STRUCT 3
+	type STRING FIELDS_DIFF
+	datatype STRARR 2
+		RADAR001:CFRADIAL:MPH,MPH,SAVEVOL
+        RADAR002:RAD4ALP:MPH
+    products STRUCT 1
+        ELN00_2 STRUCT 5
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING diff
+            vmin FLOAT -180.
+            vmax FLOAT 180.
+
+IQA_PHA_ST1_diff STRUCT 3
+	type STRING FIELDS_DIFF
+	datatype STRARR 2
+		RADAR001:CFRADIAL:ST1,ST1,SAVEVOL
+        RADAR002:RAD4ALP:ST1
+    products STRUCT 1
+        ELN00_2 STRUCT 5
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING diff
+            vmin FLOAT -2.
+            vmax FLOAT 2.
+
+IQA_PHA_ST2_diff STRUCT 3
+	type STRING FIELDS_DIFF
+	datatype STRARR 2
+		RADAR001:CFRADIAL:ST2,ST2,SAVEVOL
+        RADAR002:RAD4ALP:ST2
+    products STRUCT 1
+        ELN00_2 STRUCT 5
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING diff
+            vmin FLOAT -2.
+            vmax FLOAT 2.
+
+IQA_PHA_WBN_diff STRUCT 3
+	type STRING FIELDS_DIFF
+	datatype STRARR 2
+		RADAR001:CFRADIAL:WBN,WBN,SAVEVOL
+        RADAR002:RAD4ALP:WBN
+    products STRUCT 1
+        ELN00_2 STRUCT 5
+            type  STRING PPI_IMAGE
+            anglenr INT 0
+            voltype STRING diff
+            vmin FLOAT -2.
+            vmax FLOAT 2.
+
+# ==========================================================================================
+#                 Fields scatter
+# ==========================================================================================
+IQA_PHA_dBZ_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:dBZ,dBZ,SAVEVOL
+        RADAR002:RAD4ALP:dBZ
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING dBZ
+            step FLOAT 0.5
+            scatter_type STRING instant
+
+IQA_PHA_dBZv_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:dBZv,dBZv,SAVEVOL
+        RADAR002:RAD4ALP:dBZv
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING dBZv
+            step FLOAT 0.5
+            scatter_type STRING instant
+
+IQA_PHA_ZDR_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:ZDR,ZDR,SAVEVOL
+        RADAR002:RAD4ALP:ZDR
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING ZDR
+            step FLOAT 0.1
+            scatter_type STRING instant
+
+IQA_PHA_RhoHV_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:RhoHV,RhoHV,SAVEVOL
+        RADAR002:RAD4ALP:uRhoHV
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING RhoHV
+            step FLOAT 0.001
+            scatter_type STRING instant
+
+IQA_PHA_uPhiDP_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:uPhiDP,uPhiDP,SAVEVOL
+        RADAR002:RAD4ALP:uPhiDP
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING uPhiDP
+            step FLOAT 1
+            scatter_type STRING instant
+
+IQA_PHA_uPhiDP_offset_corrected_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:uPhiDP,uPhiDP_offset_corrected,SAVEVOL
+        RADAR002:RAD4ALP:uPhiDP
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING uPhiDP
+            step FLOAT 1
+            scatter_type STRING instant
+
+IQA_PHA_V_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:V,V,SAVEVOL
+        RADAR002:RAD4ALP:V
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING V
+            step FLOAT 0.1
+            scatter_type STRING instant
+
+IQA_PHA_W_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:W,W,SAVEVOL
+        RADAR002:RAD4ALP:W
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING W
+            step FLOAT 0.1
+            scatter_type STRING instant
+
+IQA_PHA_MPH_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:MPH,MPH,SAVEVOL
+        RADAR002:RAD4ALP:MPH
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING MPH
+            step FLOAT 1
+            scatter_type STRING instant
+
+IQA_PHA_ST1_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:ST1,ST1,SAVEVOL
+        RADAR002:RAD4ALP:ST1
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING ST1
+            step FLOAT 0.5
+            scatter_type STRING instant
+
+IQA_PHA_ST2_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:ST2,ST2,SAVEVOL
+        RADAR002:RAD4ALP:ST2
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING ST2
+            step FLOAT 0.5
+            scatter_type STRING instant
+
+IQA_PHA_WBN_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:WBN,WBN,SAVEVOL
+        RADAR002:RAD4ALP:WBN
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING WBN
+            step FLOAT 0.5
+            scatter_type STRING instant
+
+
+# ==========================================================================================
+#                 echo identification
+# ==========================================================================================
+echoID STRUCT 3
+    type STRING CLT_TO_SAN
+    datatype STRARR 1
+        RADAR002:RAD4ALP:CLT
+    MAKE_GLOBAL INT 1
+
+
+# ==========================================================================================
+#                 clutter and noise suppression
+# ==========================================================================================
+# echo type 3 : precip, 2 : clutter, 1 : noise
+echoFilter STRUCT 5
+    type STRING ECHO_FILTER
+    datatype STRARR 12
+        RADAR002:PROC:echoID
+        RADAR002:RAD4ALP:dBZ
+        RADAR002:RAD4ALP:dBZv
+        RADAR002:RAD4ALP:ZDR
+        RADAR002:RAD4ALP:uRhoHV
+        RADAR002:RAD4ALP:uPhiDP
+        RADAR002:RAD4ALP:MPH
+        RADAR002:RAD4ALP:V
+        RADAR002:RAD4ALP:W
+        RADAR002:RAD4ALP:ST1
+        RADAR002:RAD4ALP:ST2
+        RADAR002:RAD4ALP:WBN
+    echo_type INTARR 2
+        3
+        2
+    MAKE_GLOBAL INT 1
+    products STRUCT 1
+        dBZc STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING dBZc
+            anglenr INT 0
+
+# ==========================================================================================
+#                 Fields scatter without noise
+# ==========================================================================================
+IQA_PHA_no_noise_dBZ_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:dBZ,dBZ,SAVEVOL
+        RADAR002:PROC:dBZc
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING dBZ
+            step FLOAT 0.5
+            scatter_type STRING instant
+
+IQA_PHA_no_noise_dBZv_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:dBZv,dBZv,SAVEVOL
+        RADAR002:PROC:dBZvc
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING dBZv
+            step FLOAT 0.5
+            scatter_type STRING instant
+
+IQA_PHA_no_noise_ZDR_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:ZDR,ZDR,SAVEVOL
+        RADAR002:PROC:ZDRc
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING ZDR
+            step FLOAT 0.1
+            scatter_type STRING instant
+
+IQA_PHA_no_noise_RhoHV_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:RhoHV,RhoHV,SAVEVOL
+        RADAR002:PROC:RhoHVc
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING RhoHV
+            step FLOAT 0.001
+            scatter_type STRING instant
+
+IQA_PHA_no_noise_uPhiDP_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:uPhiDP,uPhiDP,SAVEVOL
+        RADAR002:PROC:PhiDPc
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING uPhiDP
+            step FLOAT 1
+            scatter_type STRING instant
+            
+IQA_PHA_no_noise_uPhiDP_offset_corrected_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:uPhiDP,uPhiDP_offset_corrected,SAVEVOL
+        RADAR002:PROC:PhiDPc
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING uPhiDP
+            step FLOAT 1
+            scatter_type STRING instant
+
+IQA_PHA_no_noise_V_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:V,V,SAVEVOL
+        RADAR002:PROC:Vc
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING V
+            step FLOAT 0.1
+            scatter_type STRING instant
+
+IQA_PHA_no_noise_W_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:W,W,SAVEVOL
+        RADAR002:PROC:Wc
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING W
+            step FLOAT 0.1
+            scatter_type STRING instant
+
+IQA_PHA_no_noise_MPH_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:MPH,MPH,SAVEVOL
+        RADAR002:PROC:MPHc
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING MPH
+            step FLOAT 1
+            scatter_type STRING instant
+
+IQA_PHA_no_noise_ST1_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:ST1,ST1,SAVEVOL
+        RADAR002:PROC:ST1c
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING ST1
+            step FLOAT 0.5
+            scatter_type STRING instant
+
+IQA_PHA_no_noise_ST2_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:ST2,ST2,SAVEVOL
+        RADAR002:PROC:ST2c
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING ST2
+            step FLOAT 0.5
+            scatter_type STRING instant
+
+IQA_PHA_no_noise_WBN_scatter STRUCT 3
+	type STRING INTERCOMP_FIELDS
+	datatype STRARR 2
+		RADAR001:CFRADIAL:WBN,WBN,SAVEVOL
+        RADAR002:PROC:WBNc
+    products STRUCT 1
+        IQA_PHA STRUCT 4
+            type STRING PLOT_SCATTER_INTERCOMP
+            voltype STRING WBN
+            step FLOAT 0.5
+            scatter_type STRING instant

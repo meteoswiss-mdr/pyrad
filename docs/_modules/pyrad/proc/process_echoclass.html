@@ -342,8 +342,8 @@
 
 <span class="sd">        datatype : list of string. Dataset keyword</span>
 <span class="sd">            The input data types</span>
-<span class="sd">        echo_type : int</span>
-<span class="sd">            The type of echo to keep: 1 noise, 2 clutter, 3 precipitation.</span>
+<span class="sd">        echo_type : int or list of ints</span>
+<span class="sd">            The type of echoes to keep: 1 noise, 2 clutter, 3 precipitation.</span>
 <span class="sd">            Default 3</span>
 <span class="sd">    radar_list : list of Radar objects</span>
 <span class="sd">        Optional. list of radar objects</span>
@@ -377,7 +377,8 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
     <span class="n">echo_type</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;echo_type&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-    <span class="n">mask</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">echoid_field</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">echo_type</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span>
+        <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">echoid_field</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">echo_type</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">radar</span><span class="p">)}</span>
     <span class="n">new_dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>

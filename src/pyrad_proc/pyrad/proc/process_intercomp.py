@@ -15,6 +15,8 @@ Functions used in the inter-comparison between radars
     process_colocated_gates
     process_intercomp
     process_intercomp_time_avg
+    process_fields_diff
+    process_intercomp_fields
 
 """
 
@@ -1038,12 +1040,12 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
                 beamwidth = dscfg.get('beamwidth', None)
                 if beamwidth is None:
                     if radar.instrument_parameters is not None:
-                        if ('radar_beam_width_h' in 
+                        if ('radar_beam_width_h' in
                                 radar.instrument_parameters):
                             beamwidth = radar.instrument_parameters[
                                 'radar_beam_width_h']['data'][0]
                         elif ('radar_beam_width_v' in
-                                radar.instrument_parameters):
+                              radar.instrument_parameters):
                             beamwidth = radar.instrument_parameters[
                                 'radar_beam_width_v']['data'][0]
                 if beamwidth is None:
@@ -1063,12 +1065,12 @@ def process_time_avg_flag(procstatus, dscfg, radar_list=None):
                 beamwidth = dscfg.get('beamwidth', None)
                 if beamwidth is None:
                     if radar.instrument_parameters is not None:
-                        if ('radar_beam_width_h' in 
+                        if ('radar_beam_width_h' in
                                 radar.instrument_parameters):
                             beamwidth = radar.instrument_parameters[
                                 'radar_beam_width_h']['data'][0]
                         elif ('radar_beam_width_v' in
-                                radar.instrument_parameters):
+                              radar.instrument_parameters):
                             beamwidth = radar.instrument_parameters[
                                 'radar_beam_width_v']['data'][0]
                 if beamwidth is None:
@@ -2082,3 +2084,163 @@ def process_intercomp_time_avg(procstatus, dscfg, radar_list=None):
                        'final': True}
 
         return new_dataset, None
+
+
+def process_fields_diff(procstatus, dscfg, radar_list=None):
+    """
+    Computes the field difference between RADAR001 and radar002,
+    i.e. RADAR001-RADAR002. Assumes both radars have the same geometry
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing a radar object containing the field differences
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    # check how many radars are there
+    radarnr_dict = dict()
+    ind_radar_list = set()
+    for datatypedescr in dscfg['datatype']:
+        radarnr = datatypedescr.split(':')[0]
+        radarnr_dict.update({radarnr: []})
+        ind_radar_list.add(int(radarnr[5:8])-1)
+
+    ind_radar_list = list(ind_radar_list)
+
+    if (len(radarnr_dict) != 2) or (len(radar_list) < 2):
+        warn('Intercomparison requires data from two different radars')
+        return None, None
+
+    # create the list of data types for each radar
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
+    field_name_1 = get_fieldname_pyart(datatype)
+
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][1])
+    field_name_2 = get_fieldname_pyart(datatype)
+
+    radar1 = radar_list[ind_radar_list[0]]
+    radar2 = radar_list[ind_radar_list[1]]
+
+    if radar1 is None or radar2 is None:
+        warn('Unable to inter-compare radars. Missing radar')
+        return None, None
+
+    if ((field_name_1 not in radar1.fields) or
+            (field_name_2 not in radar2.fields)):
+        warn('Unable to compare fields '+field_name_1+'and '+field_name_2 +
+             '. Field missing in one of the radars')
+        return None, None
+
+    rad_diff = deepcopy(radar1)
+    rad_diff.fields = dict()
+    field_diff = pyart.config.get_metadata('fields_difference')
+    field_diff['data'] = (
+        radar1.fields[field_name_1]['data'] -
+        radar2.fields[field_name_2]['data'])
+    rad_diff.add_field('fields_difference', field_diff)
+
+    new_dataset = {'radar_out': rad_diff}
+
+    return new_dataset, None
+
+
+def process_intercomp_fields(procstatus, dscfg, radar_list=None):
+    """
+    intercomparison between two radars
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing a dictionary with intercomparison data
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    # check how many radars are there
+    radarnr_dict = dict()
+    ind_radar_list = set()
+    for datatypedescr in dscfg['datatype']:
+        radarnr = datatypedescr.split(':')[0]
+        radarnr_dict.update({radarnr: []})
+        ind_radar_list.add(int(radarnr[5:8])-1)
+
+    ind_radar_list = list(ind_radar_list)
+
+    if (len(radarnr_dict) != 2) or (len(radar_list) < 2):
+        warn('Intercomparison requires data from two different radars')
+        return None, None
+
+    # create the list of data types for each radar
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
+    field_name_1 = get_fieldname_pyart(datatype)
+
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][1])
+    field_name_2 = get_fieldname_pyart(datatype)
+
+    radar1 = radar_list[ind_radar_list[0]]
+    radar2 = radar_list[ind_radar_list[1]]
+
+    if radar1 is None or radar2 is None:
+        warn('Unable to inter-compare radars. Missing radar')
+        return None, None
+
+    if ((field_name_1 not in radar1.fields) or
+            (field_name_2 not in radar2.fields)):
+        warn('Unable to compare fields '+field_name_1+' and '+field_name_2 +
+             '. Field missing in one of the radars')
+        return None, None
+
+    data1 = deepcopy(radar1.fields[field_name_1]['data'])
+    data2 = deepcopy(radar2.fields[field_name_2]['data'])
+
+    mask1 = np.ma.getmaskarray(data1)
+    mask2 = np.ma.getmaskarray(data2)
+
+    data1[mask2] = np.ma.masked
+    data2[mask1] = np.ma.masked
+
+    intercomp_dict = {
+        'rad1_name': dscfg['RadarName'][ind_radar_list[0]],
+        'rad1_val': data1.compressed(),
+        'rad2_name': dscfg['RadarName'][ind_radar_list[1]],
+        'rad2_val': data2.compressed()}
+
+    new_dataset = {'intercomp_dict': intercomp_dict,
+                   'timeinfo': dscfg['timeinfo'],
+                   'final': False}
+
+    return new_dataset, None
