@@ -203,7 +203,7 @@ def generate_cosmo_coord_products(dataset, prdcfg):
         new_dataset.fields = dict()
         new_dataset.add_field(field_name, radar_obj.fields[field_name])
 
-        savedir = prdcfg['cosmopath'][ind_rad]+'rad2cosmo1/'
+        savedir = prdcfg['cosmopath'][ind_rad]+'rad2cosmo/'
         fname = 'rad2cosmo_'+prdcfg['voltype']+'_'+prdcfg['procname']+'.nc'
 
         if file_type == 'nc':
