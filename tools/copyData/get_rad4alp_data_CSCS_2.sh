@@ -280,7 +280,7 @@ for ((irad=0; irad<${nrad}; irad++)); do
                         unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.* -d ${data_destpath}
                     else
                         for ((iele=0; iele<${nele}; iele++)); do
-                            ele="$((${ele_vec[${iele}]} + 800))"
+                            ele="$(expr ${ele_vec[${iele}]} + 800)"
                             unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.${ele} -d ${data_destpath}
                         done
                     fi
@@ -305,7 +305,7 @@ for ((irad=0; irad<${nrad}; irad++)); do
                         unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.* -d ${data_destpath}
                     else
                         for ((iele=0; iele<${nele}; iele++)); do
-                            ele="$((${ele_vec[${iele}]} + 800))"
+                            ele="$(expr ${ele_vec[${iele}]} + 800)"
                             unzip -o ${data_origpath}${filebase}.zip ${filebase}${time_rad}*.${ele} -d ${data_destpath}
                         done
                     fi
@@ -350,7 +350,7 @@ for ((irad=0; irad<${nrad}; irad++)); do
                     unzip -o ${data_origpath}${filebase}.zip ${filebase}0000*.* -d ${data_destpath}
                 else
                     for ((iele=0; iele<${nele}; iele++)); do
-                        ele="$((${ele_vec[${iele}]} + 800))"
+                        ele="$(expr ${ele_vec[${iele}]} + 800)"
                         unzip -o ${data_origpath}${filebase}.zip ${filebase}0000*.${ele} -d ${data_destpath}
                     done
                 fi
@@ -364,7 +364,7 @@ for ((irad=0; irad<${nrad}; irad++)); do
                     unzip -o ${data_origpath}${filebase}.zip ${filebase}0000*.* -d ${data_destpath}
                 else
                     for ((iele=0; iele<${nele}; iele++)); do
-                        ele="$((${ele_vec[${iele}]} + 800))"
+                        ele="$(expr ${ele_vec[${iele}]} + 800)"
                         unzip -o ${data_origpath}${filebase}.zip ${filebase}0000*.${ele} -d ${data_destpath}
                     done
                 fi
