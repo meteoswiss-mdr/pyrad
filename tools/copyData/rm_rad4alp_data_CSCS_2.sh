@@ -301,7 +301,7 @@ for ((iday=0; iday<${nday}; iday++)); do
                         rm -f ${data_destbase}${years}${julday}/YM${radar}${years}${julday}/YM${radar}${years}${julday}${time_rad}*.*
                     else
                         for ((iele=0; iele<${nele}; iele++)); do
-                            ele="$((${ele_vec[${iele}]} + 800))"
+                            ele="$(expr ${ele_vec[${iele}]} + 800)"
                             rm -f ${data_destbase}${years}${julday}/YM${radar}${years}${julday}/YM${radar}${years}${julday}${time_rad}*.${ele}
                         done
                     fi
@@ -331,7 +331,7 @@ for ((iday=0; iday<${nday}; iday++)); do
                         rm -f ${data_destbase}${years}${julday}/DV${radar}${years}${julday}/DV${radar}${years}${julday}${time_rad}*.*
                     else
                         for ((iele=0; iele<${nele}; iele++)); do
-                            ele="$((${ele_vec[${iele}]} + 800))"
+                            ele="$(expr ${ele_vec[${iele}]} + 800)"
                             rm -f ${data_destbase}${years}${julday}/DV${radar}${years}${julday}/DV${radar}${years}${julday}${time_rad}*.${ele}
                         done
                     fi
