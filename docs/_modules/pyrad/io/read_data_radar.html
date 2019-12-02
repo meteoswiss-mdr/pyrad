@@ -70,6 +70,7 @@
 <span class="sd">    merge_scans_dem</span>
 <span class="sd">    merge_scans_rad4alp</span>
 <span class="sd">    merge_scans_odim</span>
+<span class="sd">    merge_scans_nexrad2</span>
 <span class="sd">    merge_scans_cfradial2</span>
 <span class="sd">    merge_scans_cf1</span>
 <span class="sd">    merge_scans_cosmo</span>
@@ -183,6 +184,8 @@
 <span class="sd">                which datatype to use to match a particular ODIM field name</span>
 <span class="sd">                check the function &#39;get_datatype_odim&#39; in pyrad/io/io_aux.py</span>
 
+<span class="sd">            &#39;NEXRADII&#39;: Nexrad-level II file format.</span>
+
 <span class="sd">            &#39;CFRADIAL2&#39;: CFRADIAL2 file format. For such types &#39;dataset&#39;</span>
 <span class="sd">                specifies the directory and file name date convention.</span>
 <span class="sd">                Example: ODIM:dBZ,D{%Y-%m-%d}-F{%Y%m%d%H%M%S}. To find out</span>
@@ -250,6 +253,8 @@
     <span class="n">datatype_rad4alp</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">datatype_odim</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">dataset_odim</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">datatype_nexrad2</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">dataset_nexrad2</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">datatype_cfradial</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">dataset_cfradial</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">product_cfradial</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -292,6 +297,9 @@
         <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;ODIM&#39;</span><span class="p">:</span>
             <span class="n">datatype_odim</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
             <span class="n">dataset_odim</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;NEXRADII&#39;</span><span class="p">:</span>
+            <span class="n">datatype_nexrad2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+            <span class="n">dataset_nexrad2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;CFRADIAL&#39;</span><span class="p">:</span>
             <span class="n">datatype_cfradial</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
             <span class="n">dataset_cfradial</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
@@ -349,6 +357,7 @@
     <span class="n">ndatatypes_rainbow</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_rainbow</span><span class="p">)</span>
     <span class="n">ndatatypes_rad4alp</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_rad4alp</span><span class="p">)</span>
     <span class="n">ndatatypes_odim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_odim</span><span class="p">)</span>
+    <span class="n">ndatatypes_nexrad2</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_nexrad2</span><span class="p">)</span>
     <span class="n">ndatatypes_cfradial</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_cfradial</span><span class="p">)</span>
     <span class="n">ndatatypes_cfradial2</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_cfradial2</span><span class="p">)</span>
     <span class="n">ndatatypes_cf1</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datatype_cf1</span><span class="p">)</span>
@@ -392,6 +401,18 @@
         <span class="n">radar</span> <span class="o">=</span> <span class="n">merge_scans_odim</span><span class="p">(</span>
             <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanList&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">radar_name</span><span class="p">,</span>
             <span class="n">radar_res</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_odim</span><span class="p">,</span> <span class="n">dataset_odim</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span>
+            <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">ndatatypes_nexrad2</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">radar_name</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarName&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
+            <span class="n">radar_res</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;RadarRes&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="n">radar_name</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">radar_res</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">radar</span> <span class="o">=</span> <span class="n">merge_scans_nexrad2</span><span class="p">(</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;datapath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;ScanList&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">],</span> <span class="n">radar_name</span><span class="p">,</span>
+            <span class="n">radar_res</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span> <span class="n">datatype_nexrad2</span><span class="p">,</span> <span class="n">dataset_nexrad2</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span>
             <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
 
     <span class="k">elif</span> <span class="n">ndatatypes_cfradial2</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -1319,6 +1340,94 @@
             <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="n">scan</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">get_data_odim</span><span class="p">(</span>
+                <span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">datatype_list</span><span class="p">,</span> <span class="n">scan</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">radar_aux</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">radar</span> <span class="o">=</span> <span class="n">radar_aux</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">radar_utils</span><span class="o">.</span><span class="n">join_radar</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">radar_aux</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">radar</span>
+
+    <span class="k">return</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cut_radar</span><span class="p">(</span>
+        <span class="n">radar</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span> <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">],</span>
+        <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span> <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span>
+        <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">])</span>
+
+
+<span class="k">def</span> <span class="nf">merge_scans_nexrad2</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">scan_list</span><span class="p">,</span> <span class="n">radar_name</span><span class="p">,</span> <span class="n">radar_res</span><span class="p">,</span> <span class="n">voltime</span><span class="p">,</span>
+                        <span class="n">datatype_list</span><span class="p">,</span> <span class="n">dataset_list</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    merge NEXRAD level 2 data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    basepath : str</span>
+<span class="sd">        base path of nexrad radar data</span>
+<span class="sd">    scan_list : list</span>
+<span class="sd">        list of scans</span>
+<span class="sd">    voltime: datetime object</span>
+<span class="sd">        reference time of the scan</span>
+<span class="sd">    datatype_list : list</span>
+<span class="sd">        lists of data types to get</span>
+<span class="sd">    dataset_list : list</span>
+<span class="sd">        list of datasets. Used to get path</span>
+<span class="sd">    cfg : dict</span>
+<span class="sd">        configuration dictionary</span>
+<span class="sd">    ind_rad : int</span>
+<span class="sd">        radar index</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    radar : Radar</span>
+<span class="sd">        radar object</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fpath_strf</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">dataset_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span>
+            <span class="n">dataset_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;D&quot;</span><span class="p">)</span><span class="o">+</span><span class="mi">2</span><span class="p">:</span><span class="n">dataset_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">)</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">fdate_strf</span> <span class="o">=</span> <span class="n">dataset_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">dataset_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">)</span><span class="o">+</span><span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">datapath</span> <span class="o">=</span> <span class="p">(</span><span class="n">basepath</span><span class="o">+</span><span class="n">voltime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">fpath_strf</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="o">+</span><span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">filename_aux</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+        <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">find_date_in_file_name</span><span class="p">(</span>
+            <span class="n">filename_aux</span><span class="p">,</span> <span class="n">date_format</span><span class="o">=</span><span class="n">fdate_strf</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fdatetime</span> <span class="o">==</span> <span class="n">voltime</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="p">[</span><span class="n">filename_aux</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="o">+</span><span class="n">scan_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">scan_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">radar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">radar</span>
+
+        <span class="k">return</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cut_radar</span><span class="p">(</span>
+            <span class="n">radar</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rng_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">],</span>
+            <span class="n">rng_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;rmax&#39;</span><span class="p">],</span> <span class="n">ele_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmin&#39;</span><span class="p">],</span>
+            <span class="n">ele_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;elmax&#39;</span><span class="p">],</span> <span class="n">azi_min</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmin&#39;</span><span class="p">],</span>
+            <span class="n">azi_max</span><span class="o">=</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;azmax&#39;</span><span class="p">])</span>
+
+    <span class="c1"># merge the elevations into a single radar instance</span>
+    <span class="k">for</span> <span class="n">scan</span> <span class="ow">in</span> <span class="n">scan_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+        <span class="n">filenames</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="o">+</span><span class="n">scan</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">filename_aux</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+            <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">find_date_in_file_name</span><span class="p">(</span>
+                <span class="n">filename_aux</span><span class="p">,</span> <span class="n">date_format</span><span class="o">=</span><span class="n">fdate_strf</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">fdatetime</span> <span class="o">==</span> <span class="n">voltime</span><span class="p">:</span>
+                <span class="n">filename</span> <span class="o">=</span> <span class="p">[</span><span class="n">filename_aux</span><span class="p">]</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No file found in &#39;</span><span class="o">+</span><span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="n">timeinfo</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="n">scan</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">radar_aux</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read</span><span class="p">(</span>
                 <span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">datatype_list</span><span class="p">,</span> <span class="n">scan</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">ind_rad</span><span class="o">=</span><span class="n">ind_rad</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">radar_aux</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">continue</span>

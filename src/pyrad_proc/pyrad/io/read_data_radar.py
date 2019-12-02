@@ -14,6 +14,7 @@ Functions for reading radar data files
     merge_scans_dem
     merge_scans_rad4alp
     merge_scans_odim
+    merge_scans_nexrad2
     merge_scans_cfradial2
     merge_scans_cf1
     merge_scans_cosmo
@@ -127,6 +128,8 @@ def get_data(voltime, datatypesdescr, cfg):
                 which datatype to use to match a particular ODIM field name
                 check the function 'get_datatype_odim' in pyrad/io/io_aux.py
 
+            'NEXRADII': Nexrad-level II file format.
+
             'CFRADIAL2': CFRADIAL2 file format. For such types 'dataset'
                 specifies the directory and file name date convention.
                 Example: ODIM:dBZ,D{%Y-%m-%d}-F{%Y%m%d%H%M%S}. To find out
@@ -194,6 +197,8 @@ def get_data(voltime, datatypesdescr, cfg):
     datatype_rad4alp = list()
     datatype_odim = list()
     dataset_odim = list()
+    datatype_nexrad2 = list()
+    dataset_nexrad2 = list()
     datatype_cfradial = list()
     dataset_cfradial = list()
     product_cfradial = list()
@@ -236,6 +241,9 @@ def get_data(voltime, datatypesdescr, cfg):
         elif datagroup == 'ODIM':
             datatype_odim.append(datatype)
             dataset_odim.append(dataset)
+        elif datagroup == 'NEXRADII':
+            datatype_nexrad2.append(datatype)
+            dataset_nexrad2.append(dataset)
         elif datagroup == 'CFRADIAL':
             datatype_cfradial.append(datatype)
             dataset_cfradial.append(dataset)
@@ -293,6 +301,7 @@ def get_data(voltime, datatypesdescr, cfg):
     ndatatypes_rainbow = len(datatype_rainbow)
     ndatatypes_rad4alp = len(datatype_rad4alp)
     ndatatypes_odim = len(datatype_odim)
+    ndatatypes_nexrad2 = len(datatype_nexrad2)
     ndatatypes_cfradial = len(datatype_cfradial)
     ndatatypes_cfradial2 = len(datatype_cfradial2)
     ndatatypes_cf1 = len(datatype_cf1)
@@ -336,6 +345,18 @@ def get_data(voltime, datatypesdescr, cfg):
         radar = merge_scans_odim(
             cfg['datapath'][ind_rad], cfg['ScanList'][ind_rad], radar_name,
             radar_res, voltime, datatype_odim, dataset_odim, cfg,
+            ind_rad=ind_rad)
+
+    elif ndatatypes_nexrad2 > 0:
+        try:
+            radar_name = cfg['RadarName'][ind_rad]
+            radar_res = cfg['RadarRes'][ind_rad]
+        except TypeError:
+            radar_name = None
+            radar_res = None
+        radar = merge_scans_nexrad2(
+            cfg['datapath'][ind_rad], cfg['ScanList'][ind_rad], radar_name,
+            radar_res, voltime, datatype_nexrad2, dataset_nexrad2, cfg,
             ind_rad=ind_rad)
 
     elif ndatatypes_cfradial2 > 0:
@@ -1263,6 +1284,94 @@ def merge_scans_odim(basepath, scan_list, radar_name, radar_res, voltime,
             warn('No file found in '+datapath+basename+timeinfo+'*.'+scan)
         else:
             radar_aux = get_data_odim(
+                filename[0], datatype_list, scan, cfg, ind_rad=ind_rad)
+            if radar_aux is None:
+                continue
+
+            if radar is None:
+                radar = radar_aux
+            else:
+                radar = pyart.util.radar_utils.join_radar(radar, radar_aux)
+
+    if radar is None:
+        return radar
+
+    return pyart.util.cut_radar(
+        radar, radar.fields.keys(), rng_min=cfg['rmin'], rng_max=cfg['rmax'],
+        ele_min=cfg['elmin'], ele_max=cfg['elmax'], azi_min=cfg['azmin'],
+        azi_max=cfg['azmax'])
+
+
+def merge_scans_nexrad2(basepath, scan_list, radar_name, radar_res, voltime,
+                        datatype_list, dataset_list, cfg, ind_rad=0):
+    """
+    merge NEXRAD level 2 data.
+
+    Parameters
+    ----------
+    basepath : str
+        base path of nexrad radar data
+    scan_list : list
+        list of scans
+    voltime: datetime object
+        reference time of the scan
+    datatype_list : list
+        lists of data types to get
+    dataset_list : list
+        list of datasets. Used to get path
+    cfg : dict
+        configuration dictionary
+    ind_rad : int
+        radar index
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+    fpath_strf = (
+        dataset_list[0][
+            dataset_list[0].find("D")+2:dataset_list[0].find("F")-2])
+    fdate_strf = dataset_list[0][dataset_list[0].find("F")+2:-1]
+    datapath = (basepath+voltime.strftime(fpath_strf)+'/')
+    filenames = glob.glob(datapath+'*'+scan_list[0]+'*')
+    filename = []
+    for filename_aux in filenames:
+        fdatetime = find_date_in_file_name(
+            filename_aux, date_format=fdate_strf)
+        if fdatetime == voltime:
+            filename = [filename_aux]
+
+    if not filename:
+        warn('No file found in '+datapath+'*'+scan_list[0]+'*')
+    else:
+        radar = pyart.io.read(filename[0])
+
+    if len(scan_list) == 1:
+        if radar is None:
+            return radar
+
+        return pyart.util.cut_radar(
+            radar, radar.fields.keys(), rng_min=cfg['rmin'],
+            rng_max=cfg['rmax'], ele_min=cfg['elmin'],
+            ele_max=cfg['elmax'], azi_min=cfg['azmin'],
+            azi_max=cfg['azmax'])
+
+    # merge the elevations into a single radar instance
+    for scan in scan_list[1:]:
+        filenames = glob.glob(datapath+'*'+scan+'*')
+        filename = []
+        for filename_aux in filenames:
+            fdatetime = find_date_in_file_name(
+                filename_aux, date_format=fdate_strf)
+            if fdatetime == voltime:
+                filename = [filename_aux]
+                break
+        if not filename:
+            warn('No file found in '+datapath+basename+timeinfo+'*.'+scan)
+        else:
+            radar_aux = pyart.io.read(
                 filename[0], datatype_list, scan, cfg, ind_rad=ind_rad)
             if radar_aux is None:
                 continue

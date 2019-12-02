@@ -2050,7 +2050,7 @@
                 <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">dayfilelist</span><span class="p">:</span>
                     <span class="n">t_filelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
 
-            <span class="k">elif</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;ODIM&#39;</span><span class="p">,</span> <span class="s1">&#39;CFRADIAL2&#39;</span><span class="p">,</span> <span class="s1">&#39;CF1&#39;</span><span class="p">):</span>
+            <span class="k">elif</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;ODIM&#39;</span><span class="p">,</span> <span class="s1">&#39;CFRADIAL2&#39;</span><span class="p">,</span> <span class="s1">&#39;CF1&#39;</span><span class="p">,</span> <span class="s1">&#39;NEXRADII&#39;</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">scan</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unknown scan name&#39;</span><span class="p">)</span>
                     <span class="k">return</span> <span class="kc">None</span>
@@ -2483,7 +2483,7 @@
                 <span class="n">datatype</span> <span class="o">=</span> <span class="n">descrfields</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
                 <span class="n">dataset</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="n">product</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">elif</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;ODIM&#39;</span><span class="p">,</span> <span class="s1">&#39;CFRADIAL2&#39;</span><span class="p">,</span> <span class="s1">&#39;CF1&#39;</span><span class="p">):</span>
+            <span class="k">elif</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;ODIM&#39;</span><span class="p">,</span> <span class="s1">&#39;CFRADIAL2&#39;</span><span class="p">,</span> <span class="s1">&#39;CF1&#39;</span><span class="p">,</span> <span class="s1">&#39;NEXRADII&#39;</span><span class="p">):</span>
                 <span class="n">descrfields2</span> <span class="o">=</span> <span class="n">descrfields</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
                 <span class="n">datatype</span> <span class="o">=</span> <span class="n">descrfields2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="n">product</span> <span class="o">=</span> <span class="kc">None</span>
@@ -2512,7 +2512,7 @@
             <span class="n">datatype</span> <span class="o">=</span> <span class="n">descrfields</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">dataset</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">product</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">elif</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;ODIM&#39;</span><span class="p">,</span> <span class="s1">&#39;CFRADIAL2&#39;</span><span class="p">,</span> <span class="s1">&#39;CF1&#39;</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;ODIM&#39;</span><span class="p">,</span> <span class="s1">&#39;CFRADIAL2&#39;</span><span class="p">,</span> <span class="s1">&#39;CF1&#39;</span><span class="p">,</span> <span class="s1">&#39;NEXRADII&#39;</span><span class="p">):</span>
             <span class="n">descrfields2</span> <span class="o">=</span> <span class="n">descrfields</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
             <span class="c1"># warn(&quot; descrfields2:  &#39;%s&#39;&quot; % descrfields2[1])</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">descrfields2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
@@ -2926,7 +2926,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span>
                 <span class="n">datestr</span><span class="p">,</span> <span class="s1">&#39;%y%j&#39;</span><span class="p">)</span><span class="o">+</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;ODIM&#39;</span><span class="p">,</span> <span class="s1">&#39;CFRADIAL2&#39;</span><span class="p">,</span> <span class="s1">&#39;CF1&#39;</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;ODIM&#39;</span><span class="p">,</span> <span class="s1">&#39;CFRADIAL2&#39;</span><span class="p">,</span> <span class="s1">&#39;CF1&#39;</span><span class="p">,</span> <span class="s1">&#39;NEXRADII&#39;</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">ftime_format</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># we assume is rad4alp format</span>
             <span class="n">datetimestr</span> <span class="o">=</span> <span class="n">bfile</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">12</span><span class="p">]</span>
