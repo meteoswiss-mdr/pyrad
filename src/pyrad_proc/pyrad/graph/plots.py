@@ -15,6 +15,7 @@ Functions to plot Pyrad datasets
     plot_histogram
     plot_histogram2
     plot_antenna_pattern
+    plot_selfconsitency
     plot_scatter_comp
     plot_sun_hits
 
@@ -772,6 +773,64 @@ def plot_antenna_pattern(antpattern, fname_list, labelx='Angle [Deg]',
     plt.close(fig)
 
     return fname_list
+
+
+def plot_selfconsitency(zdrkdp_table, fname_list, labelx='ZDR [dB]',
+                        labely='KDP/Zh [(deg*m3)/(km*mm6)]',
+                        title='Selfconsistency in rain', ymin=None, ymax=None,
+                        dpi=72, save_fig=True, ax=None, fig=None):
+    """
+    plots a ZDR-KDP/ZH selfconsistency in rain relation
+
+    Parameters
+    ----------
+    antpattern : dict
+        dictionary with the angle and the attenuation
+    value : float array
+        values of the time series
+    fname_list : list of str
+        list of names of the files where to store the plot
+    labelx : str
+        The label of the X axis
+    linear : boolean
+        if true data is in linear units
+    linear : boolean
+        if true data represents the two way attenuation
+    titl : str
+        The figure title
+    ymin, ymax: float
+        Lower/Upper limit of y axis
+    dpi : int
+        dots per inch
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    """
+    if fig is None:
+        fig, ax = plt.subplots(figsize=[10, 6], dpi=dpi)
+    else:
+        ax.autoscale(False)
+
+    ax.plot(zdrkdp_table[0], zdrkdp_table[1])
+    ax.set_title(title)
+    ax.set_xlabel(labelx)
+    ax.set_ylabel(labely)
+    ax.set_ylim(bottom=ymin, top=ymax)
+
+    # Make a tight layout
+    fig.tight_layout()
+
+    if save_fig:
+        for fname in fname_list:
+            fig.savefig(fname, dpi=dpi)
+        plt.close(fig)
+
+        return fname_list
+
+    return (fig, ax)
 
 
 def plot_scatter_comp(value1, value2, fname_list, labelx='Sensor 1',
