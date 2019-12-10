@@ -11,7 +11,7 @@ umask 0002
 dateCmd="/bin/date"
 
 rawdata_origbase=/store/msrad/radar/swiss/data/
-data_destbase=/store/msrad/cosmo/cosmo1/HZT/
+data_destbase=/store/msrad/cosmo/HZT/
 
 hour_fcst_vec='all'
 hour_run_vec='all'

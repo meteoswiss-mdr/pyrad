@@ -45,6 +45,11 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
 
         datatype : list of strings. Dataset keyword
             The input data types
+        parametrization : str
+            The type of parametrization for the self-consistency curves. Can
+            be 'None', 'Gourley', 'Wolfensberger', 'Louf', 'Gorgucci' or
+            'Vaccarono'
+            'None' will use tables from config files. Default 'None'.
         rsmooth : float. Dataset keyword
             length of the smoothing window [m]. Default 1000.
         min_rhohv : float. Dataset keyword
@@ -79,6 +84,7 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
 
     temp = None
     iso0 = None
+    hydro = None
     for datatypedescr in dscfg['datatype']:
         radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'dBZc':
@@ -97,10 +103,14 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
             temp = 'temperature'
         if datatype == 'H_ISO0':
             iso0 = 'height_over_iso0'
+        if datatype == 'hydro':
+            hydro = 'radar_echo_classification'
         if datatype == 'RhoHV':
             rhohv = 'cross_correlation_ratio'
         if datatype == 'RhoHVc':
             rhohv = 'corrected_cross_correlation_ratio'
+        if datatype == 'uRhoHV':
+            rhohv = 'uncorrected_cross_correlation_ratio'
 
     ind_rad = int(radarnr[5:8])-1
     if radar_list[ind_rad] is None:
@@ -112,28 +122,36 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
             (zdr not in radar.fields) or
             (phidp not in radar.fields) or
             (rhohv not in radar.fields)):
-        warn('Unable to estimate reflectivity bias using selfconsistency. ' +
+        warn('Unable to estimate PhiDP/KDP using selfconsistency. ' +
              'Missing data')
         return None, None
 
     # determine which freezing level reference
-    temp_ref = 'temperature'
-    if temp is None and iso0 is None:
+    if hydro is not None:
+        if hydro in radar.fields:
+            temp_ref = 'hydroclass'
+        else:
+            warn('hydrometeor classification not available. '
+                 'Using fixed freezing level height to determine liquid phase')
+            temp_ref = 'fixed_fzl'
+    elif temp is not None:
+        if temp in radar.fields:
+            temp_ref = 'temperature'
+        else:
+            warn('COSMO temperature field not available. ' +
+                 'Using fixed freezing level height to determine liquid phase')
+            temp_ref = 'fixed_fzl'
+    elif iso0 is not None:
+        if iso0 in radar.fields:
+            temp_ref = 'height_over_iso0'
+        else:
+            warn('Height over iso0 field not available. ' +
+                 'Using fixed freezing level height to determine liquid phase')
+            temp_ref = 'fixed_fzl'
+    else:
         warn('Field to obtain the freezing level was not specified. ' +
              'Using fixed freezing level height')
         temp_ref = 'fixed_fzl'
-    elif temp is not None:
-        if temp not in radar.fields:
-            warn('COSMO temperature field not available. ' +
-                 'Using fixed freezing level height')
-            temp_ref = 'fixed_fzl'
-    elif iso0 is not None:
-        if iso0 not in radar.fields:
-            warn('Height over iso0 field not available. ' +
-                 'Using fixed freezing level height')
-            temp_ref = 'fixed_fzl'
-        else:
-            temp_ref = 'height_over_iso0'
 
     # determine freezing level height if necessary
     fzl = None
@@ -145,62 +163,59 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
             warn('Freezing level height not defined. Using default ' +
                  str(fzl)+' m')
 
+    # get self-consistency parametrization or curves
+    parametrization = dscfg.get('parametrization', 'None')
     if dscfg['initialized'] == 0:
+        # get frequency band
         freq = dscfg.get('frequency', None)
         if freq is None:
             if (radar.instrument_parameters is not None and
                     'frequency' in radar.instrument_parameters):
                 freq = radar.instrument_parameters['frequency']['data'][0]
             else:
-                warn('Unable to retrieve PhiDP and KDP using ' +
+                warn('Unable to estimate Zh bias using ' +
                      'self-consistency. Unknown radar frequency')
                 return None, None
+        freq_band = pyart.retrieve.get_freq_band(freq)
 
-        # get frequency band
-        freq_band = pyart.retrieve.get_freq_band(
-            radar.instrument_parameters['frequency']['data'][0])
+        if parametrization == 'None':
+            # find unique elevations
+            el_vec = np.unique(
+                (10.*np.round(radar.elevation['data'], decimals=1)).astype(int))
+            zdr_kdpzh_list = list()
+            el_list = list()
+            for el in el_vec:
+                fname = (
+                    dscfg['configpath'] + 'selfconsistency/' +
+                    'selfconsistency_zdr_zhkdp_'+freq_band+'band_temp10_elev' +
+                    '{:03d}'.format(el)+'_mu05.txt')
+                zdr_kdpzh_table = read_selfconsistency(fname)
+                if zdr_kdpzh_table is not None:
+                    zdr_kdpzh_list.append(zdr_kdpzh_table)
+                    el_list.append((el/10.).astype(int))
+            if not el_list:
+                warn('Unable to retrieve PhiDP and KDP using self-consistency. ' +
+                     'No selfconsistency files for the radar elevations.')
 
-        # find unique elevations
-        el_vec = np.unique(
-            (10.*np.round(radar.elevation['data'], decimals=1)).astype(int))
-        zdr_kdpzh_list = list()
-        el_list = list()
-        for el in el_vec:
-            fname = (
-                dscfg['configpath'] + 'selfconsistency/' +
-                'selfconsistency_zdr_zhkdp_'+freq_band+'band_temp10_elev' +
-                '{:03d}'.format(el)+'_mu05.txt')
-            zdr_kdpzh_table = read_selfconsistency(fname)
-            if zdr_kdpzh_table is not None:
-                zdr_kdpzh_list.append(zdr_kdpzh_table)
-                el_list.append((el/10.).astype(int))
-        if not el_list:
-            warn('Unable to retrieve PhiDP and KDP using self-consistency. ' +
-                 'No selfconsistency files for the radar elevations.')
+                return None, None
 
-            return None, None
+            zdr_kdpzh_dict = {'zdr_kdpzh': zdr_kdpzh_list,
+                              'elev': el_list,
+                              'freq_band': freq_band}
+        else:
+            zdr_kdpzh_dict = {'zdr_kdpzh': None,
+                              'elev': None,
+                              'freq_band': freq_band}
 
-        zdr_kdpzh_dict = {'zdr_kdpzh': zdr_kdpzh_list,
-                          'elev': el_list}
         dscfg['global_data'] = zdr_kdpzh_dict
         dscfg['initialized'] = 1
 
     if dscfg['initialized'] == 1:
-        # default values
-        rsmooth = 1000.
-        min_rhohv = 0.92
-        max_phidp = 20.
-        ml_thickness = 700.
-
         # get user defined values
-        if 'rsmooth' in dscfg:
-            rsmooth = dscfg['rsmooth']
-        if 'min_rhohv' in dscfg:
-            min_rhohv = dscfg['min_rhohv']
-        if 'max_phidp' in dscfg:
-            max_phidp = dscfg['max_phidp']
-        if 'ml_thickness' in dscfg:
-            ml_thickness = dscfg['ml_thickness']
+        rsmooth = dscfg.get('rsmooth', 2000.)
+        min_rhohv = dscfg.get('min_rhohv', 0.92)
+        max_phidp = dscfg.get('max_phidp', 20.)
+        ml_thickness = dscfg.get('ml_thickness', 700.)
 
         kdpsim_field = 'specific_differential_phase'
         phidpsim_field = 'differential_phase'
@@ -210,9 +225,10 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
         kdpsim, phidpsim = pyart.correct.selfconsistency_kdp_phidp(
             radar, dscfg['global_data'], min_rhohv=min_rhohv,
             max_phidp=max_phidp, smooth_wind_len=smooth_wind_len, doc=15,
-            fzl=fzl, thickness=ml_thickness, refl_field=refl,
-            phidp_field=phidp, zdr_field=zdr, temp_field=temp,
-            iso0_field=iso0, rhohv_field=rhohv, kdpsim_field=kdpsim_field,
+            fzl=fzl, thickness=ml_thickness, parametrization=parametrization,
+            refl_field=refl, phidp_field=phidp, zdr_field=zdr,
+            temp_field=temp, iso0_field=iso0, hydro_field=hydro,
+            rhohv_field=rhohv, kdpsim_field=kdpsim_field,
             phidpsim_field=phidpsim_field, temp_ref=temp_ref)
 
         # prepare for exit
@@ -240,6 +256,11 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
 
         datatype : list of string. Dataset keyword
             The input data types
+        parametrization : str
+            The type of parametrization for the self-consistency curves. Can
+            be 'None', 'Gourley', 'Wolfensberger', 'Louf', 'Gorgucci' or
+            'Vaccarono'
+            'None' will use tables from config files. Default 'None'.
         fzl : float. Dataset keyword
             Default freezing level height. Default 2000.
         rsmooth : float. Dataset keyword
@@ -262,6 +283,20 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
             frequency in attribute instrument_parameters of the radar
             object will be used. If the key or the attribute are not present
             the selfconsistency will not be computed
+        check_wet_radome : Bool. Dataset keyword
+            if True the average reflectivity of the closest gates to the radar
+            is going to be check to find out whether there is rain over the
+            radome. If there is rain no bias will be computed. Default True.
+        wet_radome_refl : Float. Dataset keyword
+            Average reflectivity [dBZ] of the gates close to the radar to
+            consider the radome as wet. Default 30.
+        wet_radome_rng_min, wet_radome_rng_max : Float. Dataset keyword
+            Min and max range [m] of the disk around the radar used to compute
+            the average reflectivity to determine whether the radome is wet.
+            Default 2000 and 4000.
+        wet_radome_ngates_min : int
+            Minimum number of valid gates to consider that the radome is wet.
+            Default 180
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -279,6 +314,7 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
 
     temp = None
     iso0 = None
+    hydro = None
     for datatypedescr in dscfg['datatype']:
         radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'dBZc':
@@ -297,6 +333,8 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
             temp = 'temperature'
         if datatype == 'H_ISO0':
             iso0 = 'height_over_iso0'
+        if datatype == 'hydro':
+            hydro = 'radar_echo_classification'
         if datatype == 'RhoHV':
             rhohv = 'cross_correlation_ratio'
         if datatype == 'RhoHVc':
@@ -319,23 +357,31 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
         return None, None
 
     # determine which freezing level reference
-    temp_ref = 'temperature'
-    if temp is None and iso0 is None:
+    if hydro is not None:
+        if hydro in radar.fields:
+            temp_ref = 'hydroclass'
+        else:
+            warn('hydrometeor classification not available. '
+                 'Using fixed freezing level height to determine liquid phase')
+            temp_ref = 'fixed_fzl'
+    elif temp is not None:
+        if temp in radar.fields:
+            temp_ref = 'temperature'
+        else:
+            warn('COSMO temperature field not available. ' +
+                 'Using fixed freezing level height to determine liquid phase')
+            temp_ref = 'fixed_fzl'
+    elif iso0 is not None:
+        if iso0 in radar.fields:
+            temp_ref = 'height_over_iso0'
+        else:
+            warn('Height over iso0 field not available. ' +
+                 'Using fixed freezing level height to determine liquid phase')
+            temp_ref = 'fixed_fzl'
+    else:
         warn('Field to obtain the freezing level was not specified. ' +
              'Using fixed freezing level height')
         temp_ref = 'fixed_fzl'
-    elif temp is not None:
-        if temp not in radar.fields:
-            warn('COSMO temperature field not available. ' +
-                 'Using fixed freezing level height')
-            temp_ref = 'fixed_fzl'
-    elif iso0 is not None:
-        if iso0 not in radar.fields:
-            warn('Height over iso0 field not available. ' +
-                 'Using fixed freezing level height')
-            temp_ref = 'fixed_fzl'
-        else:
-            temp_ref = 'height_over_iso0'
 
     # determine freezing level height if necessary
     fzl = None
@@ -347,83 +393,86 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
             warn('Freezing level height not defined. Using default ' +
                  str(fzl)+' m')
 
+    # get self-consistency parametrization or curves
+    parametrization = dscfg.get('parametrization', 'None')
     if dscfg['initialized'] == 0:
+        # get frequency band
         freq = dscfg.get('frequency', None)
         if freq is None:
             if (radar.instrument_parameters is not None and
                     'frequency' in radar.instrument_parameters):
                 freq = radar.instrument_parameters['frequency']['data'][0]
             else:
-                warn('Unable to retrieve PhiDP and KDP using ' +
+                warn('Unable to estimate Zh bias using ' +
                      'self-consistency. Unknown radar frequency')
                 return None, None
+        freq_band = pyart.retrieve.get_freq_band(freq)
 
-        # get frequency band
-        freq_band = pyart.retrieve.get_freq_band(
-            radar.instrument_parameters['frequency']['data'][0])
+        if parametrization == 'None':
+            # find unique elevations
+            el_vec = np.unique(
+                (10.*np.round(radar.elevation['data'], decimals=1)).astype(int))
+            zdr_kdpzh_list = list()
+            el_list = list()
+            for el in el_vec:
+                fname = (
+                    dscfg['configpath'] + 'selfconsistency/' +
+                    'selfconsistency_zdr_zhkdp_'+freq_band+'band_temp10_elev' +
+                    '{:03d}'.format(el)+'_mu05.txt')
+                zdr_kdpzh_table = read_selfconsistency(fname)
+                if zdr_kdpzh_table is not None:
+                    zdr_kdpzh_list.append(zdr_kdpzh_table)
+                    el_list.append((el/10.).astype(int))
+            if not el_list:
+                warn('Unable to retrieve Zh bias using self-consistency. ' +
+                     'No selfconsistency files for the radar elevations.')
 
-        # find unique elevations
-        el_vec = np.unique(
-            (10.*np.round(radar.elevation['data'], decimals=1)).astype(int))
-        zdr_kdpzh_list = list()
-        el_list = list()
-        for el in el_vec:
-            fname = (
-                dscfg['configpath'] + 'selfconsistency/' +
-                'selfconsistency_zdr_zhkdp_'+freq_band+'band_temp10_elev' +
-                '{:03d}'.format(el)+'_mu05.txt')
-            zdr_kdpzh_table = read_selfconsistency(fname)
-            if zdr_kdpzh_table is not None:
-                zdr_kdpzh_list.append(zdr_kdpzh_table)
-                el_list.append((el/10.).astype(int))
-        if not el_list:
-            warn('Unable to retrieve PhiDP and KDP using self-consistency. ' +
-                 'No selfconsistency files for the radar elevations.')
+                return None, None
 
-            return None, None
+            zdr_kdpzh_dict = {'zdr_kdpzh': zdr_kdpzh_list,
+                              'elev': el_list,
+                              'freq_band': freq_band}
+        else:
+            zdr_kdpzh_dict = {'zdr_kdpzh': None,
+                              'elev': None,
+                              'freq_band': freq_band}
 
-        zdr_kdpzh_dict = {'zdr_kdpzh': zdr_kdpzh_list,
-                          'elev': el_list}
         dscfg['global_data'] = zdr_kdpzh_dict
         dscfg['initialized'] = 1
 
     if dscfg['initialized'] == 1:
-        # default values
-        rsmooth = 1000.
-        min_rhohv = 0.92
-        max_phidp = 20.
-        ml_thickness = 700.
-        rcell = 1000.
-        dphidp_min = 2.
-        dphidp_max = 16.
-
         # get user defined values
-        if 'rsmooth' in dscfg:
-            rsmooth = dscfg['rsmooth']
-        if 'min_rhohv' in dscfg:
-            min_rhohv = dscfg['min_rhohv']
-        if 'max_phidp' in dscfg:
-            max_phidp = dscfg['max_phidp']
-        if 'ml_thickness' in dscfg:
-            ml_thickness = dscfg['ml_thickness']
-        if 'rcell' in dscfg:
-            rcell = dscfg['rcell']
-        if 'dphidp_min' in dscfg:
-            dphidp_min = dscfg['dphidp_min']
-        if 'dphidp_max' in dscfg:
-            dphidp_max = dscfg['dphidp_max']
+        rsmooth = dscfg.get('rsmooth', 2000.)
+        min_rhohv = dscfg.get('min_rhohv', 0.92)
+        max_phidp = dscfg.get('max_phidp', 20.)
+        ml_thickness = dscfg.get('ml_thickness', 700.)
+        rcell = dscfg.get('rcell', 15000.)
+        dphidp_min = dscfg.get('dphidp_min', 2.)
+        dphidp_max = dscfg.get('dphidp_max', 16.)
+        check_wet_radome = dscfg.get('check_wet_radome', True)
+        wet_radome_refl = dscfg.get('wet_radome_refl', 25.)
+        wet_radome_rng_min = dscfg.get('wet_radome_refl', 2000.)
+        wet_radome_rng_max = dscfg.get('wet_radome_refl', 4000.)
+        wet_radome_ngates_min = dscfg.get('wet_radome_ngates_min', 180)
 
         r_res = radar.range['data'][1]-radar.range['data'][0]
         smooth_wind_len = int(rsmooth/r_res)
         min_rcons = int(rcell/r_res)
+        wet_radome_len_min = int(wet_radome_rng_min/r_res)
+        wet_radome_len_max = int(wet_radome_rng_max/r_res)
 
         refl_bias = pyart.correct.selfconsistency_bias(
             radar, dscfg['global_data'], min_rhohv=min_rhohv,
             max_phidp=max_phidp, smooth_wind_len=smooth_wind_len, doc=15,
             fzl=fzl, thickness=ml_thickness, min_rcons=min_rcons,
-            dphidp_min=dphidp_min, dphidp_max=dphidp_max, refl_field=refl,
+            dphidp_min=dphidp_min, dphidp_max=dphidp_max,
+            parametrization=parametrization, refl_field=refl,
             phidp_field=phidp, zdr_field=zdr, temp_field=temp,
-            iso0_field=iso0, rhohv_field=rhohv, temp_ref=temp_ref)
+            iso0_field=iso0, hydro_field=hydro, rhohv_field=rhohv,
+            temp_ref=temp_ref, check_wet_radome=check_wet_radome,
+            wet_radome_refl=wet_radome_refl,
+            wet_radome_len_min=wet_radome_len_min,
+            wet_radome_len_max=wet_radome_len_max)
 
         # prepare for exit
         new_dataset = {'radar_out': deepcopy(radar)}
