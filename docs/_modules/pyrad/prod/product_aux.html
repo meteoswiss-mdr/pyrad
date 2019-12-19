@@ -66,24 +66,24 @@
 <span class="sd">    get_prodgen_func</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">.process_product</span> <span class="k">import</span> <span class="n">generate_sun_hits_products</span>
-<span class="kn">from</span> <span class="nn">.process_product</span> <span class="k">import</span> <span class="n">generate_cosmo_coord_products</span>
-<span class="kn">from</span> <span class="nn">.process_product</span> <span class="k">import</span> <span class="n">generate_occurrence_products</span>
-<span class="kn">from</span> <span class="nn">.process_product</span> <span class="k">import</span> <span class="n">generate_qvp_products</span>
-<span class="kn">from</span> <span class="nn">.process_product</span> <span class="k">import</span> <span class="n">generate_ml_products</span>
-<span class="kn">from</span> <span class="nn">.process_product</span> <span class="k">import</span> <span class="n">generate_cosmo_to_radar_products</span>
+<span class="kn">from</span> <span class="nn">.process_product</span> <span class="kn">import</span> <span class="n">generate_sun_hits_products</span>
+<span class="kn">from</span> <span class="nn">.process_product</span> <span class="kn">import</span> <span class="n">generate_cosmo_coord_products</span>
+<span class="kn">from</span> <span class="nn">.process_product</span> <span class="kn">import</span> <span class="n">generate_occurrence_products</span>
+<span class="kn">from</span> <span class="nn">.process_product</span> <span class="kn">import</span> <span class="n">generate_qvp_products</span>
+<span class="kn">from</span> <span class="nn">.process_product</span> <span class="kn">import</span> <span class="n">generate_ml_products</span>
+<span class="kn">from</span> <span class="nn">.process_product</span> <span class="kn">import</span> <span class="n">generate_cosmo_to_radar_products</span>
 
-<span class="kn">from</span> <span class="nn">.process_vol_products</span> <span class="k">import</span> <span class="n">generate_vol_products</span>
-<span class="kn">from</span> <span class="nn">.process_grid_products</span> <span class="k">import</span> <span class="n">generate_grid_products</span>
-<span class="kn">from</span> <span class="nn">.process_grid_products</span> <span class="k">import</span> <span class="n">generate_sparse_grid_products</span>
-<span class="kn">from</span> <span class="nn">.process_grid_products</span> <span class="k">import</span> <span class="n">generate_grid_time_avg_products</span>
-<span class="kn">from</span> <span class="nn">.process_spectra_products</span> <span class="k">import</span> <span class="n">generate_spectra_products</span>
-<span class="kn">from</span> <span class="nn">.process_timeseries_products</span> <span class="k">import</span> <span class="n">generate_timeseries_products</span>
-<span class="kn">from</span> <span class="nn">.process_traj_products</span> <span class="k">import</span> <span class="n">generate_traj_product</span>
-<span class="kn">from</span> <span class="nn">.process_monitoring_products</span> <span class="k">import</span> <span class="n">generate_monitoring_products</span>
-<span class="kn">from</span> <span class="nn">.process_intercomp_products</span> <span class="k">import</span> <span class="n">generate_colocated_gates_products</span>
-<span class="kn">from</span> <span class="nn">.process_intercomp_products</span> <span class="k">import</span> <span class="n">generate_intercomp_products</span>
-<span class="kn">from</span> <span class="nn">.process_intercomp_products</span> <span class="k">import</span> <span class="n">generate_time_avg_products</span>
+<span class="kn">from</span> <span class="nn">.process_vol_products</span> <span class="kn">import</span> <span class="n">generate_vol_products</span>
+<span class="kn">from</span> <span class="nn">.process_grid_products</span> <span class="kn">import</span> <span class="n">generate_grid_products</span>
+<span class="kn">from</span> <span class="nn">.process_grid_products</span> <span class="kn">import</span> <span class="n">generate_sparse_grid_products</span>
+<span class="kn">from</span> <span class="nn">.process_grid_products</span> <span class="kn">import</span> <span class="n">generate_grid_time_avg_products</span>
+<span class="kn">from</span> <span class="nn">.process_spectra_products</span> <span class="kn">import</span> <span class="n">generate_spectra_products</span>
+<span class="kn">from</span> <span class="nn">.process_timeseries_products</span> <span class="kn">import</span> <span class="n">generate_timeseries_products</span>
+<span class="kn">from</span> <span class="nn">.process_traj_products</span> <span class="kn">import</span> <span class="n">generate_traj_product</span>
+<span class="kn">from</span> <span class="nn">.process_monitoring_products</span> <span class="kn">import</span> <span class="n">generate_monitoring_products</span>
+<span class="kn">from</span> <span class="nn">.process_intercomp_products</span> <span class="kn">import</span> <span class="n">generate_colocated_gates_products</span>
+<span class="kn">from</span> <span class="nn">.process_intercomp_products</span> <span class="kn">import</span> <span class="n">generate_intercomp_products</span>
+<span class="kn">from</span> <span class="nn">.process_intercomp_products</span> <span class="kn">import</span> <span class="n">generate_time_avg_products</span>
 
 
 <div class="viewcode-block" id="get_prodgen_func"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.get_prodgen_func">[docs]</a><span class="k">def</span> <span class="nf">get_prodgen_func</span><span class="p">(</span><span class="n">dsformat</span><span class="p">,</span> <span class="n">dsname</span><span class="p">,</span> <span class="n">dstype</span><span class="p">):</span>

@@ -40,6 +40,7 @@ Plots
     plot_histogram2
     plot_antenna_pattern
     plot_selfconsitency
+    plot_selfconsitency_instrument
     plot_timeseries
     plot_timeseries_comp
     plot_monitoring_ts
@@ -70,13 +71,13 @@ Plots
 from .plots import plot_histogram, plot_histogram2, plot_density, plot_scatter
 from .plots import plot_pos, plot_pos_map, plot_sun_hits, plot_antenna_pattern
 from .plots import plot_scatter_comp, plot_quantiles, plot_selfconsitency
+from .plots import plot_selfconsitency_instrument, _plot_time_range
 
 from .plots_vol import plot_ppi, plot_ppi_map, plot_rhi, plot_bscope
 from .plots_vol import plot_time_range, plot_cappi, plot_rhi_profile
 from .plots_vol import plot_along_coord, plot_field_coverage, plot_traj
-from .plots_vol import _plot_time_range, plot_rhi_contour, plot_ppi_contour
+from .plots_vol import plot_rhi_contour, plot_ppi_contour, plot_ray
 from .plots_vol import plot_fixed_rng, plot_fixed_rng_span, plot_roi_contour
-from .plots_vol import plot_ray
 
 from .plots_grid import plot_surface, plot_latitude_slice
 from .plots_grid import plot_longitude_slice, plot_latlon_slice

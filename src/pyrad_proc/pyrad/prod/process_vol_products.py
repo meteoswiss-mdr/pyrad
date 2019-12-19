@@ -31,6 +31,7 @@ from ..graph.plots_vol import plot_rhi_contour, plot_ppi_contour
 from ..graph.plots_vol import plot_fixed_rng, plot_fixed_rng_span
 from ..graph.plots_vol import plot_roi_contour, plot_ray
 from ..graph.plots import plot_quantiles, plot_histogram
+from ..graph.plots import plot_selfconsitency_instrument
 from ..graph.plots_aux import get_colobar_label, get_field_name
 
 from ..util.radar_utils import get_ROI, compute_profile_stats
@@ -482,6 +483,18 @@ def generate_vol_products(dataset, prdcfg):
                     level).
         'SAVE_FIXED_ANGLE': Saves the position of the first fix angle in a
             csv file
+        'SELFCONSISTENCY': Plots a ZDR versus KDP/ZH histogram of data.
+            User defined parameters:
+                retrieve_relation : bool
+                    If True plots also the retrieved relationship. Default
+                    True
+                plot_theoretical : bool
+                    If True plots also the theoretical relationship. Default
+                    True
+                normalize : bool
+                    If True the occurrence density of ZK/KDP for each ZDR bin
+                    is going to be represented. Otherwise it will show the
+                    number of gates at each bin. Default True
         'TIME_RANGE': Plots a time-range plot
             User defined parameters:
                 anglenr: float
@@ -2544,6 +2557,40 @@ def generate_vol_products(dataset, prdcfg):
         print('----- save to '+fname)
 
         return fname
+
+    if prdcfg['type'] == 'SELFCONSISTENCY':
+        if 'selfconsistency_points' not in dataset:
+            return None
+
+        retrieve_relation = prdcfg.get('retrieve_relation', True)
+        plot_theoretical = prdcfg.get('plot_theoretical', True)
+        normalize = prdcfg.get('normalize', True)
+
+        timeinfo = dataset['selfconsistency_points']['timeinfo']
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdsavedir, timeinfo=timeinfo)
+
+        fname_list = make_filename(
+            'selfconsistency', prdcfg['dstype'], 'selfconsistency',
+            prdcfg['imgformat'], timeinfo=timeinfo, runinfo=prdcfg['runinfo'],
+            timeformat='%Y%m%d')
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        fname_list = plot_selfconsitency_instrument(
+            np.array(dataset['selfconsistency_points']['zdr']),
+            np.array(dataset['selfconsistency_points']['kdp']),
+            np.array(dataset['selfconsistency_points']['zh']), fname_list,
+            parametrization=dataset['selfconsistency_points']['parametrization'],
+            zdr_kdpzh_dict=dataset['selfconsistency_points']['zdr_kdpzh_dict'],
+            normalize=normalize, retrieve_relation=retrieve_relation,
+            plot_theoretical=plot_theoretical)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
 
     if prdcfg['type'] == 'SAVEVOL':
         field_name = get_fieldname_pyart(prdcfg['voltype'])

@@ -76,23 +76,23 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
-<span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">scipy</span>
-<span class="kn">from</span> <span class="nn">netCDF4</span> <span class="k">import</span> <span class="n">num2date</span>
+<span class="kn">from</span> <span class="nn">netCDF4</span> <span class="kn">import</span> <span class="n">num2date</span>
 
 <span class="kn">import</span> <span class="nn">pyart</span>
 
-<span class="kn">from</span> <span class="nn">..io.io_aux</span> <span class="k">import</span> <span class="n">get_datatype_fields</span><span class="p">,</span> <span class="n">get_fieldname_pyart</span>
-<span class="kn">from</span> <span class="nn">..io.io_aux</span> <span class="k">import</span> <span class="n">get_save_dir</span><span class="p">,</span> <span class="n">make_filename</span>
-<span class="kn">from</span> <span class="nn">..io.read_data_other</span> <span class="k">import</span> <span class="n">read_colocated_gates</span><span class="p">,</span> <span class="n">read_colocated_data</span>
-<span class="kn">from</span> <span class="nn">..io.read_data_other</span> <span class="k">import</span> <span class="n">read_colocated_data_time_avg</span>
-<span class="kn">from</span> <span class="nn">..io.read_data_radar</span> <span class="k">import</span> <span class="n">interpol_field</span>
+<span class="kn">from</span> <span class="nn">..io.io_aux</span> <span class="kn">import</span> <span class="n">get_datatype_fields</span><span class="p">,</span> <span class="n">get_fieldname_pyart</span>
+<span class="kn">from</span> <span class="nn">..io.io_aux</span> <span class="kn">import</span> <span class="n">get_save_dir</span><span class="p">,</span> <span class="n">make_filename</span>
+<span class="kn">from</span> <span class="nn">..io.read_data_other</span> <span class="kn">import</span> <span class="n">read_colocated_gates</span><span class="p">,</span> <span class="n">read_colocated_data</span>
+<span class="kn">from</span> <span class="nn">..io.read_data_other</span> <span class="kn">import</span> <span class="n">read_colocated_data_time_avg</span>
+<span class="kn">from</span> <span class="nn">..io.read_data_radar</span> <span class="kn">import</span> <span class="n">interpol_field</span>
 
-<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">time_avg_range</span><span class="p">,</span> <span class="n">get_range_bins_to_avg</span>
-<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">find_colocated_indexes</span>
+<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="kn">import</span> <span class="n">time_avg_range</span><span class="p">,</span> <span class="n">get_range_bins_to_avg</span>
+<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="kn">import</span> <span class="n">find_colocated_indexes</span>
 
 
 <div class="viewcode-block" id="process_time_stats"><a class="viewcode-back" href="../../../proc.html#pyrad.proc.process_time_stats">[docs]</a><span class="k">def</span> <span class="nf">process_time_stats</span><span class="p">(</span><span class="n">procstatus</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">radar_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>

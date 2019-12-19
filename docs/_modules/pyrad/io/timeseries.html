@@ -67,14 +67,14 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">..graph.plots</span> <span class="k">import</span> <span class="n">plot_histogram</span>
-<span class="kn">from</span> <span class="nn">..graph.plots_timeseries</span> <span class="k">import</span> <span class="n">plot_timeseries</span>
-<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">compute_histogram</span>
-<span class="kn">from</span> <span class="nn">..io.io_aux</span> <span class="k">import</span> <span class="n">get_fieldname_pyart</span>
+<span class="kn">from</span> <span class="nn">..graph.plots</span> <span class="kn">import</span> <span class="n">plot_histogram</span>
+<span class="kn">from</span> <span class="nn">..graph.plots_timeseries</span> <span class="kn">import</span> <span class="n">plot_timeseries</span>
+<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="kn">import</span> <span class="n">compute_histogram</span>
+<span class="kn">from</span> <span class="nn">..io.io_aux</span> <span class="kn">import</span> <span class="n">get_fieldname_pyart</span>
 
 
 <div class="viewcode-block" id="TimeSeries"><a class="viewcode-back" href="../../../io.html#pyrad.io.TimeSeries">[docs]</a><span class="k">class</span> <span class="nc">TimeSeries</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -99,7 +99,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="TimeSeries.__init__"><a class="viewcode-back" href="../../../io.html#pyrad.io.TimeSeries.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">timevec</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timeformat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxlength</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<div class="viewcode-block" id="TimeSeries.__init__"><a class="viewcode-back" href="../../../io.html#pyrad.io.TimeSeries.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">timevec</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timeformat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxlength</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">datatype</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initalize the object.</span>
@@ -276,7 +276,7 @@
 <span class="sd">    Hold a data vector and some meta information.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">unit_name</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">unit_name</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initalize the object.</span>

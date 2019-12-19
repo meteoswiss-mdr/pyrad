@@ -72,30 +72,30 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
-<span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
 <span class="kn">import</span> <span class="nn">os</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">import</span> <span class="nn">pyart</span>
 
-<span class="kn">from</span> <span class="nn">.process_vol_products</span> <span class="k">import</span> <span class="n">generate_vol_products</span>
+<span class="kn">from</span> <span class="nn">.process_vol_products</span> <span class="kn">import</span> <span class="n">generate_vol_products</span>
 
-<span class="kn">from</span> <span class="nn">..io.io_aux</span> <span class="k">import</span> <span class="n">get_fieldname_pyart</span>
-<span class="kn">from</span> <span class="nn">..io.io_aux</span> <span class="k">import</span> <span class="n">get_save_dir</span><span class="p">,</span> <span class="n">make_filename</span>
+<span class="kn">from</span> <span class="nn">..io.io_aux</span> <span class="kn">import</span> <span class="n">get_fieldname_pyart</span>
+<span class="kn">from</span> <span class="nn">..io.io_aux</span> <span class="kn">import</span> <span class="n">get_save_dir</span><span class="p">,</span> <span class="n">make_filename</span>
 
-<span class="kn">from</span> <span class="nn">..io.read_data_sun</span> <span class="k">import</span> <span class="n">read_sun_retrieval</span>
-<span class="kn">from</span> <span class="nn">..io.read_data_other</span> <span class="k">import</span> <span class="n">read_ml_ts</span>
+<span class="kn">from</span> <span class="nn">..io.read_data_sun</span> <span class="kn">import</span> <span class="n">read_sun_retrieval</span>
+<span class="kn">from</span> <span class="nn">..io.read_data_other</span> <span class="kn">import</span> <span class="n">read_ml_ts</span>
 
-<span class="kn">from</span> <span class="nn">..io.write_data</span> <span class="k">import</span> <span class="n">write_sun_hits</span><span class="p">,</span> <span class="n">write_sun_retrieval</span>
-<span class="kn">from</span> <span class="nn">..io.write_data</span> <span class="k">import</span> <span class="n">write_excess_gates</span><span class="p">,</span> <span class="n">write_ts_ml</span>
+<span class="kn">from</span> <span class="nn">..io.write_data</span> <span class="kn">import</span> <span class="n">write_sun_hits</span><span class="p">,</span> <span class="n">write_sun_retrieval</span>
+<span class="kn">from</span> <span class="nn">..io.write_data</span> <span class="kn">import</span> <span class="n">write_excess_gates</span><span class="p">,</span> <span class="n">write_ts_ml</span>
 
-<span class="kn">from</span> <span class="nn">..graph.plots</span> <span class="k">import</span> <span class="n">plot_sun_hits</span>
-<span class="kn">from</span> <span class="nn">..graph.plots_timeseries</span> <span class="k">import</span> <span class="n">plot_sun_retrieval_ts</span><span class="p">,</span> <span class="n">plot_ml_ts</span>
+<span class="kn">from</span> <span class="nn">..graph.plots</span> <span class="kn">import</span> <span class="n">plot_sun_hits</span>
+<span class="kn">from</span> <span class="nn">..graph.plots_timeseries</span> <span class="kn">import</span> <span class="n">plot_sun_retrieval_ts</span><span class="p">,</span> <span class="n">plot_ml_ts</span>
 
-<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">create_sun_hits_field</span>
-<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">create_sun_retrieval_field</span>
+<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="kn">import</span> <span class="n">create_sun_hits_field</span>
+<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="kn">import</span> <span class="n">create_sun_retrieval_field</span>
 
 
 <div class="viewcode-block" id="generate_occurrence_products"><a class="viewcode-back" href="../../../prod.html#pyrad.prod.generate_occurrence_products">[docs]</a><span class="k">def</span> <span class="nf">generate_occurrence_products</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">):</span>

@@ -96,16 +96,16 @@
 <span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">csv</span>
 <span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">et</span>
-<span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
 <span class="kn">import</span> <span class="nn">fcntl</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">errno</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">pyart.config</span> <span class="k">import</span> <span class="n">get_fillvalue</span><span class="p">,</span> <span class="n">get_metadata</span>
+<span class="kn">from</span> <span class="nn">pyart.config</span> <span class="kn">import</span> <span class="n">get_fillvalue</span><span class="p">,</span> <span class="n">get_metadata</span>
 
-<span class="kn">from</span> <span class="nn">.io_aux</span> <span class="k">import</span> <span class="n">get_fieldname_pyart</span><span class="p">,</span> <span class="n">_get_datetime</span>
+<span class="kn">from</span> <span class="nn">.io_aux</span> <span class="kn">import</span> <span class="n">get_fieldname_pyart</span><span class="p">,</span> <span class="n">_get_datetime</span>
 
 
 <div class="viewcode-block" id="read_proc_periods"><a class="viewcode-back" href="../../../io.html#pyrad.io.read_proc_periods">[docs]</a><span class="k">def</span> <span class="nf">read_proc_periods</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>

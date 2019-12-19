@@ -3499,6 +3499,7 @@ DEFAULT_FIELD_COLORMAP = {
     radar_echo_id: 'pyart_LangRainbow12',
     clutter_exit_code: 'pyart_LangRainbow12',
     melting_layer: 'pyart_LangRainbow12',
+    height_over_iso0: 'pyart_BuDRd18',
 
     specific_attenuation: 'pyart_Carbone17',
     path_integrated_attenuation: 'pyart_Carbone17',
@@ -3726,7 +3727,7 @@ DEFAULT_FIELD_LIMITS = {
     frequency_of_occurrence: (0, 100),
 
     temperature: (-60, 30),
-    height_over_iso0: (-6000., 10000.),
+    height_over_iso0: (-6000., 6000.),
     iso0_height: (0., 5000.),
 
     # Additional reflectivity like fields

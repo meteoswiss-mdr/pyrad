@@ -79,17 +79,16 @@
 <span class="sd">    plot_rhi_profile</span>
 <span class="sd">    plot_along_coord</span>
 <span class="sd">    plot_field_coverage</span>
-<span class="sd">    _plot_time_range</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">netCDF4</span> <span class="k">import</span> <span class="n">num2date</span>
+<span class="kn">from</span> <span class="nn">netCDF4</span> <span class="kn">import</span> <span class="n">num2date</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">cartopy</span>
-    <span class="kn">from</span> <span class="nn">cartopy.io.img_tiles</span> <span class="k">import</span> <span class="n">Stamen</span>
+    <span class="kn">from</span> <span class="nn">cartopy.io.img_tiles</span> <span class="kn">import</span> <span class="n">Stamen</span>
     <span class="n">_CARTOPY_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">_CARTOPY_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
@@ -112,13 +111,13 @@
 
 <span class="kn">import</span> <span class="nn">pyart</span>
 
-<span class="kn">from</span> <span class="nn">.plots_aux</span> <span class="k">import</span> <span class="n">get_colobar_label</span><span class="p">,</span> <span class="n">get_norm</span><span class="p">,</span> <span class="n">generate_fixed_rng_title</span>
-<span class="kn">from</span> <span class="nn">.plots_aux</span> <span class="k">import</span> <span class="n">generate_fixed_rng_span_title</span>
-<span class="kn">from</span> <span class="nn">.plots_aux</span> <span class="k">import</span> <span class="n">generate_complex_range_Doppler_title</span>
-<span class="kn">from</span> <span class="nn">.plots</span> <span class="k">import</span> <span class="n">plot_quantiles</span><span class="p">,</span> <span class="n">plot_histogram</span>
+<span class="kn">from</span> <span class="nn">.plots_aux</span> <span class="kn">import</span> <span class="n">get_colobar_label</span><span class="p">,</span> <span class="n">get_norm</span><span class="p">,</span> <span class="n">generate_fixed_rng_title</span>
+<span class="kn">from</span> <span class="nn">.plots_aux</span> <span class="kn">import</span> <span class="n">generate_fixed_rng_span_title</span>
+<span class="kn">from</span> <span class="nn">.plots_aux</span> <span class="kn">import</span> <span class="n">generate_complex_range_Doppler_title</span>
+<span class="kn">from</span> <span class="nn">.plots</span> <span class="kn">import</span> <span class="n">plot_quantiles</span><span class="p">,</span> <span class="n">plot_histogram</span><span class="p">,</span> <span class="n">_plot_time_range</span>
 
-<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">compute_quantiles_sweep</span><span class="p">,</span> <span class="n">find_ang_index</span>
-<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="k">import</span> <span class="n">compute_histogram_sweep</span>
+<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="kn">import</span> <span class="n">compute_quantiles_sweep</span><span class="p">,</span> <span class="n">find_ang_index</span>
+<span class="kn">from</span> <span class="nn">..util.radar_utils</span> <span class="kn">import</span> <span class="n">compute_histogram_sweep</span>
 
 
 <div class="viewcode-block" id="plot_ray"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_ray">[docs]</a><span class="k">def</span> <span class="nf">plot_ray</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_ray</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">titl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1744,100 +1743,6 @@
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">fname_list</span></div>
-
-
-<span class="k">def</span> <span class="nf">_plot_time_range</span><span class="p">(</span><span class="n">rad_time</span><span class="p">,</span> <span class="n">rad_range</span><span class="p">,</span> <span class="n">rad_data</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
-                     <span class="n">titl</span><span class="o">=</span><span class="s1">&#39;Time-Range plot&#39;</span><span class="p">,</span>
-                     <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;time (s from start time)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;range (Km)&#39;</span><span class="p">,</span>
-                     <span class="n">clabel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                     <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">72</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    plots a time-range plot</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    rad_time : 1D array</span>
-<span class="sd">        array containing the x dimension (typically time)</span>
-<span class="sd">    rad_range : 1D array</span>
-<span class="sd">        array containing the y dimension (typically range)</span>
-<span class="sd">    rad_data : 2D array</span>
-<span class="sd">        array containing the data to plot</span>
-<span class="sd">    field_name : str or None</span>
-<span class="sd">        field name. Used to define plot characteristics</span>
-<span class="sd">    fname_list : list of str</span>
-<span class="sd">        list of names of the files where to store the plot</span>
-<span class="sd">    titl : str</span>
-<span class="sd">        Plot title</span>
-<span class="sd">    xlabel, ylabel : str</span>
-<span class="sd">        x- and y-axis labels</span>
-<span class="sd">    clabel : str or None</span>
-<span class="sd">        colorbar label</span>
-<span class="sd">    vmin, vmax : float</span>
-<span class="sd">        min and max values of the color bar</span>
-<span class="sd">    figsize : list</span>
-<span class="sd">        figure size [xsize, ysize]</span>
-<span class="sd">    dpi : int</span>
-<span class="sd">        dpi</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    fname_list : list of str</span>
-<span class="sd">        list of names of the created plots</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># display data</span>
-    <span class="n">norm</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">cmap</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">ticks</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">ticklabs</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="n">field_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">field_dict</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">clabel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">clabel</span> <span class="o">=</span> <span class="n">get_colobar_label</span><span class="p">(</span><span class="n">field_dict</span><span class="p">,</span> <span class="n">field_name</span><span class="p">)</span>
-
-        <span class="n">cmap</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_field_colormap</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
-
-        <span class="n">norm</span><span class="p">,</span> <span class="n">ticks</span><span class="p">,</span> <span class="n">ticklabs</span> <span class="o">=</span> <span class="n">get_norm</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">vmin</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">vmin</span> <span class="o">=</span> <span class="n">vmax</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">if</span> <span class="n">norm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># if norm is set do not override with vmin/vmax</span>
-                <span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_field_limits</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">norm</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">clabel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">clabel</span> <span class="o">=</span> <span class="s1">&#39;value&#39;</span>
-        <span class="k">if</span> <span class="n">vmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">rad_data</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">rad_data</span><span class="p">)</span>
-
-    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
-    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
-
-    <span class="n">T</span><span class="p">,</span> <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">rad_time</span><span class="p">,</span> <span class="n">rad_range</span><span class="p">)</span>
-    <span class="n">cax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span>
-        <span class="n">T</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">rad_data</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span>
-        <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">titl</span><span class="p">)</span>
-
-    <span class="n">cb</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cax</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">ticks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">cb</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">ticks</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">ticklabs</span><span class="p">:</span>
-        <span class="n">cb</span><span class="o">.</span><span class="n">set_ticklabels</span><span class="p">(</span><span class="n">ticklabs</span><span class="p">)</span>
-    <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="n">clabel</span><span class="p">)</span>
-
-    <span class="c1"># Make a tight layout</span>
-    <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
-
-    <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">fname_list</span><span class="p">:</span>
-        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">fname_list</span>
 </pre></div>
 
           </div>

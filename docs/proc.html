@@ -5596,10 +5596,14 @@ be ‘None’, ‘Gourley’, ‘Wolfensberger’, ‘Louf’, ‘Gorgucci’ or
 <dd><p class="first last">Default freezing level height. Default 2000.</p>
 </dd>
 <dt>rsmooth <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
-<dd><p class="first last">length of the smoothing window [m]. Default 1000.</p>
+<dd><p class="first last">length of the smoothing window [m]. Default 2000.</p>
 </dd>
 <dt>min_rhohv <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">minimum valid RhoHV. Default 0.92</p>
+</dd>
+<dt>filter_rain <span class="classifier-delimiter">:</span> <span class="classifier">Bool. Dataset keyword</span></dt>
+<dd><p class="first last">If True the hydrometeor classification is used to filter out gates
+that are not rain. Default True</p>
 </dd>
 <dt>max_phidp <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">maximum valid PhiDP [deg]. Default 20.</p>
@@ -5609,7 +5613,7 @@ be ‘None’, ‘Gourley’, ‘Wolfensberger’, ‘Louf’, ‘Gorgucci’ or
 </dd>
 <dt>rcell <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">length of continuous precipitation to consider the precipitation
-cell a valid phidp segment [m]. Default 1000.</p>
+cell a valid phidp segment [m]. Default 15000.</p>
 </dd>
 <dt>dphidp_min <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">minimum phase shift [deg]. Default 2.</p>
@@ -5630,7 +5634,7 @@ radome. If there is rain no bias will be computed. Default True.</p>
 </dd>
 <dt>wet_radome_refl <span class="classifier-delimiter">:</span> <span class="classifier">Float. Dataset keyword</span></dt>
 <dd><p class="first last">Average reflectivity [dBZ] of the gates close to the radar to
-consider the radome as wet. Default 30.</p>
+consider the radome as wet. Default 25.</p>
 </dd>
 <dt>wet_radome_rng_min, wet_radome_rng_max <span class="classifier-delimiter">:</span> <span class="classifier">Float. Dataset keyword</span></dt>
 <dd><p class="first last">Min and max range [m] of the disk around the radar used to compute
@@ -5640,6 +5644,21 @@ Default 2000 and 4000.</p>
 <dt>wet_radome_ngates_min <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd><p class="first last">Minimum number of valid gates to consider that the radome is wet.
 Default 180</p>
+</dd>
+<dt>valid_gates_only <span class="classifier-delimiter">:</span> <span class="classifier">Bool</span></dt>
+<dd><p class="first last">If True the reflectivity bias obtained for each valid ray is going
+to be assigned only to gates of the segment used. That will give
+more weight to longer segments when computing the total bias.
+Default False</p>
+</dd>
+<dt>keep_points <span class="classifier-delimiter">:</span> <span class="classifier">Bool</span></dt>
+<dd><p class="first last">If True the ZDR, ZH and KDP of the gates used in the self-
+consistency algorithm are going to be stored for further analysis.
+Default False</p>
+</dd>
+<dt>rkdp <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The length of the window used to compute KDP with the single
+window least square method [m]. Default 6000.</p>
 </dd>
 </dl>
 </dd>
@@ -5690,10 +5709,14 @@ be ‘None’, ‘Gourley’, ‘Wolfensberger’, ‘Louf’, ‘Gorgucci’ or
 ‘None’ will use tables from config files. Default ‘None’.</p>
 </dd>
 <dt>rsmooth <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
-<dd><p class="first last">length of the smoothing window [m]. Default 1000.</p>
+<dd><p class="first last">length of the smoothing window [m]. Default 2000.</p>
 </dd>
 <dt>min_rhohv <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">minimum valid RhoHV. Default 0.92</p>
+</dd>
+<dt>filter_rain <span class="classifier-delimiter">:</span> <span class="classifier">Bool. Dataset keyword</span></dt>
+<dd><p class="first last">If True the hydrometeor classification is used to filter out gates
+that are not rain. Default True</p>
 </dd>
 <dt>max_phidp <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">maximum valid PhiDP [deg]. Default 20.</p>

@@ -73,15 +73,15 @@
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">locale</span>
-<span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
-<span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">import</span> <span class="nn">pyart</span>
 
-<span class="kn">from</span> <span class="nn">..io.read_data_sensor</span> <span class="k">import</span> <span class="n">read_lightning</span><span class="p">,</span> <span class="n">read_trt_traj_data</span>
-<span class="kn">from</span> <span class="nn">..io.read_data_sensor</span> <span class="k">import</span> <span class="n">read_trt_thundertracking_traj_data</span>
+<span class="kn">from</span> <span class="nn">..io.read_data_sensor</span> <span class="kn">import</span> <span class="n">read_lightning</span><span class="p">,</span> <span class="n">read_trt_traj_data</span>
+<span class="kn">from</span> <span class="nn">..io.read_data_sensor</span> <span class="kn">import</span> <span class="n">read_trt_thundertracking_traj_data</span>
 
 
 <div class="viewcode-block" id="Trajectory"><a class="viewcode-back" href="../../../io.html#pyrad.io.Trajectory">[docs]</a><span class="k">class</span> <span class="nc">Trajectory</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -141,7 +141,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Trajectory.__init__"><a class="viewcode-back" href="../../../io.html#pyrad.io.Trajectory.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">starttime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">endtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<div class="viewcode-block" id="Trajectory.__init__"><a class="viewcode-back" href="../../../io.html#pyrad.io.Trajectory.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">starttime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">endtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">trajtype</span><span class="o">=</span><span class="s1">&#39;plane&#39;</span><span class="p">,</span> <span class="n">flashnr</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initalize the object.</span>
@@ -647,7 +647,7 @@
 <span class="sd">    assign_velocity_vecs</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">alt</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">alt</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initalize the object.</span>
 

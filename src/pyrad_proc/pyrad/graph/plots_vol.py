@@ -23,7 +23,6 @@ Functions to plot radar volume data
     plot_rhi_profile
     plot_along_coord
     plot_field_coverage
-    _plot_time_range
 
 """
 from warnings import warn
@@ -59,7 +58,7 @@ import pyart
 from .plots_aux import get_colobar_label, get_norm, generate_fixed_rng_title
 from .plots_aux import generate_fixed_rng_span_title
 from .plots_aux import generate_complex_range_Doppler_title
-from .plots import plot_quantiles, plot_histogram
+from .plots import plot_quantiles, plot_histogram, _plot_time_range
 
 from ..util.radar_utils import compute_quantiles_sweep, find_ang_index
 from ..util.radar_utils import compute_histogram_sweep
@@ -1682,100 +1681,6 @@ def plot_field_coverage(xval_list, yval_list, fname_list,
     ax.set_ylim(bottom=ymin, top=ymax)
     if labels is not None:
         ax.legend(loc='best')
-
-    for fname in fname_list:
-        fig.savefig(fname, dpi=dpi)
-    plt.close(fig)
-
-    return fname_list
-
-
-def _plot_time_range(rad_time, rad_range, rad_data, field_name, fname_list,
-                     titl='Time-Range plot',
-                     xlabel='time (s from start time)', ylabel='range (Km)',
-                     clabel=None,
-                     vmin=None, vmax=None, figsize=[10, 8], dpi=72):
-    """
-    plots a time-range plot
-
-    Parameters
-    ----------
-    rad_time : 1D array
-        array containing the x dimension (typically time)
-    rad_range : 1D array
-        array containing the y dimension (typically range)
-    rad_data : 2D array
-        array containing the data to plot
-    field_name : str or None
-        field name. Used to define plot characteristics
-    fname_list : list of str
-        list of names of the files where to store the plot
-    titl : str
-        Plot title
-    xlabel, ylabel : str
-        x- and y-axis labels
-    clabel : str or None
-        colorbar label
-    vmin, vmax : float
-        min and max values of the color bar
-    figsize : list
-        figure size [xsize, ysize]
-    dpi : int
-        dpi
-
-    Returns
-    -------
-    fname_list : list of str
-        list of names of the created plots
-
-    """
-    # display data
-    norm = None
-    cmap = None
-    ticks = None
-    ticklabs = None
-    if field_name is not None:
-        field_dict = pyart.config.get_metadata(field_name)
-        if clabel is None:
-            clabel = get_colobar_label(field_dict, field_name)
-
-        cmap = pyart.config.get_field_colormap(field_name)
-
-        norm, ticks, ticklabs = get_norm(field_name)
-        if vmin is None or vmax is None:
-            vmin = vmax = None
-            if norm is None:  # if norm is set do not override with vmin/vmax
-                vmin, vmax = pyart.config.get_field_limits(field_name)
-        else:
-            norm = None
-    else:
-        if clabel is None:
-            clabel = 'value'
-        if vmin is None:
-            vmin = np.ma.min(rad_data)
-        if vmax is None:
-            vmax = np.ma.max(rad_data)
-
-    fig = plt.figure(figsize=figsize, dpi=dpi)
-    ax = fig.add_subplot(111)
-
-    T, R = np.meshgrid(rad_time, rad_range)
-    cax = ax.pcolormesh(
-        T, R, np.ma.transpose(rad_data), cmap=cmap, vmin=vmin, vmax=vmax,
-        norm=norm)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    ax.set_title(titl)
-
-    cb = fig.colorbar(cax)
-    if ticks is not None:
-        cb.set_ticks(ticks)
-    if ticklabs:
-        cb.set_ticklabels(ticklabs)
-    cb.set_label(clabel)
-
-    # Make a tight layout
-    fig.tight_layout()
 
     for fname in fname_list:
         fig.savefig(fname, dpi=dpi)
