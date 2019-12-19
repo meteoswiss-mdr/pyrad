@@ -35,9 +35,10 @@ def main():
         '/store/msrad/radar/pyrad_products/')
     output_base = (
         '/store/msrad/radar/pyrad_products/')
-    rad_vec = ['D']
+    rad_vec = ['A', 'D', 'L']
     var_vec = ['PhiDP0', 'RhoHV_rain', 'ZDR_prec', 'ZDR_snow', 'dBZ_bias']
-    year_vec = [datetime.datetime(2018, 1, 1)]
+    var_vec = ['dBZ_bias']
+    year_vec = [datetime.datetime(2019, 1, 1)]
 
     plot_data = True
 
@@ -200,9 +201,9 @@ def main():
                     np_min = 5000
                 elif var == 'dBZ_bias':
                     ref_value = 0.
-                    vmin = -30.
-                    vmax = 30.
-                    np_min = 100
+                    vmin = -10.
+                    vmax = 10.
+                    np_min = 100000
 
                 fname = plot_monitoring_ts(
                     date, np_t_vec, cquant_vec, lquant_vec, hquant_vec,

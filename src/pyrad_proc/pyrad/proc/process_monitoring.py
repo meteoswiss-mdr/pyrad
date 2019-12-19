@@ -51,9 +51,12 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
             'Vaccarono'
             'None' will use tables from config files. Default 'None'.
         rsmooth : float. Dataset keyword
-            length of the smoothing window [m]. Default 1000.
+            length of the smoothing window [m]. Default 2000.
         min_rhohv : float. Dataset keyword
             minimum valid RhoHV. Default 0.92
+        filter_rain : Bool. Dataset keyword
+            If True the hydrometeor classification is used to filter out gates
+            that are not rain. Default True
         max_phidp : float. Dataset keyword
             maximum valid PhiDP [deg]. Default 20.
         ml_thickness : float. Dataset keyword
@@ -127,14 +130,7 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
         return None, None
 
     # determine which freezing level reference
-    if hydro is not None:
-        if hydro in radar.fields:
-            temp_ref = 'hydroclass'
-        else:
-            warn('hydrometeor classification not available. '
-                 'Using fixed freezing level height to determine liquid phase')
-            temp_ref = 'fixed_fzl'
-    elif temp is not None:
+    if temp is not None:
         if temp in radar.fields:
             temp_ref = 'temperature'
         else:
@@ -214,6 +210,7 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
         # get user defined values
         rsmooth = dscfg.get('rsmooth', 2000.)
         min_rhohv = dscfg.get('min_rhohv', 0.92)
+        filter_rain = dscfg.get('filter_rain', True)
         max_phidp = dscfg.get('max_phidp', 20.)
         ml_thickness = dscfg.get('ml_thickness', 700.)
 
@@ -224,8 +221,9 @@ def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
 
         kdpsim, phidpsim = pyart.correct.selfconsistency_kdp_phidp(
             radar, dscfg['global_data'], min_rhohv=min_rhohv,
-            max_phidp=max_phidp, smooth_wind_len=smooth_wind_len, doc=15,
-            fzl=fzl, thickness=ml_thickness, parametrization=parametrization,
+            filter_rain=filter_rain, max_phidp=max_phidp,
+            smooth_wind_len=smooth_wind_len, doc=15, fzl=fzl,
+            thickness=ml_thickness, parametrization=parametrization,
             refl_field=refl, phidp_field=phidp, zdr_field=zdr,
             temp_field=temp, iso0_field=iso0, hydro_field=hydro,
             rhohv_field=rhohv, kdpsim_field=kdpsim_field,
@@ -264,16 +262,19 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
         fzl : float. Dataset keyword
             Default freezing level height. Default 2000.
         rsmooth : float. Dataset keyword
-            length of the smoothing window [m]. Default 1000.
+            length of the smoothing window [m]. Default 2000.
         min_rhohv : float. Dataset keyword
             minimum valid RhoHV. Default 0.92
+        filter_rain : Bool. Dataset keyword
+            If True the hydrometeor classification is used to filter out gates
+            that are not rain. Default True
         max_phidp : float. Dataset keyword
             maximum valid PhiDP [deg]. Default 20.
         ml_thickness : float. Dataset keyword
             Melting layer thickness [m]. Default 700.
         rcell : float. Dataset keyword
             length of continuous precipitation to consider the precipitation
-            cell a valid phidp segment [m]. Default 1000.
+            cell a valid phidp segment [m]. Default 15000.
         dphidp_min : float. Dataset keyword
             minimum phase shift [deg]. Default 2.
         dphidp_max : float. Dataset keyword
@@ -289,7 +290,7 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
             radome. If there is rain no bias will be computed. Default True.
         wet_radome_refl : Float. Dataset keyword
             Average reflectivity [dBZ] of the gates close to the radar to
-            consider the radome as wet. Default 30.
+            consider the radome as wet. Default 25.
         wet_radome_rng_min, wet_radome_rng_max : Float. Dataset keyword
             Min and max range [m] of the disk around the radar used to compute
             the average reflectivity to determine whether the radome is wet.
@@ -297,6 +298,18 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
         wet_radome_ngates_min : int
             Minimum number of valid gates to consider that the radome is wet.
             Default 180
+        valid_gates_only : Bool
+            If True the reflectivity bias obtained for each valid ray is going
+            to be assigned only to gates of the segment used. That will give
+            more weight to longer segments when computing the total bias.
+            Default False
+        keep_points : Bool
+            If True the ZDR, ZH and KDP of the gates used in the self-
+            consistency algorithm are going to be stored for further analysis.
+            Default False
+        rkdp : float
+            The length of the window used to compute KDP with the single
+            window least square method [m]. Default 6000.
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -308,9 +321,17 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
         radar index
 
     """
-
-    if procstatus != 1:
+    if procstatus == 0:
         return None, None
+
+    keep_points = dscfg.get('keep_points', False)
+    if procstatus == 2:
+        if not keep_points or dscfg['initialized'] == 0:
+            return None, None
+
+        return (
+            {'selfconsistency_points':
+             dscfg['global_data']['selfconsistency_points']}, None)
 
     temp = None
     iso0 = None
@@ -357,14 +378,7 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
         return None, None
 
     # determine which freezing level reference
-    if hydro is not None:
-        if hydro in radar.fields:
-            temp_ref = 'hydroclass'
-        else:
-            warn('hydrometeor classification not available. '
-                 'Using fixed freezing level height to determine liquid phase')
-            temp_ref = 'fixed_fzl'
-    elif temp is not None:
+    if temp is not None:
         if temp in radar.fields:
             temp_ref = 'temperature'
         else:
@@ -437,13 +451,23 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
                               'elev': None,
                               'freq_band': freq_band}
 
-        dscfg['global_data'] = zdr_kdpzh_dict
+        dscfg['global_data'] = {'zdr_kdpzh_dict': zdr_kdpzh_dict}
+        if keep_points:
+            dscfg['global_data'].update({'selfconsistency_points': {
+                'zdr': [],
+                'kdp': [],
+                'zh': [],
+                'timeinfo': dscfg['timeinfo'],
+                'parametrization': parametrization,
+                'zdr_kdpzh_dict': zdr_kdpzh_dict
+            }})
         dscfg['initialized'] = 1
 
     if dscfg['initialized'] == 1:
         # get user defined values
         rsmooth = dscfg.get('rsmooth', 2000.)
         min_rhohv = dscfg.get('min_rhohv', 0.92)
+        filter_rain = dscfg.get('filter_rain', True)
         max_phidp = dscfg.get('max_phidp', 20.)
         ml_thickness = dscfg.get('ml_thickness', 700.)
         rcell = dscfg.get('rcell', 15000.)
@@ -451,20 +475,24 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
         dphidp_max = dscfg.get('dphidp_max', 16.)
         check_wet_radome = dscfg.get('check_wet_radome', True)
         wet_radome_refl = dscfg.get('wet_radome_refl', 25.)
-        wet_radome_rng_min = dscfg.get('wet_radome_refl', 2000.)
-        wet_radome_rng_max = dscfg.get('wet_radome_refl', 4000.)
+        wet_radome_rng_min = dscfg.get('wet_radome_rng_min', 2000.)
+        wet_radome_rng_max = dscfg.get('wet_radome_rng_max', 4000.)
         wet_radome_ngates_min = dscfg.get('wet_radome_ngates_min', 180)
+        valid_gates_only = dscfg.get('valid_gates_only', False)
+        rkdp = dscfg.get('rkdp', 6000.)
 
         r_res = radar.range['data'][1]-radar.range['data'][0]
         smooth_wind_len = int(rsmooth/r_res)
+        kdp_wind_len = int(rkdp/r_res)
         min_rcons = int(rcell/r_res)
         wet_radome_len_min = int(wet_radome_rng_min/r_res)
         wet_radome_len_max = int(wet_radome_rng_max/r_res)
 
-        refl_bias = pyart.correct.selfconsistency_bias(
-            radar, dscfg['global_data'], min_rhohv=min_rhohv,
-            max_phidp=max_phidp, smooth_wind_len=smooth_wind_len, doc=15,
-            fzl=fzl, thickness=ml_thickness, min_rcons=min_rcons,
+        refl_bias, selfconsistency_dict = pyart.correct.selfconsistency_bias(
+            radar, dscfg['global_data']['zdr_kdpzh_dict'],
+            min_rhohv=min_rhohv, filter_rain=filter_rain, max_phidp=max_phidp,
+            smooth_wind_len=smooth_wind_len, doc=15, fzl=fzl,
+            thickness=ml_thickness, min_rcons=min_rcons,
             dphidp_min=dphidp_min, dphidp_max=dphidp_max,
             parametrization=parametrization, refl_field=refl,
             phidp_field=phidp, zdr_field=zdr, temp_field=temp,
@@ -472,7 +500,18 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
             temp_ref=temp_ref, check_wet_radome=check_wet_radome,
             wet_radome_refl=wet_radome_refl,
             wet_radome_len_min=wet_radome_len_min,
-            wet_radome_len_max=wet_radome_len_max)
+            wet_radome_len_max=wet_radome_len_max,
+            valid_gates_only=valid_gates_only, keep_points=keep_points,
+            kdp_wind_len=kdp_wind_len)
+
+        if keep_points:
+            if selfconsistency_dict is not None:
+                dscfg['global_data']['selfconsistency_points']['zdr'].extend(
+                    selfconsistency_dict['zdr'])
+                dscfg['global_data']['selfconsistency_points']['zh'].extend(
+                    selfconsistency_dict['zh'])
+                dscfg['global_data']['selfconsistency_points']['kdp'].extend(
+                    selfconsistency_dict['kdp'])
 
         # prepare for exit
         new_dataset = {'radar_out': deepcopy(radar)}

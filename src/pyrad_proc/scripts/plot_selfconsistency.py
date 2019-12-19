@@ -23,31 +23,6 @@ print(__doc__)
 def main():
     """
     """
-    
-    zdr = np.arange(0., 6., 0.05)
-    file_path = '/users/jfigui/pyrad/config/selfconsistency/'
-    img_ext = '.png'
-    
-    # Vaccarono
-    kdpzh = 1.77e-4*np.power(np.power(10., 0.1*zdr), -2.09)    
-    zdrkdp_table = [zdr, kdpzh]
-    base_name = 'selfconsistency_zdr_zh091kdp085_Cband_temp00_elev000_mu05_Vaccarono'
-    plot_selfconsitency(
-            zdrkdp_table, [file_path+base_name+img_ext], labelx='ZDR [dB]',
-            title=base_name, ymin=None, ymax=None, save_fig=True)
-            
-    return
-    
-    # Gorgucci expression, probably Zh and Zdr in linear units
-    kdpzh = 1.82e-4*np.power(np.power(10., 0.1*zdr), -1.28)    
-    zdrkdp_table = [zdr, kdpzh]
-    base_name = 'selfconsistency_zdr_zh095kdp_Cband_temp00_elev000_mu05_Gorgucci'
-    plot_selfconsitency(
-            zdrkdp_table, [file_path+base_name+img_ext], labelx='ZDR [dB]',
-            title=base_name, ymin=None, ymax=None, save_fig=True)
-            
-    return
-
     file_path = '/users/jfigui/pyrad/config/selfconsistency/'
     base_name_vec = ['selfconsistency_zdr_zhkdp_Cband_temp10_elev000_mu05']
     # base_name_vec = ['selfconsistency_zdr_zhkdp_Xband_temp10_elev000_mu05']
@@ -60,6 +35,17 @@ def main():
             title=base_name, ymin=0, ymax=0.00008, save_fig=False)
 
     zdr = np.arange(0., 6., 0.05)
+    
+    # Wolfensberger C-band
+    kdpzh = 3.199e-5*np.ma.exp(-7.767e-1*zdr)-4.436e-6*zdr+3.464e-5
+    zdrkdp_table = [zdr, kdpzh]
+
+    base_name = 'selfconsistency_zdr_zhkdp_Cband_tempXX_elev010_Wolfensberger'
+    plot_selfconsitency(
+            zdrkdp_table, [file_path+base_name+img_ext], labelx='ZDR [dB]',
+            title=base_name, ymin=0, ymax=0.00008, save_fig=True, fig=fig,
+            ax=ax)
+            
     
     # Gorgucci expression, probably Zh and Zdr in linear units
     kdpzh = 1.82e-4*np.power(np.power(10., 0.1*zdr), -1.28)    
@@ -85,7 +71,7 @@ def main():
     
     
     # Wolfensberger C-band
-    kdpzh = 0.000053*np.power(zdr, -0.08054)*np.exp(-0.247351*zdr)
+    kdpzh = 3.199e-5*np.ma.exp(-7.767e-1*zdr)-4.436e-6*zdr+3.464e-5
     zdrkdp_table = [zdr, kdpzh]
 
     base_name = 'selfconsistency_zdr_zhkdp_Cband_tempXX_elev016_Wolfensberger'
@@ -144,6 +130,30 @@ def main():
     plot_selfconsitency(
             zdrkdp_table, [file_path+base_name+img_ext], labelx='ZDR [dB]',
             title=base_name, ymin=0, ymax=0.00008, save_fig=True)
+            
+    zdr = np.arange(0., 6., 0.05)
+    file_path = '/users/jfigui/pyrad/config/selfconsistency/'
+    img_ext = '.png'
+    
+    # Vaccarono
+    kdpzh = 1.77e-4*np.power(np.power(10., 0.1*zdr), -2.09)    
+    zdrkdp_table = [zdr, kdpzh]
+    base_name = 'selfconsistency_zdr_zh091kdp085_Cband_temp00_elev000_mu05_Vaccarono'
+    plot_selfconsitency(
+            zdrkdp_table, [file_path+base_name+img_ext], labelx='ZDR [dB]',
+            title=base_name, ymin=None, ymax=None, save_fig=True)
+            
+    return
+    
+    # Gorgucci expression, probably Zh and Zdr in linear units
+    kdpzh = 1.82e-4*np.power(np.power(10., 0.1*zdr), -1.28)    
+    zdrkdp_table = [zdr, kdpzh]
+    base_name = 'selfconsistency_zdr_zh095kdp_Cband_temp00_elev000_mu05_Gorgucci'
+    plot_selfconsitency(
+            zdrkdp_table, [file_path+base_name+img_ext], labelx='ZDR [dB]',
+            title=base_name, ymin=None, ymax=None, save_fig=True)
+            
+    return
 
 
 # ---------------------------------------------------------

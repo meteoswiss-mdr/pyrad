@@ -4,8 +4,13 @@
 
 # List of datasets to generate.
 # The detailed specification of each dataset is given below.
-dataSetList STRARR 1
+dataSetList STRARR 6
     Zh
+    uPhiDP
+    uRhoHV
+    ZDR
+    V
+    W
 
 
 #	l0:SNRh
