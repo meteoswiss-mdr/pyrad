@@ -303,6 +303,9 @@ def generate_vol_products(dataset, prdcfg):
                     If the plot type is 'QUANTILES', the list of quantiles to
                     compute. If None a default list of quantiles will be
                     computed
+                vmin, vmax : float or None
+                    Min and Max values of the color scale. If None the values
+                    are taken from the Py-ART config file
         'PSEUDOPPI_MAP': Plots a pseudo-PPI image over a map. The map
             resolution and the type of maps used are defined in the variables
             'mapres' and 'maps' in 'ppiMapImageConfig' in the loc config file.
@@ -358,6 +361,9 @@ def generate_vol_products(dataset, prdcfg):
                     If the plot type is 'QUANTILES', the list of quantiles to
                     compute. If None a default list of quantiles will be
                     computed
+                vmin, vmax : float or None
+                    Min and Max values of the color scale. If None the values
+                    are taken from the Py-ART config file
         'QUANTILES': Plots and writes the quantiles of a radar volume
             User defined parameters:
                 quantiles: list of floats or None
@@ -409,6 +415,10 @@ def generate_vol_products(dataset, prdcfg):
                     If the plot type is 'QUANTILES', the list of quantiles to
                     compute. If None a default list of quantiles will be
                     computed
+                vmin, vmax: float or None
+                    The minimum and maximum values of the color scale. If None
+                    the scale is going to be set according to the Py-ART
+                    config file
         'RHI_PROFILE': Computes and plots a vertical profile statistics out of
             an RHI.
             The statistics are saved in a csv file
@@ -596,10 +606,16 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfg['type'])
             return None
 
+        plot_type = prdcfg.get('plot_type', 'PPI')
+        step = prdcfg.get('step', None)
+        quantiles = prdcfg.get('quantiles', None)
+        ele_tol = prdcfg.get('EleTol', 1.)
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
+
         try:
             xsect = pyart.util.cross_section_rhi(
-                dataset['radar_out'], [prdcfg['angle']],
-                el_tol=prdcfg['EleTol'])
+                dataset['radar_out'], [prdcfg['angle']], el_tol=ele_tol)
 
             savedir = get_save_dir(
                 prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -614,18 +630,9 @@ def generate_vol_products(dataset, prdcfg):
             for i, fname in enumerate(fname_list):
                 fname_list[i] = savedir+fname
 
-            step = None
-            quantiles = None
-            plot_type = 'PPI'
-            if 'plot_type' in prdcfg:
-                plot_type = prdcfg['plot_type']
-            if 'step' in prdcfg:
-                step = prdcfg['step']
-            if 'quantiles' in prdcfg:
-                quantiles = prdcfg['quantiles']
-
-            plot_ppi(xsect, field_name, 0, prdcfg, fname_list,
-                     plot_type=plot_type, step=step, quantiles=quantiles)
+            plot_ppi(
+                xsect, field_name, 0, prdcfg, fname_list, plot_type=plot_type,
+                vmin=vmin, vmax=vmax, step=step, quantiles=quantiles)
 
             print('----- save to '+' '.join(fname_list))
 
@@ -930,9 +937,13 @@ def generate_vol_products(dataset, prdcfg):
         step = prdcfg.get('step', None)
         quantiles = prdcfg.get('quantiles', None)
         plot_type = prdcfg.get('plot_type', 'RHI')
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
 
-        plot_rhi(dataset['radar_out'], field_name, ind_az, prdcfg, fname_list,
-                 plot_type=plot_type, step=step, quantiles=quantiles)
+        plot_rhi(
+            dataset['radar_out'], field_name, ind_az, prdcfg, fname_list,
+            plot_type=plot_type, step=step, vmin=vmin, vmax=vmax,
+            quantiles=quantiles)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -947,10 +958,16 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfg['type'])
             return None
 
+        plot_type = prdcfg.get('plot_type', 'RHI')
+        step = prdcfg.get('step', None)
+        quantiles = prdcfg.get('quantiles', None)
+        azi_tol = prdcfg.get('AziTol', 1.)
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
+
         try:
             xsect = pyart.util.cross_section_ppi(
-                dataset['radar_out'], [prdcfg['angle']],
-                az_tol=prdcfg['AziTol'])
+                dataset['radar_out'], [prdcfg['angle']], az_tol=azi_tol)
 
             savedir = get_save_dir(
                 prdcfg['basepath'], prdcfg['procname'], dssavedir,
@@ -965,12 +982,10 @@ def generate_vol_products(dataset, prdcfg):
             for i, fname in enumerate(fname_list):
                 fname_list[i] = savedir+fname
 
-            step = prdcfg.get('step', None)
-            quantiles = prdcfg.get('quantiles', None)
-            plot_type = prdcfg.get('plot_type', 'RHI')
-
-            plot_rhi(xsect, field_name, 0, prdcfg, fname_list,
-                     plot_type=plot_type, step=step, quantiles=quantiles)
+            plot_rhi(
+                xsect, field_name, 0, prdcfg, fname_list, vmin=vmin,
+                vmax=vmax, plot_type=plot_type, step=step,
+                quantiles=quantiles)
 
             print('----- save to '+' '.join(fname_list))
 

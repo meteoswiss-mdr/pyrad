@@ -359,6 +359,9 @@
 <span class="sd">                    If the plot type is &#39;QUANTILES&#39;, the list of quantiles to</span>
 <span class="sd">                    compute. If None a default list of quantiles will be</span>
 <span class="sd">                    computed</span>
+<span class="sd">                vmin, vmax : float or None</span>
+<span class="sd">                    Min and Max values of the color scale. If None the values</span>
+<span class="sd">                    are taken from the Py-ART config file</span>
 <span class="sd">        &#39;PSEUDOPPI_MAP&#39;: Plots a pseudo-PPI image over a map. The map</span>
 <span class="sd">            resolution and the type of maps used are defined in the variables</span>
 <span class="sd">            &#39;mapres&#39; and &#39;maps&#39; in &#39;ppiMapImageConfig&#39; in the loc config file.</span>
@@ -414,6 +417,9 @@
 <span class="sd">                    If the plot type is &#39;QUANTILES&#39;, the list of quantiles to</span>
 <span class="sd">                    compute. If None a default list of quantiles will be</span>
 <span class="sd">                    computed</span>
+<span class="sd">                vmin, vmax : float or None</span>
+<span class="sd">                    Min and Max values of the color scale. If None the values</span>
+<span class="sd">                    are taken from the Py-ART config file</span>
 <span class="sd">        &#39;QUANTILES&#39;: Plots and writes the quantiles of a radar volume</span>
 <span class="sd">            User defined parameters:</span>
 <span class="sd">                quantiles: list of floats or None</span>
@@ -465,6 +471,10 @@
 <span class="sd">                    If the plot type is &#39;QUANTILES&#39;, the list of quantiles to</span>
 <span class="sd">                    compute. If None a default list of quantiles will be</span>
 <span class="sd">                    computed</span>
+<span class="sd">                vmin, vmax: float or None</span>
+<span class="sd">                    The minimum and maximum values of the color scale. If None</span>
+<span class="sd">                    the scale is going to be set according to the Py-ART</span>
+<span class="sd">                    config file</span>
 <span class="sd">        &#39;RHI_PROFILE&#39;: Computes and plots a vertical profile statistics out of</span>
 <span class="sd">            an RHI.</span>
 <span class="sd">            The statistics are saved in a csv file</span>
@@ -652,10 +662,16 @@
                 <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
             <span class="k">return</span> <span class="kc">None</span>
 
+        <span class="n">plot_type</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;plot_type&#39;</span><span class="p">,</span> <span class="s1">&#39;PPI&#39;</span><span class="p">)</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;step&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">quantiles</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;quantiles&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">ele_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;EleTol&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">vmin</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vmin&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">vmax</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vmax&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
         <span class="k">try</span><span class="p">:</span>
             <span class="n">xsect</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cross_section_rhi</span><span class="p">(</span>
-                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;angle&#39;</span><span class="p">]],</span>
-                <span class="n">el_tol</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;EleTol&#39;</span><span class="p">])</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;angle&#39;</span><span class="p">]],</span> <span class="n">el_tol</span><span class="o">=</span><span class="n">ele_tol</span><span class="p">)</span>
 
             <span class="n">savedir</span> <span class="o">=</span> <span class="n">get_save_dir</span><span class="p">(</span>
                 <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;basepath&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;procname&#39;</span><span class="p">],</span> <span class="n">dssavedir</span><span class="p">,</span>
@@ -670,18 +686,9 @@
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
                 <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
 
-            <span class="n">step</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="n">quantiles</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="n">plot_type</span> <span class="o">=</span> <span class="s1">&#39;PPI&#39;</span>
-            <span class="k">if</span> <span class="s1">&#39;plot_type&#39;</span> <span class="ow">in</span> <span class="n">prdcfg</span><span class="p">:</span>
-                <span class="n">plot_type</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;plot_type&#39;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="s1">&#39;step&#39;</span> <span class="ow">in</span> <span class="n">prdcfg</span><span class="p">:</span>
-                <span class="n">step</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;step&#39;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="s1">&#39;quantiles&#39;</span> <span class="ow">in</span> <span class="n">prdcfg</span><span class="p">:</span>
-                <span class="n">quantiles</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;quantiles&#39;</span><span class="p">]</span>
-
-            <span class="n">plot_ppi</span><span class="p">(</span><span class="n">xsect</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
-                     <span class="n">plot_type</span><span class="o">=</span><span class="n">plot_type</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="n">quantiles</span><span class="p">)</span>
+            <span class="n">plot_ppi</span><span class="p">(</span>
+                <span class="n">xsect</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">plot_type</span><span class="o">=</span><span class="n">plot_type</span><span class="p">,</span>
+                <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="n">quantiles</span><span class="p">)</span>
 
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----- save to &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fname_list</span><span class="p">))</span>
 
@@ -986,9 +993,13 @@
         <span class="n">step</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;step&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">quantiles</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;quantiles&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">plot_type</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;plot_type&#39;</span><span class="p">,</span> <span class="s1">&#39;RHI&#39;</span><span class="p">)</span>
+        <span class="n">vmin</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vmin&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">vmax</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vmax&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
-        <span class="n">plot_rhi</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_az</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
-                 <span class="n">plot_type</span><span class="o">=</span><span class="n">plot_type</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="n">quantiles</span><span class="p">)</span>
+        <span class="n">plot_rhi</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_az</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
+            <span class="n">plot_type</span><span class="o">=</span><span class="n">plot_type</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span>
+            <span class="n">quantiles</span><span class="o">=</span><span class="n">quantiles</span><span class="p">)</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----- save to &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fname_list</span><span class="p">))</span>
 
@@ -1003,10 +1014,16 @@
                 <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
             <span class="k">return</span> <span class="kc">None</span>
 
+        <span class="n">plot_type</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;plot_type&#39;</span><span class="p">,</span> <span class="s1">&#39;RHI&#39;</span><span class="p">)</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;step&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">quantiles</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;quantiles&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">azi_tol</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AziTol&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">vmin</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vmin&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">vmax</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vmax&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
         <span class="k">try</span><span class="p">:</span>
             <span class="n">xsect</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cross_section_ppi</span><span class="p">(</span>
-                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;angle&#39;</span><span class="p">]],</span>
-                <span class="n">az_tol</span><span class="o">=</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;AziTol&#39;</span><span class="p">])</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;angle&#39;</span><span class="p">]],</span> <span class="n">az_tol</span><span class="o">=</span><span class="n">azi_tol</span><span class="p">)</span>
 
             <span class="n">savedir</span> <span class="o">=</span> <span class="n">get_save_dir</span><span class="p">(</span>
                 <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;basepath&#39;</span><span class="p">],</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;procname&#39;</span><span class="p">],</span> <span class="n">dssavedir</span><span class="p">,</span>
@@ -1021,12 +1038,10 @@
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fname_list</span><span class="p">):</span>
                 <span class="n">fname_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">savedir</span><span class="o">+</span><span class="n">fname</span>
 
-            <span class="n">step</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;step&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="n">quantiles</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;quantiles&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="n">plot_type</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;plot_type&#39;</span><span class="p">,</span> <span class="s1">&#39;RHI&#39;</span><span class="p">)</span>
-
-            <span class="n">plot_rhi</span><span class="p">(</span><span class="n">xsect</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
-                     <span class="n">plot_type</span><span class="o">=</span><span class="n">plot_type</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="n">quantiles</span><span class="p">)</span>
+            <span class="n">plot_rhi</span><span class="p">(</span>
+                <span class="n">xsect</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span>
+                <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">plot_type</span><span class="o">=</span><span class="n">plot_type</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span>
+                <span class="n">quantiles</span><span class="o">=</span><span class="n">quantiles</span><span class="p">)</span>
 
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----- save to &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fname_list</span><span class="p">))</span>
 

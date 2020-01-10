@@ -304,6 +304,8 @@
 
         <span class="n">plot_histogram</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">labelx</span><span class="o">=</span><span class="n">labelx</span><span class="p">,</span>
                        <span class="n">labely</span><span class="o">=</span><span class="s1">&#39;Number of Samples&#39;</span><span class="p">,</span> <span class="n">titl</span><span class="o">=</span><span class="n">titl</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unknown plot type &#39;</span><span class="o">+</span><span class="n">plot_type</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">fname_list</span></div>
 
@@ -390,7 +392,8 @@
 
 
 <div class="viewcode-block" id="plot_rhi"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_rhi">[docs]</a><span class="k">def</span> <span class="nf">plot_rhi</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_az</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;RHI&#39;</span><span class="p">,</span>
-             <span class="n">titl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">save_fig</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+             <span class="n">titl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">save_fig</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    plots an RHI</span>
 
@@ -410,6 +413,9 @@
 <span class="sd">        type of plot (PPI, QUANTILES or HISTOGRAM)</span>
 <span class="sd">    titl : str</span>
 <span class="sd">        Plot title</span>
+<span class="sd">    vmin, vmax : float</span>
+<span class="sd">        The minimum and maximum value. If None the scale is going to be</span>
+<span class="sd">        obtained from the Py-ART config file.</span>
 <span class="sd">    step : float</span>
 <span class="sd">        step for histogram plotting</span>
 <span class="sd">    quantiles : float array</span>
@@ -428,7 +434,13 @@
     <span class="k">if</span> <span class="n">plot_type</span> <span class="o">==</span> <span class="s1">&#39;RHI&#39;</span><span class="p">:</span>
         <span class="n">dpi</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;ppiImageConfig&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dpi&#39;</span><span class="p">,</span> <span class="mi">72</span><span class="p">)</span>
 
-        <span class="n">norm</span><span class="p">,</span> <span class="n">ticks</span><span class="p">,</span> <span class="n">ticklabs</span> <span class="o">=</span> <span class="n">get_norm</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">ticks</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">ticklabs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">vmin</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">norm</span><span class="p">,</span> <span class="n">ticks</span><span class="p">,</span> <span class="n">ticklabs</span> <span class="o">=</span> <span class="n">get_norm</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+            <span class="n">vmin</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">vmax</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="n">xsize</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;rhiImageConfig&#39;</span><span class="p">][</span><span class="s1">&#39;xsize&#39;</span><span class="p">]</span>
         <span class="n">ysize</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;rhiImageConfig&#39;</span><span class="p">][</span><span class="s1">&#39;ysize&#39;</span><span class="p">]</span>
@@ -437,8 +449,8 @@
         <span class="n">display</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">RadarDisplay</span><span class="p">(</span><span class="n">radar</span><span class="p">)</span>
         <span class="n">display</span><span class="o">.</span><span class="n">plot_rhi</span><span class="p">(</span>
             <span class="n">field_name</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">titl</span><span class="p">,</span> <span class="n">sweep</span><span class="o">=</span><span class="n">ind_az</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">,</span> <span class="n">ticks</span><span class="o">=</span><span class="n">ticks</span><span class="p">,</span>
-            <span class="n">ticklabs</span><span class="o">=</span><span class="n">ticklabs</span><span class="p">,</span> <span class="n">colorbar_orient</span><span class="o">=</span><span class="s1">&#39;horizontal&#39;</span><span class="p">,</span>
-            <span class="n">reverse_xaxis</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+            <span class="n">ticklabs</span><span class="o">=</span><span class="n">ticklabs</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span>
+            <span class="n">colorbar_orient</span><span class="o">=</span><span class="s1">&#39;horizontal&#39;</span><span class="p">,</span> <span class="n">reverse_xaxis</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
         <span class="n">display</span><span class="o">.</span><span class="n">set_limits</span><span class="p">(</span>
             <span class="n">ylim</span><span class="o">=</span><span class="p">[</span><span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;rhiImageConfig&#39;</span><span class="p">][</span><span class="s1">&#39;ymin&#39;</span><span class="p">],</span>
                   <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;rhiImageConfig&#39;</span><span class="p">][</span><span class="s1">&#39;ymax&#39;</span><span class="p">]],</span>
@@ -489,6 +501,8 @@
 
         <span class="n">plot_histogram</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">labelx</span><span class="o">=</span><span class="n">labelx</span><span class="p">,</span>
                        <span class="n">labely</span><span class="o">=</span><span class="s1">&#39;Number of Samples&#39;</span><span class="p">,</span> <span class="n">titl</span><span class="o">=</span><span class="n">titl</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unknown plot type &#39;</span><span class="o">+</span><span class="n">plot_type</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">fname_list</span></div>
 

@@ -248,6 +248,8 @@ def plot_ppi(radar, field_name, ind_el, prdcfg, fname_list, plot_type='PPI',
 
         plot_histogram(bins, values, fname_list, labelx=labelx,
                        labely='Number of Samples', titl=titl)
+    else:
+        warn('Unknown plot type '+plot_type)
 
     return fname_list
 
@@ -334,7 +336,8 @@ def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list,
 
 
 def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
-             titl=None, step=None, quantiles=None, save_fig=True):
+             titl=None, vmin=None, vmax=None, step=None, quantiles=None,
+             save_fig=True):
     """
     plots an RHI
 
@@ -354,6 +357,9 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
         type of plot (PPI, QUANTILES or HISTOGRAM)
     titl : str
         Plot title
+    vmin, vmax : float
+        The minimum and maximum value. If None the scale is going to be
+        obtained from the Py-ART config file.
     step : float
         step for histogram plotting
     quantiles : float array
@@ -372,7 +378,13 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
     if plot_type == 'RHI':
         dpi = prdcfg['ppiImageConfig'].get('dpi', 72)
 
-        norm, ticks, ticklabs = get_norm(field_name)
+        norm = None
+        ticks = None
+        ticklabs = None
+        if vmin is None or vmax is None:
+            norm, ticks, ticklabs = get_norm(field_name)
+            vmin = None
+            vmax = None
 
         xsize = prdcfg['rhiImageConfig']['xsize']
         ysize = prdcfg['rhiImageConfig']['ysize']
@@ -381,8 +393,8 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
         display = pyart.graph.RadarDisplay(radar)
         display.plot_rhi(
             field_name, title=titl, sweep=ind_az, norm=norm, ticks=ticks,
-            ticklabs=ticklabs, colorbar_orient='horizontal',
-            reverse_xaxis=False, fig=fig, ax=ax)
+            ticklabs=ticklabs, vmin=vmin, vmax=vmax,
+            colorbar_orient='horizontal', reverse_xaxis=False, fig=fig, ax=ax)
         display.set_limits(
             ylim=[prdcfg['rhiImageConfig']['ymin'],
                   prdcfg['rhiImageConfig']['ymax']],
@@ -433,6 +445,8 @@ def plot_rhi(radar, field_name, ind_az, prdcfg, fname_list, plot_type='RHI',
 
         plot_histogram(bins, values, fname_list, labelx=labelx,
                        labely='Number of Samples', titl=titl)
+    else:
+        warn('Unknown plot type '+plot_type)
 
     return fname_list
 

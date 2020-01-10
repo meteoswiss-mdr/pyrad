@@ -2090,7 +2090,7 @@ returns the handle to the figure</p>
 
 <dl class="function">
 <dt id="pyrad.graph.plot_rhi">
-<code class="descclassname">pyrad.graph.</code><code class="descname">plot_rhi</code><span class="sig-paren">(</span><em>radar</em>, <em>field_name</em>, <em>ind_az</em>, <em>prdcfg</em>, <em>fname_list</em>, <em>plot_type='RHI'</em>, <em>titl=None</em>, <em>step=None</em>, <em>quantiles=None</em>, <em>save_fig=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots_vol.html#plot_rhi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_rhi" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyrad.graph.</code><code class="descname">plot_rhi</code><span class="sig-paren">(</span><em>radar</em>, <em>field_name</em>, <em>ind_az</em>, <em>prdcfg</em>, <em>fname_list</em>, <em>plot_type='RHI'</em>, <em>titl=None</em>, <em>vmin=None</em>, <em>vmax=None</em>, <em>step=None</em>, <em>quantiles=None</em>, <em>save_fig=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots_vol.html#plot_rhi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_rhi" title="Permalink to this definition">¶</a></dt>
 <dd><p>plots an RHI</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2117,6 +2117,10 @@ returns the handle to the figure</p>
 </dd>
 <dt><strong>titl</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
 <dd><p class="first last">Plot title</p>
+</dd>
+<dt><strong>vmin, vmax</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The minimum and maximum value. If None the scale is going to be
+obtained from the Py-ART config file.</p>
 </dd>
 <dt><strong>step</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
 <dd><p class="first last">step for histogram plotting</p>
