@@ -100,6 +100,7 @@ def get_process_func(dataset_type, dsname):
                 'POL_VARIABLES_IQ': process_pol_variables_iq
                 'PWR': process_signal_power
                 'RADAR_RESAMPLING': process_radar_resampling
+                'RADIAL_NOISE': process_radial_noise
                 'RAINRATE': process_rainrate
                 'RAW': process_raw
                 'REFLECTIVITY': process_reflectivity
@@ -182,6 +183,7 @@ def get_process_func(dataset_type, dsname):
                 'rQVP': process_rqvp
                 'SVP': process_svp
                 'TIME_HEIGHT': process_time_height
+                'TIME_ALONG_COORD': process_ts_along_coord
             'SPARSE_GRID' format output:
                 'ZDR_COLUMN': process_zdr_column
             'SUN_HITS' format output:
@@ -291,6 +293,9 @@ def get_process_func(dataset_type, dsname):
     elif dataset_type == 'TIME_HEIGHT':
         func_name = 'process_time_height'
         dsformat = 'QVP'
+    elif dataset_type == 'TIME_ALONG_COORD':
+        func_name = 'process_ts_along_coord'
+        dsformat = 'QVP'
     elif dataset_type == 'CDF':
         func_name = 'process_cdf'
     elif dataset_type == 'NCVOL':
@@ -303,6 +308,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_rcs'
     elif dataset_type == 'SNR':
         func_name = 'process_snr'
+    elif dataset_type == 'RADIAL_NOISE':
+        func_name = 'process_radial_noise'
     elif dataset_type == 'VOL_REFL':
         func_name = 'process_vol_refl'
     elif dataset_type == 'BIRD_DENSITY':
@@ -747,7 +754,8 @@ def process_fixed_rng_span(procstatus, dscfg, radar_list=None):
 
 def process_roi(procstatus, dscfg, radar_list=None):
     """
-    Obtains the radar data at a region of interest.
+    Obtains the radar data at a region of interest defined by a TRT file or
+    by the user.
 
     Parameters
     ----------
@@ -759,6 +767,14 @@ def process_roi(procstatus, dscfg, radar_list=None):
 
         datatype : string. Dataset keyword
             The data type where we want to extract the point measurement
+        trtfile : str. Dataset keyword
+            TRT file from which to extract the region of interest
+        lon_roi, lat_roi : float array. Dataset keyword
+            latitude and longitude positions defining a region of interest
+        alt_min, alt_max : float. Dataset keyword
+            Minimum and maximum altitude of the region of interest. Can be
+            None
+
 
     radar_list : list of Radar objects
           Optional. list of radar objects

@@ -505,10 +505,14 @@ def generate_vol_products(dataset, prdcfg):
                     If True the occurrence density of ZK/KDP for each ZDR bin
                     is going to be represented. Otherwise it will show the
                     number of gates at each bin. Default True
-        'TIME_RANGE': Plots a time-range plot
+        'TIME_RANGE': Plots a time-range/azimuth/elevation plot
             User defined parameters:
                 anglenr: float
                     The number of the fixed angle to plot
+                vmin, vmax: float or None
+                    The minimum and maximum values of the color scale. If None
+                    the scale is going to be set according to the Py-ART
+                    config file
         'WIND_PROFILE': Plots vertical profile of wind data (U, V, W
             components and wind velocity and direction) out of a radar
             volume containing the retrieved U,V and W components of the wind,
@@ -2113,6 +2117,9 @@ def generate_vol_products(dataset, prdcfg):
                 prdcfg['type'])
             return None
 
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
+
         ang_vec = np.sort(dataset['radar_out'].fixed_angle['data'])
         ang = ang_vec[prdcfg['anglenr']]
         ind_ang = np.where(
@@ -2131,8 +2138,18 @@ def generate_vol_products(dataset, prdcfg):
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
+        if dataset['radar_out'].scan_type == 'ALONG_AZI':
+            ylabel = 'azimuth (deg)'
+        elif dataset['radar_out'].scan_type == 'ALONG_RNG':
+            ylabel = 'range (km)'
+        elif dataset['radar_out'].scan_type == 'ALONG_ELE':
+            ylabel = 'elevation (deg)'
+        else:
+            ylabel = 'range (km)'
+
         plot_time_range(
-            dataset['radar_out'], field_name, ind_ang, prdcfg, fname_list)
+            dataset['radar_out'], field_name, ind_ang, prdcfg, fname_list,
+            vmin=vmin, vmax=vmax, ylabel=ylabel)
         print('----- save to '+' '.join(fname_list))
 
         return fname_list

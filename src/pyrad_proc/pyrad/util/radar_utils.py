@@ -19,6 +19,7 @@ Miscellaneous functions dealing with radar data
     belongs_roi_indices
     find_ray_index
     find_rng_index
+    find_ang_index
     find_nearest_gate
     find_neighbour_gates
     find_colocated_indexes

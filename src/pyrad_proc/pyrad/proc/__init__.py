@@ -160,6 +160,7 @@ Retrievals
     process_signal_power
     process_rcs
     process_rcs_pr
+    process_radial_noise
     process_snr
     process_l
     process_cdr
@@ -194,6 +195,7 @@ Time series functions
     process_svp
     process_evp
     process_time_height
+    process_ts_along_coord
 
 Trajectory functions
 ====================
@@ -267,7 +269,7 @@ from .process_iq import process_wbn_iq
 
 from .process_timeseries import process_point_measurement, process_qvp
 from .process_timeseries import process_rqvp, process_evp, process_svp
-from .process_timeseries import process_time_height
+from .process_timeseries import process_time_height, process_ts_along_coord
 
 from .process_traj import process_trajectory, process_traj_atplane
 from .process_traj import process_traj_antenna_pattern, process_traj_lightning
@@ -311,6 +313,7 @@ from .process_retrieve import process_signal_power, process_snr, process_ccor
 from .process_retrieve import process_l, process_cdr, process_bird_density
 from .process_retrieve import process_rainrate, process_vol_refl, process_rcs
 from .process_retrieve import process_rcs_pr, process_rainfall_accumulation
+from .process_retrieve import process_radial_noise
 
 from .process_Doppler import process_wind_vel, process_windshear
 from .process_Doppler import process_dealias_fourdd
