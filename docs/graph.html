@@ -118,7 +118,7 @@
 <tr class="row-odd"><td><a class="reference internal" href="#pyrad.graph.plot_fixed_rng_span" title="pyrad.graph.plot_fixed_rng_span"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_fixed_rng_span</span></code></a>(radar,&nbsp;field_name,&nbsp;…)</td>
 <td>plots a fixed range plot</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.graph.plot_time_range" title="pyrad.graph.plot_time_range"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_time_range</span></code></a>(radar,&nbsp;field_name,&nbsp;…)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.graph.plot_time_range" title="pyrad.graph.plot_time_range"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_time_range</span></code></a>(radar,&nbsp;field_name,&nbsp;…[,&nbsp;…])</td>
 <td>plots a time-range plot</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#pyrad.graph.plot_rhi_profile" title="pyrad.graph.plot_rhi_profile"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_rhi_profile</span></code></a>(data_list,&nbsp;hvec,&nbsp;fname_list)</td>
@@ -751,8 +751,9 @@ along elevation</p>
 <dt><strong>fname_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
 <dd><p class="first last">list of names of the files where to store the plot</p>
 </dd>
-<dt><strong>vmin, vmax</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Min and max values of the colorbar</span></dt>
-<dd></dd>
+<dt><strong>vmin, vmax</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Min and max values of the colorbar</p>
+</dd>
 <dt><strong>ray_dim</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
 <dd><p class="first last">the ray dimension. Can be ‘ang’ or ‘time’</p>
 </dd>
@@ -2726,7 +2727,7 @@ returns the handle to the figure</p>
 
 <dl class="function">
 <dt id="pyrad.graph.plot_time_range">
-<code class="descclassname">pyrad.graph.</code><code class="descname">plot_time_range</code><span class="sig-paren">(</span><em>radar</em>, <em>field_name</em>, <em>ind_sweep</em>, <em>prdcfg</em>, <em>fname_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots_vol.html#plot_time_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_time_range" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyrad.graph.</code><code class="descname">plot_time_range</code><span class="sig-paren">(</span><em>radar</em>, <em>field_name</em>, <em>ind_sweep</em>, <em>prdcfg</em>, <em>fname_list</em>, <em>vmin=None</em>, <em>vmax=None</em>, <em>ylabel='range (Km)'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots_vol.html#plot_time_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_time_range" title="Permalink to this definition">¶</a></dt>
 <dd><p>plots a time-range plot</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2747,6 +2748,12 @@ returns the handle to the figure</p>
 </dd>
 <dt><strong>fname_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
 <dd><p class="first last">list of names of the files where to store the plot</p>
+</dd>
+<dt><strong>vmin, vmax</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Min and max values of the colorbar</p>
+</dd>
+<dt><strong>ylabel</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The y-axis label</p>
 </dd>
 </dl>
 </td>

@@ -2120,12 +2120,16 @@ number of gates at each bin. Default True</dd>
 </dd>
 </dl>
 </dd>
-<dt>‘TIME_RANGE’: Plots a time-range plot</dt>
+<dt>‘TIME_RANGE’: Plots a time-range/azimuth/elevation plot</dt>
 <dd><dl class="first last docutils">
 <dt>User defined parameters:</dt>
 <dd><dl class="first last docutils">
 <dt>anglenr: float</dt>
 <dd>The number of the fixed angle to plot</dd>
+<dt>vmin, vmax: float or None</dt>
+<dd>The minimum and maximum values of the color scale. If None
+the scale is going to be set according to the Py-ART
+config file</dd>
 </dl>
 </dd>
 </dl>

@@ -107,7 +107,7 @@
 <td>For each azimuth-elevation gets the data within a fixed range span and computes a user-defined statistic: mean, min, max, mode, median</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_roi" title="pyrad.proc.process_roi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_roi</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
-<td>Obtains the radar data at a region of interest.</td>
+<td>Obtains the radar data at a region of interest defined by a TRT file or by the user.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_azimuthal_average" title="pyrad.proc.process_azimuthal_average"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_azimuthal_average</span></code></a>(procstatus,&nbsp;dscfg)</td>
 <td>Averages radar data in azimuth obtaining and RHI as a result</td>
@@ -462,25 +462,28 @@
 <tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_rcs_pr" title="pyrad.proc.process_rcs_pr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_rcs_pr</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Computes the radar cross-section (assuming a point target) from radar reflectivity by first computing the received power and then the RCS from it.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_snr" title="pyrad.proc.process_snr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_snr</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_radial_noise" title="pyrad.proc.process_radial_noise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_radial_noise</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<td>Computes the radial noise from the signal power</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_snr" title="pyrad.proc.process_snr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_snr</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Computes SNR</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_l" title="pyrad.proc.process_l"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_l</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_l" title="pyrad.proc.process_l"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_l</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Computes L parameter</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_cdr" title="pyrad.proc.process_cdr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_cdr</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_cdr" title="pyrad.proc.process_cdr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_cdr</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Computes Circular Depolarization Ratio</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_rainrate" title="pyrad.proc.process_rainrate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_rainrate</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_rainrate" title="pyrad.proc.process_rainrate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_rainrate</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Estimates rainfall rate from polarimetric moments</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_rainfall_accumulation" title="pyrad.proc.process_rainfall_accumulation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_rainfall_accumulation</span></code></a>(procstatus,&nbsp;dscfg)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_rainfall_accumulation" title="pyrad.proc.process_rainfall_accumulation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_rainfall_accumulation</span></code></a>(procstatus,&nbsp;dscfg)</td>
 <td>Computes rainfall accumulation fields</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_vol_refl" title="pyrad.proc.process_vol_refl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_vol_refl</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_vol_refl" title="pyrad.proc.process_vol_refl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_vol_refl</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Computes the volumetric reflectivity in 10log10(cm^2 km^-3)</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_bird_density" title="pyrad.proc.process_bird_density"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_bird_density</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_bird_density" title="pyrad.proc.process_bird_density"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_bird_density</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
 <td>Computes the bird density from the volumetric reflectivity</td>
 </tr>
 </tbody>
@@ -543,6 +546,9 @@
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_time_height" title="pyrad.proc.process_time_height"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_time_height</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
 <td>Produces time height radar objects at a point of interest defined by latitude and longitude.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_ts_along_coord" title="pyrad.proc.process_ts_along_coord"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_ts_along_coord</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<td>Produces time series along a particular antenna coordinate</td>
 </tr>
 </tbody>
 </table>
@@ -687,6 +693,7 @@ the function documentation:</p>
 ‘POL_VARIABLES_IQ’: process_pol_variables_iq
 ‘PWR’: process_signal_power
 ‘RADAR_RESAMPLING’: process_radar_resampling
+‘RADIAL_NOISE’: process_radial_noise
 ‘RAINRATE’: process_rainrate
 ‘RAW’: process_raw
 ‘REFLECTIVITY’: process_reflectivity
@@ -779,7 +786,8 @@ the function documentation:</p>
 ‘QVP’: process_qvp
 ‘rQVP’: process_rqvp
 ‘SVP’: process_svp
-‘TIME_HEIGHT’: process_time_height</p>
+‘TIME_HEIGHT’: process_time_height
+‘TIME_ALONG_COORD’: process_ts_along_coord</p>
 </dd>
 <dt>‘SPARSE_GRID’ format output:</dt>
 <dd><p class="first last">‘ZDR_COLUMN’: process_zdr_column</p>
@@ -4757,6 +4765,57 @@ computing the statistics of each field. Default 0</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="pyrad.proc.process_radial_noise">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_radial_noise</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_retrieve.html#process_radial_noise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_radial_noise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the radial noise from the signal power</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first">data set configuration. Accepted Configuration Keywords:</p>
+<dl class="last docutils">
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">string. Dataset keyword</span></dt>
+<dd><p class="first last">The input data type</p>
+</dd>
+<dt>rmin <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">The minimum range from which to start the computation</p>
+</dd>
+<dt>nbins_min <span class="classifier-delimiter">:</span> <span class="classifier">int. Dataset keyword</span></dt>
+<dd><p class="first last">The minimum number of noisy gates to consider the estimation valid</p>
+</dd>
+<dt>max_std_pwr <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">The maximum standard deviation of the noise power to consider the
+estimation valid</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the output</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="pyrad.proc.process_rainfall_accumulation">
 <code class="descclassname">pyrad.proc.</code><code class="descname">process_rainfall_accumulation</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_retrieve.html#process_rainfall_accumulation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_rainfall_accumulation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes rainfall accumulation fields</p>
@@ -5412,7 +5471,8 @@ not in the radar object. Default 2000.</p>
 <dl class="function">
 <dt id="pyrad.proc.process_roi">
 <code class="descclassname">pyrad.proc.</code><code class="descname">process_roi</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_aux.html#process_roi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_roi" title="Permalink to this definition">¶</a></dt>
-<dd><p>Obtains the radar data at a region of interest.</p>
+<dd><p>Obtains the radar data at a region of interest defined by a TRT file or
+by the user.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -5427,6 +5487,16 @@ not in the radar object. Default 2000.</p>
 <dl class="last docutils">
 <dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">string. Dataset keyword</span></dt>
 <dd><p class="first last">The data type where we want to extract the point measurement</p>
+</dd>
+<dt>trtfile <span class="classifier-delimiter">:</span> <span class="classifier">str. Dataset keyword</span></dt>
+<dd><p class="first last">TRT file from which to extract the region of interest</p>
+</dd>
+<dt>lon_roi, lat_roi <span class="classifier-delimiter">:</span> <span class="classifier">float array. Dataset keyword</span></dt>
+<dd><p class="first last">latitude and longitude positions defining a region of interest</p>
+</dd>
+<dt>alt_min, alt_max <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">Minimum and maximum altitude of the region of interest. Can be
+None</p>
 </dd>
 </dl>
 </dd>
@@ -7477,6 +7547,65 @@ contour</p>
 </dd>
 <dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd><p class="first last">None</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.proc.process_ts_along_coord">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_ts_along_coord</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_timeseries.html#process_ts_along_coord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_ts_along_coord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces time series along a particular antenna coordinate</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first">data set configuration. Accepted Configuration Keywords:</p>
+<dl class="last docutils">
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">string. Dataset keyword</span></dt>
+<dd><p class="first last">The data type where we want to extract the time series</p>
+</dd>
+<dt>mode <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">coordinate to extract data along. Can be ALONG_AZI, ALONG_ELE or
+ALONG_RNG</p>
+</dd>
+<dt>fixed_range, fixed_azimuth, fixed_elevation <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The fixed range [m], azimuth [deg] or elevation [deg] to extract.
+In each mode two of these parameters have to be defined. If they are
+not defined they default to 0.</p>
+</dd>
+<dt>ang_tol, rng_tol <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The angle tolerance [deg] and range tolerance [m] around the fixed
+range or azimuth/elevation</p>
+</dd>
+<dt>value_start, value_stop <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The minimum and maximum value at which the data along a coordinate
+start and stop</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the data and a keyboard stating whether the
+processing has finished or not.</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
 </dd>
 </dl>
 </td>

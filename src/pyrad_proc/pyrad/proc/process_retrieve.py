@@ -13,6 +13,7 @@ Functions for retrieving new moments and products
     process_rcs
     process_vol_refl
     process_snr
+    process_radial_noise
     process_l
     process_cdr
     process_rainrate
@@ -580,6 +581,83 @@ def process_snr(procstatus, dscfg, radar_list=None):
     new_dataset = {'radar_out': deepcopy(radar)}
     new_dataset['radar_out'].fields = dict()
     new_dataset['radar_out'].add_field(snr_field, snr)
+
+    return new_dataset, ind_rad
+
+
+def process_radial_noise(procstatus, dscfg, radar_list=None):
+    """
+    Computes the radial noise from the signal power
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : string. Dataset keyword
+            The input data type
+        rmin : float. Dataset keyword
+            The minimum range from which to start the computation
+        nbins_min : int. Dataset keyword
+            The minimum number of noisy gates to consider the estimation valid
+        max_std_pwr : float. Dataset keyword
+            The maximum standard deviation of the noise power to consider the
+            estimation valid
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the output
+    ind_rad : int
+        radar index
+
+    """
+
+    if procstatus != 1:
+        return None, None
+
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
+    pwr_field = get_fieldname_pyart(datatype)
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if pwr_field not in radar.fields:
+        warn('Unable to compute radial noise. Missing signal power')
+        return None, None
+
+    # user values
+    rmin = dscfg.get('rmin', 10000.)
+    nbins_min = dscfg.get('nbins_min', 50)
+    max_std_pwr = dscfg.get('max_std_pwr', 2.)
+
+    if 'hh' in pwr_field:
+        noise_field = 'noisedBm_hh'
+    else:
+        noise_field = 'noisedBm_vv'
+
+    ind_rmin = np.where(radar.range['data'] >= rmin)[0]
+    if ind_rmin.size == 0:
+        warn('No data at ranges further than rmin '+str(rmin)+'  m.')
+        return None, None
+    ind_rmin = ind_rmin[0]
+
+    noise = pyart.retrieve.compute_radial_noise(
+        radar, ind_rmin=ind_rmin, nbins_min=nbins_min, max_std_pwr=max_std_pwr,
+        pwr_field=pwr_field, noise_field=noise_field)
+
+    # prepare for exit
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field(noise_field, noise)
 
     return new_dataset, ind_rad
 

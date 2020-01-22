@@ -13,6 +13,8 @@ Functions to obtain time series of radar data
     process_evp
     process_svp
     process_time_height
+    process_ts_along_coord
+
 """
 
 from warnings import warn
@@ -935,6 +937,153 @@ def process_time_height(procstatus, dscfg, radar_list=None):
 
         new_dataset = dict()
         new_dataset.update({'radar_out': qvp})
+        new_dataset.update({'radar_type': 'final'})
+        new_dataset.update({'start_time': dscfg['global_data']['start_time']})
+
+        return new_dataset, ind_rad
+
+
+def process_ts_along_coord(procstatus, dscfg, radar_list=None):
+    """
+    Produces time series along a particular antenna coordinate
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : string. Dataset keyword
+            The data type where we want to extract the time series
+        mode : str
+            coordinate to extract data along. Can be ALONG_AZI, ALONG_ELE or
+            ALONG_RNG
+        fixed_range, fixed_azimuth, fixed_elevation : float
+            The fixed range [m], azimuth [deg] or elevation [deg] to extract.
+            In each mode two of these parameters have to be defined. If they are
+            not defined they default to 0.
+        ang_tol, rng_tol : float
+            The angle tolerance [deg] and range tolerance [m] around the fixed
+            range or azimuth/elevation
+        value_start, value_stop : float
+            The minimum and maximum value at which the data along a coordinate
+            start and stop
+
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the data and a keyboard stating whether the
+        processing has finished or not.
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus == 0:
+        return None, None
+
+    if procstatus == 1:
+        radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
+        field_name = get_fieldname_pyart(datatype)
+
+        ind_rad = int(radarnr[5:8])-1
+
+        if (radar_list is None) or (radar_list[ind_rad] is None):
+            warn('ERROR: No valid radar')
+            return None, None
+
+        radar = radar_list[ind_rad]
+
+        mode = dscfg.get('mode', 'ALONG_AZI')
+        if mode == 'ALONG_RNG':
+            value_start = dscfg.get('value_start', 0.)
+            value_stop = dscfg.get('value_stop', radar.range['data'][-1])
+            ang_tol = dscfg.get('AngTol', 1.)
+            rng_tol = dscfg.get('RngTol', 50.)
+            fixed_range = dscfg.get('fixed_range', None)
+            fixed_azimuth = dscfg.get('fixed_azimuth', 0.)
+            fixed_elevation = dscfg.get('fixed_elevation', 0.)
+        elif mode == 'ALONG_AZI':
+            value_start = dscfg.get(
+                'value_start', np.min(radar.azimuth['data']))
+            value_stop = dscfg.get(
+                'value_stop', np.max(radar.azimuth['data']))
+            ang_tol = dscfg.get('AngTol', 1.)
+            rng_tol = dscfg.get('RngTol', 50.)
+            fixed_range = dscfg.get('fixed_range', 0.)
+            fixed_azimuth = dscfg.get('fixed_azimuth', None)
+            fixed_elevation = dscfg.get('fixed_elevation', 0.)
+        elif mode == 'ALONG_ELE':
+            value_start = dscfg.get(
+                'value_start', np.min(radar.elevation['data']))
+            value_stop = dscfg.get(
+                'value_stop', np.max(radar.elevation['data']))
+            ang_tol = dscfg.get('AngTol', 1.)
+            rng_tol = dscfg.get('RngTol', 50.)
+            fixed_range = dscfg.get('fixed_range', 0.)
+            fixed_azimuth = dscfg.get('fixed_azimuth', 0.)
+            fixed_elevation = dscfg.get('fixed_elevation', None)
+        else:
+            warn('Unknown plotting mode '+dscfg['mode'])
+            return None, None
+
+        # initialize dataset
+        if not dscfg['initialized']:
+            acoord = pyart.retrieve.compute_ts_along_coord(
+                radar, field_name, mode=mode, fixed_range=fixed_range,
+                fixed_azimuth=fixed_azimuth, fixed_elevation=fixed_elevation,
+                ang_tol=ang_tol, rng_tol=rng_tol, value_start=value_start,
+                value_stop=value_stop, ref_time=dscfg['timeinfo'],
+                acoord=None)
+
+            if acoord is None:
+                warn('Unable to compute time series along coordinate')
+                return None, None
+
+            global_dict = dict()
+            global_dict.update({'start_time': dscfg['timeinfo']})
+            global_dict.update({'radar_out': acoord})
+            dscfg['global_data'] = global_dict
+            dscfg['initialized'] = 1
+        else:
+            acoord = pyart.retrieve.compute_ts_along_coord(
+                radar, field_name, mode=mode, fixed_range=fixed_range,
+                fixed_azimuth=fixed_azimuth, fixed_elevation=fixed_elevation,
+                ang_tol=ang_tol, rng_tol=rng_tol, value_start=value_start,
+                value_stop=value_stop, ref_time=dscfg['timeinfo'],
+                acoord=dscfg['global_data']['radar_out'])
+
+            if acoord is None:
+                warn('Unable to compute time series along coordinate')
+                return None, None
+
+        dscfg['global_data']['radar_out'] = acoord
+
+        new_dataset = dict()
+        new_dataset.update({'radar_out': acoord})
+        new_dataset.update({'radar_type': 'temporal'})
+        new_dataset.update({'start_time': dscfg['global_data']['start_time']})
+
+        return new_dataset, ind_rad
+
+    if procstatus == 2:
+        if not dscfg['initialized']:
+            return None, None
+
+        for datatypedescr in dscfg['datatype']:
+            radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+            break
+
+        ind_rad = int(radarnr[5:8])-1
+
+        acoord = dscfg['global_data']['radar_out']
+
+        new_dataset = dict()
+        new_dataset.update({'radar_out': acoord})
         new_dataset.update({'radar_type': 'final'})
         new_dataset.update({'start_time': dscfg['global_data']['start_time']})
 

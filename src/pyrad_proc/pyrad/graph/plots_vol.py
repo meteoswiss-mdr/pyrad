@@ -468,7 +468,8 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list,
         dictionary containing the product configuration
     fname_list : list of str
         list of names of the files where to store the plot
-    vmin, vmax : Min and max values of the colorbar
+    vmin, vmax : float
+        Min and max values of the colorbar
     ray_dim : str
         the ray dimension. Can be 'ang' or 'time'
     xaxis : bool
@@ -575,7 +576,8 @@ def plot_bscope(radar, field_name, ind_sweep, prdcfg, fname_list,
     return fname_list
 
 
-def plot_time_range(radar, field_name, ind_sweep, prdcfg, fname_list):
+def plot_time_range(radar, field_name, ind_sweep, prdcfg, fname_list,
+                    vmin=None, vmax=None, ylabel='range (Km)'):
     """
     plots a time-range plot
 
@@ -591,6 +593,10 @@ def plot_time_range(radar, field_name, ind_sweep, prdcfg, fname_list):
         dictionary containing the product configuration
     fname_list : list of str
         list of names of the files where to store the plot
+    vmin, vmax : float
+        Min and max values of the colorbar
+    ylabel : str
+        The y-axis label
 
     Returns
     -------
@@ -607,7 +613,9 @@ def plot_time_range(radar, field_name, ind_sweep, prdcfg, fname_list):
     xsize = prdcfg['ppiImageConfig'].get('xsize', 10)
     ysize = prdcfg['ppiImageConfig'].get('ysize', 8)
 
-    rng_aux = radar_aux.range['data']/1000.
+    rng_aux = radar_aux.range['data']
+    if ylabel == 'range (Km)':
+        rng_aux /= 1000.
     rng_res = rng_aux[1]-rng_aux[0]
     rng_aux = np.append(rng_aux-rng_res/2., rng_aux[-1]+rng_res/2.)
 
@@ -616,7 +624,7 @@ def plot_time_range(radar, field_name, ind_sweep, prdcfg, fname_list):
         radar_aux.time['data'], radar_aux.time['data'][-1]+time_res)
     return _plot_time_range(
         time_aux, rng_aux, field, field_name, fname_list, titl=titl,
-        figsize=[xsize, ysize], dpi=dpi)
+        ylabel=ylabel, vmin=vmin, vmax=vmax, figsize=[xsize, ysize], dpi=dpi)
 
 
 def plot_fixed_rng(radar, field_name, prdcfg, fname_list, azi_res=None,

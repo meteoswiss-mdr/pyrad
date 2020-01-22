@@ -156,6 +156,7 @@
 <span class="sd">                &#39;POL_VARIABLES_IQ&#39;: process_pol_variables_iq</span>
 <span class="sd">                &#39;PWR&#39;: process_signal_power</span>
 <span class="sd">                &#39;RADAR_RESAMPLING&#39;: process_radar_resampling</span>
+<span class="sd">                &#39;RADIAL_NOISE&#39;: process_radial_noise</span>
 <span class="sd">                &#39;RAINRATE&#39;: process_rainrate</span>
 <span class="sd">                &#39;RAW&#39;: process_raw</span>
 <span class="sd">                &#39;REFLECTIVITY&#39;: process_reflectivity</span>
@@ -238,6 +239,7 @@
 <span class="sd">                &#39;rQVP&#39;: process_rqvp</span>
 <span class="sd">                &#39;SVP&#39;: process_svp</span>
 <span class="sd">                &#39;TIME_HEIGHT&#39;: process_time_height</span>
+<span class="sd">                &#39;TIME_ALONG_COORD&#39;: process_ts_along_coord</span>
 <span class="sd">            &#39;SPARSE_GRID&#39; format output:</span>
 <span class="sd">                &#39;ZDR_COLUMN&#39;: process_zdr_column</span>
 <span class="sd">            &#39;SUN_HITS&#39; format output:</span>
@@ -347,6 +349,9 @@
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;TIME_HEIGHT&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_time_height&#39;</span>
         <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;QVP&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;TIME_ALONG_COORD&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_ts_along_coord&#39;</span>
+        <span class="n">dsformat</span> <span class="o">=</span> <span class="s1">&#39;QVP&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;CDF&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_cdf&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;NCVOL&#39;</span><span class="p">:</span>
@@ -359,6 +364,8 @@
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_rcs&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;SNR&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_snr&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;RADIAL_NOISE&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_radial_noise&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;VOL_REFL&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_vol_refl&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;BIRD_DENSITY&#39;</span><span class="p">:</span>
@@ -803,7 +810,8 @@
 
 <div class="viewcode-block" id="process_roi"><a class="viewcode-back" href="../../../proc.html#pyrad.proc.process_roi">[docs]</a><span class="k">def</span> <span class="nf">process_roi</span><span class="p">(</span><span class="n">procstatus</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">radar_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Obtains the radar data at a region of interest.</span>
+<span class="sd">    Obtains the radar data at a region of interest defined by a TRT file or</span>
+<span class="sd">    by the user.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -815,6 +823,14 @@
 
 <span class="sd">        datatype : string. Dataset keyword</span>
 <span class="sd">            The data type where we want to extract the point measurement</span>
+<span class="sd">        trtfile : str. Dataset keyword</span>
+<span class="sd">            TRT file from which to extract the region of interest</span>
+<span class="sd">        lon_roi, lat_roi : float array. Dataset keyword</span>
+<span class="sd">            latitude and longitude positions defining a region of interest</span>
+<span class="sd">        alt_min, alt_max : float. Dataset keyword</span>
+<span class="sd">            Minimum and maximum altitude of the region of interest. Can be</span>
+<span class="sd">            None</span>
+
 
 <span class="sd">    radar_list : list of Radar objects</span>
 <span class="sd">          Optional. list of radar objects</span>

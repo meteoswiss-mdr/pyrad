@@ -524,7 +524,8 @@
 <span class="sd">        dictionary containing the product configuration</span>
 <span class="sd">    fname_list : list of str</span>
 <span class="sd">        list of names of the files where to store the plot</span>
-<span class="sd">    vmin, vmax : Min and max values of the colorbar</span>
+<span class="sd">    vmin, vmax : float</span>
+<span class="sd">        Min and max values of the colorbar</span>
 <span class="sd">    ray_dim : str</span>
 <span class="sd">        the ray dimension. Can be &#39;ang&#39; or &#39;time&#39;</span>
 <span class="sd">    xaxis : bool</span>
@@ -631,7 +632,8 @@
     <span class="k">return</span> <span class="n">fname_list</span></div>
 
 
-<div class="viewcode-block" id="plot_time_range"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_time_range">[docs]</a><span class="k">def</span> <span class="nf">plot_time_range</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_sweep</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">):</span>
+<div class="viewcode-block" id="plot_time_range"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_time_range">[docs]</a><span class="k">def</span> <span class="nf">plot_time_range</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">ind_sweep</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
+                    <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;range (Km)&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    plots a time-range plot</span>
 
@@ -647,6 +649,10 @@
 <span class="sd">        dictionary containing the product configuration</span>
 <span class="sd">    fname_list : list of str</span>
 <span class="sd">        list of names of the files where to store the plot</span>
+<span class="sd">    vmin, vmax : float</span>
+<span class="sd">        Min and max values of the colorbar</span>
+<span class="sd">    ylabel : str</span>
+<span class="sd">        The y-axis label</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -663,7 +669,9 @@
     <span class="n">xsize</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;ppiImageConfig&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;xsize&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
     <span class="n">ysize</span> <span class="o">=</span> <span class="n">prdcfg</span><span class="p">[</span><span class="s1">&#39;ppiImageConfig&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ysize&#39;</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
 
-    <span class="n">rng_aux</span> <span class="o">=</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">/</span><span class="mf">1000.</span>
+    <span class="n">rng_aux</span> <span class="o">=</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">ylabel</span> <span class="o">==</span> <span class="s1">&#39;range (Km)&#39;</span><span class="p">:</span>
+        <span class="n">rng_aux</span> <span class="o">/=</span> <span class="mf">1000.</span>
     <span class="n">rng_res</span> <span class="o">=</span> <span class="n">rng_aux</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">rng_aux</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">rng_aux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rng_aux</span><span class="o">-</span><span class="n">rng_res</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span> <span class="n">rng_aux</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">rng_res</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
 
@@ -672,7 +680,7 @@
         <span class="n">radar_aux</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">radar_aux</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">time_res</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_plot_time_range</span><span class="p">(</span>
         <span class="n">time_aux</span><span class="p">,</span> <span class="n">rng_aux</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">titl</span><span class="o">=</span><span class="n">titl</span><span class="p">,</span>
-        <span class="n">figsize</span><span class="o">=</span><span class="p">[</span><span class="n">xsize</span><span class="p">,</span> <span class="n">ysize</span><span class="p">],</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span></div>
+        <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">[</span><span class="n">xsize</span><span class="p">,</span> <span class="n">ysize</span><span class="p">],</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="plot_fixed_rng"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_fixed_rng">[docs]</a><span class="k">def</span> <span class="nf">plot_fixed_rng</span><span class="p">(</span><span class="n">radar</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">prdcfg</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">azi_res</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
