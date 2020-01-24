@@ -1228,6 +1228,30 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">radar_par</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;angle_step&#39;</span><span class="p">:</span> <span class="n">ray_angle_res</span><span class="p">})</span>
 
+            <span class="n">antenna_gain_h</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AntennaGainH&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">antenna_gain_h</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>
+                        <span class="s1">&#39;radar_antenna_gain_h&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">):</span>
+                    <span class="n">antenna_gain_h</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span><span class="s1">&#39;radar_antenna_gain_h&#39;</span><span class="p">][</span>
+                            <span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">antenna_gain_h</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Horizontal antenna gain unknown.&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">radar_par</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;antenna_gain_h&#39;</span><span class="p">:</span> <span class="n">antenna_gain_h</span><span class="p">})</span>
+
+            <span class="n">antenna_gain_v</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AntennaGainV&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">antenna_gain_v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>
+                        <span class="s1">&#39;radar_antenna_gain_v&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">):</span>
+                    <span class="n">antenna_gain_v</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span><span class="s1">&#39;radar_antenna_gain_v&#39;</span><span class="p">][</span>
+                            <span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">antenna_gain_v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Vertical antenna gain unknown.&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">radar_par</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;antenna_gain_v&#39;</span><span class="p">:</span> <span class="n">antenna_gain_v</span><span class="p">})</span>
+
             <span class="n">radar_par</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">:</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">]})</span>
             <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">radar_par</span>
             <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;initialized&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
@@ -1275,21 +1299,6 @@
         <span class="n">az_width_cross</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;az_width_cross&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">el_width_cross</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;el_width_cross&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">nfiles</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ndays&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">antenna_gain_h</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AntennaGainH&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">antenna_gain_v</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AntennaGainV&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">antenna_gain_h</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>
-                    <span class="s1">&#39;radar_antenna_gain_h&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">):</span>
-                <span class="n">antenna_gain_h</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span><span class="s1">&#39;radar_antenna_gain_h&#39;</span><span class="p">][</span>
-                        <span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
-
-        <span class="k">if</span> <span class="n">antenna_gain_v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>
-                    <span class="s1">&#39;radar_antenna_gain_v&#39;</span> <span class="ow">in</span> <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">):</span>
-                <span class="n">antenna_gain_v</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">radar</span><span class="o">.</span><span class="n">instrument_parameters</span><span class="p">[</span><span class="s1">&#39;radar_antenna_gain_v&#39;</span><span class="p">][</span>
-                        <span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
 
         <span class="n">sun_hits</span> <span class="o">=</span> <span class="n">read_sun_hits_multiple_days</span><span class="p">(</span>
             <span class="n">dscfg</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">],</span> <span class="n">nfiles</span><span class="o">=</span><span class="n">nfiles</span><span class="p">)</span>
@@ -1401,10 +1410,11 @@
             <span class="c1"># compute observed solar flux</span>
             <span class="k">if</span> <span class="p">((</span><span class="s1">&#39;pulse_width&#39;</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">])</span> <span class="ow">and</span>
                     <span class="p">(</span><span class="s1">&#39;wavelen&#39;</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">])</span> <span class="ow">and</span>
-                    <span class="p">(</span><span class="n">antenna_gain_h</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)):</span>
+                    <span class="p">(</span><span class="s1">&#39;antenna_gain_h&#39;</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">])):</span>
                 <span class="n">sf_h</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">correct</span><span class="o">.</span><span class="n">ptoa_to_sf</span><span class="p">(</span>
                     <span class="n">ptoa_h</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;pulse_width&#39;</span><span class="p">],</span>
-                    <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;wavelen&#39;</span><span class="p">],</span> <span class="n">antenna_gain_h</span><span class="p">)</span>
+                    <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;wavelen&#39;</span><span class="p">],</span>
+                    <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;antenna_gain_h&#39;</span><span class="p">])</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to estimate observed solar flux. &#39;</span> <span class="o">+</span>
                      <span class="s1">&#39;Missing radar parameters&#39;</span><span class="p">)</span>
@@ -1442,10 +1452,11 @@
             <span class="c1"># compute observed solar flux</span>
             <span class="k">if</span> <span class="p">((</span><span class="s1">&#39;pulse_width&#39;</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">])</span> <span class="ow">and</span>
                     <span class="p">(</span><span class="s1">&#39;wavelen&#39;</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">])</span> <span class="ow">and</span>
-                    <span class="p">(</span><span class="n">antenna_gain_v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)):</span>
+                    <span class="p">(</span><span class="s1">&#39;antenna_gain_v&#39;</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">])):</span>
                 <span class="n">sf_v</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">correct</span><span class="o">.</span><span class="n">ptoa_to_sf</span><span class="p">(</span>
                     <span class="n">ptoa_v</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;pulse_width&#39;</span><span class="p">],</span>
-                    <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;wavelen&#39;</span><span class="p">],</span> <span class="n">antenna_gain_v</span><span class="p">)</span>
+                    <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;wavelen&#39;</span><span class="p">],</span>
+                    <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;antenna_gain_v&#39;</span><span class="p">])</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to estimate observed solar flux. &#39;</span> <span class="o">+</span>
                      <span class="s1">&#39;Missing radar parameters&#39;</span><span class="p">)</span>
