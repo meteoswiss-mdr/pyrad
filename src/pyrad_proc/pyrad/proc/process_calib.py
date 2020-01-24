@@ -1172,6 +1172,30 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
             else:
                 radar_par.update({'angle_step': ray_angle_res})
 
+            antenna_gain_h = dscfg.get('AntennaGainH', None)
+            if antenna_gain_h is None:
+                if (radar.instrument_parameters is not None and
+                        'radar_antenna_gain_h' in radar.instrument_parameters):
+                    antenna_gain_h = (
+                        radar.instrument_parameters['radar_antenna_gain_h'][
+                            'data'][0])
+            if antenna_gain_h is None:
+                warn('Horizontal antenna gain unknown.')
+            else:
+                radar_par.update({'antenna_gain_h': antenna_gain_h})
+
+            antenna_gain_v = dscfg.get('AntennaGainV', None)
+            if antenna_gain_v is None:
+                if (radar.instrument_parameters is not None and
+                        'radar_antenna_gain_v' in radar.instrument_parameters):
+                    antenna_gain_v = (
+                        radar.instrument_parameters['radar_antenna_gain_v'][
+                            'data'][0])
+            if antenna_gain_v is None:
+                warn('Vertical antenna gain unknown.')
+            else:
+                radar_par.update({'antenna_gain_v': antenna_gain_v})
+
             radar_par.update({'timeinfo': dscfg['timeinfo']})
             dscfg['global_data'] = radar_par
             dscfg['initialized'] = 1
@@ -1219,21 +1243,6 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
         az_width_cross = dscfg.get('az_width_cross', None)
         el_width_cross = dscfg.get('el_width_cross', None)
         nfiles = dscfg.get('ndays', 1)
-        antenna_gain_h = dscfg.get('AntennaGainH', None)
-        antenna_gain_v = dscfg.get('AntennaGainV', None)
-        if antenna_gain_h is None:
-            if (radar.instrument_parameters is not None and
-                    'radar_antenna_gain_h' in radar.instrument_parameters):
-                antenna_gain_h = (
-                    radar.instrument_parameters['radar_antenna_gain_h'][
-                        'data'][0])
-
-        if antenna_gain_v is None:
-            if (radar.instrument_parameters is not None and
-                    'radar_antenna_gain_v' in radar.instrument_parameters):
-                antenna_gain_v = (
-                    radar.instrument_parameters['radar_antenna_gain_v'][
-                        'data'][0])
 
         sun_hits = read_sun_hits_multiple_days(
             dscfg, dscfg['global_data']['timeinfo'], nfiles=nfiles)
@@ -1345,10 +1354,11 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
             # compute observed solar flux
             if (('pulse_width' in dscfg['global_data']) and
                     ('wavelen' in dscfg['global_data']) and
-                    (antenna_gain_h is not None)):
+                    ('antenna_gain_h' in dscfg['global_data'])):
                 sf_h = pyart.correct.ptoa_to_sf(
                     ptoa_h, dscfg['global_data']['pulse_width'],
-                    dscfg['global_data']['wavelen'], antenna_gain_h)
+                    dscfg['global_data']['wavelen'],
+                    dscfg['global_data']['antenna_gain_h'])
             else:
                 warn('Unable to estimate observed solar flux. ' +
                      'Missing radar parameters')
@@ -1386,10 +1396,11 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
             # compute observed solar flux
             if (('pulse_width' in dscfg['global_data']) and
                     ('wavelen' in dscfg['global_data']) and
-                    (antenna_gain_v is not None)):
+                    ('antenna_gain_v' in dscfg['global_data'])):
                 sf_v = pyart.correct.ptoa_to_sf(
                     ptoa_v, dscfg['global_data']['pulse_width'],
-                    dscfg['global_data']['wavelen'], antenna_gain_v)
+                    dscfg['global_data']['wavelen'],
+                    dscfg['global_data']['antenna_gain_v'])
             else:
                 warn('Unable to estimate observed solar flux. ' +
                      'Missing radar parameters')
