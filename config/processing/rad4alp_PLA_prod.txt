@@ -49,7 +49,7 @@ Zh STRUCT 3
 ZH_grid STRUCT 5
     type     STRING GRID
     datatype STRING RAD4ALP:dBZ
-    wfunc STRING NEAREST_NEIGHBOUR
+    wfunc STRING NEAREST
     gridConfig STRUCT 9
         xmin FLOAT -50.
         xmax FLOAT 50.

@@ -16,7 +16,7 @@ dataSetList STRARR 3
 TEMP_grid STRUCT 5
     type STRING GRID
     datatype STRING CFRADIAL:TEMP,TEMP,SAVEVOL_TEMP     
-    wfunc STRING NEAREST_NEIGHBOUR
+    wfunc STRING NEAREST
     gridConfig STRUCT 9
       xmin FLOAT 0.
       xmax FLOAT 100.
@@ -35,7 +35,7 @@ TEMP_grid STRUCT 5
 ZH_grid STRUCT 5
    type     STRING GRID
    datatype STRING CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
-   wfunc STRING NEAREST_NEIGHBOUR
+   wfunc STRING NEAREST
    gridConfig STRUCT 9
       xmin FLOAT 0.
       xmax FLOAT 100.
@@ -54,7 +54,7 @@ ZH_grid STRUCT 5
 hydroclass_grid STRUCT 5
    type     STRING GRID
    datatype STRING CFRADIAL:hydro,hydroclass,SAVEVOL_hydro
-   wfunc STRING NEAREST_NEIGHBOUR   
+   wfunc STRING NEAREST   
    gridConfig STRUCT 9
       xmin FLOAT 0.
       xmax FLOAT 100.

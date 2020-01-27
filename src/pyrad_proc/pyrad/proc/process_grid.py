@@ -95,8 +95,8 @@ def process_grid(procstatus, dscfg, radar_list=None):
                 Defaults the latitude, longitude and altitude of the radar
         wfunc : str. Dataset keyword
             the weighting function used to combine the radar gates close to a
-            grid point. Possible values BARNES, CRESSMAN, NEAREST_NEIGHBOUR
-            Default NEAREST_NEIGHBOUR
+            grid point. Possible values BARNES, BARNES2, CRESSMAN, NEAREST
+            Default NEAREST
         roif_func : str. Dataset keyword
             the function used to compute the region of interest.
             Possible values: dist_beam, constant
@@ -189,7 +189,7 @@ def process_grid(procstatus, dscfg, radar_list=None):
         if 'altorig' in dscfg['gridConfig']:
             alt = dscfg['gridConfig']['altorig']
 
-    wfunc = dscfg.get('wfunc', 'NEAREST_NEIGHBOUR')
+    wfunc = dscfg.get('wfunc', 'NEAREST')
     roi_func = dscfg.get('roi_func', 'dist_beam')
 
     # number of grid points in cappi

@@ -93,7 +93,7 @@ ZH_TIME_HEIGHT STRUCT 8
 ZH_grid STRUCT 5
    type     STRING GRID
    datatype STRING RAD4ALP:dBZ
-   wfunc STRING NEAREST_NEIGHBOUR
+   wfunc STRING NEAREST
    gridConfig STRUCT 9
       xmin FLOAT 0.
       xmax FLOAT 100.
@@ -334,7 +334,7 @@ Att_ZPhi STRUCT 6
 #ZH_grid STRUCT 5
 #   type     STRING GRID
 #   datatype STRING PROC:dBZc
-#   wfunc STRING NEAREST_NEIGHBOUR
+#   wfunc STRING NEAREST
 #   gridConfig STRUCT 9
 #      xmin FLOAT 0.
 #      xmax FLOAT 100.
@@ -532,7 +532,7 @@ hydroclass_entropy STRUCT 8
 #hydroclass_grid STRUCT 5
 #   type     STRING GRID
 #   datatype STRING PROC:hydro
-#   wfunc STRING NEAREST_NEIGHBOUR
+#   wfunc STRING NEAREST
 #   gridConfig STRUCT 9
 #      xmin FLOAT 0.
 #      xmax FLOAT 100.

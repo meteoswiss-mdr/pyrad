@@ -974,7 +974,7 @@ def plot_cappi(radar, field_name, altitude, prdcfg, fname_list,
     ymin = prdcfg['ppiImageConfig']['ymin']
     ymax = prdcfg['ppiImageConfig']['ymax']
 
-    wfunc = prdcfg.get('wfunc', 'NEAREST_NEIGHBOUR')
+    wfunc = prdcfg.get('wfunc', 'NEAREST')
     cappi_res = prdcfg.get('res', 500.)
 
     # number of grid points in cappi
