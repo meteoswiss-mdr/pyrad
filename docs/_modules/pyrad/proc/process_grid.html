@@ -151,8 +151,8 @@
 <span class="sd">                Defaults the latitude, longitude and altitude of the radar</span>
 <span class="sd">        wfunc : str. Dataset keyword</span>
 <span class="sd">            the weighting function used to combine the radar gates close to a</span>
-<span class="sd">            grid point. Possible values BARNES, CRESSMAN, NEAREST_NEIGHBOUR</span>
-<span class="sd">            Default NEAREST_NEIGHBOUR</span>
+<span class="sd">            grid point. Possible values BARNES, BARNES2, CRESSMAN, NEAREST</span>
+<span class="sd">            Default NEAREST</span>
 <span class="sd">        roif_func : str. Dataset keyword</span>
 <span class="sd">            the function used to compute the region of interest.</span>
 <span class="sd">            Possible values: dist_beam, constant</span>
@@ -245,7 +245,7 @@
         <span class="k">if</span> <span class="s1">&#39;altorig&#39;</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;gridConfig&#39;</span><span class="p">]:</span>
             <span class="n">alt</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;gridConfig&#39;</span><span class="p">][</span><span class="s1">&#39;altorig&#39;</span><span class="p">]</span>
 
-    <span class="n">wfunc</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;wfunc&#39;</span><span class="p">,</span> <span class="s1">&#39;NEAREST_NEIGHBOUR&#39;</span><span class="p">)</span>
+    <span class="n">wfunc</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;wfunc&#39;</span><span class="p">,</span> <span class="s1">&#39;NEAREST&#39;</span><span class="p">)</span>
     <span class="n">roi_func</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;roi_func&#39;</span><span class="p">,</span> <span class="s1">&#39;dist_beam&#39;</span><span class="p">)</span>
 
     <span class="c1"># number of grid points in cappi</span>

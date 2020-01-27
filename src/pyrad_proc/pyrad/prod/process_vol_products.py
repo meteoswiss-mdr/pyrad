@@ -94,7 +94,7 @@ def generate_vol_products(dataset, prdcfg):
                     CAPPI altitude [m MSL]
                 wfunc: str
                     The function used to produce the CAPPI as defined in
-                    pyart.map.grid_from_radars. Default 'NEAREST_NEIGHBOUR'
+                    pyart.map.grid_from_radars. Default 'NEAREST'
                 cappi_res: float
                     The CAPPI resolution [m]. Default 500.
         'FIELD_COVERAGE': Gets the field coverage over a certain sector

@@ -149,7 +149,7 @@ def generate_timeseries_products(dataset, prdcfg):
                 wfunc: str
                     Function used in the gridding of the radar data. The
                     function types are defined in pyart.map.grid_from_radars.
-                    Default 'NEAREST_NEIGHBOUR'
+                    Default 'NEAREST'
                 res: float
                     The CAPPI resolution [m]. Default 500.
 
