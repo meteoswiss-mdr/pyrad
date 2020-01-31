@@ -134,6 +134,7 @@ Monitoring, calibration and noise correction
     process_sun_hits
     process_selfconsistency_kdp_phidp
     process_selfconsistency_bias
+    process_selfconsistency_bias2
     process_time_avg_std
     process_occurrence
     process_occurrence_period
@@ -307,6 +308,7 @@ from .process_monitoring import process_zdr_snow, process_zdr_precip
 from .process_monitoring import process_estimate_phidp0, process_rhohv_rain
 from .process_monitoring import process_selfconsistency_kdp_phidp
 from .process_monitoring import process_selfconsistency_bias
+from .process_monitoring import process_selfconsistency_bias2
 from .process_monitoring import process_monitoring
 
 from .process_retrieve import process_signal_power, process_snr, process_ccor

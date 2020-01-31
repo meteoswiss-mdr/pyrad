@@ -15,8 +15,9 @@ Functions to plot Pyrad datasets
     plot_histogram
     plot_histogram2
     plot_antenna_pattern
-    plot_selfconsitency
-    plot_selfconsitency_instrument
+    plot_selfconsistency
+    plot_selfconsistency_instrument
+    plot_selfconsistency_instrument2
     plot_scatter_comp
     plot_sun_hits
     _plot_time_range
@@ -777,10 +778,10 @@ def plot_antenna_pattern(antpattern, fname_list, labelx='Angle [Deg]',
     return fname_list
 
 
-def plot_selfconsitency(zdrkdp_table, fname_list, labelx='ZDR [dB]',
-                        labely='KDP/Zh [(deg*m3)/(km*mm6)]',
-                        title='Selfconsistency in rain', ymin=None, ymax=None,
-                        dpi=72, save_fig=True, ax=None, fig=None):
+def plot_selfconsistency(zdrkdp_table, fname_list, labelx='ZDR [dB]',
+                         labely='KDP/Zh [(deg*m3)/(km*mm6)]',
+                         title='Selfconsistency in rain', ymin=None,
+                         ymax=None, dpi=72, save_fig=True, ax=None, fig=None):
     """
     plots a ZDR-KDP/ZH selfconsistency in rain relation
 
@@ -835,14 +836,15 @@ def plot_selfconsitency(zdrkdp_table, fname_list, labelx='ZDR [dB]',
     return (fig, ax)
 
 
-def plot_selfconsitency_instrument(zdr, kdp, zh, fname_list,
-                                   bins_zdr_step=0.05, bins_zdr_min=0.,
-                                   bins_zdr_max=6., bins_kdpzh_step=0.1,
-                                   bins_kdpzh_min=-2., bins_kdpzh_max=20.,
-                                   normalize=True, vmin=0., vmax=0.01,
-                                   parametrization='None',
-                                   zdr_kdpzh_dict=None, retrieve_relation=True,
-                                   plot_theoretical=True, dpi=72):
+def plot_selfconsistency_instrument(zdr, kdp, zh, fname_list,
+                                    bins_zdr_step=0.05, bins_zdr_min=0.,
+                                    bins_zdr_max=6., bins_kdpzh_step=0.1,
+                                    bins_kdpzh_min=-2., bins_kdpzh_max=20.,
+                                    normalize=True, vmin=0., vmax=0.01,
+                                    parametrization='None',
+                                    zdr_kdpzh_dict=None,
+                                    retrieve_relation=True,
+                                    plot_theoretical=True, dpi=72):
     """
     plots the ZDR-KDP/ZH relationship obtained by an instrument. The
     theoretical curve and the retrieved curve
@@ -850,7 +852,8 @@ def plot_selfconsitency_instrument(zdr, kdp, zh, fname_list,
     Parameters
     ----------
     zdr, kdp, zh : 1D ndarray
-        The valid values of ZDR, KDP and Zh collected by the instrument
+        The valid values of ZDR [dB], KDP [deg/km] and Zh [mm6/m3] collected
+        by the instrument
     fname_list : list of str
         list of names of the files where to store the plot
     bins_zdr_step : float
@@ -864,7 +867,7 @@ def plot_selfconsitency_instrument(zdr, kdp, zh, fname_list,
         The limits of the 1e5*KDP^a/ZH^b axis of the histogram (bins center)
         [(deg*m3)/(km*mm6)]
     normalize : Bool
-        If True the occurrence density of ZK/KDP for each ZDR bin is going to
+        If True the occurrence density of ZH/KDP for each ZDR bin is going to
         be represented. Otherwise it will show the number of gates at each bin
     vmin, vmax : float
         min and max values of the colorbar
@@ -1058,6 +1061,197 @@ def plot_selfconsitency_instrument(zdr, kdp, zh, fname_list,
 
     if plot_theoretical and kdpzh_th is not None:
         ax.plot(zdr_th, kdpzh_th, 'r', linewidth=3)
+
+    for fname in fname_list:
+        fig.savefig(fname, dpi=72)
+    plt.close(fig)
+
+    return fname_list
+
+
+def plot_selfconsistency_instrument2(zdr, kdp, zh, fname_list,
+                                     bins_zh_step=0.5, bins_zh_min=-30.,
+                                     bins_zh_max=80.,
+                                     normalize=True, vmin=0., vmax=0.01,
+                                     parametrization='None',
+                                     zdr_kdpzh_dict=None, dpi=72):
+    """
+    plots the ZDR-KDP/ZH relationship obtained by an instrument. The
+    theoretical curve and the retrieved curve
+
+    Parameters
+    ----------
+    zdr, kdp, zh : 1D ndarray
+        The valid values of ZDR [dB], KDP [deg/km] and Zh [dBZ] collected by
+        the instrument
+    fname_list : list of str
+        list of names of the files where to store the plot
+    bins_zh_step : float
+        The step of the ZH of the histogram [dB]
+    bins_zh_min, bins_zh_max : float
+        The limits of the ZH of the histograms (bins center) [dBZ]
+    normalize : Bool
+        If True the occurrence density of ZH/KDP for each ZDR bin is going to
+        be represented. Otherwise it will show the number of gates at each bin
+    vmin, vmax : float
+        min and max values of the colorbar
+    parametrization : str
+        The type of parametrization for the self-consistency curves. Can be
+        'None', 'Gourley', 'Wolfensberger', 'Louf', 'Gorgucci' or 'Vaccarono'.
+        'None' will use tables contained in zdr_kdpzh_dict. The parametrized
+        curves are obtained from literature except for Wolfensberger that was
+        derived from disdrometer data obtained by MeteoSwiss and EPFL. All
+        parametrizations are valid for C-band only except that of Gourley.
+    zdr_kdpzh_dict : dict
+        dictionary containing a look up table relating ZDR with KDP/Zh for
+        different elevations and the frequency band of the radar
+    dpi : int
+        dots per inch
+
+    Returns
+    -------
+    fname_list : list of str
+        list of names of the created plots
+
+    """
+
+    # prepare bins for histogram
+    bins_zh_centers = np.arange(
+        bins_zh_min, bins_zh_max+bins_zh_step, bins_zh_step)
+    bins_zh_edges = np.append(
+        bins_zh_centers-bins_zh_step/2.,
+        bins_zh_centers[-1]+bins_zh_step/2.)
+
+    if parametrization == 'None':
+        if zdr_kdpzh_dict is not None and 'zdr_kdpzh' in zdr_kdpzh_dict:
+            zdr_th_table = zdr_kdpzh_dict['zdr_kdpzh'][0][0]
+            kdpzh_th_table = zdr_kdpzh_dict['zdr_kdpzh'][0][1]
+
+            # sort values by ZDR
+            ind_zdr_sorted = np.argsort(zdr)
+            zh = zh[ind_zdr_sorted]
+            kdp = kdp[ind_zdr_sorted]
+
+            # get value of KDP/ZH as interpolation of look up table values
+            kdpzh_th = np.interp(
+                zdr[ind_zdr_sorted], zdr_th_table, kdpzh_th_table)
+
+        else:
+            warn('Unable to plot self-consistency curve. '
+                 'Relationship not provided')
+            return None
+    elif parametrization == 'Gourley':
+        if zdr_kdpzh_dict is None or 'freq_band' not in zdr_kdpzh_dict:
+            warn('Unable to plot theoretical self-consistency curve. '
+                 'Frequency band not provided')
+            return None
+        else:
+            if zdr_kdpzh_dict['freq_band'] == 'S':
+                kdpzh_th = 1e-5*(
+                    3.696-1.963*zdr+0.504*zdr*zdr-0.051*zdr*zdr*zdr)
+            elif zdr_kdpzh_dict['freq_band'] == 'C':
+                kdpzh_th = 1e-5*(
+                    6.746-2.970*zdr+0.711*zdr*zdr-0.079*zdr*zdr*zdr)
+            elif zdr_kdpzh_dict['freq_band'] == 'X':
+                kdpzh_th = 1e-5*(
+                    11.74-4.020*zdr-0.140*zdr*zdr+0.130*zdr*zdr*zdr)
+            else:
+                warn(
+                    'Unable to plot theoretical self-consistency curve. '
+                    'Unknown frequency band '+zdr_kdpzh_dict['freq_band'])
+                return None
+    elif parametrization == 'Wolfensberger':
+        if zdr_kdpzh_dict is None or 'freq_band' not in zdr_kdpzh_dict:
+            warn('Unable to plot theoretical self-consistency curve. '
+                 'Frequency band not provided')
+            return None
+        else:
+            if zdr_kdpzh_dict['freq_band'] == 'C':
+                kdpzh_th = 1e-5*(
+                    3.199*np.ma.exp(-7.767e-1*zdr)-0.4436*zdr+3.464)
+            else:
+                warn(
+                    'Unable to plot theoretical self-consistency curve. '
+                    'Unknown frequency band '+zdr_kdpzh_dict['freq_band'])
+                return None
+    elif parametrization == 'Louf':
+        if zdr_kdpzh_dict is None or 'freq_band' not in zdr_kdpzh_dict:
+            warn('Unable to plot theoretical self-consistency curve. '
+                 'Frequency band not provided')
+            return None
+        else:
+            if zdr_kdpzh_dict['freq_band'] == 'C':
+                kdpzh_th = 1e-5*(
+                    6.607-4.577*zdr+1.577*zdr*zdr-0.23*zdr*zdr*zdr)
+            else:
+                warn(
+                    'Unable to plot theoretical self-consistency curve. '
+                    'Unknown frequency band '+zdr_kdpzh_dict['freq_band'])
+                return None
+    elif parametrization == 'Gorgucci':
+        if zdr_kdpzh_dict is None or 'freq_band' not in zdr_kdpzh_dict:
+            warn('Unable to plot theoretical self-consistency curve. '
+                 'Frequency band not provided')
+            return None
+        else:
+            if zdr_kdpzh_dict['freq_band'] == 'C':
+                zdr_lin = np.ma.power(10., 0.1*zdr)
+                kdpzh_th = 1e-5*(18.2*np.power(zdr_lin, -1.28))
+            else:
+                warn(
+                    'Unable to plot theoretical self-consistency curve. '
+                    'Unknown frequency band '+zdr_kdpzh_dict['freq_band'])
+                return None
+    elif parametrization == 'Vaccarono':
+        if zdr_kdpzh_dict is None or 'freq_band' not in zdr_kdpzh_dict:
+            warn('Unable to plot theoretical self-consistency curve. '
+                 'Frequency band not provided')
+            return None
+        else:
+            if zdr_kdpzh_dict['freq_band'] == 'C':
+                zdr_lin = np.ma.power(10., 0.1*zdr)
+                kdpzh_th = 1e-5*(17.7*np.power(zdr_lin, -2.09))
+            else:
+                warn(
+                    'Unable to plot theoretical self-consistency curve. '
+                    'Unknown frequency band '+zdr_kdpzh_dict['freq_band'])
+                return None
+
+    if parametrization == 'Gorgucci':
+        zh_th = 10.*np.ma.log10(np.ma.power(kdp/kdpzh_th, 1/0.95))
+    elif kdpzh_th is not None and parametrization == 'Vaccarono':
+        zh_th = 10.*np.ma.log10(
+            np.ma.power(np.ma.power(kdp, 0.85)/kdpzh_th, 1/0.95))
+    else:
+        zh_th = 10.*np.ma.log10(kdp/kdpzh_th)
+
+    # prepare histogram
+    zh[zh < bins_zh_centers[0]] = bins_zh_centers[0]
+    zh[zh > bins_zh_centers[-1]] = bins_zh_centers[-1]
+
+    zh_th[zh_th < bins_zh_centers[0]] = bins_zh_centers[0]
+    zh_th[zh_th > bins_zh_centers[-1]] = bins_zh_centers[-1]
+
+    hist2d, bins_zh_edges, _ = np.histogram2d(
+        zh, zh_th, bins=[bins_zh_edges, bins_zh_edges])
+    hist2d = np.ma.masked_equal(hist2d, 0)
+
+    if normalize:
+        hist2d = hist2d/np.expand_dims(np.ma.sum(hist2d, axis=-1), axis=1)
+        clabel = 'Occurrence density\n(For each ZH bin)'
+    else:
+        clabel = 'Number of gates'
+        vmin = None
+        vmax = None
+
+    fig, ax = _plot_time_range(
+        bins_zh_edges, bins_zh_edges, hist2d, None, fname_list,
+        titl='self-consistency', xlabel='ZH measured [dBZ]',
+        ylabel='ZH selfcons [dBZ]',
+        clabel=clabel, vmin=vmin, vmax=vmax, save_fig=False, dpi=dpi)
+
+    ax.autoscale(False)
+    ax.plot(bins_zh_centers, bins_zh_centers, 'rx-', linewidth=3)
 
     for fname in fname_list:
         fig.savefig(fname, dpi=72)

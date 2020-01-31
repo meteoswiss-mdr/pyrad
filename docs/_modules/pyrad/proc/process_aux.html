@@ -170,6 +170,7 @@
 <span class="sd">                &#39;ROI&#39;: process_roi</span>
 <span class="sd">                &#39;SAN&#39;: process_echo_id</span>
 <span class="sd">                &#39;SELFCONSISTENCY_BIAS&#39;: process_selfconsistency_bias</span>
+<span class="sd">                &#39;SELFCONSISTENCY_BIAS2&#39;: process_selfconsistency_bias2</span>
 <span class="sd">                &#39;SELFCONSISTENCY_KDP_PHIDP&#39;: process_selfconsistency_kdp_phidp</span>
 <span class="sd">                &#39;SNR&#39;: process_snr</span>
 <span class="sd">                &#39;SNR_FILTER&#39;: process_filter_snr</span>
@@ -493,6 +494,8 @@
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_selfconsistency_kdp_phidp&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;SELFCONSISTENCY_BIAS&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_selfconsistency_bias&#39;</span>
+    <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;SELFCONSISTENCY_BIAS2&#39;</span><span class="p">:</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_selfconsistency_bias2&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;COSMO&#39;</span><span class="p">:</span>
         <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;process_cosmo&#39;</span>
     <span class="k">elif</span> <span class="n">dataset_type</span> <span class="o">==</span> <span class="s1">&#39;COSMO_LOOKUP&#39;</span><span class="p">:</span>

@@ -2120,6 +2120,18 @@ number of gates at each bin. Default True</dd>
 </dd>
 </dl>
 </dd>
+<dt>‘SELFCONSISTENCY2’: Plots a ZH measured versus ZH inferred from a self-consistency</dt>
+<dd><p class="first">relation histogram of data.
+User defined parameters:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>normalize <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd>If True the occurrence density of ZK/KDP for each ZDR bin
+is going to be represented. Otherwise it will show the
+number of gates at each bin. Default True</dd>
+</dl>
+</div></blockquote>
+</dd>
 <dt>‘TIME_RANGE’: Plots a time-range/azimuth/elevation plot</dt>
 <dd><dl class="first last docutils">
 <dt>User defined parameters:</dt>
@@ -2133,6 +2145,55 @@ config file</dd>
 </dl>
 </dd>
 </dl>
+</dd>
+<dt>‘VOL_TS’: Writes and plots a value corresponding to a time series.</dt>
+<dd><p class="first">Meant primarily for writing and plotting the results of the
+SELFCONSISTENCY2 algorithm
+User defined parameters:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>ref_value: float</dt>
+<dd>The reference value. Default 0</dd>
+<dt>sort_by_date: Bool</dt>
+<dd>If true when reading the csv file containing the
+statistics the data is sorted by date. Default False</dd>
+<dt>rewrite: Bool</dt>
+<dd>If true the csv file containing the statistics is
+rewritten</dd>
+<dt>add_data_in_fname: Bool</dt>
+<dd>If true and the data used is cumulative the year is
+written in the csv file name and the plot file name</dd>
+<dt>npoints_min: int</dt>
+<dd>Minimum number of points to use the data point in the
+plotting and to send an alarm. Default 0</dd>
+<dt>vmin, vmax: float or None</dt>
+<dd>Limits of the Y-axis (data value). If None the limits
+are obtained from the Py-ART config file</dd>
+<dt>alarm: Bool</dt>
+<dd>If true an alarm is sent</dd>
+<dt>tol_abs: float</dt>
+<dd>Margin of tolerance from the reference value. If the
+current value is above this margin an alarm is sent. If
+the margin is not specified it is not possible to send any
+alarm</dd>
+<dt>tol_trend: float</dt>
+<dd>Margin of tolerance from the reference value. If the
+trend of the last X events is above this margin an alarm
+is sent. If the margin is not specified it is not possible
+to send any alarm</dd>
+<dt>nevents_min: int</dt>
+<dd>Minimum number of events with sufficient points to send an
+alarm related to the trend. If not specified it is not
+possible to send any alarm</dd>
+<dt>sender: str</dt>
+<dd>The mail of the alarm sender. If not specified it is not
+possible to send any alarm</dd>
+<dt>receiver_list: list of str</dt>
+<dd>The list of emails of the people that will receive the
+alarm.. If not specified it is not possible to send any
+alarm</dd>
+</dl>
+</div></blockquote>
 </dd>
 <dt>‘WIND_PROFILE’: Plots vertical profile of wind data (U, V, W</dt>
 <dd><p class="first">components and wind velocity and direction) out of a radar

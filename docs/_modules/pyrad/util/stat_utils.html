@@ -64,6 +64,7 @@
 <span class="sd">    :toctree: generated/</span>
 
 <span class="sd">    quantiles_weighted</span>
+<span class="sd">    ratio_bootstrapping</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -175,6 +176,40 @@
         <span class="n">quants</span> <span class="o">=</span> <span class="mf">10.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">quants</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="p">(</span><span class="n">avg</span><span class="p">,</span> <span class="n">quants</span><span class="p">,</span> <span class="n">nvalid</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ratio_bootstrapping"><a class="viewcode-back" href="../../../util.html#pyrad.util.ratio_bootstrapping">[docs]</a><span class="k">def</span> <span class="nf">ratio_bootstrapping</span><span class="p">(</span><span class="n">nominator</span><span class="p">,</span> <span class="n">denominator</span><span class="p">,</span> <span class="n">nsamples</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes a set of samples obtained as sum(nominator)/sum(denominator)</span>
+<span class="sd">    where the nominator and the denominator are randomly sampled with</span>
+<span class="sd">    replacement.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    nominator, denominator : 1D array</span>
+<span class="sd">        The data points in the nominator and the denominator. Nominator</span>
+<span class="sd">        and denominator are not independent, i.e. data point i in the</span>
+<span class="sd">        nominator is linked to data point i in the denominator</span>
+<span class="sd">    nsamples : int</span>
+<span class="sd">        Number of iteration, i.e. number of samples desired</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    samples : 1D array</span>
+<span class="sd">        the resultant samples</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ind_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nominator</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">(</span><span class="n">nsamples</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nsamples</span><span class="p">):</span>
+        <span class="c1"># this is for version of numpy from 1.7 to 1.15. for higher versions</span>
+        <span class="c1"># np.random.Generator.choice should be used</span>
+        <span class="n">ind_sample</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+            <span class="n">ind_values</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">ind_values</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">nominator</span><span class="p">[</span><span class="n">ind_sample</span><span class="p">])</span> <span class="o">/</span>
+                      <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">denominator</span><span class="p">[</span><span class="n">ind_sample</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">samples</span></div>
 </pre></div>
 
           </div>

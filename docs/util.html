@@ -178,6 +178,9 @@
 <tr class="row-odd"><td><a class="reference internal" href="#pyrad.util.quantiles_weighted" title="pyrad.util.quantiles_weighted"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quantiles_weighted</span></code></a>(values[,&nbsp;weight_vector,&nbsp;…])</td>
 <td>Given a set of values and weights, compute the weighted quantile(s) and average.</td>
 </tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.util.ratio_bootstrapping" title="pyrad.util.ratio_bootstrapping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ratio_bootstrapping</span></code></a>(nominator,&nbsp;denominator)</td>
+<td>Computes a set of samples obtained as sum(nominator)/sum(denominator) where the nominator and the denominator are randomly sampled with replacement.</td>
+</tr>
 </tbody>
 </table>
 <dl class="function">
@@ -1343,6 +1346,39 @@ quantiles vector</p>
 </dd>
 <dt><strong>np_vec</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int array</span></dt>
 <dd><p class="first last">the number of samples at each period</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.util.ratio_bootstrapping">
+<code class="descclassname">pyrad.util.</code><code class="descname">ratio_bootstrapping</code><span class="sig-paren">(</span><em>nominator</em>, <em>denominator</em>, <em>nsamples=1000</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/util/stat_utils.html#ratio_bootstrapping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.util.ratio_bootstrapping" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes a set of samples obtained as sum(nominator)/sum(denominator)
+where the nominator and the denominator are randomly sampled with
+replacement.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>nominator, denominator</strong> <span class="classifier-delimiter">:</span> <span class="classifier">1D array</span></dt>
+<dd><p class="first last">The data points in the nominator and the denominator. Nominator
+and denominator are not independent, i.e. data point i in the
+nominator is linked to data point i in the denominator</p>
+</dd>
+<dt><strong>nsamples</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Number of iteration, i.e. number of samples desired</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>samples</strong> <span class="classifier-delimiter">:</span> <span class="classifier">1D array</span></dt>
+<dd><p class="first last">the resultant samples</p>
 </dd>
 </dl>
 </td>
