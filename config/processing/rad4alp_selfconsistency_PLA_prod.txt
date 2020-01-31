@@ -8,9 +8,9 @@ dataSetList STRARR 6
     l0:H_ISO0_LOOKUP
     l0:PhiDPc
     l1:visibilityFilter
+    l2:KDPc
     l2:Att_ZPhi
-    l3:reflectivity_bias
-    l4:monitoring_Zh_bias
+    l3:monitoring_Zh_bias
 
 
 # ==========================================================================================
@@ -428,6 +428,18 @@ visibilityFilter STRUCT 4
 
 
 # ==========================================================================================
+#                 KDP processing
+# ==========================================================================================
+KDPc STRUCT 5
+    type STRING KDP_LEASTSQUARE_1W
+    datatype STRARR 1
+        PROC:PhiDPc
+    rwind FLOAT 6000.
+    vectorize INT 1
+    MAKE_GLOBAL INT 1
+
+
+# ==========================================================================================
 #                 Attenuation
 # ==========================================================================================
 Att_ZPhi STRUCT 5
@@ -538,6 +550,7 @@ PhiDP_selfconsistency STRUCT 6
             voltype STRING PhiDP
             anglenr INT 19
 
+# self-consistency with Gourley method
 reflectivity_bias STRUCT 7
     type STRING SELFCONSISTENCY_BIAS
     datatype STRARR 6
@@ -575,214 +588,222 @@ reflectivity_bias STRUCT 7
             type STRING PPI_IMAGE
             voltype STRING dBZ_bias
             anglenr INT 4
-        EL006 STRUCT 3
-            type STRING PPI_IMAGE
-            voltype STRING dBZ_bias
-            anglenr INT 5
-        EL007 STRUCT 3
-            type STRING PPI_IMAGE
-            voltype STRING dBZ_bias
-            anglenr INT 6
-        EL008 STRUCT 3
-            type STRING PPI_IMAGE
-            voltype STRING dBZ_bias
-            anglenr INT 7
-        EL009 STRUCT 3
-            type STRING PPI_IMAGE
-            voltype STRING dBZ_bias
-            anglenr INT 8
-        EL010 STRUCT 3
-            type STRING PPI_IMAGE
-            voltype STRING dBZ_bias
-            anglenr INT 9
-        EL011 STRUCT 3
-            type STRING PPI_IMAGE
-            voltype STRING dBZ_bias
-            anglenr INT 10
-        EL012 STRUCT 3
-            type STRING PPI_IMAGE
-            voltype STRING dBZ_bias
-            anglenr INT 11
-        EL013 STRUCT 3
-            type STRING PPI_IMAGE
-            voltype STRING dBZ_bias
-            anglenr INT 12
-        EL014 STRUCT 3
-            type STRING PPI_IMAGE
-            voltype STRING dBZ_bias
-            anglenr INT 13
-        EL015 STRUCT 3
-            type STRING PPI_IMAGE
-            voltype STRING dBZ_bias
-            anglenr INT 14
-        EL016 STRUCT 3
-            type STRING PPI_IMAGE
-            voltype STRING dBZ_bias
-            anglenr INT 15
-        EL017 STRUCT 3
-            type STRING PPI_IMAGE
-            voltype STRING dBZ_bias
-            anglenr INT 16
-        EL018 STRUCT 3
-            type STRING PPI_IMAGE
-            voltype STRING dBZ_bias
-            anglenr INT 17
-        EL019 STRUCT 3
-            type STRING PPI_IMAGE
-            voltype STRING dBZ_bias
-            anglenr INT 18
-        EL020 STRUCT 3
-            type STRING PPI_IMAGE
-            voltype STRING dBZ_bias
-            anglenr INT 19
 
-
-# ==========================================================================================
-#                 monitoring
-# ==========================================================================================
-monitoring_Zh_bias STRUCT 4
-    type STRING MONITORING
-    datatype STRARR 1
-        PROC:dBZ_bias
-    step FLOAT 0.5
-    products STRUCT 7
+# self-consistency with area-time integral method
+monitoring_Zh_bias STRUCT 12
+    type STRING SELFCONSISTENCY_BIAS2
+    datatype STRARR 7
+        PROC:H_ISO0
+        PROC:dBZc
+        PROC:ZDRc
+        PROC:PhiDPc
+        PROC:KDPc
+        RAD4ALP:uRhoHV
+        RAD4ALPHYDRO:hydro
+    fzl FLOAT 2000.
+    parametrization STRING None
+    zdr_min FLOAT 0.3
+    keep_points INT 0
+    bias_per_gate INT 0
+    bias_type STRING cumulative
+    provide_confidence INT 0
+    nsamples_confidence INT 10000
+    MAKE_GLOBAL INT 0    
+    products STRUCT 1
         VOL_TS STRUCT 14
             add_date_in_fname INT 1
             type STRING VOL_TS
-            hist_type STRING cumulative
+            bias_type STRING cumulative
             voltype STRING dBZ_bias         .
             ref_value FLOAT 0.
             tol_abs FLOAT 2.0
             tol_trend FLOAT 2.0
             npoints_min INT 100
-            vmin FLOAT -30.
-            vmax FLOAT 30.
+            vmin FLOAT -10.
+            vmax FLOAT 10.
             nevents_min INT 10
             alarm INT 0
             sender STRING jordi.figuerasiventura@meteoswiss.ch
             receiver_list STRARR 1
                 jordi.figuerasiventura@meteoswiss.ch
         VOL_HISTOGRAM STRUCT 3
-            type STRING VOL_HISTOGRAM
-            hist_type STRING cumulative
+            type STRING SAMPLES_HISTOGRAM
             voltype STRING dBZ_bias
-        EL001_DENSITY STRUCT 5
-            type STRING ANGULAR_DENSITY
-            hist_type STRING cumulative
+            step FLOAT 0.5
+        SELFCONSISTENCY2 STRUCT 2
+            type STRING SELFCONSISTENCY2
+            normalize INT 0
+        SELFCONSISTENCY STRUCT 2
+            type STRING SELFCONSISTENCY
+            normalize INT 1
+        EL001 STRUCT 3
+            type STRING PPI_IMAGE
             voltype STRING dBZ_bias
             anglenr INT 0
-            ref_value FLOAT 0.
-        EL002_DENSITY STRUCT 5
-            type STRING ANGULAR_DENSITY
-            hist_type STRING cumulative
+        EL002 STRUCT 3
+            type STRING PPI_IMAGE
             voltype STRING dBZ_bias
             anglenr INT 1
-            ref_value FLOAT 0.
-        EL003_DENSITY STRUCT 5
-            type STRING ANGULAR_DENSITY
-            hist_type STRING cumulative
+        EL003 STRUCT 3
+            type STRING PPI_IMAGE
             voltype STRING dBZ_bias
             anglenr INT 2
-            ref_value FLOAT 0.
-        EL004_DENSITY STRUCT 5
-            type STRING ANGULAR_DENSITY
-            hist_type STRING cumulative
+        EL004 STRUCT 3
+            type STRING PPI_IMAGE
             voltype STRING dBZ_bias
             anglenr INT 3
-            ref_value FLOAT 0.
-        EL005_DENSITY STRUCT 5
-            type STRING ANGULAR_DENSITY
-            hist_type STRING cumulative
+        EL005 STRUCT 3
+            type STRING PPI_IMAGE
             voltype STRING dBZ_bias
             anglenr INT 4
-            ref_value FLOAT 0.
-        EL006_DENSITY STRUCT 5
-            type STRING ANGULAR_DENSITY
-            hist_type STRING cumulative
-            voltype STRING dBZ_bias
-            anglenr INT 5
-            ref_value FLOAT 0.
-        EL007_DENSITY STRUCT 5
-            type STRING ANGULAR_DENSITY
-            hist_type STRING cumulative
-            voltype STRING dBZ_bias
-            anglenr INT 6
-            ref_value FLOAT 0.
-        EL008_DENSITY STRUCT 5
-            type STRING ANGULAR_DENSITY
-            hist_type STRING cumulative
-            voltype STRING dBZ_bias
-            anglenr INT 7
-            ref_value FLOAT 0.
-        EL009_DENSITY STRUCT 5
-            type STRING ANGULAR_DENSITY
-            hist_type STRING cumulative
-            voltype STRING dBZ_bias
-            anglenr INT 8
-            ref_value FLOAT 0.
-        EL010_DENSITY STRUCT 5
-            type STRING ANGULAR_DENSITY
-            hist_type STRING cumulative
-            voltype STRING dBZ_bias
-            anglenr INT 9
-            ref_value FLOAT 0.
-        EL011_DENSITY STRUCT 5
-            type STRING ANGULAR_DENSITY
-            hist_type STRING cumulative
-            voltype STRING dBZ_bias
-            anglenr INT 10
-            ref_value FLOAT 0.
-        EL012_DENSITY STRUCT 5
-            type STRING ANGULAR_DENSITY
-            hist_type STRING cumulative
-            voltype STRING dBZ_bias
-            anglenr INT 11
-            ref_value FLOAT 0.
-        EL013_DENSITY STRUCT 5
-            type STRING ANGULAR_DENSITY
-            hist_type STRING cumulative
-            voltype STRING dBZ_bias
-            anglenr INT 12
-            ref_value FLOAT 0.
-        EL014_DENSITY STRUCT 5
-            type STRING ANGULAR_DENSITY
-            hist_type STRING cumulative
-            voltype STRING dBZ_bias
-            anglenr INT 13
-            ref_value FLOAT 0.
-        EL015_DENSITY STRUCT 5
-            type STRING ANGULAR_DENSITY
-            hist_type STRING cumulative
-            voltype STRING dBZ_bias
-            anglenr INT 14
-            ref_value FLOAT 0.
-        EL016_DENSITY STRUCT 5
-            type STRING ANGULAR_DENSITY
-            hist_type STRING cumulative
-            voltype STRING dBZ_bias
-            anglenr INT 15
-            ref_value FLOAT 0.
-        EL017_DENSITY STRUCT 5
-            type STRING ANGULAR_DENSITY
-            hist_type STRING cumulative
-            voltype STRING dBZ_bias
-            anglenr INT 16
-            ref_value FLOAT 0.
-        EL018_DENSITY STRUCT 5
-            type STRING ANGULAR_DENSITY
-            hist_type STRING cumulative
-            voltype STRING dBZ_bias
-            anglenr INT 17
-            ref_value FLOAT 0.
-        EL019_DENSITY STRUCT 5
-            type STRING ANGULAR_DENSITY
-            hist_type STRING cumulative
-            voltype STRING dBZ_bias
-            anglenr INT 18
-            ref_value FLOAT 0.
-        EL020_DENSITY STRUCT 5
-            type STRING ANGULAR_DENSITY
-            hist_type STRING cumulative
-            voltype STRING dBZ_bias
-            anglenr INT 19
-            ref_value FLOAT 0.
+
+
+## ==========================================================================================
+##                 monitoring
+## ==========================================================================================
+#monitoring_Zh_bias STRUCT 4
+#    type STRING MONITORING
+#    datatype STRARR 1
+#        PROC:dBZ_bias
+#    step FLOAT 0.5
+#    products STRUCT 7
+#        VOL_TS STRUCT 14
+#            add_date_in_fname INT 1
+#            type STRING VOL_TS
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias         .
+#            ref_value FLOAT 0.
+#            tol_abs FLOAT 2.0
+#            tol_trend FLOAT 2.0
+#            npoints_min INT 100
+#            vmin FLOAT -30.
+#            vmax FLOAT 30.
+#            nevents_min INT 10
+#            alarm INT 0
+#            sender STRING jordi.figuerasiventura@meteoswiss.ch
+#            receiver_list STRARR 1
+#                jordi.figuerasiventura@meteoswiss.ch
+#        VOL_HISTOGRAM STRUCT 3
+#            type STRING VOL_HISTOGRAM
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias
+#        EL001_DENSITY STRUCT 5
+#            type STRING ANGULAR_DENSITY
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias
+#            anglenr INT 0
+#            ref_value FLOAT 0.
+#        EL002_DENSITY STRUCT 5
+#            type STRING ANGULAR_DENSITY
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias
+#            anglenr INT 1
+#            ref_value FLOAT 0.
+#        EL003_DENSITY STRUCT 5
+#            type STRING ANGULAR_DENSITY
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias
+#            anglenr INT 2
+#            ref_value FLOAT 0.
+#        EL004_DENSITY STRUCT 5
+#            type STRING ANGULAR_DENSITY
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias
+#            anglenr INT 3
+#            ref_value FLOAT 0.
+#        EL005_DENSITY STRUCT 5
+#            type STRING ANGULAR_DENSITY
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias
+#            anglenr INT 4
+#            ref_value FLOAT 0.
+#        EL006_DENSITY STRUCT 5
+#            type STRING ANGULAR_DENSITY
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias
+#            anglenr INT 5
+#            ref_value FLOAT 0.
+#        EL007_DENSITY STRUCT 5
+#            type STRING ANGULAR_DENSITY
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias
+#            anglenr INT 6
+#            ref_value FLOAT 0.
+#        EL008_DENSITY STRUCT 5
+#            type STRING ANGULAR_DENSITY
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias
+#            anglenr INT 7
+#            ref_value FLOAT 0.
+#        EL009_DENSITY STRUCT 5
+#            type STRING ANGULAR_DENSITY
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias
+#            anglenr INT 8
+#            ref_value FLOAT 0.
+#        EL010_DENSITY STRUCT 5
+#            type STRING ANGULAR_DENSITY
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias
+#            anglenr INT 9
+#            ref_value FLOAT 0.
+#        EL011_DENSITY STRUCT 5
+#            type STRING ANGULAR_DENSITY
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias
+#            anglenr INT 10
+#            ref_value FLOAT 0.
+#        EL012_DENSITY STRUCT 5
+#            type STRING ANGULAR_DENSITY
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias
+#            anglenr INT 11
+#            ref_value FLOAT 0.
+#        EL013_DENSITY STRUCT 5
+#            type STRING ANGULAR_DENSITY
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias
+#            anglenr INT 12
+#            ref_value FLOAT 0.
+#        EL014_DENSITY STRUCT 5
+#            type STRING ANGULAR_DENSITY
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias
+#            anglenr INT 13
+#            ref_value FLOAT 0.
+#        EL015_DENSITY STRUCT 5
+#            type STRING ANGULAR_DENSITY
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias
+#            anglenr INT 14
+#            ref_value FLOAT 0.
+#        EL016_DENSITY STRUCT 5
+#            type STRING ANGULAR_DENSITY
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias
+#            anglenr INT 15
+#            ref_value FLOAT 0.
+#        EL017_DENSITY STRUCT 5
+#            type STRING ANGULAR_DENSITY
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias
+#            anglenr INT 16
+#            ref_value FLOAT 0.
+#        EL018_DENSITY STRUCT 5
+#            type STRING ANGULAR_DENSITY
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias
+#            anglenr INT 17
+#            ref_value FLOAT 0.
+#        EL019_DENSITY STRUCT 5
+#            type STRING ANGULAR_DENSITY
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias
+#            anglenr INT 18
+#            ref_value FLOAT 0.
+#        EL020_DENSITY STRUCT 5
+#            type STRING ANGULAR_DENSITY
+#            hist_type STRING cumulative
+#            voltype STRING dBZ_bias
+#            anglenr INT 19
+#            ref_value FLOAT 0.

@@ -114,6 +114,7 @@ def get_process_func(dataset_type, dsname):
                 'ROI': process_roi
                 'SAN': process_echo_id
                 'SELFCONSISTENCY_BIAS': process_selfconsistency_bias
+                'SELFCONSISTENCY_BIAS2': process_selfconsistency_bias2
                 'SELFCONSISTENCY_KDP_PHIDP': process_selfconsistency_kdp_phidp
                 'SNR': process_snr
                 'SNR_FILTER': process_filter_snr
@@ -437,6 +438,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_selfconsistency_kdp_phidp'
     elif dataset_type == 'SELFCONSISTENCY_BIAS':
         func_name = 'process_selfconsistency_bias'
+    elif dataset_type == 'SELFCONSISTENCY_BIAS2':
+        func_name = 'process_selfconsistency_bias2'
     elif dataset_type == 'COSMO':
         func_name = 'process_cosmo'
     elif dataset_type == 'COSMO_LOOKUP':

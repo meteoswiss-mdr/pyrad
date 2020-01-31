@@ -9,6 +9,7 @@ Functions for monitoring of the polarimetric variables
 
     process_selfconsistency_kdp_phidp
     process_selfconsistency_bias
+    process_selfconsistency_bias2
     process_estimate_phidp0
     process_rhohv_rain
     process_zdr_precip
@@ -28,6 +29,7 @@ from ..io.read_data_other import read_selfconsistency
 from ..io.read_data_radar import interpol_field
 
 from ..util.radar_utils import get_histogram_bins
+from ..util.stat_utils import ratio_bootstrapping
 
 
 def process_selfconsistency_kdp_phidp(procstatus, dscfg, radar_list=None):
@@ -520,6 +522,350 @@ def process_selfconsistency_bias(procstatus, dscfg, radar_list=None):
         new_dataset['radar_out'].add_field('reflectivity_bias', refl_bias)
 
         return new_dataset, ind_rad
+
+
+def process_selfconsistency_bias2(procstatus, dscfg, radar_list=None):
+    """
+    Estimates the reflectivity bias by means of the selfconsistency
+    algorithm by Gourley
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        parametrization : str
+            The type of parametrization for the self-consistency curves. Can
+            be 'None', 'Gourley', 'Wolfensberger', 'Louf', 'Gorgucci' or
+            'Vaccarono'
+            'None' will use tables from config files. Default 'None'.
+        fzl : float. Dataset keyword
+            Default freezing level height. Default 2000.
+        rsmooth : float. Dataset keyword
+            length of the smoothing window [m]. Default 2000.
+        min_rhohv : float. Dataset keyword
+            minimum valid RhoHV. Default 0.92
+        filter_rain : Bool. Dataset keyword
+            If True the hydrometeor classification is used to filter out gates
+            that are not rain. Default True
+        max_phidp : float. Dataset keyword
+            maximum valid PhiDP [deg]. Default 20.
+        ml_thickness : float. Dataset keyword
+            Melting layer thickness [m]. Default 700.
+        rcell : float. Dataset keyword
+            length of continuous precipitation to consider the precipitation
+            cell a valid phidp segment [m]. Default 15000.
+        frequency : float. Dataset keyword
+            the radar frequency [Hz]. If None that of the key
+            frequency in attribute instrument_parameters of the radar
+            object will be used. If the key or the attribute are not present
+            the selfconsistency will not be computed
+        check_wet_radome : Bool. Dataset keyword
+            if True the average reflectivity of the closest gates to the radar
+            is going to be check to find out whether there is rain over the
+            radome. If there is rain no bias will be computed. Default True.
+        wet_radome_refl : Float. Dataset keyword
+            Average reflectivity [dBZ] of the gates close to the radar to
+            consider the radome as wet. Default 25.
+        wet_radome_rng_min, wet_radome_rng_max : Float. Dataset keyword
+            Min and max range [m] of the disk around the radar used to compute
+            the average reflectivity to determine whether the radome is wet.
+            Default 2000 and 4000.
+        wet_radome_ngates_min : int
+            Minimum number of valid gates to consider that the radome is wet.
+            Default 180
+        keep_points : Bool
+            If True the ZDR, ZH and KDP of the gates used in the self-
+            consistency algorithm are going to be stored for further analysis.
+            Default False
+        bias_per_gate : Bool
+            If True the bias per gate will be computed
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the output
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus == 0:
+        return None, None
+
+    keep_points = dscfg.get('keep_points', False)
+    bias_type = dscfg.get('bias_type', 'cumulative')
+    provide_confidence = dscfg.get('provide_confidence', False)
+    nsamples_confidence = dscfg.get('nsamples_confidence', 1000)
+    if procstatus == 2:
+        if dscfg['initialized'] == 0:
+            return None, None
+
+        dataset = None
+        if bias_type == 'cumulative':
+            kdp_obs = np.ma.array(
+                dscfg['global_data']['kdp_data_dict']['kdp_obs'])
+            kdp_sim = np.ma.array(
+                dscfg['global_data']['kdp_data_dict']['kdp_sim'])
+            reflectivity_bias = {
+                'value': 10.*np.ma.log10(
+                    np.ma.sum(kdp_sim)/np.ma.sum(kdp_obs)),
+                'npoints': kdp_obs.size,
+                'timeinfo': dscfg['global_data']['kdp_data_dict']['timeinfo'],
+                'bias_type': 'cumulative'}
+
+            if provide_confidence:
+                samples = ratio_bootstrapping(
+                    kdp_sim, kdp_obs, nsamples=nsamples_confidence)
+                reflectivity_bias.update(
+                    {'samples': 10.*np.ma.log10(samples)})
+            dataset = {'reflectivity_bias': reflectivity_bias}
+
+        if keep_points:
+            if dataset is None:
+                dataset = {'selfconsistency_points':
+                           dscfg['global_data']['selfconsistency_points']}
+            else:
+                dataset.update(
+                    {'selfconsistency_points':
+                     dscfg['global_data']['selfconsistency_points']})
+
+        return dataset, None
+
+    temp = None
+    iso0 = None
+    hydro = None
+    phidp = None
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+        if datatype == 'dBZc':
+            refl = 'corrected_reflectivity'
+        if datatype == 'dBZ':
+            refl = 'reflectivity'
+        if datatype == 'ZDRc':
+            zdr = 'corrected_differential_reflectivity'
+        if datatype == 'ZDR':
+            zdr = 'differential_reflectivity'
+        if datatype == 'PhiDPc':
+            phidp = 'corrected_differential_phase'
+        if datatype == 'PhiDP':
+            phidp = 'differential_phase'
+        if datatype == 'KDPc':
+            kdp = 'corrected_specific_differential_phase'
+        if datatype == 'KDP':
+            kdp = 'specific_differential_phase'
+        if datatype == 'TEMP':
+            temp = 'temperature'
+        if datatype == 'H_ISO0':
+            iso0 = 'height_over_iso0'
+        if datatype == 'hydro':
+            hydro = 'radar_echo_classification'
+        if datatype == 'RhoHV':
+            rhohv = 'cross_correlation_ratio'
+        if datatype == 'RhoHVc':
+            rhohv = 'corrected_cross_correlation_ratio'
+        if datatype == 'uRhoHV':
+            rhohv = 'uncorrected_cross_correlation_ratio'
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if ((refl not in radar.fields) or
+            (zdr not in radar.fields) or
+            (kdp not in radar.fields) or
+            (rhohv not in radar.fields)):
+        warn('Unable to estimate reflectivity bias using selfconsistency. ' +
+             'Missing data')
+        return None, None
+
+    # determine which freezing level reference
+    if temp is not None:
+        if temp in radar.fields:
+            temp_ref = 'temperature'
+        else:
+            warn('COSMO temperature field not available. ' +
+                 'Using fixed freezing level height to determine liquid phase')
+            temp_ref = 'fixed_fzl'
+    elif iso0 is not None:
+        if iso0 in radar.fields:
+            temp_ref = 'height_over_iso0'
+        else:
+            warn('Height over iso0 field not available. ' +
+                 'Using fixed freezing level height to determine liquid phase')
+            temp_ref = 'fixed_fzl'
+    else:
+        warn('Field to obtain the freezing level was not specified. ' +
+             'Using fixed freezing level height')
+        temp_ref = 'fixed_fzl'
+
+    # determine freezing level height if necessary
+    fzl = None
+    if temp_ref == 'fixed_fzl':
+        if 'fzl' in dscfg:
+            fzl = dscfg['fzl']
+        else:
+            fzl = 2000.
+            warn('Freezing level height not defined. Using default ' +
+                 str(fzl)+' m')
+
+    # get self-consistency parametrization or curves
+    parametrization = dscfg.get('parametrization', 'None')
+    if dscfg['initialized'] == 0:
+        # get frequency band
+        freq = dscfg.get('frequency', None)
+        if freq is None:
+            if (radar.instrument_parameters is not None and
+                    'frequency' in radar.instrument_parameters):
+                freq = radar.instrument_parameters['frequency']['data'][0]
+            else:
+                warn('Unable to estimate Zh bias using ' +
+                     'self-consistency. Unknown radar frequency')
+                return None, None
+        freq_band = pyart.retrieve.get_freq_band(freq)
+
+        if parametrization == 'None':
+            # find unique elevations
+            el_vec = np.unique(
+                (10.*np.round(radar.elevation['data'], decimals=1)).astype(int))
+            zdr_kdpzh_list = list()
+            el_list = list()
+            for el in el_vec:
+                fname = (
+                    dscfg['configpath'] + 'selfconsistency/' +
+                    'selfconsistency_zdr_zhkdp_'+freq_band+'band_temp10_elev' +
+                    '{:03d}'.format(el)+'_mu05.txt')
+                zdr_kdpzh_table = read_selfconsistency(fname)
+                if zdr_kdpzh_table is not None:
+                    zdr_kdpzh_list.append(zdr_kdpzh_table)
+                    el_list.append((el/10.).astype(int))
+            if not el_list:
+                warn('Unable to retrieve Zh bias using self-consistency. ' +
+                     'No selfconsistency files for the radar elevations.')
+
+                return None, None
+
+            zdr_kdpzh_dict = {'zdr_kdpzh': zdr_kdpzh_list,
+                              'elev': el_list,
+                              'freq_band': freq_band}
+        else:
+            zdr_kdpzh_dict = {'zdr_kdpzh': None,
+                              'elev': None,
+                              'freq_band': freq_band}
+
+        dscfg['global_data'] = {'zdr_kdpzh_dict': zdr_kdpzh_dict}
+        dscfg['global_data'].update({'kdp_data_dict': {
+            'kdp_obs': [],
+            'kdp_sim': [],
+            'timeinfo': dscfg['timeinfo']
+        }})
+        if keep_points:
+            dscfg['global_data'].update({'selfconsistency_points': {
+                'zdr': [],
+                'kdp': [],
+                'zh': [],
+                'timeinfo': dscfg['timeinfo'],
+                'parametrization': parametrization,
+                'zdr_kdpzh_dict': zdr_kdpzh_dict
+            }})
+        dscfg['initialized'] = 1
+
+    if dscfg['initialized'] == 1:
+        # get user defined values
+        rsmooth = dscfg.get('rsmooth', 2000.)
+        min_rhohv = dscfg.get('min_rhohv', 0.92)
+        min_zdr = dscfg.get('min_zdr', 0.2)
+        filter_rain = dscfg.get('filter_rain', True)
+        max_phidp = dscfg.get('max_phidp', 20.)
+        ml_thickness = dscfg.get('ml_thickness', 700.)
+        rcell = dscfg.get('rcell', 15000.)
+        check_wet_radome = dscfg.get('check_wet_radome', True)
+        wet_radome_refl = dscfg.get('wet_radome_refl', 25.)
+        wet_radome_rng_min = dscfg.get('wet_radome_rng_min', 2000.)
+        wet_radome_rng_max = dscfg.get('wet_radome_rng_max', 4000.)
+        wet_radome_ngates_min = dscfg.get('wet_radome_ngates_min', 180)
+        bias_per_gate = dscfg.get('bias_per_gate', False)
+
+        r_res = radar.range['data'][1]-radar.range['data'][0]
+        smooth_wind_len = int(rsmooth/r_res)
+        min_rcons = int(rcell/r_res)
+        wet_radome_len_min = int(wet_radome_rng_min/r_res)
+        wet_radome_len_max = int(wet_radome_rng_max/r_res)
+
+        kdp_data_dict, refl_bias, selfcons_dict = pyart.correct.selfconsistency_bias2(
+            radar, dscfg['global_data']['zdr_kdpzh_dict'],
+            min_rhohv=min_rhohv, min_zdr=min_zdr, filter_rain=filter_rain,
+            max_phidp=max_phidp, smooth_wind_len=smooth_wind_len, doc=15,
+            fzl=fzl, thickness=ml_thickness, min_rcons=min_rcons,
+            parametrization=parametrization, refl_field=refl,
+            phidp_field=phidp, zdr_field=zdr, temp_field=temp,
+            iso0_field=iso0, hydro_field=hydro, rhohv_field=rhohv,
+            kdp_field=kdp, temp_ref=temp_ref,
+            check_wet_radome=check_wet_radome,
+            wet_radome_refl=wet_radome_refl,
+            wet_radome_len_min=wet_radome_len_min,
+            wet_radome_len_max=wet_radome_len_max, keep_points=keep_points,
+            bias_per_gate=bias_per_gate)
+
+        if keep_points:
+            if selfcons_dict is not None:
+                dscfg['global_data']['selfconsistency_points']['zdr'].extend(
+                    selfcons_dict['zdr'])
+                dscfg['global_data']['selfconsistency_points']['zh'].extend(
+                    selfcons_dict['zh'])
+                dscfg['global_data']['selfconsistency_points']['kdp'].extend(
+                    selfcons_dict['kdp'])
+
+        if kdp_data_dict is not None:
+            dscfg['global_data']['kdp_data_dict']['kdp_sim'].extend(
+                kdp_data_dict['kdp_sim'])
+            dscfg['global_data']['kdp_data_dict']['kdp_obs'].extend(
+                kdp_data_dict['kdp_obs'])
+
+        # prepare for exit
+        dataset = None
+        if bias_type == 'instant':
+            reflectivity_bias = {
+                'value': np.ma.masked,
+                'npoints': 0,
+                'timeinfo': dscfg['timeinfo'],
+                'bias_type': 'instant'}
+
+            if kdp_data_dict is not None:
+                kdp_obs = np.ma.array(kdp_data_dict['kdp_obs'])
+                kdp_sim = np.ma.array(kdp_data_dict['kdp_sim'])
+
+                reflectivity_bias['value'] = 10.*np.ma.log10(
+                    np.ma.sum(kdp_sim)/np.ma.sum(kdp_obs))
+                reflectivity_bias['npoints'] = kdp_obs.size
+
+                if provide_confidence:
+                    samples = ratio_bootstrapping(
+                        kdp_sim, kdp_obs, iter=nsamples_confidence)
+                    reflectivity_bias.update(
+                        {'samples': 10.*np.ma.log10(samples)})
+
+            dataset = {'reflectivity_bias': reflectivity_bias}
+
+        if bias_per_gate:
+            if refl_bias is not None:
+                if dataset is None:
+                    dataset = {'radar_out': deepcopy(radar)}
+                else:
+                    dataset.update({'radar_out': deepcopy(radar)})
+                dataset['radar_out'].fields = dict()
+                dataset['radar_out'].add_field(
+                    'reflectivity_bias', refl_bias)
+
+        return dataset, ind_rad
 
 
 def process_estimate_phidp0(procstatus, dscfg, radar_list=None):

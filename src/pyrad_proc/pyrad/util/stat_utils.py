@@ -8,6 +8,7 @@ Miscellaneous functions dealing with statistics
     :toctree: generated/
 
     quantiles_weighted
+    ratio_bootstrapping
 
 """
 
@@ -119,3 +120,37 @@ def quantiles_weighted(values, weight_vector=None, quantiles=np.array([0.5]),
         quants = 10. * np.log10(quants)
 
     return (avg, quants, nvalid)
+
+
+def ratio_bootstrapping(nominator, denominator, nsamples=1000):
+    """
+    Computes a set of samples obtained as sum(nominator)/sum(denominator)
+    where the nominator and the denominator are randomly sampled with
+    replacement.
+
+    Parameters
+    ----------
+    nominator, denominator : 1D array
+        The data points in the nominator and the denominator. Nominator
+        and denominator are not independent, i.e. data point i in the
+        nominator is linked to data point i in the denominator
+    nsamples : int
+        Number of iteration, i.e. number of samples desired
+
+    Returns
+    -------
+    samples : 1D array
+        the resultant samples
+
+    """
+    ind_values = np.arange(nominator.size)
+
+    samples = np.ma.masked_all(nsamples)
+    for i in range(nsamples):
+        # this is for version of numpy from 1.7 to 1.15. for higher versions
+        # np.random.Generator.choice should be used
+        ind_sample = np.random.choice(
+            ind_values, size=ind_values.size, replace=True, p=None)
+        samples[i] = (np.ma.sum(nominator[ind_sample]) /
+                      np.ma.sum(denominator[ind_sample]))
+    return samples

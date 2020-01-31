@@ -33,7 +33,7 @@ dempath STRING /store/msrad/radar/rad4alp/visibRad4Alp/
 # --------------------------------------------
 # Output data
 # --------------------------------------------
-saveimgbasepath STRING /store/msrad/radar/pyrad_test/
+saveimgbasepath STRING /store/msrad/radar/pyrad_products/
 # Supported formats: eps, jpeg, jpg, pdf, pgf, png, ps, raw, rgba, svg, svgz, tif, tiff
 imgformat STRING png	
 
