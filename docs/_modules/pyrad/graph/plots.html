@@ -71,8 +71,9 @@
 <span class="sd">    plot_histogram</span>
 <span class="sd">    plot_histogram2</span>
 <span class="sd">    plot_antenna_pattern</span>
-<span class="sd">    plot_selfconsitency</span>
-<span class="sd">    plot_selfconsitency_instrument</span>
+<span class="sd">    plot_selfconsistency</span>
+<span class="sd">    plot_selfconsistency_instrument</span>
+<span class="sd">    plot_selfconsistency_instrument2</span>
 <span class="sd">    plot_scatter_comp</span>
 <span class="sd">    plot_sun_hits</span>
 <span class="sd">    _plot_time_range</span>
@@ -833,10 +834,10 @@
     <span class="k">return</span> <span class="n">fname_list</span></div>
 
 
-<div class="viewcode-block" id="plot_selfconsitency"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_selfconsitency">[docs]</a><span class="k">def</span> <span class="nf">plot_selfconsitency</span><span class="p">(</span><span class="n">zdrkdp_table</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">labelx</span><span class="o">=</span><span class="s1">&#39;ZDR [dB]&#39;</span><span class="p">,</span>
-                        <span class="n">labely</span><span class="o">=</span><span class="s1">&#39;KDP/Zh [(deg*m3)/(km*mm6)]&#39;</span><span class="p">,</span>
-                        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Selfconsistency in rain&#39;</span><span class="p">,</span> <span class="n">ymin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ymax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                        <span class="n">dpi</span><span class="o">=</span><span class="mi">72</span><span class="p">,</span> <span class="n">save_fig</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="plot_selfconsistency"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_selfconsistency">[docs]</a><span class="k">def</span> <span class="nf">plot_selfconsistency</span><span class="p">(</span><span class="n">zdrkdp_table</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">labelx</span><span class="o">=</span><span class="s1">&#39;ZDR [dB]&#39;</span><span class="p">,</span>
+                         <span class="n">labely</span><span class="o">=</span><span class="s1">&#39;KDP/Zh [(deg*m3)/(km*mm6)]&#39;</span><span class="p">,</span>
+                         <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Selfconsistency in rain&#39;</span><span class="p">,</span> <span class="n">ymin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                         <span class="n">ymax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">72</span><span class="p">,</span> <span class="n">save_fig</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    plots a ZDR-KDP/ZH selfconsistency in rain relation</span>
 
@@ -891,14 +892,15 @@
     <span class="k">return</span> <span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="plot_selfconsitency_instrument"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_selfconsitency_instrument">[docs]</a><span class="k">def</span> <span class="nf">plot_selfconsitency_instrument</span><span class="p">(</span><span class="n">zdr</span><span class="p">,</span> <span class="n">kdp</span><span class="p">,</span> <span class="n">zh</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
-                                   <span class="n">bins_zdr_step</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">bins_zdr_min</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
-                                   <span class="n">bins_zdr_max</span><span class="o">=</span><span class="mf">6.</span><span class="p">,</span> <span class="n">bins_kdpzh_step</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-                                   <span class="n">bins_kdpzh_min</span><span class="o">=-</span><span class="mf">2.</span><span class="p">,</span> <span class="n">bins_kdpzh_max</span><span class="o">=</span><span class="mf">20.</span><span class="p">,</span>
-                                   <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
-                                   <span class="n">parametrization</span><span class="o">=</span><span class="s1">&#39;None&#39;</span><span class="p">,</span>
-                                   <span class="n">zdr_kdpzh_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">retrieve_relation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                                   <span class="n">plot_theoretical</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">72</span><span class="p">):</span>
+<div class="viewcode-block" id="plot_selfconsistency_instrument"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_selfconsistency_instrument">[docs]</a><span class="k">def</span> <span class="nf">plot_selfconsistency_instrument</span><span class="p">(</span><span class="n">zdr</span><span class="p">,</span> <span class="n">kdp</span><span class="p">,</span> <span class="n">zh</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
+                                    <span class="n">bins_zdr_step</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">bins_zdr_min</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+                                    <span class="n">bins_zdr_max</span><span class="o">=</span><span class="mf">6.</span><span class="p">,</span> <span class="n">bins_kdpzh_step</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                                    <span class="n">bins_kdpzh_min</span><span class="o">=-</span><span class="mf">2.</span><span class="p">,</span> <span class="n">bins_kdpzh_max</span><span class="o">=</span><span class="mf">20.</span><span class="p">,</span>
+                                    <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+                                    <span class="n">parametrization</span><span class="o">=</span><span class="s1">&#39;None&#39;</span><span class="p">,</span>
+                                    <span class="n">zdr_kdpzh_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">retrieve_relation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                    <span class="n">plot_theoretical</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">72</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    plots the ZDR-KDP/ZH relationship obtained by an instrument. The</span>
 <span class="sd">    theoretical curve and the retrieved curve</span>
@@ -906,7 +908,8 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    zdr, kdp, zh : 1D ndarray</span>
-<span class="sd">        The valid values of ZDR, KDP and Zh collected by the instrument</span>
+<span class="sd">        The valid values of ZDR [dB], KDP [deg/km] and Zh [mm6/m3] collected</span>
+<span class="sd">        by the instrument</span>
 <span class="sd">    fname_list : list of str</span>
 <span class="sd">        list of names of the files where to store the plot</span>
 <span class="sd">    bins_zdr_step : float</span>
@@ -920,7 +923,7 @@
 <span class="sd">        The limits of the 1e5*KDP^a/ZH^b axis of the histogram (bins center)</span>
 <span class="sd">        [(deg*m3)/(km*mm6)]</span>
 <span class="sd">    normalize : Bool</span>
-<span class="sd">        If True the occurrence density of ZK/KDP for each ZDR bin is going to</span>
+<span class="sd">        If True the occurrence density of ZH/KDP for each ZDR bin is going to</span>
 <span class="sd">        be represented. Otherwise it will show the number of gates at each bin</span>
 <span class="sd">    vmin, vmax : float</span>
 <span class="sd">        min and max values of the colorbar</span>
@@ -1120,6 +1123,197 @@
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">fname_list</span></div>
+
+
+<span class="k">def</span> <span class="nf">plot_selfconsistency_instrument2</span><span class="p">(</span><span class="n">zdr</span><span class="p">,</span> <span class="n">kdp</span><span class="p">,</span> <span class="n">zh</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
+                                     <span class="n">bins_zh_step</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">bins_zh_min</span><span class="o">=-</span><span class="mf">30.</span><span class="p">,</span>
+                                     <span class="n">bins_zh_max</span><span class="o">=</span><span class="mf">80.</span><span class="p">,</span>
+                                     <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+                                     <span class="n">parametrization</span><span class="o">=</span><span class="s1">&#39;None&#39;</span><span class="p">,</span>
+                                     <span class="n">zdr_kdpzh_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">72</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    plots the ZDR-KDP/ZH relationship obtained by an instrument. The</span>
+<span class="sd">    theoretical curve and the retrieved curve</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    zdr, kdp, zh : 1D ndarray</span>
+<span class="sd">        The valid values of ZDR [dB], KDP [deg/km] and Zh [dBZ] collected by</span>
+<span class="sd">        the instrument</span>
+<span class="sd">    fname_list : list of str</span>
+<span class="sd">        list of names of the files where to store the plot</span>
+<span class="sd">    bins_zh_step : float</span>
+<span class="sd">        The step of the ZH of the histogram [dB]</span>
+<span class="sd">    bins_zh_min, bins_zh_max : float</span>
+<span class="sd">        The limits of the ZH of the histograms (bins center) [dBZ]</span>
+<span class="sd">    normalize : Bool</span>
+<span class="sd">        If True the occurrence density of ZH/KDP for each ZDR bin is going to</span>
+<span class="sd">        be represented. Otherwise it will show the number of gates at each bin</span>
+<span class="sd">    vmin, vmax : float</span>
+<span class="sd">        min and max values of the colorbar</span>
+<span class="sd">    parametrization : str</span>
+<span class="sd">        The type of parametrization for the self-consistency curves. Can be</span>
+<span class="sd">        &#39;None&#39;, &#39;Gourley&#39;, &#39;Wolfensberger&#39;, &#39;Louf&#39;, &#39;Gorgucci&#39; or &#39;Vaccarono&#39;.</span>
+<span class="sd">        &#39;None&#39; will use tables contained in zdr_kdpzh_dict. The parametrized</span>
+<span class="sd">        curves are obtained from literature except for Wolfensberger that was</span>
+<span class="sd">        derived from disdrometer data obtained by MeteoSwiss and EPFL. All</span>
+<span class="sd">        parametrizations are valid for C-band only except that of Gourley.</span>
+<span class="sd">    zdr_kdpzh_dict : dict</span>
+<span class="sd">        dictionary containing a look up table relating ZDR with KDP/Zh for</span>
+<span class="sd">        different elevations and the frequency band of the radar</span>
+<span class="sd">    dpi : int</span>
+<span class="sd">        dots per inch</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fname_list : list of str</span>
+<span class="sd">        list of names of the created plots</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># prepare bins for histogram</span>
+    <span class="n">bins_zh_centers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+        <span class="n">bins_zh_min</span><span class="p">,</span> <span class="n">bins_zh_max</span><span class="o">+</span><span class="n">bins_zh_step</span><span class="p">,</span> <span class="n">bins_zh_step</span><span class="p">)</span>
+    <span class="n">bins_zh_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+        <span class="n">bins_zh_centers</span><span class="o">-</span><span class="n">bins_zh_step</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span>
+        <span class="n">bins_zh_centers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">bins_zh_step</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">parametrization</span> <span class="o">==</span> <span class="s1">&#39;None&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">zdr_kdpzh_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s1">&#39;zdr_kdpzh&#39;</span> <span class="ow">in</span> <span class="n">zdr_kdpzh_dict</span><span class="p">:</span>
+            <span class="n">zdr_th_table</span> <span class="o">=</span> <span class="n">zdr_kdpzh_dict</span><span class="p">[</span><span class="s1">&#39;zdr_kdpzh&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">kdpzh_th_table</span> <span class="o">=</span> <span class="n">zdr_kdpzh_dict</span><span class="p">[</span><span class="s1">&#39;zdr_kdpzh&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="c1"># sort values by ZDR</span>
+            <span class="n">ind_zdr_sorted</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">zdr</span><span class="p">)</span>
+            <span class="n">zh</span> <span class="o">=</span> <span class="n">zh</span><span class="p">[</span><span class="n">ind_zdr_sorted</span><span class="p">]</span>
+            <span class="n">kdp</span> <span class="o">=</span> <span class="n">kdp</span><span class="p">[</span><span class="n">ind_zdr_sorted</span><span class="p">]</span>
+
+            <span class="c1"># get value of KDP/ZH as interpolation of look up table values</span>
+            <span class="n">kdpzh_th</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span>
+                <span class="n">zdr</span><span class="p">[</span><span class="n">ind_zdr_sorted</span><span class="p">],</span> <span class="n">zdr_th_table</span><span class="p">,</span> <span class="n">kdpzh_th_table</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to plot self-consistency curve. &#39;</span>
+                 <span class="s1">&#39;Relationship not provided&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">elif</span> <span class="n">parametrization</span> <span class="o">==</span> <span class="s1">&#39;Gourley&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">zdr_kdpzh_dict</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="s1">&#39;freq_band&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">zdr_kdpzh_dict</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to plot theoretical self-consistency curve. &#39;</span>
+                 <span class="s1">&#39;Frequency band not provided&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">zdr_kdpzh_dict</span><span class="p">[</span><span class="s1">&#39;freq_band&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;S&#39;</span><span class="p">:</span>
+                <span class="n">kdpzh_th</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="o">*</span><span class="p">(</span>
+                    <span class="mf">3.696</span><span class="o">-</span><span class="mf">1.963</span><span class="o">*</span><span class="n">zdr</span><span class="o">+</span><span class="mf">0.504</span><span class="o">*</span><span class="n">zdr</span><span class="o">*</span><span class="n">zdr</span><span class="o">-</span><span class="mf">0.051</span><span class="o">*</span><span class="n">zdr</span><span class="o">*</span><span class="n">zdr</span><span class="o">*</span><span class="n">zdr</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">zdr_kdpzh_dict</span><span class="p">[</span><span class="s1">&#39;freq_band&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span>
+                <span class="n">kdpzh_th</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="o">*</span><span class="p">(</span>
+                    <span class="mf">6.746</span><span class="o">-</span><span class="mf">2.970</span><span class="o">*</span><span class="n">zdr</span><span class="o">+</span><span class="mf">0.711</span><span class="o">*</span><span class="n">zdr</span><span class="o">*</span><span class="n">zdr</span><span class="o">-</span><span class="mf">0.079</span><span class="o">*</span><span class="n">zdr</span><span class="o">*</span><span class="n">zdr</span><span class="o">*</span><span class="n">zdr</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">zdr_kdpzh_dict</span><span class="p">[</span><span class="s1">&#39;freq_band&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;X&#39;</span><span class="p">:</span>
+                <span class="n">kdpzh_th</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="o">*</span><span class="p">(</span>
+                    <span class="mf">11.74</span><span class="o">-</span><span class="mf">4.020</span><span class="o">*</span><span class="n">zdr</span><span class="o">-</span><span class="mf">0.140</span><span class="o">*</span><span class="n">zdr</span><span class="o">*</span><span class="n">zdr</span><span class="o">+</span><span class="mf">0.130</span><span class="o">*</span><span class="n">zdr</span><span class="o">*</span><span class="n">zdr</span><span class="o">*</span><span class="n">zdr</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span>
+                    <span class="s1">&#39;Unable to plot theoretical self-consistency curve. &#39;</span>
+                    <span class="s1">&#39;Unknown frequency band &#39;</span><span class="o">+</span><span class="n">zdr_kdpzh_dict</span><span class="p">[</span><span class="s1">&#39;freq_band&#39;</span><span class="p">])</span>
+                <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">elif</span> <span class="n">parametrization</span> <span class="o">==</span> <span class="s1">&#39;Wolfensberger&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">zdr_kdpzh_dict</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="s1">&#39;freq_band&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">zdr_kdpzh_dict</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to plot theoretical self-consistency curve. &#39;</span>
+                 <span class="s1">&#39;Frequency band not provided&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">zdr_kdpzh_dict</span><span class="p">[</span><span class="s1">&#39;freq_band&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span>
+                <span class="n">kdpzh_th</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="o">*</span><span class="p">(</span>
+                    <span class="mf">3.199</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">7.767e-1</span><span class="o">*</span><span class="n">zdr</span><span class="p">)</span><span class="o">-</span><span class="mf">0.4436</span><span class="o">*</span><span class="n">zdr</span><span class="o">+</span><span class="mf">3.464</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span>
+                    <span class="s1">&#39;Unable to plot theoretical self-consistency curve. &#39;</span>
+                    <span class="s1">&#39;Unknown frequency band &#39;</span><span class="o">+</span><span class="n">zdr_kdpzh_dict</span><span class="p">[</span><span class="s1">&#39;freq_band&#39;</span><span class="p">])</span>
+                <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">elif</span> <span class="n">parametrization</span> <span class="o">==</span> <span class="s1">&#39;Louf&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">zdr_kdpzh_dict</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="s1">&#39;freq_band&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">zdr_kdpzh_dict</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to plot theoretical self-consistency curve. &#39;</span>
+                 <span class="s1">&#39;Frequency band not provided&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">zdr_kdpzh_dict</span><span class="p">[</span><span class="s1">&#39;freq_band&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span>
+                <span class="n">kdpzh_th</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="o">*</span><span class="p">(</span>
+                    <span class="mf">6.607</span><span class="o">-</span><span class="mf">4.577</span><span class="o">*</span><span class="n">zdr</span><span class="o">+</span><span class="mf">1.577</span><span class="o">*</span><span class="n">zdr</span><span class="o">*</span><span class="n">zdr</span><span class="o">-</span><span class="mf">0.23</span><span class="o">*</span><span class="n">zdr</span><span class="o">*</span><span class="n">zdr</span><span class="o">*</span><span class="n">zdr</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span>
+                    <span class="s1">&#39;Unable to plot theoretical self-consistency curve. &#39;</span>
+                    <span class="s1">&#39;Unknown frequency band &#39;</span><span class="o">+</span><span class="n">zdr_kdpzh_dict</span><span class="p">[</span><span class="s1">&#39;freq_band&#39;</span><span class="p">])</span>
+                <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">elif</span> <span class="n">parametrization</span> <span class="o">==</span> <span class="s1">&#39;Gorgucci&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">zdr_kdpzh_dict</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="s1">&#39;freq_band&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">zdr_kdpzh_dict</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to plot theoretical self-consistency curve. &#39;</span>
+                 <span class="s1">&#39;Frequency band not provided&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">zdr_kdpzh_dict</span><span class="p">[</span><span class="s1">&#39;freq_band&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span>
+                <span class="n">zdr_lin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="mf">10.</span><span class="p">,</span> <span class="mf">0.1</span><span class="o">*</span><span class="n">zdr</span><span class="p">)</span>
+                <span class="n">kdpzh_th</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="o">*</span><span class="p">(</span><span class="mf">18.2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">zdr_lin</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.28</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span>
+                    <span class="s1">&#39;Unable to plot theoretical self-consistency curve. &#39;</span>
+                    <span class="s1">&#39;Unknown frequency band &#39;</span><span class="o">+</span><span class="n">zdr_kdpzh_dict</span><span class="p">[</span><span class="s1">&#39;freq_band&#39;</span><span class="p">])</span>
+                <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">elif</span> <span class="n">parametrization</span> <span class="o">==</span> <span class="s1">&#39;Vaccarono&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">zdr_kdpzh_dict</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="s1">&#39;freq_band&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">zdr_kdpzh_dict</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to plot theoretical self-consistency curve. &#39;</span>
+                 <span class="s1">&#39;Frequency band not provided&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">zdr_kdpzh_dict</span><span class="p">[</span><span class="s1">&#39;freq_band&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span>
+                <span class="n">zdr_lin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="mf">10.</span><span class="p">,</span> <span class="mf">0.1</span><span class="o">*</span><span class="n">zdr</span><span class="p">)</span>
+                <span class="n">kdpzh_th</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="o">*</span><span class="p">(</span><span class="mf">17.7</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">zdr_lin</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.09</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span>
+                    <span class="s1">&#39;Unable to plot theoretical self-consistency curve. &#39;</span>
+                    <span class="s1">&#39;Unknown frequency band &#39;</span><span class="o">+</span><span class="n">zdr_kdpzh_dict</span><span class="p">[</span><span class="s1">&#39;freq_band&#39;</span><span class="p">])</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">parametrization</span> <span class="o">==</span> <span class="s1">&#39;Gorgucci&#39;</span><span class="p">:</span>
+        <span class="n">zh_th</span> <span class="o">=</span> <span class="mf">10.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">kdp</span><span class="o">/</span><span class="n">kdpzh_th</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="mf">0.95</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">kdpzh_th</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">parametrization</span> <span class="o">==</span> <span class="s1">&#39;Vaccarono&#39;</span><span class="p">:</span>
+        <span class="n">zh_th</span> <span class="o">=</span> <span class="mf">10.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">kdp</span><span class="p">,</span> <span class="mf">0.85</span><span class="p">)</span><span class="o">/</span><span class="n">kdpzh_th</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="mf">0.95</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">zh_th</span> <span class="o">=</span> <span class="mf">10.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">kdp</span><span class="o">/</span><span class="n">kdpzh_th</span><span class="p">)</span>
+
+    <span class="c1"># prepare histogram</span>
+    <span class="n">zh</span><span class="p">[</span><span class="n">zh</span> <span class="o">&lt;</span> <span class="n">bins_zh_centers</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">bins_zh_centers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">zh</span><span class="p">[</span><span class="n">zh</span> <span class="o">&gt;</span> <span class="n">bins_zh_centers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">bins_zh_centers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">zh_th</span><span class="p">[</span><span class="n">zh_th</span> <span class="o">&lt;</span> <span class="n">bins_zh_centers</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">bins_zh_centers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">zh_th</span><span class="p">[</span><span class="n">zh_th</span> <span class="o">&gt;</span> <span class="n">bins_zh_centers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">bins_zh_centers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">hist2d</span><span class="p">,</span> <span class="n">bins_zh_edges</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram2d</span><span class="p">(</span>
+        <span class="n">zh</span><span class="p">,</span> <span class="n">zh_th</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="p">[</span><span class="n">bins_zh_edges</span><span class="p">,</span> <span class="n">bins_zh_edges</span><span class="p">])</span>
+    <span class="n">hist2d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">hist2d</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
+        <span class="n">hist2d</span> <span class="o">=</span> <span class="n">hist2d</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">hist2d</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">clabel</span> <span class="o">=</span> <span class="s1">&#39;Occurrence density</span><span class="se">\n</span><span class="s1">(For each ZH bin)&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">clabel</span> <span class="o">=</span> <span class="s1">&#39;Number of gates&#39;</span>
+        <span class="n">vmin</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">vmax</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">_plot_time_range</span><span class="p">(</span>
+        <span class="n">bins_zh_edges</span><span class="p">,</span> <span class="n">bins_zh_edges</span><span class="p">,</span> <span class="n">hist2d</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span>
+        <span class="n">titl</span><span class="o">=</span><span class="s1">&#39;self-consistency&#39;</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;ZH measured [dBZ]&#39;</span><span class="p">,</span>
+        <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;ZH selfcons [dBZ]&#39;</span><span class="p">,</span>
+        <span class="n">clabel</span><span class="o">=</span><span class="n">clabel</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">save_fig</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">autoscale</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">bins_zh_centers</span><span class="p">,</span> <span class="n">bins_zh_centers</span><span class="p">,</span> <span class="s1">&#39;rx-&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">fname_list</span><span class="p">:</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">72</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fname_list</span>
 
 
 <div class="viewcode-block" id="plot_scatter_comp"><a class="viewcode-back" href="../../../graph.html#pyrad.graph.plot_scatter_comp">[docs]</a><span class="k">def</span> <span class="nf">plot_scatter_comp</span><span class="p">(</span><span class="n">value1</span><span class="p">,</span> <span class="n">value2</span><span class="p">,</span> <span class="n">fname_list</span><span class="p">,</span> <span class="n">labelx</span><span class="o">=</span><span class="s1">&#39;Sensor 1&#39;</span><span class="p">,</span>

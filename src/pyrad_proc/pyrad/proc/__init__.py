@@ -134,6 +134,7 @@ Monitoring, calibration and noise correction
     process_sun_hits
     process_selfconsistency_kdp_phidp
     process_selfconsistency_bias
+    process_selfconsistency_bias2
     process_time_avg_std
     process_occurrence
     process_occurrence_period
@@ -160,7 +161,8 @@ Retrievals
     process_signal_power
     process_rcs
     process_rcs_pr
-    process_radial_noise
+    process_radial_noise_hs
+    process_radial_noise_ivic
     process_snr
     process_l
     process_cdr
@@ -307,13 +309,15 @@ from .process_monitoring import process_zdr_snow, process_zdr_precip
 from .process_monitoring import process_estimate_phidp0, process_rhohv_rain
 from .process_monitoring import process_selfconsistency_kdp_phidp
 from .process_monitoring import process_selfconsistency_bias
+from .process_monitoring import process_selfconsistency_bias2
 from .process_monitoring import process_monitoring
 
 from .process_retrieve import process_signal_power, process_snr, process_ccor
 from .process_retrieve import process_l, process_cdr, process_bird_density
 from .process_retrieve import process_rainrate, process_vol_refl, process_rcs
 from .process_retrieve import process_rcs_pr, process_rainfall_accumulation
-from .process_retrieve import process_radial_noise
+from .process_retrieve import process_radial_noise_hs
+from .process_retrieve import process_radial_noise_ivic
 
 from .process_Doppler import process_wind_vel, process_windshear
 from .process_Doppler import process_dealias_fourdd

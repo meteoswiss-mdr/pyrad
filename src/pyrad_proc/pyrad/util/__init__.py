@@ -47,6 +47,7 @@ Radar Utilities
     project_to_vertical
 
     quantiles_weighted
+    ratio_bootstrapping
 """
 
 from .radar_utils import time_avg_range, get_closest_solar_flux
@@ -65,6 +66,6 @@ from .radar_utils import get_target_elevations, get_data_along_rng
 from .radar_utils import get_data_along_azi, get_data_along_ele
 from .radar_utils import get_fixed_rng_data
 
-from .stat_utils import quantiles_weighted
+from .stat_utils import quantiles_weighted, ratio_bootstrapping
 
 __all__ = [s for s in dir() if not s.startswith('_')]

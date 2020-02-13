@@ -19,10 +19,14 @@ import pyart
 from netCDF4 import num2date
 
 from ..io.io_aux import get_save_dir, make_filename, get_fieldname_pyart
+from ..io.io_aux import generate_field_name_str
 
 from ..io.write_data import write_cdf, write_rhi_profile, write_field_coverage
 from ..io.write_data import write_last_state, write_histogram, write_quantiles
-from ..io.write_data import write_fixed_angle
+from ..io.write_data import write_fixed_angle, write_monitoring_ts
+from ..io.write_data import write_alarm_msg, send_msg
+
+from ..io.read_data_other import read_monitoring_ts
 
 from ..graph.plots_vol import plot_ppi, plot_ppi_map, plot_rhi, plot_cappi
 from ..graph.plots_vol import plot_bscope, plot_rhi_profile, plot_along_coord
@@ -31,8 +35,10 @@ from ..graph.plots_vol import plot_rhi_contour, plot_ppi_contour
 from ..graph.plots_vol import plot_fixed_rng, plot_fixed_rng_span
 from ..graph.plots_vol import plot_roi_contour, plot_ray
 from ..graph.plots import plot_quantiles, plot_histogram
-from ..graph.plots import plot_selfconsitency_instrument
+from ..graph.plots import plot_selfconsistency_instrument
+from ..graph.plots import plot_selfconsistency_instrument2
 from ..graph.plots_aux import get_colobar_label, get_field_name
+from ..graph.plots_timeseries import plot_monitoring_ts
 
 from ..util.radar_utils import get_ROI, compute_profile_stats
 from ..util.radar_utils import compute_histogram, compute_quantiles
@@ -94,7 +100,7 @@ def generate_vol_products(dataset, prdcfg):
                     CAPPI altitude [m MSL]
                 wfunc: str
                     The function used to produce the CAPPI as defined in
-                    pyart.map.grid_from_radars. Default 'NEAREST_NEIGHBOUR'
+                    pyart.map.grid_from_radars. Default 'NEAREST'
                 cappi_res: float
                     The CAPPI resolution [m]. Default 500.
         'FIELD_COVERAGE': Gets the field coverage over a certain sector
@@ -505,6 +511,13 @@ def generate_vol_products(dataset, prdcfg):
                     If True the occurrence density of ZK/KDP for each ZDR bin
                     is going to be represented. Otherwise it will show the
                     number of gates at each bin. Default True
+        'SELFCONSISTENCY2': Plots a ZH measured versus ZH inferred from a self-consistency
+            relation histogram of data.
+            User defined parameters:
+                normalize : bool
+                    If True the occurrence density of ZK/KDP for each ZDR bin
+                    is going to be represented. Otherwise it will show the
+                    number of gates at each bin. Default True
         'TIME_RANGE': Plots a time-range/azimuth/elevation plot
             User defined parameters:
                 anglenr: float
@@ -513,6 +526,50 @@ def generate_vol_products(dataset, prdcfg):
                     The minimum and maximum values of the color scale. If None
                     the scale is going to be set according to the Py-ART
                     config file
+        'VOL_TS': Writes and plots a value corresponding to a time series.
+            Meant primarily for writing and plotting the results of the
+            SELFCONSISTENCY2 algorithm
+            User defined parameters:
+                ref_value: float
+                    The reference value. Default 0
+                sort_by_date: Bool
+                    If true when reading the csv file containing the
+                    statistics the data is sorted by date. Default False
+                rewrite: Bool
+                    If true the csv file containing the statistics is
+                    rewritten
+                add_data_in_fname: Bool
+                    If true and the data used is cumulative the year is
+                    written in the csv file name and the plot file name
+                npoints_min: int
+                    Minimum number of points to use the data point in the
+                    plotting and to send an alarm. Default 0
+                vmin, vmax: float or None
+                    Limits of the Y-axis (data value). If None the limits
+                    are obtained from the Py-ART config file
+                alarm: Bool
+                    If true an alarm is sent
+                tol_abs: float
+                    Margin of tolerance from the reference value. If the
+                    current value is above this margin an alarm is sent. If
+                    the margin is not specified it is not possible to send any
+                    alarm
+                tol_trend: float
+                    Margin of tolerance from the reference value. If the
+                    trend of the last X events is above this margin an alarm
+                    is sent. If the margin is not specified it is not possible
+                    to send any alarm
+                nevents_min: int
+                    Minimum number of events with sufficient points to send an
+                    alarm related to the trend. If not specified it is not
+                    possible to send any alarm
+                sender: str
+                    The mail of the alarm sender. If not specified it is not
+                    possible to send any alarm
+                receiver_list: list of str
+                    The list of emails of the people that will receive the
+                    alarm.. If not specified it is not possible to send any
+                    alarm
         'WIND_PROFILE': Plots vertical profile of wind data (U, V, W
             components and wind velocity and direction) out of a radar
             volume containing the retrieved U,V and W components of the wind,
@@ -2211,6 +2268,67 @@ def generate_vol_products(dataset, prdcfg):
 
         return fname_list
 
+    if prdcfg['type'] == 'SAMPLES_HISTOGRAM':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        if 'samples' not in dataset[field_name]:
+            warn('Unable to compute histogram. No samples')
+            return None
+
+        step = prdcfg.get('step', None)
+        write_data = prdcfg.get('write_data', 0)
+
+        timeformat = '%Y%m%d'
+        if dataset[field_name]['bias_type'] == 'instant':
+            timeformat = '%Y%m%d%H%M%S'
+        field_metadata = pyart.config.get_metadata(field_name)
+        titl = (
+            dataset[field_name]['timeinfo'].strftime(timeformat) + '\n' +
+            get_field_name(field_metadata, field_name))
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdsavedir, timeinfo=dataset[field_name]['timeinfo'])
+
+        fname_list = make_filename(
+            'histogram', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'], timeinfo=dataset[field_name]['timeinfo'],
+            runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        bin_edges, values = compute_histogram(
+            dataset[field_name]['samples'], field_name, step=step)
+
+        labelx = get_colobar_label(field_metadata, field_name)
+
+        plot_histogram(bin_edges, values, fname_list, labelx=labelx,
+                       labely='Number of Samples', titl=titl)
+
+        print('----- save to '+' '.join(fname_list))
+
+        if write_data:
+            fname = savedir+make_filename(
+                'histogram', prdcfg['dstype'], prdcfg['voltype'],
+                ['csv'], timeinfo=prdcfg['timeinfo'],
+                runinfo=prdcfg['runinfo'])[0]
+
+            hist, _ = np.histogram(values, bins=bin_edges)
+            write_histogram(
+                bin_edges, hist, fname, datatype=prdcfg['voltype'], step=step)
+            print('----- save to '+fname)
+
+            return fname
+
+        return fname_list
+
     if prdcfg['type'] == 'QUANTILES':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
@@ -2611,7 +2729,7 @@ def generate_vol_products(dataset, prdcfg):
         for i, fname in enumerate(fname_list):
             fname_list[i] = savedir+fname
 
-        fname_list = plot_selfconsitency_instrument(
+        fname_list = plot_selfconsistency_instrument(
             np.array(dataset['selfconsistency_points']['zdr']),
             np.array(dataset['selfconsistency_points']['kdp']),
             np.array(dataset['selfconsistency_points']['zh']), fname_list,
@@ -2623,6 +2741,246 @@ def generate_vol_products(dataset, prdcfg):
         print('----- save to '+' '.join(fname_list))
 
         return fname_list
+
+    if prdcfg['type'] == 'SELFCONSISTENCY2':
+        if 'selfconsistency_points' not in dataset:
+            return None
+
+        normalize = prdcfg.get('normalize', True)
+
+        timeinfo = dataset['selfconsistency_points']['timeinfo']
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdsavedir, timeinfo=timeinfo)
+
+        fname_list = make_filename(
+            'selfconsistency2', prdcfg['dstype'], 'selfconsistency2',
+            prdcfg['imgformat'], timeinfo=timeinfo, runinfo=prdcfg['runinfo'],
+            timeformat='%Y%m%d')
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        fname_list = plot_selfconsistency_instrument2(
+            np.array(dataset['selfconsistency_points']['zdr']),
+            np.array(dataset['selfconsistency_points']['kdp']),
+            10.*np.ma.log10(np.array(dataset['selfconsistency_points']['zh'])),
+            fname_list,
+            parametrization=dataset['selfconsistency_points']['parametrization'],
+            zdr_kdpzh_dict=dataset['selfconsistency_points']['zdr_kdpzh_dict'],
+            normalize=normalize)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+    if prdcfg['type'] == 'VOL_TS':
+        # Time series of a value
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # check the type of dataset required
+        bias_type = prdcfg.get('bias_type', 'cumulative')
+        if dataset[field_name]['bias_type'] != bias_type:
+            return None
+
+        # put time info in file path and name
+        csvtimeinfo_path = None
+        csvtimeinfo_file = None
+        timeformat = None
+        if bias_type == 'instant':
+            csvtimeinfo_path = dataset[field_name]['timeinfo']
+            csvtimeinfo_file = dataset[field_name]['timeinfo']
+            timeformat = '%Y%m%d'
+        if prdcfg.get('add_date_in_fname', False):
+            csvtimeinfo_file = dataset[field_name]['timeinfo']
+            timeformat = '%Y'
+
+        quantiles = prdcfg.get('quantiles', np.array([25., 75.]))
+        ref_value = prdcfg.get('ref_value', 0.)
+        sort_by_date = prdcfg.get('sort_by_date', False)
+        rewrite = prdcfg.get('rewrite', False)
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=csvtimeinfo_path)
+
+        csvfname = make_filename(
+            'ts', prdcfg['dstype'], prdcfg['voltype'], ['csv'],
+            timeinfo=csvtimeinfo_file, timeformat=timeformat,
+            runinfo=prdcfg['runinfo'])[0]
+
+        csvfname = savedir+csvfname
+
+        start_time = dataset[field_name]['timeinfo']
+
+        values = np.ma.masked_all(3)
+        values[1] = dataset[field_name]['value']
+        if 'samples' in dataset[field_name]:
+            values[0] = np.percentile(
+                dataset[field_name]['samples'].compressed(), quantiles[0])
+            values[2] = np.percentile(
+                dataset[field_name]['samples'].compressed(), quantiles[1])
+
+        write_monitoring_ts(
+            start_time, dataset[field_name]['npoints'], values,
+            [quantiles[0], 'value', quantiles[1]],
+            prdcfg['voltype'], csvfname)
+        print('saved CSV file: '+csvfname)
+
+        date, np_t_vec, cquant_vec, lquant_vec, hquant_vec = (
+            read_monitoring_ts(csvfname, sort_by_date=sort_by_date))
+
+        if date is None:
+            warn(
+                'Unable to plot time series. No valid data')
+            return None
+
+        if rewrite:
+            val_vec = np.ma.asarray(
+                [lquant_vec, cquant_vec, hquant_vec]).T
+            write_monitoring_ts(
+                date, np_t_vec, val_vec, quantiles, prdcfg['voltype'],
+                csvfname, rewrite=True)
+
+        figtimeinfo = None
+        titldate = ''
+        if bias_type == 'instant':
+            figtimeinfo = date[0]
+            titldate = date[0].strftime('%Y-%m-%d')
+        else:
+            titldate = (date[0].strftime('%Y%m%d')+'-' +
+                        date[-1].strftime('%Y%m%d'))
+            if prdcfg.get('add_date_in_fname', False):
+                figtimeinfo = date[0]
+                timeformat = '%Y'
+
+        figfname_list = make_filename(
+            'ts', prdcfg['dstype'], prdcfg['voltype'],
+            prdcfg['imgformat'],
+            timeinfo=figtimeinfo, timeformat=timeformat,
+            runinfo=prdcfg['runinfo'])
+
+        for i, figfname in enumerate(figfname_list):
+            figfname_list[i] = savedir+figfname
+
+        titl = (prdcfg['runinfo']+' Monitoring '+titldate)
+
+        labely = generate_field_name_str(prdcfg['voltype'])
+
+        np_min = prdcfg.get('npoints_min', 0)
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
+
+        plot_monitoring_ts(
+            date, np_t_vec, cquant_vec, lquant_vec, hquant_vec, field_name,
+            figfname_list, ref_value=ref_value, vmin=vmin, vmax=vmax,
+            np_min=np_min, labelx='Time UTC', labely=labely, titl=titl)
+        print('----- save to '+' '.join(figfname_list))
+
+        # generate alarms if needed
+        alarm = prdcfg.get('alarm', False)
+        if not alarm:
+            return figfname_list
+
+        if 'tol_abs' not in prdcfg:
+            warn('unable to send alarm. Missing tolerance on target')
+            return None
+
+        if 'tol_trend' not in prdcfg:
+            warn('unable to send alarm. Missing tolerance in trend')
+            return None
+
+        if 'nevents_min' not in prdcfg:
+            warn('unable to send alarm. ' +
+                 'Missing minimum number of events to compute trend')
+            return None
+
+        if 'sender' not in prdcfg:
+            warn('unable to send alarm. Missing email sender')
+            return None
+        if 'receiver_list' not in prdcfg:
+            warn('unable to send alarm. Missing email receivers')
+            return None
+
+        tol_abs = prdcfg['tol_abs']
+        tol_trend = prdcfg['tol_trend']
+        nevents_min = prdcfg['nevents_min']
+        sender = prdcfg['sender']
+        receiver_list = prdcfg['receiver_list']
+
+        np_last = np_t_vec[-1]
+        value_last = cquant_vec[-1]
+
+        if np_last < np_min:
+            warn('No valid data on day '+date[-1].strftime('%d-%m-%Y'))
+            return None
+
+        # check if absolute value exceeded
+        abs_exceeded = False
+        if ((value_last > ref_value+tol_abs) or
+                (value_last < ref_value-tol_abs)):
+            warn('Value '+str(value_last)+' exceeds target '+str(ref_value) +
+                 ' +/- '+str(tol_abs))
+            abs_exceeded = True
+
+        # compute trend and check if last value exceeds it
+        mask = np.ma.getmaskarray(cquant_vec)
+        ind = np.where(np.logical_and(
+            np.logical_not(mask), np_t_vec >= np_min))[0]
+        nvalid = len(ind)
+        if nvalid <= nevents_min:
+            warn('Not enough points to compute reliable trend')
+            np_trend = 0
+            value_trend = np.ma.masked
+        else:
+            np_trend_vec = np_t_vec[ind][-(nevents_min+1):-1]
+            data_trend_vec = cquant_vec[ind][-(nevents_min+1):-1]
+
+            np_trend = np.sum(np_trend_vec)
+            value_trend = np.sum(data_trend_vec*np_trend_vec)/np_trend
+
+        trend_exceeded = False
+        if np_trend > 0:
+            if ((value_last > value_trend+tol_trend) or
+                    (value_last < value_trend-tol_trend)):
+                warn('Value '+str(value_last)+'exceeds trend ' +
+                     str(value_trend)+' +/- '+str(tol_trend))
+                trend_exceeded = True
+
+        if abs_exceeded is False and trend_exceeded is False:
+            return None
+
+        alarm_dir = savedir+'/alarms/'
+        if not os.path.isdir(alarm_dir):
+            os.makedirs(alarm_dir)
+        alarm_fname = make_filename(
+            'alarm', prdcfg['dstype'], prdcfg['voltype'], ['txt'],
+            timeinfo=start_time, timeformat='%Y%m%d')[0]
+        alarm_fname = alarm_dir+alarm_fname
+
+        field_dict = pyart.config.get_metadata(field_name)
+        param_name = get_field_name(field_dict, field_name)
+        param_name_unit = param_name+' ['+field_dict['units']+']'
+
+        write_alarm_msg(
+            prdcfg['RadarName'][0], param_name_unit, start_time, ref_value,
+            tol_abs, np_trend, value_trend, tol_trend, nevents_min, np_last,
+            value_last, alarm_fname)
+
+        print('----- saved monitoring alarm to '+alarm_fname)
+
+        subject = ('NO REPLY: '+param_name+' monitoring alarm for radar ' +
+                   prdcfg['RadarName'][0]+' on day ' +
+                   start_time.strftime('%d-%m-%Y'))
+        send_msg(sender, receiver_list, subject, alarm_fname)
+
+        return alarm_fname
 
     if prdcfg['type'] == 'SAVEVOL':
         field_name = get_fieldname_pyart(prdcfg['voltype'])

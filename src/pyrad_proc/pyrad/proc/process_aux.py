@@ -100,7 +100,8 @@ def get_process_func(dataset_type, dsname):
                 'POL_VARIABLES_IQ': process_pol_variables_iq
                 'PWR': process_signal_power
                 'RADAR_RESAMPLING': process_radar_resampling
-                'RADIAL_NOISE': process_radial_noise
+                'RADIAL_NOISE_HS': process_radial_noise_hs
+                'RADIAL_NOISE_IVIC': process_radial_noise_ivic
                 'RAINRATE': process_rainrate
                 'RAW': process_raw
                 'REFLECTIVITY': process_reflectivity
@@ -114,6 +115,7 @@ def get_process_func(dataset_type, dsname):
                 'ROI': process_roi
                 'SAN': process_echo_id
                 'SELFCONSISTENCY_BIAS': process_selfconsistency_bias
+                'SELFCONSISTENCY_BIAS2': process_selfconsistency_bias2
                 'SELFCONSISTENCY_KDP_PHIDP': process_selfconsistency_kdp_phidp
                 'SNR': process_snr
                 'SNR_FILTER': process_filter_snr
@@ -308,8 +310,10 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_rcs'
     elif dataset_type == 'SNR':
         func_name = 'process_snr'
-    elif dataset_type == 'RADIAL_NOISE':
-        func_name = 'process_radial_noise'
+    elif dataset_type == 'RADIAL_NOISE_HS':
+        func_name = 'process_radial_noise_hs'
+    elif dataset_type == 'RADIAL_NOISE_IVIC':
+        func_name = 'process_radial_noise_ivic'
     elif dataset_type == 'VOL_REFL':
         func_name = 'process_vol_refl'
     elif dataset_type == 'BIRD_DENSITY':
@@ -437,6 +441,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_selfconsistency_kdp_phidp'
     elif dataset_type == 'SELFCONSISTENCY_BIAS':
         func_name = 'process_selfconsistency_bias'
+    elif dataset_type == 'SELFCONSISTENCY_BIAS2':
+        func_name = 'process_selfconsistency_bias2'
     elif dataset_type == 'COSMO':
         func_name = 'process_cosmo'
     elif dataset_type == 'COSMO_LOOKUP':
@@ -1139,15 +1145,16 @@ def process_radar_resampling(procstatus, dscfg, radar_list=None):
             Max altitude of the data to use when computing the view from the
             synthetic radar [m MSL]. Default 12000.
         latlon_tol : float. Dataset keyword
-            The tolerance in latitude and longitude to determine which synthetic
-            radar gates are co-located with real radar gates [deg]. Default 0.04
+            The tolerance in latitude and longitude to determine which
+            synthetic radar gates are co-located with real radar gates [deg].
+            Default 0.04
         alt_tol : float. Datset keyword
             The tolerance in altitude to determine which synthetic
             radar gates are co-located with real radar gates [m]. Default 1000.
         pattern_thres : float. Dataset keyword
             The minimum of the sum of the weights given to each value in order
-            to consider the weighted quantile valid. It is related to the number
-            of valid data points
+            to consider the weighted quantile valid. It is related to the
+            number of valid data points
         data_is_log : dict. Dataset keyword
             Dictionary specifying for each field if it is in log (True) or
             linear units (False). Default False
@@ -1259,7 +1266,7 @@ def process_radar_resampling(procstatus, dscfg, radar_list=None):
         # Config parameters for processing when the weather radar and the
         # antenna are not at the same place:
         rhi_resolution = dscfg.get('rhi_resolution', 0.5)  # [deg]
-        max_altitude = dscfg.get('max_altitude', 12000.) # [m]
+        max_altitude = dscfg.get('max_altitude', 12000.)  # [m]
         latlon_tol = dscfg.get('latlon_tol', 0.04)  # [deg]
         alt_tol = dscfg.get('alt_tol', 1000.)  # [m]
         quants = np.array(dscfg.get(
@@ -1369,12 +1376,15 @@ def process_radar_resampling(procstatus, dscfg, radar_list=None):
         # reset field values
         for field_name in trdict['target_radar'].fields.keys():
             if 'npoints' in field_name:
-                trdict['target_radar'].fields[field_name]['data'] = np.ma.zeros(
-                    (trdict['target_radar'].nrays, trdict['target_radar'].ngates),
-                    dtype=np.int32)
+                trdict['target_radar'].fields[field_name]['data'] = (
+                    np.ma.zeros(
+                        (trdict['target_radar'].nrays,
+                         trdict['target_radar'].ngates), dtype=np.int32))
                 continue
-            trdict['target_radar'].fields[field_name]['data'] = np.ma.masked_all(
-                (trdict['target_radar'].nrays, trdict['target_radar'].ngates))
+            trdict['target_radar'].fields[field_name]['data'] = (
+                np.ma.masked_all(
+                    (trdict['target_radar'].nrays,
+                     trdict['target_radar'].ngates)))
 
     target_radar = _get_values_antenna_pattern(radar, trdict, field_names)
 
@@ -1436,14 +1446,15 @@ def _get_values_antenna_pattern(radar, tadict, field_names):
                 continue
 
             values = radar.fields[field_name]['data'].flatten()
-            target_radar.fields[field_name]['data'][:] = values[ind_vec].reshape(
-                target_radar.nrays, target_radar.ngates)
+            target_radar.fields[field_name]['data'][:] = (
+                values[ind_vec].reshape(
+                    target_radar.nrays, target_radar.ngates))
 
         return target_radar
 
     # Find closest azimuth and elevation ray to target radar
     ind_rngs = (ind_vec/radar.ngates).astype(int)
-    ind_rays = (ind_vec%radar.ngates).astype(int)
+    ind_rays = (ind_vec % radar.ngates).astype(int)
 
     nsamples = target_radar.nrays*target_radar.ngates
     for sample, (ind_ray, ind_rng) in enumerate(zip(ind_rngs, ind_rays)):
@@ -1504,20 +1515,26 @@ def _get_values_antenna_pattern(radar, tadict, field_names):
                 # average field
                 target_radar.fields['avg_'+field_name]['data'][
                     np.unravel_index(
-                        sample, (target_radar.nrays, target_radar.ngates))] = avg
+                        sample, (target_radar.nrays, target_radar.ngates))] = (
+                            avg)
 
                 # npoints field
                 target_radar.fields['npoints_'+field_name]['data'][
                     np.unravel_index(
-                        sample, (target_radar.nrays, target_radar.ngates))] = nvals_valid
+                        sample, (target_radar.nrays, target_radar.ngates))] = (
+                            nvals_valid)
 
                 # quantile fields
                 for quant, val in zip(tadict['quantiles'], qvals):
                     if val is None:
                         continue
-                    target_radar.fields['quant'+'{:02d}'.format(int(100*quant))+'_'+field_name]['data'][
+                    quant_field = (
+                        'quant'+'{:02d}'.format(int(100*quant))+'_' +
+                        field_name)
+                    target_radar.fields[quant_field]['data'][
                         np.unravel_index(
-                            sample, (target_radar.nrays, target_radar.ngates))] = val
+                            sample,
+                            (target_radar.nrays, target_radar.ngates))] = val
         else:
             # ================================================================
             # Radar and scanning antenna are NOT at the same place
@@ -1556,20 +1573,27 @@ def _get_values_antenna_pattern(radar, tadict, field_names):
                 # average field
                 target_radar.fields['avg_'+field_name]['data'][
                     np.unravel_index(
-                        sample, (target_radar.nrays, target_radar.ngates))] = avg
+                        sample, (target_radar.nrays, target_radar.ngates))] = (
+                            avg)
 
                 # npoints field
                 target_radar.fields['npoints_'+field_name]['data'][
                     np.unravel_index(
-                        sample, (target_radar.nrays, target_radar.ngates))] = nvals_valid
+                        sample,
+                        (target_radar.nrays, target_radar.ngates))] = (
+                            nvals_valid)
 
                 # quantile fields
                 for quant, val in zip(tadict['quantiles'], qvals):
                     if val is None:
                         continue
-                    target_radar.fields['quant'+'{:02d}'.format(int(100*quant))+'_'+field_name]['data'][
+                    quant_field = (
+                        'quant'+'{:02d}'.format(int(100*quant))+'_' +
+                        field_name)
+                    target_radar.fields[quant_field]['data'][
                         np.unravel_index(
-                            sample, (target_radar.nrays, target_radar.ngates))] = val
+                            sample,
+                            (target_radar.nrays, target_radar.ngates))] = val
 
     return target_radar
 

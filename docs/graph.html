@@ -157,10 +157,10 @@
 <tr class="row-even"><td><a class="reference internal" href="#pyrad.graph.plot_antenna_pattern" title="pyrad.graph.plot_antenna_pattern"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_antenna_pattern</span></code></a>(antpattern,&nbsp;fname_list)</td>
 <td>plots an antenna pattern</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.graph.plot_selfconsitency" title="pyrad.graph.plot_selfconsitency"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_selfconsitency</span></code></a>(zdrkdp_table,&nbsp;fname_list)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.graph.plot_selfconsistency" title="pyrad.graph.plot_selfconsistency"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_selfconsistency</span></code></a>(zdrkdp_table,&nbsp;fname_list)</td>
 <td>plots a ZDR-KDP/ZH selfconsistency in rain relation</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.graph.plot_selfconsitency_instrument" title="pyrad.graph.plot_selfconsitency_instrument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_selfconsitency_instrument</span></code></a>(zdr,&nbsp;kdp,&nbsp;zh,&nbsp;…)</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.graph.plot_selfconsistency_instrument" title="pyrad.graph.plot_selfconsistency_instrument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_selfconsistency_instrument</span></code></a>(zdr,&nbsp;kdp,&nbsp;…)</td>
 <td>plots the ZDR-KDP/ZH relationship obtained by an instrument.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#pyrad.graph.plot_timeseries" title="pyrad.graph.plot_timeseries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_timeseries</span></code></a>(tvec,&nbsp;data_list,&nbsp;fname_list)</td>
@@ -2426,8 +2426,8 @@ returns the handle to the figure</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.graph.plot_selfconsitency">
-<code class="descclassname">pyrad.graph.</code><code class="descname">plot_selfconsitency</code><span class="sig-paren">(</span><em>zdrkdp_table</em>, <em>fname_list</em>, <em>labelx='ZDR [dB]'</em>, <em>labely='KDP/Zh [(deg*m3)/(km*mm6)]'</em>, <em>title='Selfconsistency in rain'</em>, <em>ymin=None</em>, <em>ymax=None</em>, <em>dpi=72</em>, <em>save_fig=True</em>, <em>ax=None</em>, <em>fig=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots.html#plot_selfconsitency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_selfconsitency" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.graph.plot_selfconsistency">
+<code class="descclassname">pyrad.graph.</code><code class="descname">plot_selfconsistency</code><span class="sig-paren">(</span><em>zdrkdp_table</em>, <em>fname_list</em>, <em>labelx='ZDR [dB]'</em>, <em>labely='KDP/Zh [(deg*m3)/(km*mm6)]'</em>, <em>title='Selfconsistency in rain'</em>, <em>ymin=None</em>, <em>ymax=None</em>, <em>dpi=72</em>, <em>save_fig=True</em>, <em>ax=None</em>, <em>fig=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots.html#plot_selfconsistency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_selfconsistency" title="Permalink to this definition">¶</a></dt>
 <dd><p>plots a ZDR-KDP/ZH selfconsistency in rain relation</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2476,8 +2476,8 @@ returns the handle to the figure</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.graph.plot_selfconsitency_instrument">
-<code class="descclassname">pyrad.graph.</code><code class="descname">plot_selfconsitency_instrument</code><span class="sig-paren">(</span><em>zdr</em>, <em>kdp</em>, <em>zh</em>, <em>fname_list</em>, <em>bins_zdr_step=0.05</em>, <em>bins_zdr_min=0.0</em>, <em>bins_zdr_max=6.0</em>, <em>bins_kdpzh_step=0.1</em>, <em>bins_kdpzh_min=-2.0</em>, <em>bins_kdpzh_max=20.0</em>, <em>normalize=True</em>, <em>vmin=0.0</em>, <em>vmax=0.01</em>, <em>parametrization='None'</em>, <em>zdr_kdpzh_dict=None</em>, <em>retrieve_relation=True</em>, <em>plot_theoretical=True</em>, <em>dpi=72</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots.html#plot_selfconsitency_instrument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_selfconsitency_instrument" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrad.graph.plot_selfconsistency_instrument">
+<code class="descclassname">pyrad.graph.</code><code class="descname">plot_selfconsistency_instrument</code><span class="sig-paren">(</span><em>zdr</em>, <em>kdp</em>, <em>zh</em>, <em>fname_list</em>, <em>bins_zdr_step=0.05</em>, <em>bins_zdr_min=0.0</em>, <em>bins_zdr_max=6.0</em>, <em>bins_kdpzh_step=0.1</em>, <em>bins_kdpzh_min=-2.0</em>, <em>bins_kdpzh_max=20.0</em>, <em>normalize=True</em>, <em>vmin=0.0</em>, <em>vmax=0.01</em>, <em>parametrization='None'</em>, <em>zdr_kdpzh_dict=None</em>, <em>retrieve_relation=True</em>, <em>plot_theoretical=True</em>, <em>dpi=72</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots.html#plot_selfconsistency_instrument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_selfconsistency_instrument" title="Permalink to this definition">¶</a></dt>
 <dd><p>plots the ZDR-KDP/ZH relationship obtained by an instrument. The
 theoretical curve and the retrieved curve</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -2486,7 +2486,8 @@ theoretical curve and the retrieved curve</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
 <dt><strong>zdr, kdp, zh</strong> <span class="classifier-delimiter">:</span> <span class="classifier">1D ndarray</span></dt>
-<dd><p class="first last">The valid values of ZDR, KDP and Zh collected by the instrument</p>
+<dd><p class="first last">The valid values of ZDR [dB], KDP [deg/km] and Zh [mm6/m3] collected
+by the instrument</p>
 </dd>
 <dt><strong>fname_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
 <dd><p class="first last">list of names of the files where to store the plot</p>
@@ -2506,7 +2507,7 @@ theoretical curve and the retrieved curve</p>
 [(deg*m3)/(km*mm6)]</p>
 </dd>
 <dt><strong>normalize</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Bool</span></dt>
-<dd><p class="first last">If True the occurrence density of ZK/KDP for each ZDR bin is going to
+<dd><p class="first last">If True the occurrence density of ZH/KDP for each ZDR bin is going to
 be represented. Otherwise it will show the number of gates at each bin</p>
 </dd>
 <dt><strong>vmin, vmax</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>

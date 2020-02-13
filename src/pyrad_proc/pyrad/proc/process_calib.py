@@ -355,7 +355,8 @@ def process_gc_monitoring(procstatus, dscfg, radar_list=None):
         field[field < bin_centers[0]] = bin_centers[0]
         field[field > bin_centers[-1]] = bin_centers[-1]
 
-        field_dict['data'][0, :], bin_edges = np.histogram(field, bins=bin_edges)
+        field_dict['data'][0, :], bin_edges = np.histogram(
+            field, bins=bin_edges)
         radar_aux.add_field(field_name, field_dict)
         start_time = pyart.graph.common.generate_radar_time_begin(radar_aux)
 
@@ -1011,14 +1012,6 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
 
         datatype : list of string. Dataset keyword
             The input data types
-        rmin : float. Dataset keyword
-            minimum range where to look for a sun hit signal [m].
-            Default 50000.
-        hmin : float. Dataset keyword
-            minimum altitude where to look for a sun hit signal [m MSL].
-            Default 10000. The actual range from which a sun hit signal will
-            be search will be the minimum between rmin and the range from
-            which the altitude is higher than hmin.
         delev_max : float. Dataset keyword
             maximum elevation distance from nominal radar elevation where to
             look for a sun hit signal [deg]. Default 1.5
@@ -1028,14 +1021,39 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
         elmin : float. Dataset keyword
             minimum radar elevation where to look for sun hits [deg].
             Default 1.
-        nbins_min : int. Dataset keyword.
-            minimum number of range bins that have to contain signal to
-            consider the ray a potential sun hit. Default 10.
         attg : float. Dataset keyword
             gaseous attenuation. Default None
+        sun_position : string. Datset keyword
+            The function to compute the sun position to use. Can be 'MF' or
+            'pysolar'
+        sun_hit_method : str. Dataset keyword
+            Method used to estimate the power of the sun hit. Can be HS
+            (Hildebrand and Sekhon 1974) or Ivic (Ivic 2013)
+        rmin : float. Dataset keyword
+            minimum range where to look for a sun hit signal [m]. Used in HS
+            method. Default 50000.
+        hmin : float. Dataset keyword
+            minimum altitude where to look for a sun hit signal [m MSL].
+            Default 10000. The actual range from which a sun hit signal will
+            be search will be the minimum between rmin and the range from
+            which the altitude is higher than hmin. Used in HS method. Default
+            10000.
+        nbins_min : int. Dataset keyword.
+            minimum number of range bins that have to contain signal to
+            consider the ray a potential sun hit. Default 20 for HS and 8000
+            for Ivic.
+        npulses_ray : int
+            Default number of pulses used in the computation of the ray. If the
+            number of pulses is not in radar.instrument_parameters this will be
+            used instead. Used in Ivic method. Default 30
+        flat_reg_wlen : int
+            Length of the flat region window [m]. Used in Ivic method. Default
+            8000.
+        iterations: int
+            number of iterations in step 7 of Ivic method. Default 10.
         max_std_pwr : float. Dataset keyword
             maximum standard deviation of the signal power to consider the
-            data a sun hit [dB]. Default 2.
+            data a sun hit [dB]. Default 2. Used in HS method
         max_std_zdr : float. Dataset keyword
             maximum standard deviation of the ZDR to consider the
             data a sun hit [dB]. Default 2.
@@ -1203,22 +1221,42 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
         dscfg['global_data']['timeinfo'] = dscfg['timeinfo']
 
         # user values
-        rmin = dscfg.get('rmin', 50000.)
-        hmin = dscfg.get('hmin', 10000.)
         delev_max = dscfg.get('delev_max', 1.5)
         dazim_max = dscfg.get('dazim_max', 1.5)
         elmin = dscfg.get('elmin', 1.)
-        nbins_min = dscfg.get('nbins_min', 20)
         attg = dscfg.get('attg', None)
-        max_std_pwr = dscfg.get('max_std_pwr', 2.)
         max_std_zdr = dscfg.get('max_std_zdr', 2.)
+        sun_hit_method = dscfg.get('sun_hit_method', 'HS')
+        sun_position = dscfg.get('sun_position', 'MF')
 
-        sun_hits, new_radar = pyart.correct.get_sun_hits(
-            radar, delev_max=delev_max, dazim_max=dazim_max, elmin=elmin,
-            rmin=rmin, hmin=hmin, nbins_min=nbins_min,
-            max_std_pwr=max_std_pwr, max_std_zdr=max_std_zdr,
-            attg=attg, pwrh_field=pwrh_field, pwrv_field=pwrv_field,
-            zdr_field=zdr_field)
+        if sun_hit_method == 'HS':
+            rmin = dscfg.get('rmin', 50000.)
+            hmin = dscfg.get('hmin', 10000.)
+            nbins_min = dscfg.get('nbins_min', 20)
+            max_std_pwr = dscfg.get('max_std_pwr', 2.)
+
+            sun_hits, new_radar = pyart.correct.get_sun_hits(
+                radar, delev_max=delev_max, dazim_max=dazim_max, elmin=elmin,
+                rmin=rmin, hmin=hmin, nbins_min=nbins_min,
+                max_std_pwr=max_std_pwr, max_std_zdr=max_std_zdr,
+                attg=attg, sun_position=sun_position, pwrh_field=pwrh_field,
+                pwrv_field=pwrv_field, zdr_field=zdr_field)
+        else:
+            npulses_ray = dscfg.get('npulses_ray', 30)
+            flat_reg_wlen_rng = dscfg.get('flat_reg_wlen', 8000.)
+            nbins_min = dscfg.get('nbins_min', 800)
+            iterations = dscfg.get('iterations', 10)
+
+            r_res = radar.range['data'][1]-radar.range['data'][0]
+            flat_reg_wlen = int(flat_reg_wlen_rng/r_res)
+
+            sun_hits, new_radar = pyart.correct.get_sun_hits_ivic(
+                radar, delev_max=delev_max, dazim_max=dazim_max, elmin=elmin,
+                npulses_ray=npulses_ray, flat_reg_wlen=flat_reg_wlen,
+                nbins_min=nbins_min, iterations=iterations, attg=attg,
+                max_std_zdr=max_std_zdr, sun_position=sun_position,
+                pwrh_field=pwrh_field, pwrv_field=pwrv_field,
+                zdr_field=zdr_field)
 
         if sun_hits is None:
             return None, None

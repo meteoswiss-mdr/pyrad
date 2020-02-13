@@ -1,6 +1,13 @@
 :mod: `pyart.retrieve`
 ======================
 
+.. automodule:: pyart.retrieve.advection
+   :members:
+   :undoc-members:
+   :private-members:
+   :special-members:
+   :inherited-members:
+   :show-inheritance:
 .. automodule:: pyart.retrieve.echo_class
    :members:
    :undoc-members:
