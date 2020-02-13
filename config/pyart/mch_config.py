@@ -83,6 +83,9 @@ noisedBADU_vv = 'noisedBADU_vv'
 noiseADU_hh = 'noiseADU_hh'
 noiseADU_vv = 'noiseADU_vv'
 
+noise_pos_h = 'noise_pos_h'
+noise_pos_v = 'noise_pos_v'
+
 stat_test_lag1 = 'stat_test_lag1'
 stat_test_lag2 = 'stat_test_lag2'
 wide_band_noise = 'wide_band_noise'
@@ -551,6 +554,8 @@ DEFAULT_FIELD_NAMES = {
     'noisedBADU_vv': noisedBADU_vv,
     'noiseADU_hh': noiseADU_hh,
     'noiseADU_vv': noiseADU_vv,
+    'noise_pos_h': noise_pos_h,
+    'noise_pos_v': noise_pos_v,
     'transmitted_signal_power_h': transmitted_signal_power_h,
     'transmitted_signal_power_v': transmitted_signal_power_v,
     'complex_spectra_hh_ADU': complex_spectra_hh_ADU,
@@ -1727,6 +1732,32 @@ DEFAULT_METADATA = {
         'standard_name': 'noiseADU_vv',
         'long_name': 'noise in ADU vertical',
         'coordinates': 'elevation azimuth range'},
+
+    noise_pos_h: {
+        'units': '-',
+        'standard_name': 'noise_pos_h',
+        'long_name': 'noisy radar bins horizontal polarization',
+        'labels': ['OTHER', 'NOISE'],
+        'ticks': [1, 2],
+        'boundaries': [0.5, 1.5, 2.5],
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 1,
+        'add_offset': 0,
+        '_FillValue': 0,
+        '_Write_as_dtype': 'uint8'},
+
+    noise_pos_v: {
+        'units': '-',
+        'standard_name': 'noise_pos_v',
+        'long_name': 'noisy radar bins vertical polarization',
+        'labels': ['OTHER', 'NOISE'],
+        'ticks': [1, 2],
+        'boundaries': [0.5, 1.5, 2.5],
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 1,
+        'add_offset': 0,
+        '_FillValue': 0,
+        '_Write_as_dtype': 'uint8'},
 
     transmitted_signal_power_h: {
         'units': 'kW',
@@ -3360,6 +3391,8 @@ DEFAULT_FIELD_COLORMAP = {
     noisedBADU_vv: 'pyart_NWSRef',
     noiseADU_hh: 'pyart_NWSRef',
     noiseADU_vv: 'pyart_NWSRef',
+    noise_pos_h: 'pyart_LangRainbow12',
+    noise_pos_v: 'pyart_LangRainbow12',
 
     signal_to_noise_ratio: 'pyart_Carbone17',
     signal_to_noise_ratio_hh: 'pyart_Carbone17',

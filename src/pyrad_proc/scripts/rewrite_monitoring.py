@@ -84,6 +84,7 @@ def main():
                 basedir = 'rad4alp_dataquality_PL'+rad
                 dsdir = 'monitoring_Zh_bias'
                 mon_type = 'MONITORING'
+                mon_type = 'SELFCONSISTENCY_BIAS2'
                 quantiles = [25., 50., 75.]
 
             input_path = input_base+basedir+'/'+dsdir+'/VOL_TS/'

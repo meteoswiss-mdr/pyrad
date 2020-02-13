@@ -1088,6 +1088,10 @@ def get_fieldname_pyart(datatype):
         field_name = 'noiseADU_hh'
     elif datatype == 'NADUv':
         field_name = 'noiseADU_vv'
+    elif datatype == 'noise_pos_h':
+        field_name = 'noise_pos_h'
+    elif datatype == 'noise_pos_v':
+        field_name = 'noise_pos_v'
     elif datatype == 'WBN':
         field_name = 'wide_band_noise'
     elif datatype == 'WBNc':

@@ -13,7 +13,8 @@ Functions for retrieving new moments and products
     process_rcs
     process_vol_refl
     process_snr
-    process_radial_noise
+    process_radial_noise_hs
+    process_radial_noise_ivic
     process_l
     process_cdr
     process_rainrate
@@ -585,9 +586,10 @@ def process_snr(procstatus, dscfg, radar_list=None):
     return new_dataset, ind_rad
 
 
-def process_radial_noise(procstatus, dscfg, radar_list=None):
+def process_radial_noise_hs(procstatus, dscfg, radar_list=None):
     """
-    Computes the radial noise from the signal power
+    Computes the radial noise from the signal power using the
+    Hildebrand and Sekhon 1974 method
 
     Parameters
     ----------
@@ -606,6 +608,9 @@ def process_radial_noise(procstatus, dscfg, radar_list=None):
         max_std_pwr : float. Dataset keyword
             The maximum standard deviation of the noise power to consider the
             estimation valid
+        get_noise_pos : bool. Dataset keyword
+            If True a field flagging the position of the noisy gets will be
+            returned
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -638,11 +643,14 @@ def process_radial_noise(procstatus, dscfg, radar_list=None):
     rmin = dscfg.get('rmin', 10000.)
     nbins_min = dscfg.get('nbins_min', 50)
     max_std_pwr = dscfg.get('max_std_pwr', 2.)
+    get_noise_pos = dscfg.get('get_noise_pos', False)
 
     if 'hh' in pwr_field:
         noise_field = 'noisedBm_hh'
+        noise_pos_field = 'noise_pos_h'
     else:
         noise_field = 'noisedBm_vv'
+        noise_pos_field = 'noise_pos_v'
 
     ind_rmin = np.where(radar.range['data'] >= rmin)[0]
     if ind_rmin.size == 0:
@@ -650,14 +658,106 @@ def process_radial_noise(procstatus, dscfg, radar_list=None):
         return None, None
     ind_rmin = ind_rmin[0]
 
-    noise = pyart.retrieve.compute_radial_noise(
+    noise, noise_pos = pyart.retrieve.compute_radial_noise_hs(
         radar, ind_rmin=ind_rmin, nbins_min=nbins_min, max_std_pwr=max_std_pwr,
-        pwr_field=pwr_field, noise_field=noise_field)
+        pwr_field=pwr_field, noise_field=noise_field,
+        get_noise_pos=get_noise_pos)
 
     # prepare for exit
     new_dataset = {'radar_out': deepcopy(radar)}
     new_dataset['radar_out'].fields = dict()
     new_dataset['radar_out'].add_field(noise_field, noise)
+    if noise_pos is not None:
+        new_dataset['radar_out'].add_field(noise_pos_field, noise_pos)
+
+    return new_dataset, ind_rad
+
+
+def process_radial_noise_ivic(procstatus, dscfg, radar_list=None):
+    """
+    Computes the radial noise from the signal power using the
+    Ivic 2013 method
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : string. Dataset keyword
+            The input data type
+        npulses_ray : int
+            Default number of pulses used in the computation of the ray. If
+            the number of pulses is not in radar.instrument_parameters this
+            will be used instead. Default 30
+        flat_reg_wlen : int
+            range of window considered to find flat regions [m]. Default 8000.
+        ngates_min: int
+            minimum number of gates with noise to consider the retrieval
+            valid. Default 800
+        iterations: int
+            number of iterations in step 7. Default 10.
+        get_noise_pos : bool
+            If true an additional field with gates containing noise according
+            to the algorithm is produced
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the output
+    ind_rad : int
+        radar index
+
+    """
+
+    if procstatus != 1:
+        return None, None
+
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
+    pwr_field = get_fieldname_pyart(datatype)
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if pwr_field not in radar.fields:
+        warn('Unable to compute radial noise. Missing signal power')
+        return None, None
+
+    # user values
+    npulses_ray = dscfg.get('npulses_ray', 30)
+    flat_reg_wlen_rng = dscfg.get('flat_reg_wlen', 8000.)
+    ngates_min = dscfg.get('ngates_min', 800)
+    iterations = dscfg.get('iterations', 10)
+    get_noise_pos = dscfg.get('get_noise_pos', False)
+
+    r_res = radar.range['data'][1]-radar.range['data'][0]
+    flat_reg_wlen = int(flat_reg_wlen_rng/r_res)
+
+    if 'hh' in pwr_field:
+        noise_field = 'noisedBm_hh'
+        noise_pos_field = 'noise_pos_h'
+    else:
+        noise_field = 'noisedBm_vv'
+        noise_pos_field = 'noise_pos_v'
+
+    noise, noise_pos = pyart.retrieve.compute_radial_noise_ivic(
+        radar, npulses_ray=npulses_ray, flat_reg_wlen=flat_reg_wlen,
+        ngates_min=ngates_min, iterations=iterations, noise_field=noise_field,
+        get_noise_pos=get_noise_pos)
+
+    # prepare for exit
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field(noise_field, noise)
+    if noise_pos is not None:
+        new_dataset['radar_out'].add_field(noise_pos_field, noise_pos)
 
     return new_dataset, ind_rad
 
@@ -1119,7 +1219,8 @@ def process_rainfall_accumulation(procstatus, dscfg, radar_list=None):
         radar = radar_list[ind_rad]
 
         if field_name not in radar.fields:
-            warn('ERROR: Unable to compute rainfall accumulation. Missing data')
+            warn('ERROR: Unable to compute rainfall accumulation. '
+                 'Missing data')
             return None, None
 
         # Prepare auxiliary radar

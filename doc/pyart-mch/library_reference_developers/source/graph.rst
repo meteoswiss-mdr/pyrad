@@ -50,13 +50,6 @@
    :special-members:
    :inherited-members:
    :show-inheritance:
-.. automodule:: pyart.graph.radarmapdisplay_cartopy
-   :members:
-   :undoc-members:
-   :private-members:
-   :special-members:
-   :inherited-members:
-   :show-inheritance:
 .. automodule:: pyart.graph._cm
    :members:
    :undoc-members:
