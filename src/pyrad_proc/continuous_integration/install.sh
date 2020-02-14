@@ -33,12 +33,7 @@ source activate test-environment
 # pyrad optional dependencies:
 # - pandas shapely dask bokeh memory_profiler
 conda install -c https://conda.binstar.org/jjhelmus trmm_rsl
-if [[ "$PYTHON_VERSION" == "3.5" ]]; then
-    # There are problems with the geos library so do not install anything that uses it
-    conda install -c conda-forge numpy scipy matplotlib netcdf4 h5py pytest pandas dask bokeh memory_profiler
-else
-    conda install -c conda-forge numpy scipy matplotlib netcdf4 h5py pytest basemap cartopy gdal wradlib xmltodict pandas shapely dask bokeh memory_profiler imageio xarray scikit-learn
-fi
+conda install -c conda-forge numpy scipy matplotlib netcdf4 h5py pytest basemap cartopy gdal pyproj wradlib xmltodict pandas shapely dask bokeh memory_profiler imageio xarray scikit-learn pysolar 
 
 # export global variables
 export RSL_PATH="$HOME/miniconda/envs/test-environment"
