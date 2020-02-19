@@ -37,7 +37,7 @@ try:
     import h5py
     _H5PY_AVAILABLE = True
 except ImportError:
-    H5PY_AVAILABLE = False
+    _H5PY_AVAILABLE = False
 
 class MissingOptionalDependency(Exception):
     """ Exception raised when a optional dependency is needed but not found. """
