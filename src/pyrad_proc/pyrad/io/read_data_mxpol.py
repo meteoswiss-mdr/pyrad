@@ -32,8 +32,16 @@ from copy import deepcopy
 import warnings
 
 import numpy as np
-import h5py
 import netCDF4
+try:
+    import h5py
+    _H5PY_AVAILABLE = True
+except ImportError:
+    H5PY_AVAILABLE = False
+
+class MissingOptionalDependency(Exception):
+    """ Exception raised when a optional dependency is needed but not found. """
+    pass
 
 import pyart
 
@@ -173,7 +181,7 @@ class pyrad_MXPOL(pyart.core.Radar):
 
         time_units = 'seconds since ' + str(date)
         time_data = {'data': data['time'], 'units': time_units}
-        
+
         # change keys to match pyART metranet keys
         if pyrad_names:
             fields_copy = deepcopy(fields)
@@ -796,6 +804,10 @@ def readCHRadData(filename, radar_name, variableList, radial_resolution,
     varPol: dict
         the projected variables, the azimuth and the range
     """
+    # check that h5py library is available
+    if not _H5PY_AVAILABLE:
+        raise MissingOptionalDependency(
+            "h5py is required to use readCHRadData but is not installed")
 
     varPol = {}
     h5id = h5py.File(filename, 'r')
