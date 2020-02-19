@@ -411,7 +411,8 @@
         <span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">&lt;</span> <span class="n">bin_centers</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">bin_centers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">&gt;</span> <span class="n">bin_centers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">bin_centers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
-        <span class="n">field_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bin_edges</span><span class="p">)</span>
+        <span class="n">field_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span>
+            <span class="n">field</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bin_edges</span><span class="p">)</span>
         <span class="n">radar_aux</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">field_dict</span><span class="p">)</span>
         <span class="n">start_time</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">generate_radar_time_begin</span><span class="p">(</span><span class="n">radar_aux</span><span class="p">)</span>
 
@@ -1067,14 +1068,6 @@
 
 <span class="sd">        datatype : list of string. Dataset keyword</span>
 <span class="sd">            The input data types</span>
-<span class="sd">        rmin : float. Dataset keyword</span>
-<span class="sd">            minimum range where to look for a sun hit signal [m].</span>
-<span class="sd">            Default 50000.</span>
-<span class="sd">        hmin : float. Dataset keyword</span>
-<span class="sd">            minimum altitude where to look for a sun hit signal [m MSL].</span>
-<span class="sd">            Default 10000. The actual range from which a sun hit signal will</span>
-<span class="sd">            be search will be the minimum between rmin and the range from</span>
-<span class="sd">            which the altitude is higher than hmin.</span>
 <span class="sd">        delev_max : float. Dataset keyword</span>
 <span class="sd">            maximum elevation distance from nominal radar elevation where to</span>
 <span class="sd">            look for a sun hit signal [deg]. Default 1.5</span>
@@ -1084,14 +1077,39 @@
 <span class="sd">        elmin : float. Dataset keyword</span>
 <span class="sd">            minimum radar elevation where to look for sun hits [deg].</span>
 <span class="sd">            Default 1.</span>
-<span class="sd">        nbins_min : int. Dataset keyword.</span>
-<span class="sd">            minimum number of range bins that have to contain signal to</span>
-<span class="sd">            consider the ray a potential sun hit. Default 10.</span>
 <span class="sd">        attg : float. Dataset keyword</span>
 <span class="sd">            gaseous attenuation. Default None</span>
+<span class="sd">        sun_position : string. Datset keyword</span>
+<span class="sd">            The function to compute the sun position to use. Can be &#39;MF&#39; or</span>
+<span class="sd">            &#39;pysolar&#39;</span>
+<span class="sd">        sun_hit_method : str. Dataset keyword</span>
+<span class="sd">            Method used to estimate the power of the sun hit. Can be HS</span>
+<span class="sd">            (Hildebrand and Sekhon 1974) or Ivic (Ivic 2013)</span>
+<span class="sd">        rmin : float. Dataset keyword</span>
+<span class="sd">            minimum range where to look for a sun hit signal [m]. Used in HS</span>
+<span class="sd">            method. Default 50000.</span>
+<span class="sd">        hmin : float. Dataset keyword</span>
+<span class="sd">            minimum altitude where to look for a sun hit signal [m MSL].</span>
+<span class="sd">            Default 10000. The actual range from which a sun hit signal will</span>
+<span class="sd">            be search will be the minimum between rmin and the range from</span>
+<span class="sd">            which the altitude is higher than hmin. Used in HS method. Default</span>
+<span class="sd">            10000.</span>
+<span class="sd">        nbins_min : int. Dataset keyword.</span>
+<span class="sd">            minimum number of range bins that have to contain signal to</span>
+<span class="sd">            consider the ray a potential sun hit. Default 20 for HS and 8000</span>
+<span class="sd">            for Ivic.</span>
+<span class="sd">        npulses_ray : int</span>
+<span class="sd">            Default number of pulses used in the computation of the ray. If the</span>
+<span class="sd">            number of pulses is not in radar.instrument_parameters this will be</span>
+<span class="sd">            used instead. Used in Ivic method. Default 30</span>
+<span class="sd">        flat_reg_wlen : int</span>
+<span class="sd">            Length of the flat region window [m]. Used in Ivic method. Default</span>
+<span class="sd">            8000.</span>
+<span class="sd">        iterations: int</span>
+<span class="sd">            number of iterations in step 7 of Ivic method. Default 10.</span>
 <span class="sd">        max_std_pwr : float. Dataset keyword</span>
 <span class="sd">            maximum standard deviation of the signal power to consider the</span>
-<span class="sd">            data a sun hit [dB]. Default 2.</span>
+<span class="sd">            data a sun hit [dB]. Default 2. Used in HS method</span>
 <span class="sd">        max_std_zdr : float. Dataset keyword</span>
 <span class="sd">            maximum standard deviation of the ZDR to consider the</span>
 <span class="sd">            data a sun hit [dB]. Default 2.</span>
@@ -1259,22 +1277,42 @@
         <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;global_data&#39;</span><span class="p">][</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;timeinfo&#39;</span><span class="p">]</span>
 
         <span class="c1"># user values</span>
-        <span class="n">rmin</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rmin&#39;</span><span class="p">,</span> <span class="mf">50000.</span><span class="p">)</span>
-        <span class="n">hmin</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;hmin&#39;</span><span class="p">,</span> <span class="mf">10000.</span><span class="p">)</span>
         <span class="n">delev_max</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;delev_max&#39;</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">)</span>
         <span class="n">dazim_max</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dazim_max&#39;</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">)</span>
         <span class="n">elmin</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;elmin&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
-        <span class="n">nbins_min</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nbins_min&#39;</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
         <span class="n">attg</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attg&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">max_std_pwr</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;max_std_pwr&#39;</span><span class="p">,</span> <span class="mf">2.</span><span class="p">)</span>
         <span class="n">max_std_zdr</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;max_std_zdr&#39;</span><span class="p">,</span> <span class="mf">2.</span><span class="p">)</span>
+        <span class="n">sun_hit_method</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sun_hit_method&#39;</span><span class="p">,</span> <span class="s1">&#39;HS&#39;</span><span class="p">)</span>
+        <span class="n">sun_position</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sun_position&#39;</span><span class="p">,</span> <span class="s1">&#39;MF&#39;</span><span class="p">)</span>
 
-        <span class="n">sun_hits</span><span class="p">,</span> <span class="n">new_radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">correct</span><span class="o">.</span><span class="n">get_sun_hits</span><span class="p">(</span>
-            <span class="n">radar</span><span class="p">,</span> <span class="n">delev_max</span><span class="o">=</span><span class="n">delev_max</span><span class="p">,</span> <span class="n">dazim_max</span><span class="o">=</span><span class="n">dazim_max</span><span class="p">,</span> <span class="n">elmin</span><span class="o">=</span><span class="n">elmin</span><span class="p">,</span>
-            <span class="n">rmin</span><span class="o">=</span><span class="n">rmin</span><span class="p">,</span> <span class="n">hmin</span><span class="o">=</span><span class="n">hmin</span><span class="p">,</span> <span class="n">nbins_min</span><span class="o">=</span><span class="n">nbins_min</span><span class="p">,</span>
-            <span class="n">max_std_pwr</span><span class="o">=</span><span class="n">max_std_pwr</span><span class="p">,</span> <span class="n">max_std_zdr</span><span class="o">=</span><span class="n">max_std_zdr</span><span class="p">,</span>
-            <span class="n">attg</span><span class="o">=</span><span class="n">attg</span><span class="p">,</span> <span class="n">pwrh_field</span><span class="o">=</span><span class="n">pwrh_field</span><span class="p">,</span> <span class="n">pwrv_field</span><span class="o">=</span><span class="n">pwrv_field</span><span class="p">,</span>
-            <span class="n">zdr_field</span><span class="o">=</span><span class="n">zdr_field</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sun_hit_method</span> <span class="o">==</span> <span class="s1">&#39;HS&#39;</span><span class="p">:</span>
+            <span class="n">rmin</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rmin&#39;</span><span class="p">,</span> <span class="mf">50000.</span><span class="p">)</span>
+            <span class="n">hmin</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;hmin&#39;</span><span class="p">,</span> <span class="mf">10000.</span><span class="p">)</span>
+            <span class="n">nbins_min</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nbins_min&#39;</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+            <span class="n">max_std_pwr</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;max_std_pwr&#39;</span><span class="p">,</span> <span class="mf">2.</span><span class="p">)</span>
+
+            <span class="n">sun_hits</span><span class="p">,</span> <span class="n">new_radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">correct</span><span class="o">.</span><span class="n">get_sun_hits</span><span class="p">(</span>
+                <span class="n">radar</span><span class="p">,</span> <span class="n">delev_max</span><span class="o">=</span><span class="n">delev_max</span><span class="p">,</span> <span class="n">dazim_max</span><span class="o">=</span><span class="n">dazim_max</span><span class="p">,</span> <span class="n">elmin</span><span class="o">=</span><span class="n">elmin</span><span class="p">,</span>
+                <span class="n">rmin</span><span class="o">=</span><span class="n">rmin</span><span class="p">,</span> <span class="n">hmin</span><span class="o">=</span><span class="n">hmin</span><span class="p">,</span> <span class="n">nbins_min</span><span class="o">=</span><span class="n">nbins_min</span><span class="p">,</span>
+                <span class="n">max_std_pwr</span><span class="o">=</span><span class="n">max_std_pwr</span><span class="p">,</span> <span class="n">max_std_zdr</span><span class="o">=</span><span class="n">max_std_zdr</span><span class="p">,</span>
+                <span class="n">attg</span><span class="o">=</span><span class="n">attg</span><span class="p">,</span> <span class="n">sun_position</span><span class="o">=</span><span class="n">sun_position</span><span class="p">,</span> <span class="n">pwrh_field</span><span class="o">=</span><span class="n">pwrh_field</span><span class="p">,</span>
+                <span class="n">pwrv_field</span><span class="o">=</span><span class="n">pwrv_field</span><span class="p">,</span> <span class="n">zdr_field</span><span class="o">=</span><span class="n">zdr_field</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">npulses_ray</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;npulses_ray&#39;</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+            <span class="n">flat_reg_wlen_rng</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;flat_reg_wlen&#39;</span><span class="p">,</span> <span class="mf">8000.</span><span class="p">)</span>
+            <span class="n">nbins_min</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nbins_min&#39;</span><span class="p">,</span> <span class="mi">800</span><span class="p">)</span>
+            <span class="n">iterations</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;iterations&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+
+            <span class="n">r_res</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">flat_reg_wlen</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">flat_reg_wlen_rng</span><span class="o">/</span><span class="n">r_res</span><span class="p">)</span>
+
+            <span class="n">sun_hits</span><span class="p">,</span> <span class="n">new_radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">correct</span><span class="o">.</span><span class="n">get_sun_hits_ivic</span><span class="p">(</span>
+                <span class="n">radar</span><span class="p">,</span> <span class="n">delev_max</span><span class="o">=</span><span class="n">delev_max</span><span class="p">,</span> <span class="n">dazim_max</span><span class="o">=</span><span class="n">dazim_max</span><span class="p">,</span> <span class="n">elmin</span><span class="o">=</span><span class="n">elmin</span><span class="p">,</span>
+                <span class="n">npulses_ray</span><span class="o">=</span><span class="n">npulses_ray</span><span class="p">,</span> <span class="n">flat_reg_wlen</span><span class="o">=</span><span class="n">flat_reg_wlen</span><span class="p">,</span>
+                <span class="n">nbins_min</span><span class="o">=</span><span class="n">nbins_min</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="n">iterations</span><span class="p">,</span> <span class="n">attg</span><span class="o">=</span><span class="n">attg</span><span class="p">,</span>
+                <span class="n">max_std_zdr</span><span class="o">=</span><span class="n">max_std_zdr</span><span class="p">,</span> <span class="n">sun_position</span><span class="o">=</span><span class="n">sun_position</span><span class="p">,</span>
+                <span class="n">pwrh_field</span><span class="o">=</span><span class="n">pwrh_field</span><span class="p">,</span> <span class="n">pwrv_field</span><span class="o">=</span><span class="n">pwrv_field</span><span class="p">,</span>
+                <span class="n">zdr_field</span><span class="o">=</span><span class="n">zdr_field</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">sun_hits</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
