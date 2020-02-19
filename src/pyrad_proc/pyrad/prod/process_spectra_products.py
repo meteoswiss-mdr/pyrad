@@ -16,6 +16,9 @@ from copy import deepcopy
 
 import numpy as np
 
+import pyart
+from pyart.util import datetime_from_radar
+
 from ..io.io_aux import get_fieldname_pyart
 from ..io.io_aux import get_save_dir, make_filename
 
@@ -30,9 +33,6 @@ from ..graph.plots_spectra import plot_complex_angle_Doppler
 from ..graph.plots_spectra import plot_amp_phase_angle_Doppler
 
 from ..util.radar_utils import find_ray_index, find_rng_index
-
-from pyart.util import datetime_from_radar
-from pyart.aux_io import write_spectra
 
 
 def generate_spectra_products(dataset, prdcfg):
@@ -1106,7 +1106,7 @@ def generate_spectra_products(dataset, prdcfg):
 
         fname = savedir+fname
 
-        write_spectra(fname, new_dataset, physical=physical)
+        pyart.aux_io.write_spectra(fname, new_dataset, physical=physical)
 
         print('saved file: '+fname)
 
@@ -1145,7 +1145,7 @@ def generate_spectra_products(dataset, prdcfg):
                         dataset['radar_out'].fields[field_name])
         else:
             radar_aux = dataset['radar_out']
-        write_spectra(fname, radar_aux, physical=physical)
+        pyart.aux_io.write_spectra(fname, radar_aux, physical=physical)
 
         print('saved file: '+fname)
 

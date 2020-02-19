@@ -21,15 +21,14 @@ import numpy as np
 from scipy.interpolate import NearestNDInterpolator
 from scipy.spatial import cKDTree
 
+import pyart
 from pyart.config import get_metadata, get_field_name
-from pyart.aux_io import read_product_c
-from pyart.aux_io import get_library
 
 # check existence of METRANET library
 try:
-    METRANET_LIB = get_library(momentms=False)
+    METRANET_LIB = pyart.aux_io.get_library(momentms=False)
     if platform.system() == 'Linux':
-        METRANET_LIB = get_library(momentms=True)
+        METRANET_LIB = pyart.aux_io.get_library(momentms=True)
     _METRANETLIB_AVAILABLE = True
 except SystemExit:
     _METRANETLIB_AVAILABLE = False
@@ -188,13 +187,16 @@ def read_hzt_data(fname, chy0=255., chx0=-160., read_lib='C'):
 
     """
     if read_lib == 'C' and _METRANETLIB_AVAILABLE:
-        ret = read_product_c(fname, physic_value=True, masked_array=True)
+        ret = pyart.aux_io.read_product_c(
+            fname, physic_value=True, masked_array=True)
     elif read_lib == 'python':
-        ret = read_product_py(fname, physic_value=True, masked_array=True)
+        ret = pyart.aux_io.read_product_py(
+            fname, physic_value=True, masked_array=True)
     else:
         warn('METRANET C-library reader not available or unknown ' +
              'library type. Python library will be used')
-        ret = read_product_py(fname, physic_value=True, masked_array=True)
+        ret = pyart.aux_io.read_product_py(
+            fname, physic_value=True, masked_array=True)
 
     if ret is None:
         warn('Unable to read HZT file '+fname)

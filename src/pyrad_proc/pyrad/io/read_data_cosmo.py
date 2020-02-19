@@ -25,7 +25,7 @@ from scipy.interpolate import NearestNDInterpolator
 from scipy.spatial import cKDTree
 import netCDF4
 
-from pyart.core import wgs84_to_swissCH1903
+import pyart
 from pyart.config import get_metadata, get_field_name
 
 from ..io.io_aux import get_fieldname_cosmo
@@ -505,7 +505,7 @@ def _put_radar_in_swiss_coord(radar):
         arrays containing swiss coordinates of the radar [in m]
 
     """
-    x0, y0, _ = wgs84_to_swissCH1903(
+    x0, y0, _ = pyart.core.wgs84_to_swissCH1903(
         radar.longitude['data'][0], radar.latitude['data'][0],
         radar.altitude['data'][0], no_altitude_transform=True)
 

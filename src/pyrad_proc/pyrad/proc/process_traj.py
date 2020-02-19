@@ -31,9 +31,9 @@ from copy import deepcopy
 import numpy as np
 from netCDF4 import num2date, date2num
 
+import pyart
 from pyart.config import get_metadata
 from pyart.core import Radar
-from pyart.util import colocated_gates, intersection
 
 from ..io.io_aux import get_datatype_fields, get_fieldname_pyart
 from ..io.io_aux import get_field_unit, get_field_name
@@ -1702,7 +1702,7 @@ def _get_gates_antenna_pattern(radar_sel, target_radar, az, rr, tt,
     r_radar.fields['colocated_gates']['data'][r_ind_invalid] = 1
 
     # flag regions with colocated usable data in radar_sel
-    gate_coloc_radar_sel = intersection(
+    gate_coloc_radar_sel = pyart.util.intersection(
         radar_sel, r_radar, h_tol=alt_tol, latlon_tol=latlon_tol,
         vol_d_tol=None, vismin=None, hmin=None, hmax=max_altitude,
         rmin=None, rmax=None, elmin=None, elmax=None, azmin=None,
@@ -1711,7 +1711,7 @@ def _get_gates_antenna_pattern(radar_sel, target_radar, az, rr, tt,
     radar_sel.add_field(
         'colocated_gates', gate_coloc_radar_sel, replace_existing=True)
 
-    (colgates, r_radar_colg) = colocated_gates(
+    (colgates, r_radar_colg) = pyart.util.colocated_gates(
         r_radar, radar_sel, h_tol=alt_tol, latlon_tol=latlon_tol)
     w_ind = np.where(r_radar_colg['data'] > 1)[0]
 
