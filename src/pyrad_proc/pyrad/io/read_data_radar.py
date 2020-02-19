@@ -66,7 +66,7 @@ try:
     if platform.system() == 'Linux':
         METRANET_LIB = pyart.aux_io.get_library(momentms=True)
     _METRANETLIB_AVAILABLE = True
-except SystemExit, AttributeError:
+except (SystemExit, AttributeError):
     _METRANETLIB_AVAILABLE = False
 
 from .read_data_other import read_status, read_rad4alp_cosmo, read_rad4alp_vis
