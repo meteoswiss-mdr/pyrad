@@ -38,7 +38,7 @@ Operating System :: POSIX :: Linux
 """
 
 
-NAME = 'mch_pyrad'
+NAME = 'pyrad_mch'
 MAINTAINER = "MeteoSwiss Pyrad Developers"
 MAINTAINER_EMAIL = "jordi.figuerasiventura@meteoswiss.ch"
 DESCRIPTION = DOCLINES[0]
