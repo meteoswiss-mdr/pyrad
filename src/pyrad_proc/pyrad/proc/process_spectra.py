@@ -177,6 +177,11 @@ def process_spectra_point(procstatus, dscfg, radar_list=None):
 
         datatype : string. Dataset keyword
             The data type where we want to extract the point measurement
+        single_point : boolean. Dataset keyword
+            if True only one gate per radar volume is going to be kept.
+            Otherwise all gates within the azimuth and elevation tolerance
+            are going to be kept. This is useful to extract all data from
+            fixed pointing scans. Default True
         latlon : boolean. Dataset keyword
             if True position is obtained from latitude, longitude information,
             otherwise position is obtained from antenna coordinates
@@ -258,6 +263,7 @@ def process_spectra_point(procstatus, dscfg, radar_list=None):
     truealt = dscfg.get('truealt', True)
     latlon = dscfg.get('latlon', False)
 
+    single_point = dscfg.get('single_point', True)
     if latlon:
         lon = dscfg['lon']
         lat = dscfg['lat']
@@ -299,36 +305,46 @@ def process_spectra_point(procstatus, dscfg, radar_list=None):
         lon = lon[0]
         lat = lat[0]
 
-    d_az = np.min(np.abs(psr.azimuth['data'] - az))
-    if d_az > azi_tol:
+    d_az = np.abs(psr.azimuth['data'] - az)
+    if np.min(d_az) > azi_tol:
         warn(' No psr bin found for point (az, el, r):(' +
              str(az)+', '+str(el)+', '+str(r) +
              '). Minimum distance to psr azimuth '+str(d_az) +
              ' larger than tolerance')
         return None, None
 
-    d_el = np.min(np.abs(psr.elevation['data'] - el))
-    if d_el > ele_tol:
+    d_el = np.abs(psr.elevation['data'] - el)
+    if np.min(d_el) > ele_tol:
         warn(' No psr bin found for point (az, el, r):(' +
              str(az)+', '+str(el)+', '+str(r) +
              '). Minimum distance to psr elevation '+str(d_el) +
              ' larger than tolerance')
         return None, None
 
-    d_r = np.min(np.abs(psr.range['data'] - r))
-    if d_r > rng_tol:
+    d_r = np.abs(psr.range['data'] - r)
+    if np.min(d_r) > rng_tol:
         warn(' No psr bin found for point (az, el, r):(' +
              str(az)+', '+str(el)+', '+str(r) +
              '). Minimum distance to psr range bin '+str(d_r) +
              ' larger than tolerance')
         return None, None
 
-    ind_ray = np.argmin(np.abs(psr.azimuth['data'] - az) +
-                        np.abs(psr.elevation['data'] - el))
+    if single_point:
+        ind_ray = np.argmin(np.abs(psr.azimuth['data'] - az) +
+                            np.abs(psr.elevation['data'] - el))
+    else:
+        ind_ray = np.where(np.logical_and(
+            d_az <= azi_tol, d_el <= ele_tol))[0]
     ind_rng = np.argmin(np.abs(psr.range['data'] - r))
+    nrays = ind_ray.size
 
     time_poi = num2date(psr.time['data'][ind_ray], psr.time['units'],
                         psr.time['calendar'])
+    if nrays > 1:
+        time_ref = time_poi[0]
+    else:
+        time_ref = time_poi
+        time_poi = np.array([time_poi])
 
     # initialize dataset
     if not dscfg['initialized']:
@@ -344,7 +360,7 @@ def process_spectra_point(procstatus, dscfg, radar_list=None):
         psr_poi.range['data'] = np.array([r])
         psr_poi.ngates = 1
 
-        psr_poi.time['units'] = pyart.io.make_time_unit_str(time_poi)
+        psr_poi.time['units'] = pyart.io.make_time_unit_str(time_ref)
         psr_poi.time['data'] = np.array([])
         psr_poi.scan_type = 'poi_time_series'
         psr_poi.sweep_number['data'] = np.array([], dtype=np.int32)
@@ -375,15 +391,18 @@ def process_spectra_point(procstatus, dscfg, radar_list=None):
         dscfg['initialized'] = 1
 
     psr_poi = dscfg['global_data']['psr_poi']
+    psr_poi.sweep_end_ray_index['data'][0] += nrays
+    psr_poi.rays_per_sweep['data'][0] += nrays
+    psr_poi.nrays += nrays
+    psr_poi.azimuth['data'] = np.append(
+        psr_poi.azimuth['data'], np.zeros(nrays)+az)
+    psr_poi.elevation['data'] = np.append(
+        psr_poi.elevation['data'], np.zeros(nrays)+el)
     start_time = num2date(
         0, psr_poi.time['units'], psr_poi.time['calendar'])
-    psr_poi.time['data'] = np.append(
-        psr_poi.time['data'], (time_poi - start_time).total_seconds())
-    psr_poi.sweep_end_ray_index['data'][0] += 1
-    psr_poi.rays_per_sweep['data'][0] += 1
-    psr_poi.nrays += 1
-    psr_poi.azimuth['data'] = np.append(psr_poi.azimuth['data'], az)
-    psr_poi.elevation['data'] = np.append(psr_poi.elevation['data'], el)
+    for i in range(nrays):
+        psr_poi.time['data'] = np.append(
+            psr_poi.time['data'], (time_poi[i] - start_time).total_seconds())
 
     psr_poi.gate_longitude['data'] = (
         np.ones((psr_poi.nrays, psr_poi.ngates), dtype='float64')*lon)
@@ -396,31 +415,34 @@ def process_spectra_point(procstatus, dscfg, radar_list=None):
         dtype = psr.fields[field_name]['data'].dtype
         if field_name not in psr.fields:
             warn('Field '+field_name+' not in psr object')
-            poi_data = np.ma.masked_all((1, 1, psr.npulses_max), dtype=dtype)
+            poi_data = np.ma.masked_all(
+                (nrays, 1, psr.npulses_max), dtype=dtype)
         else:
             poi_data = psr.fields[field_name]['data'][ind_ray, ind_rng, :]
-            poi_data = poi_data.reshape(1, 1, psr.npulses_max)
+            poi_data = poi_data.reshape(nrays, 1, psr.npulses_max)
 
         # Put data in radar object
         if np.size(psr_poi.fields[field_name]['data']) == 0:
             psr_poi.fields[field_name]['data'] = poi_data.reshape(
-                1, 1, psr_poi.npulses_max)
+                nrays, 1, psr_poi.npulses_max)
         else:
             if psr_poi.npulses_max == psr.npulses_max:
                 psr_poi.fields[field_name]['data'] = np.ma.append(
                     psr_poi.fields[field_name]['data'], poi_data, axis=0)
             elif psr.npulses_max < psr_poi.npulses_max:
                 poi_data_aux = np.ma.masked_all(
-                    (1, 1, psr_poi.npulses_max), dtype=dtype)
-                poi_data_aux[0, 0, 0:psr.npulses_max] = poi_data
+                    (nrays, 1, psr_poi.npulses_max), dtype=dtype)
+                for i in range(nrays):
+                    poi_data_aux[i, 0, 0:psr.npulses_max] = poi_data[i, 0, :]
                 psr_poi.fields[field_name]['data'] = np.ma.append(
                     psr_poi.fields[field_name]['data'], poi_data_aux, axis=0)
             else:
                 poi_data_aux = np.ma.masked_all(
                     (psr_poi.nrays, 1, psr.npulses_max), dtype=dtype)
-                poi_data_aux[0:psr_poi.nrays-1, :, 0:psr_poi.npulses_max] = (
+                poi_data_aux[
+                    :psr_poi.nrays-nrays, :, 0:psr_poi.npulses_max] = (
                     psr_poi.fields[field_name]['data'])
-                poi_data_aux[psr_poi.nrays-1, :, :] = poi_data
+                poi_data_aux[psr_poi.nrays-nrays:, :, :] = poi_data
                 psr_poi.fields[field_name]['data'] = poi_data_aux
 
     psr_poi.npulses['data'] = np.append(
@@ -429,52 +451,54 @@ def process_spectra_point(procstatus, dscfg, radar_list=None):
         if np.size(psr_poi.Doppler_velocity['data']) == 0:
             psr_poi.Doppler_velocity['data'] = (
                 psr.Doppler_velocity['data'][ind_ray, :].reshape(
-                    1, psr_poi.npulses_max))
+                    nrays, psr_poi.npulses_max))
         else:
             Doppler_data = psr.Doppler_velocity['data'][ind_ray, :]
-            Doppler_data = Doppler_data.reshape(1, psr.npulses_max)
+            Doppler_data = Doppler_data.reshape(nrays, psr.npulses_max)
 
             if psr_poi.npulses_max == psr.npulses_max:
                 psr_poi.Doppler_velocity['data'] = np.ma.append(
                     psr_poi.Doppler_velocity['data'],
                     Doppler_data, axis=0)
             elif psr.npulses_max < psr_poi.npulses_max:
-                Doppler_aux = np.ma.masked_all((1, psr_poi.npulses_max))
-                Doppler_aux[0, 0:psr.npulses_max] = Doppler_data
+                Doppler_aux = np.ma.masked_all((nrays, psr_poi.npulses_max))
+                for i in range(nrays):
+                    Doppler_aux[i, 0:psr.npulses_max] = Doppler_data[i, :]
                 psr_poi.Doppler_velocity['data'] = np.ma.append(
                     psr_poi.Doppler_velocity['data'], Doppler_aux, axis=0)
             else:
                 Doppler_aux = np.ma.masked_all(
                     (psr_poi.nrays, psr.npulses_max))
-                Doppler_aux[0:psr_poi.nrays-1, 0:psr_poi.npulses_max] = (
+                Doppler_aux[:psr_poi.nrays-nrays, 0:psr_poi.npulses_max] = (
                     psr_poi.Doppler_velocity['data'])
-                Doppler_aux[psr_poi.nrays-1, :] = Doppler_data
+                Doppler_aux[psr_poi.nrays-nrays:, :] = Doppler_data
                 psr_poi.Doppler_velocity['data'] = Doppler_aux
 
     if psr_poi.Doppler_frequency is not None:
         if np.size(psr_poi.Doppler_frequency['data']) == 0:
             psr_poi.Doppler_frequency['data'] = (
                 psr.Doppler_frequency['data'][ind_ray, :].reshape(
-                    1, psr_poi.npulses_max))
+                    nrays, psr_poi.npulses_max))
         else:
             Doppler_data = psr.Doppler_frequency['data'][ind_ray, :]
-            Doppler_data = Doppler_data.reshape(1, psr.npulses_max)
+            Doppler_data = Doppler_data.reshape(nrays, psr.npulses_max)
 
             if psr_poi.npulses_max == psr.npulses_max:
                 psr_poi.Doppler_frequency['data'] = np.ma.append(
                     psr_poi.Doppler_frequency['data'],
                     Doppler_data, axis=0)
             elif psr.npulses_max < psr_poi.npulses_max:
-                Doppler_aux = np.ma.masked_all((1, psr_poi.npulses_max))
-                Doppler_aux[0, 0:psr.npulses_max] = Doppler_data
+                Doppler_aux = np.ma.masked_all((nrays, psr_poi.npulses_max))
+                for i in range(nrays):
+                    Doppler_aux[i, 0:psr.npulses_max] = Doppler_data[i, :]
                 psr_poi.Doppler_frequency['data'] = np.ma.append(
                     psr_poi.Doppler_frequency['data'], Doppler_aux, axis=0)
             else:
                 Doppler_aux = np.ma.masked_all(
                     (psr_poi.nrays, psr.npulses_max))
-                Doppler_aux[0:psr_poi.nrays-1, 0:psr_poi.npulses_max] = (
+                Doppler_aux[0:psr_poi.nrays-nrays, 0:psr_poi.npulses_max] = (
                     psr_poi.Doppler_frequency['data'])
-                Doppler_aux[psr_poi.nrays-1, :] = Doppler_data
+                Doppler_aux[psr_poi.nrays-nrays:, :] = Doppler_data
                 psr_poi.Doppler_frequency['data'] = Doppler_aux
 
     psr_poi.npulses_max = max(psr_poi.npulses_max, psr.npulses_max)

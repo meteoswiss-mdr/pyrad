@@ -40,6 +40,11 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
 
         datatype : string. Dataset keyword
             The data type where we want to extract the point measurement
+        single_point : boolean. Dataset keyword
+            if True only one gate per radar volume is going to be kept.
+            Otherwise all gates within the azimuth and elevation tolerance
+            are going to be kept. This is useful to extract all data from
+            fixed pointing scans. Default True
         latlon : boolean. Dataset keyword
             if True position is obtained from latitude, longitude information,
             otherwise position is obtained from antenna coordinates
@@ -96,6 +101,7 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
         # prepare for exit
         new_dataset = {
             'time': dscfg['global_data']['time'],
+            'ref_time': dscfg['global_data']['ref_time'],
             'datatype': datatype,
             'point_coordinates_WGS84_lon_lat_alt': (
                 dscfg['global_data']['point_coordinates_WGS84_lon_lat_alt']),
@@ -120,6 +126,7 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
     projparams.update({'lon_0': radar.longitude['data']})
     projparams.update({'lat_0': radar.latitude['data']})
 
+    single_point = dscfg.get('single_point', True)
     if dscfg['latlon']:
         lon = dscfg['lon']
         lat = dscfg['lat']
@@ -155,33 +162,42 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
         lon = lon[0]
         lat = lat[0]
 
-    d_az = np.min(np.abs(radar.azimuth['data'] - az))
-    if d_az > dscfg['AziTol']:
+    d_az = np.abs(radar.azimuth['data'] - az)
+    if np.min(d_az) > dscfg['AziTol']:
         warn(' No radar bin found for point (az, el, r):(' +
              str(az)+', '+str(el)+', '+str(r) +
              '). Minimum distance to radar azimuth '+str(d_az) +
              ' larger than tolerance')
         return None, None
 
-    d_el = np.min(np.abs(radar.elevation['data'] - el))
-    if d_el > dscfg['EleTol']:
+    d_el = np.abs(radar.elevation['data'] - el)
+    if np.min(d_el) > dscfg['EleTol']:
         warn(' No radar bin found for point (az, el, r):(' +
              str(az)+', '+str(el)+', '+str(r) +
              '). Minimum distance to radar elevation '+str(d_el) +
              ' larger than tolerance')
         return None, None
 
-    d_r = np.min(np.abs(radar.range['data'] - r))
-    if d_r > dscfg['RngTol']:
+    d_r = np.abs(radar.range['data'] - r)
+    if np.min(d_r) > dscfg['RngTol']:
         warn(' No radar bin found for point (az, el, r):(' +
              str(az)+', '+str(el)+', '+str(r) +
              '). Minimum distance to radar range bin '+str(d_r) +
              ' larger than tolerance')
         return None, None
 
-    ind_ray = np.argmin(np.abs(radar.azimuth['data'] - az) +
-                        np.abs(radar.elevation['data'] - el))
+    if single_point:
+        ind_ray = np.argmin(np.abs(radar.azimuth['data'] - az) +
+                            np.abs(radar.elevation['data'] - el))
+    else:
+        ind_ray = np.where(np.logical_and(
+            d_az <= dscfg['AziTol'], d_el <= dscfg['EleTol']))[0]
     ind_r = np.argmin(np.abs(radar.range['data'] - r))
+
+    ant_coord = np.empty((3, ind_ray.size), np.float32)
+    ant_coord[0, :] = radar.azimuth['data'][ind_ray]
+    ant_coord[1, :] = radar.elevation['data'][ind_ray]
+    ant_coord[2, :] = np.zeros(ind_ray.size)+radar.range['data'][ind_r]
 
     val = radar.fields[field_name]['data'].data[ind_ray, ind_r]
     time = num2date(radar.time['data'][ind_ray], radar.time['units'],
@@ -192,23 +208,23 @@ def process_point_measurement(procstatus, dscfg, radar_list=None):
         poi = {
             'point_coordinates_WGS84_lon_lat_alt': [lon, lat, alt],
             'antenna_coordinates_az_el_r': [az, el, r],
-            'time': time}
+            'time': time,
+            'ref_time': dscfg['timeinfo']}
         dscfg['global_data'] = poi
         dscfg['initialized'] = 1
+
+    dscfg['global_data']['ref_time'] = dscfg['timeinfo']
 
     # prepare for exit
     new_dataset = dict()
     new_dataset.update({'value': val})
     new_dataset.update({'datatype': datatype})
     new_dataset.update({'time': time})
+    new_dataset.update({'ref_time': dscfg['timeinfo']})
     new_dataset.update(
         {'point_coordinates_WGS84_lon_lat_alt': [lon, lat, alt]})
     new_dataset.update({'antenna_coordinates_az_el_r': [az, el, r]})
-    new_dataset.update(
-        {'used_antenna_coordinates_az_el_r': [
-            radar.azimuth['data'][ind_ray],
-            radar.elevation['data'][ind_ray],
-            radar.range['data'][ind_r]]})
+    new_dataset.update({'used_antenna_coordinates_az_el_r': ant_coord})
     new_dataset.update({'final': False})
 
     return new_dataset, ind_rad
@@ -563,8 +579,8 @@ def process_evp(procstatus, dscfg, radar_list=None):
     Reference
     ---------
     Kaltenboeck R., Ryzhkov A. 2016: A freezing rain storm explored with a
-    C-band polarimetric weather radar using the QVP methodology. Meteorologische
-    Zeitschrift vol. 26 pp 207-222
+    C-band polarimetric weather radar using the QVP methodology.
+    Meteorologische Zeitschrift vol. 26 pp 207-222
 
     """
     if procstatus == 0:
@@ -962,8 +978,8 @@ def process_ts_along_coord(procstatus, dscfg, radar_list=None):
             ALONG_RNG
         fixed_range, fixed_azimuth, fixed_elevation : float
             The fixed range [m], azimuth [deg] or elevation [deg] to extract.
-            In each mode two of these parameters have to be defined. If they are
-            not defined they default to 0.
+            In each mode two of these parameters have to be defined. If they
+            are not defined they default to 0.
         ang_tol, rng_tol : float
             The angle tolerance [deg] and range tolerance [m] around the fixed
             range or azimuth/elevation
