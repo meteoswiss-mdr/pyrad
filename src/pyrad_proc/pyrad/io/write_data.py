@@ -57,7 +57,6 @@ from pyart.config import get_fillvalue
 from .io_aux import generate_field_name_str
 
 
-
 def write_proc_periods(start_times, end_times, fname):
     """
     writes an output file containing start and stop times of periods to
@@ -1151,8 +1150,13 @@ def write_ts_polar_data(dataset, fname):
 
     """
     filelist = glob.glob(fname)
+    nsamples = len(dataset['used_antenna_coordinates_az_el_r'][0])
     if not filelist:
         with open(fname, 'w', newline='') as csvfile:
+            if nsamples > 1:
+                start_time = dataset['time'][0]
+            else:
+                start_time = dataset['time']
             csvfile.write('# Weather radar timeseries data file\n')
             csvfile.write('# Comment lines are preceded by "#"\n')
             csvfile.write('# Description: \n')
@@ -1169,29 +1173,54 @@ def write_ts_polar_data(dataset, fname):
             csvfile.write('# Fill Value: '+str(get_fillvalue())+'\n')
             csvfile.write(
                 '# Start: ' +
-                dataset['time'].strftime('%Y-%m-%d %H:%M:%S UTC')+'\n')
+                start_time.strftime('%Y-%m-%d %H:%M:%S UTC')+'\n')
             csvfile.write('#\n')
 
             fieldnames = ['date', 'az', 'el', 'r', 'value']
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
-            writer.writerow(
-                {'date': dataset['time'],
-                 'az': dataset['used_antenna_coordinates_az_el_r'][0],
-                 'el': dataset['used_antenna_coordinates_az_el_r'][1],
-                 'r': dataset['used_antenna_coordinates_az_el_r'][2],
-                 'value': dataset['value']})
+
+            if nsamples == 1:
+                writer.writerow({
+                    'date': dataset['time'],
+                    'az': dataset['used_antenna_coordinates_az_el_r'][0][0],
+                    'el': dataset['used_antenna_coordinates_az_el_r'][1][0],
+                    'r': dataset['used_antenna_coordinates_az_el_r'][2][0],
+                    'value': dataset['value']})
+            else:
+                for i in range(nsamples):
+                    writer.writerow({
+                        'date': dataset['time'][i],
+                        'az':
+                            dataset['used_antenna_coordinates_az_el_r'][0][i],
+                        'el':
+                            dataset['used_antenna_coordinates_az_el_r'][1][i],
+                        'r':
+                            dataset['used_antenna_coordinates_az_el_r'][2][i],
+                        'value': dataset['value'][i]})
             csvfile.close()
     else:
         with open(fname, 'a', newline='') as csvfile:
             fieldnames = ['date', 'az', 'el', 'r', 'value']
             writer = csv.DictWriter(csvfile, fieldnames)
-            writer.writerow(
-                {'date': dataset['time'],
-                 'az': dataset['used_antenna_coordinates_az_el_r'][0],
-                 'el': dataset['used_antenna_coordinates_az_el_r'][1],
-                 'r': dataset['used_antenna_coordinates_az_el_r'][2],
-                 'value': dataset['value']})
+            if nsamples == 1:
+                writer.writerow({
+                    'date': dataset['time'],
+                    'az': dataset['used_antenna_coordinates_az_el_r'][0][0],
+                    'el': dataset['used_antenna_coordinates_az_el_r'][1][0],
+                    'r': dataset['used_antenna_coordinates_az_el_r'][2][0],
+                    'value': dataset['value']})
+            else:
+                for i in range(nsamples):
+                    writer.writerow({
+                        'date': dataset['time'][i],
+                        'az':
+                            dataset['used_antenna_coordinates_az_el_r'][0][i],
+                        'el':
+                            dataset['used_antenna_coordinates_az_el_r'][1][i],
+                        'r':
+                            dataset['used_antenna_coordinates_az_el_r'][2][i],
+                        'value': dataset['value'][i]})
             csvfile.close()
 
     return fname

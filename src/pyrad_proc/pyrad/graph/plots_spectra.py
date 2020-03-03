@@ -297,7 +297,8 @@ def plot_angle_Doppler(spectra, field_name, ang, ind_rays, ind_rng, prdcfg,
 
 def plot_time_Doppler(spectra, field_name, prdcfg, fname_list,
                       xaxis_info='Doppler_velocity', yaxis_pos='start',
-                      titl=None, clabel=None, vmin=None, vmax=None):
+                      titl=None, clabel=None, vmin=None, vmax=None, xmin=None,
+                      xmax=None, ymin=None, ymax=None):
     """
     Makes a time-Doppler plot
 
@@ -323,6 +324,8 @@ def plot_time_Doppler(spectra, field_name, prdcfg, fname_list,
         The color bar label
     vmin, vmax : float or None
         The value limits
+    xmin, xmax, ymin, ymax : float or None
+        The axis limits
 
     Returns
     -------
@@ -393,6 +396,8 @@ def plot_time_Doppler(spectra, field_name, prdcfg, fname_list,
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_title(titl)
+    ax.set_xlim(xmin, xmax)
+    ax.set_ylim(ymin, ymax)
 
     cb = fig.colorbar(cax)
     if ticks is not None:

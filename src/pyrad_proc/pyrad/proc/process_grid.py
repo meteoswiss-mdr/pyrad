@@ -293,6 +293,7 @@ def process_grid_point(procstatus, dscfg, radar_list=None):
         # prepare for exit
         new_dataset = {
             'time': dscfg['global_data']['time'],
+            'ref_time': dscfg['global_data']['ref_time'],
             'datatype': datatype,
             'point_coordinates_WGS84_lon_lat_alt': (
                 dscfg['global_data']['point_coordinates_WGS84_lon_lat_alt']),
@@ -366,15 +367,19 @@ def process_grid_point(procstatus, dscfg, radar_list=None):
         poi = {
             'point_coordinates_WGS84_lon_lat_alt': [lon, lat, alt],
             'grid_points_iz_iy_ix': [iz, iy, ix],
-            'time': time}
+            'time': time,
+            'ref_time': dscfg['timeinfo']}
         dscfg['global_data'] = poi
         dscfg['initialized'] = 1
+
+    dscfg['global_data']['ref_time'] = dscfg['timeinfo']
 
     # prepare for exit
     new_dataset = dict()
     new_dataset.update({'value': val})
     new_dataset.update({'datatype': datatype})
     new_dataset.update({'time': time})
+    new_dataset.update({'ref_time': dscfg['timeinfo']})
     new_dataset.update(
         {'point_coordinates_WGS84_lon_lat_alt': [lon, lat, alt]})
     new_dataset.update({'grid_points_iz_iy_ix': [iz, iy, ix]})
@@ -760,7 +765,8 @@ def process_grid_time_stats2(procstatus, dscfg, radar_list=None):
         # prepare auxiliary radar
         field_dict = deepcopy(grid.fields[field_name])
         if use_nan:
-            field_dict['data'] = np.ma.asarray(field_dict['data'].filled(nan_value))
+            field_dict['data'] = np.ma.asarray(
+                field_dict['data'].filled(nan_value))
         npoints_dict = pyart.config.get_metadata('number_of_samples')
         npoints_dict['data'] = np.ma.asarray(
             np.logical_not(np.ma.getmaskarray(field_dict['data'])), dtype=int)
