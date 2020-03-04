@@ -16,6 +16,9 @@ from copy import deepcopy
 
 import numpy as np
 
+import pyart
+from pyart.util import datetime_from_radar
+
 from ..io.io_aux import get_fieldname_pyart
 from ..io.io_aux import get_save_dir, make_filename
 
@@ -30,9 +33,6 @@ from ..graph.plots_spectra import plot_complex_angle_Doppler
 from ..graph.plots_spectra import plot_amp_phase_angle_Doppler
 
 from ..util.radar_utils import find_ray_index, find_rng_index
-
-from pyart.util import datetime_from_radar
-from pyart.aux_io import write_spectra
 
 
 def generate_spectra_products(dataset, prdcfg):
@@ -421,6 +421,10 @@ def generate_spectra_products(dataset, prdcfg):
         xaxis_info = prdcfg.get('xaxis_info', 'Doppler_velocity')
         vmin = prdcfg.get('vmin', None)
         vmax = prdcfg.get('vmax', None)
+        xmin = prdcfg.get('xmin', None)
+        xmax = prdcfg.get('xmax', None)
+        ymin = prdcfg.get('ymin', None)
+        ymax = prdcfg.get('ymax', None)
         plot_type = prdcfg.get('plot_type', 'final')
 
         if plot_type == 'final' and not dataset['final']:
@@ -461,7 +465,8 @@ def generate_spectra_products(dataset, prdcfg):
         else:
             plot_time_Doppler(
                 dataset['radar_out'], field_name, prdcfg, fname_list,
-                xaxis_info=xaxis_info, vmin=vmin, vmax=vmax)
+                xaxis_info=xaxis_info, vmin=vmin, vmax=vmax, xmin=xmin,
+                xmax=xmax, ymin=ymin, ymax=ymax)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -1106,7 +1111,7 @@ def generate_spectra_products(dataset, prdcfg):
 
         fname = savedir+fname
 
-        write_spectra(fname, new_dataset, physical=physical)
+        pyart.aux_io.write_spectra(fname, new_dataset, physical=physical)
 
         print('saved file: '+fname)
 
@@ -1145,7 +1150,7 @@ def generate_spectra_products(dataset, prdcfg):
                         dataset['radar_out'].fields[field_name])
         else:
             radar_aux = dataset['radar_out']
-        write_spectra(fname, radar_aux, physical=physical)
+        pyart.aux_io.write_spectra(fname, radar_aux, physical=physical)
 
         print('saved file: '+fname)
 

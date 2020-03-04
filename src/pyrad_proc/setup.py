@@ -27,7 +27,9 @@ Intended Audience :: Science/Research
 Intended Audience :: Developers
 License :: OSI Approved :: BSD License
 Programming Language :: Python
-Programming Language :: Python :: 3.5
+Programming Language :: Python :: 3
+Programming Language :: Python :: 3.6
+Programming Language :: Python :: 3.7
 Programming Language :: C
 Programming Language :: Cython
 Topic :: Scientific/Engineering
@@ -36,8 +38,8 @@ Operating System :: POSIX :: Linux
 """
 
 
-NAME = 'mch_pyrad'
-MAINTAINER = "Pyrad Developers"
+NAME = 'pyrad_mch'
+MAINTAINER = "MeteoSwiss Pyrad Developers"
 MAINTAINER_EMAIL = "jordi.figuerasiventura@meteoswiss.ch"
 DESCRIPTION = DOCLINES[0]
 LONG_DESCRIPTION = "\n".join(DOCLINES[2:])
@@ -47,8 +49,8 @@ LICENSE = 'BSD'
 CLASSIFIERS = filter(None, CLASSIFIERS.split('\n'))
 PLATFORMS = ["Linux"]
 MAJOR = 0
-MINOR = 1
-MICRO = 1
+MINOR = 4
+MICRO = 4
 ISRELEASED = False
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 SCRIPTS = glob.glob('scripts/*')

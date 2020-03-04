@@ -175,15 +175,12 @@ def generate_timeseries_products(dataset, prdcfg):
         prdsavedir = prdcfg['prdsavedir']
 
     if prdcfg['type'] == 'PLOT_AND_WRITE_POINT':
-        if dataset['final']:
-            return None
-
-        dpi = prdcfg.get('dpi', 72)
-        set_time_info = prdcfg.get('set_time_info', 1)
-
+        set_time_info = prdcfg.get('set_time_info', True)
         if 'antenna_coordinates_az_el_r' in dataset:
-            az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
-            el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
+            az = '{:.1f}'.format(
+                dataset['antenna_coordinates_az_el_r'][0])
+            el = '{:.1f}'.format(
+                dataset['antenna_coordinates_az_el_r'][1])
             r = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][2])
             gateinfo = ('az'+az+'r'+r+'el'+el)
         else:
@@ -195,15 +192,15 @@ def generate_timeseries_products(dataset, prdcfg):
                 dataset['point_coordinates_WGS84_lon_lat_alt'][2])
             gateinfo = ('lon'+lon+'lat'+lat+'alt'+alt)
 
-        timeinfo = None
         timeformat = None
+        timeinfo = None
         if set_time_info:
-            timeinfo = prdcfg['timeinfo']
             timeformat = '%Y%m%d'
+            timeinfo = dataset['ref_time']
 
         savedir = get_save_dir(
-            prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdsavedir, timeinfo=timeinfo)
+            prdcfg['basepath'], prdcfg['procname'], dssavedir, prdsavedir,
+            timeinfo=timeinfo)
 
         csvfname = make_filename(
             'ts', prdcfg['dstype'], dataset['datatype'], ['csv'],
@@ -212,21 +209,28 @@ def generate_timeseries_products(dataset, prdcfg):
 
         csvfname = savedir+csvfname
 
-        if 'antenna_coordinates_az_el_r' in dataset:
-            write_ts_polar_data(dataset, csvfname)
-        else:
-            write_ts_grid_data(dataset, csvfname)
-        print('saved CSV file: '+csvfname)
+        if not dataset['final']:
+            if 'antenna_coordinates_az_el_r' in dataset:
+                write_ts_polar_data(dataset, csvfname)
+            else:
+                write_ts_grid_data(dataset, csvfname)
+            print('saved CSV file: '+csvfname)
+
+        dpi = prdcfg.get('dpi', 72)
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
+        plot_only_final = prdcfg.get('plot_only_final', False)
+
+        if plot_only_final and not dataset['final']:
+            return None
+        if not plot_only_final and dataset['final']:
+            return None
 
         date, value = read_timeseries(csvfname)
-
         if date is None:
             warn(
                 'Unable to plot time series. No valid data')
             return None
-
-        vmin = prdcfg.get('vmin', None)
-        vmax = prdcfg.get('vmax', None)
 
         timeinfo_fig = None
         if set_time_info:
@@ -257,12 +261,16 @@ def generate_timeseries_products(dataset, prdcfg):
         return figfname_list
 
     if prdcfg['type'] == 'PLOT_CUMULATIVE_POINT':
-        if dataset['final']:
-            return None
-
         dpi = prdcfg.get('dpi', 72)
         vmin = prdcfg.get('vmin', None)
         vmax = prdcfg.get('vmax', None)
+        plot_only_final = prdcfg.get('plot_only_final', False)
+        set_time_info = prdcfg.get('set_time_info', True)
+
+        if plot_only_final and not dataset['final']:
+            return None
+        if not plot_only_final and dataset['final']:
+            return None
 
         if 'antenna_coordinates_az_el_r' in dataset:
             az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
@@ -278,14 +286,20 @@ def generate_timeseries_products(dataset, prdcfg):
                 dataset['point_coordinates_WGS84_lon_lat_alt'][2])
             gateinfo = ('lon'+lon+'lat'+lat+'alt'+alt)
 
+        timeformat = None
+        timeinfo = None
+        if set_time_info:
+            timeformat = '%Y%m%d'
+            timeinfo = dataset['ref_time']
+
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdid'], timeinfo=prdcfg['timeinfo'])
+            prdcfg['prdid'], timeinfo=timeinfo)
 
         csvfname = make_filename(
             'ts', prdcfg['dstype'], dataset['datatype'], ['csv'],
-            prdcfginfo=gateinfo, timeinfo=prdcfg['timeinfo'],
-            timeformat='%Y%m%d')[0]
+            prdcfginfo=gateinfo, timeinfo=timeinfo,
+            timeformat=timeformat)[0]
 
         csvfname = savedir+csvfname
 
@@ -296,10 +310,14 @@ def generate_timeseries_products(dataset, prdcfg):
                 'Unable to plot accumulation time series. No valid data')
             return None
 
+        timeinfo_fig = None
+        if set_time_info:
+            timeinfo_fig = date[0]
+
         figfname_list = make_filename(
             'ts_cum', prdcfg['dstype'], dataset['datatype'],
             prdcfg['imgformat'], prdcfginfo=gateinfo,
-            timeinfo=date[0], timeformat='%Y%m%d')
+            timeinfo=timeinfo_fig, timeformat=timeformat)
 
         for i, figfname in enumerate(figfname_list):
             figfname_list[i] = savedir+figfname
@@ -322,10 +340,16 @@ def generate_timeseries_products(dataset, prdcfg):
         return figfname_list
 
     if prdcfg['type'] == 'COMPARE_POINT':
-        if dataset['final']:
-            return None
-
         dpi = prdcfg.get('dpi', 72)
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
+        plot_only_final = prdcfg.get('plot_only_final', False)
+        set_time_info = prdcfg.get('set_time_info', True)
+
+        if plot_only_final and not dataset['final']:
+            return None
+        if not plot_only_final and dataset['final']:
+            return None
 
         if 'antenna_coordinates_az_el_r' in dataset:
             az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
@@ -341,14 +365,20 @@ def generate_timeseries_products(dataset, prdcfg):
                 dataset['point_coordinates_WGS84_lon_lat_alt'][2])
             gateinfo = ('lon'+lon+'lat'+lat+'alt'+alt)
 
+        timeformat = None
+        timeinfo = None
+        if set_time_info:
+            timeformat = '%Y%m%d'
+            timeinfo = dataset['ref_time']
+
         savedir_ts = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdid'], timeinfo=prdcfg['timeinfo'])
+            prdcfg['prdid'], timeinfo=timeinfo)
 
         csvfname = make_filename(
             'ts', prdcfg['dstype'], dataset['datatype'], ['csv'],
-            prdcfginfo=gateinfo, timeinfo=prdcfg['timeinfo'],
-            timeformat='%Y%m%d')[0]
+            prdcfginfo=gateinfo, timeinfo=timeinfo,
+            timeformat=timeformat)[0]
 
         csvfname = savedir_ts+csvfname
 
@@ -367,17 +397,18 @@ def generate_timeseries_products(dataset, prdcfg):
                 'No valid sensor data')
             return None
 
-        vmin = prdcfg.get('vmin', None)
-        vmax = prdcfg.get('vmax', None)
+        timeinfo_fig = None
+        if set_time_info:
+            timeinfo_fig = radardate[0]
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdsavedir, timeinfo=radardate[0])
+            prdsavedir, timeinfo=timeinfo_fig)
 
         figfname_list = make_filename(
             'ts_comp', prdcfg['dstype'], dataset['datatype'],
             prdcfg['imgformat'], prdcfginfo=gateinfo,
-            timeinfo=radardate[0], timeformat='%Y%m%d')
+            timeinfo=timeinfo_fig, timeformat=timeformat)
 
         for i, figfname in enumerate(figfname_list):
             figfname_list[i] = savedir+figfname
@@ -399,10 +430,16 @@ def generate_timeseries_products(dataset, prdcfg):
         return figfname_list
 
     if prdcfg['type'] == 'COMPARE_CUMULATIVE_POINT':
-        if dataset['final']:
-            return None
-
         dpi = prdcfg.get('dpi', 72)
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
+        plot_only_final = prdcfg.get('plot_only_final', False)
+        set_time_info = prdcfg.get('set_time_info', True)
+
+        if plot_only_final and not dataset['final']:
+            return None
+        if not plot_only_final and dataset['final']:
+            return None
 
         if 'antenna_coordinates_az_el_r' in dataset:
             az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
@@ -418,14 +455,20 @@ def generate_timeseries_products(dataset, prdcfg):
                 dataset['point_coordinates_WGS84_lon_lat_alt'][2])
             gateinfo = ('lon'+lon+'lat'+lat+'alt'+alt)
 
+        timeformat = None
+        timeinfo = None
+        if set_time_info:
+            timeformat = '%Y%m%d'
+            timeinfo = dataset['ref_time']
+
         savedir_ts = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdcfg['prdid'], timeinfo=prdcfg['timeinfo'])
+            prdcfg['prdid'], timeinfo=timeinfo)
 
         csvfname = make_filename(
             'ts', prdcfg['dstype'], dataset['datatype'], ['csv'],
-            prdcfginfo=gateinfo, timeinfo=prdcfg['timeinfo'],
-            timeformat='%Y%m%d')[0]
+            prdcfginfo=gateinfo, timeinfo=timeinfo,
+            timeformat=timeformat)[0]
 
         csvfname = savedir_ts+csvfname
 
@@ -444,17 +487,18 @@ def generate_timeseries_products(dataset, prdcfg):
                 'No valid sensor data')
             return None
 
-        vmin = prdcfg.get('vmin', None)
-        vmax = prdcfg.get('vmax', None)
+        timeinfo_fig = None
+        if set_time_info:
+            timeinfo_fig = radardate[0]
 
         savedir = get_save_dir(
             prdcfg['basepath'], prdcfg['procname'], dssavedir,
-            prdsavedir, timeinfo=radardate[0])
+            prdsavedir, timeinfo=timeinfo_fig)
 
         figfname_list = make_filename(
             'ts_cumcomp', prdcfg['dstype'], dataset['datatype'],
             prdcfg['imgformat'], prdcfginfo=gateinfo,
-            timeinfo=radardate[0], timeformat='%Y%m%d')
+            timeinfo=timeinfo_fig, timeformat=timeformat)
 
         for i, figfname in enumerate(figfname_list):
             figfname_list[i] = savedir+figfname
@@ -479,10 +523,13 @@ def generate_timeseries_products(dataset, prdcfg):
         return figfname_list
 
     if prdcfg['type'] == 'COMPARE_TIME_AVG':
-        if not dataset['final']:
-            return None
-
         dpi = prdcfg.get('dpi', 72)
+        plot_only_final = prdcfg.get('plot_only_final', False)
+
+        if plot_only_final and not dataset['final']:
+            return None
+        if not plot_only_final and dataset['final']:
+            return None
 
         az = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][0])
         el = '{:.1f}'.format(dataset['antenna_coordinates_az_el_r'][1])
@@ -616,7 +663,6 @@ def generate_timeseries_products(dataset, prdcfg):
                               prdcfginfo=None, timeinfo=timeinfo,
                               timeformat='%Y%m%d%H%M%S',
                               runinfo=prdcfg['runinfo'])
-
 
         ymin = prdcfg.get('ymin', None)
         ymax = prdcfg.get('ymax', None)

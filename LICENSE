@@ -1,7 +1,11 @@
 BSD 3-Clause License
 
-Copyright (c) 2019, Radar, Satellite and Nowcasting Division
+Copyright (c) 2020, Federal Office of Meteorology and Climatology - MeteoSwiss
 All rights reserved.
+
+Copyright 2020 Federal Office of Meteorology and Climatology - MeteoSwiss.
+This software uses at its core Py-ART (Python ARM Radar Toolkit), originally
+developed by UChicago Argone, LLC.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:

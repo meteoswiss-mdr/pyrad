@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Dataset processing (pyrad.proc) &#8212; pyrad 0.1.0 documentation</title>
+    <title>Dataset processing (pyrad.proc) &#8212; pyrad 0.4.4 documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -27,7 +27,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">pyrad 0.1.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">pyrad 0.4.4 documentation</a> &#187;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -465,28 +465,31 @@
 <tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_rcs_pr" title="pyrad.proc.process_rcs_pr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_rcs_pr</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Computes the radar cross-section (assuming a point target) from radar reflectivity by first computing the received power and then the RCS from it.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_radial_noise" title="pyrad.proc.process_radial_noise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_radial_noise</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
-<td>Computes the radial noise from the signal power</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_radial_noise_hs" title="pyrad.proc.process_radial_noise_hs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_radial_noise_hs</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<td>Computes the radial noise from the signal power using the Hildebrand and Sekhon 1974 method</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_snr" title="pyrad.proc.process_snr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_snr</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_radial_noise_ivic" title="pyrad.proc.process_radial_noise_ivic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_radial_noise_ivic</span></code></a>(procstatus,&nbsp;dscfg)</td>
+<td>Computes the radial noise from the signal power using the Ivic 2013 method</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_snr" title="pyrad.proc.process_snr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_snr</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Computes SNR</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_l" title="pyrad.proc.process_l"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_l</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_l" title="pyrad.proc.process_l"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_l</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Computes L parameter</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_cdr" title="pyrad.proc.process_cdr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_cdr</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_cdr" title="pyrad.proc.process_cdr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_cdr</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Computes Circular Depolarization Ratio</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_rainrate" title="pyrad.proc.process_rainrate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_rainrate</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_rainrate" title="pyrad.proc.process_rainrate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_rainrate</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Estimates rainfall rate from polarimetric moments</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_rainfall_accumulation" title="pyrad.proc.process_rainfall_accumulation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_rainfall_accumulation</span></code></a>(procstatus,&nbsp;dscfg)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_rainfall_accumulation" title="pyrad.proc.process_rainfall_accumulation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_rainfall_accumulation</span></code></a>(procstatus,&nbsp;dscfg)</td>
 <td>Computes rainfall accumulation fields</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_vol_refl" title="pyrad.proc.process_vol_refl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_vol_refl</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_vol_refl" title="pyrad.proc.process_vol_refl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_vol_refl</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Computes the volumetric reflectivity in 10log10(cm^2 km^-3)</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_bird_density" title="pyrad.proc.process_bird_density"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_bird_density</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_bird_density" title="pyrad.proc.process_bird_density"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_bird_density</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
 <td>Computes the bird density from the volumetric reflectivity</td>
 </tr>
 </tbody>
@@ -696,7 +699,8 @@ the function documentation:</p>
 ‘POL_VARIABLES_IQ’: process_pol_variables_iq
 ‘PWR’: process_signal_power
 ‘RADAR_RESAMPLING’: process_radar_resampling
-‘RADIAL_NOISE’: process_radial_noise
+‘RADIAL_NOISE_HS’: process_radial_noise_hs
+‘RADIAL_NOISE_IVIC’: process_radial_noise_ivic
 ‘RAINRATE’: process_rainrate
 ‘RAW’: process_raw
 ‘REFLECTIVITY’: process_reflectivity
@@ -4722,8 +4726,9 @@ from the synthetic radar [deg]. Default 0.5</p>
 synthetic radar [m MSL]. Default 12000.</p>
 </dd>
 <dt>latlon_tol <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
-<dd><p class="first last">The tolerance in latitude and longitude to determine which synthetic
-radar gates are co-located with real radar gates [deg]. Default 0.04</p>
+<dd><p class="first last">The tolerance in latitude and longitude to determine which
+synthetic radar gates are co-located with real radar gates [deg].
+Default 0.04</p>
 </dd>
 <dt>alt_tol <span class="classifier-delimiter">:</span> <span class="classifier">float. Datset keyword</span></dt>
 <dd><p class="first last">The tolerance in altitude to determine which synthetic
@@ -4731,8 +4736,8 @@ radar gates are co-located with real radar gates [m]. Default 1000.</p>
 </dd>
 <dt>pattern_thres <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">The minimum of the sum of the weights given to each value in order
-to consider the weighted quantile valid. It is related to the number
-of valid data points</p>
+to consider the weighted quantile valid. It is related to the
+number of valid data points</p>
 </dd>
 <dt>data_is_log <span class="classifier-delimiter">:</span> <span class="classifier">dict. Dataset keyword</span></dt>
 <dd><p class="first last">Dictionary specifying for each field if it is in log (True) or
@@ -4769,9 +4774,10 @@ computing the statistics of each field. Default 0</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyrad.proc.process_radial_noise">
-<code class="descclassname">pyrad.proc.</code><code class="descname">process_radial_noise</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_retrieve.html#process_radial_noise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_radial_noise" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the radial noise from the signal power</p>
+<dt id="pyrad.proc.process_radial_noise_hs">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_radial_noise_hs</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_retrieve.html#process_radial_noise_hs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_radial_noise_hs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the radial noise from the signal power using the
+Hildebrand and Sekhon 1974 method</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -4796,6 +4802,71 @@ computing the statistics of each field. Default 0</p>
 <dt>max_std_pwr <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">The maximum standard deviation of the noise power to consider the
 estimation valid</p>
+</dd>
+<dt>get_noise_pos <span class="classifier-delimiter">:</span> <span class="classifier">bool. Dataset keyword</span></dt>
+<dd><p class="first last">If True a field flagging the position of the noisy gets will be
+returned</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the output</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.proc.process_radial_noise_ivic">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_radial_noise_ivic</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_retrieve.html#process_radial_noise_ivic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_radial_noise_ivic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the radial noise from the signal power using the
+Ivic 2013 method</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first">data set configuration. Accepted Configuration Keywords:</p>
+<dl class="last docutils">
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">string. Dataset keyword</span></dt>
+<dd><p class="first last">The input data type</p>
+</dd>
+<dt>npulses_ray <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Default number of pulses used in the computation of the ray. If
+the number of pulses is not in radar.instrument_parameters this
+will be used instead. Default 30</p>
+</dd>
+<dt>flat_reg_wlen <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">range of window considered to find flat regions [m]. Default 8000.</p>
+</dd>
+<dt>ngates_min: int</dt>
+<dd><p class="first last">minimum number of gates with noise to consider the retrieval
+valid. Default 800</p>
+</dd>
+<dt>iterations: int</dt>
+<dd><p class="first last">number of iterations in step 7. Default 10.</p>
+</dd>
+<dt>get_noise_pos <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd><p class="first last">If true an additional field with gates containing noise according
+to the algorithm is produced</p>
 </dd>
 </dl>
 </dd>
@@ -6727,16 +6798,6 @@ vertical IQ data</p>
 <dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">list of string. Dataset keyword</span></dt>
 <dd><p class="first last">The input data types</p>
 </dd>
-<dt>rmin <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
-<dd><p class="first last">minimum range where to look for a sun hit signal [m].
-Default 50000.</p>
-</dd>
-<dt>hmin <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
-<dd><p class="first last">minimum altitude where to look for a sun hit signal [m MSL].
-Default 10000. The actual range from which a sun hit signal will
-be search will be the minimum between rmin and the range from
-which the altitude is higher than hmin.</p>
-</dd>
 <dt>delev_max <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">maximum elevation distance from nominal radar elevation where to
 look for a sun hit signal [deg]. Default 1.5</p>
@@ -6749,16 +6810,48 @@ look for a sun hit signal [deg]. Default 1.5</p>
 <dd><p class="first last">minimum radar elevation where to look for sun hits [deg].
 Default 1.</p>
 </dd>
-<dt>nbins_min <span class="classifier-delimiter">:</span> <span class="classifier">int. Dataset keyword.</span></dt>
-<dd><p class="first last">minimum number of range bins that have to contain signal to
-consider the ray a potential sun hit. Default 10.</p>
-</dd>
 <dt>attg <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">gaseous attenuation. Default None</p>
 </dd>
+<dt>sun_position <span class="classifier-delimiter">:</span> <span class="classifier">string. Datset keyword</span></dt>
+<dd><p class="first last">The function to compute the sun position to use. Can be ‘MF’ or
+‘pysolar’</p>
+</dd>
+<dt>sun_hit_method <span class="classifier-delimiter">:</span> <span class="classifier">str. Dataset keyword</span></dt>
+<dd><p class="first last">Method used to estimate the power of the sun hit. Can be HS
+(Hildebrand and Sekhon 1974) or Ivic (Ivic 2013)</p>
+</dd>
+<dt>rmin <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">minimum range where to look for a sun hit signal [m]. Used in HS
+method. Default 50000.</p>
+</dd>
+<dt>hmin <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">minimum altitude where to look for a sun hit signal [m MSL].
+Default 10000. The actual range from which a sun hit signal will
+be search will be the minimum between rmin and the range from
+which the altitude is higher than hmin. Used in HS method. Default
+10000.</p>
+</dd>
+<dt>nbins_min <span class="classifier-delimiter">:</span> <span class="classifier">int. Dataset keyword.</span></dt>
+<dd><p class="first last">minimum number of range bins that have to contain signal to
+consider the ray a potential sun hit. Default 20 for HS and 8000
+for Ivic.</p>
+</dd>
+<dt>npulses_ray <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Default number of pulses used in the computation of the ray. If the
+number of pulses is not in radar.instrument_parameters this will be
+used instead. Used in Ivic method. Default 30</p>
+</dd>
+<dt>flat_reg_wlen <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Length of the flat region window [m]. Used in Ivic method. Default
+8000.</p>
+</dd>
+<dt>iterations: int</dt>
+<dd><p class="first last">number of iterations in step 7 of Ivic method. Default 10.</p>
+</dd>
 <dt>max_std_pwr <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">maximum standard deviation of the signal power to consider the
-data a sun hit [dB]. Default 2.</p>
+data a sun hit [dB]. Default 2. Used in HS method</p>
 </dd>
 <dt>max_std_zdr <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">maximum standard deviation of the ZDR to consider the
@@ -8336,11 +8429,11 @@ Default [2] (dry snow)</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">pyrad 0.1.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">pyrad 0.4.4 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2019, meteoswiss-mdr.
+        &#169; Copyright 2020, meteoswiss-mdr.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
     </div>
   </body>

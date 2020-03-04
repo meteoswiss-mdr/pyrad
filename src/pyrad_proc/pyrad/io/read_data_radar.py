@@ -60,17 +60,13 @@ except ImportError:
 
 import pyart
 
-from pyart.aux_io import read_product_py
-from pyart.aux_io import read_product_c
-from pyart.aux_io import get_library
-
 # check existence of METRANET library
 try:
-    METRANET_LIB = get_library(momentms=False)
+    METRANET_LIB = pyart.aux_io.get_library(momentms=False)
     if platform.system() == 'Linux':
-        METRANET_LIB = get_library(momentms=True)
+        METRANET_LIB = pyart.aux_io.get_library(momentms=True)
     _METRANETLIB_AVAILABLE = True
-except SystemExit:
+except (SystemExit, AttributeError):
     _METRANETLIB_AVAILABLE = False
 
 from .read_data_other import read_status, read_rad4alp_cosmo, read_rad4alp_vis
@@ -1950,15 +1946,15 @@ def merge_scans_other_rad4alp(voltime, datatype, cfg, ind_rad=0):
 
         filename_prod = filename_prod[0]
         if cfg['metranet_read_lib'] == 'C' and _METRANETLIB_AVAILABLE:
-            prod_obj = read_product_c(
+            prod_obj = pyart.aux_io.read_product_c(
                 filename_prod, physic_value=False, masked_array=True)
         elif cfg['metranet_read_lib'] == 'python':
-            prod_obj = read_product_py(
+            prod_obj = pyart.aux_io.read_product_py(
                 filename_prod, physic_value=False, masked_array=True)
         else:
             warn('METRANET C-library reader not available or unknown ' +
                  'library type. Python library will be used')
-            prod_obj = read_product_py(
+            prod_obj = pyart.aux_io.read_product_py(
                 filename_prod, physic_value=False, masked_array=True)
         if prod_obj is None:
             warn('Unable to read file '+filename_prod)

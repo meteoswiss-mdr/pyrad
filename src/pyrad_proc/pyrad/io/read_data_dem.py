@@ -30,8 +30,8 @@ except ImportError:
     except ImportError:
         _GDAL_AVAILABLE = False
 
+import pyart
 from pyart.config import get_metadata
-from pyart.aux_io import convert_data
 from ..io.read_data_cosmo import _put_radar_in_swiss_coord
 
 # from memory_profiler import profile
@@ -187,7 +187,7 @@ def read_idrisi_metadata(fname):
             for line in txtfile:
                 strs = line.split(':')
                 metadata.update({
-                    strs[0].strip(): convert_data(strs[1].strip())})
+                    strs[0].strip(): pyart.aux_io.convert_data(strs[1].strip())})
 
         return metadata
     except EnvironmentError:
