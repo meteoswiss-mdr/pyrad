@@ -353,6 +353,9 @@ def process_spectra_point(procstatus, dscfg, radar_list=None):
         # prepare space for field
         psr_poi.fields = dict()
         for field_name in field_names:
+            if field_name not in psr.fields:
+                warn('Field '+field_name+' not in psr object')
+                return None, None
             psr_poi.add_field(field_name, deepcopy(psr.fields[field_name]))
             psr_poi.fields[field_name]['data'] = np.array([])
 
@@ -412,7 +415,7 @@ def process_spectra_point(procstatus, dscfg, radar_list=None):
         alt, (psr_poi.nrays, psr_poi.ngates))
 
     for field_name in field_names:
-        dtype = psr.fields[field_name]['data'].dtype
+        dtype = psr_poi.fields[field_name]['data'].dtype
         if field_name not in psr.fields:
             warn('Field '+field_name+' not in psr object')
             poi_data = np.ma.masked_all(
@@ -441,7 +444,7 @@ def process_spectra_point(procstatus, dscfg, radar_list=None):
                     (psr_poi.nrays, 1, psr.npulses_max), dtype=dtype)
                 poi_data_aux[
                     :psr_poi.nrays-nrays, :, 0:psr_poi.npulses_max] = (
-                    psr_poi.fields[field_name]['data'])
+                        psr_poi.fields[field_name]['data'])
                 poi_data_aux[psr_poi.nrays-nrays:, :, :] = poi_data
                 psr_poi.fields[field_name]['data'] = poi_data_aux
 
