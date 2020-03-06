@@ -1,16 +1,22 @@
 [![Build Status](https://travis-ci.org/meteoswiss-mdr/pyrad.svg?branch=master)](https://travis-ci.org/meteoswiss-mdr/pyrad)
 [![Ref doc](https://img.shields.io/badge/docs-users-4088b8.svg)](https://meteoswiss-mdr.github.io/pyrad/)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/pyrad_mch/badges/version.svg)](https://anaconda.org/conda-forge/pyrad_mch)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/pyrad_mch/badges/latest_release_date.svg)](https://anaconda.org/conda-forge/pyrad_mch)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/pyrad_mch/badges/platforms.svg)](https://anaconda.org/conda-forge/pyrad_mch)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/pyrad_mch/badges/license.svg)](https://anaconda.org/conda-forge/pyrad_mch)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/pyrad_mch/badges/downloads.svg)](https://anaconda.org/conda-forge/pyrad_mch)
 
 # pyrad
 Python Radar Data Processing
 
 # What is Pyrad?
 Pyrad is a real-time data processing framework developed by MeteoSwiss. The framework is
-aimed at processing and visualizing data from individual Swiss weather radars both off-line and in
-real time. It is written in the Python language. The framework is version controlled and automatic
-documentation is generated based on doc-strings. It is capable of ingesting data from all the
-weather radars in Switzerland, namely the operational MeteoSwiss C-band rad4alp radar network,
-the MeteoSwiss X-band DX50 radar and the EPFL MXPol radar and radar data in the OPERA file format.
+aimed at processing and visualizing polar data from individual weather radars as well as composite
+Cartesian products both off-line and in real time. It is written in the Python language. The
+framework is version controlled and automatic documentation is generated based on doc-strings.
+It is capable of ingesting data from all the weather radars in Switzerland, namely the operational
+MeteoSwiss C-band rad4alp radar network, the MeteoSwiss X-band DX50 radar and the EPFL MXPol radar
+and radar data in the OPERA file format. Additionally, it can ingest C/FRadial and NEXRAD level 2 files.
 
 The processing flow is controlled by 3 simple configuration files. Multiple levels of processing can
 be performed. At each level new datasets (e.g. attenuation corrected reflectivity) are created which
@@ -23,11 +29,12 @@ gates.
 The framework is able to ingest polarimetric and Doppler radar moments as well as auxiliary data
 such as numerical weather prediction parameters (e.g. temperature, wind speed, etc.), DEM-based
 visibility and data used in the generation of the products such as rain gauge measurements,
-disdrometer measurements, solar flux, etc.
+disdrometer measurements, solar flux, etc. It can as well work with I/Q data, spectral data and Cartesian
+data.
 
 The signal processing and part of the data visualization is performed by a [MeteoSwiss developed version of the Py-ART radar toolkit](https://github.com/meteoswiss-mdr/pyart) which contains enhanced features. MeteoSwiss regularly contributes back to the [main Py-ART branch](https://github.com/ARM-DOE/pyart) once a new functionality has been thoroughly tested and it is considered of interest for the broad weather radar community.
 
-The capabilities of the processing framework include various forms of echo classification and
+The processing framework has multiple and expanding capabilities, include various forms of echo classification and
 filtering, differential phase and specific differential phase estimation, attenuation correction, data
 quality monitoring, multiple rainfall rate algorithms, etc. In addition time series of data in points,
 regions or trajectories of interest can be extracted and comparisons can be performed with other
