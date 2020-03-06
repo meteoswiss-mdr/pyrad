@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/meteoswiss-mdr/pyrad.svg?branch=master)](https://travis-ci.org/meteoswiss-mdr/pyrad)
+
 [![Ref doc](https://img.shields.io/badge/docs-users-4088b8.svg)](https://meteoswiss-mdr.github.io/pyrad/)
+
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/pyrad_mch/badges/version.svg)](https://anaconda.org/conda-forge/pyrad_mch)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/pyrad_mch/badges/latest_release_date.svg)](https://anaconda.org/conda-forge/pyrad_mch)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/pyrad_mch/badges/platforms.svg)](https://anaconda.org/conda-forge/pyrad_mch)
