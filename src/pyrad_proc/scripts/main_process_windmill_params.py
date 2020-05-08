@@ -3,10 +3,11 @@
 
 """
 ================================================
-main_process_data_windmills
+main_process_windmill_params
 ================================================
 
-This program compiles histograms of windmill radar returns
+This program plots time series and histograms of windmill parameters such
+as nacelle orientation, rotor speed, etc.
 
 """
 
@@ -51,6 +52,10 @@ def main():
         '--wind_IDs', type=str, default='nx85213,nx85214,nx85215',
         help='Windmill ID. Coma separated')
 
+    parser.add_argument(
+        '--wind_periods', type=str, default='20200227-20200326',
+        help='Windmill periods. Coma separated')
+
     args = parser.parse_args()
 
     print("====== PYRAD windmill data processing started: %s" %
@@ -62,43 +67,53 @@ def main():
     start_date = datetime.datetime.strptime(args.startdate, '%Y%m%d%H%M%S')
     end_date = datetime.datetime.strptime(args.enddate, '%Y%m%d%H%M%S')
     wind_IDs = args.wind_IDs.split(',')
+    wind_periods = args.wind_periods.split(',')
 
     for wind_ID in wind_IDs:
         print(wind_ID)
-        
-        fname = args.basename+wind_ID+'_rawdata_10m20190227_20190326.csv'
-        fname2 = args.basename+wind_ID+'_rawdata_10m20190327_20190426.csv'
 
+        fname = args.basename+wind_ID+'_rawdata_10m_'+wind_periods[0]+'.csv'
         windmill_dict = read_windmills_data(fname)
-        windmill_dict_aux = read_windmills_data(fname2)
-        windmill_dict['dt_remote'] = np.ma.append(
-            windmill_dict['dt_remote'], windmill_dict_aux['dt_remote'])
-        windmill_dict['dt_server'] = np.ma.append(
-            windmill_dict['dt_server'], windmill_dict_aux['dt_server'])
-        windmill_dict['rotor_speed_avg'] = np.ma.append(
-            windmill_dict['rotor_speed_avg'],
-            windmill_dict_aux['rotor_speed_avg'])
-        windmill_dict['rotor_speed_min'] = np.ma.append(
-            windmill_dict['rotor_speed_min'],
-            windmill_dict_aux['rotor_speed_min'])
-        windmill_dict['rotor_speed_max'] = np.ma.append(
-            windmill_dict['rotor_speed_max'],
-            windmill_dict_aux['rotor_speed_max'])
-        windmill_dict['nacelle_pos'] = np.ma.append(
-            windmill_dict['nacelle_pos'], windmill_dict_aux['nacelle_pos'])
-        windmill_dict['blade_angle_1'] = np.ma.append(
-            windmill_dict['blade_angle_1'],
-            windmill_dict_aux['blade_angle_1'])
-        windmill_dict['blade_angle_2'] = np.ma.append(
-            windmill_dict['blade_angle_2'],
-            windmill_dict_aux['blade_angle_2'])
-        windmill_dict['blade_angle_3'] = np.ma.append(
-            windmill_dict['blade_angle_3'],
-            windmill_dict_aux['blade_angle_3'])
-        windmill_dict['t_outside'] = np.ma.append(
-            windmill_dict['t_outside'], windmill_dict_aux['t_outside'])
-        windmill_dict['ice_level'] = np.ma.append(
-            windmill_dict['ice_level'], windmill_dict_aux['ice_level'])
+
+        if len(wind_periods) > 1:
+            for wind_period in wind_periods[1:]:
+                fname = (
+                    args.basename+wind_ID+'_rawdata_10m_'+wind_period+'.csv')
+
+                windmill_dict_aux = read_windmills_data(fname)
+                windmill_dict['dt_remote'] = np.ma.append(
+                    windmill_dict['dt_remote'],
+                    windmill_dict_aux['dt_remote'])
+                windmill_dict['dt_server'] = np.ma.append(
+                    windmill_dict['dt_server'],
+                    windmill_dict_aux['dt_server'])
+                windmill_dict['rotor_speed_avg'] = np.ma.append(
+                    windmill_dict['rotor_speed_avg'],
+                    windmill_dict_aux['rotor_speed_avg'])
+                windmill_dict['rotor_speed_min'] = np.ma.append(
+                    windmill_dict['rotor_speed_min'],
+                    windmill_dict_aux['rotor_speed_min'])
+                windmill_dict['rotor_speed_max'] = np.ma.append(
+                    windmill_dict['rotor_speed_max'],
+                    windmill_dict_aux['rotor_speed_max'])
+                windmill_dict['nacelle_pos'] = np.ma.append(
+                    windmill_dict['nacelle_pos'],
+                    windmill_dict_aux['nacelle_pos'])
+                windmill_dict['blade_angle_1'] = np.ma.append(
+                    windmill_dict['blade_angle_1'],
+                    windmill_dict_aux['blade_angle_1'])
+                windmill_dict['blade_angle_2'] = np.ma.append(
+                    windmill_dict['blade_angle_2'],
+                    windmill_dict_aux['blade_angle_2'])
+                windmill_dict['blade_angle_3'] = np.ma.append(
+                    windmill_dict['blade_angle_3'],
+                    windmill_dict_aux['blade_angle_3'])
+                windmill_dict['t_outside'] = np.ma.append(
+                    windmill_dict['t_outside'],
+                    windmill_dict_aux['t_outside'])
+                windmill_dict['ice_level'] = np.ma.append(
+                    windmill_dict['ice_level'],
+                    windmill_dict_aux['ice_level'])
 
         ind = np.ma.where(np.logical_and(
             windmill_dict['dt_remote'] >= start_date,

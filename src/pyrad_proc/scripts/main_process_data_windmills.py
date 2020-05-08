@@ -6,7 +6,9 @@
 main_process_data_windmills
 ================================================
 
-This program compiles histograms of windmill radar returns
+This program groups histograms of windmill radar returns that occurred when
+the windmill had similar characteristics of orientation respect to the radar
+or rotor speed
 
 """
 

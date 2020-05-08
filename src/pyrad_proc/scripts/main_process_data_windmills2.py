@@ -3,10 +3,12 @@
 
 """
 ================================================
-main_process_data_windmills
+main_process_data_windmills2
 ================================================
 
-This program compiles histograms of windmill radar returns
+This program gets time series of median values (obtained from histograms)
+of windmill radar returns that occurred when the windmill had similar
+characteristics of orientation respect to the radar or rotor speed, etc.
 
 """
 
@@ -226,7 +228,7 @@ def write_ts(record_times, vals, fname):
         fieldnames = ['date', 'value']
         writer = csv.DictWriter(csvfile, fieldnames)
         writer.writeheader()
-        
+
         for val, dt in zip(vals, record_times):
             writer.writerow(
                 {'date': dt.strftime('%Y%m%d%H%M%S'),

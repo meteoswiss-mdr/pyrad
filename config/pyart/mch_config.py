@@ -3331,9 +3331,11 @@ def velocity_limit(container=None, selection=0):
                 vel = container.get_nyquist_vel(0, check_uniform=False)
             return (-vel, vel)
         except LookupError:
-            return (-42., 42.)
+            # return (-42., 42.)
+            return (-15.8, 15.8)
     else:
-        return (-42., 42.)
+        # return (-42., 42.)
+        return (-15.8, 15.8)
 
 
 def spectrum_width_limit(container=None, selection=0):
@@ -3347,9 +3349,11 @@ def spectrum_width_limit(container=None, selection=0):
                 vel = container.get_nyquist_vel(0, check_uniform=False)
             return (0, vel)
         except LookupError:
-            return (0., 4.)
+            #return (0., 4.)
+            return (0., 15.8)
     else:
-        return (0., 4.)
+        #return (0., 4.)
+        return (0., 15.8)
 
 
 DEFAULT_FIELD_COLORMAP = {
@@ -3602,11 +3606,13 @@ DEFAULT_FIELD_LIMITS = {
     bird_reflectivity: (-30., 75.),
     corrected_reflectivity: (-30., 75.),
     total_power: (-30., 75.),
-    unfiltered_reflectivity: (-30., 75.),
+    # unfiltered_reflectivity: (-30., 75.),
+    unfiltered_reflectivity: (-30., 85.),
     corrected_unfiltered_reflectivity:  (-30., 75.),
     reflectivity_vv: (-30., 75.),
     corrected_reflectivity_vv: (-30., 75.),
-    unfiltered_reflectivity_vv: (-30., 75.),
+    # unfiltered_reflectivity_vv: (-30., 75.),
+    unfiltered_reflectivity_vv: (-30., 85.),
     signal_to_noise_ratio: (-5., 30.),
     signal_to_noise_ratio_hh: (-5., 30.),
     signal_to_noise_ratio_vv: (-5., 30.),
@@ -3682,7 +3688,8 @@ DEFAULT_FIELD_LIMITS = {
 
     differential_reflectivity: (-1., 8.),
     corrected_differential_reflectivity: (-1., 8.),
-    unfiltered_differential_reflectivity: (-1., 8.),
+    #unfiltered_differential_reflectivity: (-1., 8.),
+    unfiltered_differential_reflectivity: (-8., 12.),
     differential_reflectivity_in_precipitation: (-10., 10.),
     differential_reflectivity_in_snow: (-10., 10.),
     differential_reflectivity_column_height: (0., 6.),
@@ -3691,7 +3698,8 @@ DEFAULT_FIELD_LIMITS = {
 
     cross_correlation_ratio: (0.7, 1.),
     corrected_cross_correlation_ratio: (0.7, 1.),
-    unfiltered_cross_correlation_ratio: (0.7, 1.),
+    #unfiltered_cross_correlation_ratio: (0.7, 1.),
+    unfiltered_cross_correlation_ratio: (0., 1.),
     uncorrected_cross_correlation_ratio: (0.7, 1.),
     logarithmic_cross_correlation_ratio: (0, 4),
     cross_correlation_ratio_in_rain: (0.9, 1.),

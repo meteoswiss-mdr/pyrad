@@ -199,12 +199,17 @@ def read_windmills_data(fname):
                 delimiter=';')
 
             for i, row in enumerate(reader):
-                dt_remote[i] = datetime.datetime.strptime(
-                    row['Datum(Remote)']+' '+row['Uhrzeit(Remote)'],
-                    '%d.%m.%Y %H:%M:%S')
-                dt_server[i] = datetime.datetime.strptime(
-                    row['Datum(Server)']+' '+row['Uhrzeit(Server)'],
-                    '%d.%m.%Y %H:%M:%S')
+                if 'Datum(Remote)' in row and 'Uhrzeit(Remote)' in row:
+                    dt_remote[i] = datetime.datetime.strptime(
+                        row['Datum(Remote)']+' '+row['Uhrzeit(Remote)'],
+                        '%d.%m.%Y %H:%M:%S')
+                    dt_server[i] = datetime.datetime.strptime(
+                        row['Datum(Server)']+' '+row['Uhrzeit(Server)'],
+                        '%d.%m.%Y %H:%M:%S')
+                else:
+                    dt_remote[i] = datetime.datetime.strptime(
+                        row['Datum (Anlage)']+' '+row['Zeit (Anlage)'],
+                        '%d.%m.%Y %H:%M:%S')
                 rotor_speed_avg[i] = float(
                     row['Rotordrehzahl'].replace(',', '.'))
                 rotor_speed_min[i] = float(
@@ -551,7 +556,6 @@ def read_trt_info2(fname):
             lon = np.ma.array([])
             scan_time = np.ma.array([], dtype=datetime.datetime)
 
-            nscans_aux = -1
             while 0 == 0:
                 line = txtfile.readline()
                 if not line:

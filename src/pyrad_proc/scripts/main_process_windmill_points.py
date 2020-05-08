@@ -3,10 +3,12 @@
 
 """
 ================================================
-main_process_data_windmills
+main_process_windmill_points
 ================================================
 
-This program compiles histograms of windmill radar returns
+This program compiles histograms of windmill radar returns at a particular
+point in space (usually the point where it got the maximum return) stratified
+by windmill characteristics (e.g. orientation, speed, etc.)
 
 """
 
@@ -223,7 +225,7 @@ def main():
 
                             if val_filt.size == 0:
                                 warn('No data for point '+point +
-                                    ' for time periods in file '+period_file)
+                                     ' for time periods in file '+period_file)
                                 continue
 
                             # Histogram plots
