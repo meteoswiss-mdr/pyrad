@@ -692,8 +692,6 @@ def process_radial_noise_ivic(procstatus, dscfg, radar_list=None):
             Default number of pulses used in the computation of the ray. If
             the number of pulses is not in radar.instrument_parameters this
             will be used instead. Default 30
-        flat_reg_wlen : int
-            range of window considered to find flat regions [m]. Default 8000.
         ngates_min: int
             minimum number of gates with noise to consider the retrieval
             valid. Default 800
@@ -732,13 +730,9 @@ def process_radial_noise_ivic(procstatus, dscfg, radar_list=None):
 
     # user values
     npulses_ray = dscfg.get('npulses_ray', 30)
-    flat_reg_wlen_rng = dscfg.get('flat_reg_wlen', 8000.)
     ngates_min = dscfg.get('ngates_min', 800)
     iterations = dscfg.get('iterations', 10)
     get_noise_pos = dscfg.get('get_noise_pos', False)
-
-    r_res = radar.range['data'][1]-radar.range['data'][0]
-    flat_reg_wlen = int(flat_reg_wlen_rng/r_res)
 
     if 'hh' in pwr_field:
         noise_field = 'noisedBm_hh'
@@ -748,8 +742,8 @@ def process_radial_noise_ivic(procstatus, dscfg, radar_list=None):
         noise_pos_field = 'noise_pos_v'
 
     noise, noise_pos = pyart.retrieve.compute_radial_noise_ivic(
-        radar, npulses_ray=npulses_ray, flat_reg_wlen=flat_reg_wlen,
-        ngates_min=ngates_min, iterations=iterations, noise_field=noise_field,
+        radar, npulses_ray=npulses_ray, ngates_min=ngates_min,
+        iterations=iterations, pwr_field=pwr_field, noise_field=noise_field,
         get_noise_pos=get_noise_pos)
 
     # prepare for exit

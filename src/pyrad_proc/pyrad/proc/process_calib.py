@@ -1046,9 +1046,6 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
             Default number of pulses used in the computation of the ray. If the
             number of pulses is not in radar.instrument_parameters this will be
             used instead. Used in Ivic method. Default 30
-        flat_reg_wlen : int
-            Length of the flat region window [m]. Used in Ivic method. Default
-            8000.
         iterations: int
             number of iterations in step 7 of Ivic method. Default 10.
         max_std_pwr : float. Dataset keyword
@@ -1243,20 +1240,15 @@ def process_sun_hits(procstatus, dscfg, radar_list=None):
                 pwrv_field=pwrv_field, zdr_field=zdr_field)
         else:
             npulses_ray = dscfg.get('npulses_ray', 30)
-            flat_reg_wlen_rng = dscfg.get('flat_reg_wlen', 8000.)
             nbins_min = dscfg.get('nbins_min', 800)
             iterations = dscfg.get('iterations', 10)
 
-            r_res = radar.range['data'][1]-radar.range['data'][0]
-            flat_reg_wlen = int(flat_reg_wlen_rng/r_res)
-
             sun_hits, new_radar = pyart.correct.get_sun_hits_ivic(
                 radar, delev_max=delev_max, dazim_max=dazim_max, elmin=elmin,
-                npulses_ray=npulses_ray, flat_reg_wlen=flat_reg_wlen,
-                nbins_min=nbins_min, iterations=iterations, attg=attg,
-                max_std_zdr=max_std_zdr, sun_position=sun_position,
-                pwrh_field=pwrh_field, pwrv_field=pwrv_field,
-                zdr_field=zdr_field)
+                npulses_ray=npulses_ray, nbins_min=nbins_min,
+                iterations=iterations, attg=attg, max_std_zdr=max_std_zdr,
+                sun_position=sun_position, pwrh_field=pwrh_field,
+                pwrv_field=pwrv_field, zdr_field=zdr_field)
 
         if sun_hits is None:
             return None, None
