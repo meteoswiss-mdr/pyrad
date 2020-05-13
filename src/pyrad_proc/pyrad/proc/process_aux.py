@@ -1138,7 +1138,7 @@ def process_radar_resampling(procstatus, dscfg, radar_list=None):
             assume the radar is collocated
         change_antenna_pattern : Bool. Dataset keyword
             If true the target radar has a different antenna pattern than the
-            observations radar
+            observations radar. Default True
         rhi_resolution : Bool. Dataset keyword
             Resolution of the synthetic RHI used to compute the data as viewed
             from the synthetic radar [deg]. Default 0.5
@@ -1441,6 +1441,9 @@ def _get_values_antenna_pattern(radar, tadict, field_names):
         (x_target.flatten(), y_target.flatten(), z_target.flatten())), k=1)
 
     if not change_antenna_pattern:
+        # temporary solution to get right time:
+        target_radar.time['data'][:] = radar.time['data'][0]
+
         for field_name in field_names:
             if field_name not in radar.fields:
                 warn('Field '+field_name+' not in observations radar object')
