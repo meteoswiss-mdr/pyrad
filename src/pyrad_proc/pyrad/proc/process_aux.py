@@ -103,6 +103,7 @@ def get_process_func(dataset_type, dsname):
                 'RADAR_RESAMPLING': process_radar_resampling
                 'RADIAL_NOISE_HS': process_radial_noise_hs
                 'RADIAL_NOISE_IVIC': process_radial_noise_ivic
+                'RADIAL_VELOCITY': process_radial_velocity
                 'RAINRATE': process_rainrate
                 'RAW': process_raw
                 'REFLECTIVITY': process_reflectivity
@@ -381,6 +382,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_dealias_region_based'
     elif dataset_type == 'DEALIAS_UNWRAP':
         func_name = 'process_dealias_unwrap_phase'
+    elif dataset_type == 'RADIAL_VELOCITY':
+        func_name = 'process_radial_velocity'
     elif dataset_type == 'WIND_VEL':
         func_name = 'process_wind_vel'
     elif dataset_type == 'VAD':

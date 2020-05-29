@@ -181,6 +181,7 @@ Doppler processing
     process_dealias_fourdd
     process_dealias_region_based
     process_dealias_unwrap_phase
+    process_radial_velocity
     process_wind_vel
     process_windshear
     process_vad
@@ -320,7 +321,7 @@ from .process_retrieve import process_radial_noise_hs
 from .process_retrieve import process_radial_noise_ivic
 
 from .process_Doppler import process_wind_vel, process_windshear
-from .process_Doppler import process_dealias_fourdd
+from .process_Doppler import process_radial_velocity, process_dealias_fourdd
 from .process_Doppler import process_dealias_region_based
 from .process_Doppler import process_dealias_unwrap_phase
 from .process_Doppler import process_vad, process_turbulence
