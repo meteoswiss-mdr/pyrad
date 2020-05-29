@@ -11,6 +11,7 @@ Functions for processing Doppler related parameters
     process_dealias_fourdd
     process_dealias_region_based
     process_dealias_unwrap_phase
+    process_radial_velocity
     process_wind_vel
     process_windshear
     process_vad
@@ -427,6 +428,105 @@ def process_dealias_unwrap_phase(procstatus, dscfg, radar_list=None):
     new_dataset = {'radar_out': deepcopy(radar)}
     new_dataset['radar_out'].fields = dict()
     new_dataset['radar_out'].add_field(corr_vel_field, corr_vel_dict)
+
+    return new_dataset, ind_rad
+
+
+def process_radial_velocity(procstatus, dscfg, radar_list=None):
+    """
+    Estimates the radial velocity respect to the radar from the wind velocity
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : string. Dataset keyword
+            The input data type
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the output
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    v_speed_field = None
+    h_speed_field = None
+    h_dir_field = None
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+        if datatype == 'wind_vel_v':
+            v_speed_field = get_fieldname_pyart(datatype)
+        if datatype == 'WIND_SPEED':
+            h_speed_field = get_fieldname_pyart(datatype)
+        if datatype == 'WIND_DIRECTION':
+            h_dir_field = get_fieldname_pyart(datatype)
+
+    if h_speed_field is None or h_dir_field is None:
+        warn('Horizontal wind speed and direction fields required'
+             ' to estimate radial velocity')
+        return None, None
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+    radar = radar_list[ind_rad]
+
+    if h_speed_field not in radar.fields or h_dir_field not in radar.fields:
+        warn('Unable to estimate radial velocity. '
+             'Missing horizontal wind')
+        return None, None
+
+    h_speed = radar.fields[h_speed_field]['data']
+    h_dir = radar.fields[h_dir_field]['data']
+
+    if v_speed_field is None or v_speed_field not in radar.fields:
+        warn('Unknown vertical wind speed. Assumed 0')
+
+        if v_speed_field is None:
+            v_speed_field == 'vertical_wind_component'
+
+        v_speed = np.ma.zeros((radar.nrays, radar.ngates))
+    else:
+        v_speed = radar.fields[v_speed_field]['data']
+
+    # get u and v wind components
+    h_dir_rad = np.deg2rad(h_dir)
+    speed_h_u = h_speed*np.sin(h_dir_rad)  # eastward component
+    speed_h_v = h_speed*np.cos(h_dir_rad)  # northward component
+
+    azi_2D_rad = np.broadcast_to(
+        np.deg2rad(radar.azimuth['data'])[:, np.newaxis],
+        (radar.nrays, radar.ngates))
+    ele_2D_rad = np.broadcast_to(
+        np.deg2rad(radar.elevation['data'])[:, np.newaxis],
+        (radar.nrays, radar.ngates))
+
+    r_speed = pyart.config.get_metadata('velocity')
+
+    # assuming no vertical velocity
+    # r_speed['data'] = h_speed*np.cos(h_dir_rad-azi_2D_rad)*np.cos(ele_2D_rad)
+
+    # with vertical velocity included
+    r_speed['data'] = (
+        (speed_h_u*np.sin(azi_2D_rad)+speed_h_v*np.cos(azi_2D_rad)) *
+        np.cos(ele_2D_rad)+np.sin(ele_2D_rad)*v_speed)
+
+    # prepare for exit
+    new_dataset = {'radar_out': deepcopy(radar)}
+    new_dataset['radar_out'].fields = dict()
+    new_dataset['radar_out'].add_field('velocity', r_speed)
 
     return new_dataset, ind_rad
 
