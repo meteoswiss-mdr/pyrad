@@ -2679,7 +2679,7 @@ def find_raw_cosmo_file(voltime, datatype, cfg, ind_rad=0):
 
         daydir = runtime.strftime('%Y-%m-%d')
         datapath = cfg['cosmopath'][ind_rad]+datatype+'/raw/'+daydir+'/'
-        for model in ('cosmo-1', 'cosmo-2', 'cosmo-7'):
+        for model in ('cosmo-1e', 'cosmo-1', 'cosmo-2', 'cosmo-7'):
             if datatype == 'TEMP':
                 search_name = (datapath+model+'_MDR_3D_'+runtimestr+'.nc')
             elif datatype == 'WIND':
@@ -2706,7 +2706,7 @@ def find_raw_cosmo_file(voltime, datatype, cfg, ind_rad=0):
 
         daydir = runtime.strftime('%Y-%m-%d')
         datapath = cfg['cosmopath'][ind_rad]+datatype+'/raw1/'+daydir+'/'
-        for model in ('cosmo-1', 'cosmo-2', 'cosmo-7'):
+        for model in ('cosmo-1e', 'cosmo-1', 'cosmo-2', 'cosmo-7'):
             if datatype == 'TEMP':
                 search_name = (datapath+model+'_MDR_3D_'+runtimestr+'.nc')
             elif datatype == 'WIND':
