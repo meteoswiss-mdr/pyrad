@@ -124,6 +124,12 @@ def process_cosmo(procstatus, dscfg, radar_list=None):
         warn('Unknown NWP model '+model)
         return None, None
 
+    # check if model is cosmo-1 or cosmo-1e
+    if model == 'cosmo-1':
+        model_aux = os.path.basename(fname)[0:8]
+        if model_aux == 'cosmo-1e':
+            model = model_aux
+
     if keep_in_memory:
         if dscfg['initialized'] == 0:
             cosmo_coord = read_cosmo_coord(
@@ -343,6 +349,7 @@ def process_hzt(procstatus, dscfg, radar_list=None):
 
     return new_dataset, ind_rad
 
+
 # @profile
 def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
     """
@@ -427,9 +434,15 @@ def process_cosmo_lookup_table(procstatus, dscfg, radar_list=None):
         return None, None
 
     model = os.path.basename(fname)[0:7]
-    if model not in ('cosmo-1', 'cosmo-2', 'cosmo-7'):
+    if model not in ('cosmo-1', 'cosmo-1e', 'cosmo-2', 'cosmo-7'):
         warn('Unknown NWP model '+model)
         return None, None
+
+    # check if model is cosmo-1 or cosmo-1e
+    if model == 'cosmo-1':
+        model_aux = os.path.basename(fname)[0:8]
+        if model_aux == 'cosmo-1e':
+            model = model_aux
 
     if dscfg['initialized'] == 0:
         if lookup_table:
@@ -761,9 +774,15 @@ def process_cosmo_to_radar(procstatus, dscfg, radar_list=None):
         return None, None
 
     model = os.path.basename(fname)[0:7]
-    if model not in ('cosmo-1', 'cosmo-2', 'cosmo-7'):
+    if model not in ('cosmo-1', 'cosmo-1e', 'cosmo-2', 'cosmo-7'):
         warn('Unknown NWP model '+model)
         return None, None
+
+    # check if model is cosmo-1 or cosmo-1e
+    if model == 'cosmo-1':
+        model_aux = os.path.basename(fname)[0:8]
+        if model_aux == 'cosmo-1e':
+            model = model_aux
 
     if dscfg['initialized'] == 0:
         savedir = dscfg['cosmopath'][ind_rad]+'rad2cosmo/'
@@ -815,7 +834,8 @@ def process_cosmo_to_radar(procstatus, dscfg, radar_list=None):
 
         radar_out = deepcopy(dscfg['global_data']['cosmo_radar'])
         radar_out.fields = dict()
-        radar_out.time['units'] = dtc.strftime('seconds since %Y-%m-%dT%H:%M:%SZ')
+        radar_out.time['units'] = dtc.strftime(
+            'seconds since %Y-%m-%dT%H:%M:%SZ')
 
         for field in cosmo_fields:
             for field_name in field:
@@ -846,7 +866,7 @@ def process_cosmo_coord(procstatus, dscfg, radar_list=None):
         cosmopath : string. General keyword
             path where to store the look up table
         model : string. Dataset keyword
-            The COSMO model to use. Can be cosmo-1, cosmo-2, cosmo-7
+            The COSMO model to use. Can be cosmo-1, cosmo-1e, cosmo-2, cosmo-7
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -874,10 +894,16 @@ def process_cosmo_coord(procstatus, dscfg, radar_list=None):
         return None, None
     radar = radar_list[ind_rad]
 
-    model = dscfg.get('model', 'cosmo-1')
-    if model not in ('cosmo-1', 'cosmo-2', 'cosmo-7'):
+    model = dscfg.get('model', 'cosmo-1e')
+    if model not in ('cosmo-1', 'cosmo-1e', 'cosmo-2', 'cosmo-7'):
         warn('Unknown NWP model '+model)
         return None, None
+
+    # check if model is cosmo-1 or cosmo-1e
+    if model == 'cosmo-1':
+        model_aux = os.path.basename(fname)[0:8]
+        if model_aux == 'cosmo-1e':
+            model = model_aux
 
     cosmo_coord = read_cosmo_coord(
         dscfg['cosmopath'][ind_rad]+'rad2cosmo/'+model+'_MDR_3D_const.nc',

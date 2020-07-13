@@ -231,6 +231,7 @@ def get_cosmo_fields(cosmo_data, cosmo_ind, time_index=0,
 
     return cosmo_fields
 
+
 # @profile
 def read_cosmo_data(fname, field_names=['temperature'], celsius=True):
     """
@@ -268,6 +269,11 @@ def read_cosmo_data(fname, field_names=['temperature'], celsius=True):
             warn(field+' data not present in COSMO file '+fname)
         else:
             var_data = _ncvar_to_dict(ncvars[cosmo_name], dtype='float16')
+
+            # remove dimension ensemble member of cosmo-1e
+            if var_data['data'].ndim == 5:
+                var_data['data'] = np.squeeze(var_data['data'], axis=1)
+
             if field == 'temperature' and celsius:
                 var_data['data'] -= 273.15
                 var_data['units'] = 'degrees Celsius'
