@@ -49,10 +49,10 @@ def main():
     parser.add_argument(
         '--datadirs', type=str,
         default=(
-            'mals_sha_windmills_point_WM1_20200304-20200311,'
-            'mals_sha_windmills_point_WM1_20200312-20200315,'
-            'mals_sha_windmills_point_WM1_20200316-20200320,'
-            'mals_sha_windmills_point_WM1_20200321-20200325'),
+            'mals_sha_windmills_point_psr_filtered_WM1_20200304-20200311,'
+            'mals_sha_windmills_point_psr_filtered_WM1_20200312-20200315,'
+            'mals_sha_windmills_point_psr_filtered_WM1_20200316-20200320,'
+            'mals_sha_windmills_point_psr_filtered_WM1_20200321-20200325'),
         help='directories containing data')
 
     parser.add_argument(

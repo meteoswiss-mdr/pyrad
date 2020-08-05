@@ -6,7 +6,7 @@ Auxiliary functions to control the Pyrad data processing flow
 
 .. autosummary::
     :toctree: generated/
-    
+
     _initialize_listener
     _user_input_listener
     _get_times_and_traj
@@ -933,6 +933,8 @@ def _create_cfg_dict(cfgfile):
         cfg.update({'lastStateFile': None})
     if 'datapath' not in cfg:
         cfg.update({'datapath': None})
+    if 'satpath' not in cfg:
+        cfg.update({'satpath': None})
     if 'path_convention' not in cfg:
         cfg.update({'path_convention': 'MCH'})
     if 'cosmopath' not in cfg:
@@ -999,7 +1001,7 @@ def _create_cfg_dict(cfgfile):
     # Convert the following strings to string arrays
     strarr_list = [
         'datapath', 'cosmopath', 'dempath', 'loadbasepath', 'psrpath',
-        'iqpath', 'loadname', 'RadarName', 'RadarRes', 'ScanList',
+        'iqpath', 'satpath', 'loadname', 'RadarName', 'RadarRes', 'ScanList',
         'imgformat', 'frequency', 'radar_beam_width_h', 'radar_beam_width_v',
         'pulse_width', 'nyquist_velocity', 'AntennaGainH', 'AntennaGainV',
         'dBADUtodBmh', 'dBADUtodBmv', 'mflossh', 'mflossv', 'radconsth',
@@ -1047,6 +1049,7 @@ def _create_datacfg_dict(cfg):
     """
 
     datacfg = dict({'datapath': cfg['datapath']})
+    datacfg.update({'satpath': cfg['satpath']})
     datacfg.update({'psrpath': cfg['psrpath']})
     datacfg.update({'iqpath': cfg['iqpath']})
     datacfg.update({'ScanList': cfg['ScanList']})

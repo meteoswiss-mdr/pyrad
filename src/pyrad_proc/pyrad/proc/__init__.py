@@ -33,6 +33,8 @@ Gridded data functions
     process_grid_point
     process_grid_time_stats
     process_grid_time_stats2
+    process_grid_fields_diff
+    process_grid_mask
 
 Spectral data functions
 =======================
@@ -246,6 +248,7 @@ from .process_aux import process_radar_resampling
 
 from .process_grid import process_grid, process_raw_grid, process_grid_point
 from .process_grid import process_grid_time_stats, process_grid_time_stats2
+from .process_grid import process_grid_fields_diff, process_grid_mask
 
 from .process_spectra import process_raw_spectra, process_spectral_power
 from .process_spectra import process_spectra_point, process_spectral_phase

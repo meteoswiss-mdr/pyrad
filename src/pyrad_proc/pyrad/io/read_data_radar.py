@@ -26,6 +26,7 @@ Functions for reading radar data files
     merge_fields_psr
     merge_fields_psr_spectra
     merge_fields_rad4alp_grid
+    merge_fields_sat_grid
     merge_fields_pyrad
     merge_fields_pyradcosmo
     merge_fields_pyradgrid
@@ -147,7 +148,7 @@ def get_data(voltime, datatypesdescr, cfg):
                 product is stored.
                 Example: CFRADIAL:dBZc,Att_ZPhi,SAVEVOL_dBZc
             'CFRADIALCOSMO': COSMO data in radar coordinates in a CFRadial
-            file format.
+                file format.
             'ODIMPYRAD': ODIM file format with the naming convention and
                 directory structure in which Pyrad saves the data.  For such
                 datatypes 'dataset' specifies the directory where the dataset
@@ -164,6 +165,8 @@ def get_data(voltime, datatypesdescr, cfg):
                 is stored and 'product' specifies the directroy where the
                 product is stored.
                 Example: ODIMPYRAD:RR,RZC,SAVEVOL
+            'SATGRID': CF Netcdf from used for the MeteoSat satellite data
+                in the CCS4 (Radar composite) grid.
 
             'PSRSPECTRA': Format used to store Rainbow power spectra
                 recordings.
@@ -216,6 +219,7 @@ def get_data(voltime, datatypesdescr, cfg):
     datatype_rad4alpgrid = list()
     datatype_rad4alpgif = list()
     datatype_rad4alpbin = list()
+    datatype_satgrid = list()
     datatype_rad4alpIQ = list()
     datatype_mxpol = list()
     datatype_pyradgrid = list()
@@ -283,6 +287,8 @@ def get_data(voltime, datatypesdescr, cfg):
             datatype_pyradgrid.append(datatype)
             dataset_pyradgrid.append(dataset)
             product_pyradgrid.append(product)
+        elif datagroup == 'SATGRID':
+            datatype_satgrid.append(datatype)
         elif datagroup == 'PSR':
             datatype_psr.append(datatype)
         elif datagroup == 'PSRSPECTRA':
@@ -313,6 +319,7 @@ def get_data(voltime, datatypesdescr, cfg):
     ndatatypes_rad4alpgrid = len(datatype_rad4alpgrid)
     ndatatypes_rad4alpgif = len(datatype_rad4alpgif)
     ndatatypes_rad4alpbin = len(datatype_rad4alpbin)
+    ndatatypes_satgrid = len(datatype_satgrid)
     ndatatypes_rad4alpIQ = len(datatype_rad4alpIQ)
     ndatatypes_pyradgrid = len(datatype_pyradgrid)
     ndatatypes_psr = len(datatype_psr)
@@ -448,18 +455,46 @@ def get_data(voltime, datatypesdescr, cfg):
 
     # add other grid object files
     if ndatatypes_rad4alpgif > 0:
-        radar = merge_fields_rad4alp_grid(
+        radar_aux = merge_fields_rad4alp_grid(
             voltime, datatype_rad4alpgif, cfg, ind_rad=ind_rad, ftype='gif')
+        if radar_aux is not None:
+            if radar is not None:
+                radar = merge_grids(radar, radar_aux)
+            else:
+                radar = radar_aux
 
     if ndatatypes_rad4alpbin > 0:
-        radar = merge_fields_rad4alp_grid(
+        radar_aux = merge_fields_rad4alp_grid(
             voltime, datatype_rad4alpbin, cfg, ind_rad=ind_rad, ftype='bin')
+        if radar_aux is not None:
+            if radar is not None:
+                radar = merge_grids(radar, radar_aux)
+            else:
+                radar = radar_aux
 
     if ndatatypes_pyradgrid > 0:
         radar_aux = merge_fields_pyradgrid(
             cfg['loadbasepath'][ind_rad], cfg['loadname'][ind_rad], voltime,
             datatype_pyradgrid, dataset_pyradgrid, product_pyradgrid, cfg)
-        radar = add_field(radar, radar_aux)
+        if radar_aux is not None:
+            if radar is not None:
+                radar = merge_grids(radar, radar_aux)
+            else:
+                radar = radar_aux
+
+    if ndatatypes_satgrid > 0:
+        radar_aux = merge_fields_sat_grid(
+            voltime, datatype_satgrid, cfg, ind_rad=ind_rad)
+        if radar_aux is not None:
+            if radar is not None:
+                radar = merge_grids(radar, radar_aux)
+            else:
+                radar = radar_aux
+
+        # for field in radar.fields:
+        #     print(
+        #         'Field size (z, y, x): ', radar.fields[field]['data'].shape)
+        #     break
 
     # add COSMO files to the radar field
     if ndatatypes_cosmo > 0 and _WRADLIB_AVAILABLE:
@@ -2475,6 +2510,66 @@ def merge_fields_rad4alp_grid(voltime, datatype_list, cfg, ind_rad=0,
             else:
                 # Zh CAPPI product. Merge grids
                 grid = merge_grids(grid, grid_aux)
+
+    if grid is None:
+        return grid
+
+    # Crop the data
+    lat_min = cfg.get('latmin', None)
+    lat_max = cfg.get('latmax', None)
+    lon_min = cfg.get('lonmin', None)
+    lon_max = cfg.get('lonmax', None)
+    alt_min = cfg.get('altmin', None)
+    alt_max = cfg.get('altmax', None)
+
+    return crop_grid(
+        grid, lat_min=lat_min, lat_max=lat_max, lon_min=lon_min,
+        lon_max=lon_max, alt_min=alt_min, alt_max=alt_max)
+
+
+def merge_fields_sat_grid(voltime, datatype_list, cfg, ind_rad=0,
+                          ftype='METRANET'):
+    """
+    merge rad4alp Cartesian products
+
+    Parameters
+    ----------
+    voltime: datetime object
+        reference time of the scan
+    datatype : str
+        name of the data type to read
+    cfg : dict
+        configuration dictionary
+    ind_rad : int
+        radar index
+    ftype : str
+        File type. Can be 'METRANET', 'gif' or 'bin'
+
+    Returns
+    -------
+    radar : Radar
+        radar object
+
+    """
+    grid = None
+    daydir = voltime.strftime('%Y/%m/%d/')
+    dayinfo = voltime.strftime('%Y%m%d%H%M')
+    datapath = cfg['satpath'][ind_rad] + daydir
+    if not os.path.isdir(datapath):
+        # warn("WARNING: Unknown datapath '%s'" % datapath)
+        return grid
+
+    filename = glob.glob(datapath+'MSG?_ccs4_'+dayinfo+'*_rad_PLAX.nc')
+    if not filename:
+        warn(
+            'No file found in '+datapath+'MSG?_ccs4_'+dayinfo+'*_rad_PLAX.nc')
+        return grid
+
+    field_names = []
+    for datatype in datatype_list:
+        field_names.append(get_fieldname_pyart(datatype))
+
+    grid = pyart.aux_io.read_cf1_cartesian(filename[0], field_names)
 
     if grid is None:
         return grid

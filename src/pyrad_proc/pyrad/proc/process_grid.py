@@ -12,6 +12,8 @@ Functions to processes gridded data.
     process_grid_point
     process_grid_time_stats
     process_grid_time_stats2
+    process_grid_fields_diff
+    process_grid_mask
 
 """
 
@@ -911,3 +913,152 @@ def process_grid_time_stats2(procstatus, dscfg, radar_list=None):
             'timeinfo': dscfg['global_data']['endtime']}
 
         return new_dataset, ind_rad
+
+
+def process_grid_fields_diff(procstatus, dscfg, radar_list=None):
+    """
+    Computes grid field differences
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing a radar object containing the field differences
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    # create the list of data types for each radar
+    if len(dscfg['datatype']) != 2:
+        warn(
+            'Two and only two fields are required to compute the field'
+            ' differences')
+        return None, None
+
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
+    field_name_1 = get_fieldname_pyart(datatype)
+
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][1])
+    field_name_2 = get_fieldname_pyart(datatype)
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+
+    grid = radar_list[ind_rad]
+    if ((field_name_1 not in grid.fields) or
+            (field_name_2 not in grid.fields)):
+        warn('Unable to compare fields '+field_name_1+'and '+field_name_2 +
+             '. Fields missings')
+        return None, None
+
+    field_diff = pyart.config.get_metadata('fields_difference')
+    field_diff['data'] = (
+        grid.fields[field_name_1]['data'] -
+        grid.fields[field_name_2]['data'])
+    field_diff['long_name'] = field_name_1+' - '+field_name_2
+
+    grid_diff = deepcopy(grid)
+    grid_diff.fields = dict()
+    grid_diff.add_field('fields_difference', field_diff)
+
+    new_dataset = {'radar_out': grid_diff}
+
+    return new_dataset, ind_rad
+
+
+def process_grid_mask(procstatus, dscfg, radar_list=None):
+    """
+    Mask data. Puts True if data is above a certain threshold and false
+    otherwise.
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+    threshold : float
+        Threshold used for the mask. Values below threshold are set to False.
+        Above threshold are set to True. Default 0.
+    x_dir_ext, y_dir_ext : int
+        Number of pixels by which to extend the mask on each side of the
+        west-east direction and south-north direction
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the output
+    ind_rad : int
+        radar index
+
+    """
+
+    if procstatus != 1:
+        return None, None
+
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, _, _, _ = get_datatype_fields(datatypedescr)
+        break
+    ind_rad = int(radarnr[5:8])-1
+    if (radar_list is None) or (radar_list[ind_rad] is None):
+        warn('ERROR: No valid radar')
+        return None, None
+
+    grid = radar_list[ind_rad]
+
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
+    field_name = get_fieldname_pyart(datatype)
+
+    if field_name not in grid.fields:
+        warn('Unable to mask field '+field_name+' Field missing in grid')
+        return None, None
+
+    threshold = dscfg.get('threshold', 0.)
+    x_dir_ext = dscfg.get('x_dir_ext', 0)
+    y_dir_ext = dscfg.get('y_dir_ext', 0)
+
+    field_mask = pyart.config.get_metadata('field_mask')
+    field_mask['data'] = np.ma.masked_all(
+        (grid.nz, grid.ny, grid.nx), dtype=np.int8)
+    field_mask['data'][:] = 0
+    valid = np.logical_not(np.ma.getmaskarray(grid.fields[field_name]['data']))
+    field_mask['data'][valid] = 1
+    field_mask['data'][grid.fields[field_name]['data'] >= threshold] = 2
+    field_mask['long_name'] = field_name+' threshold '+str(threshold)
+
+    if x_dir_ext > 0 or y_dir_ext > 0:
+        ind_z, ind_y, ind_x = np.where(field_mask['data'] == 2)
+
+        if ind_z.size > 0:
+            for z, y, x in zip(ind_z, ind_y, ind_x):
+                field_mask['data'][
+                    0, y-y_dir_ext:y+y_dir_ext+1,
+                    x-x_dir_ext:x+x_dir_ext+1] = 2
+
+    grid_mask = deepcopy(grid)
+    grid_mask.fields = dict()
+    grid_mask.add_field('field_mask', field_mask)
+
+    new_dataset = {'radar_out': grid_mask}
+
+    return new_dataset, ind_rad
