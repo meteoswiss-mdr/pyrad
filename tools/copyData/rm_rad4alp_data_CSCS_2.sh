@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script removes the rad4alp data from the CSCS
+# This script removes the rad4alp Cartesian data from the CSCS
 # repository
 # To be run in CSCS
 
@@ -10,14 +10,10 @@ umask 0002
 # Config
 dateCmd="/bin/date"
 
-file_type=M
-
 # default variables
 START_TIME="000001"
 END_TIME="240000"
 time_vec='all'
-
-ele_vec='all'
 
 data_destbase=/store/msrad/radar/rad4alp/rawdata/
 while [[ $# -gt 1 ]]
@@ -25,11 +21,11 @@ do
     key="$1"
 
     case $key in
-        -r|--radar)
-        RADAR="$2"
+        --prod)
+        PROD="$2"
         OIFS=$IFS
         IFS=','
-        read -r -a radar_vec <<< "$RADAR"
+        read -r -a prod_vec <<< "$PROD"
         IFS=$OIFS
         shift # past argument
         ;;
@@ -47,18 +43,6 @@ do
         ;;
         --end_time)
         END_TIME="$2"
-        shift # past argument
-        ;;
-        -e|--res)
-        res="$2"
-        shift # past argument
-        ;;
-        --ele)
-        ELE="$2"
-        OIFS=$IFS
-        IFS=','
-        read -r -a ele_vec <<< "$ELE"
-        IFS=$OIFS
         shift # past argument
         ;;
         -p|--dest_base)
@@ -132,8 +116,7 @@ if [ $dt_st -lt 0 ] || [ $dt_et -gt 0 ]; then
 fi
 
 nday=${#day_vec[@]}
-nrad=${#radar_vec[@]}
-nele=${#ele_vec[@]}
+nprod=${#prod_vec[@]}
 ntime=${#time_vec[@]}
 
 for ((iday=0; iday<${nday}; iday++)); do
@@ -147,9 +130,9 @@ for ((iday=0; iday<${nday}; iday++)); do
 
     echo "Removing day "${years}${julday}
 
-    for ((irad=0; irad<${nrad}; irad++)); do
-        radar=${radar_vec[${irad}]}
-        echo "Removing radar "${radar}
+    for ((iprod=0; iprod<${nprod}; iprod++)); do
+        prod=${prod_vec[${iprod}]}
+        echo "Removing product "${prod}
 
         if [ "${res}" == "H" ]
         then

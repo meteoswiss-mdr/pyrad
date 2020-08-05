@@ -2149,12 +2149,14 @@ def process_fields_diff(procstatus, dscfg, radar_list=None):
              '. Field missing in one of the radars')
         return None, None
 
-    rad_diff = deepcopy(radar1)
-    rad_diff.fields = dict()
     field_diff = pyart.config.get_metadata('fields_difference')
     field_diff['data'] = (
         radar1.fields[field_name_1]['data'] -
         radar2.fields[field_name_2]['data'])
+    field_diff['long_name'] = field_name_1+' - '+field_name_2
+
+    rad_diff = deepcopy(radar1)
+    rad_diff.fields = dict()
     rad_diff.add_field('fields_difference', field_diff)
 
     new_dataset = {'radar_out': rad_diff}

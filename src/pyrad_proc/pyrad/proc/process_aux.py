@@ -165,6 +165,8 @@ def get_process_func(dataset_type, dsname):
             'GRID' format output:
                 'RAW_GRID': process_raw_grid
                 'GRID': process_grid
+                'GRID_FIELDS_DIFF': process_grid_fields_diff
+                'GRID_MASK': process_grid_mask
             'GRID_TIMEAVG' format output:
                 'GRID_TIME_STATS': process_grid_time_stats
                 'GRID_TIME_STATS2': process_grid_time_stats2
@@ -233,6 +235,12 @@ def get_process_func(dataset_type, dsname):
         dsformat = 'GRID'
     elif dataset_type == 'RAW_GRID':
         func_name = 'process_raw_grid'
+        dsformat = 'GRID'
+    elif dataset_type == 'GRID_FIELDS_DIFF':
+        func_name = 'process_grid_fields_diff'
+        dsformat = 'GRID'
+    elif dataset_type == 'GRID_MASK':
+        func_name = 'process_grid_mask'
         dsformat = 'GRID'
     elif dataset_type == 'RAW_SPECTRA':
         func_name = 'process_raw_spectra'
@@ -964,14 +972,16 @@ def process_azimuthal_average(procstatus, dscfg, radar_list=None):
         datatype : string. Dataset keyword
             The data type where we want to extract the point measurement
         angle : float or None. Dataset keyword
-            The
+            The center angle to average. If not set or set to -1 all
+            available azimuth angles will be used
         delta_azi : float. Dataset keyword
-
+            The angle span to average. If not set or set to -1 all the
+            available azimuth angles will be used
         avg_type : str. Dataset keyword
-
+            Average type. Can be mean or median
         nvalid_min : int. Dataset keyword
-             the (minimum) radius of the region of interest in m. Default half
-             the largest resolution
+            the (minimum) radius of the region of interest in m. Default half
+            the largest resolution
 
     radar_list : list of Radar objects
         Optional. list of radar objects
