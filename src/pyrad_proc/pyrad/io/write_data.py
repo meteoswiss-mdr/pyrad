@@ -28,6 +28,7 @@ Functions for writing pyrad output data
     write_ts_polar_data
     write_ts_grid_data
     write_ts_ml
+    write_ts_stats
     write_ts_cum
     write_monitoring_ts
     write_excess_gates
@@ -1366,6 +1367,60 @@ def write_ts_ml(dt_ml, ml_top_avg, ml_top_std, thick_avg, thick_std,
                      fill_value=get_fillvalue()),
                  'N valid rays': nrays_valid,
                  'rays total': nrays_total})
+            csvfile.close()
+
+    return fname
+
+
+def write_ts_stats(dt, value, fname, stat='mean'):
+    """
+    writes time series of statistics
+
+    Parameters
+    ----------
+    dt : date time array
+        array of time steps
+    value: float arrays
+        the average and the standard deviation of the melting layer top height
+    fname : str
+        file name where to store the data
+    stat : str
+        Statistic that is written
+
+    Returns
+    -------
+    fname : str
+        the name of the file where data has written
+
+    """
+    filelist = glob.glob(fname)
+    if not filelist:
+        with open(fname, 'w', newline='') as csvfile:
+            csvfile.write(
+                '# Statistics\n' +
+                '# Comment lines are preceded by "#"\n' +
+                '# Description: \n' +
+                '# Time series of '+stat+'.\n' +
+                '# Fill Value: '+str(get_fillvalue())+'\n' +
+                '# Start: '+dt.strftime('%Y-%m-%d %H:%M:%S UTC')+'\n' +
+                '#\n')
+
+            fieldnames = ['date-time [UTC]', 'value']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writeheader()
+            writer.writerow(
+                {'date-time [UTC]': dt.strftime('%Y-%m-%d %H:%M:%S'),
+                 'value': value.filled(
+                     fill_value=get_fillvalue())[0]})
+            csvfile.close()
+    else:
+        with open(fname, 'a', newline='') as csvfile:
+            fieldnames = ['date-time [UTC]', 'value']
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writerow(
+                {'date-time [UTC]': dt.strftime('%Y-%m-%d %H:%M:%S'),
+                 'value': value.filled(
+                     fill_value=get_fillvalue())[0]})
             csvfile.close()
 
     return fname

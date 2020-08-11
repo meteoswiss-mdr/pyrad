@@ -22,7 +22,7 @@ import pyart
 
 from ..io.io_aux import get_fieldname_pyart
 from ..io.io_aux import get_save_dir, make_filename
-from ..io.write_data import write_histogram
+from ..io.write_data import write_histogram, write_ts_stats
 
 from ..graph.plots_grid import plot_surface, plot_surface_contour
 from ..graph.plots_grid import plot_longitude_slice, plot_latitude_slice
@@ -170,6 +170,11 @@ def generate_grid_products(dataset, prdcfg):
                     The list of data types to save. If it is None, all fields
                     in the radar object will be saved
         'SAVEVOL': Saves on field of a gridded data object in a netcdf file.
+        'STATS': Computes statistics over the whole images and stores them in
+            a file.
+            User defined parameters:
+                stat: str
+                    The statistic used. Can be mean, median, min, max
         'SURFACE_IMAGE': Plots a surface image of gridded data.
             User defined parameters:
                 level: int
@@ -232,6 +237,55 @@ def generate_grid_products(dataset, prdcfg):
     dssavedir = prdcfg['dsname']
     if 'dssavename' in prdcfg:
         dssavedir = prdcfg['dssavename']
+
+    if prdcfg['type'] == 'STATS':
+        field_name = get_fieldname_pyart(prdcfg['voltype'])
+        if field_name not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        # user defined values
+        stat = prdcfg.get('stat', 'mean')
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=None)
+
+        fname = make_filename(
+            'stats', prdcfg['dstype'], prdcfg['voltype'],
+            ['csv'], prdcfginfo=stat,
+            timeinfo=None, runinfo=prdcfg['runinfo'])[0]
+
+        fname = savedir+fname
+
+        if stat == 'mean':
+            value = np.ma.masked_all(1)
+            value[0] = np.ma.mean(
+                dataset['radar_out'].fields[field_name]['data'])
+        elif stat == 'median':
+            value = np.ma.masked_all(1)
+            value[0] = np.ma.median(
+                dataset['radar_out'].fields[field_name]['data'])
+        elif stat == 'min':
+            value = np.ma.masked_all(1)
+            value[0] = np.ma.min(
+                dataset['radar_out'].fields[field_name]['data'])
+        elif stat == 'max':
+            value = np.ma.masked_all(1)
+            value[0] = np.ma.max(
+                dataset['radar_out'].fields[field_name]['data'])
+        else:
+            warn('Unsupported statistic '+stat)
+            return None
+
+        write_ts_stats(prdcfg['timeinfo'], value, fname, stat=stat)
+
+        print('----- save to '+fname)
+
+        return fname
 
     if prdcfg['type'] == 'SURFACE_IMAGE':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
