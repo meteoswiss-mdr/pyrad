@@ -1080,6 +1080,7 @@ def process_attenuation(procstatus, dscfg, radar_list=None):
 
     temp = None
     iso0 = None
+    zdr = None
     for datatypedescr in dscfg['datatype']:
         radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'dBZc':
@@ -1105,9 +1106,7 @@ def process_attenuation(procstatus, dscfg, radar_list=None):
         return None, None
     radar = radar_list[ind_rad]
 
-    if ((phidp not in radar.fields) or
-            (refl not in radar.fields) or
-            (zdr not in radar.fields)):
+    if phidp not in radar.fields or refl not in radar.fields:
         warn('Unable to compute attenuation. Missing data')
         return None, None
 

@@ -1311,6 +1311,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'sum_squared'
     elif datatype == 'diff':
         field_name = 'fields_difference'
+    elif datatype == 'mask':
+        field_name = 'field_mask'
 
     # spectral data
     elif datatype == 'ShhADU':
@@ -1671,6 +1673,34 @@ def get_fieldname_pyart(datatype):
     elif datatype == 'CNR':
         field_name = 'cnr'
 
+    # satellite names
+    elif datatype == 'IR_016':
+        field_name = 'IR_016'
+    elif datatype == 'IR_039':
+        field_name = 'IR_039'
+    elif datatype == 'IR_087':
+        field_name = 'IR_087'
+    elif datatype == 'IR_097':
+        field_name = 'IR_097'
+    elif datatype == 'IR_108':
+        field_name = 'IR_108'
+    elif datatype == 'IR_120':
+        field_name = 'IR_120'
+    elif datatype == 'IR_134':
+        field_name = 'IR_134'
+    elif datatype == 'CTH':
+        field_name = 'CTH'
+    elif datatype == 'HRV':
+        field_name = 'HRV'
+    elif datatype == 'VIS006':
+        field_name = 'VIS006'
+    elif datatype == 'VIS008':
+        field_name = 'VIS008'
+    elif datatype == 'WV_062':
+        field_name = 'WV_062'
+    elif datatype == 'WV_073':
+        field_name = 'WV_073'
+
     # cloud radar names
     elif datatype == 'SNR':
         field_name = 'SNR'
@@ -1980,7 +2010,7 @@ def get_file_list(datadescriptor, starttimes, endtimes, cfg, scan=None):
                 dayfilelist = glob.glob(datapath+basename+'*.'+scan+'*')
                 for filename in dayfilelist:
                     t_filelist.append(filename)
-            elif datagroup in('RAD4ALPGRID', 'RAD4ALPGIF', 'RAD4ALPBIN'):
+            elif datagroup in ('RAD4ALPGRID', 'RAD4ALPGIF', 'RAD4ALPBIN'):
                 acronym, termination = get_rad4alp_prod_fname(datatype)
                 dir_day = starttime+datetime.timedelta(days=i)
                 dayinfo = dir_day.strftime('%y%j')
@@ -1995,6 +2025,20 @@ def get_file_list(datadescriptor, starttimes, endtimes, cfg, scan=None):
                     continue
 
                 dayfilelist = glob.glob(datapath+basename+'*'+termination)
+                for filename in dayfilelist:
+                    t_filelist.append(filename)
+            elif datagroup == 'SATGRID':
+                daydir = (
+                    starttime +
+                    datetime.timedelta(days=i)).strftime('%Y/%m/%d/')
+                dayinfo = (starttime+datetime.timedelta(days=i)).strftime(
+                    '%Y%m%d')
+                datapath = cfg['satpath'][ind_rad] + daydir
+                if not os.path.isdir(datapath):
+                    # warn("WARNING: Unknown datapath '%s'" % datapath)
+                    continue
+                dayfilelist = glob.glob(
+                    datapath+'MSG?_ccs4_'+dayinfo+'*_rad_PLAX.nc')
                 for filename in dayfilelist:
                     t_filelist.append(filename)
 
@@ -2679,7 +2723,7 @@ def find_raw_cosmo_file(voltime, datatype, cfg, ind_rad=0):
 
         daydir = runtime.strftime('%Y-%m-%d')
         datapath = cfg['cosmopath'][ind_rad]+datatype+'/raw/'+daydir+'/'
-        for model in ('cosmo-1', 'cosmo-2', 'cosmo-7'):
+        for model in ('cosmo-1e', 'cosmo-1', 'cosmo-2', 'cosmo-7'):
             if datatype == 'TEMP':
                 search_name = (datapath+model+'_MDR_3D_'+runtimestr+'.nc')
             elif datatype == 'WIND':
@@ -2706,7 +2750,7 @@ def find_raw_cosmo_file(voltime, datatype, cfg, ind_rad=0):
 
         daydir = runtime.strftime('%Y-%m-%d')
         datapath = cfg['cosmopath'][ind_rad]+datatype+'/raw1/'+daydir+'/'
-        for model in ('cosmo-1', 'cosmo-2', 'cosmo-7'):
+        for model in ('cosmo-1e', 'cosmo-1', 'cosmo-2', 'cosmo-7'):
             if datatype == 'TEMP':
                 search_name = (datapath+model+'_MDR_3D_'+runtimestr+'.nc')
             elif datatype == 'WIND':
@@ -2888,6 +2932,9 @@ def _get_datetime(fname, datagroup, ftime_format=None):
     elif datagroup == 'COSMORAW':
         datetimestr = bfile[-13:-3]
         fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d%H')
+    elif datagroup == 'SATGRID':
+        datetimestr = bfile[10:22]
+        fdatetime = datetime.datetime.strptime(datetimestr, '%Y%m%d%H%M')
     else:
         warn('unknown data group')
         return None

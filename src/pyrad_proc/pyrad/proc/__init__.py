@@ -33,6 +33,8 @@ Gridded data functions
     process_grid_point
     process_grid_time_stats
     process_grid_time_stats2
+    process_grid_fields_diff
+    process_grid_mask
 
 Spectral data functions
 =======================
@@ -181,6 +183,7 @@ Doppler processing
     process_dealias_fourdd
     process_dealias_region_based
     process_dealias_unwrap_phase
+    process_radial_velocity
     process_wind_vel
     process_windshear
     process_vad
@@ -245,6 +248,7 @@ from .process_aux import process_radar_resampling
 
 from .process_grid import process_grid, process_raw_grid, process_grid_point
 from .process_grid import process_grid_time_stats, process_grid_time_stats2
+from .process_grid import process_grid_fields_diff, process_grid_mask
 
 from .process_spectra import process_raw_spectra, process_spectral_power
 from .process_spectra import process_spectra_point, process_spectral_phase
@@ -320,7 +324,7 @@ from .process_retrieve import process_radial_noise_hs
 from .process_retrieve import process_radial_noise_ivic
 
 from .process_Doppler import process_wind_vel, process_windshear
-from .process_Doppler import process_dealias_fourdd
+from .process_Doppler import process_radial_velocity, process_dealias_fourdd
 from .process_Doppler import process_dealias_region_based
 from .process_Doppler import process_dealias_unwrap_phase
 from .process_Doppler import process_vad, process_turbulence

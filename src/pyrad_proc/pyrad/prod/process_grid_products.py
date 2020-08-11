@@ -176,12 +176,44 @@ def generate_grid_products(dataset, prdcfg):
                     The altitude level to plot. The rest of the parameters are
                     defined by the parameters in 'ppiImageConfig' and
                     'ppiMapImageConfig' in the 'loc' configuration file
-        'SURFACE_CONTOUR': Plots a surface image of gridded data.
+        'SURFACE_CONTOUR': Plots a surface image of contour gridded data.
             User defined parameters:
                 level: int
                     The altitude level to plot. The rest of the parameters are
                     defined by the parameters in 'ppiImageConfig' and
                     'ppiMapImageConfig' in the 'loc' configuration file
+                contour_values : float array or None
+                    The contour values. If None the values are taken from the
+                    'boundaries' keyword in the field description in the
+                    Py-ART config file. If 'boundaries' is not set the
+                    countours are 10 values linearly distributed from vmin to
+                    vmax
+        SURFACE_CONTOUR_OVERPLOT:
+            Plots a surface image of gridded data with a contour overplotted.
+            User defined parameters:
+                level: int
+                    The altitude level to plot. The rest of the parameters are
+                    defined by the parameters in 'ppiImageConfig' and
+                    'ppiMapImageConfig' in the 'loc' configuration file
+                contour_values : float array or None
+                    The contour values. If None the values are taken from the
+                    'boundaries' keyword in the field description in the
+                    Py-ART config file. If 'boundaries' is not set the
+                    countours are 10 values linearly distributed from vmin to
+                    vmax
+        SURFACE_OVERPLOT:
+            Plots on the same surface two images, one on top of the other.
+            User defined parameters:
+                level: int
+                    The altitude level to plot. The rest of the parameters are
+                    defined by the parameters in 'ppiImageConfig' and
+                    'ppiMapImageConfig' in the 'loc' configuration file
+                contour_values : float array or None
+                    The contour values. If None the values are taken from the
+                    'boundaries' keyword in the field description in the
+                    Py-ART config file. If 'boundaries' is not set the
+                    countours are 10 values linearly distributed from vmin to
+                    vmax
 
     Parameters
     ----------
@@ -291,7 +323,8 @@ def generate_grid_products(dataset, prdcfg):
             prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
 
         fname_list = make_filename(
-            'surface', prdcfg['dstype'], prdcfg['voltype'],
+            'surface-contour', prdcfg['dstype'],
+            prdcfg['voltype']+'-'+prdcfg['contourtype'],
             prdcfg['imgformat'], prdcfginfo='l'+str(level),
             timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
 
@@ -312,6 +345,60 @@ def generate_grid_products(dataset, prdcfg):
         fname_list = plot_surface_contour(
             dataset['radar_out'], contour_name, contour_level, prdcfg,
             fname_list, contour_values=contour_values, ax=ax, fig=fig,
+            display=display, save_fig=True)
+
+        print('----- save to '+' '.join(fname_list))
+
+        return fname_list
+
+    if prdcfg['type'] == 'SURFACE_OVERPLOT':
+        field_name_btm = get_fieldname_pyart(prdcfg['voltype_btm'])
+        if field_name_btm not in dataset['radar_out'].fields:
+            warn(
+                ' Field type ' + field_name_btm +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        field_name_top = get_fieldname_pyart(prdcfg['voltype_top'])
+        if field_name_top not in dataset['radar_out'].fields:
+            warn(
+                'Contour type ' + field_name_top +
+                ' not available in data set. Skipping product ' +
+                prdcfg['type'])
+            return None
+
+        level_btm = prdcfg.get('level_btm', 0)
+        level_top = prdcfg.get('level_top', 0)
+        alpha = prdcfg.get('alpha', None)
+
+        savedir = get_save_dir(
+            prdcfg['basepath'], prdcfg['procname'], dssavedir,
+            prdcfg['prdname'], timeinfo=prdcfg['timeinfo'])
+
+        fname_list = make_filename(
+            'surface_overplot', prdcfg['dstype'],
+            prdcfg['voltype_btm']+'-'+prdcfg['voltype_top'],
+            prdcfg['imgformat'], prdcfginfo='l'+str(level_btm),
+            timeinfo=prdcfg['timeinfo'], runinfo=prdcfg['runinfo'])
+
+        for i, fname in enumerate(fname_list):
+            fname_list[i] = savedir+fname
+
+        titl = (
+            pyart.graph.common.generate_grid_title(
+                dataset['radar_out'], field_name_btm, level_btm) +
+            ' - ' +
+            pyart.graph.common.generate_field_name(
+                dataset['radar_out'], field_name_top))
+
+        fig, ax, display = plot_surface(
+            dataset['radar_out'], field_name_btm, level_btm, prdcfg,
+            fname_list, titl=titl, save_fig=False)
+
+        fname_list = plot_surface(
+            dataset['radar_out'], field_name_top, level_top, prdcfg,
+            fname_list, titl=titl, alpha=alpha, ax=ax, fig=fig,
             display=display, save_fig=True)
 
         print('----- save to '+' '.join(fname_list))

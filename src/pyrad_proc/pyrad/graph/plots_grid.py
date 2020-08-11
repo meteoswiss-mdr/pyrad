@@ -39,7 +39,8 @@ from .plots_aux import get_norm
 
 
 def plot_surface(grid, field_name, level, prdcfg, fname_list, titl=None,
-                 save_fig=True, use_basemap=False):
+                 alpha=None, ax=None, fig=None, display=None, save_fig=True,
+                 use_basemap=False):
     """
     plots a surface from gridded data
 
@@ -57,6 +58,15 @@ def plot_surface(grid, field_name, level, prdcfg, fname_list, titl=None,
         list of names of the files where to store the plot
     titl : str
         Plot title
+    alpha : float or None
+        Set the alpha transparency of the grid plot. Useful for
+        overplotting radar over other datasets.
+    ax : Axis
+        Axis to plot on. if fig is None a new axis will be created
+    fig : Figure
+        Figure to add the colorbar to. If none a new figure will be created
+    display : GridMapDisplay object
+        The display used
     save_fig : bool
         if true save the figure. If false it does not close the plot and
         returns the handle to the figure
@@ -69,6 +79,8 @@ def plot_surface(grid, field_name, level, prdcfg, fname_list, titl=None,
 
     """
     dpi = prdcfg['gridMapImageConfig'].get('dpi', 72)
+    vmin = prdcfg.get('vmin', None)
+    vmax = prdcfg.get('vmax', None)
 
     norm, ticks, ticklabs = get_norm(field_name)
 
@@ -84,50 +96,69 @@ def plot_surface(grid, field_name, level, prdcfg, fname_list, titl=None,
     lon_lines = np.arange(np.floor(min_lon), np.ceil(max_lon)+1, lonstep)
     lat_lines = np.arange(np.floor(min_lat), np.ceil(max_lat)+1, latstep)
 
-    fig = plt.figure(figsize=[xsize, ysize], dpi=dpi)
-    ax = fig.add_subplot(111)
+    if fig is None:
 
-    if use_basemap:
-        resolution = prdcfg['gridMapImageConfig'].get('mapres', 'l')
-        if resolution not in ('c', 'l', 'i', 'h', 'f'):
-            warn('Unknown map resolution: '+resolution)
-            resolution = 'l'
 
-        if resolution == 'c':
-            area_thresh = 10000
-        elif resolution == 'l':
-            area_thresh = 1000
-        elif resolution == 'i':
-            area_thresh = 100
-        elif resolution == 'h':
-            area_thresh = 10
-        elif resolution == 'f':
-            area_thresh = 1
+        fig = plt.figure(figsize=[xsize, ysize], dpi=dpi)
+        ax = fig.add_subplot(111)
 
-        display = pyart.graph.GridMapDisplayBasemap(grid)
-        display.plot_basemap(
-            lat_lines=lat_lines, lon_lines=lon_lines, resolution=resolution,
-            area_thresh=area_thresh, auto_range=False, min_lon=min_lon,
-            max_lon=max_lon, min_lat=min_lat, max_lat=max_lat, ax=ax)
-        display.plot_grid(
-            field_name, level=level, norm=norm, ticks=ticks, title=titl,
-            ticklabs=ticklabs, ax=ax, fig=fig)
+        if use_basemap:
+            resolution = prdcfg['gridMapImageConfig'].get('mapres', 'l')
+            if resolution not in ('c', 'l', 'i', 'h', 'f'):
+                warn('Unknown map resolution: '+resolution)
+                resolution = 'l'
+
+            if resolution == 'c':
+                area_thresh = 10000
+            elif resolution == 'l':
+                area_thresh = 1000
+            elif resolution == 'i':
+                area_thresh = 100
+            elif resolution == 'h':
+                area_thresh = 10
+            elif resolution == 'f':
+                area_thresh = 1
+
+            display = pyart.graph.GridMapDisplayBasemap(grid)
+            display.plot_basemap(
+                lat_lines=lat_lines, lon_lines=lon_lines,
+                resolution=resolution, area_thresh=area_thresh,
+                auto_range=False, min_lon=min_lon, max_lon=max_lon,
+                min_lat=min_lat, max_lat=max_lat, ax=ax)
+            display.plot_grid(
+                field_name, level=level, norm=norm, ticks=ticks, title=titl,
+                ticklabs=ticklabs, vmin=vmin, vmax=vmax, alpha=alpha, ax=ax,
+                fig=fig)
+        else:
+            resolution = prdcfg['gridMapImageConfig'].get('mapres', '110m')
+            if resolution not in ('110m', '50m', '10m'):
+                warn('Unknown map resolution: '+resolution)
+                resolution = '110m'
+            background_zoom = prdcfg['gridMapImageConfig'].get(
+                'background_zoom', 8)
+
+            display = pyart.graph.GridMapDisplay(grid)
+            fig, ax = display.plot_grid(
+                field_name, level=level, norm=norm, ticks=ticks,
+                ticklabs=ticklabs, resolution=resolution,
+                background_zoom=background_zoom, lat_lines=lat_lines,
+                lon_lines=lon_lines,
+                maps_list=prdcfg['gridMapImageConfig']['maps'],
+                vmin=vmin, vmax=vmax, alpha=alpha, title=titl, ax=ax, fig=fig)
+            # display.plot_crosshairs(lon=lon, lat=lat)
     else:
-        resolution = prdcfg['gridMapImageConfig'].get('mapres', '110m')
-        if resolution not in ('110m', '50m', '10m'):
-            warn('Unknown map resolution: '+resolution)
-            resolution = '110m'
-        background_zoom = prdcfg['gridMapImageConfig'].get(
-            'background_zoom', 8)
-
-        display = pyart.graph.GridMapDisplay(grid)
-        fig, ax = display.plot_grid(
-            field_name, level=level, norm=norm, ticks=ticks, ticklabs=ticklabs,
-            resolution=resolution, background_zoom=background_zoom,
-            lat_lines=lat_lines, lon_lines=lon_lines,
-            maps_list=prdcfg['gridMapImageConfig']['maps'],
-            title=titl, ax=ax, fig=fig)
-        # display.plot_crosshairs(lon=lon, lat=lat)
+        if use_basemap:
+            display.plot_grid(
+                field_name, level=level, norm=norm, ticks=ticks,
+                lat_lines=lat_lines, lon_lines=lon_lines, title=titl,
+                ticklabs=ticklabs, colorbar_flag=False, vmin=vmin, vmax=vmax,
+                alpha=alpha, ax=ax, fig=fig)
+        else:
+            fig, ax = display.plot_grid(
+                field_name, level=level, norm=norm, ticks=ticks,
+                lat_lines=lat_lines, lon_lines=lon_lines, ticklabs=ticklabs,
+                colorbar_flag=False, embelish=False, vmin=vmin, vmax=vmax,
+                alpha=alpha, title=titl, ax=ax, fig=fig)
 
     if save_fig:
         for fname in fname_list:
@@ -144,7 +175,7 @@ def plot_surface_contour(grid, field_name, level, prdcfg, fname_list,
                          fig=None, display=None, save_fig=True,
                          use_basemap=False):
     """
-    plots a surface from gridded data
+    plots a contour plot from gridded data
 
     Parameters
     ----------
@@ -162,13 +193,17 @@ def plot_surface_contour(grid, field_name, level, prdcfg, fname_list,
         list of contours to plot
     linewidths : float
         width of the contour lines
-    fig : Figure
-        Figure to add the colorbar to. If none a new figure will be created
     ax : Axis
         Axis to plot on. if fig is None a new axis will be created
+    fig : Figure
+        Figure to add the colorbar to. If none a new figure will be created
+    display : GridMapDisplay object
+        The display used
     save_fig : bool
         if true save the figure if false it does not close the plot and
         returns the handle to the figure
+    use_basemap : Bool
+        If true uses basemap, otherwise uses cartopy.
 
     Returns
     -------

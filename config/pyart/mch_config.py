@@ -91,6 +91,7 @@ stat_test_lag2 = 'stat_test_lag2'
 wide_band_noise = 'wide_band_noise'
 
 fields_difference = 'fields_difference'
+field_mask = 'field_mask'
 
 transmitted_signal_power_h = 'transmitted_signal_power_h'
 transmitted_signal_power_v = 'transmitted_signal_power_v'
@@ -416,6 +417,30 @@ quant90_corrected_velocity = 'quant90_corrected_velocity'
 quant95_corrected_velocity = 'quant95_corrected_velocity'
 
 
+# Satellite products:
+# all 10*um except CTH
+# all 3 km resolution except HRV
+
+# infra-red
+IR_039 = 'IR_039'
+WV_062 = 'WV_062'  # Water vapour channel
+WV_073 = 'WV_073'  # Water vapour channel
+IR_087 = 'IR_087'
+IR_097 = 'IR_097'
+IR_108 = 'IR_108'
+IR_120 = 'IR_120'
+IR_134 = 'IR_134'
+
+# visible
+HRV = 'HRV'
+VIS006 = 'VIS006'
+VIS008 = 'VIS008'
+IR_016 = 'IR_016'  # This is near-infrared
+
+# Cloud top height
+CTH = 'CTH'   # m
+
+
 # End of Simple Configuration section
 
 ##############################################################################
@@ -518,6 +543,7 @@ DEFAULT_FIELD_NAMES = {
     'normalized_coherent_power': normalized_coherent_power,
     'wide_band_noise': wide_band_noise,
     'fields_difference': fields_difference,
+    'field_mask': field_mask,
     'stat_test_lag1': stat_test_lag1,
     'stat_test_lag2': stat_test_lag2,
     'mean_phase': mean_phase,
@@ -729,7 +755,20 @@ DEFAULT_FIELD_NAMES = {
     'quant50_corrected_velocity': quant50_corrected_velocity,
     'quant80_corrected_velocity': quant80_corrected_velocity,
     'quant90_corrected_velocity': quant90_corrected_velocity,
-    'quant95_corrected_velocity': quant95_corrected_velocity
+    'quant95_corrected_velocity': quant95_corrected_velocity,
+    'IR_016': IR_016,
+    'IR_039': IR_039,
+    'IR_087': IR_087,
+    'IR_097': IR_097,
+    'IR_108': IR_108,
+    'IR_120': IR_120,
+    'IR_134': IR_134,
+    'CTH': CTH,
+    'HRV': HRV,
+    'VIS006': VIS006,
+    'VIS008': VIS008,
+    'WV_062': WV_062,
+    'WV_073': WV_073
 }
 
 
@@ -1321,6 +1360,15 @@ DEFAULT_METADATA = {
         'units': '-',
         'standard_name': 'fields_difference',
         'long_name': 'Fields difference',
+        'coordinates': 'elevation azimuth range'},
+
+    field_mask:{
+        'units': '-',
+        'standard_name': 'field_mask',
+        'long_name': 'Field mask',
+        'labels': ['BELOW', 'ABOVE'],
+        'ticks': [1, 2],
+        'boundaries': [-0.5, 1.5, 2.5],
         'coordinates': 'elevation azimuth range'},
 
     mean_phase: {
@@ -2365,7 +2413,10 @@ DEFAULT_METADATA = {
     probability_of_hail: {
         'units': 'percent',
         'standard_name': 'probability_of_hail',
-        'long_name': 'Probability of hail'},
+        'long_name': 'Probability of hail',
+        'labels': ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90'],
+        'ticks': [0., 10., 20., 30., 40., 50., 60., 70., 80., 90.],
+        'boundaries': [0., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.]},
 
     maximum_expected_severe_hail_size: {
         'units': 'cm',
@@ -2673,6 +2724,71 @@ DEFAULT_METADATA = {
         'add_offset': 0,
         '_FillValue': 0,
         '_Write_as_dtype': 'uint8'},
+
+    HRV: {
+        'units': '%',
+        'standard_name': 'HRV',
+        'long_name': 'SEVIRI High Resolution Visible Reflectance'},
+
+    VIS006: {
+        'units': '%',
+        'standard_name': 'VIS006',
+        'long_name': 'SEVIRI Visible 0.6 um Reflectance'},
+
+    VIS008: {
+        'units': '%',
+        'standard_name': 'VIS008',
+        'long_name': 'SEVIRI Visible 0.8 um Reflectance'},
+
+    IR_016: {
+        'units': '%',
+        'standard_name': 'IR_016',
+        'long_name': 'SEVIRI Near-Infrared 1.6 um Reflectance'},
+
+    IR_039: {
+        'units': 'K',
+        'standard_name': 'IR_039',
+        'long_name': 'SEVIRI Infrared 3.9 um'},
+
+    WV_062: {
+        'units': 'K',
+        'standard_name': 'WV_062',
+        'long_name': 'SEVIRI Water Vapour 6.2 um'},
+    WV_073: {
+        'units': 'K',
+        'standard_name': 'WV_073',
+        'long_name': 'SEVIRI Water Vapour 7.3 um'},
+
+    IR_087: {
+        'units': 'K',
+        'standard_name': 'IR_087',
+        'long_name': 'SEVIRI Infrared 8.7 um'},
+
+    IR_097: {
+        'units': 'K',
+        'standard_name': 'IR_097',
+        'long_name': 'SEVIRI Infrared 9.7 um'},
+
+    IR_108: {
+        'units': 'K',
+        'standard_name': 'IR_108',
+        'long_name': 'SEVIRI Infrared 10.8 um'},
+
+    IR_120: {
+        'units': 'K',
+        'standard_name': 'IR_120',
+        'long_name': 'SEVIRI Infrared 12 um'},
+
+    IR_134: {
+        'units': 'K',
+        'standard_name': 'IR_134',
+        'long_name': 'SEVIRI Infrared 13.4 um'},
+
+    CTH: {
+        'units': 'm',
+        'standard_name': 'CTH',
+        'long_name': 'Cloud Top Height'},
+
 
     # Grid metadata
 
@@ -3331,9 +3447,11 @@ def velocity_limit(container=None, selection=0):
                 vel = container.get_nyquist_vel(0, check_uniform=False)
             return (-vel, vel)
         except LookupError:
-            return (-42., 42.)
+            # return (-42., 42.)
+            return (-15.8, 15.8)
     else:
-        return (-42., 42.)
+        # return (-42., 42.)
+        return (-15.8, 15.8)
 
 
 def spectrum_width_limit(container=None, selection=0):
@@ -3347,9 +3465,11 @@ def spectrum_width_limit(container=None, selection=0):
                 vel = container.get_nyquist_vel(0, check_uniform=False)
             return (0, vel)
         except LookupError:
-            return (0., 4.)
+            #return (0., 4.)
+            return (0., 15.8)
     else:
-        return (0., 4.)
+        #return (0., 4.)
+        return (0., 15.8)
 
 
 DEFAULT_FIELD_COLORMAP = {
@@ -3410,6 +3530,7 @@ DEFAULT_FIELD_COLORMAP = {
     stat_test_lag2: 'pyart_NWSRef',
     wide_band_noise: 'pyart_NWSRef',
     fields_difference: 'pyart_BuDRd18',
+    field_mask: 'Greys_r',
 
     sun_hit_power_h: 'pyart_NWSRef',
     sun_hit_power_v: 'pyart_NWSRef',
@@ -3571,6 +3692,23 @@ DEFAULT_FIELD_COLORMAP = {
     absolute_beta: 'pyart_NWSRef',
     cnr: 'pyart_Carbone17',
 
+    # appropriate colors are matplotlib Greys, gray, etc.
+    HRV: 'Greys_r', # 'pyart_Gray9',
+    VIS006: 'Greys_r', # 'pyart_Gray9',
+    VIS008: 'Greys_r', # 'pyart_Gray9',
+    IR_016: 'Greys', # 'pyart_Gray9_r',
+
+    IR_039: 'pyart_NWSRef',
+    WV_062: 'pyart_NWSRef',
+    WV_073: 'pyart_NWSRef',
+    IR_087: 'pyart_NWSRef',
+    IR_097: 'pyart_NWSRef',
+    IR_108: 'pyart_NWSRef',
+    IR_120: 'pyart_NWSRef',
+    IR_134: 'pyart_NWSRef',
+
+    CTH: 'pyart_NWSRef',
+
     # Additional reflectivity like fields
     'CZ': 'pyart_NWSRef',
     'DZ': 'pyart_NWSRef',
@@ -3590,7 +3728,8 @@ DEFAULT_FIELD_COLORMAP = {
 
 DEFAULT_FIELD_LIMITS = {
     # field name : limits
-    reflectivity: (-30., 75.),
+    #reflectivity: (-30., 75.),
+    reflectivity: (-30., 85.),
     avg_reflectivity: (-30., 75.),
     quant05_reflectivity: (-30., 75.),
     quant10_reflectivity: (-30., 75.),
@@ -3602,11 +3741,14 @@ DEFAULT_FIELD_LIMITS = {
     bird_reflectivity: (-30., 75.),
     corrected_reflectivity: (-30., 75.),
     total_power: (-30., 75.),
-    unfiltered_reflectivity: (-30., 75.),
+    # unfiltered_reflectivity: (-30., 75.),
+    unfiltered_reflectivity: (-30., 85.),
     corrected_unfiltered_reflectivity:  (-30., 75.),
-    reflectivity_vv: (-30., 75.),
+    # reflectivity_vv: (-30., 75.),
+    reflectivity_vv: (-30., 85.),
     corrected_reflectivity_vv: (-30., 75.),
-    unfiltered_reflectivity_vv: (-30., 75.),
+    # unfiltered_reflectivity_vv: (-30., 75.),
+    unfiltered_reflectivity_vv: (-30., 85.),
     signal_to_noise_ratio: (-5., 30.),
     signal_to_noise_ratio_hh: (-5., 30.),
     signal_to_noise_ratio_vv: (-5., 30.),
@@ -3680,18 +3822,22 @@ DEFAULT_FIELD_LIMITS = {
 
     normalized_coherent_power: (0., 1.),
 
-    differential_reflectivity: (-1., 8.),
+    #differential_reflectivity: (-1., 8.),
+    differential_reflectivity: (-8., 12.),
     corrected_differential_reflectivity: (-1., 8.),
-    unfiltered_differential_reflectivity: (-1., 8.),
+    #unfiltered_differential_reflectivity: (-1., 8.),
+    unfiltered_differential_reflectivity: (-8., 12.),
     differential_reflectivity_in_precipitation: (-10., 10.),
     differential_reflectivity_in_snow: (-10., 10.),
     differential_reflectivity_column_height: (0., 6.),
     spectral_differential_reflectivity: (-1., 8.),
     unfiltered_spectral_differential_reflectivity: (-1., 8.),
 
-    cross_correlation_ratio: (0.7, 1.),
+    #cross_correlation_ratio: (0.7, 1.),
+    cross_correlation_ratio: (0., 1.),
     corrected_cross_correlation_ratio: (0.7, 1.),
-    unfiltered_cross_correlation_ratio: (0.7, 1.),
+    #unfiltered_cross_correlation_ratio: (0.7, 1.),
+    unfiltered_cross_correlation_ratio: (0., 1.),
     uncorrected_cross_correlation_ratio: (0.7, 1.),
     logarithmic_cross_correlation_ratio: (0, 4),
     cross_correlation_ratio_in_rain: (0.9, 1.),
@@ -3785,6 +3931,22 @@ DEFAULT_FIELD_LIMITS = {
     'reflectivity_horizontal': (-10., 65.),
     'corr_reflectivity': (-10., 65.),
 
+
+    HRV: (0., 100.),
+    VIS006: (0., 85.),
+    VIS008: (0., 90.),
+    IR_016: (0., 80.),
+
+    IR_039: (210., 340.),
+    WV_062: (210., 260.),
+    WV_073: (190., 280.),
+    IR_087: (205., 320.),
+    IR_097: (210., 285.),
+    IR_108: (205., 320.),
+    IR_120: (205., 320.),
+    IR_134: (205., 290.),
+
+    CTH: (0., 12000.),
 
     # radial_wind_speed: 'pyart_BuDRd18',
     #radial_wind_speed_ci:

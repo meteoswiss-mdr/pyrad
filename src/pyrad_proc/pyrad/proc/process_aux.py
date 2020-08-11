@@ -103,6 +103,7 @@ def get_process_func(dataset_type, dsname):
                 'RADAR_RESAMPLING': process_radar_resampling
                 'RADIAL_NOISE_HS': process_radial_noise_hs
                 'RADIAL_NOISE_IVIC': process_radial_noise_ivic
+                'RADIAL_VELOCITY': process_radial_velocity
                 'RAINRATE': process_rainrate
                 'RAW': process_raw
                 'REFLECTIVITY': process_reflectivity
@@ -164,6 +165,8 @@ def get_process_func(dataset_type, dsname):
             'GRID' format output:
                 'RAW_GRID': process_raw_grid
                 'GRID': process_grid
+                'GRID_FIELDS_DIFF': process_grid_fields_diff
+                'GRID_MASK': process_grid_mask
             'GRID_TIMEAVG' format output:
                 'GRID_TIME_STATS': process_grid_time_stats
                 'GRID_TIME_STATS2': process_grid_time_stats2
@@ -232,6 +235,12 @@ def get_process_func(dataset_type, dsname):
         dsformat = 'GRID'
     elif dataset_type == 'RAW_GRID':
         func_name = 'process_raw_grid'
+        dsformat = 'GRID'
+    elif dataset_type == 'GRID_FIELDS_DIFF':
+        func_name = 'process_grid_fields_diff'
+        dsformat = 'GRID'
+    elif dataset_type == 'GRID_MASK':
+        func_name = 'process_grid_mask'
         dsformat = 'GRID'
     elif dataset_type == 'RAW_SPECTRA':
         func_name = 'process_raw_spectra'
@@ -381,6 +390,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_dealias_region_based'
     elif dataset_type == 'DEALIAS_UNWRAP':
         func_name = 'process_dealias_unwrap_phase'
+    elif dataset_type == 'RADIAL_VELOCITY':
+        func_name = 'process_radial_velocity'
     elif dataset_type == 'WIND_VEL':
         func_name = 'process_wind_vel'
     elif dataset_type == 'VAD':
@@ -961,14 +972,16 @@ def process_azimuthal_average(procstatus, dscfg, radar_list=None):
         datatype : string. Dataset keyword
             The data type where we want to extract the point measurement
         angle : float or None. Dataset keyword
-            The
+            The center angle to average. If not set or set to -1 all
+            available azimuth angles will be used
         delta_azi : float. Dataset keyword
-
+            The angle span to average. If not set or set to -1 all the
+            available azimuth angles will be used
         avg_type : str. Dataset keyword
-
+            Average type. Can be mean or median
         nvalid_min : int. Dataset keyword
-             the (minimum) radius of the region of interest in m. Default half
-             the largest resolution
+            the (minimum) radius of the region of interest in m. Default half
+            the largest resolution
 
     radar_list : list of Radar objects
         Optional. list of radar objects
@@ -1138,7 +1151,7 @@ def process_radar_resampling(procstatus, dscfg, radar_list=None):
             assume the radar is collocated
         change_antenna_pattern : Bool. Dataset keyword
             If true the target radar has a different antenna pattern than the
-            observations radar
+            observations radar. Default True
         rhi_resolution : Bool. Dataset keyword
             Resolution of the synthetic RHI used to compute the data as viewed
             from the synthetic radar [deg]. Default 0.5
@@ -1441,6 +1454,9 @@ def _get_values_antenna_pattern(radar, tadict, field_names):
         (x_target.flatten(), y_target.flatten(), z_target.flatten())), k=1)
 
     if not change_antenna_pattern:
+        # temporary solution to get right time:
+        target_radar.time['data'][:] = radar.time['data'][0]
+
         for field_name in field_names:
             if field_name not in radar.fields:
                 warn('Field '+field_name+' not in observations radar object')
