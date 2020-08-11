@@ -2521,10 +2521,14 @@ def merge_fields_rad4alp_grid(voltime, datatype_list, cfg, ind_rad=0,
     lon_max = cfg.get('lonmax', None)
     alt_min = cfg.get('altmin', None)
     alt_max = cfg.get('altmax', None)
+    nx = cfg.get('nx', None)
+    ny = cfg.get('ny', None)
+    nz = cfg.get('nz', None)
 
     return crop_grid(
         grid, lat_min=lat_min, lat_max=lat_max, lon_min=lon_min,
-        lon_max=lon_max, alt_min=alt_min, alt_max=alt_max)
+        lon_max=lon_max, alt_min=alt_min, alt_max=alt_max, nx=nx, ny=ny,
+        nz=nz)
 
 
 def merge_fields_sat_grid(voltime, datatype_list, cfg, ind_rad=0,
@@ -2581,10 +2585,14 @@ def merge_fields_sat_grid(voltime, datatype_list, cfg, ind_rad=0,
     lon_max = cfg.get('lonmax', None)
     alt_min = cfg.get('altmin', None)
     alt_max = cfg.get('altmax', None)
+    nx = cfg.get('nx', None)
+    ny = cfg.get('ny', None)
+    nz = cfg.get('nz', None)
 
     return crop_grid(
         grid, lat_min=lat_min, lat_max=lat_max, lon_min=lon_min,
-        lon_max=lon_max, alt_min=alt_min, alt_max=alt_max)
+        lon_max=lon_max, alt_min=alt_min, alt_max=alt_max, nx=nx, ny=ny,
+        nz=nz)
 
 
 def merge_fields_pyrad(basepath, loadname, voltime, datatype_list,
@@ -2903,10 +2911,14 @@ def merge_fields_pyradgrid(basepath, loadname, voltime, datatype_list,
     lon_max = cfg.get('lonmax', None)
     alt_min = cfg.get('altmin', None)
     alt_max = cfg.get('altmax', None)
+    nx = cfg.get('nx', None)
+    ny = cfg.get('ny', None)
+    nz = cfg.get('nz', None)
 
     return crop_grid(
         grid, lat_min=lat_min, lat_max=lat_max, lon_min=lon_min,
-        lon_max=lon_max, alt_min=alt_min, alt_max=alt_max)
+        lon_max=lon_max, alt_min=alt_min, alt_max=alt_max, nx=nx, ny=ny,
+        nz=nz)
 
 
 def merge_fields_dem(basepath, scan_name, datatype_list):
@@ -3453,9 +3465,11 @@ def interpol_field(radar_dest, radar_orig, field_name, fill_value=None,
 
 
 def crop_grid(grid, lat_min=None, lat_max=None, lon_min=None, lon_max=None,
-              alt_min=None, alt_max=None):
+              alt_min=None, alt_max=None, nx=None, ny=None, nz=None):
     """
-    crops a grid object
+    crops a grid object. The cropping can be done either specifying min and
+    max lat, lon and altitude or by specifying the min lat, lon and altitude
+    and the length in pixels of each side
 
     Parameters
     ----------
@@ -3465,6 +3479,8 @@ def crop_grid(grid, lat_min=None, lat_max=None, lon_min=None, lon_max=None,
         the lat/lon limits of the object (deg)
     alt_min, alt_max : float
         the altitude limits of the object (m MSL)
+    nx, ny ,nz : int
+        The number of pixels in each direction
 
     Returns
     -------
@@ -3474,7 +3490,8 @@ def crop_grid(grid, lat_min=None, lat_max=None, lon_min=None, lon_max=None,
     """
     grid_crop = deepcopy(grid)
     if (lat_min is None and lat_max is None and lon_min is None
-            and lon_max is None and alt_min is None and alt_max is None):
+            and lon_max is None and alt_min is None and alt_max is None
+            and nx is None and ny is None and nz is None):
         return grid_crop
 
     if lat_min is not None:
@@ -3488,7 +3505,9 @@ def crop_grid(grid, lat_min=None, lat_max=None, lon_min=None, lon_max=None,
     else:
         iy_min = 0
 
-    if lat_max is not None:
+    if ny is not None:
+        iy_max = iy_min+ny
+    elif lat_max is not None:
         iz, iy, ix = np.where(grid.point_latitude['data'] <= lat_max)
         if iy.size == 0:
             warn('Max latitude '+str(lat_max)+' outside of grid. ' +
@@ -3510,7 +3529,9 @@ def crop_grid(grid, lat_min=None, lat_max=None, lon_min=None, lon_max=None,
     else:
         ix_min = 0
 
-    if lon_max is not None:
+    if nx is not None:
+        ix_max = ix_min+nx
+    elif lon_max is not None:
         iz, iy, ix = np.where(grid.point_longitude['data'] <= lon_max)
         if ix.size == 0:
             warn('Max longitude '+str(lon_max)+' outside of grid. ' +
@@ -3532,7 +3553,9 @@ def crop_grid(grid, lat_min=None, lat_max=None, lon_min=None, lon_max=None,
     else:
         iz_min = 0
 
-    if alt_max is not None:
+    if nz is not None:
+        iz_max = iz_min+nz
+    elif alt_max is not None:
         iz, iy, ix = np.where(grid.point_altitude['data'] <= alt_max)
         if iz.size == 0:
             warn('Max longitude '+str(lon_max)+' outside of grid. ' +

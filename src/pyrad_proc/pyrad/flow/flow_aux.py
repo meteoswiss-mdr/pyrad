@@ -1082,6 +1082,9 @@ def _create_datacfg_dict(cfg):
     datacfg.update({'lonmax': cfg.get('lonmax', None)})
     datacfg.update({'altmin': cfg.get('altmin', None)})
     datacfg.update({'altmax': cfg.get('altmax', None)})
+    datacfg.update({'nx': cfg.get('nx', None)})
+    datacfg.update({'ny': cfg.get('ny', None)})
+    datacfg.update({'nz': cfg.get('nz', None)})
 
     # variables to get the spectral data
     datacfg.update({'undo_txcorr': cfg.get('undo_txcorr', True)})

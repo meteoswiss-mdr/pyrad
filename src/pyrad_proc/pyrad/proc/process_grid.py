@@ -703,7 +703,7 @@ def process_grid_time_stats(procstatus, dscfg, radar_list=None):
 
 def process_grid_time_stats2(procstatus, dscfg, radar_list=None):
     """
-    computes the temporal mean of a field
+    computes temporal statistics of a field
 
     Parameters
     ----------

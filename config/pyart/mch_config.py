@@ -3696,7 +3696,7 @@ DEFAULT_FIELD_COLORMAP = {
     HRV: 'Greys_r', # 'pyart_Gray9',
     VIS006: 'Greys_r', # 'pyart_Gray9',
     VIS008: 'Greys_r', # 'pyart_Gray9',
-    IR_016: 'Greys', # 'pyart_Gray9_r',
+    IR_016: 'Greys_r', # 'pyart_Gray9_r',
 
     IR_039: 'pyart_NWSRef',
     WV_062: 'pyart_NWSRef',
@@ -3935,7 +3935,7 @@ DEFAULT_FIELD_LIMITS = {
     HRV: (0., 100.),
     VIS006: (0., 85.),
     VIS008: (0., 90.),
-    IR_016: (0., 80.),
+    IR_016: (0., 30.),
 
     IR_039: (210., 340.),
     WV_062: (210., 260.),
