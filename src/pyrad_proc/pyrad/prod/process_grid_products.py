@@ -147,6 +147,11 @@ def generate_grid_products(dataset, prdcfg):
                 step: float or None
                     the data quantization step. If none it will be obtained
                     from the Py-ART configuration file
+                vmin, vmax: float or None
+                    The minimum and maximum values. If None they will be
+                    obtained from the Py-ART configuration file
+                mask_val: float or None
+                    A value to mask.
                 write_data: Bool
                     If true the histogram data is written in a csv file
         'LATITUDE_SLICE': Plots a cross-section of gridded data over a
@@ -589,6 +594,8 @@ def generate_grid_products(dataset, prdcfg):
             return None
 
         step = prdcfg.get('step', None)
+        vmin = prdcfg.get('vmin', None)
+        vmax = prdcfg.get('vmax', None)
         mask_val = prdcfg.get('mask_val', None)
         write_data = prdcfg.get('write_data', 0)
 
@@ -607,7 +614,8 @@ def generate_grid_products(dataset, prdcfg):
         values = dataset['radar_out'].fields[field_name]['data']
         if mask_val is not None:
             values = np.ma.masked_values(values, mask_val)
-        bin_edges, values = compute_histogram(values, field_name, step=step)
+        bin_edges, values = compute_histogram(
+            values, field_name, step=step, vmin=vmin, vmax=vmax)
 
         titl = (
             pyart.graph.common.generate_grid_time_begin(

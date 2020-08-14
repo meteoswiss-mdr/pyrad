@@ -14,6 +14,8 @@ Functions to processes gridded data.
     process_grid_time_stats2
     process_grid_fields_diff
     process_grid_mask
+    process_normalize_luminosity
+    process_pixel_filter
 
 """
 
@@ -1016,18 +1018,15 @@ def process_grid_mask(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
-    for datatypedescr in dscfg['datatype']:
-        radarnr, _, _, _, _ = get_datatype_fields(datatypedescr)
-        break
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
+    field_name = get_fieldname_pyart(datatype)
+
     ind_rad = int(radarnr[5:8])-1
     if (radar_list is None) or (radar_list[ind_rad] is None):
         warn('ERROR: No valid radar')
         return None, None
 
     grid = radar_list[ind_rad]
-
-    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
-    field_name = get_fieldname_pyart(datatype)
 
     if field_name not in grid.fields:
         warn('Unable to mask field '+field_name+' Field missing in grid')
@@ -1058,6 +1057,151 @@ def process_grid_mask(procstatus, dscfg, radar_list=None):
     grid_mask = deepcopy(grid)
     grid_mask.fields = dict()
     grid_mask.add_field('field_mask', field_mask)
+
+    new_dataset = {'radar_out': grid_mask}
+
+    return new_dataset, ind_rad
+
+
+def process_normalize_luminosity(procstatus, dscfg, radar_list=None):
+    """
+    Normalize the data by the sinus of the sun elevation. The sun elevation is
+    computed at the central pixel.
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the output
+    ind_rad : int
+        radar index
+
+    """
+
+    if procstatus != 1:
+        return None, None
+
+    radarnr, _, _, _, _ = get_datatype_fields(dscfg['datatype'][0])
+    ind_rad = int(radarnr[5:8])-1
+    if (radar_list is None) or (radar_list[ind_rad] is None):
+        warn('ERROR: No valid radar')
+        return None, None
+
+    grid = radar_list[ind_rad]
+
+    # get normalization factor
+    lat_point = grid.point_latitude['data'][0, int(grid.ny/2), int(grid.nx/2)]
+    lon_point = grid.point_longitude['data'][
+        0, int(grid.ny/2), int(grid.nx/2)]
+
+    el_sun, _ = pyart.correct.sun_position_pysolar(
+        dscfg['timeinfo'], lat_point, lon_point)
+    norm = np.sin(np.deg2rad(el_sun))
+
+    grid_norm = deepcopy(grid)
+    grid_norm.fields = dict()
+
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+        field_name = get_fieldname_pyart(datatype)
+
+        if field_name not in grid.fields:
+            warn('Unable to normalize field '+field_name +
+                 '. Field missing in grid')
+            continue
+
+        norm_field = pyart.config.get_metadata(field_name+'_norm')
+        norm_field['data'] = grid.fields[field_name]['data']/norm
+
+        grid_norm.add_field(field_name+'_norm', norm_field)
+
+    new_dataset = {'radar_out': grid_norm}
+
+    return new_dataset, ind_rad
+
+
+def process_pixel_filter(procstatus, dscfg, radar_list=None):
+    """
+    Masks all pixels that are not of the class specified in keyword pixel_type
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        pixel_type : int or list of ints
+            The type of pixels to keep: 0 No data, 1 Below threshold, 2 Above
+            threshold. Default 2
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing the output
+    ind_rad : int
+        radar index
+
+    """
+
+    if procstatus != 1:
+        return None, None
+
+    mask_field = None
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+        if datatype == 'mask':
+            mask_field = get_fieldname_pyart(datatype)
+            break
+    if mask_field is None:
+        warn('mask field required to filter data')
+        return None, None
+
+    ind_rad = int(radarnr[5:8])-1
+    if (radar_list is None) or (radar_list[ind_rad] is None):
+        warn('ERROR: No valid radar')
+        return None, None
+
+    grid = radar_list[ind_rad]
+
+    if mask_field not in grid.fields:
+        warn('Unable to filter data. Missing mask field')
+        return None, None
+
+    pixel_type = dscfg.get('pixel_type', 2)
+    mask = np.ma.isin(
+        grid.fields[mask_field]['data'], pixel_type, invert=True)
+
+    grid_mask = deepcopy(grid)
+    grid_mask.fields = dict()
+
+    for datatypedescr in dscfg['datatype']:
+        radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
+        if datatype == 'mask':
+            continue
+
+        field_name = get_fieldname_pyart(datatype)
+        if field_name not in grid.fields:
+            warn('Unable to normalize field '+field_name +
+                 '. Field missing in grid')
+            continue
+
+        field = deepcopy(grid.fields[field_name])
+        field['data'] = np.ma.masked_where(mask, field['data'])
+
+        grid_mask.add_field(field_name, field)
 
     new_dataset = {'radar_out': grid_mask}
 

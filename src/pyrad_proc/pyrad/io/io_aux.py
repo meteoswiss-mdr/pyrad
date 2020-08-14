@@ -1674,10 +1674,21 @@ def get_fieldname_pyart(datatype):
         field_name = 'cnr'
 
     # satellite names
+    elif datatype == 'HRV':
+        field_name = 'HRV'
+    elif datatype == 'VIS006':
+        field_name = 'VIS006'
+    elif datatype == 'VIS008':
+        field_name = 'VIS008'
     elif datatype == 'IR_016':
         field_name = 'IR_016'
+
     elif datatype == 'IR_039':
         field_name = 'IR_039'
+    elif datatype == 'WV_062':
+        field_name = 'WV_062'
+    elif datatype == 'WV_073':
+        field_name = 'WV_073'
     elif datatype == 'IR_087':
         field_name = 'IR_087'
     elif datatype == 'IR_097':
@@ -1688,18 +1699,18 @@ def get_fieldname_pyart(datatype):
         field_name = 'IR_120'
     elif datatype == 'IR_134':
         field_name = 'IR_134'
+
     elif datatype == 'CTH':
         field_name = 'CTH'
-    elif datatype == 'HRV':
-        field_name = 'HRV'
-    elif datatype == 'VIS006':
-        field_name = 'VIS006'
-    elif datatype == 'VIS008':
-        field_name = 'VIS008'
-    elif datatype == 'WV_062':
-        field_name = 'WV_062'
-    elif datatype == 'WV_073':
-        field_name = 'WV_073'
+
+    elif datatype == 'HRV_norm':
+        field_name = 'HRV_norm'
+    elif datatype == 'VIS006_norm':
+        field_name = 'VIS006_norm'
+    elif datatype == 'VIS008_norm':
+        field_name = 'VIS008_norm'
+    elif datatype == 'IR_016_norm':
+        field_name = 'IR_016_norm'
 
     # cloud radar names
     elif datatype == 'SNR':
@@ -1903,6 +1914,25 @@ def get_fieldname_pyart(datatype):
         field_name = 'quant90_corrected_velocity'
     elif datatype == 'quant95Vc':
         field_name = 'quant95_corrected_velocity'
+
+    elif datatype == 'avgdealV':
+        field_name = 'avg_dealiased_velocity'
+    elif datatype == 'NdealV':
+        field_name = 'npoints_dealiased_velocity'
+    elif datatype == 'quant05dealV':
+        field_name = 'quant05_dealiased_velocity'
+    elif datatype == 'quant10dealV':
+        field_name = 'quant10_dealiased_velocity'
+    elif datatype == 'quant20dealV':
+        field_name = 'quant20_dealiased_velocity'
+    elif datatype == 'quant50dealV':
+        field_name = 'quant50_dealiased_velocity'
+    elif datatype == 'quant80dealV':
+        field_name = 'quant80_dealiased_velocity'
+    elif datatype == 'quant90dealV':
+        field_name = 'quant90_dealiased_velocity'
+    elif datatype == 'quant95dealV':
+        field_name = 'quant95_dealiased_velocity'
 
     else:
         raise ValueError('ERROR: Unknown data type '+datatype)

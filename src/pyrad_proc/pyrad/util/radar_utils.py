@@ -1431,7 +1431,8 @@ def compute_histogram(field, field_name, bin_edges=None, step=None,
     """
     if bin_edges is None:
         if field_name is not None:
-            bin_edges = get_histogram_bins(field_name, step=step)
+            bin_edges = get_histogram_bins(
+                field_name, step=step, vmin=vmin, vmax=vmax)
         else:
             if vmin is None:
                 vmin = np.ma.min(field)
@@ -1450,7 +1451,8 @@ def compute_histogram(field, field_name, bin_edges=None, step=None,
     return bin_edges, values
 
 
-def compute_histogram_sweep(field, ray_start, ray_end, field_name, step=None):
+def compute_histogram_sweep(field, ray_start, ray_end, field_name, step=None,
+                            vmin=None, vmax=None):
     """
     computes histogram of the data in a particular sweep
 
@@ -1464,6 +1466,8 @@ def compute_histogram_sweep(field, ray_start, ray_end, field_name, step=None):
         name of the field
     step : float
         size of bin
+    vmin, vmax : float
+        minimum and maximum values
 
     Returns
     -------
@@ -1473,7 +1477,8 @@ def compute_histogram_sweep(field, ray_start, ray_end, field_name, step=None):
         values at each bin
 
     """
-    bin_edges = get_histogram_bins(field_name, step=step)
+    bin_edges = get_histogram_bins(
+        field_name, step=step, vmin=vmin, vmax=vmax)
     step_aux = bin_edges[1]-bin_edges[0]
     bin_centers = bin_edges[:-1]+step_aux/2.
     values = field[ray_start:ray_end+1, :].compressed()
@@ -1483,10 +1488,10 @@ def compute_histogram_sweep(field, ray_start, ray_end, field_name, step=None):
     return bin_edges, values
 
 
-def get_histogram_bins(field_name, step=None):
+def get_histogram_bins(field_name, step=None, vmin=None, vmax=None):
     """
-    gets the histogram bins using the range limits of the field as defined
-    in the Py-ART config file.
+    gets the histogram bins. If vmin or vmax are not define the range limits
+    of the field as defined in the Py-ART config file are going to be used.
 
     Parameters
     ----------
@@ -1494,6 +1499,8 @@ def get_histogram_bins(field_name, step=None):
         name of the field
     step : float
         size of bin
+    vmin, vmax : float
+        The minimum and maximum value of the histogram
 
     Returns
     -------
@@ -1505,7 +1512,12 @@ def get_histogram_bins(field_name, step=None):
     if 'boundaries' in field_dict:
         return np.array(field_dict['boundaries'])
 
-    vmin, vmax = pyart.config.get_field_limits(field_name)
+    vmin_aux, vmax_aux = pyart.config.get_field_limits(field_name)
+    if vmin is None:
+        vmin = vmin_aux
+    if vmax is None:
+        vmax = vmax_aux
+
     if step is None:
         step = (vmax-vmin)/50.
         warn('No step has been defined. Default '+str(step)+' will be used')
@@ -1676,7 +1688,7 @@ def compute_2d_hist(field1, field2, field_name1, field_name2, step1=None,
         field2.filled(fill_value=fill_value), bins=[bin_edges1, bin_edges2])
 
 
-def quantize_field(field, field_name, step):
+def quantize_field(field, field_name, step, vmin=None, vmax=None):
     """
     quantizes data
 
@@ -1688,6 +1700,8 @@ def quantize_field(field, field_name, step):
         name of the field
     step : float
         size of bin
+    vmin, vmax : float
+        min and max values
 
     Returns
     -------
@@ -1697,7 +1711,11 @@ def quantize_field(field, field_name, step):
         values at each bin
 
     """
-    vmin, vmax = pyart.config.get_field_limits(field_name)
+    vmin_aux, vmax_aux = pyart.config.get_field_limits(field_name)
+    if vmin is None:
+        vmin = vmin_aux
+    if vmax is None:
+        vmax = vmax_aux
     field[field < vmin] = vmin
     field[field > vmax] = vmax
     fieldq = ((field+vmin)/step+1).astype(int)

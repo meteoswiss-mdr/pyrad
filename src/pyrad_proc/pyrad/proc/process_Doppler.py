@@ -446,6 +446,12 @@ def process_radial_velocity(procstatus, dscfg, radar_list=None):
 
         datatype : string. Dataset keyword
             The input data type
+        latitude, longitude : float
+            arbitrary coordinates [deg] from where to compute the radial
+            velocity. If any of them is None it will be the radar position
+        altitude : float
+            arbitrary altitude [m MSL] from where to compute the radial
+            velocity. If None it will be the radar altitude
     radar_list : list of Radar objects
         Optional. list of radar objects
 
@@ -501,17 +507,40 @@ def process_radial_velocity(procstatus, dscfg, radar_list=None):
     else:
         v_speed = radar.fields[v_speed_field]['data']
 
+    # user defined parameters
+    lat = dscfg.get('latitude', None)
+    lon = dscfg.get('longitude', None)
+    alt = dscfg.get('altitude', None)
+
     # get u and v wind components
     h_dir_rad = np.deg2rad(h_dir)
     speed_h_u = h_speed*np.sin(h_dir_rad)  # eastward component
     speed_h_v = h_speed*np.cos(h_dir_rad)  # northward component
 
-    azi_2D_rad = np.broadcast_to(
-        np.deg2rad(radar.azimuth['data'])[:, np.newaxis],
-        (radar.nrays, radar.ngates))
-    ele_2D_rad = np.broadcast_to(
-        np.deg2rad(radar.elevation['data'])[:, np.newaxis],
-        (radar.nrays, radar.ngates))
+    if lat is not None or lon is not None or alt is not None:
+        # get antenna coordinates respect to new radar location
+        if lat is None:
+            lat = radar.latitude['data'][0]
+        if lon is None:
+            lon = radar.longitude['data'][0]
+        if alt is None:
+            alt = radar.altitude['data'][0]
+
+        x, y = pyart.core.geographic_to_cartesian_aeqd(
+            radar.gate_longitude['data'], radar.gate_latitude['data'], lon,
+            lat)
+        z = radar.gate_altitude['data'] - alt
+        _, azimuths, elevations = pyart.core.cartesian_to_antenna(
+            x, y, z)
+        azi_2D_rad = np.deg2rad(azimuths)
+        ele_2D_rad = np.deg2rad(elevations)
+    else:
+        azi_2D_rad = np.broadcast_to(
+            np.deg2rad(radar.azimuth['data'])[:, np.newaxis],
+            (radar.nrays, radar.ngates))
+        ele_2D_rad = np.broadcast_to(
+            np.deg2rad(radar.elevation['data'])[:, np.newaxis],
+            (radar.nrays, radar.ngates))
 
     r_speed = pyart.config.get_metadata('velocity')
 

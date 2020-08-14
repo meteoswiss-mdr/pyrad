@@ -167,6 +167,8 @@ def get_process_func(dataset_type, dsname):
                 'GRID': process_grid
                 'GRID_FIELDS_DIFF': process_grid_fields_diff
                 'GRID_MASK': process_grid_mask
+                'NORMALIZE_LUMINOSITY': process_normalize_luminosity
+                'PIXEL_FILTER': process_pixel_filter
             'GRID_TIMEAVG' format output:
                 'GRID_TIME_STATS': process_grid_time_stats
                 'GRID_TIME_STATS2': process_grid_time_stats2
@@ -241,6 +243,12 @@ def get_process_func(dataset_type, dsname):
         dsformat = 'GRID'
     elif dataset_type == 'GRID_MASK':
         func_name = 'process_grid_mask'
+        dsformat = 'GRID'
+    elif dataset_type == 'NORMALIZE_LUMINOSITY':
+        func_name = 'process_normalize_luminosity'
+        dsformat = 'GRID'
+    elif dataset_type == 'PIXEL_FILTER':
+        func_name = 'process_pixel_filter'
         dsformat = 'GRID'
     elif dataset_type == 'RAW_SPECTRA':
         func_name = 'process_raw_spectra'
@@ -1193,11 +1201,11 @@ def process_radar_resampling(procstatus, dscfg, radar_list=None):
         return None, None
 
     # Process
-    field_names = []
+    field_names_aux = []
     datatypes = []
     for datatypedescr in dscfg['datatype']:
         radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
-        field_names.append(get_fieldname_pyart(datatype))
+        field_names_aux.append(get_fieldname_pyart(datatype))
         datatypes.append(datatype)
 
     ind_rad = int(radarnr[5:8])-1
@@ -1205,6 +1213,13 @@ def process_radar_resampling(procstatus, dscfg, radar_list=None):
         warn('ERROR: No valid radar found')
         return None, None
     radar = deepcopy(radar_list[ind_rad])
+
+    field_names = []
+    for field_name in field_names_aux:
+        if field_name not in radar.fields:
+            warn('Field '+field_name+' not in observations radar object')
+            continue
+        field_names.append(field_name)
 
     if not dscfg['initialized']:
         if 'antennaType' not in dscfg:
@@ -1453,10 +1468,10 @@ def _get_values_antenna_pattern(radar, tadict, field_names):
     _, ind_vec = tree.query(np.transpose(
         (x_target.flatten(), y_target.flatten(), z_target.flatten())), k=1)
 
-    if not change_antenna_pattern:
-        # temporary solution to get right time:
-        target_radar.time['data'][:] = radar.time['data'][0]
+    # temporary solution to get right time:
+    target_radar.time['data'][:] = radar.time['data'][0]
 
+    if not change_antenna_pattern:
         for field_name in field_names:
             if field_name not in radar.fields:
                 warn('Field '+field_name+' not in observations radar object')
@@ -1470,11 +1485,14 @@ def _get_values_antenna_pattern(radar, tadict, field_names):
         return target_radar
 
     # Find closest azimuth and elevation ray to target radar
-    ind_rngs = (ind_vec/radar.ngates).astype(int)
-    ind_rays = (ind_vec % radar.ngates).astype(int)
+    rad_ind_rays, rad_ind_rngs = np.unravel_index(
+        ind_vec, (radar.nrays, radar.ngates))
+    for sample, (rad_ind_ray, rad_ind_rng) in enumerate(
+            zip(rad_ind_rays, rad_ind_rngs)):
 
-    nsamples = target_radar.nrays*target_radar.ngates
-    for sample, (ind_ray, ind_rng) in enumerate(zip(ind_rngs, ind_rays)):
+        trad_ind_ray, trad_ind_rng = np.unravel_index(
+            sample, (target_radar.nrays, target_radar.ngates))
+
         if radar_antenna_atsameplace:
             # ==============================================================
             # Radar and scanning antenna are at the SAME place
@@ -1485,11 +1503,11 @@ def _get_values_antenna_pattern(radar, tadict, field_names):
             if is_azimuth_antenna:
                 angles = radar.azimuth['data']
                 angles_scan = radar.elevation['data']
-                ray_angle = radar.azimuth['data'][ind_ray]
+                ray_angle = radar.azimuth['data'][rad_ind_ray]
             else:
                 angles = radar.elevation['data']
                 angles_scan = radar.azimuth['data']
-                ray_angle = radar.elevation['data'][ind_ray]
+                ray_angle = radar.elevation['data'][rad_ind_ray]
 
             d_angle = np.abs(angles - ray_angle)
             ray_inds = np.where(d_angle < 0.09)[0]
@@ -1510,7 +1528,8 @@ def _get_values_antenna_pattern(radar, tadict, field_names):
                     warn("Datatype '%s' not available in radar data" %
                          field_name)
                     continue
-                values = radar.fields[field_name]['data'][ray_inds, ind_rng]
+                values = radar.fields[field_name]['data'][
+                    ray_inds, rad_ind_rng]
                 if use_nans[field_name]:
                     values_ma = np.ma.getmaskarray(values)
                     values[values_ma] = nan_value[field_name]
@@ -1531,15 +1550,11 @@ def _get_values_antenna_pattern(radar, tadict, field_names):
 
                 # average field
                 target_radar.fields['avg_'+field_name]['data'][
-                    np.unravel_index(
-                        sample, (target_radar.nrays, target_radar.ngates))] = (
-                            avg)
+                    trad_ind_ray, trad_ind_rng] = avg
 
                 # npoints field
                 target_radar.fields['npoints_'+field_name]['data'][
-                    np.unravel_index(
-                        sample, (target_radar.nrays, target_radar.ngates))] = (
-                            nvals_valid)
+                    trad_ind_ray, trad_ind_rng] = nvals_valid
 
                 # quantile fields
                 for quant, val in zip(tadict['quantiles'], qvals):
@@ -1549,18 +1564,18 @@ def _get_values_antenna_pattern(radar, tadict, field_names):
                         'quant'+'{:02d}'.format(int(100*quant))+'_' +
                         field_name)
                     target_radar.fields[quant_field]['data'][
-                        np.unravel_index(
-                            sample,
-                            (target_radar.nrays, target_radar.ngates))] = val
+                        trad_ind_ray, trad_ind_rng] = val
         else:
             # ================================================================
             # Radar and scanning antenna are NOT at the same place
             # ================================================================
             ray_inds, rng_inds, w_inds = _get_gates_antenna_pattern(
-                radar, target_radar, radar.azimuth['data'][ind_ray],
-                radar.range['data'][ind_rng],
-                radar.time['data'][ind_ray], scan_angles, alt_tol=alt_tol,
-                latlon_tol=latlon_tol, max_altitude=max_altitude)
+                radar, target_radar,
+                target_radar.azimuth['data'][trad_ind_ray],
+                target_radar.range['data'][trad_ind_rng],
+                target_radar.time['data'][trad_ind_ray], scan_angles,
+                alt_tol=alt_tol, latlon_tol=latlon_tol,
+                max_altitude=max_altitude)
 
             w_vec = tadict['weightvec'][w_inds]
             for field_name in field_names:
@@ -1589,16 +1604,11 @@ def _get_values_antenna_pattern(radar, tadict, field_names):
 
                 # average field
                 target_radar.fields['avg_'+field_name]['data'][
-                    np.unravel_index(
-                        sample, (target_radar.nrays, target_radar.ngates))] = (
-                            avg)
+                    trad_ind_ray, trad_ind_rng] = avg
 
                 # npoints field
                 target_radar.fields['npoints_'+field_name]['data'][
-                    np.unravel_index(
-                        sample,
-                        (target_radar.nrays, target_radar.ngates))] = (
-                            nvals_valid)
+                    trad_ind_ray, trad_ind_rng] = nvals_valid
 
                 # quantile fields
                 for quant, val in zip(tadict['quantiles'], qvals):
@@ -1608,9 +1618,14 @@ def _get_values_antenna_pattern(radar, tadict, field_names):
                         'quant'+'{:02d}'.format(int(100*quant))+'_' +
                         field_name)
                     target_radar.fields[quant_field]['data'][
-                        np.unravel_index(
-                            sample,
-                            (target_radar.nrays, target_radar.ngates))] = val
+                        trad_ind_ray, trad_ind_rng] = val
+            print(
+                'original radar indices (azi, rng): '+str(rad_ind_ray)+', ' +
+                str(rad_ind_rng) +
+                ' target radar indices (azi, rng): '+str(trad_ind_ray)+', ' +
+                str(trad_ind_rng) +
+                ' Samples done: '+str(sample)+'/'+str(rad_ind_rngs.size),
+                end="\r", flush=True)
 
     return target_radar
 
@@ -1665,9 +1680,9 @@ def _create_target_radar(radar, dscfg, fixed_angle_val, info, field_names,
     elevation = get_metadata('elevation')
     metadata = dict()
 
-    latitude = radar.latitude
-    longitude = radar.longitude
-    altitude = radar.altitude
+    latitude = deepcopy(radar.latitude)
+    longitude = deepcopy(radar.longitude)
+    altitude = deepcopy(radar.altitude)
     if 'target_radar_pos' in dscfg:
         latitude['data'] = np.array(
             [dscfg['target_radar_pos']['latitude']], dtype=np.float)

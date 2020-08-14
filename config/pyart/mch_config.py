@@ -440,6 +440,12 @@ IR_016 = 'IR_016'  # This is near-infrared
 # Cloud top height
 CTH = 'CTH'   # m
 
+# visible normalized by sun elevation
+HRV_norm = 'HRV_norm'
+VIS006_norm = 'VIS006_norm'
+VIS008_norm = 'VIS008_norm'
+IR_016_norm = 'IR_016_norm'  # This is near-infrared
+
 
 # End of Simple Configuration section
 
@@ -756,19 +762,23 @@ DEFAULT_FIELD_NAMES = {
     'quant80_corrected_velocity': quant80_corrected_velocity,
     'quant90_corrected_velocity': quant90_corrected_velocity,
     'quant95_corrected_velocity': quant95_corrected_velocity,
+    'CTH': CTH,
+    'HRV': HRV,
+    'VIS006': VIS006,
+    'VIS008': VIS008,
     'IR_016': IR_016,
     'IR_039': IR_039,
+    'WV_062': WV_062,
+    'WV_073': WV_073,
     'IR_087': IR_087,
     'IR_097': IR_097,
     'IR_108': IR_108,
     'IR_120': IR_120,
     'IR_134': IR_134,
-    'CTH': CTH,
-    'HRV': HRV,
-    'VIS006': VIS006,
-    'VIS008': VIS008,
-    'WV_062': WV_062,
-    'WV_073': WV_073
+    'HRV_norm': HRV_norm,
+    'VIS006_norm': VIS006_norm,
+    'VIS008_norm': VIS008_norm,
+    'IR_016_norm': IR_016_norm,
 }
 
 
@@ -2789,6 +2799,26 @@ DEFAULT_METADATA = {
         'standard_name': 'CTH',
         'long_name': 'Cloud Top Height'},
 
+    HRV_norm: {
+        'units': '%',
+        'standard_name': 'HRV_norm',
+        'long_name': 'Normalized SEVIRI High Resolution Visible Reflectance'},
+
+    VIS006_norm: {
+        'units': '%',
+        'standard_name': 'VIS006_norm',
+        'long_name': 'Normalized SEVIRI Visible 0.6 um Reflectance'},
+
+    VIS008_norm: {
+        'units': '%',
+        'standard_name': 'VIS008_norm',
+        'long_name': 'Normalized SEVIRI Visible 0.8 um Reflectance'},
+
+    IR_016_norm: {
+        'units': '%',
+        'standard_name': 'IR_016_norm',
+        'long_name': 'Normalized SEVIRI Near-Infrared 1.6 um Reflectance'},
+
 
     # Grid metadata
 
@@ -3709,6 +3739,11 @@ DEFAULT_FIELD_COLORMAP = {
 
     CTH: 'pyart_NWSRef',
 
+    HRV_norm: 'Greys_r', # 'pyart_Gray9',
+    VIS006_norm: 'Greys_r', # 'pyart_Gray9',
+    VIS008_norm: 'Greys_r', # 'pyart_Gray9',
+    IR_016_norm: 'Greys_r', # 'pyart_Gray9_r',
+
     # Additional reflectivity like fields
     'CZ': 'pyart_NWSRef',
     'DZ': 'pyart_NWSRef',
@@ -3947,6 +3982,11 @@ DEFAULT_FIELD_LIMITS = {
     IR_134: (205., 290.),
 
     CTH: (0., 12000.),
+
+    HRV_norm: (0., 100.),
+    VIS006_norm: (0., 85.),
+    VIS008_norm: (0., 90.),
+    IR_016_norm: (0., 30.),
 
     # radial_wind_speed: 'pyart_BuDRd18',
     #radial_wind_speed_ci:

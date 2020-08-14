@@ -304,11 +304,15 @@ def process_echo_filter(procstatus, dscfg, radar_list=None):
     if procstatus != 1:
         return None, None
 
+    echoid_field = None
     for datatypedescr in dscfg['datatype']:
         radarnr, _, datatype, _, _ = get_datatype_fields(datatypedescr)
         if datatype == 'echoID':
             echoid_field = get_fieldname_pyart(datatype)
             break
+    if echoid_field is None:
+        warn('echoID field required to filter data')
+        return None, None
 
     ind_rad = int(radarnr[5:8])-1
     if radar_list[ind_rad] is None:
@@ -515,7 +519,6 @@ def process_filter_snr(procstatus, dscfg, radar_list=None):
         else:
             new_field_name = 'corrected_'+field_name
         new_dataset['radar_out'].add_field(new_field_name, radar_field)
-
 
     if not new_dataset['radar_out'].fields:
         return None, None
@@ -1435,7 +1438,8 @@ def process_zdr_column(procstatus, dscfg, radar_list=None):
             zdr_dict['data'], wind_len=smooth_window_len, min_valid=1,
             wind_type='mean')
 
-    zdr_dict['data'][radar.fields[rhv_field]['data'] < rhohv_min] = np.ma.masked
+    zdr_dict['data'][
+        radar.fields[rhv_field]['data'] < rhohv_min] = np.ma.masked
     zdr_dict['data'][zdr_dict['data'] < zdr_min] = np.ma.masked
     zdr_dict['data'][radar.fields[temp_field]['data'] > 0.] = np.ma.masked
     zdr_valid = np.logical_not(np.ma.getmaskarray(zdr_dict['data']))
@@ -1505,11 +1509,12 @@ def process_zdr_column(procstatus, dscfg, radar_list=None):
 
             # put data in output array
             lat_cols = np.append(
-                lat_cols, radar.gate_latitude['data'][ind_ray_col, ind_rng_col])
+                lat_cols,
+                radar.gate_latitude['data'][ind_ray_col, ind_rng_col])
             lon_cols = np.append(
-                lon_cols, radar.gate_longitude['data'][ind_ray_col, ind_rng_col])
+                lon_cols,
+                radar.gate_longitude['data'][ind_ray_col, ind_rng_col])
             zdr_cols = np.append(zdr_cols, zdr_col)
-
 
     zdr_col_dict = pyart.config.get_metadata(
         'differential_reflectivity_column_height')
