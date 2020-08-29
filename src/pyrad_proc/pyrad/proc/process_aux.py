@@ -22,6 +22,8 @@ determined points or regions of interest.
 
 """
 
+from time import time
+
 from copy import deepcopy
 from warnings import warn
 import numpy as np
@@ -1137,7 +1139,7 @@ def process_radar_resampling(procstatus, dscfg, radar_list=None):
         antennaType : str. Dataset keyword
             Type of antenna of the radar we want to get the view from. Can
             be AZIMUTH, ELEVATION, LOWBEAM, HIGHBEAM
-        par_azimuth_antenna : dict. Global ekyword
+        par_azimuth_antenna : dict. Global keyword
             Dictionary containing the parameters of the PAR azimuth antenna,
             i.e. name of the file with the antenna elevation pattern and fixed
             antenna angle
@@ -1170,9 +1172,19 @@ def process_radar_resampling(procstatus, dscfg, radar_list=None):
             The tolerance in latitude and longitude to determine which
             synthetic radar gates are co-located with real radar gates [deg].
             Default 0.04
-        alt_tol : float. Datset keyword
+        alt_tol : float. Dataset keyword
             The tolerance in altitude to determine which synthetic
             radar gates are co-located with real radar gates [m]. Default 1000.
+        distance_upper_bound : float. Dataset keyword
+            The maximum distance where to look for a neighbour when
+            determining which synthetic radar gates are co-located with real
+            radar gates [m]. Default 1000.
+        use_cKDTree : Bool. Dataset keyword
+            Which function to use to find co-located real radar gates with the
+            synthetic radar. If True a function using cKDTree from
+            scipy.spatial is used. This function uses parameter
+            distance_upper_bound. If False a native implementation is used
+            that takes as parameters latlon_tol and alt_tol. Default True.
         pattern_thres : float. Dataset keyword
             The minimum of the sum of the weights given to each value in order
             to consider the weighted quantile valid. It is related to the
@@ -1181,17 +1193,27 @@ def process_radar_resampling(procstatus, dscfg, radar_list=None):
             Dictionary specifying for each field if it is in log (True) or
             linear units (False). Default False
         use_nans : dict. Dataset keyword
-            Dictionary specyfing whether the nans have to be used in the
+            Dictionary specifying whether the nans have to be used in the
             computation of the statistics for each field. Default False
         nan_value : dict. Dataset keyword
             Dictionary with the value to use to substitute the NaN values when
             computing the statistics of each field. Default 0
+        moving_angle_min, moving_angle_max: float. Dataset keyword
+            The minimum and maximum azimuth angle (deg) of the target radar.
+            Default 0, 360.
+        ray_res: float
+            Ray resolution (deg). Default 1 deg.
+        rng_min, rng_max:
+            The minimum and maximum range of the target radar (m).
+            Default 0, 100000
+        rng_res : float
+            The target radar range resolution (m). Default 100.
     radar_list : list of Radar objects
         Optional. list of radar objects
 
     Returns
     -------
-    new_dataset : Trajectory object
+    new_dataset : dict
         dictionary containing the new radar
     ind_rad : int
         radar index
@@ -1298,6 +1320,8 @@ def process_radar_resampling(procstatus, dscfg, radar_list=None):
         max_altitude = dscfg.get('max_altitude', 12000.)  # [m]
         latlon_tol = dscfg.get('latlon_tol', 0.04)  # [deg]
         alt_tol = dscfg.get('alt_tol', 1000.)  # [m]
+        distance_upper_bound = dscfg.get('distance_upper_bound', 1000.)
+        use_cKDTree = dscfg.get('use_cKDTree', True)
         quants = np.array(dscfg.get(
             'quants', [0.05, 0.1, 0.2, 0.5, 0.8, 0.9, 0.95]))
 
@@ -1317,7 +1341,8 @@ def process_radar_resampling(procstatus, dscfg, radar_list=None):
             else:
                 antpattern = read_antenna_pattern(patternfile, linear=True,
                                                   twoway=True)
-        except:
+        except Exception as ee:
+            warn(str(ee))
             raise
 
         pattern_angles = antpattern['angle'] + fixed_angle_val[0]
@@ -1385,6 +1410,8 @@ def process_radar_resampling(procstatus, dscfg, radar_list=None):
             'max_altitude': max_altitude,
             'latlon_tol': latlon_tol,
             'alt_tol': alt_tol,
+            'distance_upper_bound': distance_upper_bound,
+            'use_cKDTree': use_cKDTree,
             'data_is_log': data_is_log,
             'change_antenna_pattern': change_antenna_pattern})
 
@@ -1454,6 +1481,8 @@ def _get_values_antenna_pattern(radar, tadict, field_names):
     max_altitude = tadict['max_altitude']
     latlon_tol = tadict['latlon_tol']
     alt_tol = tadict['alt_tol']
+    distance_upper_bound = tadict['distance_upper_bound']
+    use_cKDTree = tadict['use_cKDTree']
     data_is_log = tadict['data_is_log']
     change_antenna_pattern = tadict['change_antenna_pattern']
 
@@ -1489,6 +1518,9 @@ def _get_values_antenna_pattern(radar, tadict, field_names):
         ind_vec, (radar.nrays, radar.ngates))
     for sample, (rad_ind_ray, rad_ind_rng) in enumerate(
             zip(rad_ind_rays, rad_ind_rngs)):
+
+        # measure time
+        tstart = time()
 
         trad_ind_ray, trad_ind_rng = np.unravel_index(
             sample, (target_radar.nrays, target_radar.ngates))
@@ -1575,7 +1607,9 @@ def _get_values_antenna_pattern(radar, tadict, field_names):
                 target_radar.range['data'][trad_ind_rng],
                 target_radar.time['data'][trad_ind_ray], scan_angles,
                 alt_tol=alt_tol, latlon_tol=latlon_tol,
-                max_altitude=max_altitude)
+                max_altitude=max_altitude,
+                distance_upper_bound=distance_upper_bound,
+                use_cKDTree=use_cKDTree)
 
             w_vec = tadict['weightvec'][w_inds]
             for field_name in field_names:
@@ -1619,12 +1653,16 @@ def _get_values_antenna_pattern(radar, tadict, field_names):
                         field_name)
                     target_radar.fields[quant_field]['data'][
                         trad_ind_ray, trad_ind_rng] = val
+
+            tend = time()
+
             print(
                 'original radar indices (azi, rng): '+str(rad_ind_ray)+', ' +
                 str(rad_ind_rng) +
                 ' target radar indices (azi, rng): '+str(trad_ind_ray)+', ' +
                 str(trad_ind_rng) +
-                ' Samples done: '+str(sample)+'/'+str(rad_ind_rngs.size),
+                ' Samples done: '+str(sample)+'/'+str(rad_ind_rngs.size) +
+                ' Time used: '+str(tend-tstart),
                 end="\r", flush=True)
 
     return target_radar
