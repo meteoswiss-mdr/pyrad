@@ -237,7 +237,8 @@ def process_traj_trt(procstatus, dscfg, radar_list=None, trajectory=None):
         field_dict = deepcopy(radar.fields[field_name])
         field_dict['data'] = np.ma.empty(
             (radar_roi.nrays, radar_roi.ngates), dtype=float)
-        field_dict['data'][0, :] = radar.fields[field_name]['data'][inds_ray, inds_rng]
+        field_dict['data'][0, :] = radar.fields[field_name]['data'][
+            inds_ray, inds_rng]
         radar_roi.add_field(field_name, field_dict)
 
     new_dataset = {'radar_out': radar_roi}
@@ -245,7 +246,8 @@ def process_traj_trt(procstatus, dscfg, radar_list=None, trajectory=None):
     return new_dataset, ind_rad
 
 
-def process_traj_trt_contour(procstatus, dscfg, radar_list=None, trajectory=None):
+def process_traj_trt_contour(procstatus, dscfg, radar_list=None,
+                             trajectory=None):
     """
     Gets the TRT cell contour corresponding to each radar volume
 
@@ -848,15 +850,26 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             Max altitude of the data to use when computing the view from the
             synthetic radar [m MSL]. Default 12000.
         latlon_tol : float. Dataset keyword
-            The tolerance in latitude and longitude to determine which synthetic
-            radar gates are co-located with real radar gates [deg]. Default 0.04
+            The tolerance in latitude and longitude to determine which
+            synthetic radar gates are co-located with real radar gates [deg].
+            Default 0.04
         alt_tol : float. Datset keyword
             The tolerance in altitude to determine which synthetic
             radar gates are co-located with real radar gates [m]. Default 1000.
+        distance_upper_bound : float. Dataset keyword
+            The maximum distance where to look for a neighbour when
+            determining which synthetic radar gates are co-located with real
+            radar gates [m]. Default 1000.
+        use_cKDTree : Bool. Dataset keyword
+            Which function to use to find co-located real radar gates with the
+            synthetic radar. If True a function using cKDTree from
+            scipy.spatial is used. This function uses parameter
+            distance_upper_bound. If False a native implementation is used
+            that takes as parameters latlon_tol and alt_tol. Default True.
         pattern_thres : float. Dataset keyword
             The minimum of the sum of the weights given to each value in order
-            to consider the weighted quantile valid. It is related to the number
-            of valid data points
+            to consider the weighted quantile valid. It is related to the
+            number of valid data points
         data_is_log : dict. Dataset keyword
             Dictionary specifying for each field if it is in log (True) or
             linear units (False). Default False
@@ -894,7 +907,6 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             'final': 1
         }
         return dataset, tadict['ind_rad']
-
 
     # Process
     field_names = []
@@ -1067,9 +1079,11 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
         # Config parameters for processing when the weather radar and the
         # antenna are not at the same place:
         rhi_resolution = dscfg.get('rhi_resolution', 0.5)  # [deg]
-        max_altitude = dscfg.get('max_altitude', 12000.) # [m]
+        max_altitude = dscfg.get('max_altitude', 12000.)  # [m]
         latlon_tol = dscfg.get('latlon_tol', 0.04)  # [deg]
         alt_tol = dscfg.get('alt_tol', 1000.)  # [m]
+        distance_upper_bound = dscfg.get('distance_upper_bound', 1000.)
+        use_cKDTree = dscfg.get('use_cKDTree', True)
 
         # Get antenna pattern and make weight vector
         try:
@@ -1082,7 +1096,8 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             else:
                 antpattern = read_antenna_pattern(patternfile, linear=True,
                                                   twoway=True)
-        except:
+        except Exception as ee:
+            warn(str(ee))
             raise
 
         pattern_angles = antpattern['angle'] + fixed_angle
@@ -1186,6 +1201,8 @@ def process_traj_antenna_pattern(procstatus, dscfg, radar_list=None,
             'max_altitude': max_altitude,
             'latlon_tol': latlon_tol,
             'alt_tol': alt_tol,
+            'distance_upper_bound': distance_upper_bound,
+            'use_cKDTree': use_cKDTree,
             'data_is_log': data_is_log,
             'ts_dict': ts_dict})
         traj_ind = trajectory.get_samples_in_period(end=dt_task_start)
@@ -1252,6 +1269,8 @@ def _get_ts_values_antenna_pattern(radar, trajectory, tadict, traj_ind,
     max_altitude = tadict['max_altitude']
     latlon_tol = tadict['latlon_tol']
     alt_tol = tadict['alt_tol']
+    distance_upper_bound = tadict['distance_upper_bound']
+    use_cKDTree = tadict['use_cKDTree']
     data_is_log = tadict['data_is_log']
 
     traj_time_vec = date2num(trajectory.time_vector, radar.time['units'],
@@ -1351,7 +1370,9 @@ def _get_ts_values_antenna_pattern(radar, trajectory, tadict, traj_ind,
             ray_inds, rng_inds, w_inds = _get_gates_antenna_pattern(
                 radar_sel, target_radar, az, rr, tt, scan_angles,
                 alt_tol=alt_tol, latlon_tol=latlon_tol,
-                max_altitude=max_altitude)
+                max_altitude=max_altitude,
+                distance_upper_bound=distance_upper_bound,
+                use_cKDTree=use_cKDTree)
 
             w_vec = tadict['weightvec'][w_inds]
 
@@ -1647,7 +1668,8 @@ def _get_gates_trt(radar, trajectory, voltime, time_tol=100., alt_min=None,
 
 def _get_gates_antenna_pattern(radar_sel, target_radar, az, rr, tt,
                                scan_angles, alt_tol=1000., latlon_tol=0.04,
-                               max_altitude=12000.):
+                               max_altitude=12000.,
+                               distance_upper_bound=1000., use_cKDTree=True):
     """
     Find the gates of the radar object that have to be used to compute the
     data of a trajectory as seen by another radar system
@@ -1669,7 +1691,13 @@ def _get_gates_antenna_pattern(radar_sel, target_radar, az, rr, tt,
     latlon_tol : float
         The tolerance in latitude and longitude [deg]
     max_altitude : float
-        The maximum altitude where to look for radar data
+        The maximum altitude where to look for radar data [m MSL]
+    distance_upper_bound : float
+        The maximum distance where to look for neighbors [m]
+    use_cKDTree : Bool
+        If True the nearest neighbour to the synthetic radar is found using
+        the cKDTree function of scipy.spatial. Otherwise it is found by Pyrad
+        implementation
 
     Returns
     -------
@@ -1682,12 +1710,12 @@ def _get_gates_antenna_pattern(radar_sel, target_radar, az, rr, tt,
     # Create dummy Radar object with fix az and r, and all elevations
     n_rays = scan_angles.size
 
-    r_time = {'data': [tt * n_rays]}
-    r_range = {'data': [rr]}
+    r_time = {'data': np.array([tt * n_rays])}
+    r_range = {'data': np.array([rr])}
     r_azimuth = get_metadata('azimuth')
     r_azimuth['data'] = np.ones(n_rays) * az
     r_elevation = {'data': scan_angles}
-    r_sweep_number = {'data': [0]}
+    r_sweep_number = {'data': np.array([0])}
     r_fields = {'colocated_gates': get_metadata('colocated_gates')}
     r_fields['colocated_gates']['data'] = 2*np.ma.ones((n_rays, 1), dtype=int)
 
@@ -1711,8 +1739,13 @@ def _get_gates_antenna_pattern(radar_sel, target_radar, az, rr, tt,
     radar_sel.add_field(
         'colocated_gates', gate_coloc_radar_sel, replace_existing=True)
 
-    (colgates, r_radar_colg) = pyart.util.colocated_gates(
-        r_radar, radar_sel, h_tol=alt_tol, latlon_tol=latlon_tol)
+    if use_cKDTree:
+        colgates, r_radar_colg = pyart.util.colocated_gates2(
+            r_radar, radar_sel, distance_upper_bound=distance_upper_bound)
+    else:
+        colgates, r_radar_colg = pyart.util.colocated_gates(
+            r_radar, radar_sel, h_tol=alt_tol, latlon_tol=latlon_tol)
+
     w_ind = np.where(r_radar_colg['data'] > 1)[0]
 
     return colgates['rad2_ray_ind'], colgates['rad2_rng_ind'], w_ind
