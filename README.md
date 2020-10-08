@@ -73,7 +73,7 @@ The core of Pyrad is based on Py-ART. Py-ART was originally developed in the con
 
 J.J. Helmus, S.M. Collis, (2016). The Python ARM Radar Toolkit (Py-ART), a Library for Working with Weather Radar Data in the Python Programming Language. Journal of Open Research Software. 4(1), p.e25. DOI: http://doi.org/10.5334/jors.119
 
-J. Figueras i Ventura, A. Leuenberger, Z. Künsch, J. Grazioli, U. Germann, Pyrad: a Real-Time Weather Radar Data Processing Framework Based on Py-ART, 38th AMS Conference on Radar Meteorology, Chicago, IL, USA, 28 Aug-1 Sept. 2017
+J. Figueras i Ventura, M. Lainer, Z. Schauwecker, J. Grazioli, U. Germann, (2020). Pyrad: A Real-Time Weather Radar Data Processing Framework Based on Py-ART. Journal of Open Research Software, 8(1), p.28. DOI: http://doi.org/10.5334/jors.330 
 
 # Disclaimer
 The software is still in a development stage. Please let us know if you would like to test it.
