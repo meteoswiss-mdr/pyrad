@@ -23,11 +23,12 @@ from scipy.interpolate import RegularGridInterpolator
 
 # check existence of gdal
 try:
-    from osgeo import gdal
+    from osgeo import gdal, osr
     _GDAL_AVAILABLE = True
 except ImportError:
     try:
         import gdal
+        import osr
         _GDAL_AVAILABLE = True
     except ImportError:
         _GDAL_AVAILABLE = False
@@ -107,7 +108,8 @@ def dem2radar_data(radar, dem_data, slice_xy=True, field_name='visibility'):
     return field_dict
 
 # @profile
-def read_dem_data(fname, field_name, fill_value=None):
+def read_dem(fname, field_name = 'terrain_altitude', fill_value=None,
+             projparams = None):
     """
     Generic reader that reads DEM data from any format, will infer the proper
     reader from filename extension
@@ -121,6 +123,9 @@ def read_dem_data(fname, field_name, fill_value=None):
     fill_value : float
         The fill value, if not provided will be infered from metadata 
         if possible
+    projparams : projection transform as can be used by pyproj, either a 
+        OGC WKT or Proj4 string, see epsg.io for a list, if not provided 
+        will be infered from the file, or for ASCII, LV1903 will be used
         
     Returns
     -------
@@ -131,11 +136,11 @@ def read_dem_data(fname, field_name, fill_value=None):
     extension = pathlib.Path(fname).suffix
   
     if extension in ['.tif','.tiff','.gtif']:
-        return  read_geotiff_data(fname, field_name, fill_value)
+        return  read_geotiff_data(fname, field_name, fill_value, projparams)
     elif extension in ['.asc','.dem','.txt']:
-        return read_ascii_data(fname, field_name, fill_value)
+        return read_ascii_data(fname, field_name, fill_value, projparams)
     elif extension in ['.rst']:
-        return read_idrisi_data(fname, field_name, fill_value)
+        return read_idrisi_data(fname, field_name, fill_value, projparams)
     else:
         warn('Unable to read file %s, extension must be .tif .tiff .gtif, '+
              '.asc .dem .txt .rst',
@@ -143,7 +148,8 @@ def read_dem_data(fname, field_name, fill_value=None):
         return None
     
 # @profile
-def read_geotiff_data(fname, field_name, fill_value=None):
+def read_geotiff_data(fname, field_name = 'terrain_altitude', 
+                      fill_value = None, projparams = None):
     
     """
     Reads DEM data from a generic geotiff file, unit system is expected to be
@@ -158,7 +164,10 @@ def read_geotiff_data(fname, field_name, fill_value=None):
     fill_value : float
         The fill value, if not provided will be infered from metadata 
         (recommended)
-
+    projparams : projection transform as can be used by pyproj, either a 
+        OGC WKT or Proj4 string, see epsg.io for a list, if not provided 
+        will be infered from the geotiff file
+        
     Returns
     -------
     dem_data : dictionary
@@ -182,7 +191,7 @@ def read_geotiff_data(fname, field_name, fill_value=None):
         maxy = gt[3] 
         
         metadata = {}
-        metadata['resolution'] = width
+        metadata['resolution'] = np.abs(gt[1])
         metadata['min. X'] = minx
         metadata['min. Y'] = miny
         metadata['rows'] = raster.RasterYSize
@@ -218,14 +227,28 @@ def read_geotiff_data(fname, field_name, fill_value=None):
             field_name: field_dict
         }
 
+        if projparams == None:
+            projparams = osr.SpatialReference(wkt=raster.GetProjection())
+            projparams = projparams.ExportToWkt()
+        if projparams == '':
+            warn('No projection info could be found in file, assuming '+\
+                 'the coordinate system is LV1903')
+            projparams = _get_lv1903_wkt()
+                
+        dem_data = pyart.core.Grid(None, {field_name:dem_data[field_name]}, 
+             dem_data['metadata'], 0, 0, 0, dem_data['x'], dem_data['y'], 
+                     {'data':[0]}, projection = projparams)
+        
         return dem_data
+        
     except EnvironmentError as ee:
         warn(str(ee))
         warn('Unable to read file '+fname)
         return None
 
 # @profile
-def read_ascii_data(fname, field_name, fill_value=None):
+def read_ascii_data(fname, field_name = 'terrain_altitude', fill_value = None,
+                    projparams = None):
     """
     Reads DEM data from an ASCII file in the Swisstopo format, the
     unit system is expected to be in meters!
@@ -239,7 +262,10 @@ def read_ascii_data(fname, field_name, fill_value=None):
     fill_value : float
         The fill value, if not provided will be infered from metadata 
         (recommended)
-
+    projparams : projection transform as can be used by pyproj, either a 
+        OGC WKT or Proj4 string, see epsg.io for a list, if not provided
+        the Swiss LV1903 coord system will be used
+        
     Returns
     -------
     dem_data : dictionary
@@ -295,15 +321,23 @@ def read_ascii_data(fname, field_name, fill_value=None):
             'y': y,
             field_name: field_dict
         }
-
+        if projparams == None:
+            projparams = _get_lv1903_wkt()
+        
+        dem_data = pyart.core.Grid(None, {field_name:dem_data[field_name]}, 
+             dem_data['metadata'], 0, 0, 0, dem_data['x'], dem_data['y'], 
+                     {'data':[0]}, projection = projparams)
+        
         return dem_data
+        
     except EnvironmentError as ee:
         warn(str(ee))
         warn('Unable to read file '+fname)
         return None
     
 # @profile
-def read_idrisi_data(fname, field_name, fill_value=None):
+def read_idrisi_data(fname, field_name = 'terrain_altitude', fill_value = None,
+                     projparams = None):
     """
     Reads DEM data from an IDRISI .rst file
 
@@ -315,7 +349,10 @@ def read_idrisi_data(fname, field_name, fill_value=None):
         name of the readed variable
     fill_value : float
         The fill value
-
+    projparams : projection transform as can be used by pyproj, either a 
+        OGC WKT or Proj4 string, see epsg.io for a list, if not provided 
+        will be infered from the idrisi file
+        
     Returns
     -------
     dem_data : dictionary
@@ -360,8 +397,20 @@ def read_idrisi_data(fname, field_name, fill_value=None):
             'y': y,
             field_name: field_dict
         }
-
+        if projparams == None:
+            projparams = osr.SpatialReference(wkt=raster.GetProjection())
+            projparams = projparams.ExportToWkt()
+        if projparams == '':
+            warn('No projection info could be found in file, assuming '+\
+                 'the coordinate system is LV1903')
+            projparams = _get_lv1903_wkt()
+         
+        dem_data = pyart.core.Grid(None, {field_name:dem_data[field_name]}, 
+             dem_data['metadata'], 0, 0, 0, dem_data['x'], dem_data['y'], 
+                     {'data':[0]}, projection = projparams)
+        
         return dem_data
+    
     except EnvironmentError as ee:
         warn(str(ee))
         warn('Unable to read file '+fname)
@@ -478,3 +527,8 @@ def _prepare_for_interpolation(x_radar, y_radar, dem_coord, slice_xy=True):
     #     np.broadcast_to(y_dem.reshape(1, ny), (nx, ny))).flatten()
 
     return (x_dem, y_dem, ind_xmin, ind_ymin, ind_xmax, ind_ymax)
+
+def _get_lv1903_wkt():
+    lv1903 = osr.SpatialReference( )
+    lv1903.ImportFromEPSG( 21781)
+    return lv1903.ExportToWkt()
