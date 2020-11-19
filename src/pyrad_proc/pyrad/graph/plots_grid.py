@@ -171,8 +171,8 @@ def plot_surface(grid, field_name, level, prdcfg, fname_list, titl=None,
 
 
 def plot_surface_contour(grid, field_name, level, prdcfg, fname_list,
-                         contour_values=None, linewidths=1.5, ax=None,
-                         fig=None, display=None, save_fig=True,
+                         contour_values=None, linewidths=1.5, colors='k',
+                         ax=None, fig=None, display=None, save_fig=True,
                          use_basemap=False):
     """
     plots a contour plot from gridded data
@@ -193,6 +193,8 @@ def plot_surface_contour(grid, field_name, level, prdcfg, fname_list,
         list of contours to plot
     linewidths : float
         width of the contour lines
+    colors : color string or sequence of colors
+        The contour colours
     ax : Axis
         Axis to plot on. if fig is None a new axis will be created
     fig : Figure
@@ -272,7 +274,7 @@ def plot_surface_contour(grid, field_name, level, prdcfg, fname_list,
 
             basemap = display.get_basemap()
             basemap.contour(
-                lons, lats, data, contour_values, colors='k',
+                lons, lats, data, contour_values, colors=colors,
                 linewidths=linewidths, latlon=True)
             ax.set_title(display.generate_grid_title(field_name, level))
         else:
@@ -287,7 +289,7 @@ def plot_surface_contour(grid, field_name, level, prdcfg, fname_list,
             fig, ax = display.plot_grid_contour(
                 field_name, level=level, ax=ax, fig=fig, lat_lines=lat_lines,
                 lon_lines=lon_lines, contour_values=contour_values,
-                linewidths=linewidths, resolution=resolution,
+                linewidths=linewidths, colors=colors, resolution=resolution,
                 background_zoom=background_zoom,
                 maps_list=prdcfg['gridMapImageConfig']['maps'])
     else:
@@ -297,14 +299,14 @@ def plot_surface_contour(grid, field_name, level, prdcfg, fname_list,
 
             basemap = display.get_basemap()
             basemap.contour(
-                lons, lats, data, contour_values, colors='k',
+                lons, lats, data, contour_values, colors=colors,
                 linewidths=linewidths, latlon=True)
         else:
             lons, lats = grid.get_point_longitude_latitude(edges=False)
             data = grid.fields[field_name]['data'][level, :, :]
 
             ax.contour(
-                lons, lats, data, contour_values, colors='k',
+                lons, lats, data, contour_values, colors=colors,
                 linewidths=linewidths, transform=cartopy.crs.PlateCarree())
 
     if save_fig:

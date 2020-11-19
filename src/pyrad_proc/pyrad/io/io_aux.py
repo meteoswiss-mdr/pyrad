@@ -1313,6 +1313,8 @@ def get_fieldname_pyart(datatype):
         field_name = 'fields_difference'
     elif datatype == 'mask':
         field_name = 'field_mask'
+    elif datatype == 'texture':
+        field_name = 'field_texture'
 
     # spectral data
     elif datatype == 'ShhADU':

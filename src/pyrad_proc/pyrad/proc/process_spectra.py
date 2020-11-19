@@ -1407,10 +1407,10 @@ def process_pol_variables(procstatus, dscfg, radar_list=None):
         datatype : list of string. Dataset keyword
             The input data types
         subtract_noise : Bool
-            If True noise will be subtracted from the signal
+            If True noise will be subtracted from the signal. Default False
         smooth_window : int or None
             Size of the moving Gaussian smoothing window. If none no smoothing
-            will be applied
+            will be applied. Default None
         variables : list of str
             list of variables to compute. Default dBZ
     radar_list : list of spectra objects

@@ -389,9 +389,6 @@ def process_rqvp(procstatus, dscfg, radar_list=None):
 
         datatype : string. Dataset keyword
             The data type where we want to extract the point measurement
-        anglenr : int
-            The sweep number to use. It assumes the radar volume consists on
-            PPI scans
         hmax : float
             The maximum height to plot [m]. Default 10000.
         hres : float

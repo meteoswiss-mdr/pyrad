@@ -169,6 +169,7 @@ def get_process_func(dataset_type, dsname):
                 'GRID': process_grid
                 'GRID_FIELDS_DIFF': process_grid_fields_diff
                 'GRID_MASK': process_grid_mask
+                'GRID_TEXTURE': process_grid_texture
                 'NORMALIZE_LUMINOSITY': process_normalize_luminosity
                 'PIXEL_FILTER': process_pixel_filter
             'GRID_TIMEAVG' format output:
@@ -245,6 +246,9 @@ def get_process_func(dataset_type, dsname):
         dsformat = 'GRID'
     elif dataset_type == 'GRID_MASK':
         func_name = 'process_grid_mask'
+        dsformat = 'GRID'
+    elif dataset_type == 'GRID_TEXTURE':
+        func_name = 'process_grid_texture'
         dsformat = 'GRID'
     elif dataset_type == 'NORMALIZE_LUMINOSITY':
         func_name = 'process_normalize_luminosity'

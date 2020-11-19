@@ -27,7 +27,7 @@ from ..io.read_data_dem import read_idrisi_data, dem2radar_data
 
 def process_dem(procstatus, dscfg, radar_list=None):
     """
-    Gets COSMO data and put it in radar coordinates
+    Gets DEM data and put it in radar coordinates
 
     Parameters
     ----------
