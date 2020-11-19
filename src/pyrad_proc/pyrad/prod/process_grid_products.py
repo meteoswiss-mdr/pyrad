@@ -198,6 +198,10 @@ def generate_grid_products(dataset, prdcfg):
                     Py-ART config file. If 'boundaries' is not set the
                     countours are 10 values linearly distributed from vmin to
                     vmax
+                linewidths : float
+                    width of the contour lines
+                colors : color string or sequence of colors
+                    The contour colours
         SURFACE_CONTOUR_OVERPLOT:
             Plots a surface image of gridded data with a contour overplotted.
             User defined parameters:
@@ -211,6 +215,10 @@ def generate_grid_products(dataset, prdcfg):
                     Py-ART config file. If 'boundaries' is not set the
                     countours are 10 values linearly distributed from vmin to
                     vmax
+                linewidths : float
+                    width of the contour lines
+                colors : color string or sequence of colors
+                    The contour colours
         SURFACE_OVERPLOT:
             Plots on the same surface two images, one on top of the other.
             User defined parameters:
@@ -334,6 +342,8 @@ def generate_grid_products(dataset, prdcfg):
 
         # user defined values
         contour_values = prdcfg.get('contour_values', None)
+        linewidths = prdcfg.get('linewidths', 1.5)
+        colors = prdcfg.get('colors', 'k')
         level = prdcfg.get('level', 0)
 
         savedir = get_save_dir(
@@ -350,7 +360,8 @@ def generate_grid_products(dataset, prdcfg):
 
         plot_surface_contour(
             dataset['radar_out'], field_name, level, prdcfg, fname_list,
-            contour_values=contour_values)
+            contour_values=contour_values, linewidths=linewidths,
+            colors=colors)
 
         print('----- save to '+' '.join(fname_list))
 
@@ -374,6 +385,8 @@ def generate_grid_products(dataset, prdcfg):
             return None
 
         contour_values = prdcfg.get('contour_values', None)
+        linewidths = prdcfg.get('linewidths', 1.5)
+        colors = prdcfg.get('colors', 'k')
         level = prdcfg.get('level', 0)
         contour_level = prdcfg.get('contour_level', level)
 
@@ -403,8 +416,8 @@ def generate_grid_products(dataset, prdcfg):
 
         fname_list = plot_surface_contour(
             dataset['radar_out'], contour_name, contour_level, prdcfg,
-            fname_list, contour_values=contour_values, ax=ax, fig=fig,
-            display=display, save_fig=True)
+            fname_list, contour_values=contour_values, linewidths=linewidths,
+            colors=colors, ax=ax, fig=fig, display=display, save_fig=True)
 
         print('----- save to '+' '.join(fname_list))
 

@@ -92,6 +92,7 @@ wide_band_noise = 'wide_band_noise'
 
 fields_difference = 'fields_difference'
 field_mask = 'field_mask'
+field_texture = 'field_texture'
 
 transmitted_signal_power_h = 'transmitted_signal_power_h'
 transmitted_signal_power_v = 'transmitted_signal_power_v'
@@ -550,6 +551,7 @@ DEFAULT_FIELD_NAMES = {
     'wide_band_noise': wide_band_noise,
     'fields_difference': fields_difference,
     'field_mask': field_mask,
+    'field_texture': field_texture,
     'stat_test_lag1': stat_test_lag1,
     'stat_test_lag2': stat_test_lag2,
     'mean_phase': mean_phase,
@@ -1370,6 +1372,12 @@ DEFAULT_METADATA = {
         'units': '-',
         'standard_name': 'fields_difference',
         'long_name': 'Fields difference',
+        'coordinates': 'elevation azimuth range'},
+
+    field_texture:{
+        'units': '-',
+        'standard_name': 'field_texture',
+        'long_name': 'Field texture',
         'coordinates': 'elevation azimuth range'},
 
     field_mask:{
@@ -3561,6 +3569,7 @@ DEFAULT_FIELD_COLORMAP = {
     wide_band_noise: 'pyart_NWSRef',
     fields_difference: 'pyart_BuDRd18',
     field_mask: 'Greys_r',
+    field_texture: 'Greys_r',
 
     sun_hit_power_h: 'pyart_NWSRef',
     sun_hit_power_v: 'pyart_NWSRef',

@@ -13,6 +13,7 @@ Functions to processes gridded data.
     process_grid_time_stats
     process_grid_time_stats2
     process_grid_fields_diff
+    process_grid_texture
     process_grid_mask
     process_normalize_luminosity
     process_pixel_filter
@@ -981,6 +982,80 @@ def process_grid_fields_diff(procstatus, dscfg, radar_list=None):
     grid_diff.add_field('fields_difference', field_diff)
 
     new_dataset = {'radar_out': grid_diff}
+
+    return new_dataset, ind_rad
+
+
+def process_grid_texture(procstatus, dscfg, radar_list=None):
+    """
+    Computes the 2D texture of a gridded field
+
+    Parameters
+    ----------
+    procstatus : int
+        Processing status: 0 initializing, 1 processing volume,
+        2 post-processing
+    dscfg : dictionary of dictionaries
+        data set configuration. Accepted Configuration Keywords::
+
+        datatype : list of string. Dataset keyword
+            The input data types
+        xwind, ywind : int
+            The size of the local window in the x and y axis. Default 7
+        fill_value : float
+            The value with which to fill masked data. Default np.NaN
+    radar_list : list of Radar objects
+        Optional. list of radar objects
+
+    Returns
+    -------
+    new_dataset : dict
+        dictionary containing a radar object containing the field differences
+    ind_rad : int
+        radar index
+
+    """
+    if procstatus != 1:
+        return None, None
+
+    # create the list of data types for each radar
+    if len(dscfg['datatype']) != 1:
+        warn('Texture can only be computed on one field')
+        return None, None
+
+    radarnr, _, datatype, _, _ = get_datatype_fields(dscfg['datatype'][0])
+    field_name = get_fieldname_pyart(datatype)
+
+    ind_rad = int(radarnr[5:8])-1
+    if radar_list[ind_rad] is None:
+        warn('No valid radar')
+        return None, None
+
+    grid = radar_list[ind_rad]
+    if field_name not in grid.fields:
+        warn('Unable to compute field '+field_name+' texture. Field missing')
+        return None, None
+
+    xwind = dscfg.get('xwind', 7)
+    ywind = dscfg.get('ywind', 7)
+    fill_value = dscfg.get('fill_value', np.NaN)
+
+    field_text = pyart.config.get_metadata('field_texture')
+    field_text['data'] = np.ma.masked_all(
+        (grid.nz, grid.ny, grid.nx),
+        dtype=grid.fields[field_name]['data'].dtype)
+
+    for level in range(grid.nz):
+        field_array = deepcopy(grid.fields[field_name]['data'][level, :, :])
+        field_array = field_array.filled(fill_value=fill_value)
+        field_text['data'][level, :, :] = pyart.util.grid_texture_2d(
+            field_array, xwind=xwind, ywind=ywind)
+
+    grid_text = deepcopy(grid)
+    grid_text.fields = dict()
+    grid_text.add_field('field_texture', field_text)
+
+    new_dataset = {'radar_out': grid_text}
 
     return new_dataset, ind_rad
 
