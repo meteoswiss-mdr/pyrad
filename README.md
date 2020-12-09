@@ -2,8 +2,8 @@
 
 [![Ref doc](https://img.shields.io/badge/docs-users-4088b8.svg)](https://meteoswiss-mdr.github.io/pyrad/)
 
-[![Anaconda-Server Badge](https://anaconda.org/conda-forge/pyrad_mch/badges/version.svg)](https://anaconda.org/conda-forge/pyrad_mch)
-[![Anaconda-Server Badge](https://anaconda.org/conda-forge/pyrad_mch/badges/latest_release_date.svg)](https://anaconda.org/conda-forge/pyrad_mch)
+[![Anaconda-Server Badge](https://img.shields.io/badge/Anaconda%20Cloud-0.5.0-blue.svg?style=flat-square)](https://anaconda.org/conda-forge/pyrad_mch)
+[![Anaconda-Server Badge](https://img.shields.io/badge/Last%20updated-09%20Dec%202020-blue.svg?style=flat-square)](https://anaconda.org/conda-forge/pyrad_mch)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/pyrad_mch/badges/downloads.svg)](https://anaconda.org/conda-forge/pyrad_mch)
 
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/pyrad_mch/badges/platforms.svg)](https://anaconda.org/conda-forge/pyrad_mch)
