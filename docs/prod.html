@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Products generation (pyrad.prod) &#8212; pyrad 0.4.4 documentation</title>
+    <title>Products generation (pyrad.prod) &#8212; pyrad 0.5.0 documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -27,7 +27,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">pyrad 0.4.4 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">pyrad 0.5.0 documentation</a> &#187;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -322,6 +322,11 @@ are defined by the parameters in ‘rhiImageConfig’ in the
 <dt>step: float or None</dt>
 <dd>the data quantization step. If none it will be obtained
 from the Py-ART configuration file</dd>
+<dt>vmin, vmax: float or None</dt>
+<dd>The minimum and maximum values. If None they will be
+obtained from the Py-ART configuration file</dd>
+<dt>mask_val: float or None</dt>
+<dd>A value to mask.</dd>
 <dt>write_data: Bool</dt>
 <dd>If true the histogram data is written in a csv file</dd>
 </dl>
@@ -365,21 +370,19 @@ in the radar object will be saved</dd>
 </dd>
 </dl>
 <p>‘SAVEVOL’: Saves on field of a gridded data object in a netcdf file.
-‘SURFACE_IMAGE’: Plots a surface image of gridded data.</p>
+‘STATS’: Computes statistics over the whole images and stores them in</p>
+<blockquote>
+<div><p>a file.
+User defined parameters:</p>
 <blockquote>
 <div><dl class="docutils">
-<dt>User defined parameters:</dt>
-<dd><dl class="first last docutils">
-<dt>level: int</dt>
-<dd>The altitude level to plot. The rest of the parameters are
-defined by the parameters in ‘ppiImageConfig’ and
-‘ppiMapImageConfig’ in the ‘loc’ configuration file</dd>
-</dl>
-</dd>
+<dt>stat: str</dt>
+<dd>The statistic used. Can be mean, median, min, max</dd>
 </dl>
 </div></blockquote>
+</div></blockquote>
 <dl class="last docutils">
-<dt>‘SURFACE_CONTOUR’: Plots a surface image of gridded data.</dt>
+<dt>‘SURFACE_IMAGE’: Plots a surface image of gridded data.</dt>
 <dd><dl class="first last docutils">
 <dt>User defined parameters:</dt>
 <dd><dl class="first last docutils">
@@ -390,6 +393,68 @@ defined by the parameters in ‘ppiImageConfig’ and
 </dl>
 </dd>
 </dl>
+</dd>
+<dt>‘SURFACE_CONTOUR’: Plots a surface image of contour gridded data.</dt>
+<dd><dl class="first last docutils">
+<dt>User defined parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>level: int</dt>
+<dd>The altitude level to plot. The rest of the parameters are
+defined by the parameters in ‘ppiImageConfig’ and
+‘ppiMapImageConfig’ in the ‘loc’ configuration file</dd>
+<dt>contour_values <span class="classifier-delimiter">:</span> <span class="classifier">float array or None</span></dt>
+<dd>The contour values. If None the values are taken from the
+‘boundaries’ keyword in the field description in the
+Py-ART config file. If ‘boundaries’ is not set the
+countours are 10 values linearly distributed from vmin to
+vmax</dd>
+<dt>linewidths <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>width of the contour lines</dd>
+<dt>colors <span class="classifier-delimiter">:</span> <span class="classifier">color string or sequence of colors</span></dt>
+<dd>The contour colours</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>SURFACE_CONTOUR_OVERPLOT:</dt>
+<dd><p class="first">Plots a surface image of gridded data with a contour overplotted.
+User defined parameters:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>level: int</dt>
+<dd>The altitude level to plot. The rest of the parameters are
+defined by the parameters in ‘ppiImageConfig’ and
+‘ppiMapImageConfig’ in the ‘loc’ configuration file</dd>
+<dt>contour_values <span class="classifier-delimiter">:</span> <span class="classifier">float array or None</span></dt>
+<dd>The contour values. If None the values are taken from the
+‘boundaries’ keyword in the field description in the
+Py-ART config file. If ‘boundaries’ is not set the
+countours are 10 values linearly distributed from vmin to
+vmax</dd>
+<dt>linewidths <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>width of the contour lines</dd>
+<dt>colors <span class="classifier-delimiter">:</span> <span class="classifier">color string or sequence of colors</span></dt>
+<dd>The contour colours</dd>
+</dl>
+</div></blockquote>
+</dd>
+<dt>SURFACE_OVERPLOT:</dt>
+<dd><p class="first">Plots on the same surface two images, one on top of the other.
+User defined parameters:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>level: int</dt>
+<dd>The altitude level to plot. The rest of the parameters are
+defined by the parameters in ‘ppiImageConfig’ and
+‘ppiMapImageConfig’ in the ‘loc’ configuration file</dd>
+<dt>contour_values <span class="classifier-delimiter">:</span> <span class="classifier">float array or None</span></dt>
+<dd>The contour values. If None the values are taken from the
+‘boundaries’ keyword in the field description in the
+Py-ART config file. If ‘boundaries’ is not set the
+countours are 10 values linearly distributed from vmin to
+vmax</dd>
+</dl>
+</div></blockquote>
 </dd>
 </dl>
 </dd>
@@ -2317,7 +2382,7 @@ what the functions do check the function documentation:</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">pyrad 0.4.4 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">pyrad 0.5.0 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

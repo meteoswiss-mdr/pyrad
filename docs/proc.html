@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Dataset processing (pyrad.proc) &#8212; pyrad 0.4.4 documentation</title>
+    <title>Dataset processing (pyrad.proc) &#8212; pyrad 0.5.0 documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -27,7 +27,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">pyrad 0.4.4 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">pyrad 0.5.0 documentation</a> &#187;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -139,7 +139,22 @@
 <td>computes the temporal statistics of a field</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_grid_time_stats2" title="pyrad.proc.process_grid_time_stats2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_grid_time_stats2</span></code></a>(procstatus,&nbsp;dscfg)</td>
-<td>computes the temporal mean of a field</td>
+<td>computes temporal statistics of a field</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_grid_texture" title="pyrad.proc.process_grid_texture"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_grid_texture</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<td>Computes the 2D texture of a gridded field</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_grid_fields_diff" title="pyrad.proc.process_grid_fields_diff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_grid_fields_diff</span></code></a>(procstatus,&nbsp;dscfg)</td>
+<td>Computes grid field differences</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_grid_mask" title="pyrad.proc.process_grid_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_grid_mask</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<td>Mask data.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_normalize_luminosity" title="pyrad.proc.process_normalize_luminosity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_normalize_luminosity</span></code></a>(procstatus,&nbsp;dscfg)</td>
+<td>Normalize the data by the sinus of the sun elevation.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_pixel_filter" title="pyrad.proc.process_pixel_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_pixel_filter</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<td>Masks all pixels that are not of the class specified in keyword pixel_type</td>
 </tr>
 </tbody>
 </table>
@@ -515,13 +530,16 @@
 <tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_dealias_unwrap_phase" title="pyrad.proc.process_dealias_unwrap_phase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_dealias_unwrap_phase</span></code></a>(procstatus,&nbsp;dscfg)</td>
 <td>Dealiases the Doppler velocity field using multi-dimensional phase unwrapping</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_wind_vel" title="pyrad.proc.process_wind_vel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_wind_vel</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_radial_velocity" title="pyrad.proc.process_radial_velocity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_radial_velocity</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<td>Estimates the radial velocity respect to the radar from the wind velocity</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_wind_vel" title="pyrad.proc.process_wind_vel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_wind_vel</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Estimates the horizontal or vertical component of the wind from the radial velocity</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_windshear" title="pyrad.proc.process_windshear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_windshear</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_windshear" title="pyrad.proc.process_windshear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_windshear</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
 <td>Estimates the wind shear from the wind velocity</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_vad" title="pyrad.proc.process_vad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_vad</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
+<tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_vad" title="pyrad.proc.process_vad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_vad</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
 <td>Estimates vertical wind profile using the VAD (velocity Azimuth Display) technique</td>
 </tr>
 </tbody>
@@ -629,7 +647,7 @@
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td><a class="reference internal" href="#pyrad.proc.process_dem" title="pyrad.proc.process_dem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_dem</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;radar_list])</td>
-<td>Gets COSMO data and put it in radar coordinates</td>
+<td>Gets DEM data and put it in radar coordinates</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#pyrad.proc.process_visibility" title="pyrad.proc.process_visibility"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_visibility</span></code></a>(procstatus,&nbsp;dscfg[,&nbsp;…])</td>
 <td>Gets the visibility in percentage from the minimum visible elevation.</td>
@@ -701,6 +719,7 @@ the function documentation:</p>
 ‘RADAR_RESAMPLING’: process_radar_resampling
 ‘RADIAL_NOISE_HS’: process_radial_noise_hs
 ‘RADIAL_NOISE_IVIC’: process_radial_noise_ivic
+‘RADIAL_VELOCITY’: process_radial_velocity
 ‘RAINRATE’: process_rainrate
 ‘RAW’: process_raw
 ‘REFLECTIVITY’: process_reflectivity
@@ -766,7 +785,12 @@ the function documentation:</p>
 </dd>
 <dt>‘GRID’ format output:</dt>
 <dd><p class="first last">‘RAW_GRID’: process_raw_grid
-‘GRID’: process_grid</p>
+‘GRID’: process_grid
+‘GRID_FIELDS_DIFF’: process_grid_fields_diff
+‘GRID_MASK’: process_grid_mask
+‘GRID_TEXTURE’: process_grid_texture
+‘NORMALIZE_LUMINOSITY’: process_normalize_luminosity
+‘PIXEL_FILTER’: process_pixel_filter</p>
 </dd>
 <dt>‘GRID_TIMEAVG’ format output:</dt>
 <dd><p class="first last">‘GRID_TIME_STATS’: process_grid_time_stats
@@ -1084,17 +1108,21 @@ not in the radar object. Default 2000.</p>
 </dd>
 <dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
 <dd><p class="first">data set configuration. Accepted Configuration Keywords:</p>
-<dl class="docutils">
+<dl class="last docutils">
 <dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">string. Dataset keyword</span></dt>
 <dd><p class="first last">The data type where we want to extract the point measurement</p>
 </dd>
 <dt>angle <span class="classifier-delimiter">:</span> <span class="classifier">float or None. Dataset keyword</span></dt>
-<dd><p class="first last">The</p>
+<dd><p class="first last">The center angle to average. If not set or set to -1 all
+available azimuth angles will be used</p>
 </dd>
-</dl>
-<p>delta_azi : float. Dataset keyword</p>
-<p>avg_type : str. Dataset keyword</p>
-<dl class="last docutils">
+<dt>delta_azi <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">The angle span to average. If not set or set to -1 all the
+available azimuth angles will be used</p>
+</dd>
+<dt>avg_type <span class="classifier-delimiter">:</span> <span class="classifier">str. Dataset keyword</span></dt>
+<dd><p class="first last">Average type. Can be mean or median</p>
+</dd>
 <dt>nvalid_min <span class="classifier-delimiter">:</span> <span class="classifier">int. Dataset keyword</span></dt>
 <dd><p class="first last">the (minimum) radius of the region of interest in m. Default half
 the largest resolution</p>
@@ -1679,7 +1707,7 @@ data has not changed</p>
 <dd><p class="first last">path where to store the look up table</p>
 </dd>
 <dt>model <span class="classifier-delimiter">:</span> <span class="classifier">string. Dataset keyword</span></dt>
-<dd><p class="first last">The COSMO model to use. Can be cosmo-1, cosmo-2, cosmo-7</p>
+<dd><p class="first last">The COSMO model to use. Can be cosmo-1, cosmo-1e, cosmo-2, cosmo-7</p>
 </dd>
 </dl>
 </dd>
@@ -1982,7 +2010,7 @@ dealiasing for that ray.</p>
 <dl class="function">
 <dt id="pyrad.proc.process_dem">
 <code class="descclassname">pyrad.proc.</code><code class="descname">process_dem</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_dem.html#process_dem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_dem" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets COSMO data and put it in radar coordinates</p>
+<dd><p>Gets DEM data and put it in radar coordinates</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -3041,6 +3069,92 @@ used. If the attribute is None a default 1 deg value will be used</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="pyrad.proc.process_grid_fields_diff">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_grid_fields_diff</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_grid.html#process_grid_fields_diff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_grid_fields_diff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes grid field differences</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first">data set configuration. Accepted Configuration Keywords:</p>
+<dl class="last docutils">
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">list of string. Dataset keyword</span></dt>
+<dd><p class="first last">The input data types</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing a radar object containing the field differences</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.proc.process_grid_mask">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_grid_mask</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_grid.html#process_grid_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_grid_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mask data. Puts True if data is above a certain threshold and false
+otherwise.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first last">data set configuration</p>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+<dt><strong>threshold</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Threshold used for the mask. Values below threshold are set to False.
+Above threshold are set to True. Default 0.</p>
+</dd>
+<dt><strong>x_dir_ext, y_dir_ext</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Number of pixels by which to extend the mask on each side of the
+west-east direction and south-north direction</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the output</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="pyrad.proc.process_grid_point">
 <code class="descclassname">pyrad.proc.</code><code class="descname">process_grid_point</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_grid.html#process_grid_point"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_grid_point" title="Permalink to this definition">¶</a></dt>
 <dd><p>Obtains the grid data at a point location.</p>
@@ -3093,6 +3207,53 @@ otherwise position is obtained from grid index (iz, iy, ix).</p>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
 <dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
 <dd><p class="first last">dictionary containing the data and metadata at the point of interest</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.proc.process_grid_texture">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_grid_texture</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_grid.html#process_grid_texture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_grid_texture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the 2D texture of a gridded field</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first">data set configuration. Accepted Configuration Keywords:</p>
+<dl class="last docutils">
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">list of string. Dataset keyword</span></dt>
+<dd><p class="first last">The input data types</p>
+</dd>
+<dt>xwind, ywind <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">The size of the local window in the x and y axis. Default 7</p>
+</dd>
+<dt>fill_value <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The value with which to fill masked data. Default np.NaN</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing a radar object containing the field differences</p>
 </dd>
 <dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd><p class="first last">radar index</p>
@@ -3168,7 +3329,7 @@ mean</p>
 <dl class="function">
 <dt id="pyrad.proc.process_grid_time_stats2">
 <code class="descclassname">pyrad.proc.</code><code class="descname">process_grid_time_stats2</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_grid.html#process_grid_time_stats2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_grid_time_stats2" title="Permalink to this definition">¶</a></dt>
-<dd><p>computes the temporal mean of a field</p>
+<dd><p>computes temporal statistics of a field</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -3989,6 +4150,43 @@ valid</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="pyrad.proc.process_normalize_luminosity">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_normalize_luminosity</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_grid.html#process_normalize_luminosity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_normalize_luminosity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalize the data by the sinus of the sun elevation. The sun elevation is
+computed at the central pixel.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first last">data set configuration</p>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the output</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="pyrad.proc.process_occurrence">
 <code class="descclassname">pyrad.proc.</code><code class="descname">process_occurrence</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_calib.html#process_occurrence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_occurrence" title="Permalink to this definition">¶</a></dt>
 <dd><p>computes the frequency of occurrence of data. It looks only for gates
@@ -4402,6 +4600,48 @@ or the attribute are not present the beamwidth will be set to None</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="pyrad.proc.process_pixel_filter">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_pixel_filter</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_grid.html#process_pixel_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_pixel_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Masks all pixels that are not of the class specified in keyword pixel_type</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first">data set configuration. Accepted Configuration Keywords:</p>
+<dl class="last docutils">
+<dt>pixel_type <span class="classifier-delimiter">:</span> <span class="classifier">int or list of ints</span></dt>
+<dd><p class="first last">The type of pixels to keep: 0 No data, 1 Below threshold, 2 Above
+threshold. Default 2</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the output</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="pyrad.proc.process_point_measurement">
 <code class="descclassname">pyrad.proc.</code><code class="descname">process_point_measurement</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_timeseries.html#process_point_measurement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_point_measurement" title="Permalink to this definition">¶</a></dt>
 <dd><p>Obtains the radar data at a point location.</p>
@@ -4419,6 +4659,12 @@ or the attribute are not present the beamwidth will be set to None</p>
 <dl class="last docutils">
 <dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">string. Dataset keyword</span></dt>
 <dd><p class="first last">The data type where we want to extract the point measurement</p>
+</dd>
+<dt>single_point <span class="classifier-delimiter">:</span> <span class="classifier">boolean. Dataset keyword</span></dt>
+<dd><p class="first last">if True only one gate per radar volume is going to be kept.
+Otherwise all gates within the azimuth and elevation tolerance
+are going to be kept. This is useful to extract all data from
+fixed pointing scans. Default True</p>
 </dd>
 <dt>latlon <span class="classifier-delimiter">:</span> <span class="classifier">boolean. Dataset keyword</span></dt>
 <dd><p class="first last">if True position is obtained from latitude, longitude information,
@@ -4501,11 +4747,11 @@ True and truealt is False</p>
 <dd><p class="first last">The input data types</p>
 </dd>
 <dt>subtract_noise <span class="classifier-delimiter">:</span> <span class="classifier">Bool</span></dt>
-<dd><p class="first last">If True noise will be subtracted from the signal</p>
+<dd><p class="first last">If True noise will be subtracted from the signal. Default False</p>
 </dd>
 <dt>smooth_window <span class="classifier-delimiter">:</span> <span class="classifier">int or None</span></dt>
 <dd><p class="first last">Size of the moving Gaussian smoothing window. If none no smoothing
-will be applied</p>
+will be applied. Default None</p>
 </dd>
 <dt>variables <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
 <dd><p class="first last">list of variables to compute. Default dBZ</p>
@@ -4688,7 +4934,7 @@ and antenna pattern</p>
 <dd><p class="first last">Type of antenna of the radar we want to get the view from. Can
 be AZIMUTH, ELEVATION, LOWBEAM, HIGHBEAM</p>
 </dd>
-<dt>par_azimuth_antenna <span class="classifier-delimiter">:</span> <span class="classifier">dict. Global ekyword</span></dt>
+<dt>par_azimuth_antenna <span class="classifier-delimiter">:</span> <span class="classifier">dict. Global keyword</span></dt>
 <dd><p class="first last">Dictionary containing the parameters of the PAR azimuth antenna,
 i.e. name of the file with the antenna elevation pattern and fixed
 antenna angle</p>
@@ -4715,7 +4961,7 @@ assume the radar is collocated</p>
 </dd>
 <dt>change_antenna_pattern <span class="classifier-delimiter">:</span> <span class="classifier">Bool. Dataset keyword</span></dt>
 <dd><p class="first last">If true the target radar has a different antenna pattern than the
-observations radar</p>
+observations radar. Default True</p>
 </dd>
 <dt>rhi_resolution <span class="classifier-delimiter">:</span> <span class="classifier">Bool. Dataset keyword</span></dt>
 <dd><p class="first last">Resolution of the synthetic RHI used to compute the data as viewed
@@ -4730,9 +4976,21 @@ synthetic radar [m MSL]. Default 12000.</p>
 synthetic radar gates are co-located with real radar gates [deg].
 Default 0.04</p>
 </dd>
-<dt>alt_tol <span class="classifier-delimiter">:</span> <span class="classifier">float. Datset keyword</span></dt>
+<dt>alt_tol <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">The tolerance in altitude to determine which synthetic
 radar gates are co-located with real radar gates [m]. Default 1000.</p>
+</dd>
+<dt>distance_upper_bound <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">The maximum distance where to look for a neighbour when
+determining which synthetic radar gates are co-located with real
+radar gates [m]. Default 1000.</p>
+</dd>
+<dt>use_cKDTree <span class="classifier-delimiter">:</span> <span class="classifier">Bool. Dataset keyword</span></dt>
+<dd><p class="first last">Which function to use to find co-located real radar gates with the
+synthetic radar. If True a function using cKDTree from
+scipy.spatial is used. This function uses parameter
+distance_upper_bound. If False a native implementation is used
+that takes as parameters latlon_tol and alt_tol. Default True.</p>
 </dd>
 <dt>pattern_thres <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">The minimum of the sum of the weights given to each value in order
@@ -4744,12 +5002,26 @@ number of valid data points</p>
 linear units (False). Default False</p>
 </dd>
 <dt>use_nans <span class="classifier-delimiter">:</span> <span class="classifier">dict. Dataset keyword</span></dt>
-<dd><p class="first last">Dictionary specyfing whether the nans have to be used in the
+<dd><p class="first last">Dictionary specifying whether the nans have to be used in the
 computation of the statistics for each field. Default False</p>
 </dd>
 <dt>nan_value <span class="classifier-delimiter">:</span> <span class="classifier">dict. Dataset keyword</span></dt>
 <dd><p class="first last">Dictionary with the value to use to substitute the NaN values when
 computing the statistics of each field. Default 0</p>
+</dd>
+<dt>moving_angle_min, moving_angle_max: float. Dataset keyword</dt>
+<dd><p class="first last">The minimum and maximum azimuth angle (deg) of the target radar.
+Default 0, 360.</p>
+</dd>
+<dt>ray_res: float</dt>
+<dd><p class="first last">Ray resolution (deg). Default 1 deg.</p>
+</dd>
+<dt>rng_min, rng_max:</dt>
+<dd><p class="first last">The minimum and maximum range of the target radar (m).
+Default 0, 100000</p>
+</dd>
+<dt>rng_res <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The target radar range resolution (m). Default 100.</p>
 </dd>
 </dl>
 </dd>
@@ -4760,7 +5032,7 @@ computing the statistics of each field. Default 0</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Trajectory object</span></dt>
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
 <dd><p class="first last">dictionary containing the new radar</p>
 </dd>
 <dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
@@ -4854,9 +5126,6 @@ Ivic 2013 method</p>
 the number of pulses is not in radar.instrument_parameters this
 will be used instead. Default 30</p>
 </dd>
-<dt>flat_reg_wlen <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd><p class="first last">range of window considered to find flat regions [m]. Default 8000.</p>
-</dd>
 <dt>ngates_min: int</dt>
 <dd><p class="first last">minimum number of gates with noise to consider the retrieval
 valid. Default 800</p>
@@ -4867,6 +5136,55 @@ valid. Default 800</p>
 <dt>get_noise_pos <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
 <dd><p class="first last">If true an additional field with gates containing noise according
 to the algorithm is produced</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>radar_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Radar objects</span></dt>
+<dd><p class="first last">Optional. list of radar objects</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_dataset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">dictionary containing the output</p>
+</dd>
+<dt><strong>ind_rad</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">radar index</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrad.proc.process_radial_velocity">
+<code class="descclassname">pyrad.proc.</code><code class="descname">process_radial_velocity</code><span class="sig-paren">(</span><em>procstatus</em>, <em>dscfg</em>, <em>radar_list=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/proc/process_Doppler.html#process_radial_velocity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.proc.process_radial_velocity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimates the radial velocity respect to the radar from the wind velocity</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>procstatus</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Processing status: 0 initializing, 1 processing volume,
+2 post-processing</p>
+</dd>
+<dt><strong>dscfg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary of dictionaries</span></dt>
+<dd><p class="first">data set configuration. Accepted Configuration Keywords:</p>
+<dl class="last docutils">
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">string. Dataset keyword</span></dt>
+<dd><p class="first last">The input data type</p>
+</dd>
+<dt>latitude, longitude <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">arbitrary coordinates [deg] from where to compute the radial
+velocity. If any of them is None it will be the radar position</p>
+</dd>
+<dt>altitude <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">arbitrary altitude [m MSL] from where to compute the radial
+velocity. If None it will be the radar altitude</p>
 </dd>
 </dl>
 </dd>
@@ -5615,10 +5933,6 @@ levels PPI data.</p>
 <dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">string. Dataset keyword</span></dt>
 <dd><p class="first last">The data type where we want to extract the point measurement</p>
 </dd>
-<dt>anglenr <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd><p class="first last">The sweep number to use. It assumes the radar volume consists on
-PPI scans</p>
-</dd>
 <dt>hmax <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
 <dd><p class="first last">The maximum height to plot [m]. Default 10000.</p>
 </dd>
@@ -6304,6 +6618,12 @@ Default -1.</p>
 <dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">string. Dataset keyword</span></dt>
 <dd><p class="first last">The data type where we want to extract the point measurement</p>
 </dd>
+<dt>single_point <span class="classifier-delimiter">:</span> <span class="classifier">boolean. Dataset keyword</span></dt>
+<dd><p class="first last">if True only one gate per radar volume is going to be kept.
+Otherwise all gates within the azimuth and elevation tolerance
+are going to be kept. This is useful to extract all data from
+fixed pointing scans. Default True</p>
+</dd>
 <dt>latlon <span class="classifier-delimiter">:</span> <span class="classifier">boolean. Dataset keyword</span></dt>
 <dd><p class="first last">if True position is obtained from latitude, longitude information,
 otherwise position is obtained from antenna coordinates
@@ -6841,10 +7161,6 @@ for Ivic.</p>
 <dd><p class="first last">Default number of pulses used in the computation of the ray. If the
 number of pulses is not in radar.instrument_parameters this will be
 used instead. Used in Ivic method. Default 30</p>
-</dd>
-<dt>flat_reg_wlen <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd><p class="first last">Length of the flat region window [m]. Used in Ivic method. Default
-8000.</p>
 </dd>
 <dt>iterations: int</dt>
 <dd><p class="first last">number of iterations in step 7 of Ivic method. Default 10.</p>
@@ -7447,17 +7763,30 @@ from the synthetic radar [deg]. Default 0.5</p>
 synthetic radar [m MSL]. Default 12000.</p>
 </dd>
 <dt>latlon_tol <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
-<dd><p class="first last">The tolerance in latitude and longitude to determine which synthetic
-radar gates are co-located with real radar gates [deg]. Default 0.04</p>
+<dd><p class="first last">The tolerance in latitude and longitude to determine which
+synthetic radar gates are co-located with real radar gates [deg].
+Default 0.04</p>
 </dd>
 <dt>alt_tol <span class="classifier-delimiter">:</span> <span class="classifier">float. Datset keyword</span></dt>
 <dd><p class="first last">The tolerance in altitude to determine which synthetic
 radar gates are co-located with real radar gates [m]. Default 1000.</p>
 </dd>
+<dt>distance_upper_bound <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
+<dd><p class="first last">The maximum distance where to look for a neighbour when
+determining which synthetic radar gates are co-located with real
+radar gates [m]. Default 1000.</p>
+</dd>
+<dt>use_cKDTree <span class="classifier-delimiter">:</span> <span class="classifier">Bool. Dataset keyword</span></dt>
+<dd><p class="first last">Which function to use to find co-located real radar gates with the
+synthetic radar. If True a function using cKDTree from
+scipy.spatial is used. This function uses parameter
+distance_upper_bound. If False a native implementation is used
+that takes as parameters latlon_tol and alt_tol. Default True.</p>
+</dd>
 <dt>pattern_thres <span class="classifier-delimiter">:</span> <span class="classifier">float. Dataset keyword</span></dt>
 <dd><p class="first last">The minimum of the sum of the weights given to each value in order
-to consider the weighted quantile valid. It is related to the number
-of valid data points</p>
+to consider the weighted quantile valid. It is related to the
+number of valid data points</p>
 </dd>
 <dt>data_is_log <span class="classifier-delimiter">:</span> <span class="classifier">dict. Dataset keyword</span></dt>
 <dd><p class="first last">Dictionary specifying for each field if it is in log (True) or
@@ -7780,8 +8109,8 @@ ALONG_RNG</p>
 </dd>
 <dt>fixed_range, fixed_azimuth, fixed_elevation <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
 <dd><p class="first last">The fixed range [m], azimuth [deg] or elevation [deg] to extract.
-In each mode two of these parameters have to be defined. If they are
-not defined they default to 0.</p>
+In each mode two of these parameters have to be defined. If they
+are not defined they default to 0.</p>
 </dd>
 <dt>ang_tol, rng_tol <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
 <dd><p class="first last">The angle tolerance [deg] and range tolerance [m] around the fixed
@@ -8429,7 +8758,7 @@ Default [2] (dry snow)</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">pyrad 0.4.4 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">pyrad 0.5.0 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

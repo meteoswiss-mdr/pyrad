@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>pyrad.proc.process_echoclass &#8212; pyrad 0.4.4 documentation</title>
+    <title>pyrad.proc.process_echoclass &#8212; pyrad 0.5.0 documentation</title>
     <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
@@ -27,7 +27,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">pyrad 0.4.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pyrad 0.5.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>
@@ -360,11 +360,15 @@
     <span class="k">if</span> <span class="n">procstatus</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
+    <span class="n">echoid_field</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">for</span> <span class="n">datatypedescr</span> <span class="ow">in</span> <span class="n">dscfg</span><span class="p">[</span><span class="s1">&#39;datatype&#39;</span><span class="p">]:</span>
         <span class="n">radarnr</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_datatype_fields</span><span class="p">(</span><span class="n">datatypedescr</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;echoID&#39;</span><span class="p">:</span>
             <span class="n">echoid_field</span> <span class="o">=</span> <span class="n">get_fieldname_pyart</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
             <span class="k">break</span>
+    <span class="k">if</span> <span class="n">echoid_field</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;echoID field required to filter data&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
     <span class="n">ind_rad</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">radarnr</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">8</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span>
     <span class="k">if</span> <span class="n">radar_list</span><span class="p">[</span><span class="n">ind_rad</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -571,7 +575,6 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">new_field_name</span> <span class="o">=</span> <span class="s1">&#39;corrected_&#39;</span><span class="o">+</span><span class="n">field_name</span>
         <span class="n">new_dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">new_field_name</span><span class="p">,</span> <span class="n">radar_field</span><span class="p">)</span>
-
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">new_dataset</span><span class="p">[</span><span class="s1">&#39;radar_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
@@ -1491,7 +1494,8 @@
             <span class="n">zdr_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">wind_len</span><span class="o">=</span><span class="n">smooth_window_len</span><span class="p">,</span> <span class="n">min_valid</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
             <span class="n">wind_type</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">)</span>
 
-    <span class="n">zdr_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">rhv_field</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">rhohv_min</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked</span>
+    <span class="n">zdr_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span>
+        <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">rhv_field</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">rhohv_min</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked</span>
     <span class="n">zdr_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">zdr_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">zdr_min</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked</span>
     <span class="n">zdr_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">temp_field</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked</span>
     <span class="n">zdr_valid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">zdr_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]))</span>
@@ -1561,11 +1565,12 @@
 
             <span class="c1"># put data in output array</span>
             <span class="n">lat_cols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">lat_cols</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">gate_latitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray_col</span><span class="p">,</span> <span class="n">ind_rng_col</span><span class="p">])</span>
+                <span class="n">lat_cols</span><span class="p">,</span>
+                <span class="n">radar</span><span class="o">.</span><span class="n">gate_latitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray_col</span><span class="p">,</span> <span class="n">ind_rng_col</span><span class="p">])</span>
             <span class="n">lon_cols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">lon_cols</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">gate_longitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray_col</span><span class="p">,</span> <span class="n">ind_rng_col</span><span class="p">])</span>
+                <span class="n">lon_cols</span><span class="p">,</span>
+                <span class="n">radar</span><span class="o">.</span><span class="n">gate_longitude</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">ind_ray_col</span><span class="p">,</span> <span class="n">ind_rng_col</span><span class="p">])</span>
             <span class="n">zdr_cols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">zdr_cols</span><span class="p">,</span> <span class="n">zdr_col</span><span class="p">)</span>
-
 
     <span class="n">zdr_col_dict</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span>
         <span class="s1">&#39;differential_reflectivity_column_height&#39;</span><span class="p">)</span>
@@ -1597,7 +1602,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">pyrad 0.4.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pyrad 0.5.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>

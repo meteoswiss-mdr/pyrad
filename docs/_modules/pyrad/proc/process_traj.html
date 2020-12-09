@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>pyrad.proc.process_traj &#8212; pyrad 0.4.4 documentation</title>
+    <title>pyrad.proc.process_traj &#8212; pyrad 0.5.0 documentation</title>
     <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
@@ -27,7 +27,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">pyrad 0.4.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pyrad 0.5.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>
@@ -293,7 +293,8 @@
         <span class="n">field_dict</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">])</span>
         <span class="n">field_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span>
             <span class="p">(</span><span class="n">radar_roi</span><span class="o">.</span><span class="n">nrays</span><span class="p">,</span> <span class="n">radar_roi</span><span class="o">.</span><span class="n">ngates</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-        <span class="n">field_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">inds_ray</span><span class="p">,</span> <span class="n">inds_rng</span><span class="p">]</span>
+        <span class="n">field_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span>
+            <span class="n">inds_ray</span><span class="p">,</span> <span class="n">inds_rng</span><span class="p">]</span>
         <span class="n">radar_roi</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">field_dict</span><span class="p">)</span>
 
     <span class="n">new_dataset</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;radar_out&#39;</span><span class="p">:</span> <span class="n">radar_roi</span><span class="p">}</span>
@@ -301,7 +302,8 @@
     <span class="k">return</span> <span class="n">new_dataset</span><span class="p">,</span> <span class="n">ind_rad</span></div>
 
 
-<div class="viewcode-block" id="process_traj_trt_contour"><a class="viewcode-back" href="../../../proc.html#pyrad.proc.process_traj_trt_contour">[docs]</a><span class="k">def</span> <span class="nf">process_traj_trt_contour</span><span class="p">(</span><span class="n">procstatus</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">radar_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">trajectory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="process_traj_trt_contour"><a class="viewcode-back" href="../../../proc.html#pyrad.proc.process_traj_trt_contour">[docs]</a><span class="k">def</span> <span class="nf">process_traj_trt_contour</span><span class="p">(</span><span class="n">procstatus</span><span class="p">,</span> <span class="n">dscfg</span><span class="p">,</span> <span class="n">radar_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">trajectory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Gets the TRT cell contour corresponding to each radar volume</span>
 
@@ -904,15 +906,26 @@
 <span class="sd">            Max altitude of the data to use when computing the view from the</span>
 <span class="sd">            synthetic radar [m MSL]. Default 12000.</span>
 <span class="sd">        latlon_tol : float. Dataset keyword</span>
-<span class="sd">            The tolerance in latitude and longitude to determine which synthetic</span>
-<span class="sd">            radar gates are co-located with real radar gates [deg]. Default 0.04</span>
+<span class="sd">            The tolerance in latitude and longitude to determine which</span>
+<span class="sd">            synthetic radar gates are co-located with real radar gates [deg].</span>
+<span class="sd">            Default 0.04</span>
 <span class="sd">        alt_tol : float. Datset keyword</span>
 <span class="sd">            The tolerance in altitude to determine which synthetic</span>
 <span class="sd">            radar gates are co-located with real radar gates [m]. Default 1000.</span>
+<span class="sd">        distance_upper_bound : float. Dataset keyword</span>
+<span class="sd">            The maximum distance where to look for a neighbour when</span>
+<span class="sd">            determining which synthetic radar gates are co-located with real</span>
+<span class="sd">            radar gates [m]. Default 1000.</span>
+<span class="sd">        use_cKDTree : Bool. Dataset keyword</span>
+<span class="sd">            Which function to use to find co-located real radar gates with the</span>
+<span class="sd">            synthetic radar. If True a function using cKDTree from</span>
+<span class="sd">            scipy.spatial is used. This function uses parameter</span>
+<span class="sd">            distance_upper_bound. If False a native implementation is used</span>
+<span class="sd">            that takes as parameters latlon_tol and alt_tol. Default True.</span>
 <span class="sd">        pattern_thres : float. Dataset keyword</span>
 <span class="sd">            The minimum of the sum of the weights given to each value in order</span>
-<span class="sd">            to consider the weighted quantile valid. It is related to the number</span>
-<span class="sd">            of valid data points</span>
+<span class="sd">            to consider the weighted quantile valid. It is related to the</span>
+<span class="sd">            number of valid data points</span>
 <span class="sd">        data_is_log : dict. Dataset keyword</span>
 <span class="sd">            Dictionary specifying for each field if it is in log (True) or</span>
 <span class="sd">            linear units (False). Default False</span>
@@ -950,7 +963,6 @@
             <span class="s1">&#39;final&#39;</span><span class="p">:</span> <span class="mi">1</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">tadict</span><span class="p">[</span><span class="s1">&#39;ind_rad&#39;</span><span class="p">]</span>
-
 
     <span class="c1"># Process</span>
     <span class="n">field_names</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1123,9 +1135,11 @@
         <span class="c1"># Config parameters for processing when the weather radar and the</span>
         <span class="c1"># antenna are not at the same place:</span>
         <span class="n">rhi_resolution</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rhi_resolution&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>  <span class="c1"># [deg]</span>
-        <span class="n">max_altitude</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;max_altitude&#39;</span><span class="p">,</span> <span class="mf">12000.</span><span class="p">)</span> <span class="c1"># [m]</span>
+        <span class="n">max_altitude</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;max_altitude&#39;</span><span class="p">,</span> <span class="mf">12000.</span><span class="p">)</span>  <span class="c1"># [m]</span>
         <span class="n">latlon_tol</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;latlon_tol&#39;</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">)</span>  <span class="c1"># [deg]</span>
         <span class="n">alt_tol</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;alt_tol&#39;</span><span class="p">,</span> <span class="mf">1000.</span><span class="p">)</span>  <span class="c1"># [m]</span>
+        <span class="n">distance_upper_bound</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;distance_upper_bound&#39;</span><span class="p">,</span> <span class="mf">1000.</span><span class="p">)</span>
+        <span class="n">use_cKDTree</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;use_cKDTree&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># Get antenna pattern and make weight vector</span>
         <span class="k">try</span><span class="p">:</span>
@@ -1138,7 +1152,8 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">antpattern</span> <span class="o">=</span> <span class="n">read_antenna_pattern</span><span class="p">(</span><span class="n">patternfile</span><span class="p">,</span> <span class="n">linear</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                                                   <span class="n">twoway</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">except</span><span class="p">:</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ee</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
             <span class="k">raise</span>
 
         <span class="n">pattern_angles</span> <span class="o">=</span> <span class="n">antpattern</span><span class="p">[</span><span class="s1">&#39;angle&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">fixed_angle</span>
@@ -1242,6 +1257,8 @@
             <span class="s1">&#39;max_altitude&#39;</span><span class="p">:</span> <span class="n">max_altitude</span><span class="p">,</span>
             <span class="s1">&#39;latlon_tol&#39;</span><span class="p">:</span> <span class="n">latlon_tol</span><span class="p">,</span>
             <span class="s1">&#39;alt_tol&#39;</span><span class="p">:</span> <span class="n">alt_tol</span><span class="p">,</span>
+            <span class="s1">&#39;distance_upper_bound&#39;</span><span class="p">:</span> <span class="n">distance_upper_bound</span><span class="p">,</span>
+            <span class="s1">&#39;use_cKDTree&#39;</span><span class="p">:</span> <span class="n">use_cKDTree</span><span class="p">,</span>
             <span class="s1">&#39;data_is_log&#39;</span><span class="p">:</span> <span class="n">data_is_log</span><span class="p">,</span>
             <span class="s1">&#39;ts_dict&#39;</span><span class="p">:</span> <span class="n">ts_dict</span><span class="p">})</span>
         <span class="n">traj_ind</span> <span class="o">=</span> <span class="n">trajectory</span><span class="o">.</span><span class="n">get_samples_in_period</span><span class="p">(</span><span class="n">end</span><span class="o">=</span><span class="n">dt_task_start</span><span class="p">)</span>
@@ -1308,6 +1325,8 @@
     <span class="n">max_altitude</span> <span class="o">=</span> <span class="n">tadict</span><span class="p">[</span><span class="s1">&#39;max_altitude&#39;</span><span class="p">]</span>
     <span class="n">latlon_tol</span> <span class="o">=</span> <span class="n">tadict</span><span class="p">[</span><span class="s1">&#39;latlon_tol&#39;</span><span class="p">]</span>
     <span class="n">alt_tol</span> <span class="o">=</span> <span class="n">tadict</span><span class="p">[</span><span class="s1">&#39;alt_tol&#39;</span><span class="p">]</span>
+    <span class="n">distance_upper_bound</span> <span class="o">=</span> <span class="n">tadict</span><span class="p">[</span><span class="s1">&#39;distance_upper_bound&#39;</span><span class="p">]</span>
+    <span class="n">use_cKDTree</span> <span class="o">=</span> <span class="n">tadict</span><span class="p">[</span><span class="s1">&#39;use_cKDTree&#39;</span><span class="p">]</span>
     <span class="n">data_is_log</span> <span class="o">=</span> <span class="n">tadict</span><span class="p">[</span><span class="s1">&#39;data_is_log&#39;</span><span class="p">]</span>
 
     <span class="n">traj_time_vec</span> <span class="o">=</span> <span class="n">date2num</span><span class="p">(</span><span class="n">trajectory</span><span class="o">.</span><span class="n">time_vector</span><span class="p">,</span> <span class="n">radar</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">],</span>
@@ -1407,7 +1426,9 @@
             <span class="n">ray_inds</span><span class="p">,</span> <span class="n">rng_inds</span><span class="p">,</span> <span class="n">w_inds</span> <span class="o">=</span> <span class="n">_get_gates_antenna_pattern</span><span class="p">(</span>
                 <span class="n">radar_sel</span><span class="p">,</span> <span class="n">target_radar</span><span class="p">,</span> <span class="n">az</span><span class="p">,</span> <span class="n">rr</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">scan_angles</span><span class="p">,</span>
                 <span class="n">alt_tol</span><span class="o">=</span><span class="n">alt_tol</span><span class="p">,</span> <span class="n">latlon_tol</span><span class="o">=</span><span class="n">latlon_tol</span><span class="p">,</span>
-                <span class="n">max_altitude</span><span class="o">=</span><span class="n">max_altitude</span><span class="p">)</span>
+                <span class="n">max_altitude</span><span class="o">=</span><span class="n">max_altitude</span><span class="p">,</span>
+                <span class="n">distance_upper_bound</span><span class="o">=</span><span class="n">distance_upper_bound</span><span class="p">,</span>
+                <span class="n">use_cKDTree</span><span class="o">=</span><span class="n">use_cKDTree</span><span class="p">)</span>
 
             <span class="n">w_vec</span> <span class="o">=</span> <span class="n">tadict</span><span class="p">[</span><span class="s1">&#39;weightvec&#39;</span><span class="p">][</span><span class="n">w_inds</span><span class="p">]</span>
 
@@ -1703,7 +1724,8 @@
 
 <span class="k">def</span> <span class="nf">_get_gates_antenna_pattern</span><span class="p">(</span><span class="n">radar_sel</span><span class="p">,</span> <span class="n">target_radar</span><span class="p">,</span> <span class="n">az</span><span class="p">,</span> <span class="n">rr</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span>
                                <span class="n">scan_angles</span><span class="p">,</span> <span class="n">alt_tol</span><span class="o">=</span><span class="mf">1000.</span><span class="p">,</span> <span class="n">latlon_tol</span><span class="o">=</span><span class="mf">0.04</span><span class="p">,</span>
-                               <span class="n">max_altitude</span><span class="o">=</span><span class="mf">12000.</span><span class="p">):</span>
+                               <span class="n">max_altitude</span><span class="o">=</span><span class="mf">12000.</span><span class="p">,</span>
+                               <span class="n">distance_upper_bound</span><span class="o">=</span><span class="mf">1000.</span><span class="p">,</span> <span class="n">use_cKDTree</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find the gates of the radar object that have to be used to compute the</span>
 <span class="sd">    data of a trajectory as seen by another radar system</span>
@@ -1725,7 +1747,13 @@
 <span class="sd">    latlon_tol : float</span>
 <span class="sd">        The tolerance in latitude and longitude [deg]</span>
 <span class="sd">    max_altitude : float</span>
-<span class="sd">        The maximum altitude where to look for radar data</span>
+<span class="sd">        The maximum altitude where to look for radar data [m MSL]</span>
+<span class="sd">    distance_upper_bound : float</span>
+<span class="sd">        The maximum distance where to look for neighbors [m]</span>
+<span class="sd">    use_cKDTree : Bool</span>
+<span class="sd">        If True the nearest neighbour to the synthetic radar is found using</span>
+<span class="sd">        the cKDTree function of scipy.spatial. Otherwise it is found by Pyrad</span>
+<span class="sd">        implementation</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1738,12 +1766,12 @@
     <span class="c1"># Create dummy Radar object with fix az and r, and all elevations</span>
     <span class="n">n_rays</span> <span class="o">=</span> <span class="n">scan_angles</span><span class="o">.</span><span class="n">size</span>
 
-    <span class="n">r_time</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">tt</span> <span class="o">*</span> <span class="n">n_rays</span><span class="p">]}</span>
-    <span class="n">r_range</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">rr</span><span class="p">]}</span>
+    <span class="n">r_time</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">tt</span> <span class="o">*</span> <span class="n">n_rays</span><span class="p">])}</span>
+    <span class="n">r_range</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">rr</span><span class="p">])}</span>
     <span class="n">r_azimuth</span> <span class="o">=</span> <span class="n">get_metadata</span><span class="p">(</span><span class="s1">&#39;azimuth&#39;</span><span class="p">)</span>
     <span class="n">r_azimuth</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_rays</span><span class="p">)</span> <span class="o">*</span> <span class="n">az</span>
     <span class="n">r_elevation</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">scan_angles</span><span class="p">}</span>
-    <span class="n">r_sweep_number</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]}</span>
+    <span class="n">r_sweep_number</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">])}</span>
     <span class="n">r_fields</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;colocated_gates&#39;</span><span class="p">:</span> <span class="n">get_metadata</span><span class="p">(</span><span class="s1">&#39;colocated_gates&#39;</span><span class="p">)}</span>
     <span class="n">r_fields</span><span class="p">[</span><span class="s1">&#39;colocated_gates&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n_rays</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
 
@@ -1767,8 +1795,13 @@
     <span class="n">radar_sel</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span>
         <span class="s1">&#39;colocated_gates&#39;</span><span class="p">,</span> <span class="n">gate_coloc_radar_sel</span><span class="p">,</span> <span class="n">replace_existing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="p">(</span><span class="n">colgates</span><span class="p">,</span> <span class="n">r_radar_colg</span><span class="p">)</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">colocated_gates</span><span class="p">(</span>
-        <span class="n">r_radar</span><span class="p">,</span> <span class="n">radar_sel</span><span class="p">,</span> <span class="n">h_tol</span><span class="o">=</span><span class="n">alt_tol</span><span class="p">,</span> <span class="n">latlon_tol</span><span class="o">=</span><span class="n">latlon_tol</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">use_cKDTree</span><span class="p">:</span>
+        <span class="n">colgates</span><span class="p">,</span> <span class="n">r_radar_colg</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">colocated_gates2</span><span class="p">(</span>
+            <span class="n">r_radar</span><span class="p">,</span> <span class="n">radar_sel</span><span class="p">,</span> <span class="n">distance_upper_bound</span><span class="o">=</span><span class="n">distance_upper_bound</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">colgates</span><span class="p">,</span> <span class="n">r_radar_colg</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">colocated_gates</span><span class="p">(</span>
+            <span class="n">r_radar</span><span class="p">,</span> <span class="n">radar_sel</span><span class="p">,</span> <span class="n">h_tol</span><span class="o">=</span><span class="n">alt_tol</span><span class="p">,</span> <span class="n">latlon_tol</span><span class="o">=</span><span class="n">latlon_tol</span><span class="p">)</span>
+
     <span class="n">w_ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">r_radar_colg</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">return</span> <span class="n">colgates</span><span class="p">[</span><span class="s1">&#39;rad2_ray_ind&#39;</span><span class="p">],</span> <span class="n">colgates</span><span class="p">[</span><span class="s1">&#39;rad2_rng_ind&#39;</span><span class="p">],</span> <span class="n">w_ind</span>
@@ -1923,7 +1956,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">pyrad 0.4.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pyrad 0.5.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>

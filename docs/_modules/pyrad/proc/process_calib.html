@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>pyrad.proc.process_calib &#8212; pyrad 0.4.4 documentation</title>
+    <title>pyrad.proc.process_calib &#8212; pyrad 0.5.0 documentation</title>
     <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
@@ -27,7 +27,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">pyrad 0.4.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pyrad 0.5.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>
@@ -1102,9 +1102,6 @@
 <span class="sd">            Default number of pulses used in the computation of the ray. If the</span>
 <span class="sd">            number of pulses is not in radar.instrument_parameters this will be</span>
 <span class="sd">            used instead. Used in Ivic method. Default 30</span>
-<span class="sd">        flat_reg_wlen : int</span>
-<span class="sd">            Length of the flat region window [m]. Used in Ivic method. Default</span>
-<span class="sd">            8000.</span>
 <span class="sd">        iterations: int</span>
 <span class="sd">            number of iterations in step 7 of Ivic method. Default 10.</span>
 <span class="sd">        max_std_pwr : float. Dataset keyword</span>
@@ -1299,20 +1296,15 @@
                 <span class="n">pwrv_field</span><span class="o">=</span><span class="n">pwrv_field</span><span class="p">,</span> <span class="n">zdr_field</span><span class="o">=</span><span class="n">zdr_field</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">npulses_ray</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;npulses_ray&#39;</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
-            <span class="n">flat_reg_wlen_rng</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;flat_reg_wlen&#39;</span><span class="p">,</span> <span class="mf">8000.</span><span class="p">)</span>
             <span class="n">nbins_min</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nbins_min&#39;</span><span class="p">,</span> <span class="mi">800</span><span class="p">)</span>
             <span class="n">iterations</span> <span class="o">=</span> <span class="n">dscfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;iterations&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
 
-            <span class="n">r_res</span> <span class="o">=</span> <span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">radar</span><span class="o">.</span><span class="n">range</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">flat_reg_wlen</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">flat_reg_wlen_rng</span><span class="o">/</span><span class="n">r_res</span><span class="p">)</span>
-
             <span class="n">sun_hits</span><span class="p">,</span> <span class="n">new_radar</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">correct</span><span class="o">.</span><span class="n">get_sun_hits_ivic</span><span class="p">(</span>
                 <span class="n">radar</span><span class="p">,</span> <span class="n">delev_max</span><span class="o">=</span><span class="n">delev_max</span><span class="p">,</span> <span class="n">dazim_max</span><span class="o">=</span><span class="n">dazim_max</span><span class="p">,</span> <span class="n">elmin</span><span class="o">=</span><span class="n">elmin</span><span class="p">,</span>
-                <span class="n">npulses_ray</span><span class="o">=</span><span class="n">npulses_ray</span><span class="p">,</span> <span class="n">flat_reg_wlen</span><span class="o">=</span><span class="n">flat_reg_wlen</span><span class="p">,</span>
-                <span class="n">nbins_min</span><span class="o">=</span><span class="n">nbins_min</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="n">iterations</span><span class="p">,</span> <span class="n">attg</span><span class="o">=</span><span class="n">attg</span><span class="p">,</span>
-                <span class="n">max_std_zdr</span><span class="o">=</span><span class="n">max_std_zdr</span><span class="p">,</span> <span class="n">sun_position</span><span class="o">=</span><span class="n">sun_position</span><span class="p">,</span>
-                <span class="n">pwrh_field</span><span class="o">=</span><span class="n">pwrh_field</span><span class="p">,</span> <span class="n">pwrv_field</span><span class="o">=</span><span class="n">pwrv_field</span><span class="p">,</span>
-                <span class="n">zdr_field</span><span class="o">=</span><span class="n">zdr_field</span><span class="p">)</span>
+                <span class="n">npulses_ray</span><span class="o">=</span><span class="n">npulses_ray</span><span class="p">,</span> <span class="n">nbins_min</span><span class="o">=</span><span class="n">nbins_min</span><span class="p">,</span>
+                <span class="n">iterations</span><span class="o">=</span><span class="n">iterations</span><span class="p">,</span> <span class="n">attg</span><span class="o">=</span><span class="n">attg</span><span class="p">,</span> <span class="n">max_std_zdr</span><span class="o">=</span><span class="n">max_std_zdr</span><span class="p">,</span>
+                <span class="n">sun_position</span><span class="o">=</span><span class="n">sun_position</span><span class="p">,</span> <span class="n">pwrh_field</span><span class="o">=</span><span class="n">pwrh_field</span><span class="p">,</span>
+                <span class="n">pwrv_field</span><span class="o">=</span><span class="n">pwrv_field</span><span class="p">,</span> <span class="n">zdr_field</span><span class="o">=</span><span class="n">zdr_field</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">sun_hits</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
@@ -1571,7 +1563,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">pyrad 0.4.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pyrad 0.5.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>

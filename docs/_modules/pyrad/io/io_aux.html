@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>pyrad.io.io_aux &#8212; pyrad 0.4.4 documentation</title>
+    <title>pyrad.io.io_aux &#8212; pyrad 0.5.0 documentation</title>
     <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
@@ -27,7 +27,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">pyrad 0.4.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pyrad 0.5.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>
@@ -1367,6 +1367,10 @@
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;sum_squared&#39;</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;diff&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;fields_difference&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;mask&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;field_mask&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;texture&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;field_texture&#39;</span>
 
     <span class="c1"># spectral data</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;ShhADU&#39;</span><span class="p">:</span>
@@ -1727,6 +1731,45 @@
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CNR&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;cnr&#39;</span>
 
+    <span class="c1"># satellite names</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;HRV&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;HRV&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;VIS006&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;VIS006&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;VIS008&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;VIS008&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IR_016&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IR_016&#39;</span>
+
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IR_039&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IR_039&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;WV_062&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;WV_062&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;WV_073&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;WV_073&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IR_087&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IR_087&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IR_097&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IR_097&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IR_108&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IR_108&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IR_120&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IR_120&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IR_134&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IR_134&#39;</span>
+
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;CTH&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;CTH&#39;</span>
+
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;HRV_norm&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;HRV_norm&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;VIS006_norm&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;VIS006_norm&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;VIS008_norm&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;VIS008_norm&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;IR_016_norm&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;IR_016_norm&#39;</span>
+
     <span class="c1"># cloud radar names</span>
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;SNR&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;SNR&#39;</span>
@@ -1930,6 +1973,25 @@
     <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;quant95Vc&#39;</span><span class="p">:</span>
         <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;quant95_corrected_velocity&#39;</span>
 
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;avgdealV&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;avg_dealiased_velocity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;NdealV&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;npoints_dealiased_velocity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;quant05dealV&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;quant05_dealiased_velocity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;quant10dealV&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;quant10_dealiased_velocity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;quant20dealV&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;quant20_dealiased_velocity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;quant50dealV&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;quant50_dealiased_velocity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;quant80dealV&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;quant80_dealiased_velocity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;quant90dealV&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;quant90_dealiased_velocity&#39;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;quant95dealV&#39;</span><span class="p">:</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;quant95_dealiased_velocity&#39;</span>
+
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;ERROR: Unknown data type &#39;</span><span class="o">+</span><span class="n">datatype</span><span class="p">)</span>
 
@@ -2036,7 +2098,7 @@
                 <span class="n">dayfilelist</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="s1">&#39;*.&#39;</span><span class="o">+</span><span class="n">scan</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">dayfilelist</span><span class="p">:</span>
                     <span class="n">t_filelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">datagroup</span> <span class="ow">in</span><span class="p">(</span><span class="s1">&#39;RAD4ALPGRID&#39;</span><span class="p">,</span> <span class="s1">&#39;RAD4ALPGIF&#39;</span><span class="p">,</span> <span class="s1">&#39;RAD4ALPBIN&#39;</span><span class="p">):</span>
+            <span class="k">elif</span> <span class="n">datagroup</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;RAD4ALPGRID&#39;</span><span class="p">,</span> <span class="s1">&#39;RAD4ALPGIF&#39;</span><span class="p">,</span> <span class="s1">&#39;RAD4ALPBIN&#39;</span><span class="p">):</span>
                 <span class="n">acronym</span><span class="p">,</span> <span class="n">termination</span> <span class="o">=</span> <span class="n">get_rad4alp_prod_fname</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
                 <span class="n">dir_day</span> <span class="o">=</span> <span class="n">starttime</span><span class="o">+</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
                 <span class="n">dayinfo</span> <span class="o">=</span> <span class="n">dir_day</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%y%j&#39;</span><span class="p">)</span>
@@ -2051,6 +2113,20 @@
                     <span class="k">continue</span>
 
                 <span class="n">dayfilelist</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">basename</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="o">+</span><span class="n">termination</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">dayfilelist</span><span class="p">:</span>
+                    <span class="n">t_filelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;SATGRID&#39;</span><span class="p">:</span>
+                <span class="n">daydir</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">starttime</span> <span class="o">+</span>
+                    <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">i</span><span class="p">))</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y/%m/</span><span class="si">%d</span><span class="s1">/&#39;</span><span class="p">)</span>
+                <span class="n">dayinfo</span> <span class="o">=</span> <span class="p">(</span><span class="n">starttime</span><span class="o">+</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">i</span><span class="p">))</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+                    <span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">datapath</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;satpath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span> <span class="o">+</span> <span class="n">daydir</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">datapath</span><span class="p">):</span>
+                    <span class="c1"># warn(&quot;WARNING: Unknown datapath &#39;%s&#39;&quot; % datapath)</span>
+                    <span class="k">continue</span>
+                <span class="n">dayfilelist</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span>
+                    <span class="n">datapath</span><span class="o">+</span><span class="s1">&#39;MSG?_ccs4_&#39;</span><span class="o">+</span><span class="n">dayinfo</span><span class="o">+</span><span class="s1">&#39;*_rad_PLAX.nc&#39;</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">dayfilelist</span><span class="p">:</span>
                     <span class="n">t_filelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
 
@@ -2735,7 +2811,7 @@
 
         <span class="n">daydir</span> <span class="o">=</span> <span class="n">runtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">datapath</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;cosmopath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span><span class="o">+</span><span class="n">datatype</span><span class="o">+</span><span class="s1">&#39;/raw/&#39;</span><span class="o">+</span><span class="n">daydir</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
-        <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;cosmo-1&#39;</span><span class="p">,</span> <span class="s1">&#39;cosmo-2&#39;</span><span class="p">,</span> <span class="s1">&#39;cosmo-7&#39;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;cosmo-1e&#39;</span><span class="p">,</span> <span class="s1">&#39;cosmo-1&#39;</span><span class="p">,</span> <span class="s1">&#39;cosmo-2&#39;</span><span class="p">,</span> <span class="s1">&#39;cosmo-7&#39;</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;TEMP&#39;</span><span class="p">:</span>
                 <span class="n">search_name</span> <span class="o">=</span> <span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">model</span><span class="o">+</span><span class="s1">&#39;_MDR_3D_&#39;</span><span class="o">+</span><span class="n">runtimestr</span><span class="o">+</span><span class="s1">&#39;.nc&#39;</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;WIND&#39;</span><span class="p">:</span>
@@ -2762,7 +2838,7 @@
 
         <span class="n">daydir</span> <span class="o">=</span> <span class="n">runtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">datapath</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;cosmopath&#39;</span><span class="p">][</span><span class="n">ind_rad</span><span class="p">]</span><span class="o">+</span><span class="n">datatype</span><span class="o">+</span><span class="s1">&#39;/raw1/&#39;</span><span class="o">+</span><span class="n">daydir</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
-        <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;cosmo-1&#39;</span><span class="p">,</span> <span class="s1">&#39;cosmo-2&#39;</span><span class="p">,</span> <span class="s1">&#39;cosmo-7&#39;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;cosmo-1e&#39;</span><span class="p">,</span> <span class="s1">&#39;cosmo-1&#39;</span><span class="p">,</span> <span class="s1">&#39;cosmo-2&#39;</span><span class="p">,</span> <span class="s1">&#39;cosmo-7&#39;</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;TEMP&#39;</span><span class="p">:</span>
                 <span class="n">search_name</span> <span class="o">=</span> <span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="n">model</span><span class="o">+</span><span class="s1">&#39;_MDR_3D_&#39;</span><span class="o">+</span><span class="n">runtimestr</span><span class="o">+</span><span class="s1">&#39;.nc&#39;</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;WIND&#39;</span><span class="p">:</span>
@@ -2944,6 +3020,9 @@
     <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;COSMORAW&#39;</span><span class="p">:</span>
         <span class="n">datetimestr</span> <span class="o">=</span> <span class="n">bfile</span><span class="p">[</span><span class="o">-</span><span class="mi">13</span><span class="p">:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
         <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">datetimestr</span><span class="p">,</span> <span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">datagroup</span> <span class="o">==</span> <span class="s1">&#39;SATGRID&#39;</span><span class="p">:</span>
+        <span class="n">datetimestr</span> <span class="o">=</span> <span class="n">bfile</span><span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">22</span><span class="p">]</span>
+        <span class="n">fdatetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">datetimestr</span><span class="p">,</span> <span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M&#39;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;unknown data group&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>
@@ -3005,7 +3084,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">pyrad 0.4.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pyrad 0.5.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>pyrad.util.radar_utils &#8212; pyrad 0.4.4 documentation</title>
+    <title>pyrad.util.radar_utils &#8212; pyrad 0.5.0 documentation</title>
     <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
@@ -27,7 +27,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">pyrad 0.4.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pyrad 0.5.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>
@@ -1487,7 +1487,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">bin_edges</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">get_histogram_bins</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">)</span>
+            <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">get_histogram_bins</span><span class="p">(</span>
+                <span class="n">field_name</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">vmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
@@ -1506,7 +1507,8 @@
     <span class="k">return</span> <span class="n">bin_edges</span><span class="p">,</span> <span class="n">values</span></div>
 
 
-<div class="viewcode-block" id="compute_histogram_sweep"><a class="viewcode-back" href="../../../util.html#pyrad.util.compute_histogram_sweep">[docs]</a><span class="k">def</span> <span class="nf">compute_histogram_sweep</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">ray_start</span><span class="p">,</span> <span class="n">ray_end</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="compute_histogram_sweep"><a class="viewcode-back" href="../../../util.html#pyrad.util.compute_histogram_sweep">[docs]</a><span class="k">def</span> <span class="nf">compute_histogram_sweep</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">ray_start</span><span class="p">,</span> <span class="n">ray_end</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                            <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    computes histogram of the data in a particular sweep</span>
 
@@ -1520,6 +1522,8 @@
 <span class="sd">        name of the field</span>
 <span class="sd">    step : float</span>
 <span class="sd">        size of bin</span>
+<span class="sd">    vmin, vmax : float</span>
+<span class="sd">        minimum and maximum values</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1529,7 +1533,8 @@
 <span class="sd">        values at each bin</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">get_histogram_bins</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">)</span>
+    <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">get_histogram_bins</span><span class="p">(</span>
+        <span class="n">field_name</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
     <span class="n">step_aux</span> <span class="o">=</span> <span class="n">bin_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">bin_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">bin_centers</span> <span class="o">=</span> <span class="n">bin_edges</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">step_aux</span><span class="o">/</span><span class="mf">2.</span>
     <span class="n">values</span> <span class="o">=</span> <span class="n">field</span><span class="p">[</span><span class="n">ray_start</span><span class="p">:</span><span class="n">ray_end</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">compressed</span><span class="p">()</span>
@@ -1539,10 +1544,10 @@
     <span class="k">return</span> <span class="n">bin_edges</span><span class="p">,</span> <span class="n">values</span></div>
 
 
-<span class="k">def</span> <span class="nf">get_histogram_bins</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_histogram_bins</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    gets the histogram bins using the range limits of the field as defined</span>
-<span class="sd">    in the Py-ART config file.</span>
+<span class="sd">    gets the histogram bins. If vmin or vmax are not define the range limits</span>
+<span class="sd">    of the field as defined in the Py-ART config file are going to be used.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1550,6 +1555,8 @@
 <span class="sd">        name of the field</span>
 <span class="sd">    step : float</span>
 <span class="sd">        size of bin</span>
+<span class="sd">    vmin, vmax : float</span>
+<span class="sd">        The minimum and maximum value of the histogram</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1561,7 +1568,12 @@
     <span class="k">if</span> <span class="s1">&#39;boundaries&#39;</span> <span class="ow">in</span> <span class="n">field_dict</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">field_dict</span><span class="p">[</span><span class="s1">&#39;boundaries&#39;</span><span class="p">])</span>
 
-    <span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_field_limits</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+    <span class="n">vmin_aux</span><span class="p">,</span> <span class="n">vmax_aux</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_field_limits</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmin</span> <span class="o">=</span> <span class="n">vmin_aux</span>
+    <span class="k">if</span> <span class="n">vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmax</span> <span class="o">=</span> <span class="n">vmax_aux</span>
+
     <span class="k">if</span> <span class="n">step</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="n">vmax</span><span class="o">-</span><span class="n">vmin</span><span class="p">)</span><span class="o">/</span><span class="mf">50.</span>
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No step has been defined. Default &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">step</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39; will be used&#39;</span><span class="p">)</span>
@@ -1732,7 +1744,7 @@
         <span class="n">field2</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">fill_value</span><span class="o">=</span><span class="n">fill_value</span><span class="p">),</span> <span class="n">bins</span><span class="o">=</span><span class="p">[</span><span class="n">bin_edges1</span><span class="p">,</span> <span class="n">bin_edges2</span><span class="p">])</span></div>
 
 
-<span class="k">def</span> <span class="nf">quantize_field</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">quantize_field</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    quantizes data</span>
 
@@ -1744,6 +1756,8 @@
 <span class="sd">        name of the field</span>
 <span class="sd">    step : float</span>
 <span class="sd">        size of bin</span>
+<span class="sd">    vmin, vmax : float</span>
+<span class="sd">        min and max values</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1753,7 +1767,11 @@
 <span class="sd">        values at each bin</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_field_limits</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+    <span class="n">vmin_aux</span><span class="p">,</span> <span class="n">vmax_aux</span> <span class="o">=</span> <span class="n">pyart</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_field_limits</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmin</span> <span class="o">=</span> <span class="n">vmin_aux</span>
+    <span class="k">if</span> <span class="n">vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmax</span> <span class="o">=</span> <span class="n">vmax_aux</span>
     <span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">&lt;</span> <span class="n">vmin</span><span class="p">]</span> <span class="o">=</span> <span class="n">vmin</span>
     <span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">&gt;</span> <span class="n">vmax</span><span class="p">]</span> <span class="o">=</span> <span class="n">vmax</span>
     <span class="n">fieldq</span> <span class="o">=</span> <span class="p">((</span><span class="n">field</span><span class="o">+</span><span class="n">vmin</span><span class="p">)</span><span class="o">/</span><span class="n">step</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
@@ -2011,7 +2029,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">pyrad 0.4.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pyrad 0.5.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>

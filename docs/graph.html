@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Plotting (pyrad.graph) &#8212; pyrad 0.4.4 documentation</title>
+    <title>Plotting (pyrad.graph) &#8212; pyrad 0.5.0 documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -27,7 +27,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">pyrad 0.4.4 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">pyrad 0.5.0 documentation</a> &#187;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -2629,7 +2629,7 @@ different elevations and the frequency band of the radar</p>
 
 <dl class="function">
 <dt id="pyrad.graph.plot_surface">
-<code class="descclassname">pyrad.graph.</code><code class="descname">plot_surface</code><span class="sig-paren">(</span><em>grid</em>, <em>field_name</em>, <em>level</em>, <em>prdcfg</em>, <em>fname_list</em>, <em>titl=None</em>, <em>save_fig=True</em>, <em>use_basemap=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots_grid.html#plot_surface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_surface" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyrad.graph.</code><code class="descname">plot_surface</code><span class="sig-paren">(</span><em>grid</em>, <em>field_name</em>, <em>level</em>, <em>prdcfg</em>, <em>fname_list</em>, <em>titl=None</em>, <em>alpha=None</em>, <em>ax=None</em>, <em>fig=None</em>, <em>display=None</em>, <em>save_fig=True</em>, <em>use_basemap=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots_grid.html#plot_surface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_surface" title="Permalink to this definition">¶</a></dt>
 <dd><p>plots a surface from gridded data</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2654,6 +2654,19 @@ different elevations and the frequency band of the radar</p>
 <dt><strong>titl</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
 <dd><p class="first last">Plot title</p>
 </dd>
+<dt><strong>alpha</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
+<dd><p class="first last">Set the alpha transparency of the grid plot. Useful for
+overplotting radar over other datasets.</p>
+</dd>
+<dt><strong>ax</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Axis</span></dt>
+<dd><p class="first last">Axis to plot on. if fig is None a new axis will be created</p>
+</dd>
+<dt><strong>fig</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Figure</span></dt>
+<dd><p class="first last">Figure to add the colorbar to. If none a new figure will be created</p>
+</dd>
+<dt><strong>display</strong> <span class="classifier-delimiter">:</span> <span class="classifier">GridMapDisplay object</span></dt>
+<dd><p class="first last">The display used</p>
+</dd>
 <dt><strong>save_fig</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
 <dd><p class="first last">if true save the figure. If false it does not close the plot and
 returns the handle to the figure</p>
@@ -2676,7 +2689,7 @@ returns the handle to the figure</p>
 
 <dl class="function">
 <dt id="pyrad.graph.plot_time_Doppler">
-<code class="descclassname">pyrad.graph.</code><code class="descname">plot_time_Doppler</code><span class="sig-paren">(</span><em>spectra</em>, <em>field_name</em>, <em>prdcfg</em>, <em>fname_list</em>, <em>xaxis_info='Doppler_velocity'</em>, <em>yaxis_pos='start'</em>, <em>titl=None</em>, <em>clabel=None</em>, <em>vmin=None</em>, <em>vmax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots_spectra.html#plot_time_Doppler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_time_Doppler" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyrad.graph.</code><code class="descname">plot_time_Doppler</code><span class="sig-paren">(</span><em>spectra</em>, <em>field_name</em>, <em>prdcfg</em>, <em>fname_list</em>, <em>xaxis_info='Doppler_velocity'</em>, <em>yaxis_pos='start'</em>, <em>titl=None</em>, <em>clabel=None</em>, <em>vmin=None</em>, <em>vmax=None</em>, <em>xmin=None</em>, <em>xmax=None</em>, <em>ymin=None</em>, <em>ymax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrad/graph/plots_spectra.html#plot_time_Doppler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrad.graph.plot_time_Doppler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Makes a time-Doppler plot</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2711,6 +2724,9 @@ returns the handle to the figure</p>
 </dd>
 <dt><strong>vmin, vmax</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
 <dd><p class="first last">The value limits</p>
+</dd>
+<dt><strong>xmin, xmax, ymin, ymax</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float or None</span></dt>
+<dd><p class="first last">The axis limits</p>
 </dd>
 </dl>
 </td>
@@ -2978,7 +2994,7 @@ returns the handle to the figure</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">pyrad 0.4.4 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">pyrad 0.5.0 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
