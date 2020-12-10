@@ -107,6 +107,7 @@ def dem2radar_data(radar, dem_data, slice_xy=True, field_name='visibility'):
 
     return field_dict
 
+
 # @profile
 def read_dem(fname, field_name = 'terrain_altitude', fill_value=None,
              projparams = None):
@@ -124,8 +125,10 @@ def read_dem(fname, field_name = 'terrain_altitude', fill_value=None,
         The fill value, if not provided will be infered from metadata 
         if possible
     projparams : projection transform as can be used by pyproj, either a 
-        OGC WKT or Proj4 string, see epsg.io for a list, if not provided 
-        will be infered from the file, or for ASCII, LV1903 will be used
+        EPSG code ("EPSG:21781" for CH1903 for example), or a OGC WKT or 
+        Proj4 string, see epsg.io for a list, 
+        if not provided will be infered from the geotiff file
+        
         
     Returns
     -------
@@ -142,9 +145,8 @@ def read_dem(fname, field_name = 'terrain_altitude', fill_value=None,
     elif extension in ['.rst']:
         return read_idrisi_data(fname, field_name, fill_value, projparams)
     else:
-        warn('Unable to read file %s, extension must be .tif .tiff .gtif, '+
-             '.asc .dem .txt .rst',
-             fname)
+        warn('Unable to read file {:s}, extension must be '.format(fname) +
+             '.tif .tiff .gtif .asc .dem .txt .rst')
         return None
     
 # @profile
@@ -165,8 +167,10 @@ def read_geotiff_data(fname, field_name = 'terrain_altitude',
         The fill value, if not provided will be infered from metadata 
         (recommended)
     projparams : projection transform as can be used by pyproj, either a 
-        OGC WKT or Proj4 string, see epsg.io for a list, if not provided 
-        will be infered from the geotiff file
+        EPSG code integer (21781 for CH1903 for example), or a OGC WKT or 
+        Proj4 string, see epsg.io for a list, 
+        if not provided will be infered from the idrisi file
+        
         
     Returns
     -------
@@ -178,6 +182,11 @@ def read_geotiff_data(fname, field_name = 'terrain_altitude',
         warn("gdal is required to use read_geotiff_data but is not installed")
         return None
 
+    if type(projparams) == int: # Retrieve Wkt code from EPSG number
+        proj = osr.SpatialReference()
+        proj.ImportFromEPSG(projparams)
+        projparams = proj.ExportToWkt()
+        
     # read the data
     try:
         raster = gdal.Open(fname)
@@ -205,13 +214,13 @@ def read_geotiff_data(fname, field_name = 'terrain_altitude',
         
         if not fill_value: 
             fill_value = metadata['flag value']
-            
+
         raster_array = raster.ReadAsArray()
         raster_array = np.ma.masked_equal(raster_array, fill_value)
     
     
         field_dict = get_metadata(field_name)
-        field_dict['data'] = np.transpose(raster_array)[:, ::-1]
+        field_dict['data'] = raster_array[::-1,:]
         field_dict['units'] = metadata['value units']
         
         x = get_metadata('x')
@@ -263,8 +272,9 @@ def read_ascii_data(fname, field_name = 'terrain_altitude', fill_value = None,
         The fill value, if not provided will be infered from metadata 
         (recommended)
     projparams : projection transform as can be used by pyproj, either a 
-        OGC WKT or Proj4 string, see epsg.io for a list, if not provided
-        the Swiss LV1903 coord system will be used
+        EPSG code integer (21781 for CH1903 for example), or a OGC WKT or 
+        Proj4 string, see epsg.io for a list, 
+        if not provided CH1903 (EPSG:21781 will be used)
         
     Returns
     -------
@@ -272,7 +282,11 @@ def read_ascii_data(fname, field_name = 'terrain_altitude', fill_value = None,
         dictionary with the data and metadata
 
     """
-  
+    if type(projparams) == int: # Retrieve Wkt code from EPSG number
+        proj = osr.SpatialReference()
+        proj.ImportFromEPSG(projparams)
+        projparams = proj.ExportToWkt()
+        
     # read the data
     try:
         asciidata = pd.read_csv(fname, header = None)
@@ -302,7 +316,7 @@ def read_ascii_data(fname, field_name = 'terrain_altitude', fill_value = None,
         rasterarray = np.ma.masked_equal(rasterarray, fill_value)
         
         field_dict = get_metadata(field_name)
-        field_dict['data'] = np.transpose(rasterarray)[:, ::-1]
+        field_dict['data'] = raster_array[::-1,:]
         field_dict['units'] = metadata['value units']
             
         x = get_metadata('x')
@@ -350,8 +364,9 @@ def read_idrisi_data(fname, field_name = 'terrain_altitude', fill_value = None,
     fill_value : float
         The fill value
     projparams : projection transform as can be used by pyproj, either a 
-        OGC WKT or Proj4 string, see epsg.io for a list, if not provided 
-        will be infered from the idrisi file
+        EPSG code integer (21781 for CH1903 for example), or a OGC WKT or 
+        Proj4 string, see epsg.io for a list, 
+        if not provided will be infered from the idrisi file
         
     Returns
     -------
@@ -362,7 +377,12 @@ def read_idrisi_data(fname, field_name = 'terrain_altitude', fill_value = None,
     if not _GDAL_AVAILABLE:
         warn("gdal is required to use read_idrisi_data but is not installed")
         return None
-
+    
+    if type(projparams) == int: # Retrieve Wkt code from EPSG number
+        proj = osr.SpatialReference()
+        proj.ImportFromEPSG(projparams)
+        projparams = proj.ExportToWkt()
+        
     # read the data
     try:
         if fill_value == None:
@@ -378,7 +398,7 @@ def read_idrisi_data(fname, field_name = 'terrain_altitude', fill_value = None,
             return None
 
         field_dict = get_metadata(field_name)
-        field_dict['data'] = np.transpose(raster_array)[:, ::-1]
+        field_dict['data'] = raster_array[::-1,:]
         field_dict['units'] = metadata['value units']
 
         x = get_metadata('x')
@@ -530,5 +550,5 @@ def _prepare_for_interpolation(x_radar, y_radar, dem_coord, slice_xy=True):
 
 def _get_lv1903_wkt():
     lv1903 = osr.SpatialReference( )
-    lv1903.ImportFromEPSG( 21781)
+    lv1903.ImportFromEPSG(21781)
     return lv1903.ExportToWkt()
