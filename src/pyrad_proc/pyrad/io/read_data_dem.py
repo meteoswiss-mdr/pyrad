@@ -32,8 +32,9 @@ except ImportError:
         _GDAL_AVAILABLE = True
     except ImportError:
         _GDAL_AVAILABLE = False
-
+from pyproj import CRS
 import pyart
+
 from pyart.config import get_metadata
 from ..io.read_data_cosmo import _put_radar_in_swiss_coord
 
@@ -220,7 +221,8 @@ def read_geotiff_data(fname, field_name = 'terrain_altitude',
     
     
         field_dict = get_metadata(field_name)
-        field_dict['data'] = raster_array[::-1,:]
+        # Pyart Grid needs 3D array for plotting
+        field_dict['data'] = raster_array[::-1,:][:,:,None]
         field_dict['units'] = metadata['value units']
         
         x = get_metadata('x')
@@ -243,10 +245,14 @@ def read_geotiff_data(fname, field_name = 'terrain_altitude',
             warn('No projection info could be found in file, assuming '+\
                  'the coordinate system is LV1903')
             projparams = _get_lv1903_wkt()
-                
-        dem_data = pyart.core.Grid(None, {field_name:dem_data[field_name]}, 
+            
+        time = get_metadata('grid_time')
+        time['data'] = np.array([0.0])
+        time['units'] = 'seconds since 2000-01-01T00:00:00Z'
+    
+        dem_data = pyart.core.Grid(time, {field_name:dem_data[field_name]}, 
              dem_data['metadata'], 0, 0, 0, dem_data['x'], dem_data['y'], 
-                     {'data':[0]}, projection = projparams)
+                     {'data':[0]}, projection = CRS(projparams).to_dict())
         
         return dem_data
         
@@ -307,16 +313,17 @@ def read_ascii_data(fname, field_name = 'terrain_altitude', fill_value = None,
         if not fill_value: 
             fill_value = metadata['flag value']
             
-        rasterarray = pd.read_csv(fname, skiprows = 6, header = None,
+        raster_array = pd.read_csv(fname, skiprows = 6, header = None,
                                   sep = ' ')
-        rasterarray = np.array(rasterarray)
-        rasterarray = rasterarray[np.isfinite(rasterarray)]
-        rasterarray = np.reshape(rasterarray,
+        raster_array = np.array(raster_array)
+        raster_array = raster_array[np.isfinite(raster_array)]
+        raster_array = np.reshape(raster_array,
                                  (metadata['rows'],metadata['columns']))
-        rasterarray = np.ma.masked_equal(rasterarray, fill_value)
+        raster_array = np.ma.masked_equal(raster_array, fill_value)
         
         field_dict = get_metadata(field_name)
-        field_dict['data'] = raster_array[::-1,:]
+        # Pyart Grid needs 3D array for plotting
+        field_dict['data'] = raster_array[::-1,:][:,:,None]
         field_dict['units'] = metadata['value units']
             
         x = get_metadata('x')
@@ -338,9 +345,13 @@ def read_ascii_data(fname, field_name = 'terrain_altitude', fill_value = None,
         if projparams == None:
             projparams = _get_lv1903_wkt()
         
-        dem_data = pyart.core.Grid(None, {field_name:dem_data[field_name]}, 
+        time = get_metadata('grid_time')
+        time['data'] = np.array([0.0])
+        time['units'] = 'seconds since 2000-01-01T00:00:00Z'
+    
+        dem_data = pyart.core.Grid(time, {field_name:dem_data[field_name]}, 
              dem_data['metadata'], 0, 0, 0, dem_data['x'], dem_data['y'], 
-                     {'data':[0]}, projection = projparams)
+                     {'data':[0]}, projection = CRS(projparams).to_dict())
         
         return dem_data
         
@@ -398,7 +409,8 @@ def read_idrisi_data(fname, field_name = 'terrain_altitude', fill_value = None,
             return None
 
         field_dict = get_metadata(field_name)
-        field_dict['data'] = raster_array[::-1,:]
+        # Pyart Grid needs 3D array for plotting
+        field_dict['data'] = raster_array[::-1,:][:,:,None]
         field_dict['units'] = metadata['value units']
 
         x = get_metadata('x')
@@ -425,9 +437,13 @@ def read_idrisi_data(fname, field_name = 'terrain_altitude', fill_value = None,
                  'the coordinate system is LV1903')
             projparams = _get_lv1903_wkt()
          
-        dem_data = pyart.core.Grid(None, {field_name:dem_data[field_name]}, 
+        time = get_metadata('grid_time')
+        time['data'] = np.array([0.0])
+        time['units'] = 'seconds since 2000-01-01T00:00:00Z'
+    
+        dem_data = pyart.core.Grid(time, {field_name : dem_data[field_name]}, 
              dem_data['metadata'], 0, 0, 0, dem_data['x'], dem_data['y'], 
-                     {'data':[0]}, projection = projparams)
+                     {'data':[0]}, projection = CRS(projparams).to_dict())
         
         return dem_data
     
