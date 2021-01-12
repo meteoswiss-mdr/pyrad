@@ -241,7 +241,7 @@ DEM data
 
     process_dem
     process_visibility
-
+    process_gecsx
 """
 
 from .process_aux import get_process_func, process_raw, process_save_radar
@@ -339,6 +339,6 @@ from .process_cosmo import process_cosmo_coord, process_hzt
 from .process_cosmo import process_hzt_lookup_table, process_hzt_coord
 from .process_cosmo import process_cosmo_to_radar
 
-from .process_dem import process_dem, process_visibility
+from .process_dem import process_dem, process_visibility, process_gecsx
 
 __all__ = [s for s in dir() if not s.startswith('_')]

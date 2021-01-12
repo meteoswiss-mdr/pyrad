@@ -314,7 +314,7 @@ def plot_ppi_map(radar, field_name, ind_el, prdcfg, fname_list,
         lat_lines=lat_lines, lon_lines=lon_lines,
         maps_list=prdcfg['ppiMapImageConfig']['maps'], ax=ax, fig=fig,
         colorbar_flag=True, alpha=1)
-
+    
     ax = display_map.ax
 
     if 'rngRing' in prdcfg['ppiMapImageConfig']:

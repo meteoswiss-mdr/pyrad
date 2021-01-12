@@ -478,6 +478,8 @@ def generate_vol_products(dataset, prdcfg):
                     The compression options allowed by the hdf5. Depends on
                     the type of compression. Default 6 (The gzip compression
                     level).
+        'SAVEALL_VOL' : Same as before but can be used in a mixed GRID/VOL
+            dataset, as there is no ambiguity with SAVEALL for VOL datasets
         'SAVESTATE': Saves the last processed data in a file. Used for real-
             time data processing
         'SAVEVOL': Saves one field of a radar volume data in a C/F radial or
@@ -497,6 +499,8 @@ def generate_vol_products(dataset, prdcfg):
                     The compression options allowed by the hdf5. Depends on
                     the type of compression. Default 6 (The gzip compression
                     level).
+        'SAVEVOL_VOL' : Same as before but can be used in a mixed GRID/VOL
+            dataset, as there is no ambiguity with SAVEVOL for GRID datasets
         'SAVE_FIXED_ANGLE': Saves the position of the first fix angle in a
             csv file
         'SELFCONSISTENCY': Plots a ZDR versus KDP/ZH histogram of data.
@@ -2982,7 +2986,8 @@ def generate_vol_products(dataset, prdcfg):
 
         return alarm_fname
 
-    if prdcfg['type'] == 'SAVEVOL':
+        
+    if prdcfg['type'] == 'SAVEVOL' or prdcfg['type'] == 'SAVEVOL_VOL':
         field_name = get_fieldname_pyart(prdcfg['voltype'])
         if field_name not in dataset['radar_out'].fields:
             warn(
@@ -3025,8 +3030,9 @@ def generate_vol_products(dataset, prdcfg):
         print('saved file: '+fname)
 
         return fname
+    
 
-    if prdcfg['type'] == 'SAVEALL':
+    if prdcfg['type'] == 'SAVEALL' or prdcfg['type'] == 'SAVEALL_VOL':
         file_type = prdcfg.get('file_type', 'nc')
         datatypes = prdcfg.get('datatypes', None)
         physical = prdcfg.get('physical', True)

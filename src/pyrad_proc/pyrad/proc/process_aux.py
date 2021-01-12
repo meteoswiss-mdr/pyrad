@@ -80,6 +80,7 @@ def get_process_func(dataset_type, dsname):
                 'FIELDS_DIFF': process_fields_diff
                 'FIXED_RNG': process_fixed_rng
                 'FIXED_RNG_SPAN': process_fixed_rng_span
+                'GECSX' : process_gecsx
                 'HYDROCLASS': process_hydroclass
                 'HZT': process_hzt
                 'HZT_LOOKUP': process_hzt_lookup_table
@@ -166,6 +167,7 @@ def get_process_func(dataset_type, dsname):
                 'COSMO2RADAR': process_cosmo_to_radar
             'GRID' format output:
                 'RAW_GRID': process_raw_grid
+                'GECSX' : process_gecsx
                 'GRID': process_grid
                 'GRID_FIELDS_DIFF': process_grid_fields_diff
                 'GRID_MASK': process_grid_mask
@@ -235,6 +237,9 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_radar_resampling'
     elif dataset_type == 'CCOR':
         func_name = 'process_ccor'
+    elif dataset_type == 'GECSX':
+        func_name = 'process_gecsx'
+        dsformat = ['GRID','VOL']
     elif dataset_type == 'GRID':
         func_name = 'process_grid'
         dsformat = 'GRID'
